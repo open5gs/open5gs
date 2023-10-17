@@ -52,6 +52,10 @@ int s1ap_send_s1_setup_response(mme_enb_t *enb);
 int s1ap_send_s1_setup_failure(
         mme_enb_t *enb, S1AP_Cause_PR group, long cause);
 
+int s1ap_send_enb_configuration_update_ack(mme_enb_t *enb);
+int s1ap_send_enb_configuration_update_failure(
+        mme_enb_t *enb, S1AP_Cause_PR group, long cause);
+
 int s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue);
 int s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue);
 int s1ap_send_ue_context_release_command(
@@ -63,6 +67,9 @@ int s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain);
 int s1ap_send_mme_configuration_transfer(
         mme_enb_t *target_enb,
         S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer);
+
+int s1ap_send_mme_direct_information_transfer(
+        mme_enb_t *target_enb, const uint8_t *buf, size_t buf_len);
 
 int s1ap_send_e_rab_modification_confirm(mme_ue_t *mme_ue);
 

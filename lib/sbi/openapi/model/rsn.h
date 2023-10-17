@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_rsn_NULL = 0, OpenAPI_rsn_V1, OpenAPI_rsn_V2 } OpenAPI_rsn_e;
+typedef enum { OpenAPI_rsn_NULL = 0, OpenAPI_rsn_V1, OpenAPI_rsn_V2, OpenAPI_rsn_NONE } OpenAPI_rsn_e;
 
 char* OpenAPI_rsn_ToString(OpenAPI_rsn_e rsn);
 

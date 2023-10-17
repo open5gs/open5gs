@@ -1,7 +1,7 @@
 /*
  * wireline_service_area_restriction.h
  *
- * 
+ * The \&quot;restrictionType\&quot; attribute and the \&quot;areas\&quot; attribute shall be either both present or absent.  The empty array of areas is used when service is allowed/restricted nowhere. 
  */
 
 #ifndef _OpenAPI_wireline_service_area_restriction_H_

@@ -1,7 +1,7 @@
 /*
  * upu_data_1.h
  *
- * 
+ * Contains UE parameters update data set (e.g., the updated Routing ID Data or the Default configured NSSAI).
  */
 
 #ifndef _OpenAPI_upu_data_1_H_

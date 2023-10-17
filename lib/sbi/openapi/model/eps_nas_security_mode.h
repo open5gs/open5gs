@@ -1,7 +1,7 @@
 /*
  * eps_nas_security_mode.h
  *
- * 
+ * Indicates the EPS NAS Security Mode
  */
 
 #ifndef _OpenAPI_eps_nas_security_mode_H_

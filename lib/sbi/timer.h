@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -33,6 +33,7 @@ void ogs_timer_nf_instance_heartbeat_interval(void *data);
 void ogs_timer_nf_instance_no_heartbeat(void *data);
 void ogs_timer_nf_instance_validity(void *data);
 void ogs_timer_subscription_validity(void *data);
+void ogs_timer_subscription_patch(void *data);
 void ogs_timer_sbi_client_wait_expire(void *data);
 
 #ifdef __cplusplus

@@ -29,12 +29,14 @@ struct sess_state {
 
     os0_t       peer_host;          /* Peer Host */
 
-#define MAX_CC_REQUEST_NUMBER 32
+#define NUM_CC_REQUEST_SLOT 4
+
     smf_sess_t *sess;
     struct {
+        uint32_t cc_req_no;
         bool pfcp;
         void *ptr; /* INITIAL: ogs_gtp_xact_t, UPDATE: ogs_pfcp_xact_t */
-    } xact_data[MAX_CC_REQUEST_NUMBER];
+    } xact_data[NUM_CC_REQUEST_SLOT];
     uint32_t cc_request_type;
     uint32_t cc_request_number;
 
@@ -54,12 +56,22 @@ static __inline__ struct sess_state *new_state(os0_t sid)
 
     ogs_thread_mutex_lock(&sess_state_mutex);
     ogs_pool_alloc(&sess_state_pool, &new);
-    ogs_expect_or_return_val(new, NULL);
+    if (!new) {
+        ogs_error("ogs_pool_alloc() failed");
+        ogs_thread_mutex_unlock(&sess_state_mutex);
+        return NULL;
+    }
     memset(new, 0, sizeof(*new));
-    ogs_thread_mutex_unlock(&sess_state_mutex);
 
     new->gy_sid = (os0_t)ogs_strdup((char *)sid);
-    ogs_expect_or_return_val(new->gy_sid, NULL);
+    if (!new->gy_sid) {
+        ogs_error("ogs_strdup() failed");
+        ogs_pool_free(&sess_state_pool, new);
+        ogs_thread_mutex_unlock(&sess_state_mutex);
+        return NULL;
+    }
+
+    ogs_thread_mutex_unlock(&sess_state_mutex);
 
     return new;
 }
@@ -515,7 +527,7 @@ static void fill_service_information_ccr(smf_sess_t *sess,
     }
 
     /* 3GPP-User-Location-Info, 3GPP TS 29.061 16.4.7.2 22 */
-    smf_fd_msg_avp_add_3gpp_uli(sess, avpch1);
+    smf_fd_msg_avp_add_3gpp_uli(sess, (struct msg *)avpch1);
 
     if (sess->smf_ue->imeisv_len > 0) {
         /* User-Equipment-Info, 3GPP TS 32.299 7.1.17 */
@@ -571,7 +583,7 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
     struct session *session = NULL;
     int new;
     const char *service_context_id = "32251@3gpp.org";
-    uint32_t timestamp;
+    uint32_t timestamp, req_slot;
 
     ogs_assert(xact);
     ogs_assert(sess);
@@ -658,18 +670,16 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
 
     ogs_debug("    CC Request Type[%d] Number[%d]",
         sess_data->cc_request_type, sess_data->cc_request_number);
-    
-    ogs_assert(sess_data->cc_request_number < MAX_CC_REQUEST_NUMBER);
-
 
     /* Update session state */
     sess_data->sess = sess;
-
+    req_slot = sess_data->cc_request_number % NUM_CC_REQUEST_SLOT;
     if (cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST)
-        sess_data->xact_data[sess_data->cc_request_number].pfcp = true;
+        sess_data->xact_data[req_slot].pfcp = true;
     else
-        sess_data->xact_data[sess_data->cc_request_number].pfcp = false;
-    sess_data->xact_data[sess_data->cc_request_number].ptr = xact;
+        sess_data->xact_data[req_slot].pfcp = false;
+    sess_data->xact_data[req_slot].cc_req_no = sess_data->cc_request_number;
+    sess_data->xact_data[req_slot].ptr = xact;
 
 
     /* Origin-Host & Origin-Realm */
@@ -910,7 +920,7 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
     void *xact = NULL;
     smf_sess_t *sess = NULL;
     ogs_diam_gy_message_t *gy_message = NULL;
-    uint32_t cc_request_number = 0;
+    uint32_t req_slot, cc_request_number = 0;
 
     ogs_debug("[Gy][Credit-Control-Answer]");
 
@@ -952,11 +962,12 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
     cc_request_number = hdr->avp_value->i32;
+    req_slot = cc_request_number % NUM_CC_REQUEST_SLOT;
 
     ogs_debug("    CC-Request-Number[%d]", cc_request_number);
 
-    xact = sess_data->xact_data[cc_request_number].ptr;
-    ogs_assert(xact);
+    xact = sess_data->xact_data[req_slot].ptr;
+    ogs_assert(sess_data->xact_data[req_slot].cc_req_no == cc_request_number);
     sess = sess_data->sess;
     ogs_assert(sess);
 
@@ -1114,10 +1125,10 @@ out:
         e->sess = sess;
         e->gy_message = gy_message;
         if (gy_message->cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST) {
-            ogs_assert(sess_data->xact_data[sess_data->cc_request_number].pfcp == true);
+            ogs_assert(sess_data->xact_data[req_slot].pfcp == true);
             e->pfcp_xact = xact;
         } else {
-            ogs_assert(sess_data->xact_data[sess_data->cc_request_number].pfcp == false);
+            ogs_assert(sess_data->xact_data[req_slot].pfcp == false);
             e->gtp_xact = xact;
         }
         rv = ogs_queue_push(ogs_app()->queue, e);

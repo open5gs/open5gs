@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_sm_context_type_NULL = 0, OpenAPI_sm_context_type_EPS_PDN_CONNECTION, OpenAPI_sm_context_type_SM_CONTEXT } OpenAPI_sm_context_type_e;
+typedef enum { OpenAPI_sm_context_type_NULL = 0, OpenAPI_sm_context_type_EPS_PDN_CONNECTION, OpenAPI_sm_context_type_SM_CONTEXT, OpenAPI_sm_context_type_AF_COORDINATION_INFO } OpenAPI_sm_context_type_e;
 
 char* OpenAPI_sm_context_type_ToString(OpenAPI_sm_context_type_e sm_context_type);
 

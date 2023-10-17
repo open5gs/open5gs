@@ -25,6 +25,8 @@
 void amf_nnrf_handle_nf_discover(
         ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg)
 {
+    int r;
+
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
@@ -68,25 +70,32 @@ void amf_nnrf_handle_nf_discover(
             ogs_assert(amf_ue);
             ogs_error("[%s] (NF discover) No [%s]", amf_ue->suci,
                         ogs_sbi_service_type_to_name(service_type));
-            ogs_assert(OGS_OK ==
-                nas_5gs_send_gmm_reject_from_sbi(amf_ue,
-                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
+            r = nas_5gs_send_gmm_reject_from_sbi(amf_ue,
+                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             break;
         case OGS_SBI_OBJ_SESS_TYPE:
             sess = (amf_sess_t *)sbi_object;
             ogs_assert(sess);
+                        
+            amf_ue = sess->amf_ue;
+            ogs_assert(amf_ue);
+                        
             ogs_error("[%d:%d] (NF discover) No [%s]", sess->psi, sess->pti,
                         ogs_sbi_service_type_to_name(service_type));
             if (sess->payload_container_type) {
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_back_gsm_message(sess,
+                r = nas_5gs_send_back_gsm_message(sess,
                         OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
-                        AMF_NAS_BACKOFF_TIME));
+                        AMF_NAS_BACKOFF_TIME);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             } else {
-                ogs_assert(OGS_OK ==
-                    ngap_send_error_indication2(amf_ue,
+                r = ngap_send_error_indication2(amf_ue,
                         NGAP_Cause_PR_transport,
-                        NGAP_CauseTransport_transport_resource_unavailable));
+                        NGAP_CauseTransport_transport_resource_unavailable);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
             break;
         default:

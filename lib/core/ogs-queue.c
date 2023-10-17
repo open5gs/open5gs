@@ -70,7 +70,10 @@ typedef struct ogs_queue_s {
 ogs_queue_t *ogs_queue_create(unsigned int capacity)
 {
     ogs_queue_t *queue = ogs_calloc(1, sizeof *queue);
-    ogs_expect_or_return_val(queue, NULL);
+    if (!queue) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
     ogs_assert(queue);
 
     ogs_thread_mutex_init(&queue->one_big_mutex);
@@ -78,7 +81,11 @@ ogs_queue_t *ogs_queue_create(unsigned int capacity)
     ogs_thread_cond_init(&queue->not_full);
 
     queue->data = ogs_calloc(1, capacity * sizeof(void*));
-    ogs_expect_or_return_val(queue->data, NULL);
+    if (!queue->data) {
+        ogs_error("ogs_calloc[capacity:%d, sizeof(void*):%d] failed",
+                (int)capacity, (int)sizeof(void*));
+        return NULL;
+    }
     queue->bounds = capacity;
     queue->nelts = 0;
     queue->in = 0;

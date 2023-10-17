@@ -1,7 +1,7 @@
 /*
  * external_client_type.h
  *
- * 
+ * Indicates types of External Clients.
  */
 
 #ifndef _OpenAPI_external_client_type_H_

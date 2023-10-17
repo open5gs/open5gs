@@ -32,7 +32,7 @@ testapp_non3gpp_sources = files('''
 testapp_non3gpp_exe = executable('non3gpp',
     sources : testapp_non3gpp_sources,
     c_args : [testunit_core_cc_flags,
-        '-DFD_EXT_DIR="@0@"'.format(freediameter_extensions_builddir)],
+        '-DFD_EXT_DIR="@0@"'.format(build_subprojects_freeDiameter_extensions_dir)],
     dependencies : libtestepc_dep)
 
 test('non3gpp', testapp_non3gpp_exe, is_parallel : false, suite: 'epc')

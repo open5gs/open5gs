@@ -1,7 +1,7 @@
 /*
  * scheduled_communication_time_1.h
  *
- * 
+ * Represents an offered scheduled communication time.
  */
 
 #ifndef _OpenAPI_scheduled_communication_time_1_H_

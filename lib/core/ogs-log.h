@@ -113,7 +113,7 @@ void ogs_log_hexdump_func(ogs_log_level_e level, int domain_id,
 
 #define ogs_assert_if_reached() \
     do { \
-        ogs_warn("%s: should not be reached.", OGS_FUNC); \
+        ogs_fatal("%s: should not be reached.", OGS_FUNC); \
         ogs_abort(); \
     } while(0)
 
@@ -122,24 +122,6 @@ void ogs_log_hexdump_func(ogs_log_level_e level, int domain_id,
         if (ogs_likely(expr)) ; \
         else { \
             ogs_error("%s: Expectation `%s' failed.", OGS_FUNC, #expr); \
-        } \
-    } while (0)
-
-#define ogs_expect_or_return(expr) \
-    do { \
-        if (ogs_likely(expr)) ; \
-        else { \
-            ogs_error("%s: Expectation `%s' failed.", OGS_FUNC, #expr); \
-            return; \
-        } \
-    } while (0)
-
-#define ogs_expect_or_return_val(expr, val) \
-    do { \
-        if (ogs_likely(expr)) ; \
-        else { \
-            ogs_error("%s: Expectation `%s' failed.", OGS_FUNC, #expr); \
-            return (val); \
         } \
     } while (0)
 

@@ -26,21 +26,38 @@ OpenAPI_v2x_context_t *OpenAPI_v2x_context_create(
 
 void OpenAPI_v2x_context_free(OpenAPI_v2x_context_t *v2x_context)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == v2x_context) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_nr_v2x_auth_free(v2x_context->nr_v2x_services_auth);
-    OpenAPI_lte_v2x_auth_free(v2x_context->lte_v2x_services_auth);
-    ogs_free(v2x_context->nr_ue_sidelink_ambr);
-    ogs_free(v2x_context->lte_ue_sidelink_ambr);
-    OpenAPI_pc5_qo_s_para_free(v2x_context->pc5_qo_s_para);
+    if (v2x_context->nr_v2x_services_auth) {
+        OpenAPI_nr_v2x_auth_free(v2x_context->nr_v2x_services_auth);
+        v2x_context->nr_v2x_services_auth = NULL;
+    }
+    if (v2x_context->lte_v2x_services_auth) {
+        OpenAPI_lte_v2x_auth_free(v2x_context->lte_v2x_services_auth);
+        v2x_context->lte_v2x_services_auth = NULL;
+    }
+    if (v2x_context->nr_ue_sidelink_ambr) {
+        ogs_free(v2x_context->nr_ue_sidelink_ambr);
+        v2x_context->nr_ue_sidelink_ambr = NULL;
+    }
+    if (v2x_context->lte_ue_sidelink_ambr) {
+        ogs_free(v2x_context->lte_ue_sidelink_ambr);
+        v2x_context->lte_ue_sidelink_ambr = NULL;
+    }
+    if (v2x_context->pc5_qo_s_para) {
+        OpenAPI_pc5_qo_s_para_free(v2x_context->pc5_qo_s_para);
+        v2x_context->pc5_qo_s_para = NULL;
+    }
     ogs_free(v2x_context);
 }
 
 cJSON *OpenAPI_v2x_context_convertToJSON(OpenAPI_v2x_context_t *v2x_context)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (v2x_context == NULL) {
         ogs_error("OpenAPI_v2x_context_convertToJSON() failed [V2xContext]");
@@ -94,7 +111,7 @@ cJSON *OpenAPI_v2x_context_convertToJSON(OpenAPI_v2x_context_t *v2x_context)
         ogs_error("OpenAPI_v2x_context_convertToJSON() failed [pc5_qo_s_para]");
         goto end;
     }
-    cJSON_AddItemToObject(item, "Pc5QoSPara", pc5_qo_s_para_local_JSON);
+    cJSON_AddItemToObject(item, "pc5QoSPara", pc5_qo_s_para_local_JSON);
     if (item->child == NULL) {
         ogs_error("OpenAPI_v2x_context_convertToJSON() failed [pc5_qo_s_para]");
         goto end;
@@ -108,55 +125,80 @@ end:
 OpenAPI_v2x_context_t *OpenAPI_v2x_context_parseFromJSON(cJSON *v2x_contextJSON)
 {
     OpenAPI_v2x_context_t *v2x_context_local_var = NULL;
-    cJSON *nr_v2x_services_auth = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "nrV2xServicesAuth");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *nr_v2x_services_auth = NULL;
     OpenAPI_nr_v2x_auth_t *nr_v2x_services_auth_local_nonprim = NULL;
+    cJSON *lte_v2x_services_auth = NULL;
+    OpenAPI_lte_v2x_auth_t *lte_v2x_services_auth_local_nonprim = NULL;
+    cJSON *nr_ue_sidelink_ambr = NULL;
+    cJSON *lte_ue_sidelink_ambr = NULL;
+    cJSON *pc5_qo_s_para = NULL;
+    OpenAPI_pc5_qo_s_para_t *pc5_qo_s_para_local_nonprim = NULL;
+    nr_v2x_services_auth = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "nrV2xServicesAuth");
     if (nr_v2x_services_auth) {
     nr_v2x_services_auth_local_nonprim = OpenAPI_nr_v2x_auth_parseFromJSON(nr_v2x_services_auth);
+    if (!nr_v2x_services_auth_local_nonprim) {
+        ogs_error("OpenAPI_nr_v2x_auth_parseFromJSON failed [nr_v2x_services_auth]");
+        goto end;
+    }
     }
 
-    cJSON *lte_v2x_services_auth = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "lteV2xServicesAuth");
-
-    OpenAPI_lte_v2x_auth_t *lte_v2x_services_auth_local_nonprim = NULL;
+    lte_v2x_services_auth = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "lteV2xServicesAuth");
     if (lte_v2x_services_auth) {
     lte_v2x_services_auth_local_nonprim = OpenAPI_lte_v2x_auth_parseFromJSON(lte_v2x_services_auth);
+    if (!lte_v2x_services_auth_local_nonprim) {
+        ogs_error("OpenAPI_lte_v2x_auth_parseFromJSON failed [lte_v2x_services_auth]");
+        goto end;
+    }
     }
 
-    cJSON *nr_ue_sidelink_ambr = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "nrUeSidelinkAmbr");
-
+    nr_ue_sidelink_ambr = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "nrUeSidelinkAmbr");
     if (nr_ue_sidelink_ambr) {
-    if (!cJSON_IsString(nr_ue_sidelink_ambr)) {
+    if (!cJSON_IsString(nr_ue_sidelink_ambr) && !cJSON_IsNull(nr_ue_sidelink_ambr)) {
         ogs_error("OpenAPI_v2x_context_parseFromJSON() failed [nr_ue_sidelink_ambr]");
         goto end;
     }
     }
 
-    cJSON *lte_ue_sidelink_ambr = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "lteUeSidelinkAmbr");
-
+    lte_ue_sidelink_ambr = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "lteUeSidelinkAmbr");
     if (lte_ue_sidelink_ambr) {
-    if (!cJSON_IsString(lte_ue_sidelink_ambr)) {
+    if (!cJSON_IsString(lte_ue_sidelink_ambr) && !cJSON_IsNull(lte_ue_sidelink_ambr)) {
         ogs_error("OpenAPI_v2x_context_parseFromJSON() failed [lte_ue_sidelink_ambr]");
         goto end;
     }
     }
 
-    cJSON *pc5_qo_s_para = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "Pc5QoSPara");
-
-    OpenAPI_pc5_qo_s_para_t *pc5_qo_s_para_local_nonprim = NULL;
+    pc5_qo_s_para = cJSON_GetObjectItemCaseSensitive(v2x_contextJSON, "pc5QoSPara");
     if (pc5_qo_s_para) {
     pc5_qo_s_para_local_nonprim = OpenAPI_pc5_qo_s_para_parseFromJSON(pc5_qo_s_para);
+    if (!pc5_qo_s_para_local_nonprim) {
+        ogs_error("OpenAPI_pc5_qo_s_para_parseFromJSON failed [pc5_qo_s_para]");
+        goto end;
+    }
     }
 
     v2x_context_local_var = OpenAPI_v2x_context_create (
         nr_v2x_services_auth ? nr_v2x_services_auth_local_nonprim : NULL,
         lte_v2x_services_auth ? lte_v2x_services_auth_local_nonprim : NULL,
-        nr_ue_sidelink_ambr ? ogs_strdup(nr_ue_sidelink_ambr->valuestring) : NULL,
-        lte_ue_sidelink_ambr ? ogs_strdup(lte_ue_sidelink_ambr->valuestring) : NULL,
+        nr_ue_sidelink_ambr && !cJSON_IsNull(nr_ue_sidelink_ambr) ? ogs_strdup(nr_ue_sidelink_ambr->valuestring) : NULL,
+        lte_ue_sidelink_ambr && !cJSON_IsNull(lte_ue_sidelink_ambr) ? ogs_strdup(lte_ue_sidelink_ambr->valuestring) : NULL,
         pc5_qo_s_para ? pc5_qo_s_para_local_nonprim : NULL
     );
 
     return v2x_context_local_var;
 end:
+    if (nr_v2x_services_auth_local_nonprim) {
+        OpenAPI_nr_v2x_auth_free(nr_v2x_services_auth_local_nonprim);
+        nr_v2x_services_auth_local_nonprim = NULL;
+    }
+    if (lte_v2x_services_auth_local_nonprim) {
+        OpenAPI_lte_v2x_auth_free(lte_v2x_services_auth_local_nonprim);
+        lte_v2x_services_auth_local_nonprim = NULL;
+    }
+    if (pc5_qo_s_para_local_nonprim) {
+        OpenAPI_pc5_qo_s_para_free(pc5_qo_s_para_local_nonprim);
+        pc5_qo_s_para_local_nonprim = NULL;
+    }
     return NULL;
 }
 

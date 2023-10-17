@@ -1,7 +1,7 @@
 /*
  * sm_context_release_data.h
  *
- * 
+ * Data within Release SM Context Request
  */
 
 #ifndef _OpenAPI_sm_context_release_data_H_

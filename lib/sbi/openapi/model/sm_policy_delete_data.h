@@ -1,7 +1,7 @@
 /*
  * sm_policy_delete_data.h
  *
- * 
+ * Contains the parameters to be sent to the PCF when an individual SM policy is deleted.
  */
 
 #ifndef _OpenAPI_sm_policy_delete_data_H_

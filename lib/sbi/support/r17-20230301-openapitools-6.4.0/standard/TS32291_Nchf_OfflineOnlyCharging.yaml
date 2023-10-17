@@ -1,0 +1,703 @@
+openapi: 3.0.0 
+info:
+  title: Nchf_OfflineOnlyCharging
+  version: 1.0.12
+  description: |
+    OfflineOnlyCharging Service
+    © 20212022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: >
+    3GPP TS 32.291 V16 V17.60.0: Telecommunication management; Charging management; 
+    5G system, charging service; Stage 3.
+  url: 'http://www.3gpp.org/ftp/Specs/archive/32_series/32.291/'
+servers:
+  - url: '{apiRoot}/nchf-offlineonlycharging/v1' 
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 4.4 of 3GPP TS 29.501.
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nchf-offlineonlycharging
+paths:
+  /offlinechargingdata:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChargingDataRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingDataResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  '/offlinechargingdata/{OfflineChargingDataRef}/update':
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChargingDataRequest'
+      parameters:
+        - name: OfflineChargingDataRef
+          in: path
+          description: a unique identifier for a charging data resource in a PLMN
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Updated Charging Data resource is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingDataResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  '/offlinechargingdata/{OfflineChargingDataRef}/release':
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChargingDataRequest'
+      parameters:
+        - name: OfflineChargingDataRef
+          in: path
+          description: a unique identifier for a charging data resource in a PLMN
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content.
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nchf-offlineonlycharging: Access to the Nchf_OfflineOnlyCharging API
+  schemas:
+    ChargingDataRequest:
+      type: object
+      properties:
+        subscriberIdentifier:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        nfConsumerIdentification:
+          $ref: '#/components/schemas/NFIdentification'
+        invocationTimeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        invocationSequenceNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        retransmissionIndicator:
+          type: boolean
+        serviceSpecificationInfo:
+          type: string
+        multipleUnitUsage:
+          type: array
+          items:
+            $ref: '#/components/schemas/MultipleUnitUsage'
+          minItems: 0
+        triggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Trigger'
+          minItems: 0
+        pDUSessionChargingInformation:
+          $ref: '#/components/schemas/PDUSessionChargingInformation'
+        roamingQBCInformation:
+          $ref: '#/components/schemas/RoamingQBCInformation'
+      required:
+        - nfConsumerIdentification
+        - invocationTimeStamp
+        - invocationSequenceNumber
+    ChargingDataResponse:
+      type: object
+      properties:
+        invocationTimeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        invocationSequenceNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        invocationResult:
+          $ref: '#/components/schemas/InvocationResult'
+        sessionFailover:
+          $ref: '#/components/schemas/SessionFailover'
+        triggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Trigger'
+          minItems: 0
+        pDUSessionChargingInformation:
+          $ref: '#/components/schemas/PDUSessionChargingInformation'
+        roamingQBCInformation:
+          $ref: '#/components/schemas/RoamingQBCInformation'
+      required:
+        - invocationTimeStamp
+        - invocationSequenceNumber
+    NFIdentification:
+      type: object
+      properties:
+        nFName:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        nFIPv4Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        nFIPv6Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        nFPLMNID:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        nodeFunctionality:
+          $ref: '#/components/schemas/NodeFunctionality'
+        nFFqdn:
+          type: string
+      required:
+        - nodeFunctionality
+    MultipleUnitUsage:
+      type: object
+      properties:
+        ratingGroup:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatingGroup'
+        usedUnitContainer:
+          type: array
+          items:
+            $ref: '#/components/schemas/UsedUnitContainer'
+          minItems: 0
+        uPFID:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        multihomedPDUAddress:
+          $ref: '#/components/schemas/PDUAddress'
+      required:
+        - ratingGroup
+    InvocationResult:
+      type: object
+      properties:
+        error:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        failureHandling:
+          $ref: '#/components/schemas/FailureHandling'
+    Trigger:
+      type: object
+      properties:
+        triggerType:
+          $ref: '#/components/schemas/TriggerType'
+        triggerCategory:
+          $ref: '#/components/schemas/TriggerCategory'
+        timeLimit:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        volumeLimit:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        volumeLimit64:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+        eventLimit:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        maxNumberOfccc:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+      required:
+        - triggerType
+        - triggerCategory
+    UsedUnitContainer:
+      type: object
+      properties:
+        serviceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ServiceId'
+        triggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Trigger'
+          minItems: 0
+        triggerTimestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        time:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        totalVolume:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+        uplinkVolume:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+        downlinkVolume:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+        serviceSpecificUnits:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+        eventTimeStamps:
+          type: array
+
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+          minItems: 0
+        localSequenceNumber:
+          type: integer
+        pDUContainerInformation:
+          $ref: '#/components/schemas/PDUContainerInformation'
+      required:
+        - localSequenceNumber
+    PDUSessionChargingInformation:
+      type: object
+      properties:
+        chargingId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ChargingId'
+        sMFChargingId:
+          type: string
+        userInformation:
+          $ref: '#/components/schemas/UserInformation'
+        userLocationinfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        mAPDUNon3GPPUserLocationInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        userLocationTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        presenceReportingAreaInformation:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          minProperties: 0
+        uetimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        pduSessionInformation:
+          $ref: '#/components/schemas/PDUSessionInformation'
+        unitCountInactivityTimer:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        rANSecondaryRATUsageReport:
+          $ref: '#/components/schemas/RANSecondaryRATUsageReport'
+      required:
+        - pduSessionInformation
+    UserInformation:
+      type: object
+      properties:
+        servedGPSI:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        servedPEI:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        unauthenticatedFlag:
+          type: boolean
+        roamerInOut:
+          $ref: '#/components/schemas/RoamerInOut'
+    PDUSessionInformation:
+      type: object
+      properties:
+        networkSlicingInfo:
+          $ref: '#/components/schemas/NetworkSlicingInfo'
+        pduSessionID:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+        pduType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+        sscMode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SscMode'
+        hPlmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        servingNetworkFunctionID:
+          $ref: '#/components/schemas/ServingNetworkFunctionID'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        mAPDUNon3GPPRATType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        dnnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        chargingCharacteristics:
+          type: string
+        chargingCharacteristicsSelectionMode:
+          $ref: '#/components/schemas/ChargingCharacteristicsSelectionMode'
+        startTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        stopTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        3gppPSDataOffStatus:
+          $ref: '#/components/schemas/3GPPPSDataOffStatus'
+        sessionStopIndicator:
+          type: boolean
+        pduAddress:
+          $ref: '#/components/schemas/PDUAddress'
+        diagnostics:
+          $ref: '#/components/schemas/Diagnostics'
+        authorizedQoSInformation:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/AuthorizedDefaultQos'
+        subscribedQoSInformation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SubscribedDefaultQos'
+        authorizedSessionAMBR:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ambr'
+        subscribedSessionAMBR:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ambr'
+        servingCNPlmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        mAPDUSessionInformation:
+          $ref: '#/components/schemas/MAPDUSessionInformation'
+        enhancedDiagnostics:
+          $ref: '#/components/schemas/EnhancedDiagnostics5G'
+      required:
+        - pduSessionID
+        - dnnId
+    PDUContainerInformation:
+      type: object
+      properties:
+        timeofFirstUsage:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        timeofLastUsage:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        qoSInformation:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/QosData'
+        qoSCharacteristics:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/QosCharacteristics'
+        aFCorrelationInformation:
+          type: string
+        userLocationInformation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        uetimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        rATType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        servingNodeID:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServingNetworkFunctionID'
+          minItems: 0
+        presenceReportingAreaInformation:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          minProperties: 0
+        3gppPSDataOffStatus:
+          $ref: '#/components/schemas/3GPPPSDataOffStatus'
+        sponsorIdentity:
+          type: string
+        applicationserviceProviderIdentity:
+          type: string
+        chargingRuleBaseName:
+          type: string
+        mAPDUSteeringFunctionality:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/SteeringFunctionality'
+        mAPDUSteeringMode:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/SteeringMode'
+    NetworkSlicingInfo:
+      type: object
+      properties:
+        sNSSAI:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+      required:
+        - sNSSAI
+    PDUAddress:
+      type: object
+      properties:
+        pduIPv4Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        pduIPv6AddresswithPrefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        pduAddressprefixlength:
+          type: integer
+        iPv4dynamicAddressFlag:
+          type: boolean
+        iPv6dynamicPrefixFlag:
+          type: boolean
+    ServingNetworkFunctionID:
+      type: object
+      properties:          
+        servingNetworkFunctionInformation:
+          $ref: '#/components/schemas/NFIdentification'
+        aMFId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AmfId'
+      required:
+        - servingNetworkFunctionInformation
+    RoamingQBCInformation:
+      type: object
+      properties:
+        multipleQFIcontainer:
+          type: array
+          items:
+            $ref: '#/components/schemas/MultipleQFIcontainer'
+          minItems: 0
+        uPFID:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        roamingChargingProfile:
+          $ref: '#/components/schemas/RoamingChargingProfile'
+    MultipleQFIcontainer:
+      type: object
+      properties:
+        triggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Trigger'
+          minItems: 0
+        triggerTimestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        time:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        totalVolume:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+        uplinkVolume:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+        localSequenceNumber:
+          type: integer
+        qFIContainerInformation:
+          $ref: '#/components/schemas/QFIContainerInformation'
+      required:
+        - localSequenceNumber
+    QFIContainerInformation:
+      type: object
+      properties:
+        qFI:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Qfi'
+        timeofFirstUsage:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        timeofLastUsage:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        qoSInformation:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/QosData'
+        qoSCharacteristics:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/QosCharacteristics'
+        userLocationInformation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        uetimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        presenceReportingAreaInformation:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          minProperties: 0
+        rATType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        servingNetworkFunctionID:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServingNetworkFunctionID'
+          minItems: 0
+        3gppPSDataOffStatus:
+          $ref: '#/components/schemas/3GPPPSDataOffStatus'
+    RoamingChargingProfile:
+      type: object
+      properties:
+        triggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Trigger'
+          minItems: 0
+        partialRecordMethod:
+          $ref: '#/components/schemas/PartialRecordMethod'
+    RANSecondaryRATUsageReport:
+      type: object
+      properties:
+        rANSecondaryRATType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        qosFlowsUsageReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosFlowsUsageReport'
+    Diagnostics:
+      type: integer
+    IPFilterRule:
+      type: string
+    QosFlowsUsageReport:
+      type: object
+      properties:
+        qFI:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Qfi'
+        startTimestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        endTimestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        uplinkVolume:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+        downlinkVolume:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+    MAPDUSessionInformation:
+      type: object
+      properties:
+        mAPDUSessionIndicator:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/MaPduIndication'
+        aTSSSCapability:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AtsssCapability'
+    EnhancedDiagnostics5G:
+      $ref: '#/components/schemas/RanNasCauseList'
+    RanNasCauseList:
+      type: array
+      items:
+        $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/RanNasRelCause'
+    NodeFunctionality:
+      anyOf:
+        - type: string
+          enum:
+            - SMF
+            - SMSF # Included for backwards compatibility, shall not be used
+            - I-SMF
+        - type: string
+    ChargingCharacteristicsSelectionMode:
+      anyOf:
+        - type: string
+          enum:
+            - HOME_DEFAULT
+            - ROAMING_DEFAULT
+            - VISITING_DEFAULT
+        - type: string
+    TriggerType:
+      anyOf:
+        - type: string
+          enum:
+            - FINAL
+            - ABNORMAL_RELEASE
+            - QOS_CHANGE
+            - VOLUME_LIMIT
+            - TIME_LIMIT
+            - EVENT_LIMIT
+            - PLMN_CHANGE
+            - USER_LOCATION_CHANGE
+            - RAT_CHANGE
+            - SESSION_AMBR_CHANGE
+            - UE_TIMEZONE_CHANGE
+            - TARIFF_TIME_CHANGE
+            - MAX_NUMBER_OF_CHANGES_IN_CHARGING_CONDITIONS
+            - MANAGEMENT_INTERVENTION
+            - CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA
+            - CHANGE_OF_3GPP_PS_DATA_OFF_STATUS
+            - SERVING_NODE_CHANGE
+            - REMOVAL_OF_UPF
+            - ADDITION_OF_UPF
+            - INSERTION_OF_ISMF
+            - REMOVAL_OF_ISMF
+            - CHANGE_OF_ISMF
+            - START_OF_SERVICE_DATA_FLOW
+            - GFBR_GUARANTEED_STATUS_CHANGE
+            - HANDOVER_CANCEL
+            - HANDOVER_START
+            - HANDOVER_COMPLETE
+            - ADDITION_OF_ACCESS
+            - REMOVAL_OF_ACCESS
+            - START_OF_SDF_ADDITIONAL_ACCESS
+        - type: string
+    TriggerCategory:
+      anyOf:
+        - type: string
+          enum:
+            - IMMEDIATE_REPORT
+            - DEFERRED_REPORT
+        - type: string
+    FailureHandling:
+      anyOf:
+        - type: string
+          enum:
+            - TERMINATE
+            - CONTINUE
+            - RETRY_AND_TERMINATE
+        - type: string
+    SessionFailover:
+      anyOf:
+        - type: string
+          enum:
+            - FAILOVER_NOT_SUPPORTED
+            - FAILOVER_SUPPORTED
+        - type: string
+    3GPPPSDataOffStatus:
+      anyOf:
+        - type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+        - type: string
+    ResultCode:
+      anyOf:
+        - type: string
+          enum: 
+            - SUCCESS
+            - END_USER_SERVICE_DENIED
+        - type: string
+    PartialRecordMethod:
+      anyOf:
+        - type: string
+          enum:
+            - DEFAULT
+            - INDIVIDUAL
+        - type: string
+    RoamerInOut:
+      anyOf:
+        - type: string
+          enum:
+            - IN_BOUND
+            - OUT_BOUND
+        - type: string

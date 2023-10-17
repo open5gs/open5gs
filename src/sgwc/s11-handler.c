@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -234,6 +234,8 @@ void sgwc_s11_handle_create_session_request(
     sess = sgwc_sess_add(sgwc_ue, apn);
     ogs_assert(sess);
 
+    ogs_info("UE IMSI[%s] APN[%s]", sgwc_ue->imsi_bcd, sess->session.name);
+
     /* Set User Location Information */
     if (req->user_location_information.presence == 1) {
         decoded = ogs_gtp2_parse_uli(&uli, &req->user_location_information);
@@ -376,7 +378,8 @@ void sgwc_s11_handle_create_session_request(
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
 
     ogs_assert(OGS_OK ==
-        sgwc_pfcp_send_session_establishment_request(sess, s11_xact, gtpbuf));
+        sgwc_pfcp_send_session_establishment_request(
+            sess, s11_xact, gtpbuf, 0));
 }
 
 void sgwc_s11_handle_modify_bearer_request(
@@ -656,11 +659,17 @@ void sgwc_s11_handle_delete_session_request(
         message->h.teid = sess->pgw_s5c_teid;
 
         gtpbuf = ogs_gtp2_build_msg(message);
-        ogs_expect_or_return(gtpbuf);
+        if (!gtpbuf) {
+            ogs_error("ogs_gtp2_build_msg() failed");
+            return;
+        }
 
         s5c_xact = ogs_gtp_xact_local_create(
                 sess->gnode, &message->h, gtpbuf, gtp_sess_timeout, sess);
-        ogs_expect_or_return(s5c_xact);
+        if (!s5c_xact) {
+            ogs_error("ogs_gtp_xact_local_create() failed");
+            return;
+        }
         s5c_xact->local_teid = sess->sgw_s5c_teid;
 
         ogs_gtp_xact_associate(s11_xact, s5c_xact);
@@ -951,10 +960,16 @@ void sgwc_s11_handle_update_bearer_response(
     message->h.teid = sess->pgw_s5c_teid;
 
     pkbuf = ogs_gtp2_build_msg(message);
-    ogs_expect_or_return(pkbuf);
+    if (!pkbuf) {
+        ogs_error("ogs_gtp2_build_msg() failed");
+        return;
+    }
 
     rv = ogs_gtp_xact_update_tx(s5c_xact, &message->h, pkbuf);
-    ogs_expect_or_return(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_update_tx() failed");
+        return;
+    }
 
     rv = ogs_gtp_xact_commit(s5c_xact);
     ogs_expect(rv == OGS_OK);
@@ -1172,7 +1187,8 @@ void sgwc_s11_handle_downlink_data_notification_ack(
         ogs_assert(cause);
 
         cause_value = cause->value;
-        if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED)
+        if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED && 
+            cause_value != OGS_GTP2_CAUSE_UE_ALREADY_RE_ATTACHED)
             ogs_warn("GTP Cause [Value:%d] - PFCP_CAUSE[%d]",
                     cause_value, pfcp_cause_from_gtp(cause_value));
     } else {
@@ -1470,11 +1486,17 @@ void sgwc_s11_handle_bearer_resource_command(
     message->h.teid = sess->pgw_s5c_teid;
 
     pkbuf = ogs_gtp2_build_msg(message);
-    ogs_expect_or_return(pkbuf);
+    if (!pkbuf) {
+        ogs_error("ogs_gtp2_build_msg() failed");
+        return;
+    }
 
     s5c_xact = ogs_gtp_xact_local_create(
             sess->gnode, &message->h, pkbuf, gtp_bearer_timeout, bearer);
-    ogs_expect_or_return(s5c_xact);
+    if (!s5c_xact) {
+        ogs_error("ogs_gtp_xact_local_create() failed");
+        return;
+    }
     s5c_xact->local_teid = sess->sgw_s5c_teid;
 
     ogs_gtp_xact_associate(s11_xact, s5c_xact);

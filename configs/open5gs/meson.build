@@ -46,3 +46,6 @@ foreach file : open5gs_conf
     meson.add_install_script(python3_exe, '-c',
             install_conf.format(gen, open5gs_sysconfdir))
 endforeach
+
+subdir('tls')
+subdir('hnet')

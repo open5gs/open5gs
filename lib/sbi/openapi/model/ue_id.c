@@ -20,21 +20,29 @@ OpenAPI_ue_id_t *OpenAPI_ue_id_create(
 
 void OpenAPI_ue_id_free(OpenAPI_ue_id_t *ue_id)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ue_id) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ue_id->supi);
-    OpenAPI_list_for_each(ue_id->gpsi_list, node) {
-        ogs_free(node->data);
+    if (ue_id->supi) {
+        ogs_free(ue_id->supi);
+        ue_id->supi = NULL;
     }
-    OpenAPI_list_free(ue_id->gpsi_list);
+    if (ue_id->gpsi_list) {
+        OpenAPI_list_for_each(ue_id->gpsi_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(ue_id->gpsi_list);
+        ue_id->gpsi_list = NULL;
+    }
     ogs_free(ue_id);
 }
 
 cJSON *OpenAPI_ue_id_convertToJSON(OpenAPI_ue_id_t *ue_id)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ue_id == NULL) {
         ogs_error("OpenAPI_ue_id_convertToJSON() failed [UeId]");
@@ -42,25 +50,27 @@ cJSON *OpenAPI_ue_id_convertToJSON(OpenAPI_ue_id_t *ue_id)
     }
 
     item = cJSON_CreateObject();
+    if (!ue_id->supi) {
+        ogs_error("OpenAPI_ue_id_convertToJSON() failed [supi]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "supi", ue_id->supi) == NULL) {
         ogs_error("OpenAPI_ue_id_convertToJSON() failed [supi]");
         goto end;
     }
 
     if (ue_id->gpsi_list) {
-    cJSON *gpsi_list = cJSON_AddArrayToObject(item, "gpsiList");
-    if (gpsi_list == NULL) {
+    cJSON *gpsi_listList = cJSON_AddArrayToObject(item, "gpsiList");
+    if (gpsi_listList == NULL) {
         ogs_error("OpenAPI_ue_id_convertToJSON() failed [gpsi_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *gpsi_list_node;
-    OpenAPI_list_for_each(ue_id->gpsi_list, gpsi_list_node)  {
-    if (cJSON_AddStringToObject(gpsi_list, "", (char*)gpsi_list_node->data) == NULL) {
-        ogs_error("OpenAPI_ue_id_convertToJSON() failed [gpsi_list]");
-        goto end;
+    OpenAPI_list_for_each(ue_id->gpsi_list, node) {
+        if (cJSON_AddStringToObject(gpsi_listList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_ue_id_convertToJSON() failed [gpsi_list]");
+            goto end;
+        }
     }
-                    }
     }
 
 end:
@@ -70,35 +80,39 @@ end:
 OpenAPI_ue_id_t *OpenAPI_ue_id_parseFromJSON(cJSON *ue_idJSON)
 {
     OpenAPI_ue_id_t *ue_id_local_var = NULL;
-    cJSON *supi = cJSON_GetObjectItemCaseSensitive(ue_idJSON, "supi");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *supi = NULL;
+    cJSON *gpsi_list = NULL;
+    OpenAPI_list_t *gpsi_listList = NULL;
+    supi = cJSON_GetObjectItemCaseSensitive(ue_idJSON, "supi");
     if (!supi) {
         ogs_error("OpenAPI_ue_id_parseFromJSON() failed [supi]");
         goto end;
     }
-
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_ue_id_parseFromJSON() failed [supi]");
         goto end;
     }
 
-    cJSON *gpsi_list = cJSON_GetObjectItemCaseSensitive(ue_idJSON, "gpsiList");
-
-    OpenAPI_list_t *gpsi_listList;
+    gpsi_list = cJSON_GetObjectItemCaseSensitive(ue_idJSON, "gpsiList");
     if (gpsi_list) {
-    cJSON *gpsi_list_local;
-    if (!cJSON_IsArray(gpsi_list)) {
-        ogs_error("OpenAPI_ue_id_parseFromJSON() failed [gpsi_list]");
-        goto end;
-    }
-    gpsi_listList = OpenAPI_list_create();
+        cJSON *gpsi_list_local = NULL;
+        if (!cJSON_IsArray(gpsi_list)) {
+            ogs_error("OpenAPI_ue_id_parseFromJSON() failed [gpsi_list]");
+            goto end;
+        }
 
-    cJSON_ArrayForEach(gpsi_list_local, gpsi_list) {
-    if (!cJSON_IsString(gpsi_list_local)) {
-        ogs_error("OpenAPI_ue_id_parseFromJSON() failed [gpsi_list]");
-        goto end;
-    }
-    OpenAPI_list_add(gpsi_listList , ogs_strdup(gpsi_list_local->valuestring));
-    }
+        gpsi_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(gpsi_list_local, gpsi_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(gpsi_list_local)) {
+                ogs_error("OpenAPI_ue_id_parseFromJSON() failed [gpsi_list]");
+                goto end;
+            }
+            OpenAPI_list_add(gpsi_listList, ogs_strdup(gpsi_list_local->valuestring));
+        }
     }
 
     ue_id_local_var = OpenAPI_ue_id_create (
@@ -108,6 +122,13 @@ OpenAPI_ue_id_t *OpenAPI_ue_id_parseFromJSON(cJSON *ue_idJSON)
 
     return ue_id_local_var;
 end:
+    if (gpsi_listList) {
+        OpenAPI_list_for_each(gpsi_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(gpsi_listList);
+        gpsi_listList = NULL;
+    }
     return NULL;
 }
 

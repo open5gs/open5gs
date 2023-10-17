@@ -1,32 +1,182 @@
-open5gs (2.5.5) unstable; urgency=medium
+open5gs (2.6.6) unstable; urgency=medium
+
+  * Ubuntu 23.04(lunar) Release
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 04 Oct 2023 21:02:46 +0900
+
+open5gs (2.6.6~lunar) lunar; urgency=medium
+
+  * Ubuntu 23.04(lunar) Release
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 04 Oct 2023 21:00:28 +0900
+
+open5gs (2.6.6~jammy) jammy; urgency=medium
+
+  * Ubuntu 23.04(lunar) Release
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 04 Oct 2023 20:47:26 +0900
+
+open5gs (2.6.6~focal) focal; urgency=medium
+
+  * Ubuntu 23.04(lunar) Release
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 04 Oct 2023 20:45:45 +0900
+
+open5gs (2.6.6~bionic) bionic; urgency=medium
+
+  * Ubuntu 23.04(lunar) Release
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 04 Oct 2023 20:43:30 +0900
+
+open5gs (2.6.4) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 21 May 2023 08:45:36 +0900
+
+open5gs (2.6.4~kinetic) kinetic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 21 May 2023 08:43:48 +0900
+
+open5gs (2.6.4~jammy) jammy; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 21 May 2023 08:41:35 +0900
+
+open5gs (2.6.4~focal) focal; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 21 May 2023 08:39:42 +0900
+
+open5gs (2.6.4~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 21 May 2023 08:36:36 +0900
+
+open5gs (2.6.3) unstable; urgency=medium
+
+  * PFCP restoration
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 26 Apr 2023 10:45:45 +0900
+
+open5gs (2.6.3~kinetic) kinetic; urgency=medium
+
+  * PFCP restoration
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 26 Apr 2023 10:43:45 +0900
+
+open5gs (2.6.3~jammy) jammy; urgency=medium
+
+  * PFCP restoration
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 26 Apr 2023 10:41:51 +0900
+
+open5gs (2.6.3~focal) focal; urgency=medium
+
+  * PFCP restoration
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 26 Apr 2023 10:39:56 +0900
+
+open5gs (2.6.3~bionic) bionic; urgency=medium
+
+  * PFCP restoration
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 26 Apr 2023 10:37:04 +0900
+
+open5gs (2.6.2) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 04 Apr 2023 22:02:19 +0900
+
+open5gs (2.6.2~kinetic) kinetic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 04 Apr 2023 22:00:46 +0900
+
+open5gs (2.6.2~jammy) jammy; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 04 Apr 2023 21:59:16 +0900
+
+open5gs (2.6.2~focal) focal; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 04 Apr 2023 21:57:26 +0900
+
+open5gs (2.6.2~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 04 Apr 2023 21:54:48 +0900
+
+open5gs (2.6.1) unstable; urgency=medium
+
+  * Upgrade to Release-17
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 09 Mar 2023 00:07:51 +0900
+
+open5gs (2.6.1~kinetic) kinetic; urgency=medium
+
+  * Upgrade to Release-17
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 09 Mar 2023 00:06:21 +0900
+
+open5gs (2.6.1~jammy) jammy; urgency=medium
+
+  * Upgrade to Release-17
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 09 Mar 2023 00:04:28 +0900
+
+open5gs (2.6.1~focal) focal; urgency=medium
+
+  * Upgrade to Release-17
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 09 Mar 2023 00:02:41 +0900
+
+open5gs (2.6.1~bionic) bionic; urgency=medium
+
+  * Upgrade to Release-17
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 09 Mar 2023 00:00:38 +0900
+
+open5gs (2.5.6) unstable; urgency=medium
 
   * New NF - SCP(Service Communication Proxy)
 
- -- Sukchan Lee <acetcom@gmail.com>  Fri, 04 Nov 2022 20:32:51 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 18 Nov 2022 23:24:32 +0900
 
-open5gs (2.5.5~kinetic) kinetic; urgency=medium
-
-  * New NF - SCP(Service Communication Proxy)
-
- -- Sukchan Lee <acetcom@gmail.com>  Fri, 04 Nov 2022 20:31:19 +0900
-
-open5gs (2.5.5~jammy) jammy; urgency=medium
+open5gs (2.5.6~jammy5) jammy; urgency=medium
 
   * New NF - SCP(Service Communication Proxy)
 
- -- Sukchan Lee <acetcom@gmail.com>  Fri, 04 Nov 2022 20:29:55 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 18 Nov 2022 23:23:07 +0900
 
-open5gs (2.5.5~focal) focal; urgency=medium
-
-  * New NF - SCP(Service Communication Proxy)
-
- -- Sukchan Lee <acetcom@gmail.com>  Fri, 04 Nov 2022 20:28:28 +0900
-
-open5gs (2.5.5~bionic) bionic; urgency=medium
+open5gs (2.5.6~kinetic3) kinetic; urgency=medium
 
   * New NF - SCP(Service Communication Proxy)
 
- -- Sukchan Lee <acetcom@gmail.com>  Fri, 04 Nov 2022 20:26:31 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 18 Nov 2022 23:21:16 +0900
+
+open5gs (2.5.6~bionic3) bionic; urgency=medium
+
+  * New NF - SCP(Service Communication Proxy)
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 18 Nov 2022 23:18:33 +0900
+
+open5gs (2.5.6~focal3) focal; urgency=medium
+
+  * New NF - SCP(Service Communication Proxy)
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 18 Nov 2022 23:17:05 +0900
 
 open5gs (2.4.11) unstable; urgency=medium
 

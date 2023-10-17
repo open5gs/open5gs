@@ -1,7 +1,7 @@
 /*
  * requested_rule_data.h
  *
- * 
+ * Contains rule data requested by the PCF to receive information associated with PCC rule(s).
  */
 
 #ifndef _OpenAPI_requested_rule_data_H_

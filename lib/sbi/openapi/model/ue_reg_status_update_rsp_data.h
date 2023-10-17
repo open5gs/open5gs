@@ -1,7 +1,7 @@
 /*
  * ue_reg_status_update_rsp_data.h
  *
- * 
+ * Data within a UE registration status update response to provide the status of UE context transfer status update at a source AMF
  */
 
 #ifndef _OpenAPI_ue_reg_status_update_rsp_data_H_

@@ -1,7 +1,7 @@
 /*
  * slice_info_for_ue_configuration_update.h
  *
- * 
+ * Contains the slice information requested during UE configuration update procedure
  */
 
 #ifndef _OpenAPI_slice_info_for_ue_configuration_update_H_
@@ -30,6 +30,13 @@ typedef struct OpenAPI_slice_info_for_ue_configuration_update_s {
     int default_configured_snssai_ind;
     OpenAPI_list_t *requested_nssai;
     OpenAPI_list_t *mapping_of_nssai;
+    bool is_ue_sup_nssrg_ind;
+    int ue_sup_nssrg_ind;
+    bool is_suppress_nssrg_ind;
+    int suppress_nssrg_ind;
+    OpenAPI_list_t *rejected_nssai_ra;
+    bool is_nsag_supported;
+    int nsag_supported;
 } OpenAPI_slice_info_for_ue_configuration_update_t;
 
 OpenAPI_slice_info_for_ue_configuration_update_t *OpenAPI_slice_info_for_ue_configuration_update_create(
@@ -39,7 +46,14 @@ OpenAPI_slice_info_for_ue_configuration_update_t *OpenAPI_slice_info_for_ue_conf
     bool is_default_configured_snssai_ind,
     int default_configured_snssai_ind,
     OpenAPI_list_t *requested_nssai,
-    OpenAPI_list_t *mapping_of_nssai
+    OpenAPI_list_t *mapping_of_nssai,
+    bool is_ue_sup_nssrg_ind,
+    int ue_sup_nssrg_ind,
+    bool is_suppress_nssrg_ind,
+    int suppress_nssrg_ind,
+    OpenAPI_list_t *rejected_nssai_ra,
+    bool is_nsag_supported,
+    int nsag_supported
 );
 void OpenAPI_slice_info_for_ue_configuration_update_free(OpenAPI_slice_info_for_ue_configuration_update_t *slice_info_for_ue_configuration_update);
 OpenAPI_slice_info_for_ue_configuration_update_t *OpenAPI_slice_info_for_ue_configuration_update_parseFromJSON(cJSON *slice_info_for_ue_configuration_updateJSON);

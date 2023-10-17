@@ -1,7 +1,7 @@
 /*
  * n1_message_container.h
  *
- * 
+ * N1 Message container
  */
 
 #ifndef _OpenAPI_n1_message_container_H_

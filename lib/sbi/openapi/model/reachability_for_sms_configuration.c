@@ -16,16 +16,18 @@ OpenAPI_reachability_for_sms_configuration_t *OpenAPI_reachability_for_sms_confi
 
 void OpenAPI_reachability_for_sms_configuration_free(OpenAPI_reachability_for_sms_configuration_t *reachability_for_sms_configuration)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == reachability_for_sms_configuration) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(reachability_for_sms_configuration);
 }
 
 cJSON *OpenAPI_reachability_for_sms_configuration_convertToJSON(OpenAPI_reachability_for_sms_configuration_t *reachability_for_sms_configuration)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (reachability_for_sms_configuration == NULL) {
         ogs_error("OpenAPI_reachability_for_sms_configuration_convertToJSON() failed [ReachabilityForSmsConfiguration]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_reachability_for_sms_configuration_t *OpenAPI_reachability_for_sms_configuration_parseFromJSON(cJSON *reachability_for_sms_configurationJSON)
 {
     OpenAPI_reachability_for_sms_configuration_t *reachability_for_sms_configuration_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     reachability_for_sms_configuration_local_var = OpenAPI_reachability_for_sms_configuration_create (
     );
 

@@ -24,18 +24,26 @@ OpenAPI_volume_timed_report_t *OpenAPI_volume_timed_report_create(
 
 void OpenAPI_volume_timed_report_free(OpenAPI_volume_timed_report_t *volume_timed_report)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == volume_timed_report) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(volume_timed_report->start_time_stamp);
-    ogs_free(volume_timed_report->end_time_stamp);
+    if (volume_timed_report->start_time_stamp) {
+        ogs_free(volume_timed_report->start_time_stamp);
+        volume_timed_report->start_time_stamp = NULL;
+    }
+    if (volume_timed_report->end_time_stamp) {
+        ogs_free(volume_timed_report->end_time_stamp);
+        volume_timed_report->end_time_stamp = NULL;
+    }
     ogs_free(volume_timed_report);
 }
 
 cJSON *OpenAPI_volume_timed_report_convertToJSON(OpenAPI_volume_timed_report_t *volume_timed_report)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (volume_timed_report == NULL) {
         ogs_error("OpenAPI_volume_timed_report_convertToJSON() failed [VolumeTimedReport]");
@@ -43,11 +51,19 @@ cJSON *OpenAPI_volume_timed_report_convertToJSON(OpenAPI_volume_timed_report_t *
     }
 
     item = cJSON_CreateObject();
+    if (!volume_timed_report->start_time_stamp) {
+        ogs_error("OpenAPI_volume_timed_report_convertToJSON() failed [start_time_stamp]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "startTimeStamp", volume_timed_report->start_time_stamp) == NULL) {
         ogs_error("OpenAPI_volume_timed_report_convertToJSON() failed [start_time_stamp]");
         goto end;
     }
 
+    if (!volume_timed_report->end_time_stamp) {
+        ogs_error("OpenAPI_volume_timed_report_convertToJSON() failed [end_time_stamp]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "endTimeStamp", volume_timed_report->end_time_stamp) == NULL) {
         ogs_error("OpenAPI_volume_timed_report_convertToJSON() failed [end_time_stamp]");
         goto end;
@@ -70,45 +86,46 @@ end:
 OpenAPI_volume_timed_report_t *OpenAPI_volume_timed_report_parseFromJSON(cJSON *volume_timed_reportJSON)
 {
     OpenAPI_volume_timed_report_t *volume_timed_report_local_var = NULL;
-    cJSON *start_time_stamp = cJSON_GetObjectItemCaseSensitive(volume_timed_reportJSON, "startTimeStamp");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *start_time_stamp = NULL;
+    cJSON *end_time_stamp = NULL;
+    cJSON *downlink_volume = NULL;
+    cJSON *uplink_volume = NULL;
+    start_time_stamp = cJSON_GetObjectItemCaseSensitive(volume_timed_reportJSON, "startTimeStamp");
     if (!start_time_stamp) {
         ogs_error("OpenAPI_volume_timed_report_parseFromJSON() failed [start_time_stamp]");
         goto end;
     }
-
-    if (!cJSON_IsString(start_time_stamp)) {
+    if (!cJSON_IsString(start_time_stamp) && !cJSON_IsNull(start_time_stamp)) {
         ogs_error("OpenAPI_volume_timed_report_parseFromJSON() failed [start_time_stamp]");
         goto end;
     }
 
-    cJSON *end_time_stamp = cJSON_GetObjectItemCaseSensitive(volume_timed_reportJSON, "endTimeStamp");
+    end_time_stamp = cJSON_GetObjectItemCaseSensitive(volume_timed_reportJSON, "endTimeStamp");
     if (!end_time_stamp) {
         ogs_error("OpenAPI_volume_timed_report_parseFromJSON() failed [end_time_stamp]");
         goto end;
     }
-
-    if (!cJSON_IsString(end_time_stamp)) {
+    if (!cJSON_IsString(end_time_stamp) && !cJSON_IsNull(end_time_stamp)) {
         ogs_error("OpenAPI_volume_timed_report_parseFromJSON() failed [end_time_stamp]");
         goto end;
     }
 
-    cJSON *downlink_volume = cJSON_GetObjectItemCaseSensitive(volume_timed_reportJSON, "downlinkVolume");
+    downlink_volume = cJSON_GetObjectItemCaseSensitive(volume_timed_reportJSON, "downlinkVolume");
     if (!downlink_volume) {
         ogs_error("OpenAPI_volume_timed_report_parseFromJSON() failed [downlink_volume]");
         goto end;
     }
-
     if (!cJSON_IsNumber(downlink_volume)) {
         ogs_error("OpenAPI_volume_timed_report_parseFromJSON() failed [downlink_volume]");
         goto end;
     }
 
-    cJSON *uplink_volume = cJSON_GetObjectItemCaseSensitive(volume_timed_reportJSON, "uplinkVolume");
+    uplink_volume = cJSON_GetObjectItemCaseSensitive(volume_timed_reportJSON, "uplinkVolume");
     if (!uplink_volume) {
         ogs_error("OpenAPI_volume_timed_report_parseFromJSON() failed [uplink_volume]");
         goto end;
     }
-
     if (!cJSON_IsNumber(uplink_volume)) {
         ogs_error("OpenAPI_volume_timed_report_parseFromJSON() failed [uplink_volume]");
         goto end;

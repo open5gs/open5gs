@@ -16,16 +16,18 @@ OpenAPI_rm_state_t *OpenAPI_rm_state_create(
 
 void OpenAPI_rm_state_free(OpenAPI_rm_state_t *rm_state)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == rm_state) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(rm_state);
 }
 
 cJSON *OpenAPI_rm_state_convertToJSON(OpenAPI_rm_state_t *rm_state)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (rm_state == NULL) {
         ogs_error("OpenAPI_rm_state_convertToJSON() failed [RmState]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_rm_state_t *OpenAPI_rm_state_parseFromJSON(cJSON *rm_stateJSON)
 {
     OpenAPI_rm_state_t *rm_state_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     rm_state_local_var = OpenAPI_rm_state_create (
     );
 

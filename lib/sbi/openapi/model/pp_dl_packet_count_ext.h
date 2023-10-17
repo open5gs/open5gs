@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "snssai.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,6 +22,8 @@ typedef struct OpenAPI_pp_dl_packet_count_ext_s OpenAPI_pp_dl_packet_count_ext_t
 typedef struct OpenAPI_pp_dl_packet_count_ext_s {
     char *af_instance_id;
     int reference_id;
+    char *dnn;
+    struct OpenAPI_snssai_s *single_nssai;
     char *validity_time;
     char *mtc_provider_information;
 } OpenAPI_pp_dl_packet_count_ext_t;
@@ -28,6 +31,8 @@ typedef struct OpenAPI_pp_dl_packet_count_ext_s {
 OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_create(
     char *af_instance_id,
     int reference_id,
+    char *dnn,
+    OpenAPI_snssai_t *single_nssai,
     char *validity_time,
     char *mtc_provider_information
 );

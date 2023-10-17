@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -145,10 +145,10 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
         ogs_sockaddr_t *pgw_addr = NULL;
         ogs_sockaddr_t *pgw_addr6 = NULL;
 
-        pgw_addr = mme_pgw_addr_find_by_apn(
-                &mme_self()->pgw_list, AF_INET, session->name);
-        pgw_addr6 = mme_pgw_addr_find_by_apn(
-                &mme_self()->pgw_list, AF_INET6, session->name);
+        pgw_addr = mme_pgw_addr_find_by_apn_enb(
+                &mme_self()->pgw_list, AF_INET, sess);
+        pgw_addr6 = mme_pgw_addr_find_by_apn_enb(
+                &mme_self()->pgw_list, AF_INET6, sess);
         if (!pgw_addr && !pgw_addr6) {
             pgw_addr = mme_self()->pgw_addr;
             pgw_addr6 = mme_self()->pgw_addr6;
@@ -253,7 +253,13 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
         req->aggregate_maximum_bit_rate.len = sizeof(ambr);
     }
 
-    if (sess->ue_pco.length && sess->ue_pco.buffer) {
+    if (sess->ue_epco.length && sess->ue_epco.buffer) {
+        req->extended_protocol_configuration_options.presence = 1;
+        req->extended_protocol_configuration_options.data =
+            sess->ue_epco.buffer;
+        req->extended_protocol_configuration_options.len =
+            sess->ue_epco.length;
+    } else if (sess->ue_pco.length && sess->ue_pco.buffer) {
         req->protocol_configuration_options.presence = 1;
         req->protocol_configuration_options.data = sess->ue_pco.buffer;
         req->protocol_configuration_options.len = sess->ue_pco.length;
@@ -558,7 +564,10 @@ ogs_pkbuf_t *mme_s11_build_create_bearer_response(
         enb_s1u_teid.interface_type = OGS_GTP2_F_TEID_S1_U_ENODEB_GTP_U;
         enb_s1u_teid.teid = htobe32(bearer->enb_s1u_teid);
         rv = ogs_gtp2_ip_to_f_teid(&bearer->enb_s1u_ip, &enb_s1u_teid, &len);
-        ogs_expect_or_return_val(rv == OGS_OK, NULL);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp2_ip_to_f_teid() failed");
+            return NULL;
+        }
         rsp->bearer_contexts.s1_u_enodeb_f_teid.presence = 1;
         rsp->bearer_contexts.s1_u_enodeb_f_teid.data = &enb_s1u_teid;
         rsp->bearer_contexts.s1_u_enodeb_f_teid.len = len;
@@ -568,7 +577,10 @@ ogs_pkbuf_t *mme_s11_build_create_bearer_response(
         sgw_s1u_teid.interface_type = OGS_GTP2_F_TEID_S1_U_SGW_GTP_U;
         sgw_s1u_teid.teid = htobe32(bearer->sgw_s1u_teid);
         rv = ogs_gtp2_ip_to_f_teid(&bearer->sgw_s1u_ip, &sgw_s1u_teid, &len);
-        ogs_expect_or_return_val(rv == OGS_OK, NULL);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp2_ip_to_f_teid() failed");
+            return NULL;
+        }
         rsp->bearer_contexts.s4_u_sgsn_f_teid.presence = 1;
         rsp->bearer_contexts.s4_u_sgsn_f_teid.data = &sgw_s1u_teid;
         rsp->bearer_contexts.s4_u_sgsn_f_teid.len = OGS_GTP2_F_TEID_IPV4_LEN;
@@ -886,7 +898,10 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
                 dl_teid[i].teid = htobe32(bearer->enb_dl_teid);
                 rv = ogs_gtp2_ip_to_f_teid(
                         &bearer->enb_dl_ip, &dl_teid[i], &len);
-                ogs_expect_or_return_val(rv == OGS_OK, NULL);
+                if (rv != OGS_OK) {
+                    ogs_error("ogs_gtp2_ip_to_f_teid() failed");
+                    return NULL;
+                }
                 req->bearer_contexts[i].s1_u_enodeb_f_teid.presence = 1;
                 req->bearer_contexts[i].s1_u_enodeb_f_teid.data = &dl_teid[i];
                 req->bearer_contexts[i].s1_u_enodeb_f_teid.len = len;
@@ -899,7 +914,10 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
                 ul_teid[i].teid = htobe32(bearer->enb_ul_teid);
                 rv = ogs_gtp2_ip_to_f_teid(
                         &bearer->enb_ul_ip, &ul_teid[i], &len);
-                ogs_expect_or_return_val(rv == OGS_OK, NULL);
+                if (rv != OGS_OK) {
+                    ogs_error("ogs_gtp2_ip_to_f_teid() failed");
+                    return NULL;
+                }
                 req->bearer_contexts[i].s12_rnc_f_teid.presence = 1;
                 req->bearer_contexts[i].s12_rnc_f_teid.data = &ul_teid[i];
                 req->bearer_contexts[i].s12_rnc_f_teid.len = len;

@@ -9,7 +9,7 @@ ies.append({ "ie_value" : "Alternative SGSN Address for Control Plane", "presenc
 ies.append({ "ie_value" : "Trigger Id", "presence" : "Optional", "reference" : "7.7.41"})
 ies.append({ "ie_value" : "OMC Identity", "presence" : "Optional", "reference" : "7.7.42"})
 ies.append({ "ie_value" : "RAT Type", "presence" : "Optional", "reference" : "7.7.50"})
-ies.append({ "ie_value" : "User Location Information", "presence" : "Optional ", "reference" : "7.7.51"})
+ies.append({ "ie_value" : "User Location Information", "presence" : "Optional", "reference" : "7.7.51"})
 ies.append({ "ie_value" : "MS Time Zone", "presence" : "Optional", "reference" : "7.7.52"})
 ies.append({ "ie_value" : "Additional Trace Info", "presence" : "Optional", "reference" : "7.7.62"})
 ies.append({ "ie_value" : "Enhanced NSAPI", "presence" : "Mandatory", "reference" : "7.7.67"})

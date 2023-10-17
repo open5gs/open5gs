@@ -1,7 +1,7 @@
 /*
  * tsn_bridge_info.h
  *
- * 
+ * Contains parameters that describe and identify the TSC user plane node.
  */
 
 #ifndef _OpenAPI_tsn_bridge_info_H_

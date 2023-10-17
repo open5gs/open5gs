@@ -14,7 +14,8 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_create(
     bool is_guard_time,
     int guard_time,
     bool is_report_period,
-    int report_period
+    int report_period,
+    OpenAPI_notification_flag_e notif_flag
 )
 {
     OpenAPI_reporting_options_t *reporting_options_local_var = ogs_malloc(sizeof(OpenAPI_reporting_options_t));
@@ -30,24 +31,33 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_create(
     reporting_options_local_var->guard_time = guard_time;
     reporting_options_local_var->is_report_period = is_report_period;
     reporting_options_local_var->report_period = report_period;
+    reporting_options_local_var->notif_flag = notif_flag;
 
     return reporting_options_local_var;
 }
 
 void OpenAPI_reporting_options_free(OpenAPI_reporting_options_t *reporting_options)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == reporting_options) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_event_report_mode_free(reporting_options->report_mode);
-    ogs_free(reporting_options->expiry);
+    if (reporting_options->report_mode) {
+        OpenAPI_event_report_mode_free(reporting_options->report_mode);
+        reporting_options->report_mode = NULL;
+    }
+    if (reporting_options->expiry) {
+        ogs_free(reporting_options->expiry);
+        reporting_options->expiry = NULL;
+    }
     ogs_free(reporting_options);
 }
 
 cJSON *OpenAPI_reporting_options_convertToJSON(OpenAPI_reporting_options_t *reporting_options)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (reporting_options == NULL) {
         ogs_error("OpenAPI_reporting_options_convertToJSON() failed [ReportingOptions]");
@@ -103,6 +113,13 @@ cJSON *OpenAPI_reporting_options_convertToJSON(OpenAPI_reporting_options_t *repo
     }
     }
 
+    if (reporting_options->notif_flag != OpenAPI_notification_flag_NULL) {
+    if (cJSON_AddStringToObject(item, "notifFlag", OpenAPI_notification_flag_ToString(reporting_options->notif_flag)) == NULL) {
+        ogs_error("OpenAPI_reporting_options_convertToJSON() failed [notif_flag]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -110,15 +127,26 @@ end:
 OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *reporting_optionsJSON)
 {
     OpenAPI_reporting_options_t *reporting_options_local_var = NULL;
-    cJSON *report_mode = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "reportMode");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *report_mode = NULL;
     OpenAPI_event_report_mode_t *report_mode_local_nonprim = NULL;
+    cJSON *max_num_of_reports = NULL;
+    cJSON *expiry = NULL;
+    cJSON *sampling_ratio = NULL;
+    cJSON *guard_time = NULL;
+    cJSON *report_period = NULL;
+    cJSON *notif_flag = NULL;
+    OpenAPI_notification_flag_e notif_flagVariable = 0;
+    report_mode = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "reportMode");
     if (report_mode) {
     report_mode_local_nonprim = OpenAPI_event_report_mode_parseFromJSON(report_mode);
+    if (!report_mode_local_nonprim) {
+        ogs_error("OpenAPI_event_report_mode_parseFromJSON failed [report_mode]");
+        goto end;
+    }
     }
 
-    cJSON *max_num_of_reports = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "maxNumOfReports");
-
+    max_num_of_reports = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "maxNumOfReports");
     if (max_num_of_reports) {
     if (!cJSON_IsNumber(max_num_of_reports)) {
         ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [max_num_of_reports]");
@@ -126,17 +154,15 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
     }
     }
 
-    cJSON *expiry = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "expiry");
-
+    expiry = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "expiry");
     if (expiry) {
-    if (!cJSON_IsString(expiry)) {
+    if (!cJSON_IsString(expiry) && !cJSON_IsNull(expiry)) {
         ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [expiry]");
         goto end;
     }
     }
 
-    cJSON *sampling_ratio = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "samplingRatio");
-
+    sampling_ratio = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "samplingRatio");
     if (sampling_ratio) {
     if (!cJSON_IsNumber(sampling_ratio)) {
         ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [sampling_ratio]");
@@ -144,8 +170,7 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
     }
     }
 
-    cJSON *guard_time = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "guardTime");
-
+    guard_time = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "guardTime");
     if (guard_time) {
     if (!cJSON_IsNumber(guard_time)) {
         ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [guard_time]");
@@ -153,8 +178,7 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
     }
     }
 
-    cJSON *report_period = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "reportPeriod");
-
+    report_period = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "reportPeriod");
     if (report_period) {
     if (!cJSON_IsNumber(report_period)) {
         ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [report_period]");
@@ -162,21 +186,35 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
     }
     }
 
+    notif_flag = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "notifFlag");
+    if (notif_flag) {
+    if (!cJSON_IsString(notif_flag)) {
+        ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [notif_flag]");
+        goto end;
+    }
+    notif_flagVariable = OpenAPI_notification_flag_FromString(notif_flag->valuestring);
+    }
+
     reporting_options_local_var = OpenAPI_reporting_options_create (
         report_mode ? report_mode_local_nonprim : NULL,
         max_num_of_reports ? true : false,
         max_num_of_reports ? max_num_of_reports->valuedouble : 0,
-        expiry ? ogs_strdup(expiry->valuestring) : NULL,
+        expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL,
         sampling_ratio ? true : false,
         sampling_ratio ? sampling_ratio->valuedouble : 0,
         guard_time ? true : false,
         guard_time ? guard_time->valuedouble : 0,
         report_period ? true : false,
-        report_period ? report_period->valuedouble : 0
+        report_period ? report_period->valuedouble : 0,
+        notif_flag ? notif_flagVariable : 0
     );
 
     return reporting_options_local_var;
 end:
+    if (report_mode_local_nonprim) {
+        OpenAPI_event_report_mode_free(report_mode_local_nonprim);
+        report_mode_local_nonprim = NULL;
+    }
     return NULL;
 }
 

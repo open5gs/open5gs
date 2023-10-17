@@ -237,7 +237,10 @@ char *ogs_strdup_debug(const char *s, const char *file_line)
 
     len = strlen(s) + 1;
     res = ogs_memdup_debug(s, len, file_line);
-    ogs_expect_or_return_val(res, res);
+    if (!res) {
+        ogs_error("ogs_memdup_debug[len:%d] failed", (int)len);
+        return res;
+    }
     return res;
 }
 
@@ -254,7 +257,10 @@ char *ogs_strndup_debug(
     if (end != NULL)
         n = end - s;
     res = ogs_malloc_debug(n + 1, file_line);
-    ogs_expect_or_return_val(res, res);
+    if (!res) {
+        ogs_error("ogs_malloc_debug[n:%d] failed", (int)n);
+        return res;
+    }
     memcpy(res, s, n);
     res[n] = '\0';
     return res;
@@ -269,7 +275,10 @@ void *ogs_memdup_debug(
         return NULL;
 
     res = ogs_malloc_debug(n, file_line);
-    ogs_expect_or_return_val(res, res);
+    if (!res) {
+        ogs_error("ogs_malloc_debug[n:%d] failed", (int)n);
+        return res;
+    }
     memcpy(res, m, n);
     return res;
 }

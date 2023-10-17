@@ -5,6 +5,7 @@
 #include "arp_1.h"
 
 OpenAPI_arp_1_t *OpenAPI_arp_1_create(
+    bool is_priority_level_null,
     int priority_level,
     OpenAPI_preemption_capability_e preempt_cap,
     OpenAPI_preemption_vulnerability_e preempt_vuln
@@ -13,6 +14,7 @@ OpenAPI_arp_1_t *OpenAPI_arp_1_create(
     OpenAPI_arp_1_t *arp_1_local_var = ogs_malloc(sizeof(OpenAPI_arp_1_t));
     ogs_assert(arp_1_local_var);
 
+    arp_1_local_var->is_priority_level_null = is_priority_level_null;
     arp_1_local_var->priority_level = priority_level;
     arp_1_local_var->preempt_cap = preempt_cap;
     arp_1_local_var->preempt_vuln = preempt_vuln;
@@ -22,16 +24,18 @@ OpenAPI_arp_1_t *OpenAPI_arp_1_create(
 
 void OpenAPI_arp_1_free(OpenAPI_arp_1_t *arp_1)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == arp_1) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(arp_1);
 }
 
 cJSON *OpenAPI_arp_1_convertToJSON(OpenAPI_arp_1_t *arp_1)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (arp_1 == NULL) {
         ogs_error("OpenAPI_arp_1_convertToJSON() failed [Arp_1]");
@@ -44,11 +48,19 @@ cJSON *OpenAPI_arp_1_convertToJSON(OpenAPI_arp_1_t *arp_1)
         goto end;
     }
 
+    if (arp_1->preempt_cap == OpenAPI_preemption_capability_NULL) {
+        ogs_error("OpenAPI_arp_1_convertToJSON() failed [preempt_cap]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "preemptCap", OpenAPI_preemption_capability_ToString(arp_1->preempt_cap)) == NULL) {
         ogs_error("OpenAPI_arp_1_convertToJSON() failed [preempt_cap]");
         goto end;
     }
 
+    if (arp_1->preempt_vuln == OpenAPI_preemption_vulnerability_NULL) {
+        ogs_error("OpenAPI_arp_1_convertToJSON() failed [preempt_vuln]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "preemptVuln", OpenAPI_preemption_vulnerability_ToString(arp_1->preempt_vuln)) == NULL) {
         ogs_error("OpenAPI_arp_1_convertToJSON() failed [preempt_vuln]");
         goto end;
@@ -61,37 +73,38 @@ end:
 OpenAPI_arp_1_t *OpenAPI_arp_1_parseFromJSON(cJSON *arp_1JSON)
 {
     OpenAPI_arp_1_t *arp_1_local_var = NULL;
-    cJSON *priority_level = cJSON_GetObjectItemCaseSensitive(arp_1JSON, "priorityLevel");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *priority_level = NULL;
+    cJSON *preempt_cap = NULL;
+    OpenAPI_preemption_capability_e preempt_capVariable = 0;
+    cJSON *preempt_vuln = NULL;
+    OpenAPI_preemption_vulnerability_e preempt_vulnVariable = 0;
+    priority_level = cJSON_GetObjectItemCaseSensitive(arp_1JSON, "priorityLevel");
     if (!priority_level) {
         ogs_error("OpenAPI_arp_1_parseFromJSON() failed [priority_level]");
         goto end;
     }
-
     if (!cJSON_IsNumber(priority_level)) {
         ogs_error("OpenAPI_arp_1_parseFromJSON() failed [priority_level]");
         goto end;
     }
 
-    cJSON *preempt_cap = cJSON_GetObjectItemCaseSensitive(arp_1JSON, "preemptCap");
+    preempt_cap = cJSON_GetObjectItemCaseSensitive(arp_1JSON, "preemptCap");
     if (!preempt_cap) {
         ogs_error("OpenAPI_arp_1_parseFromJSON() failed [preempt_cap]");
         goto end;
     }
-
-    OpenAPI_preemption_capability_e preempt_capVariable;
     if (!cJSON_IsString(preempt_cap)) {
         ogs_error("OpenAPI_arp_1_parseFromJSON() failed [preempt_cap]");
         goto end;
     }
     preempt_capVariable = OpenAPI_preemption_capability_FromString(preempt_cap->valuestring);
 
-    cJSON *preempt_vuln = cJSON_GetObjectItemCaseSensitive(arp_1JSON, "preemptVuln");
+    preempt_vuln = cJSON_GetObjectItemCaseSensitive(arp_1JSON, "preemptVuln");
     if (!preempt_vuln) {
         ogs_error("OpenAPI_arp_1_parseFromJSON() failed [preempt_vuln]");
         goto end;
     }
-
-    OpenAPI_preemption_vulnerability_e preempt_vulnVariable;
     if (!cJSON_IsString(preempt_vuln)) {
         ogs_error("OpenAPI_arp_1_parseFromJSON() failed [preempt_vuln]");
         goto end;
@@ -99,6 +112,7 @@ OpenAPI_arp_1_t *OpenAPI_arp_1_parseFromJSON(cJSON *arp_1JSON)
     preempt_vulnVariable = OpenAPI_preemption_vulnerability_FromString(preempt_vuln->valuestring);
 
     arp_1_local_var = OpenAPI_arp_1_create (
+        priority_level && cJSON_IsNull(priority_level) ? true : false,
         
         priority_level->valuedouble,
         preempt_capVariable,

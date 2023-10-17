@@ -20,16 +20,18 @@ OpenAPI_nas_security_mode_t *OpenAPI_nas_security_mode_create(
 
 void OpenAPI_nas_security_mode_free(OpenAPI_nas_security_mode_t *nas_security_mode)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == nas_security_mode) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(nas_security_mode);
 }
 
 cJSON *OpenAPI_nas_security_mode_convertToJSON(OpenAPI_nas_security_mode_t *nas_security_mode)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (nas_security_mode == NULL) {
         ogs_error("OpenAPI_nas_security_mode_convertToJSON() failed [NasSecurityMode]");
@@ -37,11 +39,19 @@ cJSON *OpenAPI_nas_security_mode_convertToJSON(OpenAPI_nas_security_mode_t *nas_
     }
 
     item = cJSON_CreateObject();
+    if (nas_security_mode->integrity_algorithm == OpenAPI_integrity_algorithm_NULL) {
+        ogs_error("OpenAPI_nas_security_mode_convertToJSON() failed [integrity_algorithm]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "integrityAlgorithm", OpenAPI_integrity_algorithm_ToString(nas_security_mode->integrity_algorithm)) == NULL) {
         ogs_error("OpenAPI_nas_security_mode_convertToJSON() failed [integrity_algorithm]");
         goto end;
     }
 
+    if (nas_security_mode->ciphering_algorithm == OpenAPI_ciphering_algorithm_NULL) {
+        ogs_error("OpenAPI_nas_security_mode_convertToJSON() failed [ciphering_algorithm]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "cipheringAlgorithm", OpenAPI_ciphering_algorithm_ToString(nas_security_mode->ciphering_algorithm)) == NULL) {
         ogs_error("OpenAPI_nas_security_mode_convertToJSON() failed [ciphering_algorithm]");
         goto end;
@@ -54,26 +64,27 @@ end:
 OpenAPI_nas_security_mode_t *OpenAPI_nas_security_mode_parseFromJSON(cJSON *nas_security_modeJSON)
 {
     OpenAPI_nas_security_mode_t *nas_security_mode_local_var = NULL;
-    cJSON *integrity_algorithm = cJSON_GetObjectItemCaseSensitive(nas_security_modeJSON, "integrityAlgorithm");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *integrity_algorithm = NULL;
+    OpenAPI_integrity_algorithm_e integrity_algorithmVariable = 0;
+    cJSON *ciphering_algorithm = NULL;
+    OpenAPI_ciphering_algorithm_e ciphering_algorithmVariable = 0;
+    integrity_algorithm = cJSON_GetObjectItemCaseSensitive(nas_security_modeJSON, "integrityAlgorithm");
     if (!integrity_algorithm) {
         ogs_error("OpenAPI_nas_security_mode_parseFromJSON() failed [integrity_algorithm]");
         goto end;
     }
-
-    OpenAPI_integrity_algorithm_e integrity_algorithmVariable;
     if (!cJSON_IsString(integrity_algorithm)) {
         ogs_error("OpenAPI_nas_security_mode_parseFromJSON() failed [integrity_algorithm]");
         goto end;
     }
     integrity_algorithmVariable = OpenAPI_integrity_algorithm_FromString(integrity_algorithm->valuestring);
 
-    cJSON *ciphering_algorithm = cJSON_GetObjectItemCaseSensitive(nas_security_modeJSON, "cipheringAlgorithm");
+    ciphering_algorithm = cJSON_GetObjectItemCaseSensitive(nas_security_modeJSON, "cipheringAlgorithm");
     if (!ciphering_algorithm) {
         ogs_error("OpenAPI_nas_security_mode_parseFromJSON() failed [ciphering_algorithm]");
         goto end;
     }
-
-    OpenAPI_ciphering_algorithm_e ciphering_algorithmVariable;
     if (!cJSON_IsString(ciphering_algorithm)) {
         ogs_error("OpenAPI_nas_security_mode_parseFromJSON() failed [ciphering_algorithm]");
         goto end;

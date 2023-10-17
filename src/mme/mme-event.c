@@ -55,9 +55,9 @@ const char *mme_event_get_name(mme_event_t *e)
         return OGS_FSM_NAME_INIT_SIG;
 
     switch (e->id) {
-    case OGS_FSM_ENTRY_SIG: 
+    case OGS_FSM_ENTRY_SIG:
         return OGS_FSM_NAME_ENTRY_SIG;
-    case OGS_FSM_EXIT_SIG: 
+    case OGS_FSM_EXIT_SIG:
         return OGS_FSM_NAME_EXIT_SIG;
 
     case MME_EVENT_S1AP_MESSAGE:
@@ -97,7 +97,9 @@ const char *mme_event_get_name(mme_event_t *e)
     case MME_EVENT_SGSAP_LO_CONNREFUSED:
         return "MME_EVENT_SGSAP_LO_CONNREFUSED";
 
-    default: 
+    case MME_EVENT_GN_MESSAGE:
+        return "MME_EVENT_GN_MESSAGE";
+    default:
        break;
     }
 

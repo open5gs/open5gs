@@ -130,7 +130,10 @@ int ogs_addaddrinfo(ogs_sockaddr_t **sa_list,
             continue;
 
         new = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-        ogs_expect_or_return_val(new, OGS_ERROR);
+        if (!new) {
+            ogs_error("ogs_calloc() failed");
+            return OGS_ERROR;
+        }
         memcpy(&new->sa, ai->ai_addr, ai->ai_addrlen);
         new->ogs_sin_port = htobe16(port);
 
@@ -204,15 +207,24 @@ int ogs_copyaddrinfo(ogs_sockaddr_t **dst, const ogs_sockaddr_t *src)
     for (*dst = d = NULL, s = src; s; s = s->next) {
         if (!d) {
             *dst = d = ogs_memdup(s, sizeof *s);
-            ogs_expect_or_return_val(*dst, OGS_ERROR);
+            if (!(*dst)) {
+                ogs_error("ogs_memdup() failed");
+                return OGS_ERROR;
+            }
         } else {
             d = d->next = ogs_memdup(s, sizeof *s);
-            ogs_expect_or_return_val(d, OGS_ERROR);
+            if (!d) {
+                ogs_error("ogs_memdup() failed");
+                return OGS_ERROR;
+            }
         }
         if (s->hostname) {
             if (s == src || s->hostname != src->hostname) {
                 d->hostname = ogs_strdup(s->hostname);
-                ogs_expect_or_return_val(d->hostname, OGS_ERROR);
+                if (!d->hostname) {
+                    ogs_error("ogs_memdup() failed");
+                    return OGS_ERROR;
+                }
             } else {
                 d->hostname = (*dst)->hostname;
             }
@@ -287,7 +299,10 @@ ogs_sockaddr_t *ogs_link_local_addr(const char *dev, const ogs_sockaddr_t *sa)
             continue;
 
         addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-        ogs_expect_or_return_val(addr, NULL);
+        if (!addr) {
+            ogs_error("ogs_calloc() failed");
+            return NULL;
+        }
         ogs_assert(addr);
         memcpy(&addr->sa, cur->ifa_addr, ogs_sockaddr_len(cur->ifa_addr));
 

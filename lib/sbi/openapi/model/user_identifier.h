@@ -1,7 +1,7 @@
 /*
  * user_identifier.h
  *
- * 
+ * Represents the user identifier.
  */
 
 #ifndef _OpenAPI_user_identifier_H_

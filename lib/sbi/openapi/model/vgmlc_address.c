@@ -22,19 +22,30 @@ OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_create(
 
 void OpenAPI_vgmlc_address_free(OpenAPI_vgmlc_address_t *vgmlc_address)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == vgmlc_address) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(vgmlc_address->vgmlc_address_ipv4);
-    ogs_free(vgmlc_address->vgmlc_address_ipv6);
-    ogs_free(vgmlc_address->vgmlc_fqdn);
+    if (vgmlc_address->vgmlc_address_ipv4) {
+        ogs_free(vgmlc_address->vgmlc_address_ipv4);
+        vgmlc_address->vgmlc_address_ipv4 = NULL;
+    }
+    if (vgmlc_address->vgmlc_address_ipv6) {
+        ogs_free(vgmlc_address->vgmlc_address_ipv6);
+        vgmlc_address->vgmlc_address_ipv6 = NULL;
+    }
+    if (vgmlc_address->vgmlc_fqdn) {
+        ogs_free(vgmlc_address->vgmlc_fqdn);
+        vgmlc_address->vgmlc_fqdn = NULL;
+    }
     ogs_free(vgmlc_address);
 }
 
 cJSON *OpenAPI_vgmlc_address_convertToJSON(OpenAPI_vgmlc_address_t *vgmlc_address)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (vgmlc_address == NULL) {
         ogs_error("OpenAPI_vgmlc_address_convertToJSON() failed [VgmlcAddress]");
@@ -70,37 +81,38 @@ end:
 OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_parseFromJSON(cJSON *vgmlc_addressJSON)
 {
     OpenAPI_vgmlc_address_t *vgmlc_address_local_var = NULL;
-    cJSON *vgmlc_address_ipv4 = cJSON_GetObjectItemCaseSensitive(vgmlc_addressJSON, "vgmlcAddressIpv4");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *vgmlc_address_ipv4 = NULL;
+    cJSON *vgmlc_address_ipv6 = NULL;
+    cJSON *vgmlc_fqdn = NULL;
+    vgmlc_address_ipv4 = cJSON_GetObjectItemCaseSensitive(vgmlc_addressJSON, "vgmlcAddressIpv4");
     if (vgmlc_address_ipv4) {
-    if (!cJSON_IsString(vgmlc_address_ipv4)) {
+    if (!cJSON_IsString(vgmlc_address_ipv4) && !cJSON_IsNull(vgmlc_address_ipv4)) {
         ogs_error("OpenAPI_vgmlc_address_parseFromJSON() failed [vgmlc_address_ipv4]");
         goto end;
     }
     }
 
-    cJSON *vgmlc_address_ipv6 = cJSON_GetObjectItemCaseSensitive(vgmlc_addressJSON, "vgmlcAddressIpv6");
-
+    vgmlc_address_ipv6 = cJSON_GetObjectItemCaseSensitive(vgmlc_addressJSON, "vgmlcAddressIpv6");
     if (vgmlc_address_ipv6) {
-    if (!cJSON_IsString(vgmlc_address_ipv6)) {
+    if (!cJSON_IsString(vgmlc_address_ipv6) && !cJSON_IsNull(vgmlc_address_ipv6)) {
         ogs_error("OpenAPI_vgmlc_address_parseFromJSON() failed [vgmlc_address_ipv6]");
         goto end;
     }
     }
 
-    cJSON *vgmlc_fqdn = cJSON_GetObjectItemCaseSensitive(vgmlc_addressJSON, "vgmlcFqdn");
-
+    vgmlc_fqdn = cJSON_GetObjectItemCaseSensitive(vgmlc_addressJSON, "vgmlcFqdn");
     if (vgmlc_fqdn) {
-    if (!cJSON_IsString(vgmlc_fqdn)) {
+    if (!cJSON_IsString(vgmlc_fqdn) && !cJSON_IsNull(vgmlc_fqdn)) {
         ogs_error("OpenAPI_vgmlc_address_parseFromJSON() failed [vgmlc_fqdn]");
         goto end;
     }
     }
 
     vgmlc_address_local_var = OpenAPI_vgmlc_address_create (
-        vgmlc_address_ipv4 ? ogs_strdup(vgmlc_address_ipv4->valuestring) : NULL,
-        vgmlc_address_ipv6 ? ogs_strdup(vgmlc_address_ipv6->valuestring) : NULL,
-        vgmlc_fqdn ? ogs_strdup(vgmlc_fqdn->valuestring) : NULL
+        vgmlc_address_ipv4 && !cJSON_IsNull(vgmlc_address_ipv4) ? ogs_strdup(vgmlc_address_ipv4->valuestring) : NULL,
+        vgmlc_address_ipv6 && !cJSON_IsNull(vgmlc_address_ipv6) ? ogs_strdup(vgmlc_address_ipv6->valuestring) : NULL,
+        vgmlc_fqdn && !cJSON_IsNull(vgmlc_fqdn) ? ogs_strdup(vgmlc_fqdn->valuestring) : NULL
     );
 
     return vgmlc_address_local_var;

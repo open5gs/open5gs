@@ -1,7 +1,7 @@
 /*
  * psa_information.h
  *
- * 
+ * PSA Information
  */
 
 #ifndef _OpenAPI_psa_information_H_

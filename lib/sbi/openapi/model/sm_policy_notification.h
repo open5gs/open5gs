@@ -1,7 +1,7 @@
 /*
  * sm_policy_notification.h
  *
- * 
+ * Represents a notification on the update of the SM policies.
  */
 
 #ifndef _OpenAPI_sm_policy_notification_H_

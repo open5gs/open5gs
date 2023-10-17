@@ -1,7 +1,7 @@
 /*
  * nssai_ack_data.h
  *
- * 
+ * Used to store the status of the latest NSSAI data update.
  */
 
 #ifndef _OpenAPI_nssai_ack_data_H_

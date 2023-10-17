@@ -1,7 +1,7 @@
 /*
  * an_gw_address.h
  *
- * describes the address of the access network gateway control node
+ * Describes the address of the access network gateway control node.
  */
 
 #ifndef _OpenAPI_an_gw_address_H_

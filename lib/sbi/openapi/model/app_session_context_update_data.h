@@ -1,7 +1,7 @@
 /*
  * app_session_context_update_data.h
  *
- * Identifies the modifications to the \&quot;ascReqData\&quot; property of an Individual Application Session Context which may include the modifications to the sub-resource Events Subscription.
+ * Identifies the modifications to the \&quot;ascReqData\&quot; property of an Individual Application Session Context which may include the modifications to the sub-resource Events Subscription. 
  */
 
 #ifndef _OpenAPI_app_session_context_update_data_H_
@@ -16,6 +16,7 @@
 #include "bridge_management_container.h"
 #include "events_subsc_req_data_rm.h"
 #include "media_component_rm.h"
+#include "mps_action.h"
 #include "port_management_container.h"
 #include "preemption_control_information_rm.h"
 #include "reserv_priority.h"
@@ -30,13 +31,16 @@ extern "C" {
 typedef struct OpenAPI_app_session_context_update_data_s OpenAPI_app_session_context_update_data_t;
 typedef struct OpenAPI_app_session_context_update_data_s {
     char *af_app_id;
+    bool is_af_rout_req_null;
     struct OpenAPI_af_routing_requirement_rm_s *af_rout_req;
     char *asp_id;
     char *bdt_ref_id;
+    bool is_ev_subsc_null;
     struct OpenAPI_events_subsc_req_data_rm_s *ev_subsc;
     char *mcptt_id;
     char *mc_video_id;
     OpenAPI_list_t* med_components;
+    OpenAPI_mps_action_e mps_action;
     char *mps_id;
     char *mcs_id;
     struct OpenAPI_preemption_control_information_rm_s *preempt_control_info;
@@ -52,13 +56,16 @@ typedef struct OpenAPI_app_session_context_update_data_s {
 
 OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_data_create(
     char *af_app_id,
+    bool is_af_rout_req_null,
     OpenAPI_af_routing_requirement_rm_t *af_rout_req,
     char *asp_id,
     char *bdt_ref_id,
+    bool is_ev_subsc_null,
     OpenAPI_events_subsc_req_data_rm_t *ev_subsc,
     char *mcptt_id,
     char *mc_video_id,
     OpenAPI_list_t* med_components,
+    OpenAPI_mps_action_e mps_action,
     char *mps_id,
     char *mcs_id,
     OpenAPI_preemption_control_information_rm_t *preempt_control_info,

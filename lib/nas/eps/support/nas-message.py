@@ -1,6 +1,6 @@
 # The MIT License
 
-# Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -64,7 +64,7 @@ def output_header_to_file(f):
     f.write("""/*
  * The MIT License
  *
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -113,7 +113,8 @@ def v_lower(v):
 
 def get_cells(cells):
     iei = cells[0].text
-    value = re.sub("\s*$", "", re.sub("\s*\n*\s*\([^\)]*\)*", "", re.sub("'s", "", cells[1].text)))
+    value = cells[1].text.encode('ascii', 'ignore').decode('utf-8')
+    value = re.sub("\s*$", "", re.sub("\s*\n*\s*\([^\)]*\)*", "", re.sub("\"|'s", "", value)))
     type = re.sub("^NAS ", "", re.sub("'s", "", re.sub('\s*\n\s*[a-zA-Z0-9.]*', '', cells[2].text)))
     if type == "message container":
         type = "EPS message container"
@@ -578,10 +579,10 @@ for (k, v) in sorted_msg_list:
     f.write(" * %s\n" % k)
     f.write(" ******************************************************/")
 
-    for i, ie in enumerate([ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]):
-        f.write("\n#define OGS_NAS_EPS_%s_%s_PRESENT (1<<%d)" % (v_upper(k), v_upper(ie["value"]), i))
+    for i, ie in enumerate([ies for ies in msg_list[k]["ies"] if ies["presence"] != "M"]):
+        f.write("\n#define OGS_NAS_EPS_%s_%s_PRESENT ((uint64_t)1<<%d)" % (v_upper(k), v_upper(ie["value"]), i))
 
-    for i, ie in enumerate([ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]):
+    for i, ie in enumerate([ies for ies in msg_list[k]["ies"] if ies["presence"] != "M"]):
         f.write("\n#define OGS_NAS_EPS_%s_%s_TYPE 0x%s" % (v_upper(k), v_upper(ie["value"]), re.sub('-', '0', ie["iei"])))
 
     f.write("\n\ntypedef struct ogs_nas_eps_%s_s {\n" % v_lower(k))
@@ -593,9 +594,9 @@ for (k, v) in sorted_msg_list:
             f.write("    /* Mandatory fields */\n")
             mandatory_fields = True;
 
-        if ie["presence"] == "O" and optional_fields is False:
+        if ie["presence"] != "M" and optional_fields is False:
             f.write("\n    /* Optional fields */\n")
-            f.write("    uint32_t presencemask;\n");
+            f.write("    uint64_t presencemask;\n");
             optional_fields = True;
 
         f.write("    ogs_nas_" + v_lower(ie["type"]) + "_t " + \
@@ -696,7 +697,7 @@ for (k, v) in sorted_msg_list:
         f.write("    decoded += size;\n\n")
 
     optional_fields = False;
-    for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]:
+    for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] != "M"]:
         if optional_fields is False:
             f.write("""    while (pkbuf->len > 0) {
         uint8_t *buffer = pkbuf->data;
@@ -726,7 +727,7 @@ for (k, v) in sorted_msg_list:
         f.write("            decoded += size;\n")
         f.write("            break;\n")
 
-    if [ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]:
+    if [ies for ies in msg_list[k]["ies"] if ies["presence"] != "M"]:
         f.write("""        default:
             ogs_warn("Unknown type(0x%x) or not implemented\\n", type);
             break;
@@ -881,7 +882,7 @@ for (k, v) in sorted_msg_list:
         f.write("    ogs_assert(size >= 0);\n")
         f.write("    encoded += size;\n\n")
 
-    for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]:
+    for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] != "M"]:
         f.write("    if (%s->presencemask & OGS_NAS_EPS_%s_%s_PRESENT) {\n" % (v_lower(k), v_upper(k), v_upper(ie["value"])))
         if ie["length"] == "1" and ie["format"] == "TV":
             f.write("        %s->%s.type = (OGS_NAS_EPS_%s_%s_TYPE >> 4);\n\n" % (v_lower(k), v_lower(ie["value"]), v_upper(k), v_upper(ie["value"])))
@@ -913,7 +914,10 @@ f.write("""ogs_pkbuf_t *ogs_nas_emm_encode(ogs_nas_eps_message_t *message)
     /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_expect_or_return_val(pkbuf, NULL);
+    if (!pkbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        return NULL;
+    }
     ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
 
@@ -976,7 +980,10 @@ f.write("""ogs_pkbuf_t *ogs_nas_esm_encode(ogs_nas_eps_message_t *message)
     /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_expect_or_return_val(pkbuf, NULL);
+    if (!pkbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        return NULL;
+    }
     ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
 

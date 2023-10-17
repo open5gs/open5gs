@@ -28,22 +28,42 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_create(
 
 void OpenAPI_charging_information_free(OpenAPI_charging_information_t *charging_information)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == charging_information) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(charging_information->primary_chf_address);
-    ogs_free(charging_information->secondary_chf_address);
-    ogs_free(charging_information->primary_chf_set_id);
-    ogs_free(charging_information->primary_chf_instance_id);
-    ogs_free(charging_information->secondary_chf_set_id);
-    ogs_free(charging_information->secondary_chf_instance_id);
+    if (charging_information->primary_chf_address) {
+        ogs_free(charging_information->primary_chf_address);
+        charging_information->primary_chf_address = NULL;
+    }
+    if (charging_information->secondary_chf_address) {
+        ogs_free(charging_information->secondary_chf_address);
+        charging_information->secondary_chf_address = NULL;
+    }
+    if (charging_information->primary_chf_set_id) {
+        ogs_free(charging_information->primary_chf_set_id);
+        charging_information->primary_chf_set_id = NULL;
+    }
+    if (charging_information->primary_chf_instance_id) {
+        ogs_free(charging_information->primary_chf_instance_id);
+        charging_information->primary_chf_instance_id = NULL;
+    }
+    if (charging_information->secondary_chf_set_id) {
+        ogs_free(charging_information->secondary_chf_set_id);
+        charging_information->secondary_chf_set_id = NULL;
+    }
+    if (charging_information->secondary_chf_instance_id) {
+        ogs_free(charging_information->secondary_chf_instance_id);
+        charging_information->secondary_chf_instance_id = NULL;
+    }
     ogs_free(charging_information);
 }
 
 cJSON *OpenAPI_charging_information_convertToJSON(OpenAPI_charging_information_t *charging_information)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (charging_information == NULL) {
         ogs_error("OpenAPI_charging_information_convertToJSON() failed [ChargingInformation]");
@@ -51,14 +71,20 @@ cJSON *OpenAPI_charging_information_convertToJSON(OpenAPI_charging_information_t
     }
 
     item = cJSON_CreateObject();
+    if (!charging_information->primary_chf_address) {
+        ogs_error("OpenAPI_charging_information_convertToJSON() failed [primary_chf_address]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "primaryChfAddress", charging_information->primary_chf_address) == NULL) {
         ogs_error("OpenAPI_charging_information_convertToJSON() failed [primary_chf_address]");
         goto end;
     }
 
+    if (charging_information->secondary_chf_address) {
     if (cJSON_AddStringToObject(item, "secondaryChfAddress", charging_information->secondary_chf_address) == NULL) {
         ogs_error("OpenAPI_charging_information_convertToJSON() failed [secondary_chf_address]");
         goto end;
+    }
     }
 
     if (charging_information->primary_chf_set_id) {
@@ -96,59 +122,58 @@ end:
 OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON *charging_informationJSON)
 {
     OpenAPI_charging_information_t *charging_information_local_var = NULL;
-    cJSON *primary_chf_address = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "primaryChfAddress");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *primary_chf_address = NULL;
+    cJSON *secondary_chf_address = NULL;
+    cJSON *primary_chf_set_id = NULL;
+    cJSON *primary_chf_instance_id = NULL;
+    cJSON *secondary_chf_set_id = NULL;
+    cJSON *secondary_chf_instance_id = NULL;
+    primary_chf_address = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "primaryChfAddress");
     if (!primary_chf_address) {
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [primary_chf_address]");
         goto end;
     }
-
     if (!cJSON_IsString(primary_chf_address)) {
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [primary_chf_address]");
         goto end;
     }
 
-    cJSON *secondary_chf_address = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "secondaryChfAddress");
-    if (!secondary_chf_address) {
+    secondary_chf_address = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "secondaryChfAddress");
+    if (secondary_chf_address) {
+    if (!cJSON_IsString(secondary_chf_address) && !cJSON_IsNull(secondary_chf_address)) {
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [secondary_chf_address]");
         goto end;
     }
-
-    if (!cJSON_IsString(secondary_chf_address)) {
-        ogs_error("OpenAPI_charging_information_parseFromJSON() failed [secondary_chf_address]");
-        goto end;
     }
 
-    cJSON *primary_chf_set_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "primaryChfSetId");
-
+    primary_chf_set_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "primaryChfSetId");
     if (primary_chf_set_id) {
-    if (!cJSON_IsString(primary_chf_set_id)) {
+    if (!cJSON_IsString(primary_chf_set_id) && !cJSON_IsNull(primary_chf_set_id)) {
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [primary_chf_set_id]");
         goto end;
     }
     }
 
-    cJSON *primary_chf_instance_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "primaryChfInstanceId");
-
+    primary_chf_instance_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "primaryChfInstanceId");
     if (primary_chf_instance_id) {
-    if (!cJSON_IsString(primary_chf_instance_id)) {
+    if (!cJSON_IsString(primary_chf_instance_id) && !cJSON_IsNull(primary_chf_instance_id)) {
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [primary_chf_instance_id]");
         goto end;
     }
     }
 
-    cJSON *secondary_chf_set_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "secondaryChfSetId");
-
+    secondary_chf_set_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "secondaryChfSetId");
     if (secondary_chf_set_id) {
-    if (!cJSON_IsString(secondary_chf_set_id)) {
+    if (!cJSON_IsString(secondary_chf_set_id) && !cJSON_IsNull(secondary_chf_set_id)) {
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [secondary_chf_set_id]");
         goto end;
     }
     }
 
-    cJSON *secondary_chf_instance_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "secondaryChfInstanceId");
-
+    secondary_chf_instance_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "secondaryChfInstanceId");
     if (secondary_chf_instance_id) {
-    if (!cJSON_IsString(secondary_chf_instance_id)) {
+    if (!cJSON_IsString(secondary_chf_instance_id) && !cJSON_IsNull(secondary_chf_instance_id)) {
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [secondary_chf_instance_id]");
         goto end;
     }
@@ -156,11 +181,11 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON
 
     charging_information_local_var = OpenAPI_charging_information_create (
         ogs_strdup(primary_chf_address->valuestring),
-        ogs_strdup(secondary_chf_address->valuestring),
-        primary_chf_set_id ? ogs_strdup(primary_chf_set_id->valuestring) : NULL,
-        primary_chf_instance_id ? ogs_strdup(primary_chf_instance_id->valuestring) : NULL,
-        secondary_chf_set_id ? ogs_strdup(secondary_chf_set_id->valuestring) : NULL,
-        secondary_chf_instance_id ? ogs_strdup(secondary_chf_instance_id->valuestring) : NULL
+        secondary_chf_address && !cJSON_IsNull(secondary_chf_address) ? ogs_strdup(secondary_chf_address->valuestring) : NULL,
+        primary_chf_set_id && !cJSON_IsNull(primary_chf_set_id) ? ogs_strdup(primary_chf_set_id->valuestring) : NULL,
+        primary_chf_instance_id && !cJSON_IsNull(primary_chf_instance_id) ? ogs_strdup(primary_chf_instance_id->valuestring) : NULL,
+        secondary_chf_set_id && !cJSON_IsNull(secondary_chf_set_id) ? ogs_strdup(secondary_chf_set_id->valuestring) : NULL,
+        secondary_chf_instance_id && !cJSON_IsNull(secondary_chf_instance_id) ? ogs_strdup(secondary_chf_instance_id->valuestring) : NULL
     );
 
     return charging_information_local_var;

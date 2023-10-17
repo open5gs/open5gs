@@ -1,7 +1,7 @@
 /*
  * charging_data.h
  *
- * 
+ * Contains charging related parameters.
  */
 
 #ifndef _OpenAPI_charging_data_H_

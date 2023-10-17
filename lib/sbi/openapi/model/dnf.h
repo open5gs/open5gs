@@ -1,7 +1,7 @@
 /*
  * dnf.h
  *
- * 
+ * A disjunctive normal form.
  */
 
 #ifndef _OpenAPI_dnf_H_

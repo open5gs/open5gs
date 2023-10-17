@@ -31,6 +31,7 @@ static void timer_send_event(int timer_id, void *data)
     case OGS_TIMER_NF_INSTANCE_NO_HEARTBEAT:
     case OGS_TIMER_NF_INSTANCE_VALIDITY:
     case OGS_TIMER_SUBSCRIPTION_VALIDITY:
+    case OGS_TIMER_SUBSCRIPTION_PATCH:
     case OGS_TIMER_SBI_CLIENT_WAIT:
         e = ogs_event_new(OGS_EVENT_SBI_TIMER);
         ogs_assert(e);
@@ -74,6 +75,11 @@ void ogs_timer_nf_instance_validity(void *data)
 void ogs_timer_subscription_validity(void *data)
 {
     timer_send_event(OGS_TIMER_SUBSCRIPTION_VALIDITY, data);
+}
+
+void ogs_timer_subscription_patch(void *data)
+{
+    timer_send_event(OGS_TIMER_SUBSCRIPTION_PATCH, data);
 }
 
 void ogs_timer_sbi_client_wait_expire(void *data)

@@ -90,7 +90,7 @@ static void ngap_message_test2(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     ogs_ngap_message_t *struct_ptr = NULL;
     size_t struct_size;
@@ -99,7 +99,7 @@ static void ngap_message_test2(abts_case *tc, void *data)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-            OGS_HEX(payload, strlen(payload), hexbuf), 23);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 23);
 
     struct_ptr = &message;
     struct_size = sizeof(ogs_ngap_message_t);
@@ -125,7 +125,7 @@ static void ngap_message_test3(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     ogs_ngap_message_t *struct_ptr = NULL;
     size_t struct_size;
@@ -134,7 +134,7 @@ static void ngap_message_test3(abts_case *tc, void *data)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-            OGS_HEX(payload, strlen(payload), hexbuf), 70);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 70);
 
     struct_ptr = &message;
     struct_size = sizeof(ogs_ngap_message_t);
@@ -160,7 +160,7 @@ static void ngap_message_test4(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     ogs_ngap_message_t *struct_ptr = NULL;
     size_t struct_size;
@@ -169,7 +169,7 @@ static void ngap_message_test4(abts_case *tc, void *data)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-            OGS_HEX(payload, strlen(payload), hexbuf), 67);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 67);
 
     struct_ptr = &message;
     struct_size = sizeof(ogs_ngap_message_t);

@@ -21,19 +21,21 @@ typedef struct OpenAPI_acknowledge_info_s OpenAPI_acknowledge_info_t;
 typedef struct OpenAPI_acknowledge_info_s {
     char *sor_mac_iue;
     char *upu_mac_iue;
-    char *secured_packet;
     char *provisioning_time;
+    char *sor_transparent_container;
     bool is_ue_not_reachable;
     int ue_not_reachable;
+    char *upu_transparent_container;
 } OpenAPI_acknowledge_info_t;
 
 OpenAPI_acknowledge_info_t *OpenAPI_acknowledge_info_create(
     char *sor_mac_iue,
     char *upu_mac_iue,
-    char *secured_packet,
     char *provisioning_time,
+    char *sor_transparent_container,
     bool is_ue_not_reachable,
-    int ue_not_reachable
+    int ue_not_reachable,
+    char *upu_transparent_container
 );
 void OpenAPI_acknowledge_info_free(OpenAPI_acknowledge_info_t *acknowledge_info);
 OpenAPI_acknowledge_info_t *OpenAPI_acknowledge_info_parseFromJSON(cJSON *acknowledge_infoJSON);

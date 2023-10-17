@@ -75,6 +75,8 @@ const char *amf_timer_get_name(int timer_id)
         return OGS_TIMER_NAME_NF_INSTANCE_VALIDITY;
     case OGS_TIMER_SUBSCRIPTION_VALIDITY:
         return OGS_TIMER_NAME_SUBSCRIPTION_VALIDITY;
+    case OGS_TIMER_SUBSCRIPTION_PATCH:
+        return OGS_TIMER_NAME_SUBSCRIPTION_PATCH;
     case OGS_TIMER_SBI_CLIENT_WAIT:
         return OGS_TIMER_NAME_SBI_CLIENT_WAIT;
     case AMF_TIMER_NG_DELAYED_SEND:
@@ -93,6 +95,10 @@ const char *amf_timer_get_name(int timer_id)
         return "AMF_TIMER_T3570";
     case AMF_TIMER_NG_HOLDING:
         return "AMF_TIMER_NG_HOLDING";
+    case AMF_TIMER_MOBILE_REACHABLE:
+        return "AMF_TIMER_MOBILE_REACHABLE";
+    case AMF_TIMER_IMPLICIT_DEREGISTRATION:
+        return "AMF_TIMER_IMPLICIT_DEREGISTRATION";
     default: 
         break;
     }
@@ -182,4 +188,14 @@ void amf_timer_ng_holding_timer_expire(void *data)
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_event_free(e);
     }
+}
+
+void amf_timer_mobile_reachable_expire(void *data)
+{
+    gmm_timer_event_send(AMF_TIMER_MOBILE_REACHABLE, data);
+}
+
+void amf_timer_implicit_deregistration_expire(void *data)
+{
+    gmm_timer_event_send(AMF_TIMER_IMPLICIT_DEREGISTRATION, data);
 }

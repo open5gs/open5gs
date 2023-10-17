@@ -28,16 +28,18 @@ OpenAPI_battery_indication_rm_t *OpenAPI_battery_indication_rm_create(
 
 void OpenAPI_battery_indication_rm_free(OpenAPI_battery_indication_rm_t *battery_indication_rm)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == battery_indication_rm) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(battery_indication_rm);
 }
 
 cJSON *OpenAPI_battery_indication_rm_convertToJSON(OpenAPI_battery_indication_rm_t *battery_indication_rm)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (battery_indication_rm == NULL) {
         ogs_error("OpenAPI_battery_indication_rm_convertToJSON() failed [BatteryIndicationRm]");
@@ -73,8 +75,11 @@ end:
 OpenAPI_battery_indication_rm_t *OpenAPI_battery_indication_rm_parseFromJSON(cJSON *battery_indication_rmJSON)
 {
     OpenAPI_battery_indication_rm_t *battery_indication_rm_local_var = NULL;
-    cJSON *battery_ind = cJSON_GetObjectItemCaseSensitive(battery_indication_rmJSON, "batteryInd");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *battery_ind = NULL;
+    cJSON *replaceable_ind = NULL;
+    cJSON *rechargeable_ind = NULL;
+    battery_ind = cJSON_GetObjectItemCaseSensitive(battery_indication_rmJSON, "batteryInd");
     if (battery_ind) {
     if (!cJSON_IsBool(battery_ind)) {
         ogs_error("OpenAPI_battery_indication_rm_parseFromJSON() failed [battery_ind]");
@@ -82,8 +87,7 @@ OpenAPI_battery_indication_rm_t *OpenAPI_battery_indication_rm_parseFromJSON(cJS
     }
     }
 
-    cJSON *replaceable_ind = cJSON_GetObjectItemCaseSensitive(battery_indication_rmJSON, "replaceableInd");
-
+    replaceable_ind = cJSON_GetObjectItemCaseSensitive(battery_indication_rmJSON, "replaceableInd");
     if (replaceable_ind) {
     if (!cJSON_IsBool(replaceable_ind)) {
         ogs_error("OpenAPI_battery_indication_rm_parseFromJSON() failed [replaceable_ind]");
@@ -91,8 +95,7 @@ OpenAPI_battery_indication_rm_t *OpenAPI_battery_indication_rm_parseFromJSON(cJS
     }
     }
 
-    cJSON *rechargeable_ind = cJSON_GetObjectItemCaseSensitive(battery_indication_rmJSON, "rechargeableInd");
-
+    rechargeable_ind = cJSON_GetObjectItemCaseSensitive(battery_indication_rmJSON, "rechargeableInd");
     if (rechargeable_ind) {
     if (!cJSON_IsBool(rechargeable_ind)) {
         ogs_error("OpenAPI_battery_indication_rm_parseFromJSON() failed [rechargeable_ind]");

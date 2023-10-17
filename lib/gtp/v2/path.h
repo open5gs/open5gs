@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -32,7 +32,7 @@ typedef struct ogs_gtp_xact_s ogs_gtp_xact_t;
 
 int ogs_gtp2_send_user_plane(
         ogs_gtp_node_t *gnode,
-        ogs_gtp2_header_t *gtp_hdesc, ogs_gtp2_extension_header_t *ext_hdesc,
+        ogs_gtp2_header_desc_t *hdesc,
         ogs_pkbuf_t *pkbuf);
 
 ogs_pkbuf_t *ogs_gtp2_handle_echo_req(ogs_pkbuf_t *pkb);
@@ -43,6 +43,9 @@ void ogs_gtp2_send_echo_request(
         ogs_gtp_node_t *gnode, uint8_t recovery, uint8_t features);
 void ogs_gtp2_send_echo_response(ogs_gtp_xact_t *xact,
         uint8_t recovery, uint8_t features);
+
+void ogs_gtp1_send_error_indication(
+        ogs_sock_t *sock, uint32_t teid, uint8_t qfi, const ogs_sockaddr_t *to);
 
 #ifdef __cplusplus
 }

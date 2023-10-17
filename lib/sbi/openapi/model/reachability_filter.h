@@ -1,7 +1,7 @@
 /*
  * reachability_filter.h
  *
- * 
+ * Event filter for REACHABILITY_REPORT event type
  */
 
 #ifndef _OpenAPI_reachability_filter_H_

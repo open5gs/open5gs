@@ -1,7 +1,7 @@
 /*
  * flows.h
  *
- * Identifies the flows
+ * Identifies the flows.
  */
 
 #ifndef _OpenAPI_flows_H_

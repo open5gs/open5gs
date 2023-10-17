@@ -35,8 +35,6 @@ void ngap_close(void);
 
 ogs_sock_t *ngap_server(ogs_socknode_t *node);
 void ngap_recv_upcall(short when, ogs_socket_t fd, void *data);
-int ngap_send(ogs_sock_t *sock,
-        ogs_pkbuf_t *pkbuf, ogs_sockaddr_t *addr, uint16_t stream_no);
 
 int ngap_send_to_gnb(
         amf_gnb_t *gnb, ogs_pkbuf_t *pkb, uint16_t stream_no);
@@ -62,8 +60,6 @@ int ngap_send_amf_ue_context_release_command(
     uint8_t action, ogs_time_t duration);
 
 int ngap_send_paging(amf_ue_t *amf_ue);
-int ngap_send_pdu_resource_setup_request(
-        amf_sess_t *sess, ogs_pkbuf_t *n2smbuf);
 
 int ngap_send_downlink_ran_configuration_transfer(
         amf_gnb_t *target_gnb, NGAP_SONConfigurationTransfer_t *transfer);

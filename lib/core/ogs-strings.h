@@ -54,8 +54,6 @@
 extern "C" {
 #endif
 
-#define OGS_HUGE_LEN        8192
-
 #if defined(_WIN32)
 #define ogs_strtok_r strtok_s
 #define ogs_strcasecmp _stricmp
@@ -112,7 +110,7 @@ char *ogs_mstrcatf_debug(
     char *source, const char *file_line, const char *message, ...)
     OGS_GNUC_PRINTF(3, 4);
 
-#if OGS_USE_TALLOC
+#if OGS_USE_TALLOC == 1
 
 /*****************************************
  * Memory Pool - Use talloc library

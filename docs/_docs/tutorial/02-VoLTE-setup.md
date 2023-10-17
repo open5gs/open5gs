@@ -772,8 +772,12 @@ ip addr add 192.168.101.1/24 dev ogstun2
 ip addr add fd1f:76f3:da9b:0101::/48 dev ogstun2
 ip link set ogstun2 mtu 1400
 ip link set ogstun2 up
+iptables -t nat -A POSTROUTING -s 192.168.101.0/24 ! -o ogstun2 -j MASQUERADE
+ip6tables -t nat -A POSTROUTING -s fd1f:76f3:da9b:0101::/48 ! -o ogstun2 -j MASQUERADE
 iptables -I INPUT -i ogstun2 -j ACCEPT
 ip6tables -I INPUT -i ogstun2 -j ACCEPT
+
+ufw disable
 ```
 
 Add users with following APN settings in Open5GS:

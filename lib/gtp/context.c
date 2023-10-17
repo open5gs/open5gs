@@ -530,7 +530,10 @@ ogs_gtp_node_t *ogs_gtp_node_new(ogs_sockaddr_t *sa_list)
     ogs_assert(sa_list);
 
     ogs_pool_alloc(&pool, &node);
-    ogs_expect_or_return_val(node, NULL);
+    if (!node) {
+        ogs_error("ogs_pool_alloc() failed");
+        return NULL;
+    }
     memset(node, 0, sizeof(ogs_gtp_node_t));
 
     node->sa_list = sa_list;
@@ -563,7 +566,10 @@ ogs_gtp_node_t *ogs_gtp_node_add_by_f_teid(
     ogs_assert(port);
 
     rv = ogs_gtp2_f_teid_to_sockaddr(f_teid, port, &addr);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp2_f_teid_to_sockaddr() failed");
+        return NULL;
+    }
 
     rv = ogs_filter_ip_version(
             &addr,
@@ -688,7 +694,10 @@ ogs_gtp_node_t *ogs_gtp_node_add_by_ip(
     ogs_assert(port);
 
     rv = ogs_ip_to_sockaddr(ip, port, &addr);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_ip_to_sockaddr() failed");
+        return NULL;
+    }
 
     rv = ogs_filter_ip_version(
             &addr,

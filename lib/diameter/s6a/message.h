@@ -59,9 +59,6 @@ extern "C" {
 #define OGS_DIAM_S6A_ULR_INITIAL_ATTACH_IND             (1 << 5)
 #define OGS_DIAM_S6A_ULR_PS_LCS_SUPPORTED_BY_UE         (1 << 6)
 
-#define OGS_DIAM_S6A_PUA_FLAGS_FREEZE_MTMSI             (1)
-#define OGS_DIAM_S6A_PUA_FLAGS_FREEZE_PTMSI             (1 << 1)
-
 #define OGS_DIAM_S6A_UE_SRVCC_NOT_SUPPORTED             (0)
 #define OGS_DIAM_S6A_UE_SRVCC_SUPPORTED                 (1)
 
@@ -88,6 +85,7 @@ extern "C" {
 #define OGS_DIAM_S6A_SUBDATA_UEAMBR                     (1 << 7)
 #define OGS_DIAM_S6A_SUBDATA_APN_CONFIG                 (1 << 8)
 #define OGS_DIAM_S6A_SUBDATA_RAU_TAU_TIMER              (1 << 9)
+#define OGS_DIAM_S6A_SUBDATA_OP_DET_BARRING             (1 << 10)
 #define OGS_DIAM_S6A_SUBDATA_ALL                        0xFFFFFFFF
 
 extern struct dict_object *ogs_diam_s6a_application;
@@ -122,6 +120,7 @@ extern struct dict_object *ogs_diam_s6a_xres;
 extern struct dict_object *ogs_diam_s6a_autn;
 extern struct dict_object *ogs_diam_s6a_kasme;
 extern struct dict_object *ogs_diam_s6a_subscriber_status;
+extern struct dict_object *ogs_diam_s6a_operator_determined_barring;
 extern struct dict_object *ogs_diam_s6a_ambr;
 extern struct dict_object *ogs_diam_s6a_network_access_mode;
 extern struct dict_object *ogs_diam_s6a_access_restriction_data;
@@ -169,15 +168,21 @@ typedef struct ogs_diam_s6a_aia_message_s {
 } ogs_diam_s6a_aia_message_t;
 
 typedef struct ogs_diam_s6a_ula_message_s {
-#define OGS_DIAM_S6A_ULA_FLAGS_SEPARATION_INDICATION        (0)
-#define OGS_DIAM_S6A_ULA_FLAGS_MME_REGISTERED_FOR_SMS       (1)
+#define OGS_DIAM_S6A_ULA_FLAGS_SEPARATION_INDICATION       (0)
+#define OGS_DIAM_S6A_ULA_FLAGS_MME_REGISTERED_FOR_SMS      (1)
     uint32_t ula_flags;
     ogs_subscription_data_t subscription_data;
 } ogs_diam_s6a_ula_message_t;
 
+typedef struct ogs_diam_s6a_pua_message_s {
+#define OGS_DIAM_S6A_PUA_FLAGS_FREEZE_MTMSI                (1)
+#define OGS_DIAM_S6A_PUA_FLAGS_FREEZE_PTMSI                (1 << 1)
+    uint32_t pua_flags;
+} ogs_diam_s6a_pua_message_t;
+
 typedef struct ogs_diam_s6a_clr_message_s {
-#define OGS_DIAM_S6A_CLR_FLAGS_S6A_S6D_INDICATOR            (1)
-#define OGS_DIAM_S6A_CLR_FLAGS_REATTACH_REQUIRED            (1 << 1)
+#define OGS_DIAM_S6A_CLR_FLAGS_S6A_S6D_INDICATOR           (1)
+#define OGS_DIAM_S6A_CLR_FLAGS_REATTACH_REQUIRED           (1 << 1)
     uint32_t clr_flags;
     uint32_t cancellation_type;
 } ogs_diam_s6a_clr_message_t;
@@ -221,6 +226,7 @@ typedef struct ogs_diam_s6a_message_s {
     ogs_diam_s6a_clr_message_t      clr_message;
     ogs_diam_s6a_aia_message_t      aia_message;
     ogs_diam_s6a_ula_message_t      ula_message;
+    ogs_diam_s6a_pua_message_t      pua_message;
 } ogs_diam_s6a_message_t;
 
 int ogs_diam_s6a_init(void);

@@ -49,3 +49,105 @@ ogs_sbi_request_t *smf_nudm_sdm_build_get(smf_sess_t *sess, void *data)
 
     return request;
 }
+
+ogs_sbi_request_t *smf_nudm_uecm_build_registration(
+        smf_sess_t *sess, void *data)
+{
+    smf_ue_t *smf_ue = NULL;
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    OpenAPI_smf_registration_t SmfRegistration;
+    OpenAPI_snssai_t single_nssai;
+
+    ogs_assert(sess);
+    ogs_assert(sess->psi);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+    ogs_assert(smf_ue->supi);
+
+    memset(&message, 0, sizeof(message));
+
+    memset(&SmfRegistration, 0, sizeof(SmfRegistration));
+    message.SmfRegistration = &SmfRegistration;
+
+    memset(&single_nssai, 0, sizeof(single_nssai));
+    SmfRegistration.single_nssai = &single_nssai;
+
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_PUT;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UECM;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+    message.h.resource.component[0] = smf_ue->supi;
+    message.h.resource.component[1] =
+        (char *)OGS_SBI_RESOURCE_NAME_REGISTRATIONS;
+    message.h.resource.component[2] =
+        (char *)OGS_SBI_RESOURCE_NAME_SMF_REGISTRATIONS;
+    message.h.resource.component[3] = ogs_msprintf("%d", sess->psi);
+    if (!message.h.resource.component[3]) {
+        ogs_error("No memory : message.h.resource.component[3]");
+        goto end;
+    }
+
+    SmfRegistration.smf_instance_id =
+        NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
+    SmfRegistration.pdu_session_id = sess->psi;
+
+    single_nssai.sst = sess->s_nssai.sst;
+    single_nssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
+
+    SmfRegistration.dnn = sess->session.name;
+
+    SmfRegistration.plmn_id = ogs_sbi_build_plmn_id(&sess->plmn_id);
+    if (!SmfRegistration.plmn_id) {
+        ogs_error("No memory : SmfRegistration.plmn_id");
+        goto end;
+    }
+
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+end:
+    ogs_free(message.h.resource.component[3]);
+    ogs_free(single_nssai.sd);
+    ogs_sbi_free_plmn_id(SmfRegistration.plmn_id);
+
+    return request;
+}
+
+ogs_sbi_request_t *smf_nudm_uecm_build_deregistration(
+        smf_sess_t *sess, void *data)
+{
+    smf_ue_t *smf_ue = NULL;
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(sess->psi);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+    ogs_assert(smf_ue->supi);
+
+    memset(&message, 0, sizeof(message));
+
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UECM;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+    message.h.resource.component[0] = smf_ue->supi;
+    message.h.resource.component[1] =
+        (char *)OGS_SBI_RESOURCE_NAME_REGISTRATIONS;
+    message.h.resource.component[2] =
+        (char *)OGS_SBI_RESOURCE_NAME_SMF_REGISTRATIONS;
+    message.h.resource.component[3] = ogs_msprintf("%d", sess->psi);
+    if (!message.h.resource.component[3]) {
+        ogs_error("No memory : message.h.resource.component[3]");
+        goto end;
+    }
+
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+end:
+    ogs_free(message.h.resource.component[3]);
+
+    return request;
+}

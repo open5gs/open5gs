@@ -543,7 +543,7 @@ static _MHD_Result access_handler(
         } else {
             offset = request->http.content_length;
             if ((request->http.content_length +
-                        *upload_data_size) > OGS_HUGE_LEN) {
+                        *upload_data_size) > OGS_MAX_SDU_LEN) {
                 ogs_error("Overflow : Content-Length[%d], upload_data_size[%d]",
                             (int)request->http.content_length,
                             (int)*upload_data_size);

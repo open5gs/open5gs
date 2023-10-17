@@ -1,7 +1,7 @@
 /*
  * cnf_unit.h
  *
- * 
+ * During the processing of cnfUnits attribute, all the members in the array shall be  interpreted as logically concatenated with logical \&quot;AND\&quot;. 
  */
 
 #ifndef _OpenAPI_cnf_unit_H_

@@ -29,16 +29,16 @@ int af_sbi_open(void)
     ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Build NF instance information. It will be transmitted to NRF. */
-    ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_AF);
+    ogs_sbi_nf_instance_build_default(nf_instance);
 
     /* Initialize NRF NF Instance */
     nf_instance = ogs_sbi_self()->nrf_instance;
     if (nf_instance)
         ogs_sbi_nf_fsm_init(nf_instance);
 
-    /* Build Subscription-Data */
-    ogs_sbi_subscription_data_build_default(
-            OpenAPI_nf_type_BSF, OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT);
+    /* Setup Subscription-Data */
+    ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
@@ -67,6 +67,7 @@ void af_sbi_discover_and_send(
         af_sess_t *sess, void *data)
 {
     ogs_sbi_xact_t *xact = NULL;
+    int r;
 
     ogs_assert(service_type);
     ogs_assert(sess);
@@ -80,7 +81,8 @@ void af_sbi_discover_and_send(
         return;
     }
 
-    if (ogs_sbi_discover_and_send(xact) != true) {
+    r = ogs_sbi_discover_and_send(xact);
+    if (r != OGS_OK) {
         ogs_error("af_sbi_discover_and_send() failed");
         return;
     }

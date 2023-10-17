@@ -1,7 +1,7 @@
 /*
  * nf_service.h
  *
- * Information of a given NF Service Instance; it is part of the NFProfile of an NF Instance
+ * Information of a given NF Service Instance; it is part of the NFProfile of an NF Instance 
  */
 
 #ifndef _OpenAPI_nf_service_H_
@@ -20,6 +20,7 @@
 #include "nf_type.h"
 #include "plmn_id.h"
 #include "plmn_id_nid.h"
+#include "plmn_oauth2.h"
 #include "plmn_snssai.h"
 #include "uri_scheme.h"
 #include "vendor_specific_feature.h"
@@ -63,6 +64,7 @@ typedef struct OpenAPI_nf_service_s {
     OpenAPI_list_t* supported_vendor_specific_features;
     bool is_oauth2_required;
     int oauth2_required;
+    struct OpenAPI_plmn_oauth2_s *per_plmn_oauth2_req_list;
 } OpenAPI_nf_service_t;
 
 OpenAPI_nf_service_t *OpenAPI_nf_service_create(
@@ -98,7 +100,8 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     char *vendor_id,
     OpenAPI_list_t* supported_vendor_specific_features,
     bool is_oauth2_required,
-    int oauth2_required
+    int oauth2_required,
+    OpenAPI_plmn_oauth2_t *per_plmn_oauth2_req_list
 );
 void OpenAPI_nf_service_free(OpenAPI_nf_service_t *nf_service);
 OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON);

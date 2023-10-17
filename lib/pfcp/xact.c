@@ -39,11 +39,7 @@ static ogs_pfcp_xact_t *ogs_pfcp_xact_remote_create(
         ogs_pfcp_node_t *node, uint32_t sqn);
 static ogs_pfcp_xact_stage_t ogs_pfcp_xact_get_stage(
         uint8_t type, uint32_t xid);
-static int ogs_pfcp_xact_delete(ogs_pfcp_xact_t *xact);
 static int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type);
-static ogs_pfcp_xact_t *ogs_pfcp_xact_find_by_xid(
-        ogs_pfcp_node_t *node, uint8_t type, uint32_t xid);
-
 
 static void response_timeout(void *data);
 static void holding_timeout(void *data);
@@ -93,12 +89,12 @@ ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout, xact);
     ogs_assert(xact->tm_response);
-    xact->response_rcount = ogs_app()->time.message.pfcp.n1_response_rcount,
+    xact->response_rcount = ogs_app()->time.message.pfcp.n1_response_rcount;
 
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
-    xact->holding_rcount = ogs_app()->time.message.pfcp.n1_holding_rcount,
+    xact->holding_rcount = ogs_app()->time.message.pfcp.n1_holding_rcount;
 
     xact->tm_delayed_commit = ogs_timer_add(
             ogs_app()->timer_mgr, delayed_commit_timeout, xact);
@@ -138,12 +134,12 @@ static ogs_pfcp_xact_t *ogs_pfcp_xact_remote_create(
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout, xact);
     ogs_assert(xact->tm_response);
-    xact->response_rcount = ogs_app()->time.message.pfcp.n1_response_rcount,
+    xact->response_rcount = ogs_app()->time.message.pfcp.n1_response_rcount;
 
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
-    xact->holding_rcount = ogs_app()->time.message.pfcp.n1_holding_rcount,
+    xact->holding_rcount = ogs_app()->time.message.pfcp.n1_holding_rcount;
 
     xact->tm_delayed_commit = ogs_timer_add(
             ogs_app()->timer_mgr, delayed_commit_timeout, xact);
@@ -286,7 +282,6 @@ int ogs_pfcp_xact_update_tx(ogs_pfcp_xact_t *xact,
 
 static int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type)
 {
-    int rv = OGS_OK;
     char buf[OGS_ADDRSTRLEN];
     ogs_pfcp_xact_stage_t stage;
 
@@ -330,8 +325,7 @@ static int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type)
                             OGS_ADDR(&xact->node->addr,
                                 buf),
                             OGS_PORT(&xact->node->addr));
-                    rv = ogs_pfcp_sendto(xact->node, pkbuf);
-                    ogs_expect(rv == OGS_OK);
+                    ogs_expect(OGS_OK == ogs_pfcp_sendto(xact->node, pkbuf));
                 } else {
                     ogs_warn("[%d] %s Request Duplicated. Discard!"
                             " for step %d type %d peer [%s]:%d",
@@ -396,8 +390,7 @@ static int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type)
                             OGS_ADDR(&xact->node->addr,
                                 buf),
                             OGS_PORT(&xact->node->addr));
-                    rv = ogs_pfcp_sendto(xact->node, pkbuf);
-                    ogs_expect(rv == OGS_OK);
+                    ogs_expect(OGS_OK == ogs_pfcp_sendto(xact->node, pkbuf));
                 } else {
                     ogs_warn("[%d] %s Request Duplicated. Discard!"
                             " for step %d type %d peer [%s]:%d",
@@ -561,11 +554,7 @@ int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact)
     pkbuf = xact->seq[xact->step-1].pkbuf;
     ogs_assert(pkbuf);
 
-    if (ogs_pfcp_sendto(xact->node, pkbuf) != OGS_OK) {
-        ogs_error("ogs_pfcp_sendto() failed");
-        ogs_pfcp_xact_delete(xact);
-        return OGS_ERROR;
-    }
+    ogs_expect(OGS_OK == ogs_pfcp_sendto(xact->node, pkbuf));
 
     return OGS_OK;
 }
@@ -605,10 +594,7 @@ static void response_timeout(void *data)
         pkbuf = xact->seq[xact->step-1].pkbuf;
         ogs_assert(pkbuf);
 
-        if (ogs_pfcp_sendto(xact->node, pkbuf) != OGS_OK) {
-            ogs_error("ogs_pfcp_sendto() failed");
-            goto out;
-        }
+        ogs_expect(OGS_OK == ogs_pfcp_sendto(xact->node, pkbuf));
     } else {
         ogs_warn("[%d] %s No Reponse. Give up! "
                 "for step %d type %d peer [%s]:%d",
@@ -623,11 +609,6 @@ static void response_timeout(void *data)
 
         ogs_pfcp_xact_delete(xact);
     }
-
-    return;
-
-out:
-    ogs_pfcp_xact_delete(xact);
 }
 
 static void holding_timeout(void *data)
@@ -684,17 +665,56 @@ static void delayed_commit_timeout(void *data)
 int ogs_pfcp_xact_receive(
         ogs_pfcp_node_t *node, ogs_pfcp_header_t *h, ogs_pfcp_xact_t **xact)
 {
-    char buf[OGS_ADDRSTRLEN];
     int rv;
+    char buf[OGS_ADDRSTRLEN];
+
+    uint8_t type;
+    uint32_t sqn, xid;
+    ogs_pfcp_xact_stage_t stage;
+    ogs_list_t *list = NULL;
     ogs_pfcp_xact_t *new = NULL;
 
     ogs_assert(node);
     ogs_assert(h);
 
-    new = ogs_pfcp_xact_find_by_xid(
-            node, h->type, OGS_PFCP_SQN_TO_XID(h->sqn));
+    type = h->type;
+    sqn = h->sqn;
+    xid = OGS_PFCP_SQN_TO_XID(sqn);
+    stage = ogs_pfcp_xact_get_stage(type, xid);
+
+    switch (stage) {
+    case PFCP_XACT_INITIAL_STAGE:
+        list = &node->remote_list;
+        break;
+    case PFCP_XACT_INTERMEDIATE_STAGE:
+        list = &node->local_list;
+        break;
+    case PFCP_XACT_FINAL_STAGE:
+        list = &node->local_list;
+        break;
+    default:
+        ogs_error("[%d] Unexpected type %u from PFCP peer [%s]:%d",
+                xid, type, OGS_ADDR(&node->addr, buf), OGS_PORT(&node->addr));
+        return OGS_ERROR;
+    }
+
+    ogs_assert(list);
+    ogs_list_for_each(list, new) {
+        if (new->xid == xid) {
+            ogs_debug("[%d] %s Find    peer [%s]:%d",
+                new->xid,
+                new->org == OGS_PFCP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+                OGS_ADDR(&node->addr, buf),
+                OGS_PORT(&node->addr));
+            break;
+        }
+    }
+
+    ogs_debug("[%d] Cannot find new type %u from PFCP peer [%s]:%d",
+            xid, type, OGS_ADDR(&node->addr, buf), OGS_PORT(&node->addr));
+
     if (!new)
-        new = ogs_pfcp_xact_remote_create(node, h->sqn);
+        new = ogs_pfcp_xact_remote_create(node, sqn);
     ogs_assert(new);
 
     ogs_debug("[%d] %s Receive peer [%s]:%d",
@@ -703,7 +723,7 @@ int ogs_pfcp_xact_receive(
             OGS_ADDR(&node->addr, buf),
             OGS_PORT(&node->addr));
 
-    rv = ogs_pfcp_xact_update_rx(new, h->type);
+    rv = ogs_pfcp_xact_update_rx(new, type);
     if (rv == OGS_ERROR) {
         ogs_error("ogs_pfcp_xact_update_rx() failed");
         ogs_pfcp_xact_delete(new);
@@ -751,55 +771,7 @@ static ogs_pfcp_xact_stage_t ogs_pfcp_xact_get_stage(uint8_t type, uint32_t xid)
     return stage;
 }
 
-static ogs_pfcp_xact_t *ogs_pfcp_xact_find_by_xid(
-        ogs_pfcp_node_t *node, uint8_t type, uint32_t xid)
-{
-    char buf[OGS_ADDRSTRLEN];
-
-    ogs_list_t *list = NULL;
-    ogs_pfcp_xact_t *xact = NULL;
-    ogs_pfcp_xact_stage_t stage;
-
-    ogs_assert(node);
-
-    stage = ogs_pfcp_xact_get_stage(type, xid);
-
-    switch (stage) {
-    case PFCP_XACT_INITIAL_STAGE:
-        list = &node->remote_list;
-        break;
-    case PFCP_XACT_INTERMEDIATE_STAGE:
-        list = &node->local_list;
-        break;
-    case PFCP_XACT_FINAL_STAGE:
-        list = &node->local_list;
-        break;
-    default:
-        ogs_warn("Unexpected stage %u.", stage);
-        ogs_assert_if_reached();
-        return NULL;
-    }
-
-    ogs_assert(list);
-    ogs_list_for_each(list, xact) {
-        if (xact->xid == xid) {
-            ogs_debug("[%d] %s Find    peer [%s]:%d",
-                xact->xid,
-                xact->org == OGS_PFCP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                OGS_ADDR(&node->addr, buf),
-                OGS_PORT(&node->addr));
-            return xact;
-        }
-    }
-
-    ogs_debug("[%d] Cannot find xact type %u from PFCP peer [%s]:%d",
-            xid, type,
-            OGS_ADDR(&node->addr, buf), OGS_PORT(&node->addr));
-
-    return NULL;
-}
-
-static int ogs_pfcp_xact_delete(ogs_pfcp_xact_t *xact)
+int ogs_pfcp_xact_delete(ogs_pfcp_xact_t *xact)
 {
     char buf[OGS_ADDRSTRLEN];
 

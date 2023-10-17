@@ -20,20 +20,25 @@ OpenAPI_plmn_operator_class_t *OpenAPI_plmn_operator_class_create(
 
 void OpenAPI_plmn_operator_class_free(OpenAPI_plmn_operator_class_t *plmn_operator_class)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == plmn_operator_class) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(plmn_operator_class->lcs_client_ids, node) {
-        ogs_free(node->data);
+    if (plmn_operator_class->lcs_client_ids) {
+        OpenAPI_list_for_each(plmn_operator_class->lcs_client_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(plmn_operator_class->lcs_client_ids);
+        plmn_operator_class->lcs_client_ids = NULL;
     }
-    OpenAPI_list_free(plmn_operator_class->lcs_client_ids);
     ogs_free(plmn_operator_class);
 }
 
 cJSON *OpenAPI_plmn_operator_class_convertToJSON(OpenAPI_plmn_operator_class_t *plmn_operator_class)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (plmn_operator_class == NULL) {
         ogs_error("OpenAPI_plmn_operator_class_convertToJSON() failed [PlmnOperatorClass]");
@@ -41,24 +46,30 @@ cJSON *OpenAPI_plmn_operator_class_convertToJSON(OpenAPI_plmn_operator_class_t *
     }
 
     item = cJSON_CreateObject();
+    if (plmn_operator_class->lcs_client_class == OpenAPI_lcs_client_class_NULL) {
+        ogs_error("OpenAPI_plmn_operator_class_convertToJSON() failed [lcs_client_class]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "lcsClientClass", OpenAPI_lcs_client_class_ToString(plmn_operator_class->lcs_client_class)) == NULL) {
         ogs_error("OpenAPI_plmn_operator_class_convertToJSON() failed [lcs_client_class]");
         goto end;
     }
 
-    cJSON *lcs_client_ids = cJSON_AddArrayToObject(item, "lcsClientIds");
-    if (lcs_client_ids == NULL) {
+    if (!plmn_operator_class->lcs_client_ids) {
+        ogs_error("OpenAPI_plmn_operator_class_convertToJSON() failed [lcs_client_ids]");
+        return NULL;
+    }
+    cJSON *lcs_client_idsList = cJSON_AddArrayToObject(item, "lcsClientIds");
+    if (lcs_client_idsList == NULL) {
         ogs_error("OpenAPI_plmn_operator_class_convertToJSON() failed [lcs_client_ids]");
         goto end;
     }
-
-    OpenAPI_lnode_t *lcs_client_ids_node;
-    OpenAPI_list_for_each(plmn_operator_class->lcs_client_ids, lcs_client_ids_node)  {
-    if (cJSON_AddStringToObject(lcs_client_ids, "", (char*)lcs_client_ids_node->data) == NULL) {
-        ogs_error("OpenAPI_plmn_operator_class_convertToJSON() failed [lcs_client_ids]");
-        goto end;
+    OpenAPI_list_for_each(plmn_operator_class->lcs_client_ids, node) {
+        if (cJSON_AddStringToObject(lcs_client_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_plmn_operator_class_convertToJSON() failed [lcs_client_ids]");
+            goto end;
+        }
     }
-                    }
 
 end:
     return item;
@@ -67,40 +78,44 @@ end:
 OpenAPI_plmn_operator_class_t *OpenAPI_plmn_operator_class_parseFromJSON(cJSON *plmn_operator_classJSON)
 {
     OpenAPI_plmn_operator_class_t *plmn_operator_class_local_var = NULL;
-    cJSON *lcs_client_class = cJSON_GetObjectItemCaseSensitive(plmn_operator_classJSON, "lcsClientClass");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *lcs_client_class = NULL;
+    OpenAPI_lcs_client_class_e lcs_client_classVariable = 0;
+    cJSON *lcs_client_ids = NULL;
+    OpenAPI_list_t *lcs_client_idsList = NULL;
+    lcs_client_class = cJSON_GetObjectItemCaseSensitive(plmn_operator_classJSON, "lcsClientClass");
     if (!lcs_client_class) {
         ogs_error("OpenAPI_plmn_operator_class_parseFromJSON() failed [lcs_client_class]");
         goto end;
     }
-
-    OpenAPI_lcs_client_class_e lcs_client_classVariable;
     if (!cJSON_IsString(lcs_client_class)) {
         ogs_error("OpenAPI_plmn_operator_class_parseFromJSON() failed [lcs_client_class]");
         goto end;
     }
     lcs_client_classVariable = OpenAPI_lcs_client_class_FromString(lcs_client_class->valuestring);
 
-    cJSON *lcs_client_ids = cJSON_GetObjectItemCaseSensitive(plmn_operator_classJSON, "lcsClientIds");
+    lcs_client_ids = cJSON_GetObjectItemCaseSensitive(plmn_operator_classJSON, "lcsClientIds");
     if (!lcs_client_ids) {
         ogs_error("OpenAPI_plmn_operator_class_parseFromJSON() failed [lcs_client_ids]");
         goto end;
     }
+        cJSON *lcs_client_ids_local = NULL;
+        if (!cJSON_IsArray(lcs_client_ids)) {
+            ogs_error("OpenAPI_plmn_operator_class_parseFromJSON() failed [lcs_client_ids]");
+            goto end;
+        }
 
-    OpenAPI_list_t *lcs_client_idsList;
-    cJSON *lcs_client_ids_local;
-    if (!cJSON_IsArray(lcs_client_ids)) {
-        ogs_error("OpenAPI_plmn_operator_class_parseFromJSON() failed [lcs_client_ids]");
-        goto end;
-    }
-    lcs_client_idsList = OpenAPI_list_create();
+        lcs_client_idsList = OpenAPI_list_create();
 
-    cJSON_ArrayForEach(lcs_client_ids_local, lcs_client_ids) {
-    if (!cJSON_IsString(lcs_client_ids_local)) {
-        ogs_error("OpenAPI_plmn_operator_class_parseFromJSON() failed [lcs_client_ids]");
-        goto end;
-    }
-    OpenAPI_list_add(lcs_client_idsList , ogs_strdup(lcs_client_ids_local->valuestring));
-    }
+        cJSON_ArrayForEach(lcs_client_ids_local, lcs_client_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(lcs_client_ids_local)) {
+                ogs_error("OpenAPI_plmn_operator_class_parseFromJSON() failed [lcs_client_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(lcs_client_idsList, ogs_strdup(lcs_client_ids_local->valuestring));
+        }
 
     plmn_operator_class_local_var = OpenAPI_plmn_operator_class_create (
         lcs_client_classVariable,
@@ -109,6 +124,13 @@ OpenAPI_plmn_operator_class_t *OpenAPI_plmn_operator_class_parseFromJSON(cJSON *
 
     return plmn_operator_class_local_var;
 end:
+    if (lcs_client_idsList) {
+        OpenAPI_list_for_each(lcs_client_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(lcs_client_idsList);
+        lcs_client_idsList = NULL;
+    }
     return NULL;
 }
 

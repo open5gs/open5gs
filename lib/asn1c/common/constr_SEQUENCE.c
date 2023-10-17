@@ -124,6 +124,8 @@ SEQUENCE_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 	for(edx = 0; edx < td->elements_count; edx++) {
 		asn_TYPE_member_t *elm = &td->elements[edx];
 		const void *memb_ptr;
+		asn_constr_check_f *constr;
+		int ret;
 
 		if(elm->flags & ATF_POINTER) {
 			memb_ptr = *(const void * const *)((const char *)sptr + elm->memb_offset);
@@ -139,14 +141,12 @@ SEQUENCE_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 			memb_ptr = (const void *)((const char *)sptr + elm->memb_offset);
 		}
 
-		if(elm->encoding_constraints.general_constraints) {
-			int ret = elm->encoding_constraints.general_constraints(elm->type, memb_ptr,
-				ctfailcb, app_key);
-			if(ret) return ret;
-		} else {
-			return elm->type->encoding_constraints.general_constraints(elm->type,
-				memb_ptr, ctfailcb, app_key);
-		}
+		constr = elm->encoding_constraints.general_constraints;
+		if(!constr)
+			constr = elm->type->encoding_constraints.general_constraints;
+
+		ret = constr(elm->type, memb_ptr, ctfailcb, app_key);
+		if(ret) return ret;
 	}
 
 	return 0;

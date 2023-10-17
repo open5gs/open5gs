@@ -16,16 +16,18 @@ OpenAPI_domain_name_protocol_t *OpenAPI_domain_name_protocol_create(
 
 void OpenAPI_domain_name_protocol_free(OpenAPI_domain_name_protocol_t *domain_name_protocol)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == domain_name_protocol) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(domain_name_protocol);
 }
 
 cJSON *OpenAPI_domain_name_protocol_convertToJSON(OpenAPI_domain_name_protocol_t *domain_name_protocol)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (domain_name_protocol == NULL) {
         ogs_error("OpenAPI_domain_name_protocol_convertToJSON() failed [DomainNameProtocol]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_domain_name_protocol_t *OpenAPI_domain_name_protocol_parseFromJSON(cJSON *domain_name_protocolJSON)
 {
     OpenAPI_domain_name_protocol_t *domain_name_protocol_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     domain_name_protocol_local_var = OpenAPI_domain_name_protocol_create (
     );
 

@@ -143,8 +143,8 @@ ogs_pfcp_rule_t *ogs_pfcp_pdr_rule_find_by_packet(
             proto = ip_h->ip_p;
             ip_hlen = (ip_h->ip_hl)*4;
 
-            src_addr = &ip_h->ip_src.s_addr;
-            dst_addr = &ip_h->ip_dst.s_addr;
+            src_addr = (void *)&ip_h->ip_src.s_addr;
+            dst_addr = (void *)&ip_h->ip_dst.s_addr;
             addr_len = OGS_IPV4_LEN;
         } else if (ip_h->ip_v == 6) {
             ip_h = NULL;
@@ -152,8 +152,8 @@ ogs_pfcp_rule_t *ogs_pfcp_pdr_rule_find_by_packet(
 
             decode_ipv6_header(ip6_h, &proto, &ip_hlen);
 
-            src_addr = (uint32_t *)ip6_h->ip6_src.s6_addr;
-            dst_addr = (uint32_t *)ip6_h->ip6_dst.s6_addr;
+            src_addr = (void *)ip6_h->ip6_src.s6_addr;
+            dst_addr = (void *)ip6_h->ip6_dst.s6_addr;
             addr_len = OGS_IPV6_LEN;
         } else {
             ogs_error("Invalid packet [IP version:%d, Packet Length:%d]",
@@ -162,20 +162,20 @@ ogs_pfcp_rule_t *ogs_pfcp_pdr_rule_find_by_packet(
             continue;
         }
 
-        ogs_debug("PROTO:%d SRC:%08x %08x %08x %08x",
+        ogs_trace("PROTO:%d SRC:%08x %08x %08x %08x",
                 proto, be32toh(src_addr[0]), be32toh(src_addr[1]),
                 be32toh(src_addr[2]), be32toh(src_addr[3]));
-        ogs_debug("HLEN:%d  DST:%08x %08x %08x %08x",
+        ogs_trace("HLEN:%d  DST:%08x %08x %08x %08x",
                 ip_hlen, be32toh(dst_addr[0]), be32toh(dst_addr[1]),
                 be32toh(dst_addr[2]), be32toh(dst_addr[3]));
 
-        ogs_debug("PROTO:%d SRC:%d-%d DST:%d-%d",
+        ogs_trace("PROTO:%d SRC:%d-%d DST:%d-%d",
                 ipfw->proto,
                 ipfw->port.src.low,
                 ipfw->port.src.high,
                 ipfw->port.dst.low,
                 ipfw->port.dst.high);
-        ogs_debug("SRC:%08x %08x %08x %08x/%08x %08x %08x %08x",
+        ogs_trace("SRC:%08x %08x %08x %08x/%08x %08x %08x %08x",
                 be32toh(ipfw->ip.src.addr[0]),
                 be32toh(ipfw->ip.src.addr[1]),
                 be32toh(ipfw->ip.src.addr[2]),
@@ -184,7 +184,7 @@ ogs_pfcp_rule_t *ogs_pfcp_pdr_rule_find_by_packet(
                 be32toh(ipfw->ip.src.mask[1]),
                 be32toh(ipfw->ip.src.mask[2]),
                 be32toh(ipfw->ip.src.mask[3]));
-        ogs_debug("DST:%08x %08x %08x %08x/%08x %08x %08x %08x",
+        ogs_trace("DST:%08x %08x %08x %08x/%08x %08x %08x %08x",
                 be32toh(ipfw->ip.dst.addr[0]),
                 be32toh(ipfw->ip.dst.addr[1]),
                 be32toh(ipfw->ip.dst.addr[2]),

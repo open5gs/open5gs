@@ -9,9 +9,12 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
 
 ### Commercial 5G
 ---
+ * Airfill S5G AFBU-SL14CN (DU + CU) + AFRU-352-I Indoor Radio (n77 and n78)
  * Airspan 5G OpenRange vCU + Airspan 5G OpenRange vDU + Airspan 5G OpenRANGE06 AirVelocity 2700 RU
  * Airspan AirSpeed 2900
  * Airspan AirStrand 2200
+ * ASKEY SCE2200 5G SUB-6 SMALL CELL
+ * BTI Wireless nCELL-F2240 5G NR Femtocell (n78)
  * CableFree Small Cell Outdoor radios (5G n77, n78 and other bands)
  * CableFree Small Cell Indoor radios (5G n77, n78 and other bands)
  * CableFree Macro (BBU+RRH) radios (4G and 5G, various bands)

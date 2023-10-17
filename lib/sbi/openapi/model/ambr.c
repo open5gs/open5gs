@@ -20,18 +20,26 @@ OpenAPI_ambr_t *OpenAPI_ambr_create(
 
 void OpenAPI_ambr_free(OpenAPI_ambr_t *ambr)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ambr) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ambr->uplink);
-    ogs_free(ambr->downlink);
+    if (ambr->uplink) {
+        ogs_free(ambr->uplink);
+        ambr->uplink = NULL;
+    }
+    if (ambr->downlink) {
+        ogs_free(ambr->downlink);
+        ambr->downlink = NULL;
+    }
     ogs_free(ambr);
 }
 
 cJSON *OpenAPI_ambr_convertToJSON(OpenAPI_ambr_t *ambr)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ambr == NULL) {
         ogs_error("OpenAPI_ambr_convertToJSON() failed [Ambr]");
@@ -39,11 +47,19 @@ cJSON *OpenAPI_ambr_convertToJSON(OpenAPI_ambr_t *ambr)
     }
 
     item = cJSON_CreateObject();
+    if (!ambr->uplink) {
+        ogs_error("OpenAPI_ambr_convertToJSON() failed [uplink]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "uplink", ambr->uplink) == NULL) {
         ogs_error("OpenAPI_ambr_convertToJSON() failed [uplink]");
         goto end;
     }
 
+    if (!ambr->downlink) {
+        ogs_error("OpenAPI_ambr_convertToJSON() failed [downlink]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "downlink", ambr->downlink) == NULL) {
         ogs_error("OpenAPI_ambr_convertToJSON() failed [downlink]");
         goto end;
@@ -56,23 +72,24 @@ end:
 OpenAPI_ambr_t *OpenAPI_ambr_parseFromJSON(cJSON *ambrJSON)
 {
     OpenAPI_ambr_t *ambr_local_var = NULL;
-    cJSON *uplink = cJSON_GetObjectItemCaseSensitive(ambrJSON, "uplink");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *uplink = NULL;
+    cJSON *downlink = NULL;
+    uplink = cJSON_GetObjectItemCaseSensitive(ambrJSON, "uplink");
     if (!uplink) {
         ogs_error("OpenAPI_ambr_parseFromJSON() failed [uplink]");
         goto end;
     }
-
     if (!cJSON_IsString(uplink)) {
         ogs_error("OpenAPI_ambr_parseFromJSON() failed [uplink]");
         goto end;
     }
 
-    cJSON *downlink = cJSON_GetObjectItemCaseSensitive(ambrJSON, "downlink");
+    downlink = cJSON_GetObjectItemCaseSensitive(ambrJSON, "downlink");
     if (!downlink) {
         ogs_error("OpenAPI_ambr_parseFromJSON() failed [downlink]");
         goto end;
     }
-
     if (!cJSON_IsString(downlink)) {
         ogs_error("OpenAPI_ambr_parseFromJSON() failed [downlink]");
         goto end;

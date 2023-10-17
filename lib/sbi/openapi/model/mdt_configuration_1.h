@@ -1,7 +1,7 @@
 /*
  * mdt_configuration_1.h
  *
- * 
+ * contains contain MDT configuration data.
  */
 
 #ifndef _OpenAPI_mdt_configuration_1_H_

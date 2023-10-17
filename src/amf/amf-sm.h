@@ -42,6 +42,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e);
 void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e);
 void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e);
 void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e);
+void gmm_state_ue_context_will_remove(ogs_fsm_t *s, amf_event_t *e);
 void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e);
 
 #define amf_sm_debug(__pe) \

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -182,8 +182,21 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
                         ogs_nnrf_nfm_handle_nf_status_subscribe(
                                 subscription_data, &message);
                     } else {
+                        ogs_error("HTTP response error : %d",
+                                message.res_status);
+                    }
+                    break;
+
+                CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                    if (message.res_status == OGS_SBI_HTTP_STATUS_OK ||
+                        message.res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+                        ogs_nnrf_nfm_handle_nf_status_update(
+                                subscription_data, &message);
+                    } else {
                         ogs_error("[%s] HTTP response error [%d]",
-                                subscription_data->id, message.res_status);
+                                subscription_data->id ?
+                                    subscription_data->id : "Unknown",
+                                message.res_status);
                     }
                     break;
 
@@ -193,7 +206,9 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
                         ogs_sbi_subscription_data_remove(subscription_data);
                     } else {
                         ogs_error("[%s] HTTP response error [%d]",
-                                subscription_data->id, message.res_status);
+                                subscription_data->id ?
+                                    subscription_data->id : "Unknown",
+                                message.res_status);
                     }
                     break;
 
@@ -232,6 +247,8 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             ogs_assert(nf_instance);
             ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
 
+            ogs_sbi_self()->nf_instance->load = get_nsi_load();
+
             ogs_fsm_dispatch(&nf_instance->sm, e);
             if (OGS_FSM_CHECK(&nf_instance->sm, ogs_sbi_nf_state_exception))
                 ogs_error("[%s:%s] State machine exception [%d]",
@@ -244,11 +261,26 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             ogs_assert(subscription_data);
 
             ogs_assert(true ==
-                ogs_nnrf_nfm_send_nf_status_subscribe(subscription_data));
+                ogs_nnrf_nfm_send_nf_status_subscribe(
+                    ogs_sbi_self()->nf_instance->nf_type,
+                    subscription_data->req_nf_instance_id,
+                    subscription_data->subscr_cond.nf_type,
+                    subscription_data->subscr_cond.service_name));
 
-            ogs_info("Subscription validity expired [%s]",
+            ogs_error("[%s] Subscription validity expired",
                 subscription_data->id);
             ogs_sbi_subscription_data_remove(subscription_data);
+            break;
+
+        case OGS_TIMER_SUBSCRIPTION_PATCH:
+            subscription_data = e->h.sbi.data;
+            ogs_assert(subscription_data);
+
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_update(subscription_data));
+
+            ogs_info("[%s] Need to update Subscription",
+                    subscription_data->id);
             break;
 
         default:

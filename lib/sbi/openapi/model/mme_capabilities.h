@@ -1,7 +1,7 @@
 /*
  * mme_capabilities.h
  *
- * 
+ * MME capabilities
  */
 
 #ifndef _OpenAPI_mme_capabilities_H_
@@ -23,13 +23,17 @@ typedef struct OpenAPI_mme_capabilities_s {
     int non_ip_supported;
     bool is_ethernet_supported;
     int ethernet_supported;
+    bool is_upip_supported;
+    int upip_supported;
 } OpenAPI_mme_capabilities_t;
 
 OpenAPI_mme_capabilities_t *OpenAPI_mme_capabilities_create(
     bool is_non_ip_supported,
     int non_ip_supported,
     bool is_ethernet_supported,
-    int ethernet_supported
+    int ethernet_supported,
+    bool is_upip_supported,
+    int upip_supported
 );
 void OpenAPI_mme_capabilities_free(OpenAPI_mme_capabilities_t *mme_capabilities);
 OpenAPI_mme_capabilities_t *OpenAPI_mme_capabilities_parseFromJSON(cJSON *mme_capabilitiesJSON);

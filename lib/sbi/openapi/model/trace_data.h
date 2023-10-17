@@ -1,7 +1,7 @@
 /*
  * trace_data.h
  *
- * 
+ * contains Trace control and configuration parameters.
  */
 
 #ifndef _OpenAPI_trace_data_H_

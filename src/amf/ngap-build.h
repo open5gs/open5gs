@@ -39,6 +39,7 @@ ogs_pkbuf_t *ngap_build_downlink_nas_transport(
 
 ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
     amf_ue_t *amf_ue, ogs_pkbuf_t *gmmbuf);
+ogs_pkbuf_t *ngap_build_ue_context_modification_request(amf_ue_t *amf_ue);
 ogs_pkbuf_t *ngap_sess_build_initial_context_setup_request(
     amf_sess_t *sess, ogs_pkbuf_t *gmmbuf, ogs_pkbuf_t *n2smbuf);
 ogs_pkbuf_t *ngap_build_ue_context_release_command(
@@ -67,7 +68,7 @@ ogs_pkbuf_t *ngap_build_handover_preparation_failure(
 ogs_pkbuf_t *ngap_build_handover_command(ran_ue_t *source_ue);
 ogs_pkbuf_t *ngap_build_handover_cancel_ack(ran_ue_t *source_ue);
 
-ogs_pkbuf_t *ngap_build_uplink_ran_status_transfer(
+ogs_pkbuf_t *ngap_build_downlink_ran_status_transfer(
     ran_ue_t *target_ue,
     NGAP_RANStatusTransfer_TransparentContainer_t *transfer);
 

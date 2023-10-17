@@ -1,7 +1,7 @@
 /*
  * qos_notification_control_info.h
  *
- * Indicates whether the QoS targets for a GRB flow are not guaranteed or guaranteed again
+ * Indicates whether the QoS targets for a GRB flow are not guaranteed or guaranteed again.
  */
 
 #ifndef _OpenAPI_qos_notification_control_info_H_

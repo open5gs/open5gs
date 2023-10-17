@@ -20,18 +20,26 @@ OpenAPI_smsc_data_t *OpenAPI_smsc_data_create(
 
 void OpenAPI_smsc_data_free(OpenAPI_smsc_data_t *smsc_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == smsc_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(smsc_data->smsc_map_address);
-    OpenAPI_network_node_diameter_address_1_free(smsc_data->smsc_diameter_address);
+    if (smsc_data->smsc_map_address) {
+        ogs_free(smsc_data->smsc_map_address);
+        smsc_data->smsc_map_address = NULL;
+    }
+    if (smsc_data->smsc_diameter_address) {
+        OpenAPI_network_node_diameter_address_1_free(smsc_data->smsc_diameter_address);
+        smsc_data->smsc_diameter_address = NULL;
+    }
     ogs_free(smsc_data);
 }
 
 cJSON *OpenAPI_smsc_data_convertToJSON(OpenAPI_smsc_data_t *smsc_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (smsc_data == NULL) {
         ogs_error("OpenAPI_smsc_data_convertToJSON() failed [SmscData]");
@@ -66,29 +74,38 @@ end:
 OpenAPI_smsc_data_t *OpenAPI_smsc_data_parseFromJSON(cJSON *smsc_dataJSON)
 {
     OpenAPI_smsc_data_t *smsc_data_local_var = NULL;
-    cJSON *smsc_map_address = cJSON_GetObjectItemCaseSensitive(smsc_dataJSON, "smscMapAddress");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *smsc_map_address = NULL;
+    cJSON *smsc_diameter_address = NULL;
+    OpenAPI_network_node_diameter_address_1_t *smsc_diameter_address_local_nonprim = NULL;
+    smsc_map_address = cJSON_GetObjectItemCaseSensitive(smsc_dataJSON, "smscMapAddress");
     if (smsc_map_address) {
-    if (!cJSON_IsString(smsc_map_address)) {
+    if (!cJSON_IsString(smsc_map_address) && !cJSON_IsNull(smsc_map_address)) {
         ogs_error("OpenAPI_smsc_data_parseFromJSON() failed [smsc_map_address]");
         goto end;
     }
     }
 
-    cJSON *smsc_diameter_address = cJSON_GetObjectItemCaseSensitive(smsc_dataJSON, "smscDiameterAddress");
-
-    OpenAPI_network_node_diameter_address_1_t *smsc_diameter_address_local_nonprim = NULL;
+    smsc_diameter_address = cJSON_GetObjectItemCaseSensitive(smsc_dataJSON, "smscDiameterAddress");
     if (smsc_diameter_address) {
     smsc_diameter_address_local_nonprim = OpenAPI_network_node_diameter_address_1_parseFromJSON(smsc_diameter_address);
+    if (!smsc_diameter_address_local_nonprim) {
+        ogs_error("OpenAPI_network_node_diameter_address_1_parseFromJSON failed [smsc_diameter_address]");
+        goto end;
+    }
     }
 
     smsc_data_local_var = OpenAPI_smsc_data_create (
-        smsc_map_address ? ogs_strdup(smsc_map_address->valuestring) : NULL,
+        smsc_map_address && !cJSON_IsNull(smsc_map_address) ? ogs_strdup(smsc_map_address->valuestring) : NULL,
         smsc_diameter_address ? smsc_diameter_address_local_nonprim : NULL
     );
 
     return smsc_data_local_var;
 end:
+    if (smsc_diameter_address_local_nonprim) {
+        OpenAPI_network_node_diameter_address_1_free(smsc_diameter_address_local_nonprim);
+        smsc_diameter_address_local_nonprim = NULL;
+    }
     return NULL;
 }
 

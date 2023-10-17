@@ -1,7 +1,7 @@
 /*
  * secondary_rat_usage_report.h
  *
- * 
+ * Secondary RAT Usage Report to report usage data for a secondary RAT for QoS flows.
  */
 
 #ifndef _OpenAPI_secondary_rat_usage_report_H_

@@ -1,7 +1,7 @@
 /*
  * parameter_combination.h
  *
- * 
+ * Represents the combination used by the BSF to check whether there is an existing PCF binding  information. 
  */
 
 #ifndef _OpenAPI_parameter_combination_H_

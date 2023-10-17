@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -19,6 +19,258 @@
 
 #include "ogs-sbi.h"
 #include "yuarel.h"
+
+static int parse_scheme_output(
+        char *_protection_scheme_id, char *_scheme_output,
+        ogs_datum_t *ecckey, ogs_datum_t *cipher_text, uint8_t *mactag)
+{
+    uint8_t protection_scheme_id;
+    uint8_t scheme_output_size;
+    uint8_t *scheme_output = NULL;
+    uint8_t *p = NULL;
+
+    ogs_assert(_protection_scheme_id);
+    ogs_assert(_scheme_output);
+    ogs_assert(ecckey);
+    ogs_assert(mactag);
+    ogs_assert(cipher_text);
+
+    scheme_output_size = strlen(_scheme_output)/2;
+    if (scheme_output_size <= ((OGS_ECCKEY_LEN+1) + OGS_MACTAG_LEN)) {
+        ogs_error("Not enought length [%d]", (int)strlen(_scheme_output));
+        return OGS_ERROR;
+    }
+
+    scheme_output = ogs_calloc(1, scheme_output_size);
+    ogs_assert(scheme_output);
+
+    ogs_ascii_to_hex(_scheme_output, strlen(_scheme_output),
+            scheme_output, scheme_output_size);
+
+    protection_scheme_id = atoi(_protection_scheme_id);
+    if (protection_scheme_id == OGS_PROTECTION_SCHEME_PROFILE_A) {
+        ecckey->size = OGS_ECCKEY_LEN;
+    } else if (protection_scheme_id == OGS_PROTECTION_SCHEME_PROFILE_B) {
+        ecckey->size = OGS_ECCKEY_LEN+1;
+    } else {
+        ogs_free(scheme_output);
+
+        ogs_fatal("Invalid protection scheme id [%s]", _protection_scheme_id);
+        ogs_assert_if_reached();
+
+        return OGS_ERROR;
+    }
+
+    cipher_text->size = OGS_MSIN_LEN;
+
+    p = scheme_output;
+    ecckey->data = ogs_memdup(p, ecckey->size);
+    ogs_assert(ecckey->data);
+
+    p += ecckey->size;
+    cipher_text->data = ogs_memdup(p, cipher_text->size);
+    ogs_assert(cipher_text->data);
+
+    p += cipher_text->size;
+    memcpy(mactag, p, OGS_MACTAG_LEN);
+
+    ogs_free(scheme_output);
+
+    return OGS_OK;
+}
+
+char *ogs_supi_from_suci(char *suci)
+{
+#define MAX_SUCI_TOKEN 16
+    char *array[MAX_SUCI_TOKEN];
+    char *p, *tmp;
+    int i;
+    char *supi = NULL;
+
+    ogs_assert(suci);
+    tmp = ogs_strdup(suci);
+    if (!tmp) {
+        ogs_error("ogs_strdup() failed");
+        return NULL;
+    }
+
+    p = tmp;
+    i = 0;
+    while((array[i++] = strsep(&p, "-"))) {
+        /* Empty Body */
+    }
+
+    SWITCH(array[0])
+    CASE("suci")
+        SWITCH(array[1])
+        CASE("0")   /* SUPI format : IMSI */
+            if (array[2] && array[3] && array[5] && array[6] && array[7]) {
+                uint8_t protection_scheme_id = atoi(array[5]);
+                uint8_t home_network_pki_value = atoi(array[6]);
+
+                if (protection_scheme_id == OGS_PROTECTION_SCHEME_NULL) {
+                    supi = ogs_msprintf("imsi-%s%s%s",
+                            array[2], array[3], array[7]);
+                } else if (protection_scheme_id ==
+                            OGS_PROTECTION_SCHEME_PROFILE_A ||
+                        protection_scheme_id ==
+                            OGS_PROTECTION_SCHEME_PROFILE_B) {
+
+                    ogs_datum_t pubkey;
+                    ogs_datum_t cipher_text;
+                    ogs_datum_t plain_text;
+                    char *plain_bcd;
+                    uint8_t mactag1[OGS_MACTAG_LEN], mactag2[OGS_MACTAG_LEN];
+
+                    uint8_t z[OGS_ECCKEY_LEN];
+
+                    uint8_t ek[OGS_KEY_LEN];
+                    uint8_t icb[OGS_IVEC_LEN];
+                    uint8_t mk[OGS_SHA256_DIGEST_SIZE];
+
+                    if (home_network_pki_value <
+                            OGS_HOME_NETWORK_PKI_VALUE_MIN ||
+                        home_network_pki_value >
+                            OGS_HOME_NETWORK_PKI_VALUE_MAX) {
+                        ogs_error("Invalid HNET PKI Value [%s]", array[6]);
+                        break;
+                    }
+
+                    if (!ogs_sbi_self()->hnet[home_network_pki_value].avail) {
+                        ogs_error("HNET PKI Value Not Avaiable [%s]", array[6]);
+                        break;
+                    }
+
+                    if (ogs_sbi_self()->hnet[home_network_pki_value].scheme
+                            != protection_scheme_id) {
+                        ogs_error("Scheme Not Matched [%d != %s]",
+                            ogs_sbi_self()->hnet[protection_scheme_id].scheme,
+                            array[5]);
+                        break;
+                    }
+
+                    if (parse_scheme_output(
+                            array[5], array[7],
+                            &pubkey, &cipher_text, mactag1) != OGS_OK) {
+                        ogs_error("parse_scheme_output[%s] failed", array[7]);
+                        break;
+                    }
+
+                    if (protection_scheme_id ==
+                            OGS_PROTECTION_SCHEME_PROFILE_A) {
+                        curve25519_donna(z,
+                            ogs_sbi_self()->hnet[home_network_pki_value].key,
+                            pubkey.data);
+                    } else if (protection_scheme_id ==
+                            OGS_PROTECTION_SCHEME_PROFILE_B) {
+                        if (ecdh_shared_secret(
+                                pubkey.data,
+                                ogs_sbi_self()->
+                                    hnet[home_network_pki_value].key,
+                                z) != 1) {
+                            ogs_error("ecdh_shared_secret() failed");
+                            ogs_log_hexdump(OGS_LOG_ERROR,
+                                    pubkey.data, OGS_ECCKEY_LEN);
+                            ogs_log_hexdump(OGS_LOG_ERROR,
+                                ogs_sbi_self()->
+                                    hnet[home_network_pki_value].key,
+                                    OGS_ECCKEY_LEN);
+                            goto cleanup;
+                        }
+                    } else
+                        ogs_assert_if_reached();
+
+                    ogs_kdf_ansi_x963(
+                        z, OGS_ECCKEY_LEN, pubkey.data, pubkey.size,
+                        ek, icb, mk);
+
+                    ogs_hmac_sha256(
+                            mk, OGS_SHA256_DIGEST_SIZE,
+                            cipher_text.data, cipher_text.size,
+                            mactag2, OGS_MACTAG_LEN);
+
+                    if (memcmp(mactag1, mactag2, OGS_MACTAG_LEN) != 0) {
+                        ogs_error("MAC-tag not matched");
+                        ogs_log_hexdump(OGS_LOG_ERROR, mactag1, OGS_MACTAG_LEN);
+                        ogs_log_hexdump(OGS_LOG_ERROR, mactag2, OGS_MACTAG_LEN);
+                        goto cleanup;
+                    }
+
+                    plain_text.size = cipher_text.size;
+                    plain_text.data = ogs_calloc(1, plain_text.size);
+                    ogs_assert(plain_text.data);
+
+                    ogs_aes_ctr128_encrypt(
+                            ek, icb, cipher_text.data, cipher_text.size,
+                            plain_text.data);
+
+                    plain_bcd = ogs_calloc(1, plain_text.size*2+1);
+                    ogs_assert(plain_bcd);
+
+                    ogs_buffer_to_bcd(
+                        plain_text.data, plain_text.size, plain_bcd);
+
+                    supi = ogs_msprintf("imsi-%s%s%s",
+                            array[2], array[3], plain_bcd);
+                    ogs_assert(supi);
+
+                    if (plain_text.data)
+                        ogs_free(plain_text.data);
+                    ogs_free(plain_bcd);
+cleanup:
+                    if (pubkey.data)
+                        ogs_free(pubkey.data);
+                    if (cipher_text.data)
+                        ogs_free(cipher_text.data);
+                } else {
+                    ogs_error("Invalid Protection Scheme [%s]", array[5]);
+                }
+            }
+            break;
+        DEFAULT
+            ogs_error("Not implemented [%s]", array[1]);
+            break;
+        END
+        break;
+    DEFAULT
+        ogs_error("Not implemented [%s]", array[0]);
+        break;
+    END
+
+    ogs_free(tmp);
+    return supi;
+}
+
+char *ogs_supi_from_supi_or_suci(char *supi_or_suci)
+{
+    char *type = NULL;
+    char *supi = NULL;
+
+    ogs_assert(supi_or_suci);
+    type = ogs_id_get_type(supi_or_suci);
+    if (!type) {
+        ogs_error("ogs_id_get_type[%s] failed", supi_or_suci);
+        goto cleanup;
+    }
+    SWITCH(type)
+    CASE("imsi")
+        supi = ogs_strdup(supi_or_suci);
+        ogs_expect(supi);
+        break;
+    CASE("suci")
+        supi = ogs_supi_from_suci(supi_or_suci);
+        ogs_expect(supi);
+        break;
+    DEFAULT
+        ogs_error("Not implemented [%s]", type);
+        break;
+    END
+
+cleanup:
+    if (type)
+        ogs_free(type);
+    return supi;
+}
 
 char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h)
 {
@@ -79,12 +331,8 @@ char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h)
 char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h)
 {
     ogs_sockaddr_t *advertise = NULL;
-    bool https = false;
 
     ogs_assert(server);
-
-    if (server->tls.key && server->tls.pem)
-        https = true;
 
     advertise = server->advertise;
 
@@ -92,19 +340,17 @@ char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h)
         advertise = server->node.addr;
     ogs_assert(advertise);
 
-    return ogs_uridup(https, advertise, h);
+    return ogs_uridup(ogs_app()->sbi.server.no_tls == false, advertise, h);
 }
 
 char *ogs_sbi_client_uri(ogs_sbi_client_t *client, ogs_sbi_header_t *h)
 {
-    bool https = false;
-
     ogs_assert(client);
 
-    if (client->tls.key && client->tls.pem)
-        https = true;
-
-    return ogs_uridup(https, client->node.addr, h);
+    return ogs_uridup(
+            ogs_app()->sbi.client.no_tls == false &&
+            client->scheme == OpenAPI_uri_scheme_https,
+            client->node.addr, h);
 }
 
 char *ogs_sbi_client_apiroot(ogs_sbi_client_t *client)
@@ -158,14 +404,15 @@ char *ogs_sbi_parse_uri(char *uri, const char *delim, char **saveptr)
     return item;
 }
 
-ogs_sockaddr_t *ogs_sbi_getaddr_from_uri(char *uri)
+bool ogs_sbi_getaddr_from_uri(
+        OpenAPI_uri_scheme_e *scheme, ogs_sockaddr_t **addr, char *uri)
 {
     int rv;
     struct yuarel yuarel;
     char *p = NULL;
     int port;
 
-    ogs_sockaddr_t *addr = NULL;
+    ogs_assert(uri);
 
     p = ogs_strdup(uri);
 
@@ -173,64 +420,67 @@ ogs_sockaddr_t *ogs_sbi_getaddr_from_uri(char *uri)
     if (rv != OGS_OK) {
         ogs_free(p);
         ogs_error("yuarel_parse() failed [%s]", uri);
-        return NULL;
+        return false;
     }
 
     if (!yuarel.scheme) {
         ogs_error("No http.scheme found [%s]", uri);
         ogs_free(p);
-        return NULL;
+        return false;
     }
 
     if (strcmp(yuarel.scheme, "https") == 0) {
         port = OGS_SBI_HTTPS_PORT;
+        *scheme = OpenAPI_uri_scheme_https;
     } else if (strcmp(yuarel.scheme, "http") == 0) {
         port = OGS_SBI_HTTP_PORT;
+        *scheme = OpenAPI_uri_scheme_http;
     } else {
         ogs_error("Invalid http.scheme [%s:%s]", yuarel.scheme, uri);
         ogs_free(p);
-        return NULL;
+        return false;
     }
 
     if (!yuarel.host) {
         ogs_error("No http.host found [%s]", uri);
         ogs_free(p);
-        return NULL;
+        return false;
     }
 
     if (yuarel.port) port = yuarel.port;
 
-    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, yuarel.host, port, 0);
+    rv = ogs_getaddrinfo(addr, AF_UNSPEC, yuarel.host, port, 0);
     if (rv != OGS_OK) {
         ogs_error("ogs_getaddrinfo() failed [%s]", uri);
         ogs_free(p);
-        return NULL;
+        return false;
     }
 
     ogs_free(p);
-    return addr;
+    return true;
 }
 
-char *ogs_sbi_getpath_from_uri(char *uri)
+bool ogs_sbi_getpath_from_uri(char **path, char *uri)
 {
     int rv;
     struct yuarel yuarel;
     char *p = NULL;
-    char *path = NULL;
+
+    ogs_assert(uri);
 
     p = ogs_strdup(uri);
 
     rv = yuarel_parse(&yuarel, p);
     if (rv != OGS_OK) {
-        ogs_free(p);
         ogs_error("yuarel_parse() failed [%s]", uri);
-        return NULL;
+        ogs_free(p);
+        return false;
     }
 
     if (!yuarel.scheme) {
         ogs_error("No http.scheme found [%s]", uri);
         ogs_free(p);
-        return NULL;
+        return false;
     }
 
     if (strcmp(yuarel.scheme, "https") == 0) {
@@ -240,42 +490,42 @@ char *ogs_sbi_getpath_from_uri(char *uri)
     } else {
         ogs_error("Invalid http.scheme [%s:%s]", yuarel.scheme, uri);
         ogs_free(p);
-        return NULL;
+        return false;
     }
 
     if (!yuarel.host) {
         ogs_error("No http.host found [%s]", uri);
         ogs_free(p);
-        return NULL;
+        return false;
     }
 
     if (!yuarel.path) {
         ogs_error("No http.path found [%s]", uri);
         ogs_free(p);
-        return NULL;
+        return false;
     }
 
-    path = ogs_strdup(yuarel.path);
-    ogs_assert(path);
+    *path = ogs_strdup(yuarel.path);
+    ogs_assert(*path);
 
     ogs_free(p);
-    return path;
+    return true;
 }
 
 char *ogs_sbi_bitrate_to_string(uint64_t bitrate, int unit)
 {
     if (unit == OGS_SBI_BITRATE_KBPS) {
         return ogs_msprintf("%lld Kbps",
-                (long long)bitrate / 1024);
+                (long long)bitrate / 1000);
     } else if (unit == OGS_SBI_BITRATE_MBPS) {
         return ogs_msprintf("%lld Mbps",
-                (long long)bitrate / 1024 / 1024);
+                (long long)bitrate / 1000 / 1000);
     } else if (unit == OGS_SBI_BITRATE_GBPS) {
         return ogs_msprintf("%lld Gbps",
-                (long long)bitrate / 1024 / 1024 / 1024);
+                (long long)bitrate / 1000 / 1000 / 1000);
     } else if (unit == OGS_SBI_BITRATE_TBPS) {
         return ogs_msprintf("%lld Tbps",
-                (long long)bitrate / 1024 / 1024 / 1024 / 1024);
+                (long long)bitrate / 1000 / 1000 / 1000 / 1000);
     }
 
     return ogs_msprintf("%lld bps", (long long)bitrate);
@@ -290,15 +540,20 @@ uint64_t ogs_sbi_bitrate_from_string(char *str)
     unit = strrchr(str, ' ');
     bitrate = atoll(str);
 
+    if (!unit) {
+        ogs_error("No Unit [%s]", str);
+        return bitrate;
+    }
+
     SWITCH(unit+1)
     CASE("Kbps")
-        return bitrate * 1024;
+        return bitrate * 1000;
     CASE("Mbps")
-        return bitrate * 1024 * 1024;
+        return bitrate * 1000 * 1000;
     CASE("Gbps")
-        return bitrate * 1024 * 1024 * 1024;
+        return bitrate * 1000 * 1000 * 1000;
     CASE("Tbps")
-        return bitrate * 1024 * 1024 * 1024 * 1024;
+        return bitrate * 1000 * 1000 * 1000 * 1000;
     DEFAULT
     END
     return bitrate;
@@ -517,7 +772,7 @@ int ogs_sbi_rfc7231_string(char *date_str, ogs_time_t time)
     return OGS_OK;
 }
 
-char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai)
+char *ogs_sbi_s_nssai_to_json(ogs_s_nssai_t *s_nssai)
 {
     cJSON *item = NULL;
     OpenAPI_snssai_t sNSSAI;
@@ -530,7 +785,10 @@ char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai)
     sNSSAI.sd = ogs_s_nssai_sd_to_string(s_nssai->sd);
 
     item = OpenAPI_snssai_convertToJSON(&sNSSAI);
-    ogs_expect_or_return_val(item, NULL);
+    if (!item) {
+        ogs_error("OpenAPI_snssai_convertToJSON() failed");
+        return NULL;
+    }
     if (sNSSAI.sd) ogs_free(sNSSAI.sd);
 
     v = cJSON_Print(item);
@@ -540,7 +798,7 @@ char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai)
     return v;
 }
 
-bool ogs_sbi_s_nssai_from_string(ogs_s_nssai_t *s_nssai, char *str)
+bool ogs_sbi_s_nssai_from_json(ogs_s_nssai_t *s_nssai, char *str)
 {
     bool rc = false;
 
@@ -565,6 +823,70 @@ bool ogs_sbi_s_nssai_from_string(ogs_s_nssai_t *s_nssai, char *str)
     return rc;
 }
 
+char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai)
+{
+    ogs_assert(s_nssai);
+
+    if (s_nssai->sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
+        return ogs_msprintf("%d-%06x", s_nssai->sst, s_nssai->sd.v);
+    } else {
+        return ogs_msprintf("%d", s_nssai->sst);
+    }
+}
+
+bool ogs_sbi_s_nssai_from_string(ogs_s_nssai_t *s_nssai, char *str)
+{
+    bool rc = false;
+    char *token, *p, *tofree;
+    char *sst = NULL;
+    char *sd = NULL;
+
+    ogs_assert(s_nssai);
+    ogs_assert(str);
+
+    tofree = p = ogs_strdup(str);
+    if (!p) {
+        ogs_error("ogs_strdup[%s] failed", str);
+        goto cleanup;
+    }
+
+    token = strsep(&p, "-");
+    if (!token) {
+        ogs_error("strsep[%s] failed", str);
+        goto cleanup;
+    }
+
+    sst = ogs_strdup(token);
+    if (!sst) {
+        ogs_error("ogs_strdup[%s:%s] failed", str, token);
+        goto cleanup;
+    }
+
+    s_nssai->sst = atoi(sst);
+    s_nssai->sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+
+    if (p) {
+        sd = ogs_strdup(p);
+        if (!sd) {
+            ogs_error("ogs_strdup[%s:%s] failed", str, token);
+            goto cleanup;
+        }
+        s_nssai->sd = ogs_uint24_from_string(sd);
+    }
+
+    rc = true;
+
+cleanup:
+    if (tofree)
+        ogs_free(tofree);
+    if (sst)
+        ogs_free(sst);
+    if (sd)
+        ogs_free(sd);
+
+    return rc;
+}
+
 OpenAPI_plmn_id_t *ogs_sbi_build_plmn_id(ogs_plmn_id_t *plmn_id)
 {
     OpenAPI_plmn_id_t *PlmnId = NULL;
@@ -572,12 +894,23 @@ OpenAPI_plmn_id_t *ogs_sbi_build_plmn_id(ogs_plmn_id_t *plmn_id)
     ogs_assert(plmn_id);
 
     PlmnId = ogs_calloc(1, sizeof(*PlmnId));
-    ogs_expect_or_return_val(PlmnId, NULL);
+    if (!PlmnId) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
 
     PlmnId->mcc = ogs_plmn_id_mcc_string(plmn_id);
-    ogs_expect_or_return_val(PlmnId->mcc, NULL);
+    if (!PlmnId->mcc) {
+        ogs_error("ogs_plmn_id_mcc_string() failed");
+        ogs_sbi_free_plmn_id(PlmnId);
+        return NULL;
+    }
     PlmnId->mnc = ogs_plmn_id_mnc_string(plmn_id);
-    ogs_expect_or_return_val(PlmnId->mnc, NULL);
+    if (!PlmnId->mnc) {
+        ogs_error("ogs_plmn_id_mnc_string() failed");
+        ogs_sbi_free_plmn_id(PlmnId);
+        return NULL;
+    }
 
     return PlmnId;
 }
@@ -615,12 +948,23 @@ OpenAPI_plmn_id_nid_t *ogs_sbi_build_plmn_id_nid(ogs_plmn_id_t *plmn_id)
     ogs_assert(plmn_id);
 
     PlmnIdNid = ogs_calloc(1, sizeof(*PlmnIdNid));
-    ogs_expect_or_return_val(PlmnIdNid, NULL);
+    if (!PlmnIdNid) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
 
     PlmnIdNid->mcc = ogs_plmn_id_mcc_string(plmn_id);
-    ogs_expect_or_return_val(PlmnIdNid->mcc, NULL);
+    if (!PlmnIdNid->mcc) {
+        ogs_error("ogs_plmn_id_mcc_string() failed");
+        ogs_sbi_free_plmn_id_nid(PlmnIdNid);
+        return NULL;
+    }
     PlmnIdNid->mnc = ogs_plmn_id_mnc_string(plmn_id);
-    ogs_expect_or_return_val(PlmnIdNid->mnc, NULL);
+    if (!PlmnIdNid->mnc) {
+        ogs_error("ogs_plmn_id_mnc_string() failed");
+        ogs_sbi_free_plmn_id_nid(PlmnIdNid);
+        return NULL;
+    }
 
     return PlmnIdNid;
 }
@@ -660,12 +1004,23 @@ OpenAPI_guami_t *ogs_sbi_build_guami(ogs_guami_t *guami)
     ogs_assert(guami);
 
     Guami = ogs_calloc(1, sizeof(*Guami));
-    ogs_assert(Guami);
+    if (!Guami) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
 
     Guami->plmn_id = ogs_sbi_build_plmn_id_nid(&guami->plmn_id);
-    ogs_expect_or_return_val(Guami->plmn_id, NULL);
+    if (!Guami->plmn_id) {
+        ogs_error("ogs_sbi_build_plmn_id_nid() failed");
+        ogs_sbi_free_guami(Guami);
+        return NULL;
+    }
     Guami->amf_id = ogs_amf_id_to_string(&guami->amf_id);
-    ogs_expect_or_return_val(Guami->amf_id, NULL);
+    if (!Guami->amf_id) {
+        ogs_error("ogs_amf_id_to_string() failed");
+        ogs_sbi_free_guami(Guami);
+        return NULL;
+    }
 
     return Guami;
 }
@@ -704,24 +1059,49 @@ OpenAPI_nr_location_t *ogs_sbi_build_nr_location(
     ogs_assert(tai);
     ogs_assert(nr_cgi);
 
-    Tai = ogs_calloc(1, sizeof(*Tai));
-    ogs_expect_or_return_val(Tai, NULL);
-    Tai->plmn_id = ogs_sbi_build_plmn_id(&tai->plmn_id);
-    ogs_expect_or_return_val(Tai->plmn_id, NULL);
-    Tai->tac = ogs_uint24_to_0string(tai->tac);
-    ogs_expect_or_return_val(Tai->tac, NULL);
-
-    Ncgi = ogs_calloc(1, sizeof(*Ncgi));
-    ogs_expect_or_return_val(Ncgi, NULL);
-    Ncgi->plmn_id = ogs_sbi_build_plmn_id(&nr_cgi->plmn_id);
-    ogs_expect_or_return_val(Ncgi->plmn_id, NULL);
-    Ncgi->nr_cell_id = ogs_uint36_to_0string(nr_cgi->cell_id);
-    ogs_expect_or_return_val(Ncgi->nr_cell_id, NULL);
-
     NrLocation = ogs_calloc(1, sizeof(*NrLocation));
-    ogs_expect_or_return_val(NrLocation, NULL);
-    NrLocation->tai = Tai;
-    NrLocation->ncgi = Ncgi;
+    if (!NrLocation) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
+
+    NrLocation->tai = Tai = ogs_calloc(1, sizeof(*Tai));
+    if (!Tai) {
+        ogs_error("ogs_calloc() failed");
+        ogs_sbi_free_nr_location(NrLocation);
+        return NULL;
+    }
+    Tai->plmn_id = ogs_sbi_build_plmn_id(&tai->plmn_id);
+    if (!Tai->plmn_id) {
+        ogs_error("ogs_sbi_build_plmn_id() failed");
+        ogs_sbi_free_nr_location(NrLocation);
+        return NULL;
+    }
+    Tai->tac = ogs_uint24_to_0string(tai->tac);
+    if (!Tai->tac) {
+        ogs_error("ogs_uint24_to_0string() failed");
+        ogs_sbi_free_nr_location(NrLocation);
+        return NULL;
+    }
+
+    NrLocation->ncgi = Ncgi = ogs_calloc(1, sizeof(*Ncgi));
+    if (!Ncgi) {
+        ogs_error("ogs_calloc() failed");
+        ogs_sbi_free_nr_location(NrLocation);
+        return NULL;
+    }
+    Ncgi->plmn_id = ogs_sbi_build_plmn_id(&nr_cgi->plmn_id);
+    if (!Ncgi->plmn_id) {
+        ogs_error("ogs_sbi_build_plmn_id() failed");
+        ogs_sbi_free_nr_location(NrLocation);
+        return NULL;
+    }
+    Ncgi->nr_cell_id = ogs_uint36_to_0string(nr_cgi->cell_id);
+    if (!Ncgi->nr_cell_id) {
+        ogs_error("ogs_uint36_to_0string() failed");
+        ogs_sbi_free_nr_location(NrLocation);
+        return NULL;
+    }
 
     return NrLocation;
 }

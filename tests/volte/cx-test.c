@@ -52,15 +52,10 @@ static void test1_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0x10;
-    mobile_identity_suci.scheme_output[1] = 0x32;
-    mobile_identity_suci.scheme_output[2] = 0x54;
-    mobile_identity_suci.scheme_output[3] = 0x86;
-    mobile_identity_suci.scheme_output[4] = 0x91;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "1032548691");
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf;

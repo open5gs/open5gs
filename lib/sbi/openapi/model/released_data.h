@@ -1,7 +1,7 @@
 /*
  * released_data.h
  *
- * 
+ * Data within Release Response
  */
 
 #ifndef _OpenAPI_released_data_H_

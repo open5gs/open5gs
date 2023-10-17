@@ -1,0 +1,1320 @@
+openapi: 3.0.0
+
+info:
+  version: 1.3.1
+  title: Nbsf_Management
+  description: |
+    Binding Support Management Service API.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.521 V17.7.0; 5G System; Binding Support Management Service.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.521/'
+
+servers:
+  - url: '{apiRoot}/nbsf-management/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nbsf-management
+
+paths:
+  /pcfBindings:
+    post:
+      summary: Create a new Individual PCF for a PDU Session binding information
+      operationId: CreatePCFBinding
+      tags:
+        - PCF Bindings (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PcfBinding'
+      responses:
+        '201':
+          description: The creation of an individual PCF for a PDU Session binding.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PcfBinding'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/nbsf-management/<apiVersion>/pcfBindings/{bindingId}
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          description: >
+            The existing PCF binding information stored in the BSF for the indicated combination is 
+            returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ExtProblemDetails'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    get:
+      summary: Read PCF for a PDU Session Bindings information
+      operationId: GetPCFBindings
+      tags:
+        - PCF Bindings (Collection)
+      parameters:
+        - name: ipv4Addr
+          in: query
+          description: The IPv4 Address of the served UE.
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        - name: ipv6Prefix
+          in: query
+          description: >
+            The IPv6 Address of the served UE. The NF service consumer shall append '/128' to the 
+            IPv6 address in the attribute value. E.g. '2001:db8:85a3::8a2e:370:7334/128'.
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        - name: macAddr48
+          in: query
+          description: The MAC Address of the served UE.
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        - name: dnn
+          in: query
+          description: DNN.
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        - name: supi
+          in: query
+          description: Subscription Permanent Identifier.
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: gpsi
+          in: query
+          description: Generic Public Subscription Identifier
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        - name: snssai
+          in: query
+          description: The identification of slice.
+          required: false
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        - name: ipDomain
+          in: query
+          description: The IPv4 address domain identifier.
+          required: false
+          schema:
+            type: string
+        - name: supp-feat
+          in: query
+          description: To filter irrelevant responses related to unsupported features.
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            The individual PCF for a PDU Session binding session binding information resource 
+            matching the query parameter(s) is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PcfBinding'
+        '204':
+          description: >
+            There is no PCF for a PDU Session binding information matching the query parameter(s).
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /pcfBindings/{bindingId}:
+    delete:
+      summary: Delete an existing Individual PCF for a PDU Session Binding information
+      operationId: DeleteIndPCFBinding
+      tags:
+        - Individual PCF Binding (Document)
+      parameters:
+        - name: bindingId
+          in: path
+          description: Represents the individual PCF for a PDU Session Binding.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            No Content. The Individual PCF for a PDU Session Binding information resource is 
+            deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Update an existing Individual PCF for a PDU Session Binding information
+      operationId: UpdateIndPCFBinding
+      tags:
+        - Individual PCF for a PDU Session Binding (Document)
+      parameters:
+        - name: bindingId
+          in: path
+          description: Represents the individual PCF for a PDU Session Binding.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to update the existing PCF for a PDU Session binding.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/PcfBindingPatch'
+      responses:
+        '200':
+          description: OK (Successful update of the PCF for a PDU Session binding).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PcfBinding'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions:
+    post:
+      operationId: CreateIndividualSubcription
+      summary: Create an individual subscription for event notifications from the BSF
+      tags:
+        - Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BsfSubscription'
+      responses:
+        '201':
+          description: Created.
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure 
+                {apiRoot}/nsmf-management/<apiVersion>/subscriptions/{subId}
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BsfSubscriptionResp'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        myNotification:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/BsfNotification'
+              responses:
+                '204':
+                  description: No Content. Notification was successful.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subId}:
+    put:
+      operationId: ReplaceIndividualSubcription
+      summary: Replace an individual subscription for event notifications from the BSF
+      tags:
+        - IndividualSubscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BsfSubscription'
+      parameters:
+        - name: subId
+          in: path
+          description: Subscription correlation ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource was successfully modified and representation is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BsfSubscriptionResp'
+        '204':
+          description: No Content. Resource was successfully modified.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      operationId: DeleteIndividualSubcription
+      summary: Delete an individual subscription for event notifications from the BSF
+      tags:
+        - IndividualSubscription (Document)
+      parameters:
+        - name: subId
+          in: path
+          description: Subscription correlation ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. Resource was successfully deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /pcf-ue-bindings:
+    post:
+      summary: Create a new Individual PCF for a UE binding information
+      operationId: CreatePCFforUEBinding
+      tags:
+        - PCF for a UE Bindings (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PcfForUeBinding'
+      responses:
+        '201':
+          description: The creation of an individual PCF for a UE binding.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PcfForUeBinding'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure 
+                {apiRoot}/nbsf-management/<apiVersion>/pcf-ue-bindings/{bindingId}
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    get:
+      summary: Read PCF for a UE Bindings information
+      operationId: GetPCFForUeBindings
+      tags:
+        - PCF for a UE Bindings (Collection)
+      parameters:
+        - name: supi
+          in: query
+          description: Subscription Permanent Identifier.
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: gpsi
+          in: query
+          description: Generic Public Subscription Identifier
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        - name: supp-feat
+          in: query
+          description: To filter irrelevant responses related to unsupported features.
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            The individual PCF for a UE binding session binding information resource matching the 
+            query parameter(s) is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PcfForUeBinding'
+                minItems: 0
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /pcf-ue-bindings/{bindingId}:
+    delete:
+      summary: Delete an existing Individual PCF for a UE Binding information
+      operationId: DeleteIndPCFforUEBinding
+      tags:
+        - Individual PCF for a UE Binding (Document)
+      parameters:
+        - name: bindingId
+          in: path
+          description: Represents the individual PCF for a UE Binding.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            No Content. The Individual PCF for a UE binding information resource is deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Update an existing Individual PCF for a UE Binding information
+      operationId: UpdateIndPCFforUEBinding
+      tags:
+        - Individual PCF for a UE Binding (Document)
+      parameters:
+        - name: bindingId
+          in: path
+          description: Represents the individual PCF for a UE Binding.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to update the existing PCF for a UE binding.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/PcfForUeBindingPatch'
+      responses:
+        '200':
+          description: OK. Successful update of the PCF for a PDU Session binding.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PcfForUeBinding'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /pcf-mbs-bindings:
+    post:
+      summary: Create a new Individual PCF for an MBS Session binding.
+      operationId: CreatePCFMbsBinding
+      tags:
+        - PCF for an MBS Session Bindings (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PcfMbsBinding'
+      responses:
+        '201':
+          description: >
+            Created. A new Individual PCF for an MBS Session Binding resource is created
+            and the corresponding URI is returned in an HTTP Location header.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PcfMbsBinding'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/nbsf-management/v1/pcf-mbs-bindings/{bindingId}
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+
+          description: >
+            The existing PCF binding information stored in the BSF for the MBS session is 
+            returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/MbsExtProblemDetails'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    get:
+      summary: Retrieve an existing PCF for an MBS Session binding.
+      operationId: GetPCFMbsBinding
+      tags:
+        - PCF for an MBS Session Bindings (Collection)
+      parameters:
+        - name: mbs-session-id
+          in: query
+          description: >
+            Contains the identifier of the MBS Session to which the requested MBS Session
+            binding is related.
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsSessionId'
+        - name: supp-feat
+          in: query
+          description: >
+            Contains the list of features supported by the NF service consumer and used to
+            filter irrelevant responses related to unsupported features.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            OK. The Individual PCF for an MBS Session Binding resource(s) matching the provided
+            query parameter(s) are returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PcfMbsBinding'
+                minItems: 0
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /pcf-mbs-bindings/{bindingId}:
+    parameters:
+      - name: bindingId
+        in: path
+        description: >
+          Represents the identifier of the Individual PCF for an MBS Session Binding resource.
+        required: true
+        schema:
+          type: string
+
+    patch:
+      summary: Request the modification of an existing Individual PCF for an MBS Session Binding resource.
+      operationId: ModifyIndPCFMbsBinding
+      tags:
+        - Individual PCF for an MBS Session Binding (Document)
+      requestBody:
+        description: Parameters to request the modification of the PCF for an MBS Session Binding.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/PcfMbsBindingPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual PCF for an MBS Session Binding resource is successfully modified and
+            a representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PcfMbsBinding'
+        '204':
+          description: >
+            No Content. The Individual PCF for an MBS Session Binding resource is successfully
+            modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual PCF for an MBS Session Binding.
+      operationId: DeleteIndPCFMbsBinding
+      tags:
+        - Individual PCF for an MBS Session Binding (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual PCF for an MBS Session Binding resource is successfully
+            Deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nbsf-management: Access to the Nbsf_Management API
+
+  schemas:
+
+    PcfBinding:
+      description: Identifies an Individual PCF for a PDU Session binding.
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        ipv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        addIpv6Prefixes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+          minItems: 1
+          description: The additional IPv6 Address Prefixes of the served UE.
+        ipDomain:
+          type: string
+        macAddr48:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        addMacAddrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+          minItems: 1
+          description: The additional MAC Addresses of the served UE.
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        pcfFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        pcfIpEndPoints:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/IpEndPoint'
+          minItems: 1
+          description: IP end points of the PCF hosting the Npcf_PolicyAuthorization service
+        pcfDiamHost:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DiameterIdentity'
+        pcfDiamRealm:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DiameterIdentity'
+        pcfSmFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        pcfSmIpEndPoints:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/IpEndPoint'
+          minItems: 1
+          description: IP end points of the PCF hosting the Npcf_SMPolicyControl service.
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        pcfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        pcfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        recoveryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        paraCom:
+          $ref: '#/components/schemas/ParameterCombination'
+        bindLevel:
+          $ref: '#/components/schemas/BindingLevel'
+        ipv4FrameRouteList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4AddrMask'
+          minItems: 1
+        ipv6FrameRouteList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+          minItems: 1
+      required:
+        - dnn
+        - snssai
+
+    PcfBindingPatch:
+      description: Identifies an Individual PCF binding used in an HTTP Patch method.
+      type: object
+      properties:
+        ipv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4AddrRm'
+        ipDomain:
+          type: string
+          nullable: true
+        ipv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6PrefixRm'
+        addIpv6Prefixes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+          minItems: 1
+          description: The additional IPv6 Address Prefixes of the served UE.
+          nullable: true
+        macAddr48:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48Rm'
+        addMacAddrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+          minItems: 1
+          description: The additional MAC Addresses of the served UE.
+          nullable: true
+        pcfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        pcfFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        pcfIpEndPoints:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/IpEndPoint'
+          minItems: 1
+          description: IP end points of the PCF hosting the Npcf_PolicyAuthorization service.
+        pcfDiamHost:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DiameterIdentity'
+        pcfDiamRealm:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DiameterIdentity'
+
+    ParameterCombination:
+      description: >
+        Represents the combination used by the BSF to check whether there is an existing PCF binding 
+        information.
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+
+    ExtProblemDetails:
+      description: >
+        Contains the FQDN or IP endpoints of the existing PCF and the cause value if there is an 
+        existing PCF binding information for the indicated combination.
+      allOf:
+        - $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        - $ref: '#/components/schemas/BindingResp'
+
+    MbsExtProblemDetails:
+      description: >
+        Contains the FQDN or IP endpoints of the existing PCF and the cause value if there is an 
+        existing PCF binding information for the MBS session.
+      allOf:
+        - $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        - $ref: '#/components/schemas/MbsBindingResp'
+
+    BindingResp:
+      description: Contains the binding information for a PCF for a PDU Session.
+      type: object
+      properties:
+        pcfSmFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        pcfSmIpEndPoints:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/IpEndPoint'
+          minItems: 1
+          description: IP end points of the PCF hosting the Npcf_SMPolicyControl service.
+
+    MbsBindingResp:
+      description: Contains the binding information for a PCF for an MBS Session.
+      type: object
+      properties:
+        pcfFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        pcfIpEndPoints:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/IpEndPoint'
+          minItems: 1
+          description: IP end points of the PCF handling the MBS Session.
+
+    BsfSubscription:
+      description: Contains the event subscription data.
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/BsfEvent'
+          minItems: 1
+          description: Contain te subscribed events.
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifCorreId:
+          type: string
+          description: Notification Correlation ID assigned by the NF service consumer.
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        snssaiDnnPairs:
+          $ref: '#/components/schemas/SnssaiDnnPair'
+        addSnssaiDnnPairs:
+          type: array
+          items:
+            $ref: '#/components/schemas/SnssaiDnnPair'
+          minItems: 1
+          description: >
+            Represents the additional S-NSSAI and DNN pair(s) for which the binding event report(s)
+            shall apply.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - events
+        - notifUri
+        - notifCorreId
+        - supi
+
+    BsfNotification:
+      description: Contains the event notifications.
+      type: object
+      properties:
+        notifCorreId:
+          type: string
+          description: Notification Correlation ID assigned by the NF service consumer.
+        pcfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        pcfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        bindLevel:
+          $ref: '#/components/schemas/BindingLevel'
+        eventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/BsfEventNotification'
+          minItems: 1
+          description: Notifications about Individual Events.
+      required:
+        - notifCorreId
+        - eventNotifs
+
+    BsfEventNotification:
+      description: Contains an event notification.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/BsfEvent'
+        pcfForUeInfo:
+          $ref: '#/components/schemas/PcfForUeInfo'
+        pcfForPduSessInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/PcfForPduSessionInfo'
+          minItems: 1
+          description: The information of the PCF for a PDU session.
+        matchSnssaiDnns:
+          type: array
+          items:
+            $ref: '#/components/schemas/SnssaiDnnPair'
+          minItems: 1
+          description: Matching S-NSSAI and DNN pairs.
+      required:
+        - event
+
+    PcfForUeInfo:
+      description: Contains the information of the PCF for a UE.
+      type: object
+      properties:
+        pcfFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        pcfIpEndPoints:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/IpEndPoint'
+          minItems: 1
+          description: IP end points of the PCF hosting the Npcf_AmPolicyAuthorization service.
+        pcfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        pcfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        bindLevel:
+          $ref: '#/components/schemas/BindingLevel'
+
+    PcfForPduSessionInfo:
+      description: Contains the informaiton of the PCF for a PDU session.
+      type: object
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        pcfFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        pcfIpEndPoints:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/IpEndPoint'
+          minItems: 1
+          description: IP end points of the PCF hosting the Npcf_AmPolicyAuthorization service.
+        ipv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4AddrRm'
+        ipDomain:
+          type: string
+        ipv6Prefixes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+          minItems: 1
+          description: The IPv6 Address Prefixes of the served UE.
+        macAddrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+          minItems: 1
+          description: The MAC Addresses of the served UE.
+        pcfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        pcfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        bindLevel:
+          $ref: '#/components/schemas/BindingLevel'
+      required:
+        - snssai
+        - dnn
+
+    PcfForUeBinding:
+      description: Identifies an Individual PCF for a UE binding.
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        pcfForUeFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        pcfForUeIpEndPoints:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/IpEndPoint'
+          minItems: 1
+          description: IP end points of the PCF hosting the Npcf_AmPolicyAuthorization service.
+        pcfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        pcfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        bindLevel:
+          $ref: '#/components/schemas/BindingLevel'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - supi
+      anyOf:
+        - required: [pcfForUeFqdn]
+        - required: [pcfForUeIpEndPoints]
+
+
+    PcfForUeBindingPatch:
+      description: Identifies the updates of an Individual PCF for a UE binding.
+      type: object
+      properties:
+        pcfForUeFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        pcfForUeIpEndPoints:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/IpEndPoint'
+          minItems: 1
+          description: IP end points of the PCF hosting the Npcf_AmPolicyAuthorization service.
+        pcfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+
+    SnssaiDnnPair:
+      description: Contains a S-NSSAI and DNN combination.
+      type: object
+      required:
+        - snssai
+        - dnn
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+
+    PcfMbsBinding:
+      description: Represents an Individual PCF for an MBS Session binding.
+      type: object
+      properties:
+        mbsSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsSessionId'
+        pcfFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        pcfIpEndPoints:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/IpEndPoint'
+          minItems: 1
+        pcfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        pcfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        bindLevel:
+          $ref: '#/components/schemas/BindingLevel'
+        recoveryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - mbsSessionId
+
+    PcfMbsBindingPatch:
+      description: >
+        Represents the requested modification to an Individual PCF for an MBS Session binding.
+      type: object
+      properties:
+        pcfFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        pcfIpEndPoints:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/IpEndPoint'
+          minItems: 1
+        pcfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+
+    BindingLevel:
+      anyOf:
+      - type: string
+        enum:
+          - NF_SET
+          - NF_INSTANCE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Possible values are:
+        - "NF_SET"
+        - "NF_INSTANCE"
+
+    BsfEvent:
+      description: Represents an event to be notified by the BSF.
+      anyOf:
+      - type: string
+        enum:
+          - PCF_PDU_SESSION_BINDING_REGISTRATION
+          - PCF_PDU_SESSION_BINDING_DEREGISTRATION
+          - PCF_UE_BINDING_REGISTRATION
+          - PCF_UE_BINDING_DEREGISTRATION
+          - SNSSAI_DNN_BINDING_REGISTRATION
+          - SNSSAI_DNN_BINDING_DEREGISTRATION
+      - type: string
+
+    BsfSubscriptionResp:
+      description: >
+        It represents a response to a modification or creation request of an Individual Binding 
+        Subscription resource. It may contain the notification of the already met events.
+      anyOf:
+        - $ref: '#/components/schemas/BsfSubscription'
+        - $ref: '#/components/schemas/BsfNotification'

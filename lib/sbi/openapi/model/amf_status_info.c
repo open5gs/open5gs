@@ -24,22 +24,33 @@ OpenAPI_amf_status_info_t *OpenAPI_amf_status_info_create(
 
 void OpenAPI_amf_status_info_free(OpenAPI_amf_status_info_t *amf_status_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == amf_status_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(amf_status_info->guami_list, node) {
-        OpenAPI_guami_free(node->data);
+    if (amf_status_info->guami_list) {
+        OpenAPI_list_for_each(amf_status_info->guami_list, node) {
+            OpenAPI_guami_free(node->data);
+        }
+        OpenAPI_list_free(amf_status_info->guami_list);
+        amf_status_info->guami_list = NULL;
     }
-    OpenAPI_list_free(amf_status_info->guami_list);
-    ogs_free(amf_status_info->target_amf_removal);
-    ogs_free(amf_status_info->target_amf_failure);
+    if (amf_status_info->target_amf_removal) {
+        ogs_free(amf_status_info->target_amf_removal);
+        amf_status_info->target_amf_removal = NULL;
+    }
+    if (amf_status_info->target_amf_failure) {
+        ogs_free(amf_status_info->target_amf_failure);
+        amf_status_info->target_amf_failure = NULL;
+    }
     ogs_free(amf_status_info);
 }
 
 cJSON *OpenAPI_amf_status_info_convertToJSON(OpenAPI_amf_status_info_t *amf_status_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (amf_status_info == NULL) {
         ogs_error("OpenAPI_amf_status_info_convertToJSON() failed [AmfStatusInfo]");
@@ -47,24 +58,28 @@ cJSON *OpenAPI_amf_status_info_convertToJSON(OpenAPI_amf_status_info_t *amf_stat
     }
 
     item = cJSON_CreateObject();
+    if (!amf_status_info->guami_list) {
+        ogs_error("OpenAPI_amf_status_info_convertToJSON() failed [guami_list]");
+        return NULL;
+    }
     cJSON *guami_listList = cJSON_AddArrayToObject(item, "guamiList");
     if (guami_listList == NULL) {
         ogs_error("OpenAPI_amf_status_info_convertToJSON() failed [guami_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *guami_list_node;
-    if (amf_status_info->guami_list) {
-        OpenAPI_list_for_each(amf_status_info->guami_list, guami_list_node) {
-            cJSON *itemLocal = OpenAPI_guami_convertToJSON(guami_list_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_amf_status_info_convertToJSON() failed [guami_list]");
-                goto end;
-            }
-            cJSON_AddItemToArray(guami_listList, itemLocal);
+    OpenAPI_list_for_each(amf_status_info->guami_list, node) {
+        cJSON *itemLocal = OpenAPI_guami_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_amf_status_info_convertToJSON() failed [guami_list]");
+            goto end;
         }
+        cJSON_AddItemToArray(guami_listList, itemLocal);
     }
 
+    if (amf_status_info->status_change == OpenAPI_status_change_NULL) {
+        ogs_error("OpenAPI_amf_status_info_convertToJSON() failed [status_change]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "statusChange", OpenAPI_status_change_ToString(amf_status_info->status_change)) == NULL) {
         ogs_error("OpenAPI_amf_status_info_convertToJSON() failed [status_change]");
         goto end;
@@ -91,63 +106,61 @@ end:
 OpenAPI_amf_status_info_t *OpenAPI_amf_status_info_parseFromJSON(cJSON *amf_status_infoJSON)
 {
     OpenAPI_amf_status_info_t *amf_status_info_local_var = NULL;
-    cJSON *guami_list = cJSON_GetObjectItemCaseSensitive(amf_status_infoJSON, "guamiList");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *guami_list = NULL;
+    OpenAPI_list_t *guami_listList = NULL;
+    cJSON *status_change = NULL;
+    OpenAPI_status_change_e status_changeVariable = 0;
+    cJSON *target_amf_removal = NULL;
+    cJSON *target_amf_failure = NULL;
+    guami_list = cJSON_GetObjectItemCaseSensitive(amf_status_infoJSON, "guamiList");
     if (!guami_list) {
         ogs_error("OpenAPI_amf_status_info_parseFromJSON() failed [guami_list]");
         goto end;
     }
-
-    OpenAPI_list_t *guami_listList;
-    cJSON *guami_list_local_nonprimitive;
-    if (!cJSON_IsArray(guami_list)){
-        ogs_error("OpenAPI_amf_status_info_parseFromJSON() failed [guami_list]");
-        goto end;
-    }
-
-    guami_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(guami_list_local_nonprimitive, guami_list ) {
-        if (!cJSON_IsObject(guami_list_local_nonprimitive)) {
+        cJSON *guami_list_local = NULL;
+        if (!cJSON_IsArray(guami_list)) {
             ogs_error("OpenAPI_amf_status_info_parseFromJSON() failed [guami_list]");
             goto end;
         }
-        OpenAPI_guami_t *guami_listItem = OpenAPI_guami_parseFromJSON(guami_list_local_nonprimitive);
 
-        if (!guami_listItem) {
-            ogs_error("No guami_listItem");
-            OpenAPI_list_free(guami_listList);
-            goto end;
+        guami_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(guami_list_local, guami_list) {
+            if (!cJSON_IsObject(guami_list_local)) {
+                ogs_error("OpenAPI_amf_status_info_parseFromJSON() failed [guami_list]");
+                goto end;
+            }
+            OpenAPI_guami_t *guami_listItem = OpenAPI_guami_parseFromJSON(guami_list_local);
+            if (!guami_listItem) {
+                ogs_error("No guami_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(guami_listList, guami_listItem);
         }
 
-        OpenAPI_list_add(guami_listList, guami_listItem);
-    }
-
-    cJSON *status_change = cJSON_GetObjectItemCaseSensitive(amf_status_infoJSON, "statusChange");
+    status_change = cJSON_GetObjectItemCaseSensitive(amf_status_infoJSON, "statusChange");
     if (!status_change) {
         ogs_error("OpenAPI_amf_status_info_parseFromJSON() failed [status_change]");
         goto end;
     }
-
-    OpenAPI_status_change_e status_changeVariable;
     if (!cJSON_IsString(status_change)) {
         ogs_error("OpenAPI_amf_status_info_parseFromJSON() failed [status_change]");
         goto end;
     }
     status_changeVariable = OpenAPI_status_change_FromString(status_change->valuestring);
 
-    cJSON *target_amf_removal = cJSON_GetObjectItemCaseSensitive(amf_status_infoJSON, "targetAmfRemoval");
-
+    target_amf_removal = cJSON_GetObjectItemCaseSensitive(amf_status_infoJSON, "targetAmfRemoval");
     if (target_amf_removal) {
-    if (!cJSON_IsString(target_amf_removal)) {
+    if (!cJSON_IsString(target_amf_removal) && !cJSON_IsNull(target_amf_removal)) {
         ogs_error("OpenAPI_amf_status_info_parseFromJSON() failed [target_amf_removal]");
         goto end;
     }
     }
 
-    cJSON *target_amf_failure = cJSON_GetObjectItemCaseSensitive(amf_status_infoJSON, "targetAmfFailure");
-
+    target_amf_failure = cJSON_GetObjectItemCaseSensitive(amf_status_infoJSON, "targetAmfFailure");
     if (target_amf_failure) {
-    if (!cJSON_IsString(target_amf_failure)) {
+    if (!cJSON_IsString(target_amf_failure) && !cJSON_IsNull(target_amf_failure)) {
         ogs_error("OpenAPI_amf_status_info_parseFromJSON() failed [target_amf_failure]");
         goto end;
     }
@@ -156,12 +169,19 @@ OpenAPI_amf_status_info_t *OpenAPI_amf_status_info_parseFromJSON(cJSON *amf_stat
     amf_status_info_local_var = OpenAPI_amf_status_info_create (
         guami_listList,
         status_changeVariable,
-        target_amf_removal ? ogs_strdup(target_amf_removal->valuestring) : NULL,
-        target_amf_failure ? ogs_strdup(target_amf_failure->valuestring) : NULL
+        target_amf_removal && !cJSON_IsNull(target_amf_removal) ? ogs_strdup(target_amf_removal->valuestring) : NULL,
+        target_amf_failure && !cJSON_IsNull(target_amf_failure) ? ogs_strdup(target_amf_failure->valuestring) : NULL
     );
 
     return amf_status_info_local_var;
 end:
+    if (guami_listList) {
+        OpenAPI_list_for_each(guami_listList, node) {
+            OpenAPI_guami_free(node->data);
+        }
+        OpenAPI_list_free(guami_listList);
+        guami_listList = NULL;
+    }
     return NULL;
 }
 

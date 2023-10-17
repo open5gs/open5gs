@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,8 +28,8 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-07-11 07:09:47.165005 by ubuntu
- * from 24501-g41.docx
+ * Created on: 2023-03-04 20:50:00.882958 by acetcom
+ * from 24501-h90.docx
  ******************************************************************************/
 
 #if !defined(OGS_NAS_INSIDE) && !defined(OGS_NAS_COMPILATION)
@@ -148,6 +148,14 @@ typedef struct ogs_nas_5gs_security_header_s {
 #define OGS_NAS_5GS_REGISTRATION_REQUEST_ADDITIONAL_INFORMATION_REQUESTED_PRESENT ((uint64_t)1<<28)
 #define OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_WUS_ASSISTANCE_INFORMATION_PRESENT ((uint64_t)1<<29)
 #define OGS_NAS_5GS_REGISTRATION_REQUEST_N5GC_INDICATION_PRESENT ((uint64_t)1<<30)
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_NB_N1_MODE_DRX_PARAMETERS_PRESENT ((uint64_t)1<<31)
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_UE_REQUEST_TYPE_PRESENT ((uint64_t)1<<32)
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_PAGING_RESTRICTION_PRESENT ((uint64_t)1<<33)
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_SERVICE_LEVEL_AA_CONTAINER_PRESENT ((uint64_t)1<<34)
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_NID_PRESENT ((uint64_t)1<<35)
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_MS_DETERMINED_PLMN_WITH_DISASTER_CONDITION_PRESENT ((uint64_t)1<<36)
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_PEIPS_ASSISTANCE_INFORMATION_PRESENT ((uint64_t)1<<37)
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_T3512_VALUE_PRESENT ((uint64_t)1<<38)
 #define OGS_NAS_5GS_REGISTRATION_REQUEST_NON_CURRENT_NATIVE_NAS_KEY_SET_IDENTIFIER_TYPE 0xC0
 #define OGS_NAS_5GS_REGISTRATION_REQUEST_5GMM_CAPABILITY_TYPE 0x10
 #define OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_TYPE 0x2E
@@ -178,7 +186,15 @@ typedef struct ogs_nas_5gs_security_header_s {
 #define OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_MAPPED_NSSAI_TYPE 0x35
 #define OGS_NAS_5GS_REGISTRATION_REQUEST_ADDITIONAL_INFORMATION_REQUESTED_TYPE 0x48
 #define OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_WUS_ASSISTANCE_INFORMATION_TYPE 0x1A
-#define OGS_NAS_5GS_REGISTRATION_REQUEST_N5GC_INDICATION_TYPE 0xA1
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_N5GC_INDICATION_TYPE 0xA0
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_NB_N1_MODE_DRX_PARAMETERS_TYPE 0x30
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_UE_REQUEST_TYPE_TYPE 0x29
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_PAGING_RESTRICTION_TYPE 0x28
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_SERVICE_LEVEL_AA_CONTAINER_TYPE 0x72
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_NID_TYPE 0x32
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_MS_DETERMINED_PLMN_WITH_DISASTER_CONDITION_TYPE 0x16
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_PEIPS_ASSISTANCE_INFORMATION_TYPE 0x2A
+#define OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_T3512_VALUE_TYPE 0x3B
 
 typedef struct ogs_nas_5gs_registration_request_s {
     /* Mandatory fields */
@@ -218,6 +234,14 @@ typedef struct ogs_nas_5gs_registration_request_s {
     ogs_nas_additional_information_requested_t additional_information_requested;
     ogs_nas_wus_assistance_information_t requested_wus_assistance_information;
     ogs_nas_n5gc_indication_t n5gc_indication;
+    ogs_nas_nb_n1_mode_drx_parameters_t requested_nb_n1_mode_drx_parameters;
+    ogs_nas_ue_request_type_t ue_request_type;
+    ogs_nas_paging_restriction_t paging_restriction;
+    ogs_nas_service_level_aa_container_t service_level_aa_container;
+    ogs_nas_nid_t nid;
+    ogs_nas_plmn_identity_t ms_determined_plmn_with_disaster_condition;
+    ogs_nas_peips_assistance_information_t requested_peips_assistance_information;
+    ogs_nas_gprs_timer_3_t requested_t3512_value;
 } ogs_nas_5gs_registration_request_t;
 
 
@@ -261,6 +285,19 @@ typedef struct ogs_nas_5gs_registration_request_s {
 #define OGS_NAS_5GS_REGISTRATION_ACCEPT_CAG_INFORMATION_LIST_PRESENT ((uint64_t)1<<34)
 #define OGS_NAS_5GS_REGISTRATION_ACCEPT_TRUNCATED_5G_S_TMSI_CONFIGURATION_PRESENT ((uint64_t)1<<35)
 #define OGS_NAS_5GS_REGISTRATION_ACCEPT_NEGOTIATED_WUS_ASSISTANCE_INFORMATION_PRESENT ((uint64_t)1<<36)
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_NEGOTIATED_NB_N1_MODE_DRX_PARAMETERS_PRESENT ((uint64_t)1<<37)
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_EXTENDED_REJECTED_NSSAI_PRESENT ((uint64_t)1<<38)
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_SERVICE_LEVEL_AA_CONTAINER_PRESENT ((uint64_t)1<<39)
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_NEGOTIATED_PEIPS_ASSISTANCE_INFORMATION_PRESENT ((uint64_t)1<<40)
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_5GS_ADDITIONAL_REQUEST_RESULT_PRESENT ((uint64_t)1<<41)
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_NSSRG_INFORMATION_PRESENT ((uint64_t)1<<42)
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_DISASTER_ROAMING_WAIT_RANGE_PRESENT ((uint64_t)1<<43)
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_DISASTER_RETURN_WAIT_RANGE_PRESENT ((uint64_t)1<<44)
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION_PRESENT ((uint64_t)1<<45)
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT ((uint64_t)1<<46)
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT ((uint64_t)1<<47)
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_EXTENDED_CAG_INFORMATION_LIST_PRESENT ((uint64_t)1<<48)
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_NSAG_INFORMATION_PRESENT ((uint64_t)1<<49)
 #define OGS_NAS_5GS_REGISTRATION_ACCEPT_5G_GUTI_TYPE 0x77
 #define OGS_NAS_5GS_REGISTRATION_ACCEPT_EQUIVALENT_PLMNS_TYPE 0x4A
 #define OGS_NAS_5GS_REGISTRATION_ACCEPT_TAI_LIST_TYPE 0x54
@@ -292,12 +329,25 @@ typedef struct ogs_nas_5gs_registration_request_s {
 #define OGS_NAS_5GS_REGISTRATION_ACCEPT_T3448_VALUE_TYPE 0x6B
 #define OGS_NAS_5GS_REGISTRATION_ACCEPT_T3324_VALUE_TYPE 0x6A
 #define OGS_NAS_5GS_REGISTRATION_ACCEPT_UE_RADIO_CAPABILITY_ID_TYPE 0x67
-#define OGS_NAS_5GS_REGISTRATION_ACCEPT_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_TYPE 0x68
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_TYPE 0xE0
 #define OGS_NAS_5GS_REGISTRATION_ACCEPT_PENDING_NSSAI_TYPE 0x39
 #define OGS_NAS_5GS_REGISTRATION_ACCEPT_CIPHERING_KEY_DATA_TYPE 0x74
 #define OGS_NAS_5GS_REGISTRATION_ACCEPT_CAG_INFORMATION_LIST_TYPE 0x75
 #define OGS_NAS_5GS_REGISTRATION_ACCEPT_TRUNCATED_5G_S_TMSI_CONFIGURATION_TYPE 0x1B
 #define OGS_NAS_5GS_REGISTRATION_ACCEPT_NEGOTIATED_WUS_ASSISTANCE_INFORMATION_TYPE 0x1C
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_NEGOTIATED_NB_N1_MODE_DRX_PARAMETERS_TYPE 0x29
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_EXTENDED_REJECTED_NSSAI_TYPE 0x68
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_SERVICE_LEVEL_AA_CONTAINER_TYPE 0x7B
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_NEGOTIATED_PEIPS_ASSISTANCE_INFORMATION_TYPE 0x33
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_5GS_ADDITIONAL_REQUEST_RESULT_TYPE 0x34
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_NSSRG_INFORMATION_TYPE 0x70
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_DISASTER_ROAMING_WAIT_RANGE_TYPE 0x14
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_DISASTER_RETURN_WAIT_RANGE_TYPE 0x2C
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION_TYPE 0x13
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE 0x1D
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE 0x1E
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_EXTENDED_CAG_INFORMATION_LIST_TYPE 0x71
+#define OGS_NAS_5GS_REGISTRATION_ACCEPT_NSAG_INFORMATION_TYPE 0x7C
 
 typedef struct ogs_nas_5gs_registration_accept_s {
     /* Mandatory fields */
@@ -333,7 +383,7 @@ typedef struct ogs_nas_5gs_registration_accept_s {
     ogs_nas_eps_bearer_context_status_t eps_bearer_context_status;
     ogs_nas_extended_drx_parameters_t negotiated_extended_drx_parameters;
     ogs_nas_gprs_timer_3_t t3447_value;
-    ogs_nas_gprs_timer_3_t t3448_value;
+    ogs_nas_gprs_timer_2_t t3448_value;
     ogs_nas_gprs_timer_3_t t3324_value;
     ogs_nas_ue_radio_capability_id_t ue_radio_capability_id;
     ogs_nas_ue_radio_capability_id_deletion_indication_t ue_radio_capability_id_deletion_indication;
@@ -342,6 +392,19 @@ typedef struct ogs_nas_5gs_registration_accept_s {
     ogs_nas_cag_information_list_t cag_information_list;
     ogs_nas_truncated_5g_s_tmsi_configuration_t truncated_s_tmsi_configuration;
     ogs_nas_wus_assistance_information_t negotiated_wus_assistance_information;
+    ogs_nas_nb_n1_mode_drx_parameters_t negotiated_nb_n1_mode_drx_parameters;
+    ogs_nas_extended_rejected_nssai_t extended_rejected_nssai;
+    ogs_nas_service_level_aa_container_t service_level_aa_container;
+    ogs_nas_peips_assistance_information_t negotiated_peips_assistance_information;
+    ogs_nas_5gs_additional_request_result_t additional_request_result;
+    ogs_nas_nssrg_information_t nssrg_information;
+    ogs_nas_registration_wait_range_t disaster_roaming_wait_range;
+    ogs_nas_registration_wait_range_t disaster_return_wait_range;
+    ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t list_of_plmns_to_be_used_in_disaster_condition;
+    ogs_nas_5gs_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming;
+    ogs_nas_5gs_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service;
+    ogs_nas_extended_cag_information_list_t extended_cag_information_list;
+    ogs_nas_nsag_information_t nsag_information;
 } ogs_nas_5gs_registration_accept_t;
 
 
@@ -366,10 +429,24 @@ typedef struct ogs_nas_5gs_registration_complete_s {
 #define OGS_NAS_5GS_REGISTRATION_REJECT_T3502_VALUE_PRESENT ((uint64_t)1<<1)
 #define OGS_NAS_5GS_REGISTRATION_REJECT_EAP_MESSAGE_PRESENT ((uint64_t)1<<2)
 #define OGS_NAS_5GS_REGISTRATION_REJECT_REJECTED_NSSAI_PRESENT ((uint64_t)1<<3)
+#define OGS_NAS_5GS_REGISTRATION_REJECT_CAG_INFORMATION_LIST_PRESENT ((uint64_t)1<<4)
+#define OGS_NAS_5GS_REGISTRATION_REJECT_EXTENDED_REJECTED_NSSAI_PRESENT ((uint64_t)1<<5)
+#define OGS_NAS_5GS_REGISTRATION_REJECT_DISASTER_RETURN_WAIT_RANGE_PRESENT ((uint64_t)1<<6)
+#define OGS_NAS_5GS_REGISTRATION_REJECT_EXTENDED_CAG_INFORMATION_LIST_PRESENT ((uint64_t)1<<7)
+#define OGS_NAS_5GS_REGISTRATION_REJECT_LOWER_BOUND_TIMER_VALUE_PRESENT ((uint64_t)1<<8)
+#define OGS_NAS_5GS_REGISTRATION_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT ((uint64_t)1<<9)
+#define OGS_NAS_5GS_REGISTRATION_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT ((uint64_t)1<<10)
 #define OGS_NAS_5GS_REGISTRATION_REJECT_T3346_VALUE_TYPE 0x5F
 #define OGS_NAS_5GS_REGISTRATION_REJECT_T3502_VALUE_TYPE 0x16
 #define OGS_NAS_5GS_REGISTRATION_REJECT_EAP_MESSAGE_TYPE 0x78
 #define OGS_NAS_5GS_REGISTRATION_REJECT_REJECTED_NSSAI_TYPE 0x69
+#define OGS_NAS_5GS_REGISTRATION_REJECT_CAG_INFORMATION_LIST_TYPE 0x75
+#define OGS_NAS_5GS_REGISTRATION_REJECT_EXTENDED_REJECTED_NSSAI_TYPE 0x68
+#define OGS_NAS_5GS_REGISTRATION_REJECT_DISASTER_RETURN_WAIT_RANGE_TYPE 0x2C
+#define OGS_NAS_5GS_REGISTRATION_REJECT_EXTENDED_CAG_INFORMATION_LIST_TYPE 0x71
+#define OGS_NAS_5GS_REGISTRATION_REJECT_LOWER_BOUND_TIMER_VALUE_TYPE 0x3A
+#define OGS_NAS_5GS_REGISTRATION_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE 0x1D
+#define OGS_NAS_5GS_REGISTRATION_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE 0x1E
 
 typedef struct ogs_nas_5gs_registration_reject_s {
     /* Mandatory fields */
@@ -381,6 +458,13 @@ typedef struct ogs_nas_5gs_registration_reject_s {
     ogs_nas_gprs_timer_2_t t3502_value;
     ogs_nas_eap_message_t eap_message;
     ogs_nas_rejected_nssai_t rejected_nssai;
+    ogs_nas_cag_information_list_t cag_information_list;
+    ogs_nas_extended_rejected_nssai_t extended_rejected_nssai;
+    ogs_nas_registration_wait_range_t disaster_return_wait_range;
+    ogs_nas_extended_cag_information_list_t extended_cag_information_list;
+    ogs_nas_gprs_timer_3_t lower_bound_timer_value;
+    ogs_nas_5gs_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming;
+    ogs_nas_5gs_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service;
 } ogs_nas_5gs_registration_reject_t;
 
 
@@ -401,9 +485,23 @@ typedef struct ogs_nas_5gs_deregistration_request_from_ue_s {
 #define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_5GMM_CAUSE_PRESENT ((uint64_t)1<<0)
 #define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_T3346_VALUE_PRESENT ((uint64_t)1<<1)
 #define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_REJECTED_NSSAI_PRESENT ((uint64_t)1<<2)
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_CAG_INFORMATION_LIST_PRESENT ((uint64_t)1<<3)
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_EXTENDED_REJECTED_NSSAI_PRESENT ((uint64_t)1<<4)
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_DISASTER_RETURN_WAIT_RANGE_PRESENT ((uint64_t)1<<5)
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_EXTENDED_CAG_INFORMATION_LIST_PRESENT ((uint64_t)1<<6)
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_LOWER_BOUND_TIMER_VALUE_PRESENT ((uint64_t)1<<7)
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT ((uint64_t)1<<8)
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT ((uint64_t)1<<9)
 #define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_5GMM_CAUSE_TYPE 0x58
 #define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_T3346_VALUE_TYPE 0x5F
 #define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_REJECTED_NSSAI_TYPE 0x6D
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_CAG_INFORMATION_LIST_TYPE 0x75
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_EXTENDED_REJECTED_NSSAI_TYPE 0x68
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_DISASTER_RETURN_WAIT_RANGE_TYPE 0x2C
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_EXTENDED_CAG_INFORMATION_LIST_TYPE 0x71
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_LOWER_BOUND_TIMER_VALUE_TYPE 0x3A
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE 0x1D
+#define OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE 0x1E
 
 typedef struct ogs_nas_5gs_deregistration_request_to_ue_s {
     /* Mandatory fields */
@@ -414,6 +512,13 @@ typedef struct ogs_nas_5gs_deregistration_request_to_ue_s {
     ogs_nas_5gmm_cause_t gmm_cause;
     ogs_nas_gprs_timer_2_t t3346_value;
     ogs_nas_rejected_nssai_t rejected_nssai;
+    ogs_nas_cag_information_list_t cag_information_list;
+    ogs_nas_extended_rejected_nssai_t extended_rejected_nssai;
+    ogs_nas_registration_wait_range_t disaster_return_wait_range;
+    ogs_nas_extended_cag_information_list_t extended_cag_information_list;
+    ogs_nas_gprs_timer_3_t lower_bound_timer_value;
+    ogs_nas_5gs_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming;
+    ogs_nas_5gs_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service;
 } ogs_nas_5gs_deregistration_request_to_ue_t;
 
 
@@ -424,10 +529,14 @@ typedef struct ogs_nas_5gs_deregistration_request_to_ue_s {
 #define OGS_NAS_5GS_SERVICE_REQUEST_PDU_SESSION_STATUS_PRESENT ((uint64_t)1<<1)
 #define OGS_NAS_5GS_SERVICE_REQUEST_ALLOWED_PDU_SESSION_STATUS_PRESENT ((uint64_t)1<<2)
 #define OGS_NAS_5GS_SERVICE_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT ((uint64_t)1<<3)
+#define OGS_NAS_5GS_SERVICE_REQUEST_UE_REQUEST_TYPE_PRESENT ((uint64_t)1<<4)
+#define OGS_NAS_5GS_SERVICE_REQUEST_PAGING_RESTRICTION_PRESENT ((uint64_t)1<<5)
 #define OGS_NAS_5GS_SERVICE_REQUEST_UPLINK_DATA_STATUS_TYPE 0x40
 #define OGS_NAS_5GS_SERVICE_REQUEST_PDU_SESSION_STATUS_TYPE 0x50
 #define OGS_NAS_5GS_SERVICE_REQUEST_ALLOWED_PDU_SESSION_STATUS_TYPE 0x25
 #define OGS_NAS_5GS_SERVICE_REQUEST_NAS_MESSAGE_CONTAINER_TYPE 0x71
+#define OGS_NAS_5GS_SERVICE_REQUEST_UE_REQUEST_TYPE_TYPE 0x29
+#define OGS_NAS_5GS_SERVICE_REQUEST_PAGING_RESTRICTION_TYPE 0x28
 
 typedef struct ogs_nas_5gs_service_request_s {
     /* Mandatory fields */
@@ -440,6 +549,8 @@ typedef struct ogs_nas_5gs_service_request_s {
     ogs_nas_pdu_session_status_t pdu_session_status;
     ogs_nas_allowed_pdu_session_status_t allowed_pdu_session_status;
     ogs_nas_message_container_t nas_message_container;
+    ogs_nas_ue_request_type_t ue_request_type;
+    ogs_nas_paging_restriction_t paging_restriction;
 } ogs_nas_5gs_service_request_t;
 
 
@@ -450,10 +561,22 @@ typedef struct ogs_nas_5gs_service_request_s {
 #define OGS_NAS_5GS_SERVICE_REJECT_T3346_VALUE_PRESENT ((uint64_t)1<<1)
 #define OGS_NAS_5GS_SERVICE_REJECT_EAP_MESSAGE_PRESENT ((uint64_t)1<<2)
 #define OGS_NAS_5GS_SERVICE_REJECT_T3448_VALUE_PRESENT ((uint64_t)1<<3)
+#define OGS_NAS_5GS_SERVICE_REJECT_CAG_INFORMATION_LIST_PRESENT ((uint64_t)1<<4)
+#define OGS_NAS_5GS_SERVICE_REJECT_DISASTER_RETURN_WAIT_RANGE_PRESENT ((uint64_t)1<<5)
+#define OGS_NAS_5GS_SERVICE_REJECT_EXTENDED_CAG_INFORMATION_LIST_PRESENT ((uint64_t)1<<6)
+#define OGS_NAS_5GS_SERVICE_REJECT_LOWER_BOUND_TIMER_VALUE_PRESENT ((uint64_t)1<<7)
+#define OGS_NAS_5GS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT ((uint64_t)1<<8)
+#define OGS_NAS_5GS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT ((uint64_t)1<<9)
 #define OGS_NAS_5GS_SERVICE_REJECT_PDU_SESSION_STATUS_TYPE 0x50
 #define OGS_NAS_5GS_SERVICE_REJECT_T3346_VALUE_TYPE 0x5F
 #define OGS_NAS_5GS_SERVICE_REJECT_EAP_MESSAGE_TYPE 0x78
 #define OGS_NAS_5GS_SERVICE_REJECT_T3448_VALUE_TYPE 0x6B
+#define OGS_NAS_5GS_SERVICE_REJECT_CAG_INFORMATION_LIST_TYPE 0x75
+#define OGS_NAS_5GS_SERVICE_REJECT_DISASTER_RETURN_WAIT_RANGE_TYPE 0x2C
+#define OGS_NAS_5GS_SERVICE_REJECT_EXTENDED_CAG_INFORMATION_LIST_TYPE 0x71
+#define OGS_NAS_5GS_SERVICE_REJECT_LOWER_BOUND_TIMER_VALUE_TYPE 0x3A
+#define OGS_NAS_5GS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE 0x1D
+#define OGS_NAS_5GS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE 0x1E
 
 typedef struct ogs_nas_5gs_service_reject_s {
     /* Mandatory fields */
@@ -464,7 +587,13 @@ typedef struct ogs_nas_5gs_service_reject_s {
     ogs_nas_pdu_session_status_t pdu_session_status;
     ogs_nas_gprs_timer_2_t t3346_value;
     ogs_nas_eap_message_t eap_message;
-    ogs_nas_gprs_timer_3_t t3448_value;
+    ogs_nas_gprs_timer_2_t t3448_value;
+    ogs_nas_cag_information_list_t cag_information_list;
+    ogs_nas_registration_wait_range_t disaster_return_wait_range;
+    ogs_nas_extended_cag_information_list_t extended_cag_information_list;
+    ogs_nas_gprs_timer_3_t lower_bound_timer_value;
+    ogs_nas_5gs_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming;
+    ogs_nas_5gs_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service;
 } ogs_nas_5gs_service_reject_t;
 
 
@@ -476,11 +605,17 @@ typedef struct ogs_nas_5gs_service_reject_s {
 #define OGS_NAS_5GS_SERVICE_ACCEPT_PDU_SESSION_REACTIVATION_RESULT_ERROR_CAUSE_PRESENT ((uint64_t)1<<2)
 #define OGS_NAS_5GS_SERVICE_ACCEPT_EAP_MESSAGE_PRESENT ((uint64_t)1<<3)
 #define OGS_NAS_5GS_SERVICE_ACCEPT_T3448_VALUE_PRESENT ((uint64_t)1<<4)
+#define OGS_NAS_5GS_SERVICE_ACCEPT_5GS_ADDITIONAL_REQUEST_RESULT_PRESENT ((uint64_t)1<<5)
+#define OGS_NAS_5GS_SERVICE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT ((uint64_t)1<<6)
+#define OGS_NAS_5GS_SERVICE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT ((uint64_t)1<<7)
 #define OGS_NAS_5GS_SERVICE_ACCEPT_PDU_SESSION_STATUS_TYPE 0x50
 #define OGS_NAS_5GS_SERVICE_ACCEPT_PDU_SESSION_REACTIVATION_RESULT_TYPE 0x26
 #define OGS_NAS_5GS_SERVICE_ACCEPT_PDU_SESSION_REACTIVATION_RESULT_ERROR_CAUSE_TYPE 0x72
 #define OGS_NAS_5GS_SERVICE_ACCEPT_EAP_MESSAGE_TYPE 0x78
 #define OGS_NAS_5GS_SERVICE_ACCEPT_T3448_VALUE_TYPE 0x6B
+#define OGS_NAS_5GS_SERVICE_ACCEPT_5GS_ADDITIONAL_REQUEST_RESULT_TYPE 0x34
+#define OGS_NAS_5GS_SERVICE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE 0x1D
+#define OGS_NAS_5GS_SERVICE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_5GS_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE 0x1E
 
 typedef struct ogs_nas_5gs_service_accept_s {
 
@@ -490,7 +625,10 @@ typedef struct ogs_nas_5gs_service_accept_s {
     ogs_nas_pdu_session_reactivation_result_t pdu_session_reactivation_result;
     ogs_nas_pdu_session_reactivation_result_error_cause_t pdu_session_reactivation_result_error_cause;
     ogs_nas_eap_message_t eap_message;
-    ogs_nas_gprs_timer_3_t t3448_value;
+    ogs_nas_gprs_timer_2_t t3448_value;
+    ogs_nas_5gs_additional_request_result_t additional_request_result;
+    ogs_nas_5gs_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming;
+    ogs_nas_5gs_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service;
 } ogs_nas_5gs_service_accept_t;
 
 
@@ -520,6 +658,17 @@ typedef struct ogs_nas_5gs_service_accept_s {
 #define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_PRESENT ((uint64_t)1<<20)
 #define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_5GS_REGISTRATION_RESULT_PRESENT ((uint64_t)1<<21)
 #define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_TRUNCATED_5G_S_TMSI_CONFIGURATION_PRESENT ((uint64_t)1<<22)
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_ADDITIONAL_CONFIGURATION_INDICATION_PRESENT ((uint64_t)1<<23)
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_EXTENDED_REJECTED_NSSAI_PRESENT ((uint64_t)1<<24)
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_SERVICE_LEVEL_AA_CONTAINER_PRESENT ((uint64_t)1<<25)
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NSSRG_INFORMATION_PRESENT ((uint64_t)1<<26)
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_DISASTER_ROAMING_WAIT_RANGE_PRESENT ((uint64_t)1<<27)
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_DISASTER_RETURN_WAIT_RANGE_PRESENT ((uint64_t)1<<28)
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION_PRESENT ((uint64_t)1<<29)
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_EXTENDED_CAG_INFORMATION_LIST_PRESENT ((uint64_t)1<<30)
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_UPDATED_PEIPS_ASSISTANCE_INFORMATION_PRESENT ((uint64_t)1<<31)
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NSAG_INFORMATION_PRESENT ((uint64_t)1<<32)
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_PRIORITY_INDICATOR_PRESENT ((uint64_t)1<<33)
 #define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_CONFIGURATION_UPDATE_INDICATION_TYPE 0xD0
 #define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_5G_GUTI_TYPE 0x77
 #define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_TAI_LIST_TYPE 0x54
@@ -540,9 +689,20 @@ typedef struct ogs_nas_5gs_service_accept_s {
 #define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_T3447_VALUE_TYPE 0x6C
 #define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_CAG_INFORMATION_LIST_TYPE 0x75
 #define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_UE_RADIO_CAPABILITY_ID_TYPE 0x67
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_TYPE 0x68
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_TYPE 0xA0
 #define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_5GS_REGISTRATION_RESULT_TYPE 0x44
 #define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_TRUNCATED_5G_S_TMSI_CONFIGURATION_TYPE 0x1B
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_ADDITIONAL_CONFIGURATION_INDICATION_TYPE 0xC0
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_EXTENDED_REJECTED_NSSAI_TYPE 0x68
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_SERVICE_LEVEL_AA_CONTAINER_TYPE 0x72
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NSSRG_INFORMATION_TYPE 0x70
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_DISASTER_ROAMING_WAIT_RANGE_TYPE 0x14
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_DISASTER_RETURN_WAIT_RANGE_TYPE 0x2C
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION_TYPE 0x13
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_EXTENDED_CAG_INFORMATION_LIST_TYPE 0x71
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_UPDATED_PEIPS_ASSISTANCE_INFORMATION_TYPE 0x1F
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NSAG_INFORMATION_TYPE 0x73
+#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_PRIORITY_INDICATOR_TYPE 0xE0
 
 typedef struct ogs_nas_5gs_configuration_update_command_s {
 
@@ -571,6 +731,17 @@ typedef struct ogs_nas_5gs_configuration_update_command_s {
     ogs_nas_ue_radio_capability_id_deletion_indication_t ue_radio_capability_id_deletion_indication;
     ogs_nas_5gs_registration_result_t registration_result;
     ogs_nas_truncated_5g_s_tmsi_configuration_t truncated_s_tmsi_configuration;
+    ogs_nas_additional_configuration_indication_t additional_configuration_indication;
+    ogs_nas_extended_rejected_nssai_t extended_rejected_nssai;
+    ogs_nas_service_level_aa_container_t service_level_aa_container;
+    ogs_nas_nssrg_information_t nssrg_information;
+    ogs_nas_registration_wait_range_t disaster_roaming_wait_range;
+    ogs_nas_registration_wait_range_t disaster_return_wait_range;
+    ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t list_of_plmns_to_be_used_in_disaster_condition;
+    ogs_nas_extended_cag_information_list_t extended_cag_information_list;
+    ogs_nas_peips_assistance_information_t updated_peips_assistance_information;
+    ogs_nas_nsag_information_t nsag_information;
+    ogs_nas_priority_indicator_t priority_indicator;
 } ogs_nas_5gs_configuration_update_command_t;
 
 
@@ -823,10 +994,12 @@ typedef struct ogs_nas_5gs_ul_nas_transport_s {
 #define OGS_NAS_5GS_DL_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT ((uint64_t)1<<1)
 #define OGS_NAS_5GS_DL_NAS_TRANSPORT_5GMM_CAUSE_PRESENT ((uint64_t)1<<2)
 #define OGS_NAS_5GS_DL_NAS_TRANSPORT_BACK_OFF_TIMER_VALUE_PRESENT ((uint64_t)1<<3)
+#define OGS_NAS_5GS_DL_NAS_TRANSPORT_LOWER_BOUND_TIMER_VALUE_PRESENT ((uint64_t)1<<4)
 #define OGS_NAS_5GS_DL_NAS_TRANSPORT_PDU_SESSION_ID_TYPE 0x12
 #define OGS_NAS_5GS_DL_NAS_TRANSPORT_ADDITIONAL_INFORMATION_TYPE 0x24
 #define OGS_NAS_5GS_DL_NAS_TRANSPORT_5GMM_CAUSE_TYPE 0x58
 #define OGS_NAS_5GS_DL_NAS_TRANSPORT_BACK_OFF_TIMER_VALUE_TYPE 0x37
+#define OGS_NAS_5GS_DL_NAS_TRANSPORT_LOWER_BOUND_TIMER_VALUE_TYPE 0x3A
 
 typedef struct ogs_nas_5gs_dl_nas_transport_s {
     /* Mandatory fields */
@@ -839,6 +1012,7 @@ typedef struct ogs_nas_5gs_dl_nas_transport_s {
     ogs_nas_additional_information_t additional_information;
     ogs_nas_5gmm_cause_t gmm_cause;
     ogs_nas_gprs_timer_3_t back_off_timer_value;
+    ogs_nas_gprs_timer_3_t lower_bound_timer_value;
 } ogs_nas_5gs_dl_nas_transport_t;
 
 
@@ -852,10 +1026,16 @@ typedef struct ogs_nas_5gs_dl_nas_transport_s {
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_ALWAYS_ON_PDU_SESSION_REQUESTED_PRESENT ((uint64_t)1<<4)
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_SM_PDU_DN_REQUEST_CONTAINER_PRESENT ((uint64_t)1<<5)
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT ((uint64_t)1<<6)
-#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_HEADER_COMPRESSION_CONFIGURATION_PRESENT ((uint64_t)1<<7)
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_IP_HEADER_COMPRESSION_CONFIGURATION_PRESENT ((uint64_t)1<<7)
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_DS_TT_ETHERNET_PORT_MAC_ADDRESS_PRESENT ((uint64_t)1<<8)
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_UE_DS_TT_RESIDENCE_TIME_PRESENT ((uint64_t)1<<9)
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_PORT_MANAGEMENT_INFORMATION_CONTAINER_PRESENT ((uint64_t)1<<10)
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_PRESENT ((uint64_t)1<<11)
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_SUGGESTED_INTERFACE_IDENTIFIER_PRESENT ((uint64_t)1<<12)
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_SERVICE_LEVEL_AA_CONTAINER_PRESENT ((uint64_t)1<<13)
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_REQUESTED_MBS_CONTAINER_PRESENT ((uint64_t)1<<14)
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_PDU_SESSION_PAIR_ID_PRESENT ((uint64_t)1<<15)
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_RSN_PRESENT ((uint64_t)1<<16)
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_PDU_SESSION_TYPE_TYPE 0x90
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_SSC_MODE_TYPE 0xA0
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_5GSM_CAPABILITY_TYPE 0x28
@@ -863,10 +1043,16 @@ typedef struct ogs_nas_5gs_dl_nas_transport_s {
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_ALWAYS_ON_PDU_SESSION_REQUESTED_TYPE 0xB0
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_SM_PDU_DN_REQUEST_CONTAINER_TYPE 0x39
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
-#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x66
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_IP_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x66
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_DS_TT_ETHERNET_PORT_MAC_ADDRESS_TYPE 0x6E
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_UE_DS_TT_RESIDENCE_TIME_TYPE 0x6F
-#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_PORT_MANAGEMENT_INFORMATION_CONTAINER_TYPE 0x7C
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_PORT_MANAGEMENT_INFORMATION_CONTAINER_TYPE 0x74
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x1F
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_SUGGESTED_INTERFACE_IDENTIFIER_TYPE 0x29
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_SERVICE_LEVEL_AA_CONTAINER_TYPE 0x72
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_REQUESTED_MBS_CONTAINER_TYPE 0x70
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_PDU_SESSION_PAIR_ID_TYPE 0x34
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_RSN_TYPE 0x35
 
 typedef struct ogs_nas_5gs_pdu_session_establishment_request_s {
     /* Mandatory fields */
@@ -881,10 +1067,16 @@ typedef struct ogs_nas_5gs_pdu_session_establishment_request_s {
     ogs_nas_always_on_pdu_session_requested_t always_on_pdu_session_requested;
     ogs_nas_sm_pdu_dn_request_container_t sm_pdu_dn_request_container;
     ogs_nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
-    ogs_nas_header_compression_configuration_t header_compression_configuration;
+    ogs_nas_ip_header_compression_configuration_t ip_header_compression_configuration;
     ogs_nas_ds_tt_ethernet_port_mac_address_t ds_tt_ethernet_port_mac_address;
     ogs_nas_ue_ds_tt_residence_time_t ue_ds_tt_residence_time;
     ogs_nas_port_management_information_container_t port_management_information_container;
+    ogs_nas_ethernet_header_compression_configuration_t ethernet_header_compression_configuration;
+    ogs_nas_pdu_address_t suggested_interface_identifier;
+    ogs_nas_service_level_aa_container_t service_level_aa_container;
+    ogs_nas_requested_mbs_container_t requested_mbs_container;
+    ogs_nas_pdu_session_pair_id_t pdu_session_pair_id;
+    ogs_nas_rsn_t rsn;
 } ogs_nas_5gs_pdu_session_establishment_request_t;
 
 
@@ -905,7 +1097,10 @@ typedef struct ogs_nas_5gs_pdu_session_establishment_request_s {
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_SERVING_PLMN_RATE_CONTROL_PRESENT ((uint64_t)1<<11)
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_ATSSS_CONTAINER_PRESENT ((uint64_t)1<<12)
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_CONTROL_PLANE_ONLY_INDICATION_PRESENT ((uint64_t)1<<13)
-#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_HEADER_COMPRESSION_CONFIGURATION_PRESENT ((uint64_t)1<<14)
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_IP_HEADER_COMPRESSION_CONFIGURATION_PRESENT ((uint64_t)1<<14)
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_PRESENT ((uint64_t)1<<15)
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_SERVICE_LEVEL_AA_CONTAINER_PRESENT ((uint64_t)1<<16)
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_RECEIVED_MBS_CONTAINER_PRESENT ((uint64_t)1<<17)
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_5GSM_CAUSE_TYPE 0x59
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_PDU_ADDRESS_TYPE 0x29
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_RQ_TIMER_VALUE_TYPE 0x56
@@ -920,7 +1115,10 @@ typedef struct ogs_nas_5gs_pdu_session_establishment_request_s {
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_SERVING_PLMN_RATE_CONTROL_TYPE 0x18
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_ATSSS_CONTAINER_TYPE 0x77
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_CONTROL_PLANE_ONLY_INDICATION_TYPE 0xC0
-#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x66
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_IP_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x66
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x1F
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_SERVICE_LEVEL_AA_CONTAINER_TYPE 0x72
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_RECEIVED_MBS_CONTAINER_TYPE 0x71
 
 typedef struct ogs_nas_5gs_pdu_session_establishment_accept_s {
     /* Mandatory fields */
@@ -944,7 +1142,10 @@ typedef struct ogs_nas_5gs_pdu_session_establishment_accept_s {
     ogs_nas_serving_plmn_rate_control_t serving_plmn_rate_control;
     ogs_nas_atsss_container_t atsss_container;
     ogs_nas_control_plane_only_indication_t control_plane_only_indication;
-    ogs_nas_header_compression_configuration_t header_compression_configuration;
+    ogs_nas_ip_header_compression_configuration_t ip_header_compression_configuration;
+    ogs_nas_ethernet_header_compression_configuration_t ethernet_header_compression_configuration;
+    ogs_nas_service_level_aa_container_t service_level_aa_container;
+    ogs_nas_received_mbs_container_t received_mbs_container;
 } ogs_nas_5gs_pdu_session_establishment_accept_t;
 
 
@@ -954,15 +1155,17 @@ typedef struct ogs_nas_5gs_pdu_session_establishment_accept_s {
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_BACK_OFF_TIMER_VALUE_PRESENT ((uint64_t)1<<0)
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_ALLOWED_SSC_MODE_PRESENT ((uint64_t)1<<1)
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_EAP_MESSAGE_PRESENT ((uint64_t)1<<2)
-#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT ((uint64_t)1<<3)
-#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_RE_ATTEMPT_INDICATOR_PRESENT ((uint64_t)1<<4)
-#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_PRESENT ((uint64_t)1<<5)
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_PRESENT ((uint64_t)1<<3)
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT ((uint64_t)1<<4)
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_RE_ATTEMPT_INDICATOR_PRESENT ((uint64_t)1<<5)
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_SERVICE_LEVEL_AA_CONTAINER_PRESENT ((uint64_t)1<<6)
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_BACK_OFF_TIMER_VALUE_TYPE 0x37
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_ALLOWED_SSC_MODE_TYPE 0xF0
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_EAP_MESSAGE_TYPE 0x78
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_TYPE 0x61
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 #define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_RE_ATTEMPT_INDICATOR_TYPE 0x1D
-#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_TYPE 0x61
+#define OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT_SERVICE_LEVEL_AA_CONTAINER_TYPE 0x72
 
 typedef struct ogs_nas_5gs_pdu_session_establishment_reject_s {
     /* Mandatory fields */
@@ -973,9 +1176,10 @@ typedef struct ogs_nas_5gs_pdu_session_establishment_reject_s {
     ogs_nas_gprs_timer_3_t back_off_timer_value;
     ogs_nas_allowed_ssc_mode_t allowed_ssc_mode;
     ogs_nas_eap_message_t eap_message;
+    ogs_nas_5gsm_congestion_re_attempt_indicator_t gsm_congestion_re_attempt_indicator;
     ogs_nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
     ogs_nas_re_attempt_indicator_t re_attempt_indicator;
-    ogs_nas_5gsm_congestion_re_attempt_indicator_t gsm_congestion_re_attempt_indicator;
+    ogs_nas_service_level_aa_container_t service_level_aa_container;
 } ogs_nas_5gs_pdu_session_establishment_reject_t;
 
 
@@ -1041,7 +1245,10 @@ typedef struct ogs_nas_5gs_pdu_session_authentication_result_s {
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_MAPPED_EPS_BEARER_CONTEXTS_PRESENT ((uint64_t)1<<7)
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT ((uint64_t)1<<8)
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_PORT_MANAGEMENT_INFORMATION_CONTAINER_PRESENT ((uint64_t)1<<9)
-#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_HEADER_COMPRESSION_CONFIGURATION_PRESENT ((uint64_t)1<<10)
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_IP_HEADER_COMPRESSION_CONFIGURATION_PRESENT ((uint64_t)1<<10)
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_PRESENT ((uint64_t)1<<11)
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_REQUESTED_MBS_CONTAINER_PRESENT ((uint64_t)1<<12)
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_SERVICE_LEVEL_AA_CONTAINER_PRESENT ((uint64_t)1<<13)
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_5GSM_CAPABILITY_TYPE 0x28
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_5GSM_CAUSE_TYPE 0x59
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_MAXIMUM_NUMBER_OF_SUPPORTED_PACKET_FILTERS_TYPE 0x55
@@ -1051,8 +1258,11 @@ typedef struct ogs_nas_5gs_pdu_session_authentication_result_s {
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_REQUESTED_QOS_FLOW_DESCRIPTIONS_TYPE 0x79
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_MAPPED_EPS_BEARER_CONTEXTS_TYPE 0x75
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
-#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_PORT_MANAGEMENT_INFORMATION_CONTAINER_TYPE 0x7C
-#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x66
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_PORT_MANAGEMENT_INFORMATION_CONTAINER_TYPE 0x74
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_IP_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x66
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x1F
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_REQUESTED_MBS_CONTAINER_TYPE 0x70
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST_SERVICE_LEVEL_AA_CONTAINER_TYPE 0x72
 
 typedef struct ogs_nas_5gs_pdu_session_modification_request_s {
 
@@ -1068,7 +1278,10 @@ typedef struct ogs_nas_5gs_pdu_session_modification_request_s {
     ogs_nas_mapped_eps_bearer_contexts_t mapped_eps_bearer_contexts;
     ogs_nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
     ogs_nas_port_management_information_container_t port_management_information_container;
-    ogs_nas_header_compression_configuration_t header_compression_configuration;
+    ogs_nas_header_compression_configuration_t ip_header_compression_configuration;
+    ogs_nas_ethernet_header_compression_configuration_t ethernet_header_compression_configuration;
+    ogs_nas_requested_mbs_container_t requested_mbs_container;
+    ogs_nas_service_level_aa_container_t service_level_aa_container;
 } ogs_nas_5gs_pdu_session_modification_request_t;
 
 
@@ -1076,13 +1289,13 @@ typedef struct ogs_nas_5gs_pdu_session_modification_request_s {
  * PDU SESSION MODIFICATION REJECT
  ******************************************************/
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_BACK_OFF_TIMER_VALUE_PRESENT ((uint64_t)1<<0)
-#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT ((uint64_t)1<<1)
-#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_RE_ATTEMPT_INDICATOR_PRESENT ((uint64_t)1<<2)
-#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_PRESENT ((uint64_t)1<<3)
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_PRESENT ((uint64_t)1<<1)
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT ((uint64_t)1<<2)
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_RE_ATTEMPT_INDICATOR_PRESENT ((uint64_t)1<<3)
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_BACK_OFF_TIMER_VALUE_TYPE 0x37
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_TYPE 0x61
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_RE_ATTEMPT_INDICATOR_TYPE 0x1D
-#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REJECT_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_TYPE 0x61
 
 typedef struct ogs_nas_5gs_pdu_session_modification_reject_s {
     /* Mandatory fields */
@@ -1091,9 +1304,9 @@ typedef struct ogs_nas_5gs_pdu_session_modification_reject_s {
     /* Optional fields */
     uint64_t presencemask;
     ogs_nas_gprs_timer_3_t back_off_timer_value;
+    ogs_nas_5gsm_congestion_re_attempt_indicator_t gsm_congestion_re_attempt_indicator;
     ogs_nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
     ogs_nas_re_attempt_indicator_t re_attempt_indicator;
-    ogs_nas_5gsm_congestion_re_attempt_indicator_t gsm_congestion_re_attempt_indicator;
 } ogs_nas_5gs_pdu_session_modification_reject_t;
 
 
@@ -1109,9 +1322,12 @@ typedef struct ogs_nas_5gs_pdu_session_modification_reject_s {
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT ((uint64_t)1<<6)
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT ((uint64_t)1<<7)
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_ATSSS_CONTAINER_PRESENT ((uint64_t)1<<8)
-#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_HEADER_COMPRESSION_CONFIGURATION_PRESENT ((uint64_t)1<<9)
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_IP_HEADER_COMPRESSION_CONFIGURATION_PRESENT ((uint64_t)1<<9)
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_PORT_MANAGEMENT_INFORMATION_CONTAINER_PRESENT ((uint64_t)1<<10)
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_SERVING_PLMN_RATE_CONTROL_PRESENT ((uint64_t)1<<11)
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_PRESENT ((uint64_t)1<<12)
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_RECEIVED_MBS_CONTAINER_PRESENT ((uint64_t)1<<13)
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_SERVICE_LEVEL_AA_CONTAINER_PRESENT ((uint64_t)1<<14)
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_5GSM_CAUSE_TYPE 0x59
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_SESSION_AMBR_TYPE 0x2A
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_RQ_TIMER_VALUE_TYPE 0x56
@@ -1121,9 +1337,12 @@ typedef struct ogs_nas_5gs_pdu_session_modification_reject_s {
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_TYPE 0x79
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_ATSSS_CONTAINER_TYPE 0x77
-#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x66
-#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_PORT_MANAGEMENT_INFORMATION_CONTAINER_TYPE 0x7C
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_IP_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x66
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_PORT_MANAGEMENT_INFORMATION_CONTAINER_TYPE 0x74
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_SERVING_PLMN_RATE_CONTROL_TYPE 0x1E
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_ETHERNET_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x1F
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_RECEIVED_MBS_CONTAINER_TYPE 0x71
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_SERVICE_LEVEL_AA_CONTAINER_TYPE 0x72
 
 typedef struct ogs_nas_5gs_pdu_session_modification_command_s {
 
@@ -1138,9 +1357,12 @@ typedef struct ogs_nas_5gs_pdu_session_modification_command_s {
     ogs_nas_qos_flow_descriptions_t authorized_qos_flow_descriptions;
     ogs_nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
     ogs_nas_atsss_container_t atsss_container;
-    ogs_nas_header_compression_configuration_t header_compression_configuration;
+    ogs_nas_ip_header_compression_configuration_t ip_header_compression_configuration;
     ogs_nas_port_management_information_container_t port_management_information_container;
     ogs_nas_serving_plmn_rate_control_t serving_plmn_rate_control;
+    ogs_nas_ethernet_header_compression_configuration_t ethernet_header_compression_configuration;
+    ogs_nas_received_mbs_container_t received_mbs_container;
+    ogs_nas_service_level_aa_container_t service_level_aa_container;
 } ogs_nas_5gs_pdu_session_modification_command_t;
 
 
@@ -1150,7 +1372,7 @@ typedef struct ogs_nas_5gs_pdu_session_modification_command_s {
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT ((uint64_t)1<<0)
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE_PORT_MANAGEMENT_INFORMATION_CONTAINER_PRESENT ((uint64_t)1<<1)
 #define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
-#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE_PORT_MANAGEMENT_INFORMATION_CONTAINER_TYPE 0x7C
+#define OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE_PORT_MANAGEMENT_INFORMATION_CONTAINER_TYPE 0x74
 
 typedef struct ogs_nas_5gs_pdu_session_modification_complete_s {
 
@@ -1218,11 +1440,13 @@ typedef struct ogs_nas_5gs_pdu_session_release_reject_s {
 #define OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_PRESENT ((uint64_t)1<<2)
 #define OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT ((uint64_t)1<<3)
 #define OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND_ACCESS_TYPE_PRESENT ((uint64_t)1<<4)
+#define OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND_SERVICE_LEVEL_AA_CONTAINER_PRESENT ((uint64_t)1<<5)
 #define OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND_BACK_OFF_TIMER_VALUE_TYPE 0x37
 #define OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND_EAP_MESSAGE_TYPE 0x78
 #define OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND_5GSM_CONGESTION_RE_ATTEMPT_INDICATOR_TYPE 0x61
 #define OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 #define OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND_ACCESS_TYPE_TYPE 0xD0
+#define OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND_SERVICE_LEVEL_AA_CONTAINER_TYPE 0x72
 
 typedef struct ogs_nas_5gs_pdu_session_release_command_s {
     /* Mandatory fields */
@@ -1235,6 +1459,7 @@ typedef struct ogs_nas_5gs_pdu_session_release_command_s {
     ogs_nas_5gsm_congestion_re_attempt_indicator_t gsm_congestion_re_attempt_indicator;
     ogs_nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
     ogs_nas_access_type_t access_type;
+    ogs_nas_service_level_aa_container_t service_level_aa_container;
 } ogs_nas_5gs_pdu_session_release_command_t;
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,7 +28,7 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         ogs_sbi_nf_instance_t *nf_instance,
         const char *service_name,
         ogs_sbi_discovery_option_t *discovery_option,
-        uint64_t supported_features);
+        bool service_map);
 void ogs_nnrf_nfm_free_nf_profile(OpenAPI_nf_profile_t *NFProfile);
 
 ogs_sbi_request_t *ogs_nnrf_nfm_build_register(void);
@@ -36,6 +36,8 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void);
 ogs_sbi_request_t *ogs_nnrf_nfm_build_de_register(void);
 
 ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
+        ogs_sbi_subscription_data_t *subscription_data);
+ogs_sbi_request_t *ogs_nnrf_nfm_build_status_update(
         ogs_sbi_subscription_data_t *subscription_data);
 ogs_sbi_request_t *ogs_nnrf_nfm_build_status_unsubscribe(
         ogs_sbi_subscription_data_t *subscription_data);

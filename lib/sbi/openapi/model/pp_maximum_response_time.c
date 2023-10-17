@@ -26,19 +26,30 @@ OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_create(
 
 void OpenAPI_pp_maximum_response_time_free(OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == pp_maximum_response_time) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(pp_maximum_response_time->af_instance_id);
-    ogs_free(pp_maximum_response_time->validity_time);
-    ogs_free(pp_maximum_response_time->mtc_provider_information);
+    if (pp_maximum_response_time->af_instance_id) {
+        ogs_free(pp_maximum_response_time->af_instance_id);
+        pp_maximum_response_time->af_instance_id = NULL;
+    }
+    if (pp_maximum_response_time->validity_time) {
+        ogs_free(pp_maximum_response_time->validity_time);
+        pp_maximum_response_time->validity_time = NULL;
+    }
+    if (pp_maximum_response_time->mtc_provider_information) {
+        ogs_free(pp_maximum_response_time->mtc_provider_information);
+        pp_maximum_response_time->mtc_provider_information = NULL;
+    }
     ogs_free(pp_maximum_response_time);
 }
 
 cJSON *OpenAPI_pp_maximum_response_time_convertToJSON(OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (pp_maximum_response_time == NULL) {
         ogs_error("OpenAPI_pp_maximum_response_time_convertToJSON() failed [PpMaximumResponseTime]");
@@ -51,6 +62,10 @@ cJSON *OpenAPI_pp_maximum_response_time_convertToJSON(OpenAPI_pp_maximum_respons
         goto end;
     }
 
+    if (!pp_maximum_response_time->af_instance_id) {
+        ogs_error("OpenAPI_pp_maximum_response_time_convertToJSON() failed [af_instance_id]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "afInstanceId", pp_maximum_response_time->af_instance_id) == NULL) {
         ogs_error("OpenAPI_pp_maximum_response_time_convertToJSON() failed [af_instance_id]");
         goto end;
@@ -82,52 +97,53 @@ end:
 OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_parseFromJSON(cJSON *pp_maximum_response_timeJSON)
 {
     OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time_local_var = NULL;
-    cJSON *maximum_response_time = cJSON_GetObjectItemCaseSensitive(pp_maximum_response_timeJSON, "maximumResponseTime");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *maximum_response_time = NULL;
+    cJSON *af_instance_id = NULL;
+    cJSON *reference_id = NULL;
+    cJSON *validity_time = NULL;
+    cJSON *mtc_provider_information = NULL;
+    maximum_response_time = cJSON_GetObjectItemCaseSensitive(pp_maximum_response_timeJSON, "maximumResponseTime");
     if (!maximum_response_time) {
         ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [maximum_response_time]");
         goto end;
     }
-
     if (!cJSON_IsNumber(maximum_response_time)) {
         ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [maximum_response_time]");
         goto end;
     }
 
-    cJSON *af_instance_id = cJSON_GetObjectItemCaseSensitive(pp_maximum_response_timeJSON, "afInstanceId");
+    af_instance_id = cJSON_GetObjectItemCaseSensitive(pp_maximum_response_timeJSON, "afInstanceId");
     if (!af_instance_id) {
         ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [af_instance_id]");
         goto end;
     }
-
     if (!cJSON_IsString(af_instance_id)) {
         ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [af_instance_id]");
         goto end;
     }
 
-    cJSON *reference_id = cJSON_GetObjectItemCaseSensitive(pp_maximum_response_timeJSON, "referenceId");
+    reference_id = cJSON_GetObjectItemCaseSensitive(pp_maximum_response_timeJSON, "referenceId");
     if (!reference_id) {
         ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [reference_id]");
         goto end;
     }
-
     if (!cJSON_IsNumber(reference_id)) {
         ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [reference_id]");
         goto end;
     }
 
-    cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(pp_maximum_response_timeJSON, "validityTime");
-
+    validity_time = cJSON_GetObjectItemCaseSensitive(pp_maximum_response_timeJSON, "validityTime");
     if (validity_time) {
-    if (!cJSON_IsString(validity_time)) {
+    if (!cJSON_IsString(validity_time) && !cJSON_IsNull(validity_time)) {
         ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [validity_time]");
         goto end;
     }
     }
 
-    cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(pp_maximum_response_timeJSON, "mtcProviderInformation");
-
+    mtc_provider_information = cJSON_GetObjectItemCaseSensitive(pp_maximum_response_timeJSON, "mtcProviderInformation");
     if (mtc_provider_information) {
-    if (!cJSON_IsString(mtc_provider_information)) {
+    if (!cJSON_IsString(mtc_provider_information) && !cJSON_IsNull(mtc_provider_information)) {
         ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [mtc_provider_information]");
         goto end;
     }
@@ -139,8 +155,8 @@ OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_parseFromJS
         ogs_strdup(af_instance_id->valuestring),
         
         reference_id->valuedouble,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
-        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
+        validity_time && !cJSON_IsNull(validity_time) ? ogs_strdup(validity_time->valuestring) : NULL,
+        mtc_provider_information && !cJSON_IsNull(mtc_provider_information) ? ogs_strdup(mtc_provider_information->valuestring) : NULL
     );
 
     return pp_maximum_response_time_local_var;

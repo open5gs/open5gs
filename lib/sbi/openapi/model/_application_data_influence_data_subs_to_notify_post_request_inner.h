@@ -1,0 +1,42 @@
+/*
+ * _application_data_influence_data_subs_to_notify_post_request_inner.h
+ *
+ * 
+ */
+
+#ifndef _OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_H_
+#define _OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_H_
+
+#include <string.h>
+#include "../external/cJSON.h"
+#include "../include/list.h"
+#include "../include/keyValuePair.h"
+#include "../include/binary.h"
+#include "traffic_influ_data.h"
+#include "traffic_influ_data_notif.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_s OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_t;
+typedef struct OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_s {
+    char *res_uri;
+    struct OpenAPI_traffic_influ_data_s *traffic_influ_data;
+} OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_t;
+
+OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_t *OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_create(
+    char *res_uri,
+    OpenAPI_traffic_influ_data_t *traffic_influ_data
+);
+void OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_free(OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_t *_application_data_influence_data_subs_to_notify_post_request_inner);
+OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_t *OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_parseFromJSON(cJSON *_application_data_influence_data_subs_to_notify_post_request_innerJSON);
+cJSON *OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_convertToJSON(OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_t *_application_data_influence_data_subs_to_notify_post_request_inner);
+OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_t *OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_copy(OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_t *dst, OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_t *src);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _OpenAPI__application_data_influence_data_subs_to_notify_post_request_inner_H_ */
+

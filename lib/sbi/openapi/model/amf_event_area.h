@@ -1,7 +1,7 @@
 /*
  * amf_event_area.h
  *
- * 
+ * Represents an area to be monitored by an AMF event
  */
 
 #ifndef _OpenAPI_amf_event_area_H_

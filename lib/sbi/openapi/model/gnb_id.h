@@ -1,7 +1,7 @@
 /*
  * gnb_id.h
  *
- * 
+ * Provides the G-NB identifier.
  */
 
 #ifndef _OpenAPI_gnb_id_H_

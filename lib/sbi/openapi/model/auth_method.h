@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_auth_method_NULL = 0, OpenAPI_auth_method_5G_AKA, OpenAPI_auth_method_EAP_AKA_PRIME, OpenAPI_auth_method_EAP_TLS } OpenAPI_auth_method_e;
+typedef enum { OpenAPI_auth_method_NULL = 0, OpenAPI_auth_method_5G_AKA, OpenAPI_auth_method_EAP_AKA_PRIME, OpenAPI_auth_method_EAP_TLS, OpenAPI_auth_method_EAP_TTLS, OpenAPI_auth_method_NONE } OpenAPI_auth_method_e;
 
 char* OpenAPI_auth_method_ToString(OpenAPI_auth_method_e auth_method);
 

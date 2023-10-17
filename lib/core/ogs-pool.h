@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-typedef unsigned int ogs_index_t;
+typedef uint32_t ogs_pool_id_t;
 
 #define OGS_POOL(pool, type) \
     struct { \
@@ -38,6 +38,10 @@ typedef unsigned int ogs_index_t;
         type **free, *array, **index; \
     } pool
 
+/*
+ * ogs_pool_init() shall be used in the initialization routine.
+ * Otherwise, memory will be fragment since this function uses system malloc()
+ */
 #define ogs_pool_init(pool, _size) do { \
     int i; \
     (pool)->name = #pool; \
@@ -55,6 +59,10 @@ typedef unsigned int ogs_index_t;
     } \
 } while (0)
 
+/*
+ * ogs_pool_final() shall be used in the finalization routine.
+ * Otherwise, memory will be fragment since this function uses system free()
+ */
 #define ogs_pool_final(pool) do { \
     if (((pool)->size != (pool)->avail)) \
         ogs_error("%d in '%s[%d]' were not released.", \
@@ -62,6 +70,44 @@ typedef unsigned int ogs_index_t;
     free((pool)->free); \
     free((pool)->array); \
     free((pool)->index); \
+} while (0)
+
+/*
+ * COMPARED WITH ogs_pool_init()
+ *
+ * ogs_pool_create() could be called while the process is running,
+ * so this function should use ogs_malloc() instead of system malloc()
+ */
+#define ogs_pool_create(pool, _size) do { \
+    int i; \
+    (pool)->name = #pool; \
+    (pool)->free = ogs_malloc(sizeof(*(pool)->free) * _size); \
+    ogs_assert((pool)->free); \
+    (pool)->array = ogs_malloc(sizeof(*(pool)->array) * _size); \
+    ogs_assert((pool)->array); \
+    (pool)->index = ogs_malloc(sizeof(*(pool)->index) * _size); \
+    ogs_assert((pool)->index); \
+    (pool)->size = (pool)->avail = _size; \
+    (pool)->head = (pool)->tail = 0; \
+    for (i = 0; i < _size; i++) { \
+        (pool)->free[i] = &((pool)->array[i]); \
+        (pool)->index[i] = NULL; \
+    } \
+} while (0)
+
+/*
+ * COMPARED WITH ogs_pool_final()
+ *
+ * ogs_pool_destroy() could be called while the process is running,
+ * so this function should use ogs_free() instead of system free()
+ */
+#define ogs_pool_destroy(pool) do { \
+    if (((pool)->size != (pool)->avail)) \
+        ogs_error("%d in '%s[%d]' were not released.", \
+                (pool)->size - (pool)->avail, (pool)->name, (pool)->size); \
+    ogs_free((pool)->free); \
+    ogs_free((pool)->array); \
+    ogs_free((pool)->index); \
 } while (0)
 
 #define ogs_pool_index(pool, node) (((node) - (pool)->array)+1)
@@ -93,30 +139,23 @@ typedef unsigned int ogs_index_t;
 #define ogs_pool_size(pool) ((pool)->size)
 #define ogs_pool_avail(pool) ((pool)->avail)
 
-#define ogs_index_init(pool, _size) do { \
+#define ogs_pool_sequence_id_generate(pool) do { \
     int i; \
-    (pool)->name = #pool; \
-    (pool)->free = ogs_malloc(sizeof(*(pool)->free) * _size); \
-    ogs_assert((pool)->free); \
-    (pool)->array = ogs_malloc(sizeof(*(pool)->array) * _size); \
-    ogs_assert((pool)->array); \
-    (pool)->index = ogs_malloc(sizeof(*(pool)->index) * _size); \
-    ogs_assert((pool)->index); \
-    (pool)->size = (pool)->avail = _size; \
-    (pool)->head = (pool)->tail = 0; \
-    for (i = 0; i < _size; i++) { \
-        (pool)->free[i] = &((pool)->array[i]); \
-        (pool)->index[i] = NULL; \
-    } \
+    for (i = 0; i < (pool)->size; i++) \
+        (pool)->array[i] = i+1; \
 } while (0)
 
-#define ogs_index_final(pool) do { \
-    if (((pool)->size != (pool)->avail)) \
-        ogs_error("%d in '%s[%d]' were not released.", \
-                (pool)->size - (pool)->avail, (pool)->name, (pool)->size); \
-    ogs_free((pool)->free); \
-    ogs_free((pool)->array); \
-    ogs_free((pool)->index); \
+#define ogs_pool_random_id_generate(pool) do { \
+    int i, j; \
+    ogs_pool_id_t temp; \
+    for (i = 0; i < (pool)->size; i++) \
+        (pool)->array[i] = i+1; \
+    for (i = (pool)->size - 1; i > 0; i--) { \
+       j = ogs_random32() % (i + 1); \
+       temp = (pool)->array[i]; \
+       (pool)->array[i] = (pool)->array[j]; \
+       (pool)->array[j] = temp; \
+    } \
 } while (0)
 
 #ifdef __cplusplus

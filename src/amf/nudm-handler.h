@@ -27,7 +27,7 @@ extern "C" {
 #include "context.h"
 
 int amf_nudm_sdm_handle_provisioned(
-        amf_ue_t *amf_ue, ogs_sbi_message_t *recvmsg);
+        amf_ue_t *amf_ue, int state, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }

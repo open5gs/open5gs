@@ -1,7 +1,7 @@
 /*
  * nssaa_status.h
  *
- * 
+ * contains the Subscribed S-NSSAI subject to NSSAA procedure and the status.
  */
 
 #ifndef _OpenAPI_nssaa_status_H_

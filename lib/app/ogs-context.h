@@ -28,6 +28,12 @@
 extern "C" {
 #endif
 
+typedef enum {
+    OGS_SBI_TLS_ENABLED_AUTO = 0,
+    OGS_SBI_TLS_ENABLED_YES,
+    OGS_SBI_TLS_ENABLED_NO,
+} ogs_sbi_tls_enabled_mode_e;
+
 typedef struct ogs_app_context_s {
     const char *version;
 
@@ -171,6 +177,17 @@ typedef struct ogs_app_context_s {
     struct metrics {
         uint64_t max_specs;
     } metrics;
+
+    struct {
+        struct {
+            bool no_tls;
+            bool no_verify;
+            const char *cacert;
+            const char *cert;
+            const char *key;
+        } server, client;
+    } sbi;
+
 } ogs_app_context_t;
 
 int ogs_app_context_init(void);

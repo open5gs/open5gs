@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -35,7 +35,7 @@ typedef struct ogs_pfcp_xact_s {
     ogs_lnode_t     lnode;          /**< A node of list */
     ogs_lnode_t     tmpnode;        /**< A node of temp-list */
 
-    ogs_index_t     index;
+    ogs_pool_id_t   index;
 
 #define OGS_PFCP_LOCAL_ORIGINATOR  0
 #define OGS_PFCP_REMOTE_ORIGINATOR 1
@@ -78,6 +78,9 @@ typedef struct ogs_pfcp_xact_s {
 
     bool            epc;            /**< EPC or 5GC */
 
+#define OGS_PFCP_CREATE_RESTORATION_INDICATION ((uint64_t)1<<0)
+    uint64_t        create_flags;
+
 #define OGS_PFCP_MODIFY_SESSION ((uint64_t)1<<0)
 #define OGS_PFCP_MODIFY_DL_ONLY ((uint64_t)1<<1)
 #define OGS_PFCP_MODIFY_UL_ONLY ((uint64_t)1<<2)
@@ -110,7 +113,6 @@ typedef struct ogs_pfcp_xact_s {
 #define OGS_PFCP_MODIFY_URR_TIME_QUOTA ((uint64_t)1<<29)
 #define OGS_PFCP_MODIFY_URR_VOLUME_THRESH ((uint64_t)1<<30)
 #define OGS_PFCP_MODIFY_URR_TIME_THRESH ((uint64_t)1<<31)
-
     uint64_t        modify_flags;
 
 #define OGS_PFCP_DELETE_TRIGGER_LOCAL_INITIATED 1
@@ -139,6 +141,8 @@ int ogs_pfcp_xact_update_tx(ogs_pfcp_xact_t *xact,
 
 int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact);
 void ogs_pfcp_xact_delayed_commit(ogs_pfcp_xact_t *xact, ogs_time_t duration);
+
+int ogs_pfcp_xact_delete(ogs_pfcp_xact_t *xact);
 
 int ogs_pfcp_xact_receive(ogs_pfcp_node_t *node,
         ogs_pfcp_header_t *h, ogs_pfcp_xact_t **xact);

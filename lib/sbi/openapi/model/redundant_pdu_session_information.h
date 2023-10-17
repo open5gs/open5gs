@@ -21,10 +21,14 @@ extern "C" {
 typedef struct OpenAPI_redundant_pdu_session_information_s OpenAPI_redundant_pdu_session_information_t;
 typedef struct OpenAPI_redundant_pdu_session_information_s {
     OpenAPI_rsn_e rsn;
+    bool is_pdu_session_pair_id;
+    int pdu_session_pair_id;
 } OpenAPI_redundant_pdu_session_information_t;
 
 OpenAPI_redundant_pdu_session_information_t *OpenAPI_redundant_pdu_session_information_create(
-    OpenAPI_rsn_e rsn
+    OpenAPI_rsn_e rsn,
+    bool is_pdu_session_pair_id,
+    int pdu_session_pair_id
 );
 void OpenAPI_redundant_pdu_session_information_free(OpenAPI_redundant_pdu_session_information_t *redundant_pdu_session_information);
 OpenAPI_redundant_pdu_session_information_t *OpenAPI_redundant_pdu_session_information_parseFromJSON(cJSON *redundant_pdu_session_informationJSON);

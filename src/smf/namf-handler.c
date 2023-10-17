@@ -106,6 +106,7 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
 
     case SMF_NETWORK_REQUESTED_PDU_SESSION_RELEASE:
     case SMF_ERROR_INDICATON_RECEIVED_FROM_5G_AN:
+
         N1N2MessageTransferRspData = recvmsg->N1N2MessageTransferRspData;
         if (!N1N2MessageTransferRspData) {
             ogs_error("No N1N2MessageTransferRspData [status:%d]",
@@ -113,7 +114,37 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
             break;
         }
 
-        if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
+        if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_ACCEPTED) {
+    /*
+     * OpenAPI_n1_n2_message_transfer_cause_ATTEMPTING_TO_REACH_UE and
+     * HTTP_STATUS_ACCEPTED should be handled here when removing PDU session
+     * due to the change of PDU Session Anchor.
+     *
+     * TS23.502
+     * 4.3.4 PDU Session Release
+     * 4.3.4.2 UE or network requested PDU Session Release for Non-Roaming
+     * and Roaming with Local Breakout
+     *
+     * 3b. ...
+     *
+     * The "skip indicator" tells the AMF whether it may skip sending
+     * the N1 SM container to the UE (e.g. when the UE is in CM-IDLE state).
+     * SMF includes the "skip indicator"
+     * in the Namf_Communication_N1N2MessageTransfer
+     * except when the procedure is triggered to change PDU Session Anchor
+     * of a PDU Session with SSC mode 2.
+     *
+     * Related Issue #2396
+     */
+            if (N1N2MessageTransferRspData->cause ==
+                OpenAPI_n1_n2_message_transfer_cause_ATTEMPTING_TO_REACH_UE) {
+                /* Nothing */
+            } else {
+                ogs_error("Not implemented [cause:%d]",
+                        N1N2MessageTransferRspData->cause);
+                ogs_assert_if_reached();
+            }
+        } else if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
             if (N1N2MessageTransferRspData->cause ==
                 OpenAPI_n1_n2_message_transfer_cause_N1_MSG_NOT_TRANSFERRED) {
                 smf_n1_n2_message_transfer_param_t param;

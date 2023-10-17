@@ -1,7 +1,7 @@
 /*
  * sm_context_update_error.h
  *
- * 
+ * Error within Update SM Context Response
  */
 
 #ifndef _OpenAPI_sm_context_update_error_H_

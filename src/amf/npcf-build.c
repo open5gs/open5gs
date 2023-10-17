@@ -38,6 +38,7 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
 
     ogs_assert(amf_ue);
     ogs_assert(amf_ue->supi);
+    ogs_assert(ran_ue_cycle(amf_ue->ran_ue));
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
@@ -47,6 +48,8 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
     message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_POLICIES;
 
     memset(&PolicyAssociationRequest, 0, sizeof(PolicyAssociationRequest));
+    memset(&ueLocation, 0, sizeof(ueLocation));
+    memset(&UeAmbr, 0, sizeof(UeAmbr));
 
     server = ogs_list_first(&ogs_sbi_self()->server_list);
     if (!server) {
@@ -83,7 +86,6 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
     PolicyAssociationRequest.access_type = amf_ue->nas.access_type; 
     PolicyAssociationRequest.pei = amf_ue->pei;
 
-    memset(&ueLocation, 0, sizeof(ueLocation));
     ueLocation.nr_location = ogs_sbi_build_nr_location(
             &amf_ue->nr_tai, &amf_ue->nr_cgi);
     if (!ueLocation.nr_location) {
@@ -114,7 +116,6 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
 
     PolicyAssociationRequest.rat_type = amf_ue_rat_type(amf_ue);
 
-    memset(&UeAmbr, 0, sizeof(UeAmbr));
     if (OGS_SBI_FEATURES_IS_SET(amf_ue->am_policy_control_features,
                 OGS_SBI_NPCF_AM_POLICY_CONTROL_UE_AMBR_AUTHORIZATION)) {
         if (amf_ue->ue_ambr.uplink) {

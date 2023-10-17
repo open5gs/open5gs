@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -49,15 +49,10 @@ static void test1_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0x37;
-    mobile_identity_suci.scheme_output[1] = 0x46;
-    mobile_identity_suci.scheme_output[2] = 0;
-    mobile_identity_suci.scheme_output[3] = 0;
-    mobile_identity_suci.scheme_output[4] = 0x06;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "3746000006");
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf0;
@@ -154,7 +149,7 @@ static void test1_func(abts_case *tc, void *data)
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send ESM Information Response */
-    sess->esm_information_param.pco = 1;
+    sess->esm_information_param.epco = 1;
     esmbuf = testesm_build_esm_information_response(sess);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);

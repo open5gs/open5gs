@@ -39,6 +39,7 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
     ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_message_t *message = NULL;
+    int r;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -83,6 +84,22 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 END
                 break;
 
+            CASE(OGS_SBI_HTTP_METHOD_PUT)
+                SWITCH(message->h.resource.component[1])
+                CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
+                    udm_nudm_ueau_handle_result_confirmation_inform(
+                            udm_ue, stream, message);
+                    break;
+                DEFAULT
+                    ogs_error("[%s] Invalid resource name [%s]",
+                            udm_ue->suci, message->h.resource.component[1]);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, message,
+                            "Invalid resource name", message->h.method));
+                END
+                break;
+
             DEFAULT
                 ogs_error("[%s] Invalid HTTP method [%s]",
                         udm_ue->suci, message->h.method);
@@ -98,7 +115,8 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
             CASE(OGS_SBI_HTTP_METHOD_PUT)
                 SWITCH(message->h.resource.component[1])
                 CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
-                    udm_nudm_uecm_handle_registration(udm_ue, stream, message);
+                    udm_nudm_uecm_handle_amf_registration(
+                            udm_ue, stream, message);
                     break;
 
                 DEFAULT
@@ -113,7 +131,8 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
             CASE(OGS_SBI_HTTP_METHOD_PATCH)
                 SWITCH(message->h.resource.component[1])
                 CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
-                    udm_nudm_uecm_handle_registration_update(udm_ue, stream, message);
+                    udm_nudm_uecm_handle_amf_registration_update(
+                            udm_ue, stream, message);
                     break;
 
                 DEFAULT
@@ -142,11 +161,12 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
                 CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
                 CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
-                    ogs_assert(true ==
-                        udm_sbi_discover_and_send(
+                    r = udm_ue_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
                             udm_nudr_dr_build_query_subscription_provisioned,
-                            udm_ue, stream, message));
+                            udm_ue, stream, message);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
                     break;
 
                 CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
@@ -168,6 +188,23 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 SWITCH(message->h.resource.component[1])
                 CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
                     udm_nudm_sdm_handle_subscription_create(
+                            udm_ue, stream, message);
+                    break;
+
+                DEFAULT
+                    ogs_error("[%s] Invalid resource name [%s]",
+                            udm_ue->suci, message->h.resource.component[1]);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, message,
+                            "Invalid resource name", message->h.method));
+                END
+                break;
+
+            CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                SWITCH(message->h.resource.component[1])
+                CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
+                    udm_nudm_sdm_handle_subscription_delete(
                             udm_ue, stream, message);
                     break;
 

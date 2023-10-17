@@ -20,17 +20,22 @@ OpenAPI_key_amf_t *OpenAPI_key_amf_create(
 
 void OpenAPI_key_amf_free(OpenAPI_key_amf_t *key_amf)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == key_amf) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(key_amf->key_val);
+    if (key_amf->key_val) {
+        ogs_free(key_amf->key_val);
+        key_amf->key_val = NULL;
+    }
     ogs_free(key_amf);
 }
 
 cJSON *OpenAPI_key_amf_convertToJSON(OpenAPI_key_amf_t *key_amf)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (key_amf == NULL) {
         ogs_error("OpenAPI_key_amf_convertToJSON() failed [KeyAmf]");
@@ -38,11 +43,19 @@ cJSON *OpenAPI_key_amf_convertToJSON(OpenAPI_key_amf_t *key_amf)
     }
 
     item = cJSON_CreateObject();
+    if (key_amf->key_type == OpenAPI_key_amf_type_NULL) {
+        ogs_error("OpenAPI_key_amf_convertToJSON() failed [key_type]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "keyType", OpenAPI_key_amf_type_ToString(key_amf->key_type)) == NULL) {
         ogs_error("OpenAPI_key_amf_convertToJSON() failed [key_type]");
         goto end;
     }
 
+    if (!key_amf->key_val) {
+        ogs_error("OpenAPI_key_amf_convertToJSON() failed [key_val]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "keyVal", key_amf->key_val) == NULL) {
         ogs_error("OpenAPI_key_amf_convertToJSON() failed [key_val]");
         goto end;
@@ -55,25 +68,26 @@ end:
 OpenAPI_key_amf_t *OpenAPI_key_amf_parseFromJSON(cJSON *key_amfJSON)
 {
     OpenAPI_key_amf_t *key_amf_local_var = NULL;
-    cJSON *key_type = cJSON_GetObjectItemCaseSensitive(key_amfJSON, "keyType");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *key_type = NULL;
+    OpenAPI_key_amf_type_e key_typeVariable = 0;
+    cJSON *key_val = NULL;
+    key_type = cJSON_GetObjectItemCaseSensitive(key_amfJSON, "keyType");
     if (!key_type) {
         ogs_error("OpenAPI_key_amf_parseFromJSON() failed [key_type]");
         goto end;
     }
-
-    OpenAPI_key_amf_type_e key_typeVariable;
     if (!cJSON_IsString(key_type)) {
         ogs_error("OpenAPI_key_amf_parseFromJSON() failed [key_type]");
         goto end;
     }
     key_typeVariable = OpenAPI_key_amf_type_FromString(key_type->valuestring);
 
-    cJSON *key_val = cJSON_GetObjectItemCaseSensitive(key_amfJSON, "keyVal");
+    key_val = cJSON_GetObjectItemCaseSensitive(key_amfJSON, "keyVal");
     if (!key_val) {
         ogs_error("OpenAPI_key_amf_parseFromJSON() failed [key_val]");
         goto end;
     }
-
     if (!cJSON_IsString(key_val)) {
         ogs_error("OpenAPI_key_amf_parseFromJSON() failed [key_val]");
         goto end;

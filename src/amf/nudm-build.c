@@ -75,6 +75,7 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
         ogs_error("No rat_type");
         goto end;
     }
+    Amf3GppAccessRegistration.pei = amf_ue->pei;
 
     message.Amf3GppAccessRegistration = &Amf3GppAccessRegistration;
 
@@ -218,6 +219,7 @@ ogs_sbi_request_t *amf_nudm_sdm_build_subscription(amf_ue_t *amf_ue, void *data)
     }
 
     OpenAPI_list_add(SDMSubscription.monitored_resource_uris, monres);
+    SDMSubscription.is_implicit_unsubscribe = true;
     SDMSubscription.implicit_unsubscribe = 1;
 
     message.SDMSubscription = &SDMSubscription;
@@ -235,6 +237,31 @@ end:
     OpenAPI_list_free(SDMSubscription.monitored_resource_uris);
     if (SDMSubscription.callback_reference)
         ogs_free(SDMSubscription.callback_reference);
+
+    return request;
+}
+
+ogs_sbi_request_t *amf_nudm_sdm_build_subscription_delete(
+        amf_ue_t *amf_ue, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    ogs_assert(amf_ue);
+    ogs_assert(amf_ue->supi);
+    ogs_assert(amf_ue->data_change_subscription_id);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_SDM;
+    message.h.api.version = (char *)OGS_SBI_API_V2;
+    message.h.resource.component[0] = amf_ue->supi;
+    message.h.resource.component[1] =
+            (char *)OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS;
+    message.h.resource.component[2] = amf_ue->data_change_subscription_id;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
 
     return request;
 }

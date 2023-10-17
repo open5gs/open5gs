@@ -1,7 +1,7 @@
 /*
  * sponsor_connectivity_data.h
  *
- * Contains the sponsored data connectivity related information for a sponsor identifier.
+ * Contains the sponsored data connectivity related information for a sponsor identifier. 
  */
 
 #ifndef _OpenAPI_sponsor_connectivity_data_H_

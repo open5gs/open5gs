@@ -1,7 +1,7 @@
 /*
  * av5g_aka.h
  *
- * 
+ * Contains Authentication Vector for method 5G AKA.
  */
 
 #ifndef _OpenAPI_av5g_aka_H_

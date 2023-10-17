@@ -1,0 +1,309 @@
+openapi: 3.0.0
+
+info:
+  version: '1.2.1'
+  title: 'NRF OAuth2'
+  description: |
+    NRF OAuth2 Authorization.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.510 V17.7.0; 5G System; Network Function Repository Services; Stage 3
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.510/'
+
+paths:
+  /oauth2/token:
+    post:
+      summary: Access Token Request
+      operationId: AccessTokenRequest
+      tags:
+        - Access Token Request
+      parameters:
+        - name: Content-Encoding
+          in: header
+          description: Content-Encoding, described in IETF RFC 7231
+          schema:
+            type: string
+        - name: Accept-Encoding
+          in: header
+          description: Accept-Encoding, described in IETF RFC 7231
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AccessTokenReq'
+            encoding:
+              requesterPlmn:
+                contentType: application/json
+              requesterPlmnList:
+                contentType: application/json
+              requesterSnssaiList:
+                contentType: application/json
+              requesterSnpnList:
+                contentType: application/json
+              targetPlmn:
+                contentType: application/json
+              targetSnpn:
+                contentType: application/json
+              targetSnssaiList:
+                contentType: application/json
+              targetNsiList:
+                style: form
+                explode: true
+        required: true
+      responses:
+        '200':
+          description: Successful Access Token Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenRsp'
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/cache-control'
+            Pragma:
+              $ref: '#/components/headers/pragma'
+            Accept-Encoding:
+              description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
+            Content-Encoding:
+              description: Content-Encoding, described in IETF RFC 7231
+              schema:
+                type: string
+        '307':
+          description: Temporary Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: The URI pointing to the resource located on the redirect target NRF
+              required: true
+              schema:
+                type: string
+        '308':
+          description: Permanent Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: The URI pointing to the resource located on the redirect target NRF
+              required: true
+              schema:
+                type: string
+        '400':
+          description: Error in the Access Token Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenErr'
+            application/problem+json: # error originated by an SCP or SEPP
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/cache-control'
+            Pragma:
+              $ref: '#/components/headers/pragma'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  headers:
+    cache-control:
+      required: true
+      schema:
+        type: string
+        enum:
+          - no-store
+    pragma:
+      required: true
+      schema:
+        type: string
+        enum:
+          - no-cache
+
+  schemas:
+    AccessTokenReq:
+      description: Contains information related to the access token request
+      type: object
+      required:
+        - grant_type
+        - nfInstanceId
+        - scope
+      properties:
+        grant_type:
+          type: string
+          enum:
+            - client_credentials
+        nfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        nfType:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NFType'
+        targetNfType:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NFType'
+        scope:
+          type: string
+          pattern: '^([a-zA-Z0-9_:-]+)( [a-zA-Z0-9_:-]+)*$'
+        targetNfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        requesterPlmn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        requesterPlmnList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+          minItems: 2
+        requesterSnssaiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        requesterFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        requesterSnpnList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+          minItems: 1
+        targetPlmn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        targetSnpn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        targetSnssaiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        targetNsiList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        targetNfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        targetNfServiceSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfServiceSetId'
+        hnrfAccessTokenUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        sourceNfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+
+    AccessTokenRsp:
+      description: Contains information related to the access token response
+      type: object
+      required:
+        - access_token
+        - token_type
+      properties:
+        access_token:
+          type: string
+          description: >
+            JWS Compact Serialized representation of JWS signed JSON object (AccessTokenClaims)
+        token_type:
+          type: string
+          enum:
+            - Bearer
+        expires_in:
+          type: integer
+        scope:
+          type: string
+          pattern: '^([a-zA-Z0-9_:-]+)( [a-zA-Z0-9_:-]+)*$'
+
+    AccessTokenClaims:
+      description: The claims data structure for the access token
+      type: object
+      required:
+        - iss
+        - sub
+        - aud
+        - scope
+        - exp
+      properties:
+        iss:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        sub:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        aud:
+          anyOf:
+            - $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NFType'
+            - type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+              minItems: 1
+        scope:
+          type: string
+          pattern: '^([a-zA-Z0-9_:-]+)( [a-zA-Z0-9_:-]+)*$'
+        exp:
+          type: integer
+        consumerPlmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        consumerSnpnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        producerPlmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        producerSnpnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        producerSnssaiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        producerNsiList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        producerNfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        producerNfServiceSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfServiceSetId'
+        sourceNfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+
+    AccessTokenErr:
+      description: Error returned in the access token response message
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          enum:
+            - invalid_request
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
+            - unsupported_grant_type
+            - invalid_scope
+        error_description:
+          type: string
+        error_uri:
+          type: string

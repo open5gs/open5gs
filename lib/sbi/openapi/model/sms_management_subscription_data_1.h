@@ -34,6 +34,7 @@ typedef struct OpenAPI_sms_management_subscription_data_1_s {
     bool is_mo_sms_barring_roaming;
     int mo_sms_barring_roaming;
     OpenAPI_list_t *shared_sms_mng_data_ids;
+    bool is_trace_data_null;
     struct OpenAPI_trace_data_s *trace_data;
 } OpenAPI_sms_management_subscription_data_1_t;
 
@@ -52,6 +53,7 @@ OpenAPI_sms_management_subscription_data_1_t *OpenAPI_sms_management_subscriptio
     bool is_mo_sms_barring_roaming,
     int mo_sms_barring_roaming,
     OpenAPI_list_t *shared_sms_mng_data_ids,
+    bool is_trace_data_null,
     OpenAPI_trace_data_t *trace_data
 );
 void OpenAPI_sms_management_subscription_data_1_free(OpenAPI_sms_management_subscription_data_1_t *sms_management_subscription_data_1);

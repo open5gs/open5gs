@@ -1,0 +1,204 @@
+{{#models}}{{#model}}/*
+ * {{classname}}.h
+ *
+ * {{description}}
+ */
+
+#ifndef _OpenAPI_{{classname}}_H_
+#define _OpenAPI_{{classname}}_H_
+
+#include <string.h>
+#include "../external/cJSON.h"
+#include "../include/list.h"
+#include "../include/keyValuePair.h"
+#include "../include/binary.h"
+{{#imports}}
+#include "{{{.}}}.h"
+{{/imports}}
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+{{#isEnum}}
+    {{#allowableValues}}
+typedef enum { OpenAPI_{{classVarName}}_NULL = 0{{#enumVars}}, OpenAPI_{{classVarName}}_{{{value}}}{{/enumVars}} } OpenAPI_{{classVarName}}_e;
+    {{/allowableValues}}
+
+char* OpenAPI_{{classname}}_ToString(OpenAPI_{{classVarName}}_e {{classname}});
+
+OpenAPI_{{classVarName}}_e OpenAPI_{{classname}}_FromString(char* {{classname}});
+{{/isEnum}}
+{{^isEnum}}
+typedef struct OpenAPI_{{classname}}_s OpenAPI_{{classname}}_t;
+{{#vars}}
+    {{^isContainer}}
+        {{#isPrimitiveType}}
+            {{#isEnum}}
+                {{#allowableValues}}
+typedef enum { OpenAPI_{{classVarName}}_{{enumName}}_NULL = 0{{#enumVars}}, OpenAPI_{{classVarName}}_{{enumName}}_{{{value}}}{{/enumVars}} } OpenAPI_{{classVarName}}_{{name}}_e;
+                {{/allowableValues}}
+
+char* OpenAPI_{{classVarName}}_{{name}}_ToString(OpenAPI_{{classVarName}}_{{name}}_e {{name}});
+
+OpenAPI_{{classVarName}}_{{name}}_e OpenAPI_{{classVarName}}_{{name}}_FromString(char* {{name}});
+            {{/isEnum}}
+        {{/isPrimitiveType}}
+    {{/isContainer}}
+{{/vars}}
+typedef struct OpenAPI_{{classname}}_s {
+{{#vars}}
+    {{^isContainer}}
+        {{^isPrimitiveType}}
+            {{#isEnum}}
+    OpenAPI_{{datatype}}_e {{name}};
+            {{/isEnum}}
+            {{^isEnum}}
+                {{#isModel}}
+    struct OpenAPI_{{datatype}}_s *{{name}};
+                {{/isModel}}
+                {{^isModel}}
+                    {{#isUuid}}
+    {{datatype}} *{{name}};
+                    {{/isUuid}}
+                    {{#isEmail}}
+    {{datatype}} *{{name}};
+                    {{/isEmail}}
+                    {{#isFreeFormObject}}
+    OpenAPI_{{datatype}}_t *{{name}};
+                    {{/isFreeFormObject}}
+                    {{#isAnyType}}
+    OpenAPI_{{datatype}}_t *{{name}};
+                    {{/isAnyType}}
+                {{/isModel}}
+            {{/isEnum}}
+        {{/isPrimitiveType}}
+        {{#isPrimitiveType}}
+            {{#isEnum}}
+    OpenAPI_{{classVarName}}_{{name}}_e {{name}};
+            {{/isEnum}}
+            {{^isEnum}}
+                {{#isNumeric}}
+                    {{^required}}
+    bool is_{{name}};
+                    {{/required}}
+    {{datatype}} {{name}};
+                {{/isNumeric}}
+                {{#isBoolean}}
+                    {{^required}}
+    bool is_{{name}};
+                    {{/required}}
+    {{datatype}} {{name}};
+                {{/isBoolean}}
+                {{#isString}}
+    {{datatype}} *{{name}};
+                {{/isString}}
+            {{/isEnum}}
+            {{#isByteArray}}
+    {{datatype}} *{{name}};
+            {{/isByteArray}}
+            {{#isBinary}}
+    OpenAPI_{{datatype}} {{name}};
+            {{/isBinary}}
+            {{#isDate}}
+    {{datatype}} *{{name}};
+            {{/isDate}}
+            {{#isDateTime}}
+    {{datatype}} *{{name}};
+            {{/isDateTime}}
+        {{/isPrimitiveType}}
+    {{/isContainer}}
+    {{#isContainer}}
+        {{#isArray}}
+    OpenAPI_{{datatype}}_t *{{name}};
+        {{/isArray}}
+        {{#isMap}}
+    OpenAPI_{{datatype}} {{name}};
+        {{/isMap}}
+    {{/isContainer}}
+{{/vars}}
+} OpenAPI_{{classname}}_t;
+
+OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_create(
+{{#vars}}
+    {{^isContainer}}
+        {{^isPrimitiveType}}
+            {{#isEnum}}
+    OpenAPI_{{datatype}}_e {{name}}{{^-last}},{{/-last}}
+            {{/isEnum}}
+            {{^isEnum}}
+                {{#isModel}}
+    OpenAPI_{{datatype}}_t *{{name}}{{^-last}},{{/-last}}
+                {{/isModel}}
+                {{^isModel}}
+                    {{#isUuid}}
+    {{datatype}} *{{name}}{{^-last}},{{/-last}}
+                    {{/isUuid}}
+                    {{#isEmail}}
+    {{datatype}} *{{name}}{{^-last}},{{/-last}}
+                    {{/isEmail}}
+                    {{#isFreeFormObject}}
+    OpenAPI_{{datatype}}_t *{{name}}{{^-last}},{{/-last}}
+                    {{/isFreeFormObject}}
+                    {{#isAnyType}}
+    OpenAPI_{{datatype}}_t *{{name}}{{^-last}},{{/-last}}
+                    {{/isAnyType}}
+                {{/isModel}}
+            {{/isEnum}}
+        {{/isPrimitiveType}}
+        {{#isPrimitiveType}}
+            {{#isEnum}}
+    OpenAPI_{{classVarName}}_{{name}}_e {{name}}{{^-last}},{{/-last}}
+            {{/isEnum}}
+            {{^isEnum}}
+                {{#isNumeric}}
+                    {{^required}}
+    bool is_{{name}},
+                    {{/required}}
+    {{datatype}} {{name}}{{^-last}},{{/-last}}
+                {{/isNumeric}}
+                {{#isBoolean}}
+                    {{^required}}
+    bool is_{{name}},
+                    {{/required}}
+    {{datatype}} {{name}}{{^-last}},{{/-last}}
+                {{/isBoolean}}
+                {{#isString}}
+    {{datatype}} *{{name}}{{^-last}},{{/-last}}
+                {{/isString}}
+            {{/isEnum}}
+            {{#isByteArray}}
+    {{datatype}} *{{name}}{{^-last}},{{/-last}}
+            {{/isByteArray}}
+            {{#isBinary}}
+    OpenAPI_{{datatype}} {{name}}{{^-last}},{{/-last}}
+            {{/isBinary}}
+            {{#isDate}}
+    {{datatype}} *{{name}}{{^-last}},{{/-last}}
+            {{/isDate}}
+            {{#isDateTime}}
+    {{datatype}} *{{name}}{{^-last}},{{/-last}}
+            {{/isDateTime}}
+        {{/isPrimitiveType}}
+    {{/isContainer}}
+    {{#isContainer}}
+        {{#isArray}}
+    OpenAPI_{{datatype}}_t *{{name}}{{^-last}},{{/-last}}
+        {{/isArray}}
+        {{#isMap}}
+    OpenAPI_{{datatype}} {{name}}{{^-last}},{{/-last}}
+        {{/isMap}}
+    {{/isContainer}}
+{{/vars}});
+void OpenAPI_{{classname}}_free(OpenAPI_{{classname}}_t *{{classname}});
+OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}}JSON);
+cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}});
+OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_copy(OpenAPI_{{classname}}_t *dst, OpenAPI_{{classname}}_t *src);
+{{/isEnum}}
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _OpenAPI_{{classname}}_H_ */
+{{/model}}{{/models}}

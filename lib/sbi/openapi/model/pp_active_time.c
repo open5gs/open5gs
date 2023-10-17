@@ -26,19 +26,30 @@ OpenAPI_pp_active_time_t *OpenAPI_pp_active_time_create(
 
 void OpenAPI_pp_active_time_free(OpenAPI_pp_active_time_t *pp_active_time)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == pp_active_time) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(pp_active_time->af_instance_id);
-    ogs_free(pp_active_time->validity_time);
-    ogs_free(pp_active_time->mtc_provider_information);
+    if (pp_active_time->af_instance_id) {
+        ogs_free(pp_active_time->af_instance_id);
+        pp_active_time->af_instance_id = NULL;
+    }
+    if (pp_active_time->validity_time) {
+        ogs_free(pp_active_time->validity_time);
+        pp_active_time->validity_time = NULL;
+    }
+    if (pp_active_time->mtc_provider_information) {
+        ogs_free(pp_active_time->mtc_provider_information);
+        pp_active_time->mtc_provider_information = NULL;
+    }
     ogs_free(pp_active_time);
 }
 
 cJSON *OpenAPI_pp_active_time_convertToJSON(OpenAPI_pp_active_time_t *pp_active_time)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (pp_active_time == NULL) {
         ogs_error("OpenAPI_pp_active_time_convertToJSON() failed [PpActiveTime]");
@@ -51,6 +62,10 @@ cJSON *OpenAPI_pp_active_time_convertToJSON(OpenAPI_pp_active_time_t *pp_active_
         goto end;
     }
 
+    if (!pp_active_time->af_instance_id) {
+        ogs_error("OpenAPI_pp_active_time_convertToJSON() failed [af_instance_id]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "afInstanceId", pp_active_time->af_instance_id) == NULL) {
         ogs_error("OpenAPI_pp_active_time_convertToJSON() failed [af_instance_id]");
         goto end;
@@ -82,52 +97,53 @@ end:
 OpenAPI_pp_active_time_t *OpenAPI_pp_active_time_parseFromJSON(cJSON *pp_active_timeJSON)
 {
     OpenAPI_pp_active_time_t *pp_active_time_local_var = NULL;
-    cJSON *active_time = cJSON_GetObjectItemCaseSensitive(pp_active_timeJSON, "activeTime");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *active_time = NULL;
+    cJSON *af_instance_id = NULL;
+    cJSON *reference_id = NULL;
+    cJSON *validity_time = NULL;
+    cJSON *mtc_provider_information = NULL;
+    active_time = cJSON_GetObjectItemCaseSensitive(pp_active_timeJSON, "activeTime");
     if (!active_time) {
         ogs_error("OpenAPI_pp_active_time_parseFromJSON() failed [active_time]");
         goto end;
     }
-
     if (!cJSON_IsNumber(active_time)) {
         ogs_error("OpenAPI_pp_active_time_parseFromJSON() failed [active_time]");
         goto end;
     }
 
-    cJSON *af_instance_id = cJSON_GetObjectItemCaseSensitive(pp_active_timeJSON, "afInstanceId");
+    af_instance_id = cJSON_GetObjectItemCaseSensitive(pp_active_timeJSON, "afInstanceId");
     if (!af_instance_id) {
         ogs_error("OpenAPI_pp_active_time_parseFromJSON() failed [af_instance_id]");
         goto end;
     }
-
     if (!cJSON_IsString(af_instance_id)) {
         ogs_error("OpenAPI_pp_active_time_parseFromJSON() failed [af_instance_id]");
         goto end;
     }
 
-    cJSON *reference_id = cJSON_GetObjectItemCaseSensitive(pp_active_timeJSON, "referenceId");
+    reference_id = cJSON_GetObjectItemCaseSensitive(pp_active_timeJSON, "referenceId");
     if (!reference_id) {
         ogs_error("OpenAPI_pp_active_time_parseFromJSON() failed [reference_id]");
         goto end;
     }
-
     if (!cJSON_IsNumber(reference_id)) {
         ogs_error("OpenAPI_pp_active_time_parseFromJSON() failed [reference_id]");
         goto end;
     }
 
-    cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(pp_active_timeJSON, "validityTime");
-
+    validity_time = cJSON_GetObjectItemCaseSensitive(pp_active_timeJSON, "validityTime");
     if (validity_time) {
-    if (!cJSON_IsString(validity_time)) {
+    if (!cJSON_IsString(validity_time) && !cJSON_IsNull(validity_time)) {
         ogs_error("OpenAPI_pp_active_time_parseFromJSON() failed [validity_time]");
         goto end;
     }
     }
 
-    cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(pp_active_timeJSON, "mtcProviderInformation");
-
+    mtc_provider_information = cJSON_GetObjectItemCaseSensitive(pp_active_timeJSON, "mtcProviderInformation");
     if (mtc_provider_information) {
-    if (!cJSON_IsString(mtc_provider_information)) {
+    if (!cJSON_IsString(mtc_provider_information) && !cJSON_IsNull(mtc_provider_information)) {
         ogs_error("OpenAPI_pp_active_time_parseFromJSON() failed [mtc_provider_information]");
         goto end;
     }
@@ -139,8 +155,8 @@ OpenAPI_pp_active_time_t *OpenAPI_pp_active_time_parseFromJSON(cJSON *pp_active_
         ogs_strdup(af_instance_id->valuestring),
         
         reference_id->valuedouble,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
-        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
+        validity_time && !cJSON_IsNull(validity_time) ? ogs_strdup(validity_time->valuestring) : NULL,
+        mtc_provider_information && !cJSON_IsNull(mtc_provider_information) ? ogs_strdup(mtc_provider_information->valuestring) : NULL
     );
 
     return pp_active_time_local_var;

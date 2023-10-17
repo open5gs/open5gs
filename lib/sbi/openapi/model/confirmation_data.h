@@ -1,7 +1,7 @@
 /*
  * confirmation_data.h
  *
- * 
+ * Contains the result of the authentication.
  */
 
 #ifndef _OpenAPI_confirmation_data_H_
@@ -19,11 +19,13 @@ extern "C" {
 
 typedef struct OpenAPI_confirmation_data_s OpenAPI_confirmation_data_t;
 typedef struct OpenAPI_confirmation_data_s {
+    bool is_res_star_null;
     char *res_star;
     char *supported_features;
 } OpenAPI_confirmation_data_t;
 
 OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_create(
+    bool is_res_star_null,
     char *res_star,
     char *supported_features
 );

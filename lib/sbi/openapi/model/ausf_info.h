@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "suci_info.h"
 #include "supi_range.h"
 
 #ifdef __cplusplus
@@ -23,12 +24,14 @@ typedef struct OpenAPI_ausf_info_s {
     char *group_id;
     OpenAPI_list_t *supi_ranges;
     OpenAPI_list_t *routing_indicators;
+    OpenAPI_list_t *suci_infos;
 } OpenAPI_ausf_info_t;
 
 OpenAPI_ausf_info_t *OpenAPI_ausf_info_create(
     char *group_id,
     OpenAPI_list_t *supi_ranges,
-    OpenAPI_list_t *routing_indicators
+    OpenAPI_list_t *routing_indicators,
+    OpenAPI_list_t *suci_infos
 );
 void OpenAPI_ausf_info_free(OpenAPI_ausf_info_t *ausf_info);
 OpenAPI_ausf_info_t *OpenAPI_ausf_info_parseFromJSON(cJSON *ausf_infoJSON);

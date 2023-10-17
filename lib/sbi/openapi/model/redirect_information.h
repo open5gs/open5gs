@@ -1,7 +1,7 @@
 /*
  * redirect_information.h
  *
- * 
+ * Contains the redirect information.
  */
 
 #ifndef _OpenAPI_redirect_information_H_

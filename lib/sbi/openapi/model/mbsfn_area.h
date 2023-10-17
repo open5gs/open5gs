@@ -1,7 +1,7 @@
 /*
  * mbsfn_area.h
  *
- * 
+ * Contains an MBSFN area information.
  */
 
 #ifndef _OpenAPI_mbsfn_area_H_

@@ -239,10 +239,10 @@ ED2(uint8_t spare:6;,
 /* 9.9.3.16 GPRS timer
  * See subclause 10.5.7.3 in 3GPP TS 24.008 [13].
  * M V 1 or  O TV 2 */
-#define OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_2_SS       0
-#define OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM       1
-#define OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH    2
-#define OGS_NAS_GRPS_TIMER_UNIT_DEACTIVATED             7
+#define OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_2_SS       0
+#define OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_1_MM       1
+#define OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_DECI_HH    2
+#define OGS_NAS_GPRS_TIMER_UNIT_DEACTIVATED             7
 typedef struct ogs_nas_gprs_timer_s {
 ED2(uint8_t unit:3;,
     uint8_t value:5;)
@@ -253,26 +253,24 @@ ED2(uint8_t unit:3;,
  * O TLV 3 */
 typedef struct ogs_nas_gprs_timer_2_s {
     uint8_t length;
-ED2(uint8_t unit:3;,
-    uint8_t value:5;)
+    ogs_nas_gprs_timer_t t;
 } __attribute__ ((packed)) ogs_nas_gprs_timer_2_t;
 
 /* 9.9.3.16B GPRS timer 3
  * See subclause 10.5.7.4a in 3GPP TS 24.008 [13].
  * O TLV 3 */
-#define OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_10_MM    0
-#define OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_1_HH     1
-#define OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_10_HH    2
-#define OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_2_SS     3 
-#define OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_30_SS    4
-#define OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_1_MM     5
-#define OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_320_HH   6
-#define OGS_NAS_GRPS_TIMER_3_UNIT_DEACTIVATED           7
+#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_MM    0
+#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_HH     1
+#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_HH    2
+#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_2_SS     3 
+#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_30_SS    4
+#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_MM     5
+#define OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_320_HH   6
+#define OGS_NAS_GPRS_TIMER_3_UNIT_DEACTIVATED           7
 
 typedef struct ogs_nas_gprs_timer_3_s {
     uint8_t length;
-ED2(uint8_t unit:3;,
-    uint8_t value:5;)
+    ogs_nas_gprs_timer_t t;
 } __attribute__ ((packed)) ogs_nas_gprs_timer_3_t;
 
 /* 9.9.3.18 IMEISV request
@@ -497,6 +495,18 @@ ED8(uint8_t signalling_for_a_maximum_number_of_15_eps_bearer_contexts:1;,
     uint8_t retstriction_on_use_of_enhanced_coverage:1;,
     uint8_t v2x_communication_over_pc5:1;,
     uint8_t multiple_drb:1;)
+ED8(uint8_t reject_paging_request:1;,
+    uint8_t paging_indication_for_voice_services:1;,
+    uint8_t nas_signalling_connection_release:1;,
+    uint8_t v2x_communication_over_nr_pc5:1;,
+    uint8_t user_plane_mobile_terminated_early_data_transmission:1;,
+    uint8_t control_plane_mobile_terminated_early_data_transmission:1;,
+    uint8_t wake_up_signal_assistance:1;,
+    uint8_t radio_capability_signalling_optimisation_capability:1;)
+ED3(uint8_t spare1:6;,
+    uint8_t paging_timing_collision_control:1;,
+    uint8_t paging_restriction:1;)
+    char spare2[4];
 } __attribute__ ((packed)) ogs_nas_ue_network_capability_t;
 
 /* 9.9.3.36 UE security capability
@@ -702,7 +712,7 @@ typedef struct ogs_nas_emergency_number_list_s {
 /* 9.9.3.37A Extended emergency number list
  * O TLV-E 7-65535 */
 typedef struct ogs_nas_extended_emergency_number_list_s {
-    uint8_t length;
+    uint16_t length;
     void *buffer;
 } ogs_nas_extended_emergency_number_list_t;
 
@@ -713,6 +723,7 @@ typedef struct ogs_nas_extended_drx_parameters_s {
     uint8_t length;
 ED2(uint8_t paging_time_window:4;,
     uint8_t e_drx_value:4;)
+    uint8_t extended_paging_time_window;
 } __attribute__ ((packed)) ogs_nas_extended_drx_parameters_t;
 
 /* 9.9.3.60 UE radio capability ID
@@ -734,6 +745,43 @@ ED3(uint8_t type:4;,
     uint8_t spare:1;,
     uint8_t value:3;)
 } __attribute__ ((packed)) ogs_nas_ue_radio_capability_id_deletion_indication_t;
+
+/* 9.9.3.65 UE request type
+ * O TLV 3
+ * 9.11.3.76 UE request type
+ * O TLV 3 */
+typedef struct ogs_nas_ue_request_type_s {
+    uint8_t length;
+ED2(uint8_t spare:4;,
+    uint8_t type:4;)
+} __attribute__ ((packed)) ogs_nas_ue_request_type_t;
+
+/* 9.9.3.66 Paging restriction
+ * O TLV 3-5
+ * 9.11.3.77 Paging restriction
+ * O TLV 3-35 */
+typedef struct ogs_nas_paging_restriction_s {
+    uint8_t length;
+ED2(uint8_t spare1:4;,
+    uint8_t type:4;)
+    union {
+        uint16_t ebi;
+        uint16_t psimask;
+    };
+    uint8_t spare2[30];
+} __attribute__ ((packed)) ogs_nas_paging_restriction_t;
+
+/* 9.9.3.67 EPS additional request result
+ * 9.11.3.81 5GS additional request result
+ * O TLV 3 */
+#define OGS_NAS_ADDITIONAL_REQUEST_RESULT_NO_ADDITIONAL_INFORMATION 0
+#define OGS_NAS_ADDITIONAL_REQUEST_RESULT_PAGING_RESTRICTION_IS_ACCEPTED 1
+#define OGS_NAS_ADDITIONAL_REQUEST_RESULT_PAGING_RESTRICTION_IS_REJECTED 2
+typedef struct ogs_nas_additional_request_result_s {
+    uint8_t length;
+ED2(uint8_t spare:6;,
+    uint8_t paging_restriction_decision:2;)
+} __attribute__ ((packed)) ogs_nas_additional_request_result_t;
 
 /* 9.9.4.2 APN aggregate maximum bit rate
  * O TLV 4-8  */
@@ -783,7 +831,8 @@ void eps_qos_build(ogs_nas_eps_quality_of_service_t *eps_qos,
 #define OGS_NAS_PDU_ADDRESS_IPV4V6_LEN 13
 typedef struct ogs_nas_pdu_address_s {
     uint8_t length;
-ED2(uint8_t reserved:5;,
+ED3(uint8_t spare:4;,
+    uint8_t smf_ipv6_link_local_address_presence:1;,
     uint8_t pdn_type:3;)
     union {
         uint32_t addr;
@@ -795,6 +844,7 @@ ED2(uint8_t reserved:5;,
             uint32_t addr;
         } both;
     };
+    uint8_t smf_ipv6_link_local_address[OGS_IPV6_LEN];
 } __attribute__ ((packed)) ogs_nas_pdu_address_t;
 
 /* 9.9.4.14 Request type
@@ -828,8 +878,8 @@ ED3(uint8_t type:4;,
 typedef struct ogs_nas_re_attempt_indicator_s {
     uint8_t length;
 ED3(uint8_t spare:3;,  /* allowed in A/Gb mode or Iu mode */
-    uint8_t eplmnc:1;, /* allowed in an equivalent PLMN */
-    uint8_t ratc:1;) 
+    uint8_t ue_is_not_allowed_to_re_attempt_the_procedure_in_an_equivalent_plmn:1;,
+    uint8_t ue_is_not_allowed_to_re_attempt_the_procedure_in_A_Gb_mode_or_Iu_mode_or_N1:1;)
 } __attribute__ ((packed)) ogs_nas_re_attempt_indicator_t;
 
 /* 9.9.4.19 NBIFOM container
@@ -887,22 +937,7 @@ typedef struct ogs_nas_extended_protocol_configuration_options_s {
  * O TLV 4 */
 typedef struct ogs_nas_serving_plmn_rate_control_s {
     uint8_t length;
-ED8(uint8_t ebi7:1;,
-    uint8_t ebi6:1;,
-    uint8_t ebi5:1;,
-    uint8_t ebi4:1;,
-    uint8_t ebi3:1;,
-    uint8_t ebi2:1;,
-    uint8_t ebi1:1;,
-    uint8_t ebi0:1;)
-ED8(uint8_t ebi15:1;,
-    uint8_t ebi14:1;,
-    uint8_t ebi13:1;,
-    uint8_t ebi12:1;,
-    uint8_t ebi11:1;,
-    uint8_t ebi10:1;,
-    uint8_t ebi9:1;,
-    uint8_t ebi8:1;)
+    uint16_t value;
 } __attribute__ ((packed)) ogs_nas_serving_plmn_rate_control_t;
 
 /* 9.9.4.29 Extended APN aggregate maximum bit rate

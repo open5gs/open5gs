@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -110,10 +110,9 @@ int nssf_context_parse_config(void)
                         int family = AF_UNSPEC;
                         int i, num = 0;
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
-                        uint16_t port = ogs_sbi_self()->sbi_port;
+                        uint16_t port = ogs_sbi_server_default_port();
                         const char *dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
-                        const char *key = NULL, *pem = NULL;
                         const char *sst = NULL, *sd = NULL;
 
                         ogs_sockopt_t option;
@@ -183,22 +182,6 @@ int nssf_context_parse_config(void)
                                         &nsi_iter, &option);
                                 if (rv != OGS_OK) return rv;
                                 is_option = true;
-                            } else if (!strcmp(nsi_key, "tls")) {
-                                ogs_yaml_iter_t tls_iter;
-                                ogs_yaml_iter_recurse(&nsi_iter, &tls_iter);
-
-                                while (ogs_yaml_iter_next(&tls_iter)) {
-                                    const char *tls_key =
-                                        ogs_yaml_iter_key(&tls_iter);
-                                    ogs_assert(tls_key);
-
-                                    if (!strcmp(tls_key, "key")) {
-                                        key = ogs_yaml_iter_value(&tls_iter);
-                                    } else if (!strcmp(tls_key, "pem")) {
-                                        pem = ogs_yaml_iter_value(&tls_iter);
-                                    } else
-                                        ogs_warn("unknown key `%s`", tls_key);
-                                }
                             } else if (!strcmp(nsi_key, "s_nssai")) {
                                 ogs_yaml_iter_t s_nssai_iter;
                                 ogs_yaml_iter_recurse(&nsi_iter, &s_nssai_iter);
@@ -259,9 +242,6 @@ int nssf_context_parse_config(void)
                             nssf_nsi_t *nsi = nssf_nsi_add(node->addr,
                                     atoi(sst), ogs_s_nssai_sd_from_string(sd));
                             ogs_assert(nsi);
-
-                            if (key) nsi->tls.key = key;
-                            if (pem) nsi->tls.pem = pem;
                         }
                         node6 = ogs_list_first(&list6);
                         if (node6) {
@@ -270,9 +250,6 @@ int nssf_context_parse_config(void)
                             nssf_nsi_t *nsi = nssf_nsi_add(node6->addr,
                                     atoi(sst), ogs_s_nssai_sd_from_string(sd));
                             ogs_assert(nsi);
-
-                            if (key) nsi->tls.key = key;
-                            if (pem) nsi->tls.pem = pem;
                         }
 
                         ogs_socknode_remove_all(&list);
@@ -358,18 +335,21 @@ nssf_nsi_t *nssf_nsi_find_by_s_nssai(ogs_s_nssai_t *s_nssai)
 char *nssf_nsi_nrf_uri(nssf_nsi_t *nsi)
 {
     ogs_sbi_header_t h;
-    bool https = false;
 
     ogs_assert(nsi);
 
     memset(&h, 0, sizeof(h));
 
-    if (nsi->tls.key && nsi->tls.pem)
-        https = true;
-
     h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_DISC;
     h.api.version = (char *)OGS_SBI_API_V1;
     h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_NF_INSTANCES;
 
-    return ogs_uridup(https, nsi->addr, &h);
+    return ogs_uridup(ogs_app()->sbi.server.no_tls == false, nsi->addr, &h);
+}
+
+int get_nsi_load(void)
+{
+    return (((ogs_pool_size(&nssf_nsi_pool) -
+            ogs_pool_avail(&nssf_nsi_pool)) * 100) /
+            ogs_pool_size(&nssf_nsi_pool));
 }

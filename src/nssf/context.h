@@ -50,10 +50,6 @@ typedef struct nssf_nsi_s {
     char *nsi_id;
 
     ogs_sockaddr_t *addr;
-    struct {
-        const char  *key;
-        const char  *pem;
-    } tls;
 
     ogs_s_nssai_t s_nssai;
 } nssf_nsi_t;
@@ -64,6 +60,7 @@ void nssf_nsi_remove_all(void);
 nssf_nsi_t *nssf_nsi_find_by_s_nssai(ogs_s_nssai_t *s_nssai);
 
 char *nssf_nsi_nrf_uri(nssf_nsi_t *nsi);
+int get_nsi_load(void);
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,7 @@
 /*
  * upu_data.h
  *
- * 
+ * Contains UE parameters update data set (e.g., the updated Routing ID Data or the Default configured NSSAI).
  */
 
 #ifndef _OpenAPI_upu_data_H_
@@ -12,7 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "ue_update_status.h"
+#include "snssai.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,17 +20,15 @@ extern "C" {
 
 typedef struct OpenAPI_upu_data_s OpenAPI_upu_data_t;
 typedef struct OpenAPI_upu_data_s {
-    char *provisioning_time;
-    OpenAPI_ue_update_status_e ue_update_status;
-    char *upu_xmac_iue;
-    char *upu_mac_iue;
+    char *sec_packet;
+    OpenAPI_list_t *default_conf_nssai;
+    char *routing_id;
 } OpenAPI_upu_data_t;
 
 OpenAPI_upu_data_t *OpenAPI_upu_data_create(
-    char *provisioning_time,
-    OpenAPI_ue_update_status_e ue_update_status,
-    char *upu_xmac_iue,
-    char *upu_mac_iue
+    char *sec_packet,
+    OpenAPI_list_t *default_conf_nssai,
+    char *routing_id
 );
 void OpenAPI_upu_data_free(OpenAPI_upu_data_t *upu_data);
 OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON);

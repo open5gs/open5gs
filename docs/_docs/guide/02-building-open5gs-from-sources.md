@@ -16,19 +16,22 @@ This post explains how to compile and install the source code on **Debian/Ubuntu
 Import the public key used by the package management system.
 
 ```bash
-$ wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+$ sudo apt update
+$ sudo apt install gnupg
+$ curl -fsSL https://pgp.mongodb.com/server-6.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg --dearmor
 ```
 
 Create the list file /etc/apt/sources.list.d/mongodb-org-6.0.list for your version of Ubuntu.
 
+On ubuntu 22.04 (Jammy)
 ```bash
-$ echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+$ echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
 ```
 
 Install the MongoDB packages.
 ```bash
 $ sudo apt update
-$ sudo apt-get install -y mongodb-org
+$ sudo apt install -y mongodb-org
 $ sudo systemctl start mongod (if '/usr/bin/mongod' is not running)
 $ sudo systemctl enable mongod (ensure to automatically start it on system boot)
 ```
@@ -58,7 +61,7 @@ $ sudo ip link set ogstun up
 Install the dependencies for building the source code.
 
 ```bash
-$ sudo apt install python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn11-dev libmongoc-dev libbson-dev libyaml-dev libnghttp2-dev libmicrohttpd-dev libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev meson
+$ sudo apt install python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git cmake libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn11-dev libmongoc-dev libbson-dev libyaml-dev libnghttp2-dev libmicrohttpd-dev libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev meson
 ```
 
 Git clone.
@@ -174,10 +177,10 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 +++ mme.yaml.new    2020-09-05 20:56:05.434484208 -0400
 @@ -253,20 +253,20 @@ mme:
      s1ap:
-       - addr: 127.0.0.2
-     gtpc:
 -      - addr: 127.0.0.2
 +      - addr: 10.10.0.2
+     gtpc:
+       - addr: 127.0.0.2
      metrics:
        addr: 127.0.0.2
        port: 9090
@@ -202,17 +205,19 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 
 Modify [install/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.
 ```diff
-$ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
---- sgwu.yaml    2020-09-05 20:50:39.393022566 -0400
-+++ sgwu.yaml.new    2020-09-05 20:51:06.667838823 -0400
-@@ -98,7 +98,7 @@ logger:
- #
- sgwu:
+$ diff --git a/configs/open5gs/sgwu.yaml.in b/configs/open5gs/sgwu.yaml.in
+index 8ccf94378..25b6884a3 100644
+--- a/configs/open5gs/sgwu.yaml.in
++++ b/configs/open5gs/sgwu.yaml.in
+@@ -100,7 +100,7 @@ sgwu:
      pfcp:
+       - addr: 127.0.0.6
+     gtpu:
 -      - addr: 127.0.0.6
 +      - addr: 10.11.0.6
-     gtpu:
-       - addr: 127.0.0.6
+
+ #
+ # sgwc:
 ```
 
 If you modify the config files while Open5GS daemons are running, please restart them
@@ -417,9 +422,19 @@ $ ./build/tests/app/app ## Both 5G Core and EPC with ./build/configs/sample.yaml
 [Node.js](https://nodejs.org/) is required to build WebUI of Open5GS
 
 ```bash
-$ sudo apt install curl
-$ curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-$ sudo apt install nodejs
+# Download and import the Nodesource GPG key
+$ sudo apt update
+$ sudo apt install -y ca-certificates curl gnupg
+$ sudo mkdir -p /etc/apt/keyrings
+$ curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+
+# Create deb repository
+$ NODE_MAJOR=20
+$ echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+
+# Run Update and Install
+$ sudo apt update
+$ sudo apt install nodejs -y
 ```
 
 Install the dependencies to run WebUI
@@ -464,37 +479,13 @@ To add subscriber information, you can do WebUI operations in the following orde
 **Note:** Subscribers added with this tool immediately register in the Open5GS HSS/UDR without the need to restart any daemon. However, if you use the WebUI to change subscriber profile, you must restart the Open5GS AMF/MME daemon for the changes to take effect.
 {: .notice--warning}
 
-### IP routing + NAT for UE internet connectivity
+#### Adding a route for the UE to have WAN connectivity {#UEInternet}
 ---
 
-To allow your phones to connect to the internet, you must run the following command on the host running Open5GS-PGW:
+In order to bridge between the PGWU/UPF and WAN (Internet), you must enable IP forwarding and add a NAT rule to your IP Tables.
 
+To enable forwarding and add the NAT rule, enter
 ```bash
-### Check IP Table 'forward'
-$ sudo iptables -L
-Chain INPUT (policy ACCEPT)
-target     prot opt source               destination
-
-Chain FORWARD (policy ACCEPT)
-target     prot opt source               destination
-
-Chain OUTPUT (policy ACCEPT)
-target     prot opt source               destination
-
-### Check IP Table 'nat'
-$ sudo iptables -L -t nat
-Chain PREROUTING (policy ACCEPT)
-target     prot opt source               destination
-
-Chain INPUT (policy ACCEPT)
-target     prot opt source               destination
-
-Chain OUTPUT (policy ACCEPT)
-target     prot opt source               destination
-
-Chain POSTROUTING (policy ACCEPT)
-target     prot opt source               destination
-
 ### Enable IPv4/IPv6 Forwarding
 $ sudo sysctl -w net.ipv4.ip_forward=1
 $ sudo sysctl -w net.ipv6.conf.all.forwarding=1
@@ -504,9 +495,22 @@ $ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
 $ sudo ip6tables -t nat -A POSTROUTING -s 2001:db8:cafe::/48 ! -o ogstun -j MASQUERADE
 ```
 
+Configure the firewall correctly. Some operating systems (Ubuntu) by default enable firewall rules to block traffic.
+```bash
+$ sudo ufw status
+Status: active
+$ sudo ufw disable
+Firewall stopped and disabled on system startup
+$ sudo ufw status
+Status: inactive
+```
+
 Optionally, you may consider the settings below for security purposes.
 
 ```bash
+### Ensure that the packets in the `INPUT` chain to the `ogstun` interface are accepted
+$ sudo iptables -I INPUT -i ogstun -j ACCEPT
+
 ### Prevent UE's from connecting to the host on which UPF is running
 $ sudo iptables -I INPUT -s 10.45.0.0/16 -j DROP
 $ sudo ip6tables -I INPUT -s 2001:db8:cafe::/48 -j DROP
@@ -517,10 +521,7 @@ $ sudo ip6tables -I INPUT -s 2001:db8:cafe::/48 -j DROP
 $ sudo iptables -I FORWARD -s 10.45.0.0/16 -d x.x.x.x/y -j DROP
 ```
 
-**Note:** The above assumes you do not have any existing rules in the filter and nat tables. If a program such as docker has already set up rules, you may need to add the Open5GS related rules differently.
-{: .notice--danger}
-
-### Turn on your eNodeB and Phone
+## 5. Turn on your eNB/gNB and UE
 ---
 
 - You can see actual traffic through wireshark -- [[srsenb.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/srsenb.pcapng).

@@ -16,16 +16,18 @@ OpenAPI_bdt_policy_status_t *OpenAPI_bdt_policy_status_create(
 
 void OpenAPI_bdt_policy_status_free(OpenAPI_bdt_policy_status_t *bdt_policy_status)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == bdt_policy_status) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(bdt_policy_status);
 }
 
 cJSON *OpenAPI_bdt_policy_status_convertToJSON(OpenAPI_bdt_policy_status_t *bdt_policy_status)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (bdt_policy_status == NULL) {
         ogs_error("OpenAPI_bdt_policy_status_convertToJSON() failed [BdtPolicyStatus]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_bdt_policy_status_t *OpenAPI_bdt_policy_status_parseFromJSON(cJSON *bdt_policy_statusJSON)
 {
     OpenAPI_bdt_policy_status_t *bdt_policy_status_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     bdt_policy_status_local_var = OpenAPI_bdt_policy_status_create (
     );
 

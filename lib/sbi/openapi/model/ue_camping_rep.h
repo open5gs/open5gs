@@ -1,7 +1,7 @@
 /*
  * ue_camping_rep.h
  *
- * 
+ * Contains the current applicable values corresponding to the policy control request triggers.
  */
 
 #ifndef _OpenAPI_ue_camping_rep_H_
@@ -16,6 +16,7 @@
 #include "net_loc_access_support.h"
 #include "plmn_id_nid.h"
 #include "rat_type.h"
+#include "satellite_backhaul_category.h"
 #include "serving_nf_identity.h"
 #include "user_location.h"
 
@@ -32,6 +33,7 @@ typedef struct OpenAPI_ue_camping_rep_s {
     struct OpenAPI_user_location_s *user_location_info;
     char *ue_time_zone;
     OpenAPI_net_loc_access_support_e net_loc_acc_supp;
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_category;
 } OpenAPI_ue_camping_rep_t;
 
 OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_create(
@@ -41,7 +43,8 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_create(
     OpenAPI_plmn_id_nid_t *serving_network,
     OpenAPI_user_location_t *user_location_info,
     char *ue_time_zone,
-    OpenAPI_net_loc_access_support_e net_loc_acc_supp
+    OpenAPI_net_loc_access_support_e net_loc_acc_supp,
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_category
 );
 void OpenAPI_ue_camping_rep_free(OpenAPI_ue_camping_rep_t *ue_camping_rep);
 OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping_repJSON);

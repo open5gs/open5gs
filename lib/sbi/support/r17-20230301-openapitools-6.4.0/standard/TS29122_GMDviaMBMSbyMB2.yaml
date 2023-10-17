@@ -1,0 +1,843 @@
+openapi: 3.0.0
+info:
+  title: GMDviaMBMSbyMB2
+  description: | 
+    API for Group Message Delivery via MBMS by MB2  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: 1.2.0
+externalDocs:
+  description: 3GPP TS 29.122 V17.6.0 T8 reference point for Northbound APIs
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.122/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/3gpp-group-message-delivery-mb2/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+paths:
+  /{scsAsId}/tmgi-allocation:
+    get:
+      summary: read all TMGI Allocation resource for a given SCS/AS
+      operationId: FetchAllTMGIAllocations
+      tags:
+        - TMGI Allocation Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (successful query of TMGI Allocation resource)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TMGIAllocation'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary:  Creates a new TMGI Allocation resource for a given SCS/AS.
+      operationId: CreateTMGIAllocation
+      tags:
+        - TMGI Allocation Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: representation of the TMGI Allocation to be created in the SCEF
+        required: true
+        content:
+          application/json: 
+            schema:
+              $ref: '#/components/schemas/TMGIAllocation'
+      responses:
+        '201':
+          description: successful creation of an TMGI Allocation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TMGIAllocation'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{scsAsId}/tmgi-allocation/{tmgi}:
+    get:
+      summary: Read a TMGI Allocation resource for a given SCS/AS and a TMGI.
+      operationId: FetchIndTMGIAllocation
+      tags:
+        - Individual TMGI Allocation Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: tmgi
+          in: path
+          description: TMGI
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (successful query of TMGI Allocation resource)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TMGIAllocation'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Updates an existing TMGI Allocation resource for a given SCS/AS and a TMGI.
+      operationId: UpdateIndTMGIAllocation
+      tags:
+        - Individual TMGI Allocation Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: tmgi
+          in: path
+          description: TMGI
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: representation of the TMGI Allocation to be updated in the SCEF
+        required: true
+        content:
+          application/json: 
+            schema:
+              $ref: '#/components/schemas/TMGIAllocation'
+      responses:
+        '200':
+          description: successful creation of an TMGI Allocation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TMGIAllocation'
+        '204':
+          description: The TMGI expiration time renewal is successful, and no content is to be sent in the response message body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Updates an existing TMGI Allocation resource for a given SCS/AS and a TMGI.
+      operationId: ModifyIndTMGIAllocation
+      tags:
+        - Individual TMGI Allocation Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: tmgi
+          in: path
+          description: TMGI
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: representation of the TMGI Allocation to be updated in the SCEF
+        required: true
+        content:
+          application/merge-patch+json: 
+            schema:
+              $ref: '#/components/schemas/TMGIAllocationPatch'
+      responses:
+        '200':
+          description: successful creation of an TMGI Allocation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TMGIAllocation'
+        '204':
+          description: The TMGI expiration time renewal is successful, and no content is to be sent in the response message body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Deletes an existing TMGI Allocation resource for a given SCS/AS and a TMGI.
+      operationId: DeleteTMGIAllocation
+      tags:
+        - Individual TMGI Allocation Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: tmgi
+          in: path
+          description: TMGI
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content, successful deletion of an TMGI Allocation
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{scsAsId}/tmgi-allocation/{tmgi}/delivery-via-mbms:
+    get:
+      summary: Read all group message delivery via MBMS resource for a given SCS/AS and a TMGI.
+      operationId: FecthAllGMDViaMBMSByMB2
+      tags:
+        - Delivery via MBMS Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: tmgi
+          in: path
+          description: TMGI
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (successful query of Delivery via MBMS resource)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GMDViaMBMSByMb2'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Creates a new delivery via MBMS for a given SCS/AS and a TMGI.
+      operationId: CreateGMDViaMBMSByMB2
+      tags:
+        - Delivery via MBMS Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: tmgi
+          in: path
+          description: TMGI
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: representation of the GMD via MBMS by MB2 resource to be Created in the SCEF
+        required: true
+        content:
+          application/json: 
+            schema:
+              $ref: '#/components/schemas/GMDViaMBMSByMb2'
+      callbacks:
+        gMDByMb2Notification:
+          '{$request.body#/notificationDestination}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/GMDByMb2Notification'
+              responses:
+                '200':
+                  description: OK (The successful acknowledgement of the notification with a body)
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS29122_CommonData.yaml#/components/schemas/Acknowledgement'
+                '204':
+                  description: successful notification
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: successful creation of an GMD via MBMS by MB2 resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GMDViaMBMSByMb2'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{scsAsId}/tmgi-allocation/{tmgi}/delivery-via-mbms/{transactionId}:
+    get:
+      summary: Read all group message delivery via MBMS resource for a given SCS/AS and a TMGI.
+      operationId: FetchIndDeliveryViaMBMS
+      tags:
+        - Individual Delivery via MBMS resource Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: tmgi
+          in: path
+          description: TMGI
+          required: true
+          schema:
+            type: string
+        - name: transactionId
+          in: path
+          description: Identifier of transaction
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (successful query of an Delivery via MBMS resource)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GMDViaMBMSByMb2'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Updates a existing delivery via MBMS for a given SCS/AS, a TMGI and transaction Id.
+      operationId: UpdateIndDeliveryViaMBMS
+      tags:
+        - Individual Delivery via MBMS resource Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: tmgi
+          in: path
+          description: TMGI
+          required: true
+          schema:
+            type: string
+        - name: transactionId
+          in: path
+          description: Identifier of transaction
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: representation of the GMD via MBMS by MB2 resource to be udpated in the SCEF
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GMDViaMBMSByMb2'
+      responses:
+        '200':
+          description: successful update of an individual GMD via MBMS by MB2 resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GMDViaMBMSByMb2'
+        '204':
+          description: The group message delivery is replaced successfully, and no content is to be sent in the response message body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Updates a existing delivery via MBMS for a given SCS/AS, a TMGI and transaction Id.
+      operationId: ModifyIndDeliveryViaMBMS
+      tags:
+        - Individual Delivery via MBMS resource Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: tmgi
+          in: path
+          description: TMGI
+          required: true
+          schema:
+            type: string
+        - name: transactionId
+          in: path
+          description: Identifier of transaction
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: representation of the GMD via MBMS by MB2 resource to be udpated in the SCEF
+        required: true
+        content:
+          application/merge-patch+json: 
+            schema:
+              $ref: '#/components/schemas/GMDViaMBMSByMb2Patch'
+      responses:
+        '200':
+          description: successful update of an individual GMD via MBMS by MB2 resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GMDViaMBMSByMb2'
+        '204':
+          description: The group message delivery is modified successfully, and no content is to be sent in the response message body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Deletes a delivery via MBMS resource for a given SCS/AS, a TMGI and a transcation Id.
+      operationId: DeleteIndDeliveryViaMBMS
+      tags:
+        - Individual Delivery via MBMS resource Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: tmgi
+          in: path
+          description: TMGI
+          required: true
+          schema:
+            type: string
+        - name: transactionId
+          in: path
+          description: Identifier of transaction
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content, successful deletion of an resouce of deliery via MBMS
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    TMGIAllocation:
+      description: Represents an individual TMGI Allocation resource.
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        externalGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        mbmsLocArea:
+          $ref: '#/components/schemas/MbmsLocArea'
+        tmgiExpiration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTimeRo'
+    GMDViaMBMSByMb2:
+      description: Represents a group message delivery via MBMS by MB2.
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        requestTestNotification:
+          type: boolean
+          description: Set to true by the SCS/AS to request the SCEF to send a test notification as defined in clause 5.2.5.3. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        externalGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        mbmsLocArea:
+          $ref: '#/components/schemas/MbmsLocArea'
+        messageDeliveryStartTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        groupMessagePayload:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bytes'
+        scefMessageDeliveryIPv4:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv4AddrRo'
+        scefMessageDeliveryIPv6:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv6AddrRo'
+        scefMessageDeliveryPort:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/PortRo'
+      required:
+        - notificationDestination
+    GMDByMb2Notification:
+      description: Represents a group message delivery notification.
+      type: object
+      properties:
+        transaction:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        deliveryTriggerStatus:
+          type: boolean
+          description: Indicates whether delivery of group message payload corresponding to the TMGI was successful (TRUE) or not (FALSE)
+      required:
+        - transaction
+        - deliveryTriggerStatus
+    TMGIAllocationPatch:
+      description: Represents the parameters to request the modification of a TMGI Allocation resource.
+      type: object
+      properties:
+        externalGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        mbmsLocArea:
+          $ref: '#/components/schemas/MbmsLocArea'
+    GMDViaMBMSByMb2Patch:
+      description: Represents a modification request of a group message delivery via MBMS by MB2.
+      type: object
+      properties:
+        externalGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        mbmsLocArea:
+          $ref: '#/components/schemas/MbmsLocArea'
+        messageDeliveryStartTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        groupMessagePayload:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bytes'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+    MbmsLocArea:
+      description: Represents a user location area whithin which is sent a group message delivery via MBMS request.
+      type: object
+      properties:
+        cellId:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Indicates a Cell Global Identification of the user which identifies the cell the UE is registered.
+        enodeBId:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Indicates an eNodeB in which the UE is currently located.
+        geographicArea:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+          description: Identifies a geographic area of the user where the UE is located.
+        mbmsServiceAreaId:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Identifies an MBMS Service Area Identity of the user where the UE is located.
+        civicAddress:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CivicAddress'
+          minItems: 1
+          description: Identifies a civic address of the user where the UE is located.

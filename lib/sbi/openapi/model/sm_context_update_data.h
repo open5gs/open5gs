@@ -1,7 +1,7 @@
 /*
  * sm_context_update_data.h
  *
- * 
+ * Data within Update SM Context Request
  */
 
 #ifndef _OpenAPI_sm_context_update_data_H_
@@ -26,10 +26,12 @@
 #include "n2_sm_info_type.h"
 #include "ng_ap_cause.h"
 #include "ng_ran_target_id.h"
+#include "pcf_ue_callback_info.h"
 #include "plmn_id_nid.h"
 #include "presence_state.h"
 #include "rat_type.h"
 #include "ref_to_binary_data.h"
+#include "satellite_backhaul_category.h"
 #include "snssai.h"
 #include "trace_data.h"
 #include "tunnel_info.h"
@@ -41,11 +43,17 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_sm_context_update_data_s OpenAPI_sm_context_update_data_t;
+typedef enum { OpenAPI_sm_context_update_data_SMPOLICYNOTIFYIND_NULL = 0, OpenAPI_sm_context_update_data_SMPOLICYNOTIFYIND__true } OpenAPI_sm_context_update_data_sm_policy_notify_ind_e;
+
+char* OpenAPI_sm_context_update_data_sm_policy_notify_ind_ToString(OpenAPI_sm_context_update_data_sm_policy_notify_ind_e sm_policy_notify_ind);
+
+OpenAPI_sm_context_update_data_sm_policy_notify_ind_e OpenAPI_sm_context_update_data_sm_policy_notify_ind_FromString(char* sm_policy_notify_ind);
 typedef struct OpenAPI_sm_context_update_data_s {
     char *pei;
     char *serving_nf_id;
     struct OpenAPI_guami_s *guami;
     struct OpenAPI_plmn_id_nid_s *serving_network;
+    bool is_backup_amf_info_null;
     OpenAPI_list_t *backup_amf_info;
     OpenAPI_access_type_e an_type;
     OpenAPI_access_type_e additional_an_type;
@@ -72,6 +80,9 @@ typedef struct OpenAPI_sm_context_update_data_s {
     struct OpenAPI_tunnel_info_s *n9_forwarding_tunnel;
     OpenAPI_list_t *n9_dl_forwarding_tnl_list;
     OpenAPI_list_t *n9_ul_forwarding_tnl_list;
+    struct OpenAPI_tunnel_info_s *n9_dl_forwarding_tunnel;
+    bool is_n9_inactivity_timer;
+    int n9_inactivity_timer;
     OpenAPI_list_t *eps_bearer_setup;
     OpenAPI_list_t *revoke_ebi_list;
     bool is_release;
@@ -81,6 +92,7 @@ typedef struct OpenAPI_sm_context_update_data_s {
     bool is__5g_mm_cause_value;
     int _5g_mm_cause_value;
     struct OpenAPI_snssai_s *s_nssai;
+    bool is_trace_data_null;
     struct OpenAPI_trace_data_s *trace_data;
     OpenAPI_eps_interworking_indication_e eps_interworking_ind;
     bool is_an_type_can_be_changed;
@@ -97,9 +109,16 @@ typedef struct OpenAPI_sm_context_update_data_s {
     struct OpenAPI_mo_exp_data_counter_s *mo_exp_data_counter;
     bool is_extended_nas_sm_timer_ind;
     int extended_nas_sm_timer_ind;
-    char forwarding_f_teid;
+    char *forwarding_f_teid;
     OpenAPI_list_t *forwarding_bearer_contexts;
     struct OpenAPI_ddn_failure_subs_s *ddn_failure_subs;
+    bool is_skip_n2_pdu_session_res_rel_ind;
+    int skip_n2_pdu_session_res_rel_ind;
+    OpenAPI_list_t *secondary_rat_usage_data_report_container;
+    OpenAPI_sm_context_update_data_sm_policy_notify_ind_e sm_policy_notify_ind;
+    bool is_pcf_ue_callback_info_null;
+    struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_callback_info;
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat;
 } OpenAPI_sm_context_update_data_t;
 
 OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
@@ -107,6 +126,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     char *serving_nf_id,
     OpenAPI_guami_t *guami,
     OpenAPI_plmn_id_nid_t *serving_network,
+    bool is_backup_amf_info_null,
     OpenAPI_list_t *backup_amf_info,
     OpenAPI_access_type_e an_type,
     OpenAPI_access_type_e additional_an_type,
@@ -133,6 +153,9 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     OpenAPI_tunnel_info_t *n9_forwarding_tunnel,
     OpenAPI_list_t *n9_dl_forwarding_tnl_list,
     OpenAPI_list_t *n9_ul_forwarding_tnl_list,
+    OpenAPI_tunnel_info_t *n9_dl_forwarding_tunnel,
+    bool is_n9_inactivity_timer,
+    int n9_inactivity_timer,
     OpenAPI_list_t *eps_bearer_setup,
     OpenAPI_list_t *revoke_ebi_list,
     bool is_release,
@@ -142,6 +165,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     bool is__5g_mm_cause_value,
     int _5g_mm_cause_value,
     OpenAPI_snssai_t *s_nssai,
+    bool is_trace_data_null,
     OpenAPI_trace_data_t *trace_data,
     OpenAPI_eps_interworking_indication_e eps_interworking_ind,
     bool is_an_type_can_be_changed,
@@ -158,9 +182,16 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter,
     bool is_extended_nas_sm_timer_ind,
     int extended_nas_sm_timer_ind,
-    char forwarding_f_teid,
+    char *forwarding_f_teid,
     OpenAPI_list_t *forwarding_bearer_contexts,
-    OpenAPI_ddn_failure_subs_t *ddn_failure_subs
+    OpenAPI_ddn_failure_subs_t *ddn_failure_subs,
+    bool is_skip_n2_pdu_session_res_rel_ind,
+    int skip_n2_pdu_session_res_rel_ind,
+    OpenAPI_list_t *secondary_rat_usage_data_report_container,
+    OpenAPI_sm_context_update_data_sm_policy_notify_ind_e sm_policy_notify_ind,
+    bool is_pcf_ue_callback_info_null,
+    OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info,
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat
 );
 void OpenAPI_sm_context_update_data_free(OpenAPI_sm_context_update_data_t *sm_context_update_data);
 OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(cJSON *sm_context_update_dataJSON);

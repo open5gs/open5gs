@@ -107,12 +107,21 @@ static ogs_tlv_t *tlv_add_leaf(
     case OGS_TV_INT8:
     {
         ogs_tlv_uint8_t *v = (ogs_tlv_uint8_t *)msg;
-        if (parent_tlv)
+        if (parent_tlv) {
             tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
                     desc->type, 1, desc->instance, &v->u8);
-        else
-            tlv = ogs_tlv_add(tlv, tlv_mode, desc->type, 1, desc->instance, &v->u8);
-        ogs_expect_or_return_val(tlv, NULL);
+            if (!tlv) {
+                ogs_error("ogs_tlv_embed()");
+                return NULL;
+            }
+        } else {
+            tlv = ogs_tlv_add(tlv, tlv_mode,
+                    desc->type, 1, desc->instance, &v->u8);
+            if (!tlv) {
+                ogs_error("ogs_tlv_add()");
+                return NULL;
+            }
+        }
         break;
     }
     case OGS_TLV_UINT16:
@@ -124,12 +133,21 @@ static ogs_tlv_t *tlv_add_leaf(
 
         v->u16 = htobe16(v->u16);
 
-        if (parent_tlv)
+        if (parent_tlv) {
             tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
                     desc->type, 2, desc->instance, &v->u16);
-        else
-            tlv = ogs_tlv_add(tlv, tlv_mode, desc->type, 2, desc->instance, &v->u16);
-        ogs_expect_or_return_val(tlv, NULL);
+            if (!tlv) {
+                ogs_error("ogs_tlv_embed()");
+                return NULL;
+            }
+        } else {
+            tlv = ogs_tlv_add(tlv, tlv_mode,
+                    desc->type, 2, desc->instance, &v->u16);
+            if (!tlv) {
+                ogs_error("ogs_tlv_add()");
+                return NULL;
+            }
+        }
         break;
     }
     case OGS_TLV_UINT24:
@@ -142,12 +160,21 @@ static ogs_tlv_t *tlv_add_leaf(
         v->u24 = v->u24 << 8;
         v->u24 = htobe32(v->u24);
 
-        if (parent_tlv)
+        if (parent_tlv) {
             tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
                     desc->type, 3, desc->instance, &v->u24);
-        else
-            tlv = ogs_tlv_add(tlv, tlv_mode, desc->type, 3, desc->instance, &v->u24);
-        ogs_expect_or_return_val(tlv, NULL);
+            if (!tlv) {
+                ogs_error("ogs_tlv_embed()");
+                return NULL;
+            }
+        } else {
+            tlv = ogs_tlv_add(tlv, tlv_mode,
+                    desc->type, 3, desc->instance, &v->u24);
+            if (!tlv) {
+                ogs_error("ogs_tlv_add()");
+                return NULL;
+            }
+        }
         break;
     }
     case OGS_TLV_UINT32:
@@ -159,13 +186,21 @@ static ogs_tlv_t *tlv_add_leaf(
 
         v->u32 = htobe32(v->u32);
 
-        if (parent_tlv)
+        if (parent_tlv) {
             tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
                     desc->type, 4, desc->instance, &v->u32);
-        else
+            if (!tlv) {
+                ogs_error("ogs_tlv_embed()");
+                return NULL;
+            }
+        } else {
             tlv = ogs_tlv_add(tlv, tlv_mode,
                     desc->type, 4, desc->instance, &v->u32);
-        ogs_expect_or_return_val(tlv, NULL);
+            if (!tlv) {
+                ogs_error("ogs_tlv_add()");
+                return NULL;
+            }
+        }
         break;
     }
     case OGS_TLV_FIXED_STR:
@@ -173,13 +208,21 @@ static ogs_tlv_t *tlv_add_leaf(
     {
         ogs_tlv_octet_t *v = (ogs_tlv_octet_t *)msg;
 
-        if (parent_tlv)
+        if (parent_tlv) {
             tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
                     desc->type, desc->length, desc->instance, v->data);
-        else
+            if (!tlv) {
+                ogs_error("ogs_tlv_embed()");
+                return NULL;
+            }
+        } else {
             tlv = ogs_tlv_add(tlv, tlv_mode,
                     desc->type, desc->length, desc->instance, v->data);
-        ogs_expect_or_return_val(tlv, NULL);
+            if (!tlv) {
+                ogs_error("ogs_tlv_add()");
+                return NULL;
+            }
+        }
         break;
     }
     case OGS_TLV_VAR_STR:
@@ -189,33 +232,49 @@ static ogs_tlv_t *tlv_add_leaf(
         if (v->len == 0) {
             ogs_error("No TLV length - [%s] T:%d I:%d (vsz=%d)",
                     desc->name, desc->type, desc->instance, desc->vsize);
-            ogs_expect_or_return_val(0, NULL);
+            return NULL;
         }
 
-        if (parent_tlv)
+        if (parent_tlv) {
             tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
                     desc->type, v->len, desc->instance, v->data);
-        else
+            if (!tlv) {
+                ogs_error("ogs_tlv_embed()");
+                return NULL;
+            }
+        } else {
             tlv = ogs_tlv_add(tlv, tlv_mode,
                     desc->type, v->len, desc->instance, v->data);
-        ogs_expect_or_return_val(tlv, NULL);
+            if (!tlv) {
+                ogs_error("ogs_tlv_add()");
+                return NULL;
+            }
+        }
         break;
     }
     case OGS_TLV_NULL:
     case OGS_TV_NULL:
     {
-        if (parent_tlv)
+        if (parent_tlv) {
             tlv = ogs_tlv_embed(parent_tlv, tlv_mode,
                     desc->type, 0, desc->instance, NULL);
-        else
+            if (!tlv) {
+                ogs_error("ogs_tlv_embed()");
+                return NULL;
+            }
+        } else {
             tlv = ogs_tlv_add(tlv, tlv_mode,
                     desc->type, 0, desc->instance, NULL);
-        ogs_expect_or_return_val(tlv, NULL);
+            if (!tlv) {
+                ogs_error("ogs_tlv_add()");
+                return NULL;
+            }
+        }
         break;
     }
     default:
-        ogs_expect_or_return_val(0, NULL);
-        break;
+        ogs_error("Unknown type [%d]", desc->ctype);
+        return NULL;
     }
 
     return tlv;
@@ -258,16 +317,21 @@ static uint32_t tlv_add_compound(ogs_tlv_t **root, ogs_tlv_t *parent_tlv,
                             desc->vsize, p + offset2);
 
                     if (parent_tlv)
-                        tlv = ogs_tlv_embed(parent_tlv, tlv_ctype2mode(desc->ctype, mode),
+                        tlv = ogs_tlv_embed(parent_tlv,
+                                tlv_ctype2mode(desc->ctype, mode),
                                 desc->type, 0, desc->instance, NULL);
                     else
-                        tlv = ogs_tlv_add(tlv, tlv_ctype2mode(desc->ctype, mode),
+                        tlv = ogs_tlv_add(tlv,
+                                tlv_ctype2mode(desc->ctype, mode),
                                 desc->type, 0, desc->instance, NULL);
 
                     r = tlv_add_compound(&emb_tlv, tlv, desc,
                             p + offset2 + sizeof(ogs_tlv_presence_t),
                             depth + 1, mode);
-                    ogs_expect_or_return_val(r > 0 && emb_tlv, 0);
+                    if (r <= 0 || !emb_tlv) {
+                        ogs_error("tlv_add_compound() failed");
+                        return 0;
+                    }
                     count += 1 + r;
                 } else {
                     ogs_trace("BUILD %sL#%d [%s] T:%d L:%d I:%d "
@@ -276,8 +340,12 @@ static uint32_t tlv_add_compound(ogs_tlv_t **root, ogs_tlv_t *parent_tlv,
                             desc->instance, desc->ctype, desc->vsize,
                             p + offset2);
 
-                    tlv = tlv_add_leaf(parent_tlv, tlv, desc, p + offset2, mode);
-                    ogs_expect_or_return_val(tlv, 0);
+                    tlv = tlv_add_leaf(parent_tlv, tlv, desc,
+                            p + offset2, mode);
+                    if (!tlv) {
+                        ogs_error("tlv_add_leaf() failed");
+                        return 0;
+                    }
                     count++;
                 }
 
@@ -298,16 +366,21 @@ static uint32_t tlv_add_compound(ogs_tlv_t **root, ogs_tlv_t *parent_tlv,
                             desc->vsize, p + offset);
 
                     if (parent_tlv)
-                        tlv = ogs_tlv_embed(parent_tlv, tlv_ctype2mode(desc->ctype, mode),
+                        tlv = ogs_tlv_embed(parent_tlv,
+                                tlv_ctype2mode(desc->ctype, mode),
                                 desc->type, 0, desc->instance, NULL);
                     else
-                        tlv = ogs_tlv_add(tlv, tlv_ctype2mode(desc->ctype, mode),
+                        tlv = ogs_tlv_add(tlv,
+                                tlv_ctype2mode(desc->ctype, mode),
                                 desc->type, 0, desc->instance, NULL);
 
                     r = tlv_add_compound(&emb_tlv, tlv, desc,
                             p + offset + sizeof(ogs_tlv_presence_t),
                             depth + 1, mode);
-                    ogs_expect_or_return_val(r > 0 && emb_tlv, 0);
+                    if (r <= 0 || !emb_tlv) {
+                        ogs_error("tlv_add_compound() failed");
+                        return 0;
+                    }
                     count += 1 + r;
                 } else {
                     ogs_trace("BUILD %sL#%d [%s] T:%d L:%d I:%d "
@@ -317,7 +390,10 @@ static uint32_t tlv_add_compound(ogs_tlv_t **root, ogs_tlv_t *parent_tlv,
                             p + offset);
 
                     tlv = tlv_add_leaf(parent_tlv, tlv, desc, p + offset, mode);
-                    ogs_expect_or_return_val(tlv, 0);
+                    if (!tlv) {
+                        ogs_error("tlv_add_leaf() failed");
+                        return 0;
+                    }
                     count++;
                 }
 
@@ -344,20 +420,30 @@ ogs_pkbuf_t *ogs_tlv_build_msg(ogs_tlv_desc_t *desc, void *msg, int mode)
 
     if (desc->child_descs[0]) {
         r = tlv_add_compound(&root, NULL, desc, msg, 0, mode);
-        ogs_expect_or_return_val(r > 0 && root, NULL);
+        if (r <= 0 || !root) {
+            ogs_error("tlv_add_compound() failed");
+            return NULL;
+        }
 
         length = ogs_tlv_calc_length(root);
     } else {
         length = 0;
     }
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_TLV_MAX_HEADROOM+length);
-    ogs_expect_or_return_val(pkbuf, NULL);
+    if (!pkbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        return NULL;
+    }
     ogs_pkbuf_reserve(pkbuf, OGS_TLV_MAX_HEADROOM);
     ogs_pkbuf_put(pkbuf, length);
 
     if (desc->child_descs[0]) {
         rendlen = ogs_tlv_render(root, pkbuf->data, length);
-        ogs_expect_or_return_val(rendlen == length, NULL);
+        if (rendlen != length) {
+            ogs_error("ogs_tlv_render[rendlen:%d != length:%d] failed",
+                    rendlen, length);
+            return NULL;
+        }
 
         ogs_tlv_free_all(root);
     }
@@ -501,8 +587,8 @@ static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
         break;
     }
     default:
-        ogs_assert_if_reached();
-        break;
+        ogs_error("Unknown type[%d]", desc->ctype);
+        return OGS_ERROR;
     }
 
     return OGS_OK;
@@ -603,7 +689,6 @@ static int tlv_parse_compound(void *msg, ogs_tlv_desc_t *parent_desc,
             }
             if (j == next_desc->length) {
                 ogs_fatal("Multiple of the same type TLV need more room");
-                ogs_assert_if_reached();
                 tlv = tlv->next;
                 continue;
             }
@@ -664,7 +749,10 @@ int ogs_tlv_parse_msg(void *msg, ogs_tlv_desc_t *desc, ogs_pkbuf_t *pkbuf,
     ogs_assert(pkbuf);
 
     ogs_assert(desc->ctype == OGS_TLV_MESSAGE);
-    ogs_assert(desc->child_descs[0]);
+    if (!desc->child_descs[0]) {
+        ogs_fatal("No Child Descs in [%s]", desc->name);
+        ogs_assert_if_reached();
+    }
 
     root = ogs_tlv_parse_block(pkbuf->len, pkbuf->data, mode);
     if (root == NULL) {

@@ -1,7 +1,7 @@
 /*
  * ue_context_relocated_data.h
  *
- * 
+ * Data within a Relocate UE Context response
  */
 
 #ifndef _OpenAPI_ue_context_relocated_data_H_

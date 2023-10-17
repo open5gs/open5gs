@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -49,15 +49,10 @@ static void test1_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0x37;
-    mobile_identity_suci.scheme_output[1] = 0x46;
-    mobile_identity_suci.scheme_output[2] = 0;
-    mobile_identity_suci.scheme_output[3] = 0;
-    mobile_identity_suci.scheme_output[4] = 0x06;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "3746000006");
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf0;
@@ -233,7 +228,7 @@ static void test1_func(abts_case *tc, void *data)
     memset(&sess->pdn_connectivity_param,
             0, sizeof(sess->pdn_connectivity_param));
     sess->pdn_connectivity_param.eit = 1;
-    sess->pdn_connectivity_param.pco = 1;
+    sess->pdn_connectivity_param.epco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
     esmbuf = testesm_build_pdn_connectivity_request(sess, false);
@@ -476,15 +471,10 @@ static void test2_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0x37;
-    mobile_identity_suci.scheme_output[1] = 0x46;
-    mobile_identity_suci.scheme_output[2] = 0;
-    mobile_identity_suci.scheme_output[3] = 0;
-    mobile_identity_suci.scheme_output[4] = 0x06;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "3746000006");
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf0;
@@ -895,15 +885,10 @@ static void test3_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0x37;
-    mobile_identity_suci.scheme_output[1] = 0x46;
-    mobile_identity_suci.scheme_output[2] = 0;
-    mobile_identity_suci.scheme_output[3] = 0;
-    mobile_identity_suci.scheme_output[4] = 0x06;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "3746000006");
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x54f6401;
@@ -1231,15 +1216,10 @@ static void test4_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0x37;
-    mobile_identity_suci.scheme_output[1] = 0x46;
-    mobile_identity_suci.scheme_output[2] = 0;
-    mobile_identity_suci.scheme_output[3] = 0;
-    mobile_identity_suci.scheme_output[4] = 0x06;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "3746000006");
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x64010;

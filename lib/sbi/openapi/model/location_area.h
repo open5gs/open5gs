@@ -14,7 +14,8 @@
 #include "../include/binary.h"
 #include "civic_address.h"
 #include "geographic_area.h"
-#include "network_area_info.h"
+#include "network_area_info_1.h"
+#include "umt_time.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,13 +25,15 @@ typedef struct OpenAPI_location_area_s OpenAPI_location_area_t;
 typedef struct OpenAPI_location_area_s {
     OpenAPI_list_t *geographic_areas;
     OpenAPI_list_t *civic_addresses;
-    struct OpenAPI_network_area_info_s *nw_area_info;
+    struct OpenAPI_network_area_info_1_s *nw_area_info;
+    struct OpenAPI_umt_time_s *umt_time;
 } OpenAPI_location_area_t;
 
 OpenAPI_location_area_t *OpenAPI_location_area_create(
     OpenAPI_list_t *geographic_areas,
     OpenAPI_list_t *civic_addresses,
-    OpenAPI_network_area_info_t *nw_area_info
+    OpenAPI_network_area_info_1_t *nw_area_info,
+    OpenAPI_umt_time_t *umt_time
 );
 void OpenAPI_location_area_free(OpenAPI_location_area_t *location_area);
 OpenAPI_location_area_t *OpenAPI_location_area_parseFromJSON(cJSON *location_areaJSON);

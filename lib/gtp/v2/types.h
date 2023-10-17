@@ -53,20 +53,47 @@ extern "C" {
 typedef struct ogs_gtp2_extension_header_s {
 #define OGS_GTP2_EXTENSION_HEADER_TYPE_UDP_PORT 0x40
 #define OGS_GTP2_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER 0x85
+#define OGS_GTP2_EXTENSION_HEADER_TYPE_PDCP_NUMBER 0xc0
 #define OGS_GTP2_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS 0x0
     uint16_t sequence_number;
     uint8_t n_pdu_number;
-    uint8_t type;
-    uint8_t len;
+    struct {
+        uint8_t type;
+        uint8_t len;
+        union {
+            struct {
 #define OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION 0
 #define OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION 1
-    ED2(uint8_t pdu_type:4;,
-        uint8_t spare1:4;);
-    ED3(uint8_t paging_policy_presence:1;,
-        uint8_t reflective_qos_indicator:1;,
-        uint8_t qos_flow_identifier:6;);
-    uint8_t next_type;
+            ED2(uint8_t pdu_type:4;,
+                uint8_t spare1:4;);
+            ED3(uint8_t paging_policy_presence:1;,
+                uint8_t reflective_qos_indicator:1;,
+                uint8_t qos_flow_identifier:6;);
+            };
+            uint16_t udp_port;
+            uint16_t pdcp_number;
+        };
+
+/* sizeof(extension_header.array[i]) */
+#define OGS_GTP2_MAX_EXTENSION_HEADER_LEN 4
+
+#define OGS_GTP2_NUM_OF_EXTENSION_HEADER 8
+    } __attribute__ ((packed)) array[OGS_GTP2_NUM_OF_EXTENSION_HEADER];
 } __attribute__ ((packed)) ogs_gtp2_extension_header_t;
+
+typedef struct ogs_gtp2_header_desc_s {
+    /* GTP Header */
+    uint8_t type;
+    uint8_t flags;
+    uint32_t teid;
+
+    /* GTP Extension Header */
+    uint8_t qos_flow_identifier;
+    uint8_t pdu_type;
+    ogs_port_t udp;
+    bool pdcp_number_presence;
+    uint16_t pdcp_number;
+} ogs_gtp2_header_desc_t;
 
 /* 8.4 Cause */
 #define OGS_GTP2_CAUSE_UNDEFINED_VALUE 0
@@ -236,14 +263,19 @@ ED8(uint8_t create_session_request_message_forwarded_indication:1;,
     uint8_t _5g_srvcc_ho_indication:1;,
     uint8_t ethernet_pdn_support_indication:1;)
 
-ED8(uint8_t spare1:1;,
-    uint8_t spare2:1;,
-    uint8_t spare3:1;,
-    uint8_t spare4:1;,
+ED8(uint8_t notify_start_pause_of_charging_via_user_plane_support_indication:1;,
+    uint8_t pgw_redirection_due_to_mismatch_with_network_slice_subscribed_by_ue_support_indication:1;,
+    uint8_t restoration_of_pdn_connections_after_an_pgw_c_smf_change_support_indication:1;,
+    uint8_t pgw_change_indication:1;,
     uint8_t same_iwk_scef_selected_for_monitoring_event_indication:1;,
     uint8_t notify_source_enodeb_indication:1;,
     uint8_t indirect_data_forwarding_with_upf_indication:1;,
     uint8_t emergency_pdu_session_indication:1;)
+
+ED4(uint8_t spare1:5;,
+    uint8_t lte_m_satellite_access_indication:1;,
+    uint8_t satellite_rat_type_reporting_to_pgw_indication:1;,
+    uint8_t user_plane_integrity_protection_support_indication:1;)
 } __attribute__ ((packed)) ogs_gtp2_indication_t;
 
 /* 8.13 Protocol Configuration Options (PCO)
@@ -297,7 +329,7 @@ typedef struct ogs_gtp2_flow_qos_s {
 } __attribute__ ((packed)) ogs_gtp2_flow_qos_t;
 
 #define ogs_gtp2_qos_to_bps(br, extended, extended2) \
-    ogs_gtp2_qos_to_kbps(br, extended, extended2) * 1024;
+    ogs_gtp2_qos_to_kbps(br, extended, extended2) * 1000;
 
 uint64_t ogs_gtp2_qos_to_kbps(uint8_t br, uint8_t extended, uint8_t extended2);
 

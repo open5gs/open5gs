@@ -112,7 +112,10 @@ static int epoll_add(ogs_poll_t *poll)
     map = ogs_hash_get(context->map_hash, &poll->fd, sizeof(poll->fd));
     if (!map) {
         map = ogs_calloc(1, sizeof(*map));
-        ogs_expect_or_return_val(map, OGS_ERROR);
+        if (!map) {
+            ogs_error("ogs_calloc() failed");
+            return OGS_ERROR;
+        }
 
         op = EPOLL_CTL_ADD;
         ogs_hash_set(context->map_hash, &poll->fd, sizeof(poll->fd), map);
@@ -224,7 +227,22 @@ static int epoll_process(ogs_pollset_t *pollset, ogs_time_t timeout)
 
         received = context->event_list[i].events;
         if (received & EPOLLERR) {
+        /*
+         * The libevent library has OGS_POLLOUT turned on in EPOLLERR.
+         *
+         * However, SIGPIPE can occur if write() is called
+         * when the peer connection is closed.
+         *
+         * Therefore, Open5GS turns off OGS_POLLOUT
+         * so that write() cannot be called in case of EPOLLERR.
+         *
+         * See also #2411 and #2312
+         */
+#if 0
             when = OGS_POLLIN|OGS_POLLOUT;
+#else
+            when = OGS_POLLIN;
+#endif
         } else if ((received & EPOLLHUP) && !(received & EPOLLRDHUP)) {
             when = OGS_POLLIN|OGS_POLLOUT;
         } else {

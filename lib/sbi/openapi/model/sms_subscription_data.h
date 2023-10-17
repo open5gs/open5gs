@@ -22,12 +22,14 @@ typedef struct OpenAPI_sms_subscription_data_s {
     bool is_sms_subscribed;
     int sms_subscribed;
     char *shared_sms_subs_data_id;
+    char *supported_features;
 } OpenAPI_sms_subscription_data_t;
 
 OpenAPI_sms_subscription_data_t *OpenAPI_sms_subscription_data_create(
     bool is_sms_subscribed,
     int sms_subscribed,
-    char *shared_sms_subs_data_id
+    char *shared_sms_subs_data_id,
+    char *supported_features
 );
 void OpenAPI_sms_subscription_data_free(OpenAPI_sms_subscription_data_t *sms_subscription_data);
 OpenAPI_sms_subscription_data_t *OpenAPI_sms_subscription_data_parseFromJSON(cJSON *sms_subscription_dataJSON);

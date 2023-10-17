@@ -99,9 +99,22 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                     }
                     break;
 
+                CASE(OGS_SBI_HTTP_METHOD_OPTIONS)
+                    ogs_assert(
+                        true ==
+                        ogs_sbi_server_send_error(
+                            stream,
+                            OGS_SBI_HTTP_STATUS_NOT_IMPLEMENTED,
+                            &message, "OPTIONS method is not implemented yet",
+                            NULL));
+                    break;
+
                 DEFAULT
-                    nf_instance = ogs_sbi_nf_instance_find(
-                            message.h.resource.component[1]);
+                    if (message.h.resource.component[1]) {
+                        nf_instance = ogs_sbi_nf_instance_find(
+                                message.h.resource.component[1]);
+                    }
+
                     if (!nf_instance) {
                         SWITCH(message.h.method)
                         CASE(OGS_SBI_HTTP_METHOD_PUT)
@@ -151,7 +164,6 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                                     nrf_nf_state_exception)) {
                             ogs_error("[%s] State machine exception",
                                     nf_instance->id);
-                            ogs_sbi_message_free(&message);
 
                             nrf_nf_fsm_fini(nf_instance);
                             ogs_sbi_nf_instance_remove(nf_instance);
@@ -164,6 +176,10 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     nrf_nnrf_handle_nf_status_subscribe(stream, &message);
+                    break;
+
+                CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                    nrf_nnrf_handle_nf_status_update(stream, &message);
                     break;
 
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
@@ -254,7 +270,7 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
             subscription_data = e->subscription_data;
             ogs_assert(subscription_data);
 
-            ogs_info("[%s] Subscription validity expired",
+            ogs_error("[%s] Subscription validity expired",
                     subscription_data->id);
             ogs_sbi_subscription_data_remove(subscription_data);
             break;

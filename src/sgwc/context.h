@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -39,18 +39,21 @@ extern int __sgwc_log_domain;
 typedef struct sgwc_tunnel_s sgwc_tunnel_t;
 
 typedef struct sgwc_context_s {
-    ogs_list_t      mme_s11_list;   /* MME GTPC Node List */
-    ogs_list_t      pgw_s5c_list;   /* PGW GTPC Node List */
+    ogs_list_t mme_s11_list;    /* MME GTPC Node List */
+    ogs_list_t pgw_s5c_list;    /* PGW GTPC Node List */
 
-    ogs_hash_t      *imsi_ue_hash;  /* hash table (IMSI : SGW_UE) */
+    ogs_hash_t *imsi_ue_hash;   /* hash table (IMSI : SGW_UE) */
+    ogs_hash_t *sgw_s11_teid_hash;  /* hash table (SGW-S11-TEID : SGW_UE) */
+    ogs_hash_t *sgwc_sxa_seid_hash; /* hash table (SGWC-SXA-SEID : Session) */
 
-    ogs_list_t      sgw_ue_list;    /* SGW_UE List */
+    ogs_list_t sgw_ue_list;    /* SGW_UE List */
 } sgwc_context_t;
 
 typedef struct sgwc_ue_s {
     ogs_lnode_t     lnode;
+    ogs_pool_id_t   *sgw_s11_teid_node; /* A node of SGW-S11-TEID */
 
-    uint32_t        sgw_s11_teid;   /* SGW-S11-TEID is derived from INDEX */
+    uint32_t        sgw_s11_teid;   /* SGW-S11-TEID is derived from NODE */
     uint32_t        mme_s11_teid;   /* MME-S11-TEID is received from MME */
 
     /* UE identity */
@@ -70,15 +73,15 @@ typedef struct sgwc_ue_s {
 
 #define SGWC_SESS(pfcp_sess) ogs_container_of(pfcp_sess, sgwc_sess_t, pfcp)
 typedef struct sgwc_sess_s {
-    ogs_lnode_t     lnode;          /* A node of list_t */
-    uint32_t        index;          /**< An index of this node */
+    ogs_lnode_t     lnode;                  /* A node of list_t */
+    ogs_pool_id_t   *sgwc_sxa_seid_node;    /* A node of SGWC-SXA-SEID */
 
     ogs_pfcp_sess_t pfcp;           /* PFCP session context */
 
-    uint32_t        sgw_s5c_teid;   /* SGW-S5C-TEID is derived from INDEX */
+    uint32_t        sgw_s5c_teid;   /* SGW-S5C-TEID is derived from NODE */
     uint32_t        pgw_s5c_teid;   /* PGW-S5C-TEID is received from PGW */
 
-    uint64_t        sgwc_sxa_seid;  /* SGW-C SEID is dervied from INDEX */
+    uint64_t        sgwc_sxa_seid;  /* SGW-C SEID is dervied from NODE */
     uint64_t        sgwu_sxa_seid;  /* SGW-U SEID is received from Peer */
 
     /* APN Configuration */
@@ -106,7 +109,6 @@ typedef struct sgwc_bearer_s {
 
 typedef struct sgwc_tunnel_s {
     ogs_lnode_t     lnode;
-    uint32_t        index;          /**< An index of this node */
 
     uint8_t         interface_type;
 
@@ -147,7 +149,6 @@ void sgwc_sess_select_sgwu(sgwc_sess_t *sess);
 int sgwc_sess_remove(sgwc_sess_t *sess);
 void sgwc_sess_remove_all(sgwc_ue_t *sgwc_ue);
 
-sgwc_sess_t *sgwc_sess_find(uint32_t index);
 sgwc_sess_t *sgwc_sess_find_by_teid(uint32_t teid);
 sgwc_sess_t *sgwc_sess_find_by_seid(uint64_t seid);
 
@@ -167,9 +168,6 @@ sgwc_bearer_t *sgwc_bearer_find_by_sess_ebi(
                                 sgwc_sess_t *sess, uint8_t ebi);
 sgwc_bearer_t *sgwc_bearer_find_by_ue_ebi(
                                 sgwc_ue_t *sgwc_ue, uint8_t ebi);
-sgwc_bearer_t *sgwc_bearer_find_by_error_indication_report(
-        sgwc_sess_t *sess,
-        ogs_pfcp_tlv_error_indication_report_t *error_indication_report);
 sgwc_bearer_t *sgwc_default_bearer_in_sess(sgwc_sess_t *sess);
 sgwc_bearer_t *sgwc_bearer_cycle(sgwc_bearer_t *bearer);
 
@@ -182,6 +180,8 @@ sgwc_tunnel_t *sgwc_tunnel_find_by_interface_type(
         sgwc_bearer_t *bearer, uint8_t interface_type);
 sgwc_tunnel_t *sgwc_tunnel_find_by_pdr_id(
         sgwc_sess_t *sess, ogs_pfcp_pdr_id_t pdr_id);
+sgwc_tunnel_t *sgwc_tunnel_find_by_far_id(
+        sgwc_sess_t *sess, ogs_pfcp_far_id_t far_id);
 sgwc_tunnel_t *sgwc_dl_tunnel_in_bearer(sgwc_bearer_t *bearer);
 sgwc_tunnel_t *sgwc_ul_tunnel_in_bearer(sgwc_bearer_t *bearer);
 

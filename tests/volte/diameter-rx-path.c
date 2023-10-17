@@ -42,9 +42,9 @@ static __inline__ struct sess_state *new_state(os0_t sid)
     struct sess_state *new = NULL;
 
     new = ogs_calloc(1, sizeof(*new));
-    ogs_expect_or_return_val(new, NULL);
+    ogs_assert(new);
     new->sid = (os0_t)ogs_strdup((char *)sid);
-    ogs_expect_or_return_val(new->sid, NULL);
+    ogs_assert(new->sid);
 
     return new;
 }

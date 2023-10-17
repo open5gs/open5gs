@@ -1,7 +1,7 @@
 /*
  * n1_n2_message_transfer_error.h
  *
- * 
+ * Data within a N1/N2 Message Transfer Error response
  */
 
 #ifndef _OpenAPI_n1_n2_message_transfer_error_H_

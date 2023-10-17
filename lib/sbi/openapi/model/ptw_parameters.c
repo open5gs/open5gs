@@ -20,17 +20,22 @@ OpenAPI_ptw_parameters_t *OpenAPI_ptw_parameters_create(
 
 void OpenAPI_ptw_parameters_free(OpenAPI_ptw_parameters_t *ptw_parameters)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ptw_parameters) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ptw_parameters->ptw_value);
+    if (ptw_parameters->ptw_value) {
+        ogs_free(ptw_parameters->ptw_value);
+        ptw_parameters->ptw_value = NULL;
+    }
     ogs_free(ptw_parameters);
 }
 
 cJSON *OpenAPI_ptw_parameters_convertToJSON(OpenAPI_ptw_parameters_t *ptw_parameters)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ptw_parameters == NULL) {
         ogs_error("OpenAPI_ptw_parameters_convertToJSON() failed [PtwParameters]");
@@ -38,11 +43,19 @@ cJSON *OpenAPI_ptw_parameters_convertToJSON(OpenAPI_ptw_parameters_t *ptw_parame
     }
 
     item = cJSON_CreateObject();
+    if (ptw_parameters->operation_mode == OpenAPI_operation_mode_NULL) {
+        ogs_error("OpenAPI_ptw_parameters_convertToJSON() failed [operation_mode]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "operationMode", OpenAPI_operation_mode_ToString(ptw_parameters->operation_mode)) == NULL) {
         ogs_error("OpenAPI_ptw_parameters_convertToJSON() failed [operation_mode]");
         goto end;
     }
 
+    if (!ptw_parameters->ptw_value) {
+        ogs_error("OpenAPI_ptw_parameters_convertToJSON() failed [ptw_value]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "ptwValue", ptw_parameters->ptw_value) == NULL) {
         ogs_error("OpenAPI_ptw_parameters_convertToJSON() failed [ptw_value]");
         goto end;
@@ -55,25 +68,26 @@ end:
 OpenAPI_ptw_parameters_t *OpenAPI_ptw_parameters_parseFromJSON(cJSON *ptw_parametersJSON)
 {
     OpenAPI_ptw_parameters_t *ptw_parameters_local_var = NULL;
-    cJSON *operation_mode = cJSON_GetObjectItemCaseSensitive(ptw_parametersJSON, "operationMode");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *operation_mode = NULL;
+    OpenAPI_operation_mode_e operation_modeVariable = 0;
+    cJSON *ptw_value = NULL;
+    operation_mode = cJSON_GetObjectItemCaseSensitive(ptw_parametersJSON, "operationMode");
     if (!operation_mode) {
         ogs_error("OpenAPI_ptw_parameters_parseFromJSON() failed [operation_mode]");
         goto end;
     }
-
-    OpenAPI_operation_mode_e operation_modeVariable;
     if (!cJSON_IsString(operation_mode)) {
         ogs_error("OpenAPI_ptw_parameters_parseFromJSON() failed [operation_mode]");
         goto end;
     }
     operation_modeVariable = OpenAPI_operation_mode_FromString(operation_mode->valuestring);
 
-    cJSON *ptw_value = cJSON_GetObjectItemCaseSensitive(ptw_parametersJSON, "ptwValue");
+    ptw_value = cJSON_GetObjectItemCaseSensitive(ptw_parametersJSON, "ptwValue");
     if (!ptw_value) {
         ogs_error("OpenAPI_ptw_parameters_parseFromJSON() failed [ptw_value]");
         goto end;
     }
-
     if (!cJSON_IsString(ptw_value)) {
         ogs_error("OpenAPI_ptw_parameters_parseFromJSON() failed [ptw_value]");
         goto end;

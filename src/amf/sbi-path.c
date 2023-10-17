@@ -33,7 +33,7 @@ int amf_sbi_open(void)
     ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Build NF instance information. It will be transmitted to NRF. */
-    ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_AMF);
+    ogs_sbi_nf_instance_build_default(nf_instance);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SMF);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SCP);
 
@@ -52,19 +52,19 @@ int amf_sbi_open(void)
     if (nf_instance)
         ogs_sbi_nf_fsm_init(nf_instance);
 
-    /* Build Subscription-Data */
-    ogs_sbi_subscription_data_build_default(
-            OpenAPI_nf_type_AUSF, OGS_SBI_SERVICE_NAME_NAUSF_AUTH);
-    ogs_sbi_subscription_data_build_default(
-            OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_UECM);
-    ogs_sbi_subscription_data_build_default(
-            OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_SDM);
-    ogs_sbi_subscription_data_build_default(
-            OpenAPI_nf_type_PCF, OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL);
-    ogs_sbi_subscription_data_build_default(
-            OpenAPI_nf_type_SMF, OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION);
-    ogs_sbi_subscription_data_build_default(
-            OpenAPI_nf_type_NSSF, OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION);
+    /* Setup Subscription-Data */
+    ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NAUSF_AUTH);
+    ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NUDM_UECM);
+    ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NUDM_SDM);
+    ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL);
+    ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION);
+    ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
@@ -86,12 +86,14 @@ bool amf_sbi_send_request(
     return ogs_sbi_send_request_to_nf_instance(nf_instance, xact);
 }
 
-bool amf_ue_sbi_discover_and_send(
+int amf_ue_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data),
-        amf_ue_t *amf_ue, void *data)
+        amf_ue_t *amf_ue, int state, void *data)
 {
+    int r;
+    int rv;
     ogs_sbi_xact_t *xact = NULL;
 
     ogs_assert(service_type);
@@ -103,30 +105,37 @@ bool amf_ue_sbi_discover_and_send(
             (ogs_sbi_build_f)build, amf_ue, data);
     if (!xact) {
         ogs_error("amf_ue_sbi_discover_and_send() failed");
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_gmm_reject_from_sbi(
-                amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
-        return false;
+        r = nas_5gs_send_gmm_reject_from_sbi(
+                amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
     }
 
-    if (ogs_sbi_discover_and_send(xact) != true) {
+    xact->state = state;
+
+    rv = ogs_sbi_discover_and_send(xact);
+    if (rv != OGS_OK) {
         ogs_error("amf_ue_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_gmm_reject_from_sbi(
-                amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
-        return false;
+        r = nas_5gs_send_gmm_reject_from_sbi(
+                amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return rv;
     }
 
-    return true;
+    return OGS_OK;
 }
 
-bool amf_sess_sbi_discover_and_send(
+int amf_sess_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data),
         amf_sess_t *sess, int state, void *data)
 {
+    int r;
+    int rv;
     ogs_sbi_xact_t *xact = NULL;
 
     ogs_assert(service_type);
@@ -138,27 +147,32 @@ bool amf_sess_sbi_discover_and_send(
             (ogs_sbi_build_f)build, sess, data);
     if (!xact) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
-        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
-            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
-        return false;
+        r = nas_5gs_send_back_gsm_message(sess,
+            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
     }
 
     xact->state = state;
 
-    if (ogs_sbi_discover_and_send(xact) != true) {
+    rv = ogs_sbi_discover_and_send(xact);
+    if (rv != OGS_OK) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
-        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
-            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
-        return false;
+        r = nas_5gs_send_back_gsm_message(sess,
+            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return rv;
     }
 
-    return true;
+    return OGS_OK;
 }
 static int client_discover_cb(
         int status, ogs_sbi_response_t *response, void *data)
 {
-    int rv;
+    int r, rv;
     ogs_sbi_message_t message;
 
     ogs_sbi_xact_t *xact = NULL;
@@ -214,24 +228,30 @@ static int client_discover_cb(
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
         ogs_error("cannot parse HTTP response");
-        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
-            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
+        r = nas_5gs_send_back_gsm_message(sess,
+            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
 
         goto cleanup;
     }
 
     if (message.res_status != OGS_SBI_HTTP_STATUS_OK) {
         ogs_error("NF-Discover failed [%d]", message.res_status);
-        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
-            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
+        r = nas_5gs_send_back_gsm_message(sess,
+            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
 
         goto cleanup;
     }
 
     if (!message.SearchResult) {
         ogs_error("No SearchResult");
-        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
-            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
+        r = nas_5gs_send_back_gsm_message(sess,
+            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
 
         goto cleanup;
     }
@@ -245,18 +265,21 @@ static int client_discover_cb(
         ogs_error("[%s:%d] (NF discover) No [%s]",
                     amf_ue->supi, sess->psi,
                     ogs_sbi_service_type_to_name(service_type));
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_back_gsm_message(sess,
+        r = nas_5gs_send_back_gsm_message(sess,
                 OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
-                AMF_NAS_BACKOFF_TIME));
+                AMF_NAS_BACKOFF_TIME);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
 
         goto cleanup;
     }
 
-    amf_sess_sbi_discover_and_send(
+    r = amf_sess_sbi_discover_and_send(
             service_type, NULL,
             amf_nsmf_pdusession_build_create_sm_context,
             sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
 
     ogs_sbi_xact_remove(xact);
 
@@ -274,7 +297,7 @@ cleanup:
     return OGS_ERROR;
 }
 
-bool amf_sess_sbi_discover_by_nsi(
+int amf_sess_sbi_discover_by_nsi(
         amf_sess_t *sess,
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option)
@@ -292,34 +315,45 @@ bool amf_sess_sbi_discover_by_nsi(
 
     xact = ogs_sbi_xact_add(
             &sess->sbi, service_type, discovery_option, NULL, NULL, NULL);
-    ogs_expect_or_return_val(xact, false);
+    if (!xact) {
+        ogs_error("ogs_sbi_xact_add() failed");
+        return OGS_ERROR;
+    }
 
     xact->request = amf_nnrf_disc_build_discover(
                 sess->nssf.nrf.id, xact->service_type, xact->discovery_option);
-    ogs_expect_or_return_val(xact->request, false);
+    if (!xact->request) {
+        ogs_error("amf_nnrf_disc_build_discover() failed");
+        ogs_sbi_xact_remove(xact);
+        return OGS_ERROR;
+    }
 
     return ogs_sbi_client_send_request(
-            client, client_discover_cb, xact->request, xact);
+            client, client_discover_cb, xact->request, xact) == true ? OGS_OK : OGS_ERROR;
 }
 
 void amf_sbi_send_activating_session(amf_sess_t *sess, int state)
 {
     amf_nsmf_pdusession_sm_context_param_t param;
+    int r;
 
     ogs_assert(sess);
 
     memset(&param, 0, sizeof(param));
     param.upCnxState = OpenAPI_up_cnx_state_ACTIVATING;
 
-    amf_sess_sbi_discover_and_send(
+    r = amf_sess_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
             amf_nsmf_pdusession_build_update_sm_context, sess, state, &param);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
 }
 
 void amf_sbi_send_deactivate_session(
         amf_sess_t *sess, int state, int group, int cause)
 {
     amf_nsmf_pdusession_sm_context_param_t param;
+    int r;
 
     ogs_assert(sess);
 
@@ -330,9 +364,11 @@ void amf_sbi_send_deactivate_session(
     param.ue_location = true;
     param.ue_timezone = true;
 
-    amf_sess_sbi_discover_and_send(
+    r = amf_sess_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
             amf_nsmf_pdusession_build_update_sm_context, sess, state, &param);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
 }
 
 void amf_sbi_send_deactivate_all_sessions(
@@ -391,11 +427,15 @@ void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state)
 
 void amf_sbi_send_release_session(amf_sess_t *sess, int state)
 {
+    int r;
+
     ogs_assert(sess);
 
-    amf_sess_sbi_discover_and_send(
+    r = amf_sess_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
             amf_nsmf_pdusession_build_release_sm_context, sess, state, NULL);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
 
     /* Prevent to invoke SMF for this session */
     CLEAR_SM_CONTEXT_REF(sess);
@@ -458,7 +498,10 @@ bool amf_sbi_send_n1_n2_failure_notify(
     ogs_assert(client);
 
     request = amf_nsmf_callback_build_n1_n2_failure_notify(sess, cause);
-    ogs_expect_or_return_val(request, false);
+    if (!request) {
+        ogs_error("amf_nsmf_callback_build_n1_n2_failure_notify() failed");
+        return false;
+    }
 
     rc = ogs_sbi_send_request_to_client(
             client, client_notify_cb, request, NULL);
@@ -467,4 +510,41 @@ bool amf_sbi_send_n1_n2_failure_notify(
     ogs_sbi_request_free(request);
 
     return rc;
+}
+
+bool amf_ue_have_session_release_pending(amf_ue_t *amf_ue)
+{
+    amf_sess_t *sess = NULL;
+
+    ogs_assert(amf_ue);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if (amf_sess_have_session_release_pending(sess) == true)
+            return true;
+    }
+
+    return false;
+}
+
+bool amf_sess_have_session_release_pending(amf_sess_t *sess)
+{
+    ogs_sbi_xact_t *xact = NULL;
+
+    ogs_assert(sess);
+
+    ogs_list_for_each(&sess->sbi.xact_list, xact) {
+        if (xact->state == AMF_UPDATE_SM_CONTEXT_N1_RELEASED)
+            return true;
+        if (xact->state == AMF_UPDATE_SM_CONTEXT_N2_RELEASED)
+            return true;
+    }
+
+    if (sess->n1_released == true)
+        return true;
+    if (sess->n2_released == true)
+        return true;
+    if (sess->resource_status == OpenAPI_resource_status_RELEASED)
+        return true;
+
+    return false;
 }

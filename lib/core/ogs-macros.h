@@ -206,6 +206,10 @@ static ogs_inline ogs_uint24_t ogs_htobe24(ogs_uint24_t x)
 #define OGS_MAX_FILEPATH_LEN            256
 #define OGS_MAX_IFNAME_LEN              32
 
+#define OGS_MAX_SDU_LEN                 32768 /* Should Heap */
+#define OGS_HUGE_LEN                    8192  /* Can Stack */
+#define OGS_MAX_PKT_LEN                 2048
+
 #define OGS_FILE_LINE __FILE__ ":" OGS_STRINGIFY(__LINE__)
 
 #define ogs_uint64_to_uint32(x) ((x >= 0xffffffffUL) ? 0xffffffffU : x)

@@ -1,7 +1,7 @@
 /*
  * preemption_control_information_rm.h
  *
- * 
+ * This data type is defined in the same way as the PreemptionControlInformation data type, but with the OpenAPI nullable property set to true.
  */
 
 #ifndef _OpenAPI_preemption_control_information_rm_H_

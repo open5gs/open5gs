@@ -1,7 +1,7 @@
 /*
  * traffic_descriptor.h
  *
- * 
+ * Represents the Traffic Descriptor
  */
 
 #ifndef _OpenAPI_traffic_descriptor_H_

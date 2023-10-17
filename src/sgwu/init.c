@@ -26,7 +26,7 @@ static void sgwu_main(void *data);
 
 static int initialized = 0;
 
-int sgwu_initialize()
+int sgwu_initialize(void)
 {
     int rv;
 

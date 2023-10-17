@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -50,13 +50,14 @@ extern "C" {
 #define OGS_MAX_NUM_OF_FLOW_IN_BEARER   16
 
 #define OGS_MAX_NUM_OF_GTPU_RESOURCE    4
+#define OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI 8
 
-#define OGS_MAX_SDU_LEN                 8192
-#define OGS_MAX_PKT_LEN                 2048
 #define OGS_PLMN_ID_LEN                 3
 #define OGS_MAX_PLMN_ID_BCD_LEN         6
 
 #define OGS_CHRGCHARS_LEN               2
+
+#define OGS_MSIN_LEN                    5
 
 #define OGS_BCD_TO_BUFFER_LEN(x)        (((x)+1)/2)
 #define OGS_MAX_IMSI_BCD_LEN            15
@@ -79,10 +80,12 @@ extern "C" {
 #define OGS_MAX_DNN_LEN                 100
 #define OGS_MAX_APN_LEN                 OGS_MAX_DNN_LEN
 #define OGS_MAX_PCO_LEN                 251
+#define OGS_MAX_EPCO_LEN                65535
 #define OGS_MAX_FQDN_LEN                256
 
 #define OGS_MAX_NUM_OF_SERVED_GUAMI     8
-#define OGS_MAX_NUM_OF_SERVED_TAI       16
+#define OGS_MAX_NUM_OF_SERVED_TAI       OGS_MAX_NUM_OF_TAI
+#define OGS_MAX_NUM_OF_ACCESS_CONTROL   8
 #define OGS_MAX_NUM_OF_ALGORITHM        8
 
 #define OGS_MAX_NUM_OF_BPLMN            6
@@ -176,14 +179,17 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
         uint8_t region, uint16_t set, uint8_t pointer);
 
 /************************************
- * SUPI/SUCI                       */
-char *ogs_supi_from_suci(char *suci);
-char *ogs_supi_from_supi_or_suci(char *supi_or_suci);
+ * 9.11.3.4 5GS mobile identity
+ * - Protection Scheme */
+#define OGS_PROTECTION_SCHEME_NULL 0
+#define OGS_PROTECTION_SCHEME_PROFILE_A 1
+#define OGS_PROTECTION_SCHEME_PROFILE_B 2
 
 /************************************
  * SUPI/GPSI                       */
 #define OGS_ID_SUPI_TYPE_IMSI "imsi"
 #define OGS_ID_GPSI_TYPE_MSISDN "msisdn"
+#define OGS_ID_SUPI_TYPE_IMEISV "imeisv"
 char *ogs_id_get_type(char *str);
 char *ogs_id_get_value(char *str);
 
@@ -447,6 +453,7 @@ typedef struct ogs_pcc_rule_s {
         (__pCCrULE)->num_of_flow = 0; \
     } while(0)
 
+
 /**********************************
  * PDN Structure                 */
 typedef struct ogs_session_s {
@@ -478,6 +485,8 @@ typedef struct ogs_session_s {
 
     ogs_paa_t paa;
     ogs_ip_t ue_ip;
+    char **ipv4_framed_routes;
+    char **ipv6_framed_routes;
     ogs_ip_t smf_ip;
 } ogs_session_t;
 
@@ -676,6 +685,16 @@ typedef struct ogs_subscription_data_s {
 #define OGS_SUBSCRIBER_STATUS_SERVICE_GRANTED                   0
 #define OGS_SUBSCRIBER_STATUS_OPERATOR_DETERMINED_BARRING       1
     uint32_t                subscriber_status;
+#define OGS_OP_DET_BARRING_ALL_PS_BARRED                                            (1<<0)
+#define OGS_OP_DET_BARRING_ROAM_ACC_HPLMN_AP_BARRED                                 (1<<1)
+#define OGS_OP_DET_BARRING_ROAM_ACC_VPLMN_AP_BARRED                                 (1<<2)
+#define OGS_OP_DET_BARRING_ALL_OUT_CALLS                                            (1<<3)
+#define OGS_OP_DET_BARRING_ALL_OUT_INT_CALLS                                        (1<<4)
+#define OGS_OP_DET_BARRING_ALL_OUT_INT_CALLS_EXCL_HPLMN_COUNTRY                     (1<<5)
+#define OGS_OP_DET_BARRING_ALL_OUT_INTERZONE_CALLS                                  (1<<6)
+#define OGS_OP_DET_BARRING_ALL_OUT_INTERZONE_CALLS_EXCL_HPLMN_COUNTRY               (1<<7)
+#define OGS_OPD_ETEBARRING_OUT_INT_CALLS_EXCL_EXCL_HPLMN_COUNTRY_AND_INTERZONE_CALLS (1<<8)
+    uint32_t operator_determined_barring; /* 3GPP TS 29.272 7.3.30 */
 #define OGS_NETWORK_ACCESS_MODE_PACKET_AND_CIRCUIT              0
 #define OGS_NETWORK_ACCESS_MODE_RESERVED                        1
 #define OGS_NETWORK_ACCESS_MODE_ONLY_PACKET                     2
@@ -780,6 +799,16 @@ int ogs_pcc_rule_install_flow_from_media(
         ogs_pcc_rule_t *pcc_rule, ogs_media_component_t *media_component);
 int ogs_pcc_rule_update_qos_from_media(
         ogs_pcc_rule_t *pcc_rule, ogs_media_component_t *media_component);
+
+typedef struct ogs_datum_s {
+    unsigned char *data;
+    unsigned int size;
+} ogs_datum_t;
+
+typedef struct ogs_port_s {
+    bool presence;
+    uint16_t port;
+} ogs_port_t;
 
 #ifdef __cplusplus
 }

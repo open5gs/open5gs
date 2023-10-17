@@ -48,15 +48,10 @@ static void cm_idle_paging_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -387,7 +382,7 @@ static void cm_idle_paging_func(abts_case *tc, void *data)
             NGAP_ProcedureCode_id_Paging,
             test_ue->ngap_procedure_code);
 
-    ogs_msleep(3000);
+    ogs_msleep(2100);
 #endif
 
     /*
@@ -614,15 +609,10 @@ static void cm_connected_paging_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -868,6 +858,7 @@ static void cm_connected_paging_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+#if OGS_SBI_DISABLE_NETWORK_SERVICE_REQUEST_WHILE_ACTIVATING == 0
     /* Receive PDUSessionResourceSetupRequest +
      * DL NAS transport +
      * PDU session establishment accept */
@@ -877,12 +868,14 @@ static void cm_connected_paging_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_PDUSessionResourceSetup,
             test_ue->ngap_procedure_code);
+#endif
 
     /* Receive GTP-U ICMP Packet */
     recvbuf = testgnb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+#if OGS_SBI_DISABLE_NETWORK_SERVICE_REQUEST_WHILE_ACTIVATING == 0
     /* Send PDUSessionResourceSetupResponse(Unsuccessful) */
     sendbuf = testngap_sess_build_pdu_session_resource_failed_to_setup(
             sess,
@@ -891,6 +884,7 @@ static void cm_connected_paging_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+#endif
 
     /* Send GTP-U ICMP Packet */
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
@@ -900,6 +894,16 @@ static void cm_connected_paging_func(abts_case *tc, void *data)
     recvbuf = testgnb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
+
+#if OGS_SBI_DISABLE_NETWORK_SERVICE_REQUEST_WHILE_ACTIVATING == 1
+    /* Send UEContextReleaseRequest */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+#endif
 
     /* Receive UEContextReleaseCommand */
     recvbuf = testgnb_ngap_read(ngap);
@@ -959,15 +963,10 @@ static void cm_idle_error_indication_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -1306,15 +1305,10 @@ static void cm_connected_error_indication_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -1568,7 +1562,7 @@ static void vonr_qos_flow_test1_func(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     int i;
 
-    uint8_t tmp[OGS_MAX_SDU_LEN];
+    uint8_t tmp[OGS_HUGE_LEN];
     char *_gtp_payload = "34ff0024"
         "0000000100000085 010002004500001c 0c0b000040015a7a 0a2d00010a2d0002"
         "00000964cd7c291f";
@@ -1589,15 +1583,10 @@ static void vonr_qos_flow_test1_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -1892,6 +1881,7 @@ static void vonr_qos_flow_test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+#if OGS_SBI_DISABLE_NETWORK_SERVICE_REQUEST_WHILE_ACTIVATING == 0
     /* Receive PDUSessionResourceSetupRequest */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -1905,6 +1895,7 @@ static void vonr_qos_flow_test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+#endif
 
     /* Send GTP-U ICMP Packet */
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
@@ -1968,7 +1959,7 @@ static void vonr_session_test2_func(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     int i;
 
-    uint8_t tmp[OGS_MAX_SDU_LEN];
+    uint8_t tmp[OGS_HUGE_LEN];
     char *_gtp_payload = "34ff0024"
         "0000000100000085 010002004500001c 0c0b000040015a7a 0a2d00010a2d0002"
         "00000964cd7c291f";
@@ -1989,15 +1980,10 @@ static void vonr_session_test2_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -2334,6 +2320,7 @@ static void vonr_session_test2_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+#if OGS_SBI_DISABLE_NETWORK_SERVICE_REQUEST_WHILE_ACTIVATING == 0
     /* Receive PDUSessionResourceSetupRequest */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -2347,6 +2334,7 @@ static void vonr_session_test2_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+#endif
 
     /* Send GTP-U ICMP Packet */
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
@@ -2381,6 +2369,9 @@ static void vonr_session_test2_func(abts_case *tc, void *data)
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceRelease,
+            test_ue->ngap_procedure_code);
 
     /* Send PDUSessionResourceReleaseResponse */
     sendbuf = testngap_build_pdu_session_resource_release_response(sess);
@@ -2480,15 +2471,10 @@ static void registration_ue_context_test4_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -2774,6 +2760,7 @@ static void registration_ue_context_test4_func(abts_case *tc, void *data)
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+#if OGS_SBI_DISABLE_NETWORK_SERVICE_REQUEST_WHILE_ACTIVATING == 0
     /* Receive PDUSessionResourceSetupRequest */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -2781,6 +2768,7 @@ static void registration_ue_context_test4_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_PDUSessionResourceSetup,
             test_ue->ngap_procedure_code);
+#endif
 
     /* Send InitialContextSetupResponse */
     sendbuf = testngap_build_initial_context_setup_response(test_ue, true);
@@ -2788,11 +2776,13 @@ static void registration_ue_context_test4_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+#if OGS_SBI_DISABLE_NETWORK_SERVICE_REQUEST_WHILE_ACTIVATING == 0
     /* Send PDUSessionResourceSetupResponse */
     sendbuf = testngap_ue_build_pdu_session_resource_setup_response(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+#endif
 
     /* Receive GTP-U ICMP Packet */
     recvbuf = testgnb_gtpu_read(gtpu);
@@ -2874,15 +2864,10 @@ static void registration_idle_test1_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -3208,6 +3193,7 @@ static void registration_idle_test1_func(abts_case *tc, void *data)
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+#if OGS_SBI_DISABLE_NETWORK_SERVICE_REQUEST_WHILE_ACTIVATING == 0
     /* Receive PDUSessionResourceSetupRequest */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -3215,6 +3201,7 @@ static void registration_idle_test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_PDUSessionResourceSetup,
             test_ue->ngap_procedure_code);
+#endif
 
     /* Send InitialContextSetupResponse */
     sendbuf = testngap_build_initial_context_setup_response(test_ue, true);
@@ -3222,11 +3209,13 @@ static void registration_idle_test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+#if OGS_SBI_DISABLE_NETWORK_SERVICE_REQUEST_WHILE_ACTIVATING == 0
     /* Send PDUSessionResourceSetupResponse */
     sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+#endif
 
     /* Receive GTP-U ICMP Packet */
     recvbuf = testgnb_gtpu_read(gtpu);

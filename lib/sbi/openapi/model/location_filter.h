@@ -1,7 +1,7 @@
 /*
  * location_filter.h
  *
- * 
+ * Describes the supported filters of LOCATION_REPORT event type
  */
 
 #ifndef _OpenAPI_location_filter_H_

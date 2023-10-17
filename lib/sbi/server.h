@@ -28,16 +28,16 @@
 extern "C" {
 #endif
 
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 typedef struct ogs_sbi_stream_s ogs_sbi_stream_t;
 
 typedef struct ogs_sbi_server_s {
     ogs_socknode_t  node;
     ogs_sockaddr_t  *advertise;
 
-    struct {
-        const char  *key;
-        const char  *pem;
-    } tls;
+    SSL_CTX *ssl_ctx;
 
     int (*cb)(ogs_sbi_request_t *request, void *data);
     ogs_list_t      session_list;

@@ -817,7 +817,7 @@ static void test6_func(abts_case *tc, void *data)
 
     ABTS_INT_EQUAL(tc, 182, req->len);
     ABTS_TRUE(tc, memcmp(req->data,
-        OGS_HEX(TEST_TLV_BUILD_MSG, strlen(TEST_TLV_BUILD_MSG), testbuf),
+        ogs_hex_from_string(TEST_TLV_BUILD_MSG, testbuf, sizeof(testbuf)),
         req->len) == 0);
 
     /* Initialize message value structure */

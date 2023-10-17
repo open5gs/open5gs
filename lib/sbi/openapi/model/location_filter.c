@@ -16,16 +16,18 @@ OpenAPI_location_filter_t *OpenAPI_location_filter_create(
 
 void OpenAPI_location_filter_free(OpenAPI_location_filter_t *location_filter)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == location_filter) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(location_filter);
 }
 
 cJSON *OpenAPI_location_filter_convertToJSON(OpenAPI_location_filter_t *location_filter)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (location_filter == NULL) {
         ogs_error("OpenAPI_location_filter_convertToJSON() failed [LocationFilter]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_location_filter_t *OpenAPI_location_filter_parseFromJSON(cJSON *location_filterJSON)
 {
     OpenAPI_location_filter_t *location_filter_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     location_filter_local_var = OpenAPI_location_filter_create (
     );
 

@@ -1,0 +1,205 @@
+openapi: 3.0.0
+info:
+  version: '1.0.1'
+  title: 'Nudm_MT'
+  description: |
+    UDM MT Service.
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.503 Unified Data Management Services, version 16.5.0
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.503/'
+
+servers:
+  - url: '{apiRoot}/nudm-mt/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - oAuth2ClientCredentials:
+    - nudm-mt
+  - {}
+
+paths:
+  /{supi}:
+    get:
+      summary: Query Information for the UE
+      operationId: QueryUeInfo
+      tags:
+        - Query UE Info
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: fields
+          in: query
+          description: attributes to be retrieved
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+          style: form
+          explode: false
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeInfo'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/loc-info/provide-loc-info:
+    post:
+      summary: Provides the UE's 5GS location information
+      operationId: ProvideLocationInfo
+      tags:
+        - Provide UE Location
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationInfoRequest'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationInfoResult'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nudm-mt: Access to the nudm-mt API
+
+
+  schemas:
+
+# COMPLEX TYPES:
+
+    UeInfo:
+      type: object
+      properties:
+        tadsInfo:
+          $ref: 'TS29518_Namf_MT.yaml#/components/schemas/UeContextInfo'
+        userState:
+          $ref: 'TS29518_Namf_EventExposure.yaml#/components/schemas/5GsUserState'
+        5gSrvccInfo:
+          $ref: '#/components/schemas/5GSrvccInfo'
+
+    5GSrvccInfo:
+      type: object
+      required:
+       - ue5GSrvccCapability
+      properties:
+        ue5GSrvccCapability:
+          type: boolean
+        stnSr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/StnSr'
+        cMsisdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/CMsisdn'
+
+    LocationInfoRequest:
+      type: object
+      properties:
+        req5gsLoc:
+          type: boolean
+          default: false
+        reqCurrentLoc:
+          type: boolean
+          default: false
+        reqRatType:
+          type: boolean
+          default: false
+        reqTimeZone:
+          type: boolean
+          default: false
+        reqServingNode:
+          type: boolean
+          default: false
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    LocationInfoResult:
+      type: object
+      properties:
+        vPlmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        amfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        smsfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        ncgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+        ecgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ecgi'
+        tai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+        currentLoc:
+          type: boolean
+        geoInfo:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+        locatoinAge:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/AgeOfLocationEstimate'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        timezone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+# SIMPLE TYPES:
+
+
+# ENUMS:
+

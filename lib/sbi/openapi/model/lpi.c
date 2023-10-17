@@ -20,17 +20,22 @@ OpenAPI_lpi_t *OpenAPI_lpi_create(
 
 void OpenAPI_lpi_free(OpenAPI_lpi_t *lpi)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == lpi) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_valid_time_period_free(lpi->valid_time_period);
+    if (lpi->valid_time_period) {
+        OpenAPI_valid_time_period_free(lpi->valid_time_period);
+        lpi->valid_time_period = NULL;
+    }
     ogs_free(lpi);
 }
 
 cJSON *OpenAPI_lpi_convertToJSON(OpenAPI_lpi_t *lpi)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (lpi == NULL) {
         ogs_error("OpenAPI_lpi_convertToJSON() failed [Lpi]");
@@ -38,6 +43,10 @@ cJSON *OpenAPI_lpi_convertToJSON(OpenAPI_lpi_t *lpi)
     }
 
     item = cJSON_CreateObject();
+    if (lpi->location_privacy_ind == OpenAPI_location_privacy_ind_NULL) {
+        ogs_error("OpenAPI_lpi_convertToJSON() failed [location_privacy_ind]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "locationPrivacyInd", OpenAPI_location_privacy_ind_ToString(lpi->location_privacy_ind)) == NULL) {
         ogs_error("OpenAPI_lpi_convertToJSON() failed [location_privacy_ind]");
         goto end;
@@ -63,24 +72,29 @@ end:
 OpenAPI_lpi_t *OpenAPI_lpi_parseFromJSON(cJSON *lpiJSON)
 {
     OpenAPI_lpi_t *lpi_local_var = NULL;
-    cJSON *location_privacy_ind = cJSON_GetObjectItemCaseSensitive(lpiJSON, "locationPrivacyInd");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *location_privacy_ind = NULL;
+    OpenAPI_location_privacy_ind_e location_privacy_indVariable = 0;
+    cJSON *valid_time_period = NULL;
+    OpenAPI_valid_time_period_t *valid_time_period_local_nonprim = NULL;
+    location_privacy_ind = cJSON_GetObjectItemCaseSensitive(lpiJSON, "locationPrivacyInd");
     if (!location_privacy_ind) {
         ogs_error("OpenAPI_lpi_parseFromJSON() failed [location_privacy_ind]");
         goto end;
     }
-
-    OpenAPI_location_privacy_ind_e location_privacy_indVariable;
     if (!cJSON_IsString(location_privacy_ind)) {
         ogs_error("OpenAPI_lpi_parseFromJSON() failed [location_privacy_ind]");
         goto end;
     }
     location_privacy_indVariable = OpenAPI_location_privacy_ind_FromString(location_privacy_ind->valuestring);
 
-    cJSON *valid_time_period = cJSON_GetObjectItemCaseSensitive(lpiJSON, "validTimePeriod");
-
-    OpenAPI_valid_time_period_t *valid_time_period_local_nonprim = NULL;
+    valid_time_period = cJSON_GetObjectItemCaseSensitive(lpiJSON, "validTimePeriod");
     if (valid_time_period) {
     valid_time_period_local_nonprim = OpenAPI_valid_time_period_parseFromJSON(valid_time_period);
+    if (!valid_time_period_local_nonprim) {
+        ogs_error("OpenAPI_valid_time_period_parseFromJSON failed [valid_time_period]");
+        goto end;
+    }
     }
 
     lpi_local_var = OpenAPI_lpi_create (
@@ -90,6 +104,10 @@ OpenAPI_lpi_t *OpenAPI_lpi_parseFromJSON(cJSON *lpiJSON)
 
     return lpi_local_var;
 end:
+    if (valid_time_period_local_nonprim) {
+        OpenAPI_valid_time_period_free(valid_time_period_local_nonprim);
+        valid_time_period_local_nonprim = NULL;
+    }
     return NULL;
 }
 

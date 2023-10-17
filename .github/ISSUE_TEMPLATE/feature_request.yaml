@@ -1,0 +1,48 @@
+name: Feature request
+description: Propose an enhancement to Open5GS
+labels: ['Enhancement', 'triage']
+body:
+  - type: markdown
+    attributes:
+      value: >
+        ## Feature request
+        Please submit your feature request using the form. If your proposal is not sufficiently
+        well formed, we may request further clarification and expansion. If you're unsure about
+        how to formulate your request, please start a [discussion instead](https://github.com/open5gs/open5gs/dicsussions/).
+
+  - type: input
+    attributes:
+      label: Open5GS Release, Revision, or Tag
+      placeholder: v2.6.0
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Components and subsystems
+      description: Which subsystems and components would this feature be relevant to?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Proposed functionality
+      description: >
+        Provide a detailed description of the feature or behaviour you are proposing. Please include any
+        Please include any relevant 3GPP standards and references and include any specific changes to
+        current protocols, processing pipelines, DIAMETER requests/responses, and interfaces. The more detail
+        you provide, the greater the chance your proposal has of being discussed.
+
+        If your feature request does not include anything actionable or sufficient details, you may be asked
+        to provide further clarification or your request may be rejected.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: External dependencies
+      description: >
+        Please detail any new dependencies or implementations that this feature might introduce. e.g. Does the 
+        proposal require the installation of additional packages? Are there further external nodes which may be
+        required for integration testing? (Not all feature requests will introduce new dependencies)
+

@@ -1,7 +1,7 @@
 /*
  * identity_data.h
  *
- * 
+ * Identity data corresponds to the provided ueId.
  */
 
 #ifndef _OpenAPI_identity_data_H_
@@ -21,11 +21,15 @@ typedef struct OpenAPI_identity_data_s OpenAPI_identity_data_t;
 typedef struct OpenAPI_identity_data_s {
     OpenAPI_list_t *supi_list;
     OpenAPI_list_t *gpsi_list;
+    OpenAPI_list_t *allowed_af_ids;
+    OpenAPI_list_t* application_port_ids;
 } OpenAPI_identity_data_t;
 
 OpenAPI_identity_data_t *OpenAPI_identity_data_create(
     OpenAPI_list_t *supi_list,
-    OpenAPI_list_t *gpsi_list
+    OpenAPI_list_t *gpsi_list,
+    OpenAPI_list_t *allowed_af_ids,
+    OpenAPI_list_t* application_port_ids
 );
 void OpenAPI_identity_data_free(OpenAPI_identity_data_t *identity_data);
 OpenAPI_identity_data_t *OpenAPI_identity_data_parseFromJSON(cJSON *identity_dataJSON);

@@ -1,7 +1,7 @@
 /*
  * ulcl_bp_information.h
  *
- * 
+ * UL CL or BP Information
  */
 
 #ifndef _OpenAPI_ulcl_bp_information_H_

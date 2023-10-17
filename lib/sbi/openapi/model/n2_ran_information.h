@@ -1,7 +1,7 @@
 /*
  * n2_ran_information.h
  *
- * 
+ * Represents the RAN related N2 information data part
  */
 
 #ifndef _OpenAPI_n2_ran_information_H_

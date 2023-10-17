@@ -1,7 +1,7 @@
 /*
  * pdu_session_created_data.h
  *
- * 
+ * Data within Create Response
  */
 
 #ifndef _OpenAPI_pdu_session_created_data_H_
@@ -77,6 +77,10 @@ typedef struct OpenAPI_pdu_session_created_data_s {
     int ipv6_index;
     struct OpenAPI_ip_address_s *dn_aaa_address;
     struct OpenAPI_redundant_pdu_session_information_s *redundant_pdu_session_info;
+    bool is_nspu_support_ind;
+    int nspu_support_ind;
+    char *inter_plmn_api_root;
+    char *intra_plmn_api_root;
 } OpenAPI_pdu_session_created_data_t;
 
 OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
@@ -124,7 +128,11 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     bool is_ipv6_index,
     int ipv6_index,
     OpenAPI_ip_address_t *dn_aaa_address,
-    OpenAPI_redundant_pdu_session_information_t *redundant_pdu_session_info
+    OpenAPI_redundant_pdu_session_information_t *redundant_pdu_session_info,
+    bool is_nspu_support_ind,
+    int nspu_support_ind,
+    char *inter_plmn_api_root,
+    char *intra_plmn_api_root
 );
 void OpenAPI_pdu_session_created_data_free(OpenAPI_pdu_session_created_data_t *pdu_session_created_data);
 OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJSON(cJSON *pdu_session_created_dataJSON);

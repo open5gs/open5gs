@@ -13,6 +13,7 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "ip_address.h"
+#include "plmn_id.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,6 +26,7 @@ typedef struct OpenAPI_emergency_info_s {
     char *smf_instance_id;
     bool is_epdg_ind;
     int epdg_ind;
+    struct OpenAPI_plmn_id_s *plmn_id;
 } OpenAPI_emergency_info_t;
 
 OpenAPI_emergency_info_t *OpenAPI_emergency_info_create(
@@ -32,7 +34,8 @@ OpenAPI_emergency_info_t *OpenAPI_emergency_info_create(
     OpenAPI_ip_address_t *pgw_ip_address,
     char *smf_instance_id,
     bool is_epdg_ind,
-    int epdg_ind
+    int epdg_ind,
+    OpenAPI_plmn_id_t *plmn_id
 );
 void OpenAPI_emergency_info_free(OpenAPI_emergency_info_t *emergency_info);
 OpenAPI_emergency_info_t *OpenAPI_emergency_info_parseFromJSON(cJSON *emergency_infoJSON);

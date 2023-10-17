@@ -10,7 +10,7 @@
 #
 
 PACKAGE="open5gs"
-VERSION="2.5.5"
+VERSION="2.6.6"
 
 print_status() {
     echo
@@ -90,6 +90,16 @@ fi
 }
 
 preinstall() {
+
+if [ ! -x /usr/bin/mongod ]; then
+    print_status "First you need to install MongoDB packages."
+    exit 1
+fi
+
+if [ ! -x /usr/bin/npm ]; then
+    print_status "First you need to install NPM packages."
+    exit 1
+fi
 
 PRE_INSTALL_PKGS=""
 
@@ -222,35 +232,6 @@ if [ "X${DISTRO}" == "Xdebian" ]; then
     print_status "Found \"${DISTRO}\" in /etc/debian_version..."
   fi
 fi
-
-print_status 'Removing Launchpad PPA Repository for MongoDB...'
-for i in /etc/apt/sources.list.d/mongodb-org*; do
-    exec_cmd "rm -f $i"
-done
-
-print_status 'Adding the MongoDB signing key to your keyring...'
-
-if [ -x /usr/bin/curl ]; then
-    exec_cmd_nobail "curl -sLf -o /dev/null 'https://www.mongodb.org/static/pgp/server-6.0.asc' | apt-key add -"
-else
-    exec_cmd_nobail "wget -qO /dev/null -o /dev/null 'https://www.mongodb.org/static/pgp/server-6.0.asc' | apt-key add -"
-fi
-
-print_status "Creating apt sources list file for the MongoDB repo..."
-
-exec_cmd "echo 'deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse' > /etc/apt/sources.list.d/mongodb-org-6.0.list"
-
-if [ ! -x /usr/bin/mongod ]; then
-    MONGODB_INSTALL_PKGS="${MONGODB_INSTALL_PKGS} mongodb-org"
-fi
-
-if [ "X${MONGODB_INSTALL_PKGS}" != "X" ]; then
-    print_status "Populating apt-get cache..."
-    exec_cmd 'apt-get update'
-
-    print_status "Installing packages required for setup:${MONGODB_INSTALL_PKGS}..."
-    exec_cmd "apt-get install -y${MONGODB_INSTALL_PKGS} > /dev/null 2>&1"
-fi
 }
 
 install() {
@@ -259,7 +240,7 @@ if [ -x /usr/bin/curl ]; then
     exec_cmd "curl -sLf 'https://github.com/open5gs/${PACKAGE}/archive/v${VERSION}.tar.gz' | tar zxf -"
     RC=$?
 else
-    exec_cmd "wget -qO- /dev/null 'https://github.com/open5gs/${PACKAGE}/archive/v${VERSION}.tar.gz' | tar zxf -"
+    exec_cmd "wget -qO - 'https://github.com/open5gs/${PACKAGE}/archive/v${VERSION}.tar.gz' | tar zxf -"
     RC=$?
 fi
 
@@ -272,6 +253,7 @@ print_status "Build the Open5GS WebUI..."
 exec_cmd "cd ./${PACKAGE}-${VERSION}/webui && npm clean-install && npm run build"
 
 print_status "Install the Open5GS WebUI..."
+exec_cmd "mkdir -p /usr/lib/node_modules"
 exec_cmd "mv ./${PACKAGE}-${VERSION}/webui /usr/lib/node_modules/${PACKAGE}"
 exec_cmd_nobail "chown -R open5gs:open5gs /usr/lib/node_modules/${PACKAGE}"
 
@@ -294,14 +276,22 @@ WantedBy=multi-user.target
 EOF"
 
 exec_cmd_nobail "systemctl daemon-reload"
-exec_cmd "systemctl enable open5gs-webui"
-exec_cmd "deb-systemd-invoke start open5gs-webui"
+exec_cmd_nobail "systemctl enable open5gs-webui"
+exec_cmd_nobail "deb-systemd-invoke start open5gs-webui"
 }
 
 postinstall() {
 
 print_status "Default Administrator Account [Username:admin, Password:1423]..."
-exec_cmd "mongosh open5gs ./${PACKAGE}-${VERSION}/docs/assets/webui/mongo-init.js"
+if [ -x /usr/bin/mongo ];
+then
+    exec_cmd "mongo open5gs ./${PACKAGE}-${VERSION}/docs/assets/webui/mongo-init.js"
+elif [ -x /usr/bin/mongosh ];
+then
+    exec_cmd "mongosh open5gs ./${PACKAGE}-${VERSION}/docs/assets/webui/mongo-init.js"
+else
+    echo "Failed to execute mongo-init.js"
+fi
 
 exec_cmd "rm -rf ./${PACKAGE}-${VERSION}"
 }

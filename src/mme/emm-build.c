@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -33,7 +33,9 @@ ogs_pkbuf_t *emm_build_attach_accept(
     ogs_nas_eps_attach_result_t *eps_attach_result = 
         &attach_accept->eps_attach_result;
     ogs_nas_gprs_timer_t *t3412_value = &attach_accept->t3412_value;
-    int served_tai_index = 0;
+    ogs_nas_gprs_timer_t *t3402_value = &attach_accept->t3402_value;
+    ogs_nas_gprs_timer_t *t3423_value = &attach_accept->t3423_value;
+    int rv, served_tai_index = 0;
     ogs_nas_eps_mobile_identity_t *nas_guti = &attach_accept->guti;
     ogs_nas_eps_network_feature_support_t *eps_network_feature_support =
         &attach_accept->eps_network_feature_support;
@@ -136,9 +138,11 @@ ogs_pkbuf_t *emm_build_attach_accept(
         }
     }
 
-    /* Set T3412 */
-    t3412_value->unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
-    t3412_value->value = 9;
+    /* Set T3412 : Mandatory in Open5GS */
+    ogs_assert(mme_self()->time.t3412.value);
+    rv = ogs_nas_gprs_timer_from_sec(
+            t3412_value, mme_self()->time.t3412.value);
+    ogs_assert(rv == OGS_OK);
 
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id),
@@ -153,6 +157,7 @@ ogs_pkbuf_t *emm_build_attach_accept(
     ogs_assert(OGS_OK ==
         ogs_nas_tai_list_build(&attach_accept->tai_list,
             &mme_self()->served_tai[served_tai_index].list0,
+            &mme_self()->served_tai[served_tai_index].list1,
             &mme_self()->served_tai[served_tai_index].list2));
 
     attach_accept->esm_message_container.buffer = esmbuf->data;
@@ -174,19 +179,23 @@ ogs_pkbuf_t *emm_build_attach_accept(
         nas_guti->guti.m_tmsi = mme_ue->next.guti.m_tmsi;
     }
 
-#if 0 /* Need not to include T3402 */
     /* Set T3402 */
-    attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_T3402_VALUE_PRESENT;
-    attach_accept->t3402_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
-    attach_accept->t3402_value.value = 12;
-#endif
+    if (mme_self()->time.t3402.value) {
+        rv = ogs_nas_gprs_timer_from_sec(
+                t3402_value, mme_self()->time.t3402.value);
+        ogs_assert(rv == OGS_OK);
+        attach_accept->presencemask |=
+            OGS_NAS_EPS_ATTACH_ACCEPT_T3402_VALUE_PRESENT;
+    }
 
     /* Set T3423 */
-    attach_accept->presencemask |=
-        OGS_NAS_EPS_ATTACH_ACCEPT_T3423_VALUE_PRESENT;
-    attach_accept->t3423_value.unit =
-        OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
-    attach_accept->t3423_value.value = 9;
+    if (mme_self()->time.t3423.value) {
+        rv = ogs_nas_gprs_timer_from_sec(
+                t3423_value, mme_self()->time.t3423.value);
+        ogs_assert(rv == OGS_OK);
+        attach_accept->presencemask |=
+            OGS_NAS_EPS_ATTACH_ACCEPT_T3423_VALUE_PRESENT;
+    }
 
     attach_accept->presencemask |= 
         OGS_NAS_EPS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
@@ -480,7 +489,10 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
     ogs_nas_eps_tracking_area_update_accept_t *tau_accept = 
         &message.emm.tracking_area_update_accept;
     ogs_nas_eps_mobile_identity_t *nas_guti = &tau_accept->guti;
-    int served_tai_index = 0;
+    ogs_nas_gprs_timer_t *t3412_value = &tau_accept->t3412_value;
+    ogs_nas_gprs_timer_t *t3402_value = &tau_accept->t3402_value;
+    ogs_nas_gprs_timer_t *t3423_value = &tau_accept->t3423_value;
+    int rv, served_tai_index = 0;
 
     mme_sess_t *sess = NULL;
 
@@ -505,11 +517,13 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
             OGS_NAS_EPS_UPDATE_RESULT_TA_UPDATED;
     }
 
-    /* Set T3412 */
-    tau_accept->presencemask |=
-        OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3412_VALUE_PRESENT ;
-    tau_accept->t3412_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
-    tau_accept->t3412_value.value = 9;
+    if (mme_self()->time.t3412.value) {
+        rv = ogs_nas_gprs_timer_from_sec(
+                t3412_value, mme_self()->time.t3412.value);
+        ogs_assert(rv == OGS_OK);
+        tau_accept->presencemask |=
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3412_VALUE_PRESENT ;
+    }
 
     if (mme_ue->next.m_tmsi) {
         tau_accept->presencemask |=
@@ -545,6 +559,7 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
     ogs_assert(OGS_OK ==
         ogs_nas_tai_list_build(&tau_accept->tai_list,
             &mme_self()->served_tai[served_tai_index].list0,
+            &mme_self()->served_tai[served_tai_index].list1,
             &mme_self()->served_tai[served_tai_index].list2));
 
     /* Set EPS bearer context status */
@@ -575,19 +590,23 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
         sess = mme_sess_next(sess);
     }
 
-#if 0 /* Need not to include T3402 */
     /* Set T3402 */
-    tau_accept->presencemask |=
-        OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3402_VALUE_PRESENT;
-    tau_accept->t3402_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
-    tau_accept->t3402_value.value = 12;
-#endif
+    if (mme_self()->time.t3402.value) {
+        rv = ogs_nas_gprs_timer_from_sec(
+                t3402_value, mme_self()->time.t3402.value);
+        ogs_assert(rv == OGS_OK);
+        tau_accept->presencemask |=
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3402_VALUE_PRESENT;
+    }
 
     /* Set T3423 */
-    tau_accept->presencemask |=
-        OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3423_VALUE_PRESENT;
-    tau_accept->t3423_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
-    tau_accept->t3423_value.value = 9;
+    if (mme_self()->time.t3423.value) {
+        rv = ogs_nas_gprs_timer_from_sec(
+                t3423_value, mme_self()->time.t3423.value);
+        ogs_assert(rv == OGS_OK);
+        tau_accept->presencemask |=
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3423_VALUE_PRESENT;
+    }
 
     /* Set EPS network feature support */
     tau_accept->presencemask |=

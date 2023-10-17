@@ -16,6 +16,9 @@ typedef enum mme_metric_type_global_s {
 } mme_metric_type_global_t;
 extern ogs_metrics_inst_t *mme_metrics_inst_global[_MME_METR_GLOB_MAX];
 
+int mme_metrics_init_inst_global(void);
+int mme_metrics_free_inst_global(void);
+
 static inline void mme_metrics_inst_global_set(mme_metric_type_global_t t, int val)
 { ogs_metrics_inst_set(mme_metrics_inst_global[t], val); }
 static inline void mme_metrics_inst_global_add(mme_metric_type_global_t t, int val)
@@ -25,8 +28,8 @@ static inline void mme_metrics_inst_global_inc(mme_metric_type_global_t t)
 static inline void mme_metrics_inst_global_dec(mme_metric_type_global_t t)
 { ogs_metrics_inst_dec(mme_metrics_inst_global[t]); }
 
-int mme_metrics_open(void);
-int mme_metrics_close(void);
+void mme_metrics_init(void);
+void mme_metrics_final(void);
 
 #ifdef __cplusplus
 }

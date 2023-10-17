@@ -1,7 +1,7 @@
 /*
  * deregistration_info.h
  *
- * 
+ * Contains the UE id (i.e. SUPI).
  */
 
 #ifndef _OpenAPI_deregistration_info_H_

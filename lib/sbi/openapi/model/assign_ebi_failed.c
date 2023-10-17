@@ -20,20 +20,25 @@ OpenAPI_assign_ebi_failed_t *OpenAPI_assign_ebi_failed_create(
 
 void OpenAPI_assign_ebi_failed_free(OpenAPI_assign_ebi_failed_t *assign_ebi_failed)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == assign_ebi_failed) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(assign_ebi_failed->failed_arp_list, node) {
-        OpenAPI_arp_free(node->data);
+    if (assign_ebi_failed->failed_arp_list) {
+        OpenAPI_list_for_each(assign_ebi_failed->failed_arp_list, node) {
+            OpenAPI_arp_free(node->data);
+        }
+        OpenAPI_list_free(assign_ebi_failed->failed_arp_list);
+        assign_ebi_failed->failed_arp_list = NULL;
     }
-    OpenAPI_list_free(assign_ebi_failed->failed_arp_list);
     ogs_free(assign_ebi_failed);
 }
 
 cJSON *OpenAPI_assign_ebi_failed_convertToJSON(OpenAPI_assign_ebi_failed_t *assign_ebi_failed)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (assign_ebi_failed == NULL) {
         ogs_error("OpenAPI_assign_ebi_failed_convertToJSON() failed [AssignEbiFailed]");
@@ -52,17 +57,13 @@ cJSON *OpenAPI_assign_ebi_failed_convertToJSON(OpenAPI_assign_ebi_failed_t *assi
         ogs_error("OpenAPI_assign_ebi_failed_convertToJSON() failed [failed_arp_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *failed_arp_list_node;
-    if (assign_ebi_failed->failed_arp_list) {
-        OpenAPI_list_for_each(assign_ebi_failed->failed_arp_list, failed_arp_list_node) {
-            cJSON *itemLocal = OpenAPI_arp_convertToJSON(failed_arp_list_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_assign_ebi_failed_convertToJSON() failed [failed_arp_list]");
-                goto end;
-            }
-            cJSON_AddItemToArray(failed_arp_listList, itemLocal);
+    OpenAPI_list_for_each(assign_ebi_failed->failed_arp_list, node) {
+        cJSON *itemLocal = OpenAPI_arp_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_assign_ebi_failed_convertToJSON() failed [failed_arp_list]");
+            goto end;
         }
+        cJSON_AddItemToArray(failed_arp_listList, itemLocal);
     }
     }
 
@@ -73,44 +74,42 @@ end:
 OpenAPI_assign_ebi_failed_t *OpenAPI_assign_ebi_failed_parseFromJSON(cJSON *assign_ebi_failedJSON)
 {
     OpenAPI_assign_ebi_failed_t *assign_ebi_failed_local_var = NULL;
-    cJSON *pdu_session_id = cJSON_GetObjectItemCaseSensitive(assign_ebi_failedJSON, "pduSessionId");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *pdu_session_id = NULL;
+    cJSON *failed_arp_list = NULL;
+    OpenAPI_list_t *failed_arp_listList = NULL;
+    pdu_session_id = cJSON_GetObjectItemCaseSensitive(assign_ebi_failedJSON, "pduSessionId");
     if (!pdu_session_id) {
         ogs_error("OpenAPI_assign_ebi_failed_parseFromJSON() failed [pdu_session_id]");
         goto end;
     }
-
     if (!cJSON_IsNumber(pdu_session_id)) {
         ogs_error("OpenAPI_assign_ebi_failed_parseFromJSON() failed [pdu_session_id]");
         goto end;
     }
 
-    cJSON *failed_arp_list = cJSON_GetObjectItemCaseSensitive(assign_ebi_failedJSON, "failedArpList");
-
-    OpenAPI_list_t *failed_arp_listList;
+    failed_arp_list = cJSON_GetObjectItemCaseSensitive(assign_ebi_failedJSON, "failedArpList");
     if (failed_arp_list) {
-    cJSON *failed_arp_list_local_nonprimitive;
-    if (!cJSON_IsArray(failed_arp_list)){
-        ogs_error("OpenAPI_assign_ebi_failed_parseFromJSON() failed [failed_arp_list]");
-        goto end;
-    }
-
-    failed_arp_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(failed_arp_list_local_nonprimitive, failed_arp_list ) {
-        if (!cJSON_IsObject(failed_arp_list_local_nonprimitive)) {
+        cJSON *failed_arp_list_local = NULL;
+        if (!cJSON_IsArray(failed_arp_list)) {
             ogs_error("OpenAPI_assign_ebi_failed_parseFromJSON() failed [failed_arp_list]");
             goto end;
         }
-        OpenAPI_arp_t *failed_arp_listItem = OpenAPI_arp_parseFromJSON(failed_arp_list_local_nonprimitive);
 
-        if (!failed_arp_listItem) {
-            ogs_error("No failed_arp_listItem");
-            OpenAPI_list_free(failed_arp_listList);
-            goto end;
+        failed_arp_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(failed_arp_list_local, failed_arp_list) {
+            if (!cJSON_IsObject(failed_arp_list_local)) {
+                ogs_error("OpenAPI_assign_ebi_failed_parseFromJSON() failed [failed_arp_list]");
+                goto end;
+            }
+            OpenAPI_arp_t *failed_arp_listItem = OpenAPI_arp_parseFromJSON(failed_arp_list_local);
+            if (!failed_arp_listItem) {
+                ogs_error("No failed_arp_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(failed_arp_listList, failed_arp_listItem);
         }
-
-        OpenAPI_list_add(failed_arp_listList, failed_arp_listItem);
-    }
     }
 
     assign_ebi_failed_local_var = OpenAPI_assign_ebi_failed_create (
@@ -121,6 +120,13 @@ OpenAPI_assign_ebi_failed_t *OpenAPI_assign_ebi_failed_parseFromJSON(cJSON *assi
 
     return assign_ebi_failed_local_var;
 end:
+    if (failed_arp_listList) {
+        OpenAPI_list_for_each(failed_arp_listList, node) {
+            OpenAPI_arp_free(node->data);
+        }
+        OpenAPI_list_free(failed_arp_listList);
+        failed_arp_listList = NULL;
+    }
     return NULL;
 }
 

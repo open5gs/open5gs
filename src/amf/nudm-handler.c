@@ -23,15 +23,28 @@
 #include "nas-path.h"
 
 int amf_nudm_sdm_handle_provisioned(
-        amf_ue_t *amf_ue, ogs_sbi_message_t *recvmsg)
+        amf_ue_t *amf_ue, int state, ogs_sbi_message_t *recvmsg)
 {
-    int i;
+    int i, r;
+    ran_ue_t *ran_ue = NULL;
 
     ogs_assert(amf_ue);
     ogs_assert(recvmsg);
 
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    if (!ran_ue) {
+        /* ran_ue is required for amf_ue_is_rat_restricted() */
+        ogs_error("NG context has already been removed");
+        r = nas_5gs_send_gmm_reject(
+                amf_ue, OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
+    }
+
     SWITCH(recvmsg->h.resource.component[1])
     CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
+
         if (recvmsg->AccessAndMobilitySubscriptionData) {
             OpenAPI_list_t *gpsiList =
                 recvmsg->AccessAndMobilitySubscriptionData->gpsis;
@@ -39,6 +52,8 @@ int amf_nudm_sdm_handle_provisioned(
                 recvmsg->AccessAndMobilitySubscriptionData->subscribed_ue_ambr;
             OpenAPI_nssai_t *NSSAI =
                 recvmsg->AccessAndMobilitySubscriptionData->nssai;
+            OpenAPI_list_t *RatRestrictions =
+                recvmsg->AccessAndMobilitySubscriptionData->rat_restrictions;
 
             OpenAPI_lnode_t *node = NULL;
 
@@ -55,21 +70,18 @@ int amf_nudm_sdm_handle_provisioned(
                         char *gpsi = NULL;
 
                         gpsi = ogs_id_get_type(node->data);
-                        ogs_assert(gpsi);
+                        if (gpsi) {
+                            if (strncmp(gpsi, OGS_ID_GPSI_TYPE_MSISDN,
+                                    strlen(OGS_ID_GPSI_TYPE_MSISDN)) == 0) {
+                                amf_ue->msisdn[amf_ue->num_of_msisdn] =
+                                    ogs_id_get_value(node->data);
+                                ogs_assert(amf_ue->
+                                        msisdn[amf_ue->num_of_msisdn]);
 
-                        if (strncmp(gpsi, OGS_ID_GPSI_TYPE_MSISDN,
-                                    strlen(OGS_ID_GPSI_TYPE_MSISDN)) != 0) {
-                            ogs_error("Unknown GPSI Type [%s]", gpsi);
-
-                        } else {
-                            amf_ue->msisdn[amf_ue->num_of_msisdn] =
-                                ogs_id_get_value(node->data);
-                            ogs_assert(amf_ue->msisdn[amf_ue->num_of_msisdn]);
-
-                            amf_ue->num_of_msisdn++;
+                                amf_ue->num_of_msisdn++;
+                            }
+                            ogs_free(gpsi);
                         }
-
-                        ogs_free(gpsi);
                     }
                 }
             }
@@ -132,18 +144,39 @@ int amf_nudm_sdm_handle_provisioned(
                     }
                 }
             }
+
+            OpenAPI_list_clear(amf_ue->rat_restrictions);
+            if (RatRestrictions) {
+                OpenAPI_list_for_each(RatRestrictions, node) {
+                    OpenAPI_list_add(amf_ue->rat_restrictions, node->data);
+                }
+            }
         }
 
         if (amf_update_allowed_nssai(amf_ue) == false) {
             ogs_error("No Allowed-NSSAI");
+            r = nas_5gs_send_gmm_reject(
+                    amf_ue, OGS_5GMM_CAUSE_NO_NETWORK_SLICES_AVAILABLE);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             return OGS_ERROR;
         }
 
-        ogs_assert(true ==
-            amf_ue_sbi_discover_and_send(
+        if (amf_ue_is_rat_restricted(amf_ue)) {
+            ogs_error("Registration rejected due to RAT restrictions");
+            r = nas_5gs_send_gmm_reject(
+                    amf_ue, OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return OGS_ERROR;
+        }
+
+        r = amf_ue_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                 amf_nudm_sdm_build_get,
-                amf_ue, (char *)OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA));
+                amf_ue, state, (char *)OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
@@ -212,29 +245,33 @@ int amf_nudm_sdm_handle_provisioned(
                 }
             }
         }
-        ogs_assert(true ==
-            amf_ue_sbi_discover_and_send(
+        r = amf_ue_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                 amf_nudm_sdm_build_get,
-                amf_ue, (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA));
+                amf_ue, state,
+                (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
-
         if (amf_ue->data_change_subscription_id) {
             /* we already have a SDM subscription to UDM; continue without
              * subscribing again */
-            ogs_assert(true ==
-                amf_ue_sbi_discover_and_send(
+            r = amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
-                    amf_npcf_am_policy_control_build_create, amf_ue, NULL));
+                    amf_npcf_am_policy_control_build_create,
+                    amf_ue, state, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         }
         else {
-            ogs_assert(true ==
-                amf_ue_sbi_discover_and_send(
+            r = amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
-                    amf_nudm_sdm_build_subscription, amf_ue,
-                    (char *)OGS_SBI_RESOURCE_NAME_AM_DATA));
+                    amf_nudm_sdm_build_subscription,
+                    amf_ue, state, (char *)OGS_SBI_RESOURCE_NAME_AM_DATA);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         }
         break;
 
@@ -246,9 +283,10 @@ int amf_nudm_sdm_handle_provisioned(
 
         if (!recvmsg->http.location) {
             ogs_error("[%s] No http.location", amf_ue->supi);
-            ogs_assert(OGS_OK ==
-                nas_5gs_send_gmm_reject_from_sbi(
-                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+            r = nas_5gs_send_gmm_reject_from_sbi(
+                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             return OGS_ERROR;
         }
 
@@ -259,9 +297,10 @@ int amf_nudm_sdm_handle_provisioned(
         if (rv != OGS_OK) {
             ogs_error("[%s] Cannot parse http.location [%s]",
                 amf_ue->supi, recvmsg->http.location);
-            ogs_assert(OGS_OK ==
-                nas_5gs_send_gmm_reject_from_sbi(
-                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+            r = nas_5gs_send_gmm_reject_from_sbi(
+                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             return OGS_ERROR;
         }
 
@@ -270,9 +309,10 @@ int amf_nudm_sdm_handle_provisioned(
                 amf_ue->supi, recvmsg->http.location);
 
             ogs_sbi_header_free(&header);
-            ogs_assert(OGS_OK ==
-                nas_5gs_send_gmm_reject_from_sbi(
-                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+            r = nas_5gs_send_gmm_reject_from_sbi(
+                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             return OGS_ERROR;
         }
 
@@ -283,10 +323,11 @@ int amf_nudm_sdm_handle_provisioned(
 
         ogs_sbi_header_free(&header);
 
-        ogs_assert(true ==
-            amf_ue_sbi_discover_and_send(
+        r = amf_ue_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
-                amf_npcf_am_policy_control_build_create, amf_ue, NULL));
+                amf_npcf_am_policy_control_build_create, amf_ue, state, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         break;
 
     DEFAULT

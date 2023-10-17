@@ -1,7 +1,7 @@
 /*
  * ue_differentiation_info.h
  *
- * 
+ * Represents the UE Differentiation Information and its validity time
  */
 
 #ifndef _OpenAPI_ue_differentiation_info_H_

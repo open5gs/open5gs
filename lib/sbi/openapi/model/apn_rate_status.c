@@ -34,17 +34,22 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_create(
 
 void OpenAPI_apn_rate_status_free(OpenAPI_apn_rate_status_t *apn_rate_status)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == apn_rate_status) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(apn_rate_status->validity_time);
+    if (apn_rate_status->validity_time) {
+        ogs_free(apn_rate_status->validity_time);
+        apn_rate_status->validity_time = NULL;
+    }
     ogs_free(apn_rate_status);
 }
 
 cJSON *OpenAPI_apn_rate_status_convertToJSON(OpenAPI_apn_rate_status_t *apn_rate_status)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (apn_rate_status == NULL) {
         ogs_error("OpenAPI_apn_rate_status_convertToJSON() failed [ApnRateStatus]");
@@ -94,8 +99,13 @@ end:
 OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate_statusJSON)
 {
     OpenAPI_apn_rate_status_t *apn_rate_status_local_var = NULL;
-    cJSON *remain_packets_ul = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "remainPacketsUl");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *remain_packets_ul = NULL;
+    cJSON *remain_packets_dl = NULL;
+    cJSON *validity_time = NULL;
+    cJSON *remain_ex_reports_ul = NULL;
+    cJSON *remain_ex_reports_dl = NULL;
+    remain_packets_ul = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "remainPacketsUl");
     if (remain_packets_ul) {
     if (!cJSON_IsNumber(remain_packets_ul)) {
         ogs_error("OpenAPI_apn_rate_status_parseFromJSON() failed [remain_packets_ul]");
@@ -103,8 +113,7 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
     }
     }
 
-    cJSON *remain_packets_dl = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "remainPacketsDl");
-
+    remain_packets_dl = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "remainPacketsDl");
     if (remain_packets_dl) {
     if (!cJSON_IsNumber(remain_packets_dl)) {
         ogs_error("OpenAPI_apn_rate_status_parseFromJSON() failed [remain_packets_dl]");
@@ -112,17 +121,15 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
     }
     }
 
-    cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "validityTime");
-
+    validity_time = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "validityTime");
     if (validity_time) {
-    if (!cJSON_IsString(validity_time)) {
+    if (!cJSON_IsString(validity_time) && !cJSON_IsNull(validity_time)) {
         ogs_error("OpenAPI_apn_rate_status_parseFromJSON() failed [validity_time]");
         goto end;
     }
     }
 
-    cJSON *remain_ex_reports_ul = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "remainExReportsUl");
-
+    remain_ex_reports_ul = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "remainExReportsUl");
     if (remain_ex_reports_ul) {
     if (!cJSON_IsNumber(remain_ex_reports_ul)) {
         ogs_error("OpenAPI_apn_rate_status_parseFromJSON() failed [remain_ex_reports_ul]");
@@ -130,8 +137,7 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
     }
     }
 
-    cJSON *remain_ex_reports_dl = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "remainExReportsDl");
-
+    remain_ex_reports_dl = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "remainExReportsDl");
     if (remain_ex_reports_dl) {
     if (!cJSON_IsNumber(remain_ex_reports_dl)) {
         ogs_error("OpenAPI_apn_rate_status_parseFromJSON() failed [remain_ex_reports_dl]");
@@ -144,7 +150,7 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
         remain_packets_ul ? remain_packets_ul->valuedouble : 0,
         remain_packets_dl ? true : false,
         remain_packets_dl ? remain_packets_dl->valuedouble : 0,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
+        validity_time && !cJSON_IsNull(validity_time) ? ogs_strdup(validity_time->valuestring) : NULL,
         remain_ex_reports_ul ? true : false,
         remain_ex_reports_ul ? remain_ex_reports_ul->valuedouble : 0,
         remain_ex_reports_dl ? true : false,

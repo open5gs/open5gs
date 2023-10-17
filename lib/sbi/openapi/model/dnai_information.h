@@ -1,7 +1,7 @@
 /*
  * dnai_information.h
  *
- * 
+ * DNAI Information
  */
 
 #ifndef _OpenAPI_dnai_information_H_

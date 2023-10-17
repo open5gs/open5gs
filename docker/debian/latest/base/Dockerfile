@@ -16,6 +16,7 @@ RUN apt-get update && \
         flex \
         bison \
         git \
+        cmake \
         meson \
         libsctp-dev \
         libgnutls28-dev \

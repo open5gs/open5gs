@@ -1,7 +1,7 @@
 /*
  * mtc_provider.h
  *
- * 
+ * MTC provider information.
  */
 
 #ifndef _OpenAPI_mtc_provider_H_

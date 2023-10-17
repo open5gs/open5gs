@@ -1,7 +1,7 @@
 /*
  * point_altitude.h
  *
- * 
+ * Ellipsoid point with altitude.
  */
 
 #ifndef _OpenAPI_point_altitude_H_
@@ -14,7 +14,6 @@
 #include "../include/binary.h"
 #include "gad_shape.h"
 #include "geographical_coordinates.h"
-#include "point_altitude_all_of.h"
 #include "supported_gad_shapes.h"
 
 #ifdef __cplusplus

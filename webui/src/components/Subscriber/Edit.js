@@ -120,6 +120,30 @@ const schema = {
         }
       }
     },
+    "subscriber_status": {
+      "type": "number",
+      "title": "Subscriber Status (TS 29.272 7.3.29)",
+      "enum": [ 0, 1 ],
+      "enumNames": ["SERVICE_GRANTED", "OPERATOR_DETERMINED_BARRING"],
+      "default": 0,
+    },
+    "operator_determined_barring": {
+      "type": "number",
+      "title": "Operator Determined Barring (TS 29.272 7.3.30)",
+      "enum": [ 0, 1, 2, 3, 4, 5, 6, 7, 8 ],
+      "enumNames": [
+        "(0) All Packet Oriented Services Barred",
+        "(1) Roamer Access HPLMN-AP Barred",
+        "(2) Roamer Access to VPLMN-AP Barred",
+        "(3) Barring of all outgoing calls",
+        "(4) Barring of all outgoing international calls",
+        "(5) Barring of all outgoing international calls except those directed to the home PLMN country",
+        "(6) Barring of all outgoing inter-zonal calls",
+        "(7) Barring of all outgoing inter-zonal calls except those directed to the home PLMN country",
+        "(8) Barring of all outgoing international calls except those directed to the home PLMN country and Barring of all outgoing inter-zonal calls"
+      ],
+      "default": 0,
+    },
     "slice": {
       "type": "array",
       "title": "Slice Configurations",
@@ -503,6 +527,12 @@ const uiSchema = {
       },
     }
   },
+  "subscriber_status" : {
+    classNames: "col-xs-7",
+  },
+  "operator_determined_barring" : {
+    classNames: "col-xs-7",
+  },
   "slice": {
     classNames: "col-xs-12",
     "items": {
@@ -672,7 +702,7 @@ class Edit extends Component {
   }
 
   getStateFromProps(props) {
-    const { 
+    const {
       action,
       profiles,
       width,
@@ -741,7 +771,7 @@ class Edit extends Component {
 
   getFormDataFromProfile(profile) {
     let formData;
-    
+
     formData = Object.assign({}, this.props.profiles.filter(p => p._id === profile)[0]);
     formData = Object.assign(formData, { profile });
 
@@ -807,8 +837,8 @@ class Edit extends Component {
     } = this.state;
 
     return (
-      <Form 
-        visible={visible}
+      <Form
+        visible={isLoading ? false : visible}
         title={(action === 'update') ? 'Edit Subscriber' : 'Create Subscriber'}
         schema={this.state.schema}
         uiSchema={this.state.uiSchema}

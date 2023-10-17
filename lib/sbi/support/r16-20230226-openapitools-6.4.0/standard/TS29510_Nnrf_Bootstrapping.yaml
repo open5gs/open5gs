@@ -1,0 +1,83 @@
+openapi: 3.0.0
+
+info:
+  version: '1.0.2'
+  title: 'NRF Bootstrapping'
+  description: |
+    NRF Bootstrapping.
+    © 2021, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.510 V16.8.0; 5G System; Network Function Repository Services; Stage 3
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.510/'
+
+paths:
+  /bootstrapping:
+    get:
+      summary: Bootstrapping Info Request
+      operationId: BootstrappingInfoRequest
+      tags:
+        - Bootstrapping Request
+      responses:
+        '200':
+          description: Successful Bootstrapping Request
+          content:
+            application/3gppHal+json:
+              schema:
+                $ref: '#/components/schemas/BootstrappingInfo'
+        '307':
+          description: Temporary Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: 'The URI pointing to the resource located on the redirect target NRF'
+              required: true
+              schema:
+                type: string
+        '308':
+          description: Permanent Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: 'The URI pointing to the resource located on the redirect target NRF'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  schemas:
+    BootstrappingInfo:
+      description: Information returned by NRF in the bootstrapping response message
+      type: object
+      required:
+        - _links
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        _links:
+          type: object
+          description: 'Map of link objects where the keys are the link relations defined in 3GPP TS 29.510 clause 6.4.6.3.3'
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/LinksValueSchema'
+          minProperties: 1
+    Status:
+      description: Overal status of the NRF
+      anyOf:
+        - type: string
+          enum:
+            - OPERATIVE
+            - NON_OPERATIVE
+        - type: string

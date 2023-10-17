@@ -1,7 +1,7 @@
 /*
  * ue_context_create_data.h
  *
- * 
+ * Data within a request to create an individual ueContext resource
  */
 
 #ifndef _OpenAPI_ue_context_create_data_H_
@@ -31,6 +31,7 @@ typedef struct OpenAPI_ue_context_create_data_s {
     OpenAPI_list_t *pdu_session_list;
     char *n2_notify_uri;
     struct OpenAPI_n2_info_content_s *ue_radio_capability;
+    struct OpenAPI_n2_info_content_s *ue_radio_capability_for_paging;
     struct OpenAPI_ng_ap_cause_s *ngap_cause;
     char *supported_features;
     struct OpenAPI_plmn_id_nid_s *serving_network;
@@ -43,6 +44,7 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_create(
     OpenAPI_list_t *pdu_session_list,
     char *n2_notify_uri,
     OpenAPI_n2_info_content_t *ue_radio_capability,
+    OpenAPI_n2_info_content_t *ue_radio_capability_for_paging,
     OpenAPI_ng_ap_cause_t *ngap_cause,
     char *supported_features,
     OpenAPI_plmn_id_nid_t *serving_network

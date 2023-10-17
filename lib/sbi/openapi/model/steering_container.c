@@ -16,16 +16,18 @@ OpenAPI_steering_container_t *OpenAPI_steering_container_create(
 
 void OpenAPI_steering_container_free(OpenAPI_steering_container_t *steering_container)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == steering_container) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(steering_container);
 }
 
 cJSON *OpenAPI_steering_container_convertToJSON(OpenAPI_steering_container_t *steering_container)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (steering_container == NULL) {
         ogs_error("OpenAPI_steering_container_convertToJSON() failed [SteeringContainer]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_steering_container_t *OpenAPI_steering_container_parseFromJSON(cJSON *steering_containerJSON)
 {
     OpenAPI_steering_container_t *steering_container_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     steering_container_local_var = OpenAPI_steering_container_create (
     );
 

@@ -23,12 +23,11 @@ static ogs_thread_t *thread;
 static void nssf_main(void *data);
 static int initialized = 0;
 
-int nssf_initialize()
+int nssf_initialize(void)
 {
     int rv;
 
-    ogs_sbi_context_init();
-
+    ogs_sbi_context_init(OpenAPI_nf_type_NSSF);
     nssf_context_init();
 
     rv = ogs_sbi_context_parse_config("nssf", "nrf", "scp");

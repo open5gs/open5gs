@@ -41,7 +41,7 @@ static void test2_func(abts_case *tc, void *data)
 
 static void test3_func(abts_case *tc, void *data)
 {
-#if OGS_USE_TALLOC != 1
+#if OGS_USE_TALLOC == 0
     char *ptr = ogs_realloc(0, 10);
     ABTS_PTR_NOTNULL(tc, ptr);
     ogs_free(ptr);
@@ -54,7 +54,7 @@ static void test3_func(abts_case *tc, void *data)
 
 static void test4_func(abts_case *tc, void *data)
 {
-#if OGS_USE_TALLOC != 1
+#if OGS_USE_TALLOC == 0
     char *p, *q;
 
     p = ogs_malloc(10);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -103,6 +103,31 @@ bool bsf_nbsf_management_handle_pcf_binding(
                 ogs_assert(sess->pcf_fqdn);
             }
 
+
+            if (RecvPcfBinding->ipv4_frame_route_list) {
+                OpenAPI_lnode_t *node = NULL;
+
+                OpenAPI_clear_and_free_string_list(sess->ipv4_frame_route_list);
+                sess->ipv4_frame_route_list = OpenAPI_list_create();
+                OpenAPI_list_for_each(RecvPcfBinding->ipv4_frame_route_list, node) {
+                    if (!node->data)
+                        continue;
+                    OpenAPI_list_add(sess->ipv4_frame_route_list, ogs_strdup(node->data));
+                }
+            }
+
+            if (RecvPcfBinding->ipv6_frame_route_list) {
+                OpenAPI_lnode_t *node = NULL;
+
+                OpenAPI_clear_and_free_string_list(sess->ipv6_frame_route_list);
+                sess->ipv6_frame_route_list = OpenAPI_list_create();
+                OpenAPI_list_for_each(RecvPcfBinding->ipv6_frame_route_list, node) {
+                    if (!node->data)
+                        continue;
+                    OpenAPI_list_add(sess->ipv6_frame_route_list, ogs_strdup(node->data));
+                }
+            }
+
             sess->s_nssai.sst = RecvPcfBinding->snssai->sst;
             sess->s_nssai.sd =
                 ogs_s_nssai_sd_from_string(RecvPcfBinding->snssai->sd);
@@ -123,27 +148,10 @@ bool bsf_nbsf_management_handle_pcf_binding(
 
                 OpenAPI_list_for_each(PcfIpEndPointList, node) {
                     OpenAPI_ip_end_point_t *IpEndPoint = node->data;
-                    int port = 0;
 
                     if (!IpEndPoint) continue;
 
                     if (sess->num_of_pcf_ip < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
-                        if (!IpEndPoint->is_port) {
-                            if (ogs_sbi_default_uri_scheme() ==
-                                    OpenAPI_uri_scheme_http)
-                                port = OGS_SBI_HTTP_PORT;
-                            else if (ogs_sbi_default_uri_scheme() ==
-                                    OpenAPI_uri_scheme_https)
-                                port = OGS_SBI_HTTPS_PORT;
-                            else {
-                                ogs_fatal("Invalid scheme [%d]",
-                                    ogs_sbi_default_uri_scheme());
-                                ogs_assert_if_reached();
-                            }
-                        } else {
-                            port = IpEndPoint->port;
-                        }
-
                         if (IpEndPoint->ipv4_address ||
                             IpEndPoint->ipv6_address) {
                             if (IpEndPoint->ipv4_address) {
@@ -154,7 +162,12 @@ bool bsf_nbsf_management_handle_pcf_binding(
                                 sess->pcf_ip[sess->num_of_pcf_ip].addr6 =
                                     ogs_strdup(IpEndPoint->ipv6_address);
                             }
-                            sess->pcf_ip[sess->num_of_pcf_ip].port = port;
+                            if (IpEndPoint->is_port) {
+                                sess->pcf_ip[sess->num_of_pcf_ip].is_port =
+                                    IpEndPoint->is_port;
+                                sess->pcf_ip[sess->num_of_pcf_ip].port =
+                                    IpEndPoint->port;
+                            }
                             sess->num_of_pcf_ip++;
                         }
                     }
@@ -230,11 +243,11 @@ bool bsf_nbsf_management_handle_pcf_binding(
                     ogs_assert(sess->pcf_ip[i].addr || sess->pcf_ip[i].addr6);
 
                     PcfIpEndPoint = ogs_calloc(1, sizeof(*PcfIpEndPoint));
-                    ogs_expect_or_return_val(PcfIpEndPoint, NULL);
+                    ogs_assert(PcfIpEndPoint);
                     PcfIpEndPoint->ipv4_address = sess->pcf_ip[i].addr;
                     PcfIpEndPoint->ipv6_address = sess->pcf_ip[i].addr6;
 
-                    PcfIpEndPoint->is_port = true;
+                    PcfIpEndPoint->is_port = sess->pcf_ip[i].is_port;
                     PcfIpEndPoint->port = sess->pcf_ip[i].port;
 
                     OpenAPI_list_add(PcfIpEndPointList, PcfIpEndPoint);

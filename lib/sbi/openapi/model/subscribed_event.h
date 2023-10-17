@@ -1,7 +1,7 @@
 /*
  * subscribed_event.h
  *
- * Possible values are - UP_PATH_CHANGE: The AF requests to be notified when the UP path changes for the PDU session. 
+ * Possible values are: - UP_PATH_CHANGE: The AF requests to be notified when the UP path changes for the PDU session. 
  */
 
 #ifndef _OpenAPI_subscribed_event_H_

@@ -1,7 +1,7 @@
 /*
  * ue_reachability.h
  *
- * 
+ * Describes the reachability of the UE
  */
 
 #ifndef _OpenAPI_ue_reachability_H_

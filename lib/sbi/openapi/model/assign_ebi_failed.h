@@ -1,7 +1,7 @@
 /*
  * assign_ebi_failed.h
  *
- * 
+ * Represents failed assignment of EBI(s)
  */
 
 #ifndef _OpenAPI_assign_ebi_failed_H_

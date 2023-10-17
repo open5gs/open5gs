@@ -56,7 +56,7 @@ The Open5GS 5G SA Core contains the following functions:
 * NSSF - Network Slice Selection Function
 * BSF - Binding Support Function
 
-The 5G SA core works in a different way to the 4G core - it uses a **Service Based Architecture** (SBI). **Control plane** functions are configured to register with the NRF, and the NRF then helps them discover the other core functions. Running through the other functions: The AMF handles connection and mobility management; a subset of what the 4G MME is tasked with. gNBs (5G basestations) connect to the AMF. The UDM, AUSF and UDR carry out similar operations as the 4G HSS, generating SIM authentication vectors and holding the subscriber profile. Session management is all handled by the SMF (previously the responsibility of the 4G MME/ SGWC/ PGWC). The NSSF provides a way to select the network slice, and PCF is used for charging and enforcing subscriber policies. Finally there is the SCP that enable indirect communication.
+The 5G SA core works in a different way to the 4G core - it uses a **Service Based Architecture** (SBA). **Control plane** functions are configured to register with the NRF, and the NRF then helps them discover the other core functions. Running through the other functions: The AMF handles connection and mobility management; a subset of what the 4G MME is tasked with. gNBs (5G basestations) connect to the AMF. The UDM, AUSF and UDR carry out similar operations as the 4G HSS, generating SIM authentication vectors and holding the subscriber profile. Session management is all handled by the SMF (previously the responsibility of the 4G MME/ SGWC/ PGWC). The NSSF provides a way to select the network slice, and PCF is used for charging and enforcing subscriber policies. Finally there is the SCP that enable indirect communication.
 
 The 5G SA core **user plane** is much simpler, as it only contains a single function. The UPF carries user data packets between the gNB and the external WAN. It connects back to the SMF too. 
 
@@ -68,7 +68,7 @@ With the exception of the SMF and UPF, all config files for the 5G SA core funct
 
 **Note:** Package managers can be used to install Open5GS in *Debian/Ubuntu and openSUSE* environments (for major and minor builds). *CentOS, Fedora, and Mac OSX* require you to [build with source code]({{ site.url }}{{ site.baseurl }}/docs/guide/02-building-open5gs-from-sources).
 {: .notice--warning}
-**Note:** Nighly builds are offered by [Osmocom](https://osmocom.org) on [OBS](https://build.opensuse.org/package/show/network:osmocom:nightly/open5gs). Scroll down to use a nightly build package.
+**Note:** Nighly builds are offered by [Osmocom](https://osmocom.org) on [OBS](https://obs.osmocom.org/package/show/osmocom:nightly/open5gs). Scroll down to use a nightly build package.
 {: .notice--warning}
 
 #### Getting MongoDB
@@ -78,20 +78,21 @@ Import the public key used by the package management system.
 
 ```bash
 $ sudo apt update
-$ sudo apt install wget gnupg
-$ wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+$ sudo apt install gnupg
+$ curl -fsSL https://pgp.mongodb.com/server-6.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg --dearmor
 ```
 
 Create the list file /etc/apt/sources.list.d/mongodb-org-6.0.list for your version of Ubuntu.
 
+On ubuntu 22.04 (Jammy)
 ```bash
-$ echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+$ echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
 ```
 
 Install the MongoDB packages.
 ```bash
 $ sudo apt update
-$ sudo apt-get install -y mongodb-org
+$ sudo apt install -y mongodb-org
 $ sudo systemctl start mongod (if '/usr/bin/mongod' is not running)
 $ sudo systemctl enable mongod (ensure to automatically start it on system boot)
 ```
@@ -123,9 +124,11 @@ Other distributions can be installed by changing the path.
 
 ```
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10/
+https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_11/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_Testing/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_Unstable/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Raspbian_10/
+https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Raspbian_11/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.04/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.10/
@@ -136,13 +139,13 @@ https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbunt
 
 #### Nightly Builds
 
-Nightly bulit package are provided by [Osmocom](https://osmocom.org) on [OBS](https://build.opensuse.org/package/show/network:osmocom:nightly/open5gs). On *Ubuntu 20.04* you can install it like this:
+Nightly bulit package are provided by [Osmocom](https://osmocom.org) on [OBS](https://obs.osmocom.org/package/show/osmocom:nightly/open5gs). On *Ubuntu 20.04* you can install it like this:
 
 ```bash
 $ sudo apt update
 $ sudo apt install wget gnupg
-$ wget -qO - https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.04/Release.key | sudo apt-key add -
-$ sudo sh -c "echo 'deb http://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.04/ ./' > /etc/apt/sources.list.d/open5gs.list"
+$ wget -qO - https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_20.04/Release.key | sudo apt-key add -
+$ sudo sh -c "echo 'deb https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_20.04/ ./' > /etc/apt/sources.list.d/open5gs.list"
 $ sudo apt update
 $ sudo apt install open5gs
 ```
@@ -150,16 +153,18 @@ $ sudo apt install open5gs
 Other distributions can be installed by changing the path.
 
 ```
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/Debian_10/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/Debian_Testing/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/Debian_Unstable/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/Raspbian_10/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_18.04/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.04/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.10/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_21.04/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_21.10/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_22.04/
+https://downloads.osmocom.org/packages/osmocom:/nightly/Debian_10/
+https://downloads.osmocom.org/packages/osmocom:/nightly/Debian_11/
+https://downloads.osmocom.org/packages/osmocom:/nightly/Debian_Testing/
+https://downloads.osmocom.org/packages/osmocom:/nightly/Debian_Unstable/
+https://downloads.osmocom.org/packages/osmocom:/nightly/Raspbian_10/
+https://downloads.osmocom.org/packages/osmocom:/nightly/Raspbian_11/
+https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_18.04/
+https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_20.04/
+https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_20.10/
+https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_21.04/
+https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_21.10/
+https://downloads.osmocom.org/packages/osmocom:/nightly/xUbuntu_22.04/
 ```
 
 #### openSUSE
@@ -183,10 +188,19 @@ The WebUI allows you to interactively edit subscriber data. While it is not esse
 1. *Debian and Ubuntu* based Linux distributions can install [Node.js](https://nodejs.org/) as follows:
 
     ```bash
+    # Download and import the Nodesource GPG key
     $ sudo apt update
-    $ sudo apt install curl
-    $ curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    $ sudo apt install nodejs
+    $ sudo apt install -y ca-certificates curl gnupg
+    $ sudo mkdir -p /etc/apt/keyrings
+    $ curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+
+    # Create deb repository
+    $ NODE_MAJOR=20
+    $ echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+
+    # Run Update and Install
+    $ sudo apt update
+    $ sudo apt install nodejs -y
     ```
 
 2. To install [Node.js](https://nodejs.org/) on *openSUSE*, run the following:
@@ -262,10 +276,10 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 +++ mme.yaml.new    2020-09-05 20:56:05.434484208 -0400
 @@ -253,20 +253,20 @@ mme:
      s1ap:
-       - addr: 127.0.0.2
-     gtpc:
 -      - addr: 127.0.0.2
 +      - addr: 10.10.0.2
+     gtpc:
+       - addr: 127.0.0.2
      metrics:
        addr: 127.0.0.2
        port: 9090
@@ -290,17 +304,19 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 
 Modify [/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.
 ```diff
-$ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
---- sgwu.yaml    2020-09-05 20:50:39.393022566 -0400
-+++ sgwu.yaml.new    2020-09-05 20:51:06.667838823 -0400
-@@ -98,7 +98,7 @@ logger:
- #
- sgwu:
+$ diff --git a/configs/open5gs/sgwu.yaml.in b/configs/open5gs/sgwu.yaml.in
+index 8ccf94378..25b6884a3 100644
+--- a/configs/open5gs/sgwu.yaml.in
++++ b/configs/open5gs/sgwu.yaml.in
+@@ -100,7 +100,7 @@ sgwu:
      pfcp:
+       - addr: 127.0.0.6
+     gtpu:
 -      - addr: 127.0.0.6
 +      - addr: 10.11.0.6
-     gtpu:
-       - addr: 127.0.0.6
+
+ #
+ # sgwc:
 ```
 
 After changing config files, please restart Open5GS daemons.
@@ -410,38 +426,7 @@ Enter the subscriber details of your SIM cards using this tool, to save the subs
 #### Adding a route for the UE to have WAN connectivity {#UEInternet}
 ---
 
-In order to bridge between the PGWU/UPF and WAN (Internet), you must enable IP forwarding and add a NAT rule to your IP Tables.  
-
-**Note:** For the first run, it makes things simpler if you do not have any rules in the IP/NAT tables. If a program such as docker has already set up a rule, you will need to add rules differently.
-{: .notice--danger}
-
-You can check your current IP Table rules with the following commands (these tables are empty):
-```bash
-### Check IP Tables
-$ sudo iptables -L
-Chain INPUT (policy ACCEPT)
-target     prot opt source               destination
-
-Chain FORWARD (policy ACCEPT)
-target     prot opt source               destination
-
-Chain OUTPUT (policy ACCEPT)
-target     prot opt source               destination
-
-### Check NAT Tables
-$ sudo iptables -L -t nat
-Chain PREROUTING (policy ACCEPT)
-target     prot opt source               destination
-
-Chain INPUT (policy ACCEPT)
-target     prot opt source               destination
-
-Chain OUTPUT (policy ACCEPT)
-target     prot opt source               destination
-
-Chain POSTROUTING (policy ACCEPT)
-target     prot opt source               destination
-```
+In order to bridge between the PGWU/UPF and WAN (Internet), you must enable IP forwarding and add a NAT rule to your IP Tables.
 
 To enable forwarding and add the NAT rule, enter
 ```bash
@@ -454,9 +439,22 @@ $ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
 $ sudo ip6tables -t nat -A POSTROUTING -s 2001:db8:cafe::/48 ! -o ogstun -j MASQUERADE
 ```
 
+Configure the firewall correctly. Some operating systems (Ubuntu) by default enable firewall rules to block traffic.
+```bash
+$ sudo ufw status
+Status: active
+$ sudo ufw disable
+Firewall stopped and disabled on system startup
+$ sudo ufw status
+Status: inactive
+```
+
 Optionally, you may consider the settings below for security purposes.
 
 ```bash
+### Ensure that the packets in the `INPUT` chain to the `ogstun` interface are accepted
+$ sudo iptables -I INPUT -i ogstun -j ACCEPT
+
 ### Prevent UE's from connecting to the host on which UPF is running
 $ sudo iptables -I INPUT -s 10.45.0.0/16 -j DROP
 $ sudo ip6tables -I INPUT -s 2001:db8:cafe::/48 -j DROP
@@ -466,9 +464,6 @@ $ sudo ip6tables -I INPUT -s 2001:db8:cafe::/48 -j DROP
 ### Replace x.x.x.x/y with the VNFs IP/subnet
 $ sudo iptables -I FORWARD -s 10.45.0.0/16 -d x.x.x.x/y -j DROP
 ```
-
-**Note:** The above assumes you do not have any existing rules in the filter and nat tables. If a program such as docker has already set up rules, you may need to add the Open5GS related rules differently.
-{: .notice--danger}
 
 ## 5. Turn on your eNB/gNB and UE
 ---

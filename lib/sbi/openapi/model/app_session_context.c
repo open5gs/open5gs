@@ -22,19 +22,30 @@ OpenAPI_app_session_context_t *OpenAPI_app_session_context_create(
 
 void OpenAPI_app_session_context_free(OpenAPI_app_session_context_t *app_session_context)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == app_session_context) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_app_session_context_req_data_free(app_session_context->asc_req_data);
-    OpenAPI_app_session_context_resp_data_free(app_session_context->asc_resp_data);
-    OpenAPI_events_notification_free(app_session_context->evs_notif);
+    if (app_session_context->asc_req_data) {
+        OpenAPI_app_session_context_req_data_free(app_session_context->asc_req_data);
+        app_session_context->asc_req_data = NULL;
+    }
+    if (app_session_context->asc_resp_data) {
+        OpenAPI_app_session_context_resp_data_free(app_session_context->asc_resp_data);
+        app_session_context->asc_resp_data = NULL;
+    }
+    if (app_session_context->evs_notif) {
+        OpenAPI_events_notification_free(app_session_context->evs_notif);
+        app_session_context->evs_notif = NULL;
+    }
     ogs_free(app_session_context);
 }
 
 cJSON *OpenAPI_app_session_context_convertToJSON(OpenAPI_app_session_context_t *app_session_context)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (app_session_context == NULL) {
         ogs_error("OpenAPI_app_session_context_convertToJSON() failed [AppSessionContext]");
@@ -88,25 +99,38 @@ end:
 OpenAPI_app_session_context_t *OpenAPI_app_session_context_parseFromJSON(cJSON *app_session_contextJSON)
 {
     OpenAPI_app_session_context_t *app_session_context_local_var = NULL;
-    cJSON *asc_req_data = cJSON_GetObjectItemCaseSensitive(app_session_contextJSON, "ascReqData");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *asc_req_data = NULL;
     OpenAPI_app_session_context_req_data_t *asc_req_data_local_nonprim = NULL;
+    cJSON *asc_resp_data = NULL;
+    OpenAPI_app_session_context_resp_data_t *asc_resp_data_local_nonprim = NULL;
+    cJSON *evs_notif = NULL;
+    OpenAPI_events_notification_t *evs_notif_local_nonprim = NULL;
+    asc_req_data = cJSON_GetObjectItemCaseSensitive(app_session_contextJSON, "ascReqData");
     if (asc_req_data) {
     asc_req_data_local_nonprim = OpenAPI_app_session_context_req_data_parseFromJSON(asc_req_data);
+    if (!asc_req_data_local_nonprim) {
+        ogs_error("OpenAPI_app_session_context_req_data_parseFromJSON failed [asc_req_data]");
+        goto end;
+    }
     }
 
-    cJSON *asc_resp_data = cJSON_GetObjectItemCaseSensitive(app_session_contextJSON, "ascRespData");
-
-    OpenAPI_app_session_context_resp_data_t *asc_resp_data_local_nonprim = NULL;
+    asc_resp_data = cJSON_GetObjectItemCaseSensitive(app_session_contextJSON, "ascRespData");
     if (asc_resp_data) {
     asc_resp_data_local_nonprim = OpenAPI_app_session_context_resp_data_parseFromJSON(asc_resp_data);
+    if (!asc_resp_data_local_nonprim) {
+        ogs_error("OpenAPI_app_session_context_resp_data_parseFromJSON failed [asc_resp_data]");
+        goto end;
+    }
     }
 
-    cJSON *evs_notif = cJSON_GetObjectItemCaseSensitive(app_session_contextJSON, "evsNotif");
-
-    OpenAPI_events_notification_t *evs_notif_local_nonprim = NULL;
+    evs_notif = cJSON_GetObjectItemCaseSensitive(app_session_contextJSON, "evsNotif");
     if (evs_notif) {
     evs_notif_local_nonprim = OpenAPI_events_notification_parseFromJSON(evs_notif);
+    if (!evs_notif_local_nonprim) {
+        ogs_error("OpenAPI_events_notification_parseFromJSON failed [evs_notif]");
+        goto end;
+    }
     }
 
     app_session_context_local_var = OpenAPI_app_session_context_create (
@@ -117,6 +141,18 @@ OpenAPI_app_session_context_t *OpenAPI_app_session_context_parseFromJSON(cJSON *
 
     return app_session_context_local_var;
 end:
+    if (asc_req_data_local_nonprim) {
+        OpenAPI_app_session_context_req_data_free(asc_req_data_local_nonprim);
+        asc_req_data_local_nonprim = NULL;
+    }
+    if (asc_resp_data_local_nonprim) {
+        OpenAPI_app_session_context_resp_data_free(asc_resp_data_local_nonprim);
+        asc_resp_data_local_nonprim = NULL;
+    }
+    if (evs_notif_local_nonprim) {
+        OpenAPI_events_notification_free(evs_notif_local_nonprim);
+        evs_notif_local_nonprim = NULL;
+    }
     return NULL;
 }
 

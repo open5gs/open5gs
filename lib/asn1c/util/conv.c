@@ -215,15 +215,22 @@ int ogs_asn_copy_ie(const asn_TYPE_descriptor_t *td, void *src, void *dst)
 {
     asn_enc_rval_t enc_ret = {0};
     asn_dec_rval_t dec_ret = {0};
-    uint8_t buffer[OGS_MAX_SDU_LEN];
+    uint8_t *buffer = NULL;
 
     ogs_assert(td);
     ogs_assert(src);
     ogs_assert(dst);
 
+    buffer = ogs_calloc(1, OGS_MAX_SDU_LEN);
+    if (!buffer) {
+        ogs_error("ogs_calloc() failed");
+        return OGS_ERROR;
+    }
+
     enc_ret = aper_encode_to_buffer(td, NULL, src, buffer, OGS_MAX_SDU_LEN);
     if (enc_ret.encoded < 0) {
         ogs_error("aper_encode_to_buffer() failed[%d]", (int)enc_ret.encoded);
+        ogs_free(buffer);
         return OGS_ERROR;
     }
 
@@ -232,8 +239,11 @@ int ogs_asn_copy_ie(const asn_TYPE_descriptor_t *td, void *src, void *dst)
 
     if (dec_ret.code != RC_OK) {
         ogs_error("aper_decode() failed[%d]", dec_ret.code);
+        ogs_free(buffer);
         return OGS_ERROR;
     }
+
+    ogs_free(buffer);
 
     return OGS_OK;
 }

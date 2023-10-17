@@ -1,7 +1,7 @@
 /*
  * ng_ap_cause.h
  *
- * 
+ * Represents the NGAP cause.
  */
 
 #ifndef _OpenAPI_ng_ap_cause_H_

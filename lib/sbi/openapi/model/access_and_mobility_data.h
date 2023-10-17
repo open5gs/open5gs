@@ -1,7 +1,7 @@
 /*
  * access_and_mobility_data.h
  *
- * 
+ * Represents Access and Mobility data for a UE.
  */
 
 #ifndef _OpenAPI_access_and_mobility_data_H_
@@ -48,6 +48,7 @@ typedef struct OpenAPI_access_and_mobility_data_s {
     OpenAPI_list_t *rat_type;
     char *rat_types_ts;
     char *supp_feat;
+    OpenAPI_list_t *reset_ids;
 } OpenAPI_access_and_mobility_data_t;
 
 OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_create(
@@ -71,7 +72,8 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_create(
     char *current_plmn_ts,
     OpenAPI_list_t *rat_type,
     char *rat_types_ts,
-    char *supp_feat
+    char *supp_feat,
+    OpenAPI_list_t *reset_ids
 );
 void OpenAPI_access_and_mobility_data_free(OpenAPI_access_and_mobility_data_t *access_and_mobility_data);
 OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJSON(cJSON *access_and_mobility_dataJSON);

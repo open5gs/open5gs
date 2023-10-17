@@ -16,8 +16,10 @@ typedef enum smf_metric_type_global_s {
     SMF_METR_GLOB_CTR_S5C_RX_PARSE_FAILED,
     SMF_METR_GLOB_CTR_S5C_RX_CREATESESSIONREQ,
     SMF_METR_GLOB_CTR_S5C_RX_DELETESESSIONREQ,
+    SMF_METR_GLOB_CTR_SM_N4SESSIONESTABREQ,
+    SMF_METR_GLOB_CTR_SM_N4SESSIONREPORT,
+    SMF_METR_GLOB_CTR_SM_N4SESSIONREPORTSUCC,
     SMF_METR_GLOB_GAUGE_UES_ACTIVE,
-    SMF_METR_GLOB_GAUGE_SESSIONS_ACTIVE,
     SMF_METR_GLOB_GAUGE_BEARERS_ACTIVE,
     SMF_METR_GLOB_GAUGE_GTP1_PDPCTXS_ACTIVE,
     SMF_METR_GLOB_GAUGE_GTP2_SESSIONS_ACTIVE,
@@ -25,6 +27,8 @@ typedef enum smf_metric_type_global_s {
     _SMF_METR_GLOB_MAX,
 } smf_metric_type_global_t;
 extern ogs_metrics_inst_t *smf_metrics_inst_global[_SMF_METR_GLOB_MAX];
+int smf_metrics_init_inst_global(void);
+int smf_metrics_free_inst_global(void);
 
 static inline void smf_metrics_inst_global_set(smf_metric_type_global_t t, int val)
 { ogs_metrics_inst_set(smf_metrics_inst_global[t], val); }
@@ -61,8 +65,39 @@ static inline void smf_metrics_inst_gtp_node_dec(
     ogs_metrics_inst_t **inst, smf_metric_type_gtp_node_t t)
 { ogs_metrics_inst_dec(inst[t]); }
 
-int smf_metrics_open(void);
-int smf_metrics_close(void);
+/* BY SLICE */
+typedef enum smf_metric_type_by_slice_s {
+    SMF_METR_GAUGE_SM_SESSIONNBR = 0,
+    SMF_METR_CTR_SM_PDUSESSIONCREATIONREQ,
+    SMF_METR_CTR_SM_PDUSESSIONCREATIONSUCC,
+    _SMF_METR_BY_SLICE_MAX,
+} smf_metric_type_by_slice_t;
+
+void smf_metrics_inst_by_slice_add(
+    ogs_plmn_id_t *plmn, ogs_s_nssai_t *snssai,
+    smf_metric_type_by_slice_t t, int val);
+
+/* BY SLICE and 5QI */
+typedef enum smf_metric_type_by_5qi_s {
+    SMF_METR_GAUGE_SM_QOSFLOWNBR = 0,
+    _SMF_METR_BY_5QI_MAX,
+} smf_metric_type_by_5qi_t;
+
+void smf_metrics_inst_by_5qi_add(
+    ogs_plmn_id_t *plmn, ogs_s_nssai_t *snssai,
+    uint8_t fiveqi, smf_metric_type_by_5qi_t t, int val);
+
+/* BY CAUSE */
+typedef enum smf_metric_type_by_cause_s {
+    SMF_METR_CTR_SM_N4SESSIONESTABFAIL = 0,
+    SMF_METR_CTR_SM_PDUSESSIONCREATIONFAIL,
+    _SMF_METR_BY_CAUSE_MAX,
+} smf_metric_type_by_cause_t;
+
+void smf_metrics_inst_by_cause_add(
+    int cause, smf_metric_type_by_cause_t t, int val);
+void smf_metrics_init(void);
+void smf_metrics_final(void);
 
 #ifdef __cplusplus
 }

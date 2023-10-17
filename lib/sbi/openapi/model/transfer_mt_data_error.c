@@ -17,6 +17,8 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_create(
     OpenAPI_access_token_err_t *access_token_error,
     OpenAPI_access_token_req_t *access_token_request,
     char *nrf_id,
+    bool is_remote_error,
+    int remote_error,
     bool is_max_waiting_time,
     int max_waiting_time
 )
@@ -36,6 +38,8 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_create(
     transfer_mt_data_error_local_var->access_token_error = access_token_error;
     transfer_mt_data_error_local_var->access_token_request = access_token_request;
     transfer_mt_data_error_local_var->nrf_id = nrf_id;
+    transfer_mt_data_error_local_var->is_remote_error = is_remote_error;
+    transfer_mt_data_error_local_var->remote_error = remote_error;
     transfer_mt_data_error_local_var->is_max_waiting_time = is_max_waiting_time;
     transfer_mt_data_error_local_var->max_waiting_time = max_waiting_time;
 
@@ -44,29 +48,61 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_create(
 
 void OpenAPI_transfer_mt_data_error_free(OpenAPI_transfer_mt_data_error_t *transfer_mt_data_error)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == transfer_mt_data_error) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(transfer_mt_data_error->type);
-    ogs_free(transfer_mt_data_error->title);
-    ogs_free(transfer_mt_data_error->detail);
-    ogs_free(transfer_mt_data_error->instance);
-    ogs_free(transfer_mt_data_error->cause);
-    OpenAPI_list_for_each(transfer_mt_data_error->invalid_params, node) {
-        OpenAPI_invalid_param_free(node->data);
+    if (transfer_mt_data_error->type) {
+        ogs_free(transfer_mt_data_error->type);
+        transfer_mt_data_error->type = NULL;
     }
-    OpenAPI_list_free(transfer_mt_data_error->invalid_params);
-    ogs_free(transfer_mt_data_error->supported_features);
-    OpenAPI_access_token_err_free(transfer_mt_data_error->access_token_error);
-    OpenAPI_access_token_req_free(transfer_mt_data_error->access_token_request);
-    ogs_free(transfer_mt_data_error->nrf_id);
+    if (transfer_mt_data_error->title) {
+        ogs_free(transfer_mt_data_error->title);
+        transfer_mt_data_error->title = NULL;
+    }
+    if (transfer_mt_data_error->detail) {
+        ogs_free(transfer_mt_data_error->detail);
+        transfer_mt_data_error->detail = NULL;
+    }
+    if (transfer_mt_data_error->instance) {
+        ogs_free(transfer_mt_data_error->instance);
+        transfer_mt_data_error->instance = NULL;
+    }
+    if (transfer_mt_data_error->cause) {
+        ogs_free(transfer_mt_data_error->cause);
+        transfer_mt_data_error->cause = NULL;
+    }
+    if (transfer_mt_data_error->invalid_params) {
+        OpenAPI_list_for_each(transfer_mt_data_error->invalid_params, node) {
+            OpenAPI_invalid_param_free(node->data);
+        }
+        OpenAPI_list_free(transfer_mt_data_error->invalid_params);
+        transfer_mt_data_error->invalid_params = NULL;
+    }
+    if (transfer_mt_data_error->supported_features) {
+        ogs_free(transfer_mt_data_error->supported_features);
+        transfer_mt_data_error->supported_features = NULL;
+    }
+    if (transfer_mt_data_error->access_token_error) {
+        OpenAPI_access_token_err_free(transfer_mt_data_error->access_token_error);
+        transfer_mt_data_error->access_token_error = NULL;
+    }
+    if (transfer_mt_data_error->access_token_request) {
+        OpenAPI_access_token_req_free(transfer_mt_data_error->access_token_request);
+        transfer_mt_data_error->access_token_request = NULL;
+    }
+    if (transfer_mt_data_error->nrf_id) {
+        ogs_free(transfer_mt_data_error->nrf_id);
+        transfer_mt_data_error->nrf_id = NULL;
+    }
     ogs_free(transfer_mt_data_error);
 }
 
 cJSON *OpenAPI_transfer_mt_data_error_convertToJSON(OpenAPI_transfer_mt_data_error_t *transfer_mt_data_error)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (transfer_mt_data_error == NULL) {
         ogs_error("OpenAPI_transfer_mt_data_error_convertToJSON() failed [TransferMtDataError]");
@@ -122,17 +158,13 @@ cJSON *OpenAPI_transfer_mt_data_error_convertToJSON(OpenAPI_transfer_mt_data_err
         ogs_error("OpenAPI_transfer_mt_data_error_convertToJSON() failed [invalid_params]");
         goto end;
     }
-
-    OpenAPI_lnode_t *invalid_params_node;
-    if (transfer_mt_data_error->invalid_params) {
-        OpenAPI_list_for_each(transfer_mt_data_error->invalid_params, invalid_params_node) {
-            cJSON *itemLocal = OpenAPI_invalid_param_convertToJSON(invalid_params_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_transfer_mt_data_error_convertToJSON() failed [invalid_params]");
-                goto end;
-            }
-            cJSON_AddItemToArray(invalid_paramsList, itemLocal);
+    OpenAPI_list_for_each(transfer_mt_data_error->invalid_params, node) {
+        cJSON *itemLocal = OpenAPI_invalid_param_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_transfer_mt_data_error_convertToJSON() failed [invalid_params]");
+            goto end;
         }
+        cJSON_AddItemToArray(invalid_paramsList, itemLocal);
     }
     }
 
@@ -176,6 +208,13 @@ cJSON *OpenAPI_transfer_mt_data_error_convertToJSON(OpenAPI_transfer_mt_data_err
     }
     }
 
+    if (transfer_mt_data_error->is_remote_error) {
+    if (cJSON_AddBoolToObject(item, "remoteError", transfer_mt_data_error->remote_error) == NULL) {
+        ogs_error("OpenAPI_transfer_mt_data_error_convertToJSON() failed [remote_error]");
+        goto end;
+    }
+    }
+
     if (transfer_mt_data_error->is_max_waiting_time) {
     if (cJSON_AddNumberToObject(item, "maxWaitingTime", transfer_mt_data_error->max_waiting_time) == NULL) {
         ogs_error("OpenAPI_transfer_mt_data_error_convertToJSON() failed [max_waiting_time]");
@@ -190,26 +229,40 @@ end:
 OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(cJSON *transfer_mt_data_errorJSON)
 {
     OpenAPI_transfer_mt_data_error_t *transfer_mt_data_error_local_var = NULL;
-    cJSON *type = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "type");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *type = NULL;
+    cJSON *title = NULL;
+    cJSON *status = NULL;
+    cJSON *detail = NULL;
+    cJSON *instance = NULL;
+    cJSON *cause = NULL;
+    cJSON *invalid_params = NULL;
+    OpenAPI_list_t *invalid_paramsList = NULL;
+    cJSON *supported_features = NULL;
+    cJSON *access_token_error = NULL;
+    OpenAPI_access_token_err_t *access_token_error_local_nonprim = NULL;
+    cJSON *access_token_request = NULL;
+    OpenAPI_access_token_req_t *access_token_request_local_nonprim = NULL;
+    cJSON *nrf_id = NULL;
+    cJSON *remote_error = NULL;
+    cJSON *max_waiting_time = NULL;
+    type = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "type");
     if (type) {
-    if (!cJSON_IsString(type)) {
+    if (!cJSON_IsString(type) && !cJSON_IsNull(type)) {
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [type]");
         goto end;
     }
     }
 
-    cJSON *title = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "title");
-
+    title = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "title");
     if (title) {
-    if (!cJSON_IsString(title)) {
+    if (!cJSON_IsString(title) && !cJSON_IsNull(title)) {
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [title]");
         goto end;
     }
     }
 
-    cJSON *status = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "status");
-
+    status = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "status");
     if (status) {
     if (!cJSON_IsNumber(status)) {
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [status]");
@@ -217,96 +270,97 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
     }
     }
 
-    cJSON *detail = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "detail");
-
+    detail = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "detail");
     if (detail) {
-    if (!cJSON_IsString(detail)) {
+    if (!cJSON_IsString(detail) && !cJSON_IsNull(detail)) {
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [detail]");
         goto end;
     }
     }
 
-    cJSON *instance = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "instance");
-
+    instance = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "instance");
     if (instance) {
-    if (!cJSON_IsString(instance)) {
+    if (!cJSON_IsString(instance) && !cJSON_IsNull(instance)) {
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [instance]");
         goto end;
     }
     }
 
-    cJSON *cause = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "cause");
-
+    cause = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "cause");
     if (cause) {
-    if (!cJSON_IsString(cause)) {
+    if (!cJSON_IsString(cause) && !cJSON_IsNull(cause)) {
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [cause]");
         goto end;
     }
     }
 
-    cJSON *invalid_params = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "invalidParams");
-
-    OpenAPI_list_t *invalid_paramsList;
+    invalid_params = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "invalidParams");
     if (invalid_params) {
-    cJSON *invalid_params_local_nonprimitive;
-    if (!cJSON_IsArray(invalid_params)){
-        ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [invalid_params]");
-        goto end;
-    }
-
-    invalid_paramsList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(invalid_params_local_nonprimitive, invalid_params ) {
-        if (!cJSON_IsObject(invalid_params_local_nonprimitive)) {
+        cJSON *invalid_params_local = NULL;
+        if (!cJSON_IsArray(invalid_params)) {
             ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [invalid_params]");
             goto end;
         }
-        OpenAPI_invalid_param_t *invalid_paramsItem = OpenAPI_invalid_param_parseFromJSON(invalid_params_local_nonprimitive);
 
-        if (!invalid_paramsItem) {
-            ogs_error("No invalid_paramsItem");
-            OpenAPI_list_free(invalid_paramsList);
-            goto end;
+        invalid_paramsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(invalid_params_local, invalid_params) {
+            if (!cJSON_IsObject(invalid_params_local)) {
+                ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [invalid_params]");
+                goto end;
+            }
+            OpenAPI_invalid_param_t *invalid_paramsItem = OpenAPI_invalid_param_parseFromJSON(invalid_params_local);
+            if (!invalid_paramsItem) {
+                ogs_error("No invalid_paramsItem");
+                goto end;
+            }
+            OpenAPI_list_add(invalid_paramsList, invalid_paramsItem);
         }
-
-        OpenAPI_list_add(invalid_paramsList, invalid_paramsItem);
-    }
     }
 
-    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "supportedFeatures");
-
+    supported_features = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "supportedFeatures");
     if (supported_features) {
-    if (!cJSON_IsString(supported_features)) {
+    if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [supported_features]");
         goto end;
     }
     }
 
-    cJSON *access_token_error = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "accessTokenError");
-
-    OpenAPI_access_token_err_t *access_token_error_local_nonprim = NULL;
+    access_token_error = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "accessTokenError");
     if (access_token_error) {
     access_token_error_local_nonprim = OpenAPI_access_token_err_parseFromJSON(access_token_error);
+    if (!access_token_error_local_nonprim) {
+        ogs_error("OpenAPI_access_token_err_parseFromJSON failed [access_token_error]");
+        goto end;
+    }
     }
 
-    cJSON *access_token_request = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "accessTokenRequest");
-
-    OpenAPI_access_token_req_t *access_token_request_local_nonprim = NULL;
+    access_token_request = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "accessTokenRequest");
     if (access_token_request) {
     access_token_request_local_nonprim = OpenAPI_access_token_req_parseFromJSON(access_token_request);
+    if (!access_token_request_local_nonprim) {
+        ogs_error("OpenAPI_access_token_req_parseFromJSON failed [access_token_request]");
+        goto end;
+    }
     }
 
-    cJSON *nrf_id = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "nrfId");
-
+    nrf_id = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "nrfId");
     if (nrf_id) {
-    if (!cJSON_IsString(nrf_id)) {
+    if (!cJSON_IsString(nrf_id) && !cJSON_IsNull(nrf_id)) {
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [nrf_id]");
         goto end;
     }
     }
 
-    cJSON *max_waiting_time = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "maxWaitingTime");
+    remote_error = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "remoteError");
+    if (remote_error) {
+    if (!cJSON_IsBool(remote_error)) {
+        ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [remote_error]");
+        goto end;
+    }
+    }
 
+    max_waiting_time = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "maxWaitingTime");
     if (max_waiting_time) {
     if (!cJSON_IsNumber(max_waiting_time)) {
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [max_waiting_time]");
@@ -315,24 +369,41 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
     }
 
     transfer_mt_data_error_local_var = OpenAPI_transfer_mt_data_error_create (
-        type ? ogs_strdup(type->valuestring) : NULL,
-        title ? ogs_strdup(title->valuestring) : NULL,
+        type && !cJSON_IsNull(type) ? ogs_strdup(type->valuestring) : NULL,
+        title && !cJSON_IsNull(title) ? ogs_strdup(title->valuestring) : NULL,
         status ? true : false,
         status ? status->valuedouble : 0,
-        detail ? ogs_strdup(detail->valuestring) : NULL,
-        instance ? ogs_strdup(instance->valuestring) : NULL,
-        cause ? ogs_strdup(cause->valuestring) : NULL,
+        detail && !cJSON_IsNull(detail) ? ogs_strdup(detail->valuestring) : NULL,
+        instance && !cJSON_IsNull(instance) ? ogs_strdup(instance->valuestring) : NULL,
+        cause && !cJSON_IsNull(cause) ? ogs_strdup(cause->valuestring) : NULL,
         invalid_params ? invalid_paramsList : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         access_token_error ? access_token_error_local_nonprim : NULL,
         access_token_request ? access_token_request_local_nonprim : NULL,
-        nrf_id ? ogs_strdup(nrf_id->valuestring) : NULL,
+        nrf_id && !cJSON_IsNull(nrf_id) ? ogs_strdup(nrf_id->valuestring) : NULL,
+        remote_error ? true : false,
+        remote_error ? remote_error->valueint : 0,
         max_waiting_time ? true : false,
         max_waiting_time ? max_waiting_time->valuedouble : 0
     );
 
     return transfer_mt_data_error_local_var;
 end:
+    if (invalid_paramsList) {
+        OpenAPI_list_for_each(invalid_paramsList, node) {
+            OpenAPI_invalid_param_free(node->data);
+        }
+        OpenAPI_list_free(invalid_paramsList);
+        invalid_paramsList = NULL;
+    }
+    if (access_token_error_local_nonprim) {
+        OpenAPI_access_token_err_free(access_token_error_local_nonprim);
+        access_token_error_local_nonprim = NULL;
+    }
+    if (access_token_request_local_nonprim) {
+        OpenAPI_access_token_req_free(access_token_request_local_nonprim);
+        access_token_request_local_nonprim = NULL;
+    }
     return NULL;
 }
 

@@ -16,16 +16,18 @@ OpenAPI_event_type_t *OpenAPI_event_type_create(
 
 void OpenAPI_event_type_free(OpenAPI_event_type_t *event_type)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == event_type) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(event_type);
 }
 
 cJSON *OpenAPI_event_type_convertToJSON(OpenAPI_event_type_t *event_type)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (event_type == NULL) {
         ogs_error("OpenAPI_event_type_convertToJSON() failed [EventType]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_event_type_t *OpenAPI_event_type_parseFromJSON(cJSON *event_typeJSON)
 {
     OpenAPI_event_type_t *event_type_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     event_type_local_var = OpenAPI_event_type_create (
     );
 

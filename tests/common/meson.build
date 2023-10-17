@@ -16,7 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 libtestcommon_conf = configuration_data()
-libtestcommon_conf.set_quoted('MESON_BUILD_ROOT', meson.build_root())
+libtestcommon_conf.set_quoted('MESON_BUILD_ROOT', open5gs_build_dir)
 configure_file(output : 'test-config-private.h',
                configuration : libtestcommon_conf)
 

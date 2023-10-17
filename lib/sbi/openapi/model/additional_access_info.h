@@ -1,7 +1,7 @@
 /*
  * additional_access_info.h
  *
- * 
+ * Indicates the combination of additional Access Type and RAT Type for a MA PDU session.
  */
 
 #ifndef _OpenAPI_additional_access_info_H_

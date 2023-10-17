@@ -43,13 +43,15 @@ class TestSchemaUpdater(unittest.TestCase):
                 'opc': 'iamatransparentsecretopcstring'
             },
             'subscribed_rau_tau_timer': 12,
-            'subscriber_status': 0
+            'subscriber_status': 0,
+            "operator_determined_barring": 0,
         }
 
     def test_top_level_migration(self):
         new_sub = SchemaUpdater.create_v1_from_v0(self.legacy_sub)
         self.assertEqual(new_sub["imsi"], self.legacy_sub["imsi"])
         self.assertEqual(new_sub["subscriber_status"], self.legacy_sub["subscriber_status"])
+        self.assertEqual(new_sub["operator_determined_barring"], self.legacy_sub["operator_determined_barring"])
         self.assertEqual(new_sub["subscribed_rau_tau_timer"], self.legacy_sub["subscribed_rau_tau_timer"])
         self.assertEqual(new_sub["network_access_mode"], self.legacy_sub["network_access_mode"])
         self.assertEqual(new_sub["access_restriction_data"], self.legacy_sub["access_restriction_data"])

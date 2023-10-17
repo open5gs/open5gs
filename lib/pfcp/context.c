@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -27,24 +27,29 @@ static int context_initialized = 0;
 static OGS_POOL(ogs_pfcp_node_pool, ogs_pfcp_node_t);
 
 static OGS_POOL(ogs_pfcp_sess_pool, ogs_pfcp_sess_t);
-static OGS_POOL(ogs_pfcp_pdr_pool, ogs_pfcp_pdr_t);
 static OGS_POOL(ogs_pfcp_far_pool, ogs_pfcp_far_t);
 static OGS_POOL(ogs_pfcp_urr_pool, ogs_pfcp_urr_t);
 static OGS_POOL(ogs_pfcp_qer_pool, ogs_pfcp_qer_t);
 static OGS_POOL(ogs_pfcp_bar_pool, ogs_pfcp_bar_t);
 
+static OGS_POOL(ogs_pfcp_pdr_pool, ogs_pfcp_pdr_t);
+static OGS_POOL(ogs_pfcp_pdr_teid_pool, ogs_pool_id_t);
+static ogs_pool_id_t *pdr_random_to_index;
+
+static OGS_POOL(ogs_pfcp_rule_pool, ogs_pfcp_rule_t);
+
 static OGS_POOL(ogs_pfcp_dev_pool, ogs_pfcp_dev_t);
 static OGS_POOL(ogs_pfcp_subnet_pool, ogs_pfcp_subnet_t);
-static OGS_POOL(ogs_pfcp_rule_pool, ogs_pfcp_rule_t);
 
 void ogs_pfcp_context_init(void)
 {
+    int i;
     ogs_assert(context_initialized == 0);
 
     /* Initialize SMF context */
     memset(&self, 0, sizeof(ogs_pfcp_context_t));
 
-    self.pfcp_started = ogs_time_ntp32_now();
+    self.local_recovery = ogs_time_ntp32_now();
 
     ogs_log_install_domain(&__ogs_pfcp_domain, "pfcp", ogs_core()->log.level);
 
@@ -52,8 +57,6 @@ void ogs_pfcp_context_init(void)
 
     ogs_pool_init(&ogs_pfcp_sess_pool, ogs_app()->pool.sess);
 
-    ogs_pool_init(&ogs_pfcp_pdr_pool,
-            ogs_app()->pool.sess * OGS_MAX_NUM_OF_PDR);
     ogs_pool_init(&ogs_pfcp_far_pool,
             ogs_app()->pool.sess * OGS_MAX_NUM_OF_FAR);
     ogs_pool_init(&ogs_pfcp_urr_pool,
@@ -62,6 +65,17 @@ void ogs_pfcp_context_init(void)
             ogs_app()->pool.sess * OGS_MAX_NUM_OF_QER);
     ogs_pool_init(&ogs_pfcp_bar_pool,
             ogs_app()->pool.sess * OGS_MAX_NUM_OF_BAR);
+
+    ogs_pool_init(&ogs_pfcp_pdr_pool,
+            ogs_app()->pool.sess * OGS_MAX_NUM_OF_PDR);
+    ogs_pool_init(&ogs_pfcp_pdr_teid_pool, ogs_pfcp_pdr_pool.size);
+    ogs_pool_random_id_generate(&ogs_pfcp_pdr_teid_pool);
+
+    pdr_random_to_index = ogs_calloc(
+            sizeof(ogs_pool_id_t), ogs_pfcp_pdr_pool.size+1);
+    ogs_assert(pdr_random_to_index);
+    for (i = 0; i < ogs_pfcp_pdr_pool.size; i++)
+        pdr_random_to_index[ogs_pfcp_pdr_teid_pool.array[i]] = i;
 
     ogs_pool_init(&ogs_pfcp_rule_pool,
             ogs_app()->pool.sess *
@@ -98,8 +112,11 @@ void ogs_pfcp_context_final(void)
     ogs_pool_final(&ogs_pfcp_subnet_pool);
     ogs_pool_final(&ogs_pfcp_rule_pool);
 
-    ogs_pool_final(&ogs_pfcp_sess_pool);
     ogs_pool_final(&ogs_pfcp_pdr_pool);
+    ogs_pool_final(&ogs_pfcp_pdr_teid_pool);
+    ogs_free(pdr_random_to_index);
+
+    ogs_pool_final(&ogs_pfcp_sess_pool);
     ogs_pool_final(&ogs_pfcp_far_pool);
     ogs_pool_final(&ogs_pfcp_urr_pool);
     ogs_pool_final(&ogs_pfcp_qer_pool);
@@ -126,6 +143,62 @@ static int ogs_pfcp_context_prepare(void)
     return OGS_OK;
 }
 
+static int ogs_pfcp_check_subnet_overlapping(void)
+{
+    ogs_pfcp_subnet_t *subnet = NULL;
+    ogs_pfcp_subnet_t *next_subnet = NULL;
+    char buf1[OGS_ADDRSTRLEN];
+    char buf2[OGS_ADDRSTRLEN];
+    int rv = OGS_OK;
+
+    ogs_list_for_each(&self.subnet_list, subnet){
+        for (next_subnet = ogs_list_next(subnet); (next_subnet);
+                next_subnet = ogs_list_next(next_subnet)) {
+            if (strcmp(subnet->dnn, next_subnet->dnn) == 0 &&
+                subnet->gw.family == next_subnet->gw.family) {
+                uint32_t *addr1 = subnet->sub.sub;
+                uint32_t *addr2 = next_subnet->sub.sub;
+                uint32_t mask[4];
+                int i;
+                /* Get smaller subnet mask for IPv4 or IPv6 */
+                for (i = 0; i < 4 ; i++) {
+                    mask[i] = (subnet->sub.mask[i] & next_subnet->sub.mask[i]);
+                }
+                /* Compare masked subnets if they overlap */
+                if (subnet->gw.family == AF_INET) {
+                    if ((addr1[0] & mask[0]) == (addr2[0] & mask[0])) {
+                        ogs_error("Overlapping subnets in SMF configuration file: %s/%d and %s/%d",
+                                OGS_INET_NTOP(&subnet->gw.sub[0], buf1),
+                                subnet->prefixlen,
+                                OGS_INET_NTOP(&next_subnet->gw.sub[0], buf2),
+                                next_subnet->prefixlen);
+                        rv = OGS_ERROR;
+                    }
+                } else if (subnet->gw.family == AF_INET6) {
+                    if (((addr1[0] & mask[0]) == (addr2[0] & mask[0])) &&
+                        ((addr1[1] & mask[1]) == (addr2[1] & mask[1])) &&
+                        ((addr1[2] & mask[2]) == (addr2[2] & mask[2])) &&
+                        ((addr1[3] & mask[3]) == (addr2[3] & mask[3]))) {
+                        ogs_error("Overlapping subnets in SMF configuration file: %s/%d and %s/%d",
+                                OGS_INET6_NTOP(&subnet->gw.sub[0], buf1),
+                                subnet->prefixlen,
+                                OGS_INET6_NTOP(&next_subnet->gw.sub[0], buf2),
+                                next_subnet->prefixlen);
+                        rv = OGS_ERROR;
+                    }
+                } else {
+                    ogs_error("Invalid family in subnet configuration [%d]",
+                            subnet->gw.family);
+                    rv = OGS_ERROR;
+                    ogs_assert_if_reached();
+                }
+            }
+        }
+    }
+
+    return rv;
+}
+
 static int ogs_pfcp_context_validation(const char *local)
 {
     if (ogs_list_first(&self.pfcp_list) == NULL &&
@@ -133,6 +206,9 @@ static int ogs_pfcp_context_validation(const char *local)
         ogs_error("No %s.pfcp: in '%s'", local, ogs_app()->file);
         return OGS_ERROR;
     }
+    if (ogs_pfcp_check_subnet_overlapping() != OGS_OK)
+        return OGS_ERROR;
+
     return OGS_OK;
 }
 
@@ -165,6 +241,8 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         int family = AF_UNSPEC;
                         int i, num = 0;
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
+                        int num_of_advertise = 0;
+                        const char *advertise[OGS_MAX_NUM_OF_HOSTNAME];
                         uint16_t port = self.pfcp_port;
                         const char *dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
@@ -224,6 +302,27 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 } while (
                                     ogs_yaml_iter_type(&hostname_iter) ==
                                         YAML_SEQUENCE_NODE);
+                            } else if (!strcmp(pfcp_key, "advertise")) {
+                                ogs_yaml_iter_t hostname_iter;
+                                ogs_yaml_iter_recurse(&pfcp_iter,
+                                        &hostname_iter);
+                                ogs_assert(ogs_yaml_iter_type(&hostname_iter) !=
+                                    YAML_MAPPING_NODE);
+
+                                do {
+                                    if (ogs_yaml_iter_type(&hostname_iter) ==
+                                            YAML_SEQUENCE_NODE) {
+                                        if (!ogs_yaml_iter_next(
+                                                    &hostname_iter))
+                                            break;
+                                    }
+
+                                    ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
+                                    advertise[num_of_advertise++] =
+                                        ogs_yaml_iter_value(&hostname_iter);
+                                } while (
+                                    ogs_yaml_iter_type(&hostname_iter) ==
+                                        YAML_SEQUENCE_NODE);
                             } else if (!strcmp(pfcp_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&pfcp_iter);
                                 if (v) {
@@ -260,6 +359,27 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 ogs_socknode_add(
                                     &self.pfcp_list6, AF_INET6, addr,
                                     is_option ? &option : NULL);
+                            ogs_freeaddrinfo(addr);
+                        }
+
+                        addr = NULL;
+                        for (i = 0; i < num_of_advertise; i++) {
+                            rv = ogs_addaddrinfo(&addr,
+                                    family, advertise[i], port, 0);
+                            ogs_assert(rv == OGS_OK);
+                        }
+
+                        if (addr) {
+                            if (ogs_app()->parameter.no_ipv4 == 0 &&
+                                !self.pfcp_advertise) {
+                                ogs_copyaddrinfo(&self.pfcp_advertise, addr);
+                                ogs_filteraddrinfo(&self.pfcp_advertise, AF_INET);
+                            }
+                            if (ogs_app()->parameter.no_ipv6 == 0 &&
+                                !self.pfcp_advertise6) {
+                                ogs_copyaddrinfo(&self.pfcp_advertise6, addr);
+                                ogs_filteraddrinfo(&self.pfcp_advertise6, AF_INET6);
+                            }
                             ogs_freeaddrinfo(addr);
                         }
 
@@ -403,16 +523,13 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
                         uint16_t port = self.pfcp_port;
                         uint16_t tac[OGS_MAX_NUM_OF_TAI] = {0,};
-                        uint8_t num_of_tac = 0;
+                        int num_of_tac = 0;
                         const char *dnn[OGS_MAX_NUM_OF_DNN];
-                        uint8_t num_of_dnn = 0;
+                        int num_of_dnn = 0;
                         uint32_t e_cell_id[OGS_MAX_NUM_OF_CELL_ID] = {0,};
-                        uint8_t num_of_e_cell_id = 0;
+                        int num_of_e_cell_id = 0;
                         uint64_t nr_cell_id[OGS_MAX_NUM_OF_CELL_ID] = {0,};
-                        uint8_t num_of_nr_cell_id = 0;
-
-                        /* full list RR enabled by default */
-                        uint8_t rr_enable = 1;
+                        int num_of_nr_cell_id = 0;
 
                         if (ogs_yaml_iter_type(&pfcp_array) ==
                                 YAML_MAPPING_NODE) {
@@ -465,6 +582,8 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 } while (
                                     ogs_yaml_iter_type(&hostname_iter) ==
                                         YAML_SEQUENCE_NODE);
+                            } else if (!strcmp(pfcp_key, "advertise")) {
+                                /* Nothing in client */
                             } else if (!strcmp(pfcp_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&pfcp_iter);
                                 if (v) port = atoi(v);
@@ -575,9 +694,6 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 } while (
                                     ogs_yaml_iter_type(&nr_cell_id_iter) ==
                                         YAML_SEQUENCE_NODE);
-                            } else if (!strcmp(pfcp_key, "rr")) {
-                                const char *v = ogs_yaml_iter_value(&pfcp_iter);
-                                if (v) rr_enable = atoi(v);
                             } else
                                 ogs_warn("unknown key `%s`", pfcp_key);
                         }
@@ -618,7 +734,6 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                             memcpy(node->nr_cell_id, nr_cell_id,
                                     sizeof(node->nr_cell_id));
 
-                        node->rr_enable = rr_enable;
                     } while (ogs_yaml_iter_type(&pfcp_array) ==
                             YAML_SEQUENCE_NODE);
                 }
@@ -639,7 +754,10 @@ ogs_pfcp_node_t *ogs_pfcp_node_new(ogs_sockaddr_t *sa_list)
     ogs_assert(sa_list);
 
     ogs_pool_alloc(&ogs_pfcp_node_pool, &node);
-    ogs_assert(node);
+    if (!node) {
+        ogs_error("No memory: ogs_pool_alloc() failed");
+        return NULL;
+    }
     memset(node, 0, sizeof(ogs_pfcp_node_t));
 
     node->sa_list = sa_list;
@@ -675,6 +793,11 @@ ogs_pfcp_node_t *ogs_pfcp_node_add(
 
     ogs_assert(OGS_OK == ogs_copyaddrinfo(&new, addr));
     node = ogs_pfcp_node_new(new);
+    if (!node) {
+        ogs_error("No memory : ogs_pfcp_node_new() failed");
+        ogs_freeaddrinfo(new);
+        return NULL;
+    }
 
     ogs_assert(node);
     memcpy(&node->addr, new, sizeof node->addr);
@@ -766,11 +889,17 @@ int ogs_pfcp_setup_far_gtpu_node(ogs_pfcp_far_t *far)
     if (!gnode) {
         gnode = ogs_gtp_node_add_by_ip(
             &ogs_gtp_self()->gtpu_peer_list, &ip, ogs_gtp_self()->gtpu_port);
-        ogs_expect_or_return_val(gnode, OGS_ERROR);
+        if (!gnode) {
+            ogs_error("ogs_gtp_node_add_by_ip() failed");
+            return OGS_ERROR;
+        }
 
         rv = ogs_gtp_connect(
                 ogs_gtp_self()->gtpu_sock, ogs_gtp_self()->gtpu_sock6, gnode);
-        ogs_expect_or_return_val(rv == OGS_OK, rv);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp_connect() failed");
+            return rv;
+        }
     }
 
     OGS_SETUP_GTP_NODE(far, gnode);
@@ -790,17 +919,26 @@ int ogs_pfcp_setup_pdr_gtpu_node(ogs_pfcp_pdr_t *pdr)
     if (pdr->f_teid_len == 0) return OGS_DONE;
 
     rv = ogs_pfcp_f_teid_to_ip(&pdr->f_teid, &ip);
-    ogs_expect_or_return_val(rv == OGS_OK, rv);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_f_teid_to_ip() failed");
+        return rv;
+    }
 
     gnode = ogs_gtp_node_find_by_ip(&ogs_gtp_self()->gtpu_peer_list, &ip);
     if (!gnode) {
         gnode = ogs_gtp_node_add_by_ip(
             &ogs_gtp_self()->gtpu_peer_list, &ip, ogs_gtp_self()->gtpu_port);
-        ogs_expect_or_return_val(gnode, OGS_ERROR);
+        if (!gnode) {
+            ogs_error("ogs_gtp_node_add_by_ip() failed");
+            return OGS_ERROR;
+        }
 
         rv = ogs_gtp_connect(
                 ogs_gtp_self()->gtpu_sock, ogs_gtp_self()->gtpu_sock6, gnode);
-        ogs_expect_or_return_val(rv == OGS_OK, rv);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp_connect() failed");
+            return rv;
+        }
     }
 
     OGS_SETUP_GTP_NODE(pdr, gnode);
@@ -840,6 +978,16 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_add(ogs_pfcp_sess_t *sess)
     }
     memset(pdr, 0, sizeof *pdr);
 
+    pdr->obj.type = OGS_PFCP_OBJ_PDR_TYPE;
+    pdr->src_if = OGS_PFCP_INTERFACE_UNKNOWN;
+
+    /* Set TEID */
+    ogs_pool_alloc(&ogs_pfcp_pdr_teid_pool, &pdr->teid_node);
+    ogs_assert(pdr->teid_node);
+
+    pdr->teid = *(pdr->teid_node);
+
+    /* Set PDR-ID */
     ogs_pool_alloc(&sess->pdr_id_pool, &pdr->id_node);
     if (pdr->id_node == NULL) {
         ogs_error("pdr_id_pool() failed");
@@ -847,16 +995,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_add(ogs_pfcp_sess_t *sess)
         return NULL;
     }
 
-    pdr->obj.type = OGS_PFCP_OBJ_PDR_TYPE;
-
-    pdr->index = ogs_pool_index(&ogs_pfcp_pdr_pool, pdr);
-    ogs_assert(pdr->index > 0 &&
-            pdr->index <= ogs_app()->pool.sess * OGS_MAX_NUM_OF_PDR);
-
     pdr->id = *(pdr->id_node);
     ogs_assert(pdr->id > 0 && pdr->id <= OGS_MAX_NUM_OF_PDR);
-
-    pdr->src_if = OGS_PFCP_INTERFACE_UNKNOWN;
 
     pdr->sess = sess;
     ogs_list_add(&sess->pdr_list, pdr);
@@ -894,11 +1034,87 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
     return pdr;
 }
 
+void ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
+{
+    int i = 0;
+
+    ogs_assert(pdr);
+    ogs_assert(pdr->f_teid.teid > 0 &&
+            pdr->f_teid.teid <= ogs_pfcp_pdr_teid_pool.size);
+
+    /* Find out the Array Index for the restored TEID. */
+    i = pdr_random_to_index[pdr->f_teid.teid];
+    ogs_assert(i < ogs_pfcp_pdr_teid_pool.size);
+
+    ogs_assert(pdr->teid_node);
+    /*
+     * If SWAP has already done this, it will not try this again.
+     * This situation can occur when multiple PDRs are restored
+     * with the same TEID.
+     */
+    if (pdr->f_teid.teid == ogs_pfcp_pdr_teid_pool.array[i]) {
+        ogs_pfcp_pdr_teid_pool.array[i] = *(pdr->teid_node);
+        *(pdr->teid_node) = pdr->f_teid.teid;
+    }
+}
+
 void ogs_pfcp_object_teid_hash_set(
-        ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr)
+        ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr,
+        bool restoration_indication)
 {
     ogs_assert(type);
     ogs_assert(pdr);
+
+    if (ogs_pfcp_self()->up_function_features.ftup && pdr->f_teid.ch) {
+
+        ogs_pfcp_pdr_t *choosed_pdr = NULL;
+
+        if (pdr->f_teid.chid) {
+            choosed_pdr = ogs_pfcp_pdr_find_by_choose_id(
+                    pdr->sess, pdr->f_teid.choose_id);
+            if (!choosed_pdr) {
+                pdr->chid = true;
+                pdr->choose_id = pdr->f_teid.choose_id;
+            }
+        }
+
+        if (choosed_pdr) {
+            pdr->f_teid_len = choosed_pdr->f_teid_len;
+            memcpy(&pdr->f_teid, &choosed_pdr->f_teid, pdr->f_teid_len);
+
+        } else {
+            ogs_gtpu_resource_t *resource = NULL;
+            resource = ogs_pfcp_find_gtpu_resource(
+                    &ogs_gtp_self()->gtpu_resource_list,
+                    pdr->dnn, OGS_PFCP_INTERFACE_ACCESS);
+            if (resource) {
+                ogs_assert(
+                    (resource->info.v4 && pdr->f_teid.ipv4) ||
+                    (resource->info.v6 && pdr->f_teid.ipv6));
+                ogs_assert(OGS_OK ==
+                    ogs_pfcp_user_plane_ip_resource_info_to_f_teid(
+                    &resource->info, &pdr->f_teid, &pdr->f_teid_len));
+                if (resource->info.teidri)
+                    pdr->f_teid.teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
+                            pdr->teid, resource->info.teidri,
+                            resource->info.teid_range);
+                else
+                    pdr->f_teid.teid = pdr->teid;
+            } else {
+                ogs_assert(
+                    (ogs_gtp_self()->gtpu_addr && pdr->f_teid.ipv4) ||
+                    (ogs_gtp_self()->gtpu_addr6 && pdr->f_teid.ipv6));
+                ogs_assert(OGS_OK ==
+                    ogs_pfcp_sockaddr_to_f_teid(
+                        pdr->f_teid.ipv4 ?
+                            ogs_gtp_self()->gtpu_addr : NULL,
+                        pdr->f_teid.ipv6 ?
+                            ogs_gtp_self()->gtpu_addr6 : NULL,
+                        &pdr->f_teid, &pdr->f_teid_len));
+                pdr->f_teid.teid = pdr->teid;
+            }
+        }
+    }
 
     if (pdr->hash.teid.len)
         ogs_hash_set(self.object_teid_hash,
@@ -927,6 +1143,20 @@ ogs_pfcp_object_t *ogs_pfcp_object_find_by_teid(uint32_t teid)
 {
     return (ogs_pfcp_object_t *)ogs_hash_get(
             self.object_teid_hash, &teid, sizeof(teid));
+}
+
+int ogs_pfcp_object_count_by_teid(ogs_pfcp_sess_t *sess, uint32_t teid)
+{
+    ogs_pfcp_pdr_t *pdr = NULL;
+    int count = 0;
+
+    ogs_assert(sess);
+
+    ogs_list_for_each(&sess->pdr_list, pdr) {
+        if (pdr->f_teid.teid == teid) count++;
+    }
+
+    return count;
 }
 
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_choose_id(
@@ -990,6 +1220,8 @@ void ogs_pfcp_pdr_associate_qer(ogs_pfcp_pdr_t *pdr, ogs_pfcp_qer_t *qer)
 
 void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
 {
+    int i;
+
     ogs_assert(pdr);
     ogs_assert(pdr->sess);
 
@@ -997,9 +1229,21 @@ void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
 
     ogs_pfcp_rule_remove_all(pdr);
 
-    if (pdr->hash.teid.len)
-        ogs_hash_set(self.object_teid_hash,
-                &pdr->hash.teid.key, pdr->hash.teid.len, NULL);
+    if (pdr->hash.teid.len) {
+        /*
+         * Issues #2003
+         *
+         * In 5G Core, two PDRs can use different QFIDs for the same TEID.
+         * So, before deleting a TEID, we should check if there is a PDR
+         * using the same TEID.
+         *
+         * Since this PDR has already been deleted with ogs_list_remove() above,
+         * if the current list has a TEID count of 0, there are no other PDRs.
+         */
+        if (ogs_pfcp_object_count_by_teid(pdr->sess, pdr->f_teid.teid) == 0)
+            ogs_hash_set(self.object_teid_hash,
+                    &pdr->hash.teid.key, pdr->hash.teid.len, NULL);
+    }
 
     if (pdr->dnn)
         ogs_free(pdr->dnn);
@@ -1007,6 +1251,25 @@ void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
     if (pdr->id_node)
         ogs_pool_free(&pdr->sess->pdr_id_pool, pdr->id_node);
 
+    if (pdr->ipv4_framed_routes) {
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            if (!pdr->ipv4_framed_routes[i])
+                break;
+            ogs_free(pdr->ipv4_framed_routes[i]);
+        }
+        ogs_free(pdr->ipv4_framed_routes);
+    }
+
+    if (pdr->ipv6_framed_routes) {
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            if (!pdr->ipv6_framed_routes[i])
+                break;
+            ogs_free(pdr->ipv6_framed_routes[i]);
+        }
+        ogs_free(pdr->ipv6_framed_routes);
+    }
+
+    ogs_pool_free(&ogs_pfcp_pdr_teid_pool, pdr->teid_node);
     ogs_pool_free(&ogs_pfcp_pdr_pool, pdr);
 }
 
@@ -1120,7 +1383,7 @@ void ogs_pfcp_far_f_teid_hash_set(ogs_pfcp_far_t *far)
             &far->hash.f_teid.key, far->hash.f_teid.len, far);
 }
 
-ogs_pfcp_far_t *ogs_pfcp_far_find_by_error_indication(ogs_pkbuf_t *pkbuf)
+ogs_pfcp_far_t *ogs_pfcp_far_find_by_gtpu_error_indication(ogs_pkbuf_t *pkbuf)
 {
     ogs_pfcp_far_hash_f_teid_t hashkey;
     int hashkey_len;
@@ -1180,6 +1443,61 @@ ogs_pfcp_far_t *ogs_pfcp_far_find_by_error_indication(ogs_pkbuf_t *pkbuf)
 
     return (ogs_pfcp_far_t *)ogs_hash_get(
             self.far_f_teid_hash, &hashkey, hashkey_len);
+}
+
+ogs_pfcp_far_t *ogs_pfcp_far_find_by_pfcp_session_report(
+        ogs_pfcp_sess_t *sess,
+        ogs_pfcp_tlv_error_indication_report_t *error_indication_report)
+{
+    ogs_pfcp_far_t *far = NULL;
+    ogs_pfcp_f_teid_t *remote_f_teid = NULL;
+
+    uint32_t teid;
+    uint16_t len;  /* OGS_IPV4_LEN or OGS_IPV6_LEN */
+    uint32_t addr[4];
+
+    ogs_assert(sess);
+    ogs_assert(error_indication_report);
+
+    if (error_indication_report->presence == 0) {
+        ogs_error("No Error Indication Report");
+        return NULL;
+    }
+
+    if (error_indication_report->remote_f_teid.presence == 0) {
+        ogs_error("No Remote F-TEID");
+        return NULL;
+    }
+
+    remote_f_teid = error_indication_report->remote_f_teid.data;
+    ogs_assert(remote_f_teid);
+
+    teid = be32toh(remote_f_teid->teid);
+    if (remote_f_teid->ipv4 && remote_f_teid->ipv6) {
+        ogs_error("User plane should not set both IPv4 and IPv6");
+        return NULL;
+    } else if (remote_f_teid->ipv4) {
+        len = OGS_IPV4_LEN;
+        memcpy(addr, &remote_f_teid->addr, len);
+    } else if (remote_f_teid->ipv6) {
+        len = OGS_IPV6_LEN;
+        memcpy(addr, remote_f_teid->addr6, len);
+    } else {
+        ogs_error("No IPv4 and IPv6");
+        return NULL;
+    }
+
+    ogs_list_for_each(&sess->far_list, far) {
+        if (teid == far->outer_header_creation.teid)
+            return far;
+    }
+
+    ogs_error("Cannot find the session context "
+            "[TEID:0x%x,LEN:%d,ADDR:%08x %08x %08x %08x]",
+            teid, len, be32toh(addr[0]), be32toh(addr[1]),
+            be32toh(addr[2]), be32toh(addr[3]));
+
+    return NULL;
 }
 
 void ogs_pfcp_far_teid_hash_set(ogs_pfcp_far_t *far)
@@ -1633,16 +1951,8 @@ ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
         subnet = ogs_pfcp_find_subnet(family);
 
     if (subnet == NULL) {
-        ogs_error("CHECK CONFIGURATION: Cannot find subnet [family:%d, dnn:%s]",
-                    family, dnn ? dnn : "No DNN");
-        ogs_error("Please add FALLBACK subnet as below.");
-        ogs_error("    subnet:");
-        if (family == AF_INET)
-            ogs_error("     - addr: 10.50.0.1/16");
-        else if (family == AF_INET6)
-            ogs_error("     - addr: 2001:db8:abcd::1/48");
-
-        *cause_value = OGS_PFCP_CAUSE_SYSTEM_FAILURE;
+        ogs_error("All IP addresses in all subnets are occupied");
+        *cause_value = OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE;
         return NULL;
     }
 
@@ -1803,7 +2113,8 @@ ogs_pfcp_subnet_t *ogs_pfcp_find_subnet(int family)
 
     ogs_list_for_each(&self.subnet_list, subnet) {
         if ((subnet->family == AF_UNSPEC || subnet->family == family) &&
-            (strlen(subnet->dnn) == 0))
+            (strlen(subnet->dnn) == 0) &&
+            subnet->pool.avail)
             break;
     }
 
@@ -1820,7 +2131,8 @@ ogs_pfcp_subnet_t *ogs_pfcp_find_subnet_by_dnn(int family, const char *dnn)
     ogs_list_for_each(&self.subnet_list, subnet) {
         if ((subnet->family == AF_UNSPEC || subnet->family == family) &&
             (strlen(subnet->dnn) == 0 ||
-                (strlen(subnet->dnn) && ogs_strcasecmp(subnet->dnn, dnn) == 0)))
+                (strlen(subnet->dnn) && ogs_strcasecmp(subnet->dnn, dnn) == 0)) &&
+            subnet->pool.avail)
             break;
     }
 
@@ -1829,41 +2141,29 @@ ogs_pfcp_subnet_t *ogs_pfcp_find_subnet_by_dnn(int family, const char *dnn)
 
 void ogs_pfcp_pool_init(ogs_pfcp_sess_t *sess)
 {
-    int i;
-
     ogs_assert(sess);
 
     sess->obj.type = OGS_PFCP_OBJ_SESS_TYPE;
 
-    ogs_index_init(&sess->pdr_id_pool, OGS_MAX_NUM_OF_PDR);
-    ogs_index_init(&sess->far_id_pool, OGS_MAX_NUM_OF_FAR);
-    ogs_index_init(&sess->urr_id_pool, OGS_MAX_NUM_OF_URR);
-    ogs_index_init(&sess->qer_id_pool, OGS_MAX_NUM_OF_QER);
-    ogs_index_init(&sess->bar_id_pool, OGS_MAX_NUM_OF_BAR);
+    ogs_pool_create(&sess->pdr_id_pool, OGS_MAX_NUM_OF_PDR);
+    ogs_pool_create(&sess->far_id_pool, OGS_MAX_NUM_OF_FAR);
+    ogs_pool_create(&sess->urr_id_pool, OGS_MAX_NUM_OF_URR);
+    ogs_pool_create(&sess->qer_id_pool, OGS_MAX_NUM_OF_QER);
+    ogs_pool_create(&sess->bar_id_pool, OGS_MAX_NUM_OF_BAR);
 
-    for (i = 1; i <= OGS_MAX_NUM_OF_PDR; i++) {
-        sess->pdr_id_pool.array[i-1] = i;
-    }
-    for (i = 1; i <= OGS_MAX_NUM_OF_FAR; i++) {
-        sess->far_id_pool.array[i-1] = i;
-    }
-    for (i = 1; i <= OGS_MAX_NUM_OF_URR; i++) {
-        sess->urr_id_pool.array[i-1] = i;
-    }
-    for (i = 1; i <= OGS_MAX_NUM_OF_QER; i++) {
-        sess->qer_id_pool.array[i-1] = i;
-    }
-    for (i = 1; i <= OGS_MAX_NUM_OF_BAR; i++) {
-        sess->bar_id_pool.array[i-1] = i;
-    }
+    ogs_pool_sequence_id_generate(&sess->pdr_id_pool);
+    ogs_pool_sequence_id_generate(&sess->far_id_pool);
+    ogs_pool_sequence_id_generate(&sess->urr_id_pool);
+    ogs_pool_sequence_id_generate(&sess->qer_id_pool);
+    ogs_pool_sequence_id_generate(&sess->bar_id_pool);
 }
 void ogs_pfcp_pool_final(ogs_pfcp_sess_t *sess)
 {
     ogs_assert(sess);
 
-    ogs_index_final(&sess->pdr_id_pool);
-    ogs_index_final(&sess->far_id_pool);
-    ogs_index_final(&sess->urr_id_pool);
-    ogs_index_final(&sess->qer_id_pool);
-    ogs_index_final(&sess->bar_id_pool);
+    ogs_pool_destroy(&sess->pdr_id_pool);
+    ogs_pool_destroy(&sess->far_id_pool);
+    ogs_pool_destroy(&sess->urr_id_pool);
+    ogs_pool_destroy(&sess->qer_id_pool);
+    ogs_pool_destroy(&sess->bar_id_pool);
 }

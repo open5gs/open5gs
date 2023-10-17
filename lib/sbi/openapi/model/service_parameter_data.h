@@ -1,7 +1,7 @@
 /*
  * service_parameter_data.h
  *
- * 
+ * Represents the service parameter data.
  */
 
 #ifndef _OpenAPI_service_parameter_data_H_
@@ -12,7 +12,9 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "event.h"
 #include "snssai.h"
+#include "ursp_rule_request.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,8 +34,18 @@ typedef struct OpenAPI_service_parameter_data_s {
     int any_ue_ind;
     char *param_over_pc5;
     char *param_over_uu;
+    char *param_for_pro_se_dd;
+    char *param_for_pro_se_dc;
+    char *param_for_pro_se_u2_n_rel_ue;
+    char *param_for_pro_se_rem_ue;
+    OpenAPI_list_t *ursp_guidance;
+    OpenAPI_list_t *delivery_events;
+    char *polic_deliv_notif_corre_id;
+    char *polic_deliv_notif_uri;
     char *supp_feat;
     char *res_uri;
+    OpenAPI_list_t *headers;
+    OpenAPI_list_t *reset_ids;
 } OpenAPI_service_parameter_data_t;
 
 OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_create(
@@ -49,8 +61,18 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_create(
     int any_ue_ind,
     char *param_over_pc5,
     char *param_over_uu,
+    char *param_for_pro_se_dd,
+    char *param_for_pro_se_dc,
+    char *param_for_pro_se_u2_n_rel_ue,
+    char *param_for_pro_se_rem_ue,
+    OpenAPI_list_t *ursp_guidance,
+    OpenAPI_list_t *delivery_events,
+    char *polic_deliv_notif_corre_id,
+    char *polic_deliv_notif_uri,
     char *supp_feat,
-    char *res_uri
+    char *res_uri,
+    OpenAPI_list_t *headers,
+    OpenAPI_list_t *reset_ids
 );
 void OpenAPI_service_parameter_data_free(OpenAPI_service_parameter_data_t *service_parameter_data);
 OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(cJSON *service_parameter_dataJSON);

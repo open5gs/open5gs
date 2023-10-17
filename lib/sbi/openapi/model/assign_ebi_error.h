@@ -1,7 +1,7 @@
 /*
  * assign_ebi_error.h
  *
- * 
+ * Data within a failure response to the EBI assignment request
  */
 
 #ifndef _OpenAPI_assign_ebi_error_H_

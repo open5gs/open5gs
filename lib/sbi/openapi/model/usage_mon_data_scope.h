@@ -1,7 +1,7 @@
 /*
  * usage_mon_data_scope.h
  *
- * Contains a SNSSAI and DNN combinations to which the UsageMonData instance belongs to.
+ * Contains a SNSSAI and DNN combinations to which the UsageMonData instance belongs to. 
  */
 
 #ifndef _OpenAPI_usage_mon_data_scope_H_

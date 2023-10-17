@@ -1,7 +1,7 @@
 /*
  * media_sub_component_rm.h
  *
- * This data type is defined in the same way as the MediaSubComponent data type, but with the OpenAPI nullable property set to true. Removable attributes marBwDl and marBwUl are defined with the corresponding removable data type.
+ * This data type is defined in the same way as the MediaSubComponent data type, but with the OpenAPI nullable property set to true. Removable attributes marBwDl and marBwUl are defined with the corresponding removable data type. 
  */
 
 #ifndef _OpenAPI_media_sub_component_rm_H_
@@ -24,24 +24,34 @@ extern "C" {
 typedef struct OpenAPI_media_sub_component_rm_s OpenAPI_media_sub_component_rm_t;
 typedef struct OpenAPI_media_sub_component_rm_s {
     OpenAPI_af_sig_protocol_e af_sig_protocol;
+    bool is_ethf_descs_null;
     OpenAPI_list_t *ethf_descs;
     int f_num;
+    bool is_f_descs_null;
     OpenAPI_list_t *f_descs;
     OpenAPI_flow_status_e f_status;
+    bool is_mar_bw_dl_null;
     char *mar_bw_dl;
+    bool is_mar_bw_ul_null;
     char *mar_bw_ul;
+    bool is_tos_tr_cl_null;
     char *tos_tr_cl;
     OpenAPI_flow_usage_e flow_usage;
 } OpenAPI_media_sub_component_rm_t;
 
 OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_create(
     OpenAPI_af_sig_protocol_e af_sig_protocol,
+    bool is_ethf_descs_null,
     OpenAPI_list_t *ethf_descs,
     int f_num,
+    bool is_f_descs_null,
     OpenAPI_list_t *f_descs,
     OpenAPI_flow_status_e f_status,
+    bool is_mar_bw_dl_null,
     char *mar_bw_dl,
+    bool is_mar_bw_ul_null,
     char *mar_bw_ul,
+    bool is_tos_tr_cl_null,
     char *tos_tr_cl,
     OpenAPI_flow_usage_e flow_usage
 );

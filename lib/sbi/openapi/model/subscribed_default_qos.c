@@ -24,17 +24,22 @@ OpenAPI_subscribed_default_qos_t *OpenAPI_subscribed_default_qos_create(
 
 void OpenAPI_subscribed_default_qos_free(OpenAPI_subscribed_default_qos_t *subscribed_default_qos)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == subscribed_default_qos) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_arp_free(subscribed_default_qos->arp);
+    if (subscribed_default_qos->arp) {
+        OpenAPI_arp_free(subscribed_default_qos->arp);
+        subscribed_default_qos->arp = NULL;
+    }
     ogs_free(subscribed_default_qos);
 }
 
 cJSON *OpenAPI_subscribed_default_qos_convertToJSON(OpenAPI_subscribed_default_qos_t *subscribed_default_qos)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (subscribed_default_qos == NULL) {
         ogs_error("OpenAPI_subscribed_default_qos_convertToJSON() failed [SubscribedDefaultQos]");
@@ -47,6 +52,10 @@ cJSON *OpenAPI_subscribed_default_qos_convertToJSON(OpenAPI_subscribed_default_q
         goto end;
     }
 
+    if (!subscribed_default_qos->arp) {
+        ogs_error("OpenAPI_subscribed_default_qos_convertToJSON() failed [arp]");
+        return NULL;
+    }
     cJSON *arp_local_JSON = OpenAPI_arp_convertToJSON(subscribed_default_qos->arp);
     if (arp_local_JSON == NULL) {
         ogs_error("OpenAPI_subscribed_default_qos_convertToJSON() failed [arp]");
@@ -72,28 +81,33 @@ end:
 OpenAPI_subscribed_default_qos_t *OpenAPI_subscribed_default_qos_parseFromJSON(cJSON *subscribed_default_qosJSON)
 {
     OpenAPI_subscribed_default_qos_t *subscribed_default_qos_local_var = NULL;
-    cJSON *_5qi = cJSON_GetObjectItemCaseSensitive(subscribed_default_qosJSON, "5qi");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *_5qi = NULL;
+    cJSON *arp = NULL;
+    OpenAPI_arp_t *arp_local_nonprim = NULL;
+    cJSON *priority_level = NULL;
+    _5qi = cJSON_GetObjectItemCaseSensitive(subscribed_default_qosJSON, "5qi");
     if (!_5qi) {
         ogs_error("OpenAPI_subscribed_default_qos_parseFromJSON() failed [_5qi]");
         goto end;
     }
-
     if (!cJSON_IsNumber(_5qi)) {
         ogs_error("OpenAPI_subscribed_default_qos_parseFromJSON() failed [_5qi]");
         goto end;
     }
 
-    cJSON *arp = cJSON_GetObjectItemCaseSensitive(subscribed_default_qosJSON, "arp");
+    arp = cJSON_GetObjectItemCaseSensitive(subscribed_default_qosJSON, "arp");
     if (!arp) {
         ogs_error("OpenAPI_subscribed_default_qos_parseFromJSON() failed [arp]");
         goto end;
     }
-
-    OpenAPI_arp_t *arp_local_nonprim = NULL;
     arp_local_nonprim = OpenAPI_arp_parseFromJSON(arp);
+    if (!arp_local_nonprim) {
+        ogs_error("OpenAPI_arp_parseFromJSON failed [arp]");
+        goto end;
+    }
 
-    cJSON *priority_level = cJSON_GetObjectItemCaseSensitive(subscribed_default_qosJSON, "priorityLevel");
-
+    priority_level = cJSON_GetObjectItemCaseSensitive(subscribed_default_qosJSON, "priorityLevel");
     if (priority_level) {
     if (!cJSON_IsNumber(priority_level)) {
         ogs_error("OpenAPI_subscribed_default_qos_parseFromJSON() failed [priority_level]");
@@ -111,6 +125,10 @@ OpenAPI_subscribed_default_qos_t *OpenAPI_subscribed_default_qos_parseFromJSON(c
 
     return subscribed_default_qos_local_var;
 end:
+    if (arp_local_nonprim) {
+        OpenAPI_arp_free(arp_local_nonprim);
+        arp_local_nonprim = NULL;
+    }
     return NULL;
 }
 

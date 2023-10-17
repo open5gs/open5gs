@@ -28,6 +28,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_t *esmbuf;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
+    ogs_pkbuf_t *pkbuf;
     ogs_s1ap_message_t message;
 
     ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
@@ -49,15 +50,10 @@ static void test1_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0x37;
-    mobile_identity_suci.scheme_output[1] = 0x46;
-    mobile_identity_suci.scheme_output[2] = 0;
-    mobile_identity_suci.scheme_output[3] = 0;
-    mobile_identity_suci.scheme_output[4] = 0x06;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "3746000006");
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1234560;
@@ -333,6 +329,35 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+
+    /* Send GTP-U ICMP Packet */
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    ogs_assert(bearer);
+    rv = test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = test_gtpu_read(gtpu1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+
+    /* Copy ICMP Packet */
+    pkbuf = ogs_pkbuf_alloc(NULL, 200);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_reserve(pkbuf, OGS_GTPV1U_5GC_HEADER_LEN);
+    ogs_pkbuf_put(pkbuf, 200-OGS_GTPV1U_5GC_HEADER_LEN);
+    memset(pkbuf->data, 0, pkbuf->len);
+    memcpy(pkbuf->data, recvbuf->data + 8, recvbuf->len - 8);
+
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send GTP-U Packet with Indirect Data Forwarding */
+    rv = test_gtpu_send_indirect_data_forwarding(gtpu1, bearer, pkbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
 
     /* Send eNB Status Transfer */
     sendbuf = test_s1ap_build_enb_status_transfer(test_ue);
@@ -619,15 +644,10 @@ static void test2_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0x37;
-    mobile_identity_suci.scheme_output[1] = 0x46;
-    mobile_identity_suci.scheme_output[2] = 0;
-    mobile_identity_suci.scheme_output[3] = 0;
-    mobile_identity_suci.scheme_output[4] = 0x06;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "3746000006");
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1234560;
@@ -946,15 +966,10 @@ static void test3_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0x37;
-    mobile_identity_suci.scheme_output[1] = 0x46;
-    mobile_identity_suci.scheme_output[2] = 0;
-    mobile_identity_suci.scheme_output[3] = 0;
-    mobile_identity_suci.scheme_output[4] = 0x06;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "3746000006");
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1234560;

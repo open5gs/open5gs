@@ -1,7 +1,7 @@
 /*
  * key_amf.h
  *
- * 
+ * Represents the Kamf or K&#39;amf
  */
 
 #ifndef _OpenAPI_key_amf_H_

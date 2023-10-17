@@ -1,7 +1,7 @@
 /*
  * service_area_restriction_1.h
  *
- * 
+ * Provides information about allowed or not allowed areas.
  */
 
 #ifndef _OpenAPI_service_area_restriction_1_H_

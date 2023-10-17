@@ -1,7 +1,7 @@
 /*
  * flow_info.h
  *
- * 
+ * Represents IP flow information.
  */
 
 #ifndef _OpenAPI_flow_info_H_

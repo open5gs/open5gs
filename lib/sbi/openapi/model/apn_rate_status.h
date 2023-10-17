@@ -1,7 +1,7 @@
 /*
  * apn_rate_status.h
  *
- * 
+ * Contains the APN rate control status e.g. of the AMF.
  */
 
 #ifndef _OpenAPI_apn_rate_status_H_

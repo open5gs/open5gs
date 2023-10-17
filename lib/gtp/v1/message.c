@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
+ * Copyright (C) 2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -21,8 +22,8 @@
 /*******************************************************************************
  * This file had been created by gtp1-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-06-30 08:56:31.641366 by ubuntu
- * from 29060-g00.docx
+ * Created on: 2023-08-26 16:35:02.182792 by acetcom
+ * from 29060-h40.docx
  ******************************************************************************/
 
 #include "ogs-gtp.h"
@@ -1785,6 +1786,8 @@ ogs_tlv_desc_t ogs_gtp1_tlv_desc_sgsn_context_response =
         &ogs_gtp1_tlv_desc_mm_context,
         &ogs_gtp1_tlv_desc_pdp_context,
         &ogs_gtp1_tlv_desc_gsn_address,
+        &ogs_gtp1_tlv_desc_gsn_address,
+        &ogs_gtp1_tlv_desc_gsn_address,
         &ogs_gtp1_tlv_desc_pdp_context_prioritization,
         &ogs_gtp1_tlv_desc_mbms_ue_context,
         &ogs_gtp1_tlv_desc_rfsp_index,
@@ -1803,8 +1806,6 @@ ogs_tlv_desc_t ogs_gtp1_tlv_desc_sgsn_context_response =
         &ogs_gtp1_tlv_desc_extended_common_flags_ii,
         &ogs_gtp1_tlv_desc_scef_pdn_connection,
         &ogs_gtp1_tlv_desc_iov_updates_counter,
-        &ogs_gtp1_tlv_desc_gsn_address,
-        &ogs_gtp1_tlv_desc_gsn_address,
     NULL,
 }};
 
@@ -1833,6 +1834,8 @@ ogs_tlv_desc_t ogs_gtp1_tlv_desc_forward_relocation_request =
         &ogs_gtp1_tlv_desc_charging_characteristics,
         &ogs_gtp1_tlv_desc_mm_context,
         &ogs_gtp1_tlv_desc_pdp_context,
+        &ogs_gtp1_tlv_desc_gsn_address,
+        &ogs_gtp1_tlv_desc_gsn_address,
         &ogs_gtp1_tlv_desc_gsn_address,
         &ogs_gtp1_tlv_desc_target_identification,
         &ogs_gtp1_tlv_desc_utran_transparent_container,
@@ -1867,8 +1870,6 @@ ogs_tlv_desc_t ogs_gtp1_tlv_desc_forward_relocation_request =
         &ogs_gtp1_tlv_desc_ue_usage_type,
         &ogs_gtp1_tlv_desc_extended_common_flags_ii,
         &ogs_gtp1_tlv_desc_scef_pdn_connection,
-        &ogs_gtp1_tlv_desc_gsn_address,
-        &ogs_gtp1_tlv_desc_gsn_address,
     NULL,
 }};
 
@@ -1929,7 +1930,9 @@ ogs_tlv_desc_t ogs_gtp1_tlv_desc_forward_srns_context =
     OGS_TLV_MESSAGE,
     "Forward SRNS Context",
     0, 0, 0, 0, {
-        &ogs_gtp1_tlv_desc_cause,
+        &ogs_gtp1_tlv_desc_rab_context,
+        &ogs_gtp1_tlv_desc_source_rnc_pdcp_context_info,
+        &ogs_gtp1_tlv_desc_pdu_numbers,
     NULL,
 }};
 
@@ -1947,9 +1950,7 @@ ogs_tlv_desc_t ogs_gtp1_tlv_desc_forward_srns_context_acknowledge =
     OGS_TLV_MESSAGE,
     "Forward SRNS Context Acknowledge",
     0, 0, 0, 0, {
-        &ogs_gtp1_tlv_desc_rab_context,
-        &ogs_gtp1_tlv_desc_source_rnc_pdcp_context_info,
-        &ogs_gtp1_tlv_desc_pdu_numbers,
+        &ogs_gtp1_tlv_desc_cause,
     NULL,
 }};
 
@@ -2113,6 +2114,20 @@ ogs_tlv_desc_t ogs_gtp1_tlv_desc_update_mbms_context_response =
         &ogs_gtp1_tlv_desc_gsn_address,
         &ogs_gtp1_tlv_desc_charging_gateway_address,
         &ogs_gtp1_tlv_desc_charging_gateway_address,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_gtp1_tlv_desc_delete_mbms_context_request =
+{
+    OGS_TLV_MESSAGE,
+    "Delete MBMS Context Request",
+    0, 0, 0, 0, {
+        &ogs_gtp1_tlv_desc_imsi,
+        &ogs_gtp1_tlv_desc_tunnel_endpoint_identifier_control_plane,
+        &ogs_gtp1_tlv_desc_end_user_address,
+        &ogs_gtp1_tlv_desc_access_point_name,
+        &ogs_gtp1_tlv_desc_mbms_protocol_configuration_options,
+        &ogs_gtp1_tlv_desc_enhanced_nsapi,
     NULL,
 }};
 
@@ -2284,7 +2299,10 @@ int ogs_gtp1_parse_msg(ogs_gtp1_message_t *gtp1_message, ogs_pkbuf_t *pkbuf)
     else
         size = OGS_GTPV1C_HEADER_LEN - 4;
 
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+        ogs_error("ogs_pkbuf_pull() failed [len:%d]", pkbuf->len);
+        return OGS_ERROR;
+    }
     memcpy(&gtp1_message->h, pkbuf->data - size, size);
 
     gtp1_message->h.teid = be32toh(gtp1_message->h.teid);
@@ -2296,8 +2314,6 @@ int ogs_gtp1_parse_msg(ogs_gtp1_message_t *gtp1_message, ogs_pkbuf_t *pkbuf)
 
     switch(gtp1_message->h.type) {
     case OGS_GTP1_ECHO_REQUEST_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp1_message->echo_request,
-                &ogs_gtp1_tlv_desc_echo_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_ECHO_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg_desc(&gtp1_message->echo_response,
@@ -2408,8 +2424,6 @@ int ogs_gtp1_parse_msg(ogs_gtp1_message_t *gtp1_message, ogs_pkbuf_t *pkbuf)
                 &ogs_gtp1_tlv_desc_forward_relocation_response, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_FORWARD_RELOCATION_COMPLETE_TYPE:
-        rv = ogs_tlv_parse_msg_desc(&gtp1_message->forward_relocation_complete,
-                &ogs_gtp1_tlv_desc_forward_relocation_complete, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_RELOCATION_CANCEL_REQUEST_TYPE:
         rv = ogs_tlv_parse_msg_desc(&gtp1_message->relocation_cancel_request,
@@ -2474,6 +2488,10 @@ int ogs_gtp1_parse_msg(ogs_gtp1_message_t *gtp1_message, ogs_pkbuf_t *pkbuf)
     case OGS_GTP1_UPDATE_MBMS_CONTEXT_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg_desc(&gtp1_message->update_mbms_context_response,
                 &ogs_gtp1_tlv_desc_update_mbms_context_response, pkbuf, OGS_TLV_MODE_T1_L2);
+        break;
+    case OGS_GTP1_DELETE_MBMS_CONTEXT_REQUEST_TYPE:
+        rv = ogs_tlv_parse_msg_desc(&gtp1_message->delete_mbms_context_request,
+                &ogs_gtp1_tlv_desc_delete_mbms_context_request, pkbuf, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_DELETE_MBMS_CONTEXT_RESPONSE_TYPE:
         rv = ogs_tlv_parse_msg_desc(&gtp1_message->delete_mbms_context_response,
@@ -2714,6 +2732,10 @@ ogs_pkbuf_t *ogs_gtp1_build_msg(ogs_gtp1_message_t *gtp1_message)
     case OGS_GTP1_UPDATE_MBMS_CONTEXT_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_update_mbms_context_response,
                 &gtp1_message->update_mbms_context_response, OGS_TLV_MODE_T1_L2);
+        break;
+    case OGS_GTP1_DELETE_MBMS_CONTEXT_REQUEST_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_delete_mbms_context_request,
+                &gtp1_message->delete_mbms_context_request, OGS_TLV_MODE_T1_L2);
         break;
     case OGS_GTP1_DELETE_MBMS_CONTEXT_RESPONSE_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp1_tlv_desc_delete_mbms_context_response,

@@ -1,7 +1,7 @@
 /*
  * qos_flow_release_request_item.h
  *
- * 
+ * Individual QoS flow requested to be released
  */
 
 #ifndef _OpenAPI_qos_flow_release_request_item_H_
@@ -20,14 +20,14 @@ extern "C" {
 typedef struct OpenAPI_qos_flow_release_request_item_s OpenAPI_qos_flow_release_request_item_t;
 typedef struct OpenAPI_qos_flow_release_request_item_s {
     int qfi;
-    char qos_rules;
-    char qos_flow_description;
+    char *qos_rules;
+    char *qos_flow_description;
 } OpenAPI_qos_flow_release_request_item_t;
 
 OpenAPI_qos_flow_release_request_item_t *OpenAPI_qos_flow_release_request_item_create(
     int qfi,
-    char qos_rules,
-    char qos_flow_description
+    char *qos_rules,
+    char *qos_flow_description
 );
 void OpenAPI_qos_flow_release_request_item_free(OpenAPI_qos_flow_release_request_item_t *qos_flow_release_request_item);
 OpenAPI_qos_flow_release_request_item_t *OpenAPI_qos_flow_release_request_item_parseFromJSON(cJSON *qos_flow_release_request_itemJSON);

@@ -1,0 +1,400 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-racs-parameter-provisioning
+  version: 1.0.1
+  description: |
+    API for provisioning UE radio capability parameters.
+    © 2021, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.122 V16.9.0 T8 reference point for Northbound APIs
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.122/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/3gpp-racs-pp/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 5.2.4 of 3GPP TS 29.122.
+paths:
+  /{scsAsId}/provisionings:
+    parameters:
+      - name: scsAsId
+        in: path
+        description: Identifier of the SCS/AS as defined in subclause subclause 5.2.4 of 3GPP TS 29.122.
+        required: true
+        schema:
+          type: string
+    get:
+      responses:
+        '200':
+          description: OK. The provisioning information related to the request URI is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RacsProvisioningData'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    post:
+      requestBody:
+        description: create new provisionings for a given SCS/AS.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RacsProvisioningData'
+      responses:
+        '201':
+          description: Created. The provisioning was created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RacsProvisioningData'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The RACS data for all RACS IDs were not provisioned successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RacsFailureReport'
+                minItems: 1
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /{scsAsId}/provisionings/{provisioningId}:
+    parameters:
+      - name: scsAsId
+        in: path
+        description: Identifier of the SCS/AS as defined in subclause subclause 5.2.4 of 3GPP TS 29.122.
+        required: true
+        schema:
+          type: string
+      - name: provisioningId
+        in: path
+        description: Provisioning ID
+        required: true
+        schema:
+          type: string
+    get:
+      responses:
+        '200':
+          description: OK. The provisioning information related to the request URI is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RacsProvisioningData'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    patch:
+      requestBody:
+        description: update an existing parameter provisioning.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/RacsProvisioningDataPatch'
+      responses:
+        '200':
+          description: OK. The provisioning data was updated successfully. The SCEF shall return an updated provisioning information in the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RacsProvisioningData'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The RACS data for all RACS IDs were not provisioned successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RacsFailureReport'
+                minItems: 1
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      requestBody:
+        description: update an existing parameter provisioning.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RacsProvisioningData'
+      responses:
+        '200':
+          description: OK. The provisioning data was updated successfully. The SCEF shall return an updated provisioning information in the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RacsProvisioningData'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The RACS data for all RACS IDs were not provisioned successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RacsFailureReport'
+                minItems: 1
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      responses:
+        '204':
+          description: No Content. The provisioning was terminated successfully. The payload body shall be empty.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    RacsProvisioningData:
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        racsConfigs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/RacsConfiguration'
+          minProperties: 1
+          description: Identifies the configuration related to manufacturer specific UE radio capability. Each element uniquely identifies an RACS configuration for an RACS ID and is identified in the map via the RACS ID as key. The response shall include successfully provisioned RACS data.
+        racsReports:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/RacsFailureReport'
+          minProperties: 1
+          description: Supplied by the SCEF. Contains the RACS IDs for which the RACS data are not provisioned successfully.
+          readOnly: true
+      required:
+        - racsConfigs
+    RacsFailureReport:
+      type: object
+      properties:
+        racsIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Identifies the RACS ID(s) for which the RACS data are not provisioned successfully.
+        failureCode:
+          $ref: '#/components/schemas/RacsFailureCode'
+      required:
+        - racsIds
+        - failureCode
+    RacsConfiguration:
+      type: object
+      properties:
+        racsId:
+          type: string
+          description: The UE radio capability ID provided by the SCS/AS to identify the UE radio capability data. See 3GPP TS 23.003 for the encoding.
+        racsParamEps:
+          type: string
+          description: The UE radio capability data in EPS.
+        racsParam5Gs:
+          type: string
+          description: The UE radio capability data in 5GS.
+        imeiTacs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/TypeAllocationCode'
+          minItems: 1
+          description: Related UE model's IMEI-TAC values.
+      anyOf:
+        - required: [racsParamEps]
+        - required: [racsParam5Gs]
+      required:
+        - racsId
+        - imeiTacs
+    RacsProvisioningDataPatch:
+      type: object
+      properties:
+        racsConfigs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/RacsConfigurationRm'
+          minProperties: 1
+          description: Identifies the configuration related to manufactuer specific UE radio capability. Each element uniquely identifies an RACS configuration for an RACS ID and is identified in the map via the RACS ID as key.
+    RacsConfigurationRm:
+      type: object
+      properties:
+        racsParamEps:
+          type: string
+          description: The UE radio capability data in EPS.
+          nullable: true
+        racsParam5Gs:
+          type: string
+          description: The UE radio capability data in 5GS.
+          nullable: true
+        imeiTacs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/TypeAllocationCode'
+          minItems: 1
+          description: Related UE model's IMEI-TAC values.
+      nullable: true
+    RacsFailureCode:
+      anyOf:
+      - type: string
+        enum:
+          - MALFUNCTION
+          - RESOURCE_LIMITATION
+          - RACS_ID_DUPLICATED
+          - OTHER_REASON
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - MALFUNCTION: This value indicates that something functions wrongly in RACS provisioning or the RACS provisioning does not function at all.
+        - RESOURCE_LIMITATION: This value indicates there is resource limitation for RACS data storage.
+        - RACS_ID_DUPLICATED: The received RACS identifier(s) are already provisioned.
+        - OTHER_REASON: Other reason unspecified.

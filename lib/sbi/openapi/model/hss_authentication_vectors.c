@@ -16,16 +16,18 @@ OpenAPI_hss_authentication_vectors_t *OpenAPI_hss_authentication_vectors_create(
 
 void OpenAPI_hss_authentication_vectors_free(OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == hss_authentication_vectors) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(hss_authentication_vectors);
 }
 
 cJSON *OpenAPI_hss_authentication_vectors_convertToJSON(OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (hss_authentication_vectors == NULL) {
         ogs_error("OpenAPI_hss_authentication_vectors_convertToJSON() failed [HssAuthenticationVectors]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_hss_authentication_vectors_t *OpenAPI_hss_authentication_vectors_parseFromJSON(cJSON *hss_authentication_vectorsJSON)
 {
     OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     hss_authentication_vectors_local_var = OpenAPI_hss_authentication_vectors_create (
     );
 

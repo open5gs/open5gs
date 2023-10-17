@@ -1,7 +1,7 @@
 /*
  * rm_info.h
  *
- * 
+ * Represents the registration state of a UE for an access type
  */
 
 #ifndef _OpenAPI_rm_info_H_

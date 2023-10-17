@@ -12,20 +12,32 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "aanf_info.h"
 #include "amf_info.h"
 #include "ausf_info.h"
 #include "bsf_info.h"
 #include "chf_info.h"
+#include "collocated_nf_instance.h"
+#include "dccf_info.h"
 #include "default_notification_subscription.h"
+#include "easdf_info.h"
 #include "ext_snssai.h"
 #include "gmlc_info.h"
 #include "hss_info.h"
+#include "iwmsc_info.h"
 #include "lmf_info.h"
+#include "mb_smf_info.h"
+#include "mb_upf_info.h"
+#include "mfaf_info.h"
+#include "mnpf_info.h"
+#include "model_5_g_ddnmf_info.h"
 #include "nef_info.h"
 #include "nf_service.h"
 #include "nf_status.h"
 #include "nf_type.h"
 #include "nrf_info.h"
+#include "nsacf_info.h"
+#include "nssaaf_info.h"
 #include "nwdaf_info.h"
 #include "object.h"
 #include "pcf_info.h"
@@ -34,11 +46,15 @@
 #include "plmn_id_nid.h"
 #include "plmn_snssai.h"
 #include "scp_info.h"
+#include "sepp_info.h"
 #include "smf_info.h"
+#include "trust_af_info.h"
+#include "tsctsf_info.h"
 #include "udm_info.h"
 #include "udr_info.h"
 #include "udsf_info.h"
 #include "upf_info.h"
+#include "vendor_specific_feature.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,6 +66,7 @@ typedef struct OpenAPI_nf_profile_s {
     char *nf_instance_name;
     OpenAPI_nf_type_e nf_type;
     OpenAPI_nf_status_e nf_status;
+    OpenAPI_list_t *collocated_nf_instances;
     bool is_heart_beat_timer;
     int heart_beat_timer;
     OpenAPI_list_t *plmn_list;
@@ -97,6 +114,7 @@ typedef struct OpenAPI_nf_profile_s {
     struct OpenAPI_udsf_info_s *udsf_info;
     OpenAPI_list_t* udsf_info_list;
     struct OpenAPI_nwdaf_info_s *nwdaf_info;
+    OpenAPI_list_t* nwdaf_info_list;
     OpenAPI_list_t* pcscf_info_list;
     OpenAPI_list_t* hss_info_list;
     OpenAPI_object_t *custom_info;
@@ -122,6 +140,23 @@ typedef struct OpenAPI_nf_profile_s {
     OpenAPI_list_t* service_set_recovery_time_list;
     OpenAPI_list_t *scp_domains;
     struct OpenAPI_scp_info_s *scp_info;
+    struct OpenAPI_sepp_info_s *sepp_info;
+    char *vendor_id;
+    OpenAPI_list_t* supported_vendor_specific_features;
+    OpenAPI_list_t* aanf_info_list;
+    struct OpenAPI_model_5_g_ddnmf_info_s *_5g_ddnmf_info;
+    struct OpenAPI_mfaf_info_s *mfaf_info;
+    OpenAPI_list_t* easdf_info_list;
+    struct OpenAPI_dccf_info_s *dccf_info;
+    OpenAPI_list_t* nsacf_info_list;
+    OpenAPI_list_t* mb_smf_info_list;
+    OpenAPI_list_t* tsctsf_info_list;
+    OpenAPI_list_t* mb_upf_info_list;
+    struct OpenAPI_trust_af_info_s *trust_af_info;
+    struct OpenAPI_nssaaf_info_s *nssaaf_info;
+    OpenAPI_list_t *hni_list;
+    struct OpenAPI_iwmsc_info_s *iwmsc_info;
+    struct OpenAPI_mnpf_info_s *mnpf_info;
 } OpenAPI_nf_profile_t;
 
 OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
@@ -129,6 +164,7 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     char *nf_instance_name,
     OpenAPI_nf_type_e nf_type,
     OpenAPI_nf_status_e nf_status,
+    OpenAPI_list_t *collocated_nf_instances,
     bool is_heart_beat_timer,
     int heart_beat_timer,
     OpenAPI_list_t *plmn_list,
@@ -176,6 +212,7 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     OpenAPI_udsf_info_t *udsf_info,
     OpenAPI_list_t* udsf_info_list,
     OpenAPI_nwdaf_info_t *nwdaf_info,
+    OpenAPI_list_t* nwdaf_info_list,
     OpenAPI_list_t* pcscf_info_list,
     OpenAPI_list_t* hss_info_list,
     OpenAPI_object_t *custom_info,
@@ -200,7 +237,24 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     OpenAPI_list_t* nf_set_recovery_time_list,
     OpenAPI_list_t* service_set_recovery_time_list,
     OpenAPI_list_t *scp_domains,
-    OpenAPI_scp_info_t *scp_info
+    OpenAPI_scp_info_t *scp_info,
+    OpenAPI_sepp_info_t *sepp_info,
+    char *vendor_id,
+    OpenAPI_list_t* supported_vendor_specific_features,
+    OpenAPI_list_t* aanf_info_list,
+    OpenAPI_model_5_g_ddnmf_info_t *_5g_ddnmf_info,
+    OpenAPI_mfaf_info_t *mfaf_info,
+    OpenAPI_list_t* easdf_info_list,
+    OpenAPI_dccf_info_t *dccf_info,
+    OpenAPI_list_t* nsacf_info_list,
+    OpenAPI_list_t* mb_smf_info_list,
+    OpenAPI_list_t* tsctsf_info_list,
+    OpenAPI_list_t* mb_upf_info_list,
+    OpenAPI_trust_af_info_t *trust_af_info,
+    OpenAPI_nssaaf_info_t *nssaaf_info,
+    OpenAPI_list_t *hni_list,
+    OpenAPI_iwmsc_info_t *iwmsc_info,
+    OpenAPI_mnpf_info_t *mnpf_info
 );
 void OpenAPI_nf_profile_free(OpenAPI_nf_profile_t *nf_profile);
 OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON);

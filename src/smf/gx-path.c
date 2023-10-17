@@ -28,9 +28,12 @@ struct sess_state {
 
     os0_t       peer_host;          /* Peer Host */
 
-#define MAX_CC_REQUEST_NUMBER 32
+#define NUM_CC_REQUEST_SLOT 4
     smf_sess_t *sess;
-    ogs_gtp_xact_t *xact[MAX_CC_REQUEST_NUMBER];
+    struct {
+        uint32_t cc_req_no;
+        ogs_gtp_xact_t *ptr;
+    } xact_data[NUM_CC_REQUEST_SLOT];
 
     uint32_t cc_request_type;
     uint32_t cc_request_number;
@@ -51,12 +54,22 @@ static __inline__ struct sess_state *new_state(os0_t sid)
 
     ogs_thread_mutex_lock(&sess_state_mutex);
     ogs_pool_alloc(&sess_state_pool, &new);
-    ogs_expect_or_return_val(new, NULL);
+    if (!new) {
+        ogs_error("ogs_pool_alloc() failed");
+        ogs_thread_mutex_unlock(&sess_state_mutex);
+        return NULL;
+    }
     memset(new, 0, sizeof(*new));
-    ogs_thread_mutex_unlock(&sess_state_mutex);
 
     new->gx_sid = (os0_t)ogs_strdup((char *)sid);
-    ogs_expect_or_return_val(new->gx_sid, NULL);
+    if (!new->gx_sid) {
+        ogs_error("ogs_strdup() failed");
+        ogs_pool_free(&sess_state_pool, new);
+        ogs_thread_mutex_unlock(&sess_state_mutex);
+        return NULL;
+    }
+
+    ogs_thread_mutex_unlock(&sess_state_mutex);
 
     return new;
 }
@@ -93,6 +106,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
     struct sockaddr_in sin;
     struct sockaddr_in6 sin6;
     uint32_t charging_id;
+    uint32_t req_slot;
 
     ogs_assert(sess);
 
@@ -120,7 +134,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_assert(ret == 0);
         ogs_assert(new == 0);
 
-        ogs_debug("    Found GX Session-Id: [%s]", sess->gx_sid);
+        ogs_debug("    Found Gx Session-Id: [%s]", sess->gx_sid);
 
         /* Add Session-Id to the message */
         ret = ogs_diam_message_session_id_set(req, (os0_t)sess->gx_sid, sidlen);
@@ -181,11 +195,12 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
 
     ogs_debug("    CC Request Type[%d] Number[%d]",
         sess_data->cc_request_type, sess_data->cc_request_number);
-    ogs_assert(sess_data->cc_request_number <= MAX_CC_REQUEST_NUMBER);
 
     /* Update session state */
     sess_data->sess = sess;
-    sess_data->xact[sess_data->cc_request_number] = xact;
+    req_slot = sess_data->cc_request_number % NUM_CC_REQUEST_SLOT;
+    sess_data->xact_data[req_slot].ptr = xact;
+    sess_data->xact_data[req_slot].cc_req_no = sess_data->cc_request_number;
 
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
@@ -489,7 +504,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_assert(ret == 0);
 
         /* 3GPP-User-Location-Info, 3GPP TS 29.061 16.4.7.2 22 */
-        smf_fd_msg_avp_add_3gpp_uli(sess, avpch1);
+        smf_fd_msg_avp_add_3gpp_uli(sess, req);
 
         /* Set 3GPP-MS-Timezone */
         if (sess->gtp.ue_timezone.presence &&
@@ -703,7 +718,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     ogs_gtp_xact_t *xact = NULL;
     smf_sess_t *sess = NULL;
     ogs_diam_gx_message_t *gx_message = NULL;
-    uint32_t cc_request_number = 0;
+    uint32_t req_slot, cc_request_number = 0;
 
     ogs_debug("[Credit-Control-Answer]");
 
@@ -745,11 +760,13 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
     cc_request_number = hdr->avp_value->i32;
+    req_slot = cc_request_number % NUM_CC_REQUEST_SLOT;
 
     ogs_debug("    CC-Request-Number[%d]", cc_request_number);
 
-    xact = sess_data->xact[cc_request_number];
+    xact = sess_data->xact_data[req_slot].ptr;
     sess = sess_data->sess;
+    ogs_assert(sess_data->xact_data[req_slot].cc_req_no == cc_request_number);
     ogs_assert(sess);
 
     gx_message = ogs_calloc(1, sizeof(ogs_diam_gx_message_t));

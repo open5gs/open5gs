@@ -126,6 +126,10 @@ ausf_ue_t *ausf_ue_add(char *suci)
     ogs_assert(suci);
 
     ogs_pool_alloc(&ausf_ue_pool, &ausf_ue);
+    if (!ausf_ue) {
+        ogs_error("ogs_pool_alloc() failed");
+        return NULL;
+    }
     ogs_assert(ausf_ue);
     memset(ausf_ue, 0, sizeof *ausf_ue);
 
@@ -136,10 +140,6 @@ ausf_ue_t *ausf_ue_add(char *suci)
     ausf_ue->suci = ogs_strdup(suci);
     ogs_assert(ausf_ue->suci);
     ogs_hash_set(self.suci_hash, ausf_ue->suci, strlen(ausf_ue->suci), ausf_ue);
-
-    ausf_ue->supi = ogs_supi_from_supi_or_suci(ausf_ue->suci);
-    ogs_assert(ausf_ue->supi);
-    ogs_hash_set(self.supi_hash, ausf_ue->supi, strlen(ausf_ue->supi), ausf_ue);
 
     memset(&e, 0, sizeof(e));
     e.ausf_ue = ausf_ue;
@@ -172,9 +172,11 @@ void ausf_ue_remove(ausf_ue_t *ausf_ue)
     ogs_hash_set(self.suci_hash, ausf_ue->suci, strlen(ausf_ue->suci), NULL);
     ogs_free(ausf_ue->suci);
 
-    ogs_assert(ausf_ue->supi);
-    ogs_hash_set(self.supi_hash, ausf_ue->supi, strlen(ausf_ue->supi), NULL);
-    ogs_free(ausf_ue->supi);
+    if (ausf_ue->supi) {
+        ogs_hash_set(self.supi_hash,
+                ausf_ue->supi, strlen(ausf_ue->supi), NULL);
+        ogs_free(ausf_ue->supi);
+    }
 
     if (ausf_ue->auth_events_url)
         ogs_free(ausf_ue->auth_events_url);
@@ -185,7 +187,7 @@ void ausf_ue_remove(ausf_ue_t *ausf_ue)
     ogs_pool_free(&ausf_ue_pool, ausf_ue);
 }
 
-void ausf_ue_remove_all()
+void ausf_ue_remove_all(void)
 {
     ausf_ue_t *ausf_ue = NULL, *next = NULL;;
 
@@ -223,4 +225,11 @@ ausf_ue_t *ausf_ue_find_by_ctx_id(char *ctx_id)
 ausf_ue_t *ausf_ue_cycle(ausf_ue_t *ausf_ue)
 {
     return ogs_pool_cycle(&ausf_ue_pool, ausf_ue);
+}
+
+int get_ue_load(void)
+{
+    return (((ogs_pool_size(&ausf_ue_pool) -
+            ogs_pool_avail(&ausf_ue_pool)) * 100) /
+            ogs_pool_size(&ausf_ue_pool));
 }

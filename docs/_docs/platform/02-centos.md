@@ -86,13 +86,13 @@ $ sudo dnf config-manager --set-enabled elrepo-testing
 Create a repository file to install the MongoDB packages:
 
 ```bash
-$ sudo sh -c 'cat << EOF > /etc/yum.repos.d/mongodb-org-3.6.repo
-[mongodb-org-3.6]
+$ sudo sh -c 'cat << EOF > /etc/yum.repos.d/mongodb-org-6.0.repo
+[mongodb-org-6.0]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/\$releasever/mongodb-org/3.6/x86_64/
+baseurl=https://repo.mongodb.org/yum/redhat/\$releasever/mongodb-org/6.0/x86_64/
 gpgcheck=1
 enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc
+gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc
 EOF'
 ```
 
@@ -109,7 +109,7 @@ a base CentOS Stream 8 installation.
 
 
 ```bash
-$ sudo dnf install python3 meson ninja-build gcc gcc-c++ flex bison git lksctp-tools-devel libidn-devel gnutls-devel libgcrypt-devel openssl-devel cyrus-sasl-devel libyaml-devel mongo-c-driver-devel libmicrohttpd-devel libcurl-devel libnghttp2-devel libtalloc-devel
+$ sudo dnf install python3 meson cmake ninja-build gcc gcc-c++ flex bison git cmake lksctp-tools-devel libidn-devel gnutls-devel libgcrypt-devel openssl-devel cyrus-sasl-devel libyaml-devel mongo-c-driver-devel libmicrohttpd-devel libcurl-devel libnghttp2-devel libtalloc-devel
 ```
 
 ### Install iproute IP interface tools.
@@ -238,11 +238,16 @@ to support IPv6.  This is done by setting the `diable_ipv6` option for
 `ogstun` to 0 (false):
 
 ```bash
+$ sysctl -n net.ipv6.conf.lo.disable_ipv6
+1
 $ sysctl -n net.ipv6.conf.ogstun.disable_ipv6
 1
 
+$ sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
 $ sudo sysctl -w net.ipv6.conf.ogstun.disable_ipv6=0
 
+$ sysctl -n net.ipv6.conf.lo.disable_ipv6
+0
 $ sysctl -n net.ipv6.conf.ogstun.disable_ipv6
 0
 ```
@@ -341,6 +346,7 @@ open5gs-hssd   open5gs-pcfd   open5gs-sgwud  open5gs-upfd
 
 Install Node.js:
 ```bash
+$ curl -sL https://rpm.nodesource.com/setup_18.x | sudo -E bash -
 $ sudo dnf install nodejs
 ```
 
@@ -354,5 +360,5 @@ $ npm ci
 The WebUI runs as an [npm](https://www.npmjs.com/) script.
 
 ```bash
-$ npm run dev
+$ DB_URI=mongodb://127.0.0.1/open5gs HOSTNAME=0.0.0.0 npm run dev
 ```

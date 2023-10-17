@@ -16,16 +16,18 @@ OpenAPI_access_tech_t *OpenAPI_access_tech_create(
 
 void OpenAPI_access_tech_free(OpenAPI_access_tech_t *access_tech)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == access_tech) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(access_tech);
 }
 
 cJSON *OpenAPI_access_tech_convertToJSON(OpenAPI_access_tech_t *access_tech)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (access_tech == NULL) {
         ogs_error("OpenAPI_access_tech_convertToJSON() failed [AccessTech]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_access_tech_t *OpenAPI_access_tech_parseFromJSON(cJSON *access_techJSON)
 {
     OpenAPI_access_tech_t *access_tech_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     access_tech_local_var = OpenAPI_access_tech_create (
     );
 

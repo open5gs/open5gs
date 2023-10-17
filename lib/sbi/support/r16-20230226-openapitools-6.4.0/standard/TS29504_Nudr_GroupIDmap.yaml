@@ -1,0 +1,94 @@
+openapi: 3.0.0
+
+info:
+  version: 1.0.0
+  title: 'Nudr_GroupIDmap'
+  description: |
+    Unified Data Repository Service for NF-Group ID retrieval.
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.504 V16.4.0; 5G System; Unified Data Repository Services; Stage 3
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.504/'
+
+servers:
+  - description: API root
+    url: '{apiRoot}/nudr-group-id-map/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - nudr-group-id-map
+
+paths:
+  /nf-group-ids:
+    get:
+      summary: Retrieves NF-Group IDs for provided Subscriber and NF types
+      operationId: GetNfGroupIDs
+      tags:
+        - NF Group IDs (Document)
+      parameters:
+        - name: nf-type
+          in: query
+          description: Type of NF
+          required: true
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NFType'
+            minItems: 1
+        - name: subscriberId
+          in: query
+          description: Identifier of the subscriber
+          required: true
+          schema:
+            $ref: '#/components/schemas/SubscriberId'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NfGroupIdMapResult'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        default:
+          description: Unexpected error
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nudr-group-id-map: Access to the Nudr_GroupIDmap API
+
+
+
+  schemas:
+
+# COMPLEX TYPES:
+
+    NfGroupIdMapResult:
+      type: object
+      additionalProperties:
+        $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+      minProperties: 1
+
+
+# SIMPLE TYPES:
+
+    SubscriberId:
+      type: string
+      pattern: '^(imsi-[0-9]{5,15}|nai-.+|msisdn-[0-9]{5,15}|extid-[^@]+@[^@]+|impi-.+|impu-.+|.+)$'
+
+# ENUMS:

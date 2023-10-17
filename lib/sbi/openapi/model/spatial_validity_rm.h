@@ -1,7 +1,7 @@
 /*
  * spatial_validity_rm.h
  *
- * this data type is defined in the same way as the SpatialValidity data type, but with the OpenAPI nullable property set to true
+ * This data type is defined in the same way as the SpatialValidity data type, but with the OpenAPI nullable property set to true.
  */
 
 #ifndef _OpenAPI_spatial_validity_rm_H_

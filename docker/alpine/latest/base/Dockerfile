@@ -10,6 +10,7 @@ RUN apk update && \
         bison \
         flex \
         git \
+        cmake \
         meson \
         bash \
         linux-headers \

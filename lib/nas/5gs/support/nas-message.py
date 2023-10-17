@@ -1,6 +1,6 @@
 # The MIT License
 
-# Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -64,7 +64,7 @@ def output_header_to_file(f):
     f.write("""/*
  * The MIT License
  *
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -116,7 +116,8 @@ def get_value(v):
 
 def get_cells(cells):
     iei = cells[0].text
-    value = re.sub("\s*$", "", re.sub("\s*\n*\s*\([^\)]*\)*", "", re.sub("'s", "", cells[1].text)))
+    value = cells[1].text.encode('ascii', 'ignore').decode('utf-8')
+    value = re.sub("\s*$", "", re.sub("\s*\n*\s*\([^\)]*\)*", "", re.sub("\"|'s", "", value)))
     type = re.sub("^NAS ", "", re.sub("'s", "", re.sub('\s*\n\s*[a-zA-Z0-9.]*', '', cells[2].text)))
     reference = re.sub('[a-zA-Z0-9\'\-\s]*\n\s*', '', cells[2].text)
     presence = cells[3].text
@@ -240,22 +241,22 @@ msg_list["SECURITY MODE COMPLETE"]["table"] = 25
 msg_list["SECURITY MODE REJECT"]["table"] = 26
 msg_list["5GMM STATUS"]["table"] = 28
 
-msg_list["PDU SESSION ESTABLISHMENT REQUEST"]["table"] = 33
-msg_list["PDU SESSION ESTABLISHMENT ACCEPT"]["table"] = 34
-msg_list["PDU SESSION ESTABLISHMENT REJECT"]["table"] = 35
-msg_list["PDU SESSION AUTHENTICATION COMMAND"]["table"] = 36
-msg_list["PDU SESSION AUTHENTICATION COMPLETE"]["table"] = 37
-msg_list["PDU SESSION AUTHENTICATION RESULT"]["table"] = 38
-msg_list["PDU SESSION MODIFICATION REQUEST"]["table"] = 39
-msg_list["PDU SESSION MODIFICATION REJECT"]["table"] = 40
-msg_list["PDU SESSION MODIFICATION COMMAND"]["table"] = 41
-msg_list["PDU SESSION MODIFICATION COMPLETE"]["table"] = 42
-msg_list["PDU SESSION MODIFICATION COMMAND REJECT"]["table"] = 43
-msg_list["PDU SESSION RELEASE REQUEST"]["table"] = 44
-msg_list["PDU SESSION RELEASE REJECT"]["table"] = 45
-msg_list["PDU SESSION RELEASE COMMAND"]["table"] = 46
-msg_list["PDU SESSION RELEASE COMPLETE"]["table"] = 47
-msg_list["5GSM STATUS"]["table"] = 48
+msg_list["PDU SESSION ESTABLISHMENT REQUEST"]["table"] = 38
+msg_list["PDU SESSION ESTABLISHMENT ACCEPT"]["table"] = 39
+msg_list["PDU SESSION ESTABLISHMENT REJECT"]["table"] = 40
+msg_list["PDU SESSION AUTHENTICATION COMMAND"]["table"] = 41
+msg_list["PDU SESSION AUTHENTICATION COMPLETE"]["table"] = 42
+msg_list["PDU SESSION AUTHENTICATION RESULT"]["table"] = 43
+msg_list["PDU SESSION MODIFICATION REQUEST"]["table"] = 44
+msg_list["PDU SESSION MODIFICATION REJECT"]["table"] = 45
+msg_list["PDU SESSION MODIFICATION COMMAND"]["table"] = 46
+msg_list["PDU SESSION MODIFICATION COMPLETE"]["table"] = 47
+msg_list["PDU SESSION MODIFICATION COMMAND REJECT"]["table"] = 48
+msg_list["PDU SESSION RELEASE REQUEST"]["table"] = 49
+msg_list["PDU SESSION RELEASE REJECT"]["table"] = 50
+msg_list["PDU SESSION RELEASE COMMAND"]["table"] = 51
+msg_list["PDU SESSION RELEASE COMPLETE"]["table"] = 52
+msg_list["5GSM STATUS"]["table"] = 53
 
 for key in msg_list.keys():
     if "table" not in msg_list[key].keys():
@@ -886,7 +887,10 @@ f.write("""ogs_pkbuf_t *ogs_nas_5gmm_encode(ogs_nas_5gs_message_t *message)
     /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_expect_or_return_val(pkbuf, NULL);
+    if (!pkbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        return NULL;
+    }
     ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
 
@@ -937,7 +941,10 @@ f.write("""ogs_pkbuf_t *ogs_nas_5gsm_encode(ogs_nas_5gs_message_t *message)
     /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_expect_or_return_val(pkbuf, NULL);
+    if (!pkbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        return NULL;
+    }
     ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
 

@@ -67,7 +67,7 @@ int main(int argc, const char *const argv[])
         char *log_level;
         char *domain_mask;
     } optarg;
-    const char *argv_out[argc+2]; /* '-e error' is always added */
+    const char *argv_out[argc+3]; /* '-e error' is always added */
     
     abts_suite *suite = NULL;
     ogs_pkbuf_config_t config;

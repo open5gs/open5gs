@@ -155,7 +155,12 @@ else
 endif
 
 # Check for /dev/urandom
-if run_command('[', '-c', '/dev/urandom', ']').returncode() == 0
+if meson.version().version_compare('>=0.47.0')
+     dev_urandom = run_command('[', '-c', '/dev/urandom', ']', check: false)
+else
+     dev_urandom = run_command('[', '-c', '/dev/urandom', ']')
+endif
+if dev_urandom.returncode() == 0
     libcore_conf.set_quoted('OGS_DEV_RANDOM', '/dev/urandom',
                     description: 'a suitable file to read random data from')
 endif
@@ -256,6 +261,7 @@ libcore_sources = files('''
     ogs-hash.h
     ogs-misc.h
     ogs-getopt.h
+    ogs-file.h
     abts.h
 
     ogs-abort.c
@@ -291,6 +297,7 @@ libcore_sources = files('''
     ogs-hash.c
     ogs-misc.c
     ogs-getopt.c
+    ogs-file.c
     ogs-core.c
     abts.c
 '''.split())

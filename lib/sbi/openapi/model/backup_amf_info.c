@@ -20,21 +20,29 @@ OpenAPI_backup_amf_info_t *OpenAPI_backup_amf_info_create(
 
 void OpenAPI_backup_amf_info_free(OpenAPI_backup_amf_info_t *backup_amf_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == backup_amf_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(backup_amf_info->backup_amf);
-    OpenAPI_list_for_each(backup_amf_info->guami_list, node) {
-        OpenAPI_guami_free(node->data);
+    if (backup_amf_info->backup_amf) {
+        ogs_free(backup_amf_info->backup_amf);
+        backup_amf_info->backup_amf = NULL;
     }
-    OpenAPI_list_free(backup_amf_info->guami_list);
+    if (backup_amf_info->guami_list) {
+        OpenAPI_list_for_each(backup_amf_info->guami_list, node) {
+            OpenAPI_guami_free(node->data);
+        }
+        OpenAPI_list_free(backup_amf_info->guami_list);
+        backup_amf_info->guami_list = NULL;
+    }
     ogs_free(backup_amf_info);
 }
 
 cJSON *OpenAPI_backup_amf_info_convertToJSON(OpenAPI_backup_amf_info_t *backup_amf_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (backup_amf_info == NULL) {
         ogs_error("OpenAPI_backup_amf_info_convertToJSON() failed [BackupAmfInfo]");
@@ -42,6 +50,10 @@ cJSON *OpenAPI_backup_amf_info_convertToJSON(OpenAPI_backup_amf_info_t *backup_a
     }
 
     item = cJSON_CreateObject();
+    if (!backup_amf_info->backup_amf) {
+        ogs_error("OpenAPI_backup_amf_info_convertToJSON() failed [backup_amf]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "backupAmf", backup_amf_info->backup_amf) == NULL) {
         ogs_error("OpenAPI_backup_amf_info_convertToJSON() failed [backup_amf]");
         goto end;
@@ -53,17 +65,13 @@ cJSON *OpenAPI_backup_amf_info_convertToJSON(OpenAPI_backup_amf_info_t *backup_a
         ogs_error("OpenAPI_backup_amf_info_convertToJSON() failed [guami_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *guami_list_node;
-    if (backup_amf_info->guami_list) {
-        OpenAPI_list_for_each(backup_amf_info->guami_list, guami_list_node) {
-            cJSON *itemLocal = OpenAPI_guami_convertToJSON(guami_list_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_backup_amf_info_convertToJSON() failed [guami_list]");
-                goto end;
-            }
-            cJSON_AddItemToArray(guami_listList, itemLocal);
+    OpenAPI_list_for_each(backup_amf_info->guami_list, node) {
+        cJSON *itemLocal = OpenAPI_guami_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_backup_amf_info_convertToJSON() failed [guami_list]");
+            goto end;
         }
+        cJSON_AddItemToArray(guami_listList, itemLocal);
     }
     }
 
@@ -74,44 +82,42 @@ end:
 OpenAPI_backup_amf_info_t *OpenAPI_backup_amf_info_parseFromJSON(cJSON *backup_amf_infoJSON)
 {
     OpenAPI_backup_amf_info_t *backup_amf_info_local_var = NULL;
-    cJSON *backup_amf = cJSON_GetObjectItemCaseSensitive(backup_amf_infoJSON, "backupAmf");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *backup_amf = NULL;
+    cJSON *guami_list = NULL;
+    OpenAPI_list_t *guami_listList = NULL;
+    backup_amf = cJSON_GetObjectItemCaseSensitive(backup_amf_infoJSON, "backupAmf");
     if (!backup_amf) {
         ogs_error("OpenAPI_backup_amf_info_parseFromJSON() failed [backup_amf]");
         goto end;
     }
-
     if (!cJSON_IsString(backup_amf)) {
         ogs_error("OpenAPI_backup_amf_info_parseFromJSON() failed [backup_amf]");
         goto end;
     }
 
-    cJSON *guami_list = cJSON_GetObjectItemCaseSensitive(backup_amf_infoJSON, "guamiList");
-
-    OpenAPI_list_t *guami_listList;
+    guami_list = cJSON_GetObjectItemCaseSensitive(backup_amf_infoJSON, "guamiList");
     if (guami_list) {
-    cJSON *guami_list_local_nonprimitive;
-    if (!cJSON_IsArray(guami_list)){
-        ogs_error("OpenAPI_backup_amf_info_parseFromJSON() failed [guami_list]");
-        goto end;
-    }
-
-    guami_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(guami_list_local_nonprimitive, guami_list ) {
-        if (!cJSON_IsObject(guami_list_local_nonprimitive)) {
+        cJSON *guami_list_local = NULL;
+        if (!cJSON_IsArray(guami_list)) {
             ogs_error("OpenAPI_backup_amf_info_parseFromJSON() failed [guami_list]");
             goto end;
         }
-        OpenAPI_guami_t *guami_listItem = OpenAPI_guami_parseFromJSON(guami_list_local_nonprimitive);
 
-        if (!guami_listItem) {
-            ogs_error("No guami_listItem");
-            OpenAPI_list_free(guami_listList);
-            goto end;
+        guami_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(guami_list_local, guami_list) {
+            if (!cJSON_IsObject(guami_list_local)) {
+                ogs_error("OpenAPI_backup_amf_info_parseFromJSON() failed [guami_list]");
+                goto end;
+            }
+            OpenAPI_guami_t *guami_listItem = OpenAPI_guami_parseFromJSON(guami_list_local);
+            if (!guami_listItem) {
+                ogs_error("No guami_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(guami_listList, guami_listItem);
         }
-
-        OpenAPI_list_add(guami_listList, guami_listItem);
-    }
     }
 
     backup_amf_info_local_var = OpenAPI_backup_amf_info_create (
@@ -121,6 +127,13 @@ OpenAPI_backup_amf_info_t *OpenAPI_backup_amf_info_parseFromJSON(cJSON *backup_a
 
     return backup_amf_info_local_var;
 end:
+    if (guami_listList) {
+        OpenAPI_list_for_each(guami_listList, node) {
+            OpenAPI_guami_free(node->data);
+        }
+        OpenAPI_list_free(guami_listList);
+        guami_listList = NULL;
+    }
     return NULL;
 }
 

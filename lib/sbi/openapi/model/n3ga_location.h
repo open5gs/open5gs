@@ -1,7 +1,7 @@
 /*
  * n3ga_location.h
  *
- * 
+ * Contains the Non-3GPP access user location.
  */
 
 #ifndef _OpenAPI_n3ga_location_H_
@@ -16,6 +16,7 @@
 #include "line_type.h"
 #include "tai.h"
 #include "tnap_id.h"
+#include "transport_protocol.h"
 #include "twap_id.h"
 
 #ifdef __cplusplus
@@ -30,6 +31,7 @@ typedef struct OpenAPI_n3ga_location_s {
     char *ue_ipv6_addr;
     bool is_port_number;
     int port_number;
+    OpenAPI_transport_protocol_e protocol;
     struct OpenAPI_tnap_id_s *tnap_id;
     struct OpenAPI_twap_id_s *twap_id;
     struct OpenAPI_hfc_node_id_s *hfc_node_id;
@@ -45,6 +47,7 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_create(
     char *ue_ipv6_addr,
     bool is_port_number,
     int port_number,
+    OpenAPI_transport_protocol_e protocol,
     OpenAPI_tnap_id_t *tnap_id,
     OpenAPI_twap_id_t *twap_id,
     OpenAPI_hfc_node_id_t *hfc_node_id,

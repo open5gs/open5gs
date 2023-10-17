@@ -6,7 +6,7 @@
 
 char* OpenAPI_data_ind_any_of_ToString(OpenAPI_data_ind_any_of_e data_ind_any_of)
 {
-    const char *data_ind_any_ofArray[] =  { "NULL", "PFD", "IPTV", "BDT", "SVC_PARAM" };
+    const char *data_ind_any_ofArray[] =  { "NULL", "PFD", "IPTV", "BDT", "SVC_PARAM", "AM" };
     size_t sizeofArray = sizeof(data_ind_any_ofArray) / sizeof(data_ind_any_ofArray[0]);
     if (data_ind_any_of < sizeofArray)
         return (char *)data_ind_any_ofArray[data_ind_any_of];
@@ -17,7 +17,7 @@ char* OpenAPI_data_ind_any_of_ToString(OpenAPI_data_ind_any_of_e data_ind_any_of
 OpenAPI_data_ind_any_of_e OpenAPI_data_ind_any_of_FromString(char* data_ind_any_of)
 {
     int stringToReturn = 0;
-    const char *data_ind_any_ofArray[] =  { "NULL", "PFD", "IPTV", "BDT", "SVC_PARAM" };
+    const char *data_ind_any_ofArray[] =  { "NULL", "PFD", "IPTV", "BDT", "SVC_PARAM", "AM" };
     size_t sizeofArray = sizeof(data_ind_any_ofArray) / sizeof(data_ind_any_ofArray[0]);
     while (stringToReturn < sizeofArray) {
         if (strcmp(data_ind_any_of, data_ind_any_ofArray[stringToReturn]) == 0) {

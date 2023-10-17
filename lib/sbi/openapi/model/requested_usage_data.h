@@ -1,7 +1,7 @@
 /*
  * requested_usage_data.h
  *
- * 
+ * Contains usage data requested by the PCF requesting usage reports for the corresponding usage monitoring data instances.
  */
 
 #ifndef _OpenAPI_requested_usage_data_H_

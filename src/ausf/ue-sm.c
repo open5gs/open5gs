@@ -90,7 +90,36 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             }
             break;
         CASE(OGS_SBI_HTTP_METHOD_PUT)
+            if (!ausf_ue->supi) {
+                ogs_error("[%s] No SUPI", ausf_ue->suci);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        message, "[%s] No SUPI", ausf_ue->suci));
+                OGS_FSM_TRAN(s, ausf_ue_state_exception);
+                break;
+            }
+
             handled = ausf_nausf_auth_handle_authenticate_confirmation(
+                    ausf_ue, stream, message);
+            if (!handled) {
+                ogs_error("[%s] Cannot handle SBI message",
+                        ausf_ue->suci);
+                OGS_FSM_TRAN(s, ausf_ue_state_exception);
+            }
+            break;
+        CASE(OGS_SBI_HTTP_METHOD_DELETE)
+            if (!ausf_ue->supi) {
+                ogs_error("[%s] No SUPI", ausf_ue->suci);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        message, "[%s] No SUPI", ausf_ue->suci));
+                OGS_FSM_TRAN(s, ausf_ue_state_exception);
+                break;
+            }
+
+            handled = ausf_nausf_auth_handle_authenticate_delete(
                     ausf_ue, stream, message);
             if (!handled) {
                 ogs_error("[%s] Cannot handle SBI message",
@@ -136,20 +165,37 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                 break;
             }
 
-            SWITCH(message->h.resource.component[1])
-            CASE(OGS_SBI_RESOURCE_NAME_SECURITY_INFORMATION)
-                ausf_nudm_ueau_handle_get(ausf_ue, stream, message);
-                break;
+            SWITCH(message->h.method)
+            CASE(OGS_SBI_HTTP_METHOD_PUT)
+                SWITCH(message->h.resource.component[1])
+                CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
+                    ausf_nudm_ueau_handle_auth_removal_ind(
+                            ausf_ue, stream, message);
+                    break;
 
-            CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
-                ausf_nudm_ueau_handle_result_confirmation_inform(
-                        ausf_ue, stream, message);
+                DEFAULT
+                    ogs_error("[%s] Invalid HTTP method [%s]",
+                            ausf_ue->suci, message->h.method);
+                    ogs_assert_if_reached();
+                END
                 break;
-
             DEFAULT
-                ogs_error("[%s] Invalid HTTP method [%s]",
-                        ausf_ue->suci, message->h.method);
-                ogs_assert_if_reached();
+                SWITCH(message->h.resource.component[1])
+                CASE(OGS_SBI_RESOURCE_NAME_SECURITY_INFORMATION)
+                    ausf_nudm_ueau_handle_get(ausf_ue, stream, message);
+                    break;
+
+                CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
+                    ausf_nudm_ueau_handle_result_confirmation_inform(
+                            ausf_ue, stream, message);
+                    break;
+
+                DEFAULT
+                    ogs_error("[%s] Invalid HTTP method [%s]",
+                            ausf_ue->suci, message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
             END
             break;
 

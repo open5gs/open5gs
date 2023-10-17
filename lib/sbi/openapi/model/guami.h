@@ -1,7 +1,7 @@
 /*
  * guami.h
  *
- * 
+ * Globally Unique AMF Identifier constructed out of PLMN, Network and AMF identity.
  */
 
 #ifndef _OpenAPI_guami_H_

@@ -23,7 +23,7 @@
 ogs_pkbuf_t *upf_n4_build_session_establishment_response(uint8_t type,
     upf_sess_t *sess, ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr)
 {
-    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_message_t *pfcp_message = NULL;
     ogs_pfcp_session_establishment_response_t *rsp = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
@@ -35,14 +35,16 @@ ogs_pkbuf_t *upf_n4_build_session_establishment_response(uint8_t type,
 
     ogs_debug("Session Establishment Response");
 
-    rsp = &pfcp_message.pfcp_session_establishment_response;
-    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
+    if (!pfcp_message) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
+
+    rsp = &pfcp_message->pfcp_session_establishment_response;
 
     /* Node ID */
-    ogs_pfcp_sockaddr_to_node_id(
-            ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
-            ogs_app()->parameter.prefer_ipv4,
-            &node_id, &len);
+    ogs_pfcp_sockaddr_to_node_id(&node_id, &len);
     rsp->node_id.presence = 1;
     rsp->node_id.data = &node_id;
     rsp->node_id.len = len;
@@ -52,9 +54,7 @@ ogs_pkbuf_t *upf_n4_build_session_establishment_response(uint8_t type,
     rsp->cause.u8 = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
     /* F-SEID */
-    ogs_pfcp_sockaddr_to_f_seid(
-            ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
-            &f_seid, &len);
+    ogs_pfcp_sockaddr_to_f_seid(&f_seid, &len);
     f_seid.seid = htobe64(sess->upf_n4_seid);
     rsp->up_f_seid.presence = 1;
     rsp->up_f_seid.data = &f_seid;
@@ -69,10 +69,12 @@ ogs_pkbuf_t *upf_n4_build_session_establishment_response(uint8_t type,
         if (pdr_presence == true) j++;
     }
 
-    pfcp_message.h.type = type;
-    pkbuf = ogs_pfcp_build_msg(&pfcp_message);
+    pfcp_message->h.type = type;
+    pkbuf = ogs_pfcp_build_msg(pfcp_message);
+    ogs_expect(pkbuf);
 
     ogs_pfcp_pdrbuf_clear();
+    ogs_free(pfcp_message);
 
     return pkbuf;
 }
@@ -80,7 +82,7 @@ ogs_pkbuf_t *upf_n4_build_session_establishment_response(uint8_t type,
 ogs_pkbuf_t *upf_n4_build_session_modification_response(uint8_t type,
     upf_sess_t *sess, ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr)
 {
-    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_message_t *pfcp_message = NULL;
     ogs_pfcp_session_modification_response_t *rsp = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
@@ -88,8 +90,13 @@ ogs_pkbuf_t *upf_n4_build_session_modification_response(uint8_t type,
 
     ogs_debug("Session Modification Response");
 
-    rsp = &pfcp_message.pfcp_session_modification_response;
-    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
+    if (!pfcp_message) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
+
+    rsp = &pfcp_message->pfcp_session_modification_response;
 
     /* Cause */
     rsp->cause.presence = 1;
@@ -104,10 +111,12 @@ ogs_pkbuf_t *upf_n4_build_session_modification_response(uint8_t type,
         if (pdr_presence == true) j++;
     }
 
-    pfcp_message.h.type = type;
-    pkbuf = ogs_pfcp_build_msg(&pfcp_message);
+    pfcp_message->h.type = type;
+    pkbuf = ogs_pfcp_build_msg(pfcp_message);
+    ogs_expect(pkbuf);
 
     ogs_pfcp_pdrbuf_clear();
+    ogs_free(pfcp_message);
 
     return pkbuf;
 }

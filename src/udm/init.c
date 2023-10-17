@@ -23,12 +23,11 @@ static ogs_thread_t *thread;
 static void udm_main(void *data);
 static int initialized = 0;
 
-int udm_initialize()
+int udm_initialize(void)
 {
     int rv;
 
-    ogs_sbi_context_init();
-
+    ogs_sbi_context_init(OpenAPI_nf_type_UDM);
     udm_context_init();
 
     rv = ogs_sbi_context_parse_config("udm", "nrf", "scp");

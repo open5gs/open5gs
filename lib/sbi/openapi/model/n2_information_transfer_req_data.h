@@ -1,7 +1,7 @@
 /*
  * n2_information_transfer_req_data.h
  *
- * 
+ * Data within a N2 Information Transfer request containing the N2 information requested to be transferred to 5G AN
  */
 
 #ifndef _OpenAPI_n2_information_transfer_req_data_H_

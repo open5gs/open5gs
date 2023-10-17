@@ -28,22 +28,42 @@ OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data
 
 void OpenAPI_pcscf_restoration_request_data_free(OpenAPI_pcscf_restoration_request_data_t *pcscf_restoration_request_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == pcscf_restoration_request_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(pcscf_restoration_request_data->dnn);
-    ogs_free(pcscf_restoration_request_data->ip_domain);
-    OpenAPI_snssai_free(pcscf_restoration_request_data->slice_info);
-    ogs_free(pcscf_restoration_request_data->supi);
-    ogs_free(pcscf_restoration_request_data->ue_ipv4);
-    ogs_free(pcscf_restoration_request_data->ue_ipv6);
+    if (pcscf_restoration_request_data->dnn) {
+        ogs_free(pcscf_restoration_request_data->dnn);
+        pcscf_restoration_request_data->dnn = NULL;
+    }
+    if (pcscf_restoration_request_data->ip_domain) {
+        ogs_free(pcscf_restoration_request_data->ip_domain);
+        pcscf_restoration_request_data->ip_domain = NULL;
+    }
+    if (pcscf_restoration_request_data->slice_info) {
+        OpenAPI_snssai_free(pcscf_restoration_request_data->slice_info);
+        pcscf_restoration_request_data->slice_info = NULL;
+    }
+    if (pcscf_restoration_request_data->supi) {
+        ogs_free(pcscf_restoration_request_data->supi);
+        pcscf_restoration_request_data->supi = NULL;
+    }
+    if (pcscf_restoration_request_data->ue_ipv4) {
+        ogs_free(pcscf_restoration_request_data->ue_ipv4);
+        pcscf_restoration_request_data->ue_ipv4 = NULL;
+    }
+    if (pcscf_restoration_request_data->ue_ipv6) {
+        ogs_free(pcscf_restoration_request_data->ue_ipv6);
+        pcscf_restoration_request_data->ue_ipv6 = NULL;
+    }
     ogs_free(pcscf_restoration_request_data);
 }
 
 cJSON *OpenAPI_pcscf_restoration_request_data_convertToJSON(OpenAPI_pcscf_restoration_request_data_t *pcscf_restoration_request_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (pcscf_restoration_request_data == NULL) {
         ogs_error("OpenAPI_pcscf_restoration_request_data_convertToJSON() failed [PcscfRestorationRequestData]");
@@ -106,69 +126,78 @@ end:
 OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data_parseFromJSON(cJSON *pcscf_restoration_request_dataJSON)
 {
     OpenAPI_pcscf_restoration_request_data_t *pcscf_restoration_request_data_local_var = NULL;
-    cJSON *dnn = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "dnn");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *dnn = NULL;
+    cJSON *ip_domain = NULL;
+    cJSON *slice_info = NULL;
+    OpenAPI_snssai_t *slice_info_local_nonprim = NULL;
+    cJSON *supi = NULL;
+    cJSON *ue_ipv4 = NULL;
+    cJSON *ue_ipv6 = NULL;
+    dnn = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "dnn");
     if (dnn) {
-    if (!cJSON_IsString(dnn)) {
+    if (!cJSON_IsString(dnn) && !cJSON_IsNull(dnn)) {
         ogs_error("OpenAPI_pcscf_restoration_request_data_parseFromJSON() failed [dnn]");
         goto end;
     }
     }
 
-    cJSON *ip_domain = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "ipDomain");
-
+    ip_domain = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "ipDomain");
     if (ip_domain) {
-    if (!cJSON_IsString(ip_domain)) {
+    if (!cJSON_IsString(ip_domain) && !cJSON_IsNull(ip_domain)) {
         ogs_error("OpenAPI_pcscf_restoration_request_data_parseFromJSON() failed [ip_domain]");
         goto end;
     }
     }
 
-    cJSON *slice_info = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "sliceInfo");
-
-    OpenAPI_snssai_t *slice_info_local_nonprim = NULL;
+    slice_info = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "sliceInfo");
     if (slice_info) {
     slice_info_local_nonprim = OpenAPI_snssai_parseFromJSON(slice_info);
+    if (!slice_info_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [slice_info]");
+        goto end;
+    }
     }
 
-    cJSON *supi = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "supi");
-
+    supi = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "supi");
     if (supi) {
-    if (!cJSON_IsString(supi)) {
+    if (!cJSON_IsString(supi) && !cJSON_IsNull(supi)) {
         ogs_error("OpenAPI_pcscf_restoration_request_data_parseFromJSON() failed [supi]");
         goto end;
     }
     }
 
-    cJSON *ue_ipv4 = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "ueIpv4");
-
+    ue_ipv4 = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "ueIpv4");
     if (ue_ipv4) {
-    if (!cJSON_IsString(ue_ipv4)) {
+    if (!cJSON_IsString(ue_ipv4) && !cJSON_IsNull(ue_ipv4)) {
         ogs_error("OpenAPI_pcscf_restoration_request_data_parseFromJSON() failed [ue_ipv4]");
         goto end;
     }
     }
 
-    cJSON *ue_ipv6 = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "ueIpv6");
-
+    ue_ipv6 = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "ueIpv6");
     if (ue_ipv6) {
-    if (!cJSON_IsString(ue_ipv6)) {
+    if (!cJSON_IsString(ue_ipv6) && !cJSON_IsNull(ue_ipv6)) {
         ogs_error("OpenAPI_pcscf_restoration_request_data_parseFromJSON() failed [ue_ipv6]");
         goto end;
     }
     }
 
     pcscf_restoration_request_data_local_var = OpenAPI_pcscf_restoration_request_data_create (
-        dnn ? ogs_strdup(dnn->valuestring) : NULL,
-        ip_domain ? ogs_strdup(ip_domain->valuestring) : NULL,
+        dnn && !cJSON_IsNull(dnn) ? ogs_strdup(dnn->valuestring) : NULL,
+        ip_domain && !cJSON_IsNull(ip_domain) ? ogs_strdup(ip_domain->valuestring) : NULL,
         slice_info ? slice_info_local_nonprim : NULL,
-        supi ? ogs_strdup(supi->valuestring) : NULL,
-        ue_ipv4 ? ogs_strdup(ue_ipv4->valuestring) : NULL,
-        ue_ipv6 ? ogs_strdup(ue_ipv6->valuestring) : NULL
+        supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,
+        ue_ipv4 && !cJSON_IsNull(ue_ipv4) ? ogs_strdup(ue_ipv4->valuestring) : NULL,
+        ue_ipv6 && !cJSON_IsNull(ue_ipv6) ? ogs_strdup(ue_ipv6->valuestring) : NULL
     );
 
     return pcscf_restoration_request_data_local_var;
 end:
+    if (slice_info_local_nonprim) {
+        OpenAPI_snssai_free(slice_info_local_nonprim);
+        slice_info_local_nonprim = NULL;
+    }
     return NULL;
 }
 

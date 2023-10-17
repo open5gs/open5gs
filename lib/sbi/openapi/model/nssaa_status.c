@@ -20,17 +20,22 @@ OpenAPI_nssaa_status_t *OpenAPI_nssaa_status_create(
 
 void OpenAPI_nssaa_status_free(OpenAPI_nssaa_status_t *nssaa_status)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == nssaa_status) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_snssai_free(nssaa_status->snssai);
+    if (nssaa_status->snssai) {
+        OpenAPI_snssai_free(nssaa_status->snssai);
+        nssaa_status->snssai = NULL;
+    }
     ogs_free(nssaa_status);
 }
 
 cJSON *OpenAPI_nssaa_status_convertToJSON(OpenAPI_nssaa_status_t *nssaa_status)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (nssaa_status == NULL) {
         ogs_error("OpenAPI_nssaa_status_convertToJSON() failed [NssaaStatus]");
@@ -38,6 +43,10 @@ cJSON *OpenAPI_nssaa_status_convertToJSON(OpenAPI_nssaa_status_t *nssaa_status)
     }
 
     item = cJSON_CreateObject();
+    if (!nssaa_status->snssai) {
+        ogs_error("OpenAPI_nssaa_status_convertToJSON() failed [snssai]");
+        return NULL;
+    }
     cJSON *snssai_local_JSON = OpenAPI_snssai_convertToJSON(nssaa_status->snssai);
     if (snssai_local_JSON == NULL) {
         ogs_error("OpenAPI_nssaa_status_convertToJSON() failed [snssai]");
@@ -49,6 +58,10 @@ cJSON *OpenAPI_nssaa_status_convertToJSON(OpenAPI_nssaa_status_t *nssaa_status)
         goto end;
     }
 
+    if (nssaa_status->status == OpenAPI_auth_status_NULL) {
+        ogs_error("OpenAPI_nssaa_status_convertToJSON() failed [status]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "status", OpenAPI_auth_status_ToString(nssaa_status->status)) == NULL) {
         ogs_error("OpenAPI_nssaa_status_convertToJSON() failed [status]");
         goto end;
@@ -61,22 +74,27 @@ end:
 OpenAPI_nssaa_status_t *OpenAPI_nssaa_status_parseFromJSON(cJSON *nssaa_statusJSON)
 {
     OpenAPI_nssaa_status_t *nssaa_status_local_var = NULL;
-    cJSON *snssai = cJSON_GetObjectItemCaseSensitive(nssaa_statusJSON, "snssai");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *snssai = NULL;
+    OpenAPI_snssai_t *snssai_local_nonprim = NULL;
+    cJSON *status = NULL;
+    OpenAPI_auth_status_e statusVariable = 0;
+    snssai = cJSON_GetObjectItemCaseSensitive(nssaa_statusJSON, "snssai");
     if (!snssai) {
         ogs_error("OpenAPI_nssaa_status_parseFromJSON() failed [snssai]");
         goto end;
     }
-
-    OpenAPI_snssai_t *snssai_local_nonprim = NULL;
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (!snssai_local_nonprim) {
+        ogs_error("OpenAPI_snssai_parseFromJSON failed [snssai]");
+        goto end;
+    }
 
-    cJSON *status = cJSON_GetObjectItemCaseSensitive(nssaa_statusJSON, "status");
+    status = cJSON_GetObjectItemCaseSensitive(nssaa_statusJSON, "status");
     if (!status) {
         ogs_error("OpenAPI_nssaa_status_parseFromJSON() failed [status]");
         goto end;
     }
-
-    OpenAPI_auth_status_e statusVariable;
     if (!cJSON_IsString(status)) {
         ogs_error("OpenAPI_nssaa_status_parseFromJSON() failed [status]");
         goto end;
@@ -90,6 +108,10 @@ OpenAPI_nssaa_status_t *OpenAPI_nssaa_status_parseFromJSON(cJSON *nssaa_statusJS
 
     return nssaa_status_local_var;
 end:
+    if (snssai_local_nonprim) {
+        OpenAPI_snssai_free(snssai_local_nonprim);
+        snssai_local_nonprim = NULL;
+    }
     return NULL;
 }
 

@@ -22,11 +22,13 @@ typedef struct OpenAPI_smsf_info_s OpenAPI_smsf_info_t;
 typedef struct OpenAPI_smsf_info_s {
     char *smsf_instance_id;
     struct OpenAPI_plmn_id_s *plmn_id;
+    char *smsf_set_id;
 } OpenAPI_smsf_info_t;
 
 OpenAPI_smsf_info_t *OpenAPI_smsf_info_create(
     char *smsf_instance_id,
-    OpenAPI_plmn_id_t *plmn_id
+    OpenAPI_plmn_id_t *plmn_id,
+    char *smsf_set_id
 );
 void OpenAPI_smsf_info_free(OpenAPI_smsf_info_t *smsf_info);
 OpenAPI_smsf_info_t *OpenAPI_smsf_info_parseFromJSON(cJSON *smsf_infoJSON);

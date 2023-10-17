@@ -1,7 +1,7 @@
 /*
  * packet_filter_info.h
  *
- * 
+ * Contains the information from a single packet filter sent from the SMF to the PCF.
  */
 
 #ifndef _OpenAPI_packet_filter_info_H_

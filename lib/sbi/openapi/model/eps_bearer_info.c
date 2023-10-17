@@ -6,8 +6,8 @@
 
 OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_create(
     int ebi,
-    char pgw_s8u_fteid,
-    char bearer_level_qo_s
+    char *pgw_s8u_fteid,
+    char *bearer_level_qo_s
 )
 {
     OpenAPI_eps_bearer_info_t *eps_bearer_info_local_var = ogs_malloc(sizeof(OpenAPI_eps_bearer_info_t));
@@ -22,16 +22,26 @@ OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_create(
 
 void OpenAPI_eps_bearer_info_free(OpenAPI_eps_bearer_info_t *eps_bearer_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == eps_bearer_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
+    if (eps_bearer_info->pgw_s8u_fteid) {
+        ogs_free(eps_bearer_info->pgw_s8u_fteid);
+        eps_bearer_info->pgw_s8u_fteid = NULL;
+    }
+    if (eps_bearer_info->bearer_level_qo_s) {
+        ogs_free(eps_bearer_info->bearer_level_qo_s);
+        eps_bearer_info->bearer_level_qo_s = NULL;
+    }
     ogs_free(eps_bearer_info);
 }
 
 cJSON *OpenAPI_eps_bearer_info_convertToJSON(OpenAPI_eps_bearer_info_t *eps_bearer_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (eps_bearer_info == NULL) {
         ogs_error("OpenAPI_eps_bearer_info_convertToJSON() failed [EpsBearerInfo]");
@@ -44,12 +54,20 @@ cJSON *OpenAPI_eps_bearer_info_convertToJSON(OpenAPI_eps_bearer_info_t *eps_bear
         goto end;
     }
 
-    if (cJSON_AddNumberToObject(item, "pgwS8uFteid", eps_bearer_info->pgw_s8u_fteid) == NULL) {
+    if (!eps_bearer_info->pgw_s8u_fteid) {
+        ogs_error("OpenAPI_eps_bearer_info_convertToJSON() failed [pgw_s8u_fteid]");
+        return NULL;
+    }
+    if (cJSON_AddStringToObject(item, "pgwS8uFteid", eps_bearer_info->pgw_s8u_fteid) == NULL) {
         ogs_error("OpenAPI_eps_bearer_info_convertToJSON() failed [pgw_s8u_fteid]");
         goto end;
     }
 
-    if (cJSON_AddNumberToObject(item, "bearerLevelQoS", eps_bearer_info->bearer_level_qo_s) == NULL) {
+    if (!eps_bearer_info->bearer_level_qo_s) {
+        ogs_error("OpenAPI_eps_bearer_info_convertToJSON() failed [bearer_level_qo_s]");
+        return NULL;
+    }
+    if (cJSON_AddStringToObject(item, "bearerLevelQoS", eps_bearer_info->bearer_level_qo_s) == NULL) {
         ogs_error("OpenAPI_eps_bearer_info_convertToJSON() failed [bearer_level_qo_s]");
         goto end;
     }
@@ -61,35 +79,36 @@ end:
 OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_parseFromJSON(cJSON *eps_bearer_infoJSON)
 {
     OpenAPI_eps_bearer_info_t *eps_bearer_info_local_var = NULL;
-    cJSON *ebi = cJSON_GetObjectItemCaseSensitive(eps_bearer_infoJSON, "ebi");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *ebi = NULL;
+    cJSON *pgw_s8u_fteid = NULL;
+    cJSON *bearer_level_qo_s = NULL;
+    ebi = cJSON_GetObjectItemCaseSensitive(eps_bearer_infoJSON, "ebi");
     if (!ebi) {
         ogs_error("OpenAPI_eps_bearer_info_parseFromJSON() failed [ebi]");
         goto end;
     }
-
     if (!cJSON_IsNumber(ebi)) {
         ogs_error("OpenAPI_eps_bearer_info_parseFromJSON() failed [ebi]");
         goto end;
     }
 
-    cJSON *pgw_s8u_fteid = cJSON_GetObjectItemCaseSensitive(eps_bearer_infoJSON, "pgwS8uFteid");
+    pgw_s8u_fteid = cJSON_GetObjectItemCaseSensitive(eps_bearer_infoJSON, "pgwS8uFteid");
     if (!pgw_s8u_fteid) {
         ogs_error("OpenAPI_eps_bearer_info_parseFromJSON() failed [pgw_s8u_fteid]");
         goto end;
     }
-
-    if (!cJSON_IsNumber(pgw_s8u_fteid)) {
+    if (!cJSON_IsString(pgw_s8u_fteid)) {
         ogs_error("OpenAPI_eps_bearer_info_parseFromJSON() failed [pgw_s8u_fteid]");
         goto end;
     }
 
-    cJSON *bearer_level_qo_s = cJSON_GetObjectItemCaseSensitive(eps_bearer_infoJSON, "bearerLevelQoS");
+    bearer_level_qo_s = cJSON_GetObjectItemCaseSensitive(eps_bearer_infoJSON, "bearerLevelQoS");
     if (!bearer_level_qo_s) {
         ogs_error("OpenAPI_eps_bearer_info_parseFromJSON() failed [bearer_level_qo_s]");
         goto end;
     }
-
-    if (!cJSON_IsNumber(bearer_level_qo_s)) {
+    if (!cJSON_IsString(bearer_level_qo_s)) {
         ogs_error("OpenAPI_eps_bearer_info_parseFromJSON() failed [bearer_level_qo_s]");
         goto end;
     }
@@ -97,8 +116,8 @@ OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_parseFromJSON(cJSON *eps_bear
     eps_bearer_info_local_var = OpenAPI_eps_bearer_info_create (
         
         ebi->valuedouble,
-        pgw_s8u_fteid->valueint,
-        bearer_level_qo_s->valueint
+        ogs_strdup(pgw_s8u_fteid->valuestring),
+        ogs_strdup(bearer_level_qo_s->valuestring)
     );
 
     return eps_bearer_info_local_var;

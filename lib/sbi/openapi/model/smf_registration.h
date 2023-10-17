@@ -13,6 +13,7 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "context_info.h"
+#include "ip_address.h"
 #include "plmn_id.h"
 #include "registration_reason.h"
 #include "snssai.h"
@@ -34,12 +35,19 @@ typedef struct OpenAPI_smf_registration_s {
     char *pcscf_restoration_callback_uri;
     struct OpenAPI_plmn_id_s *plmn_id;
     char *pgw_fqdn;
+    struct OpenAPI_ip_address_s *pgw_ip_addr;
     bool is_epdg_ind;
     int epdg_ind;
     char *dereg_callback_uri;
     OpenAPI_registration_reason_e registration_reason;
     char *registration_time;
     struct OpenAPI_context_info_s *context_info;
+    char *pcf_id;
+    char *data_restoration_callback_uri;
+    OpenAPI_list_t *reset_ids;
+    bool is_udr_restart_ind;
+    int udr_restart_ind;
+    char *last_synchronization_time;
 } OpenAPI_smf_registration_t;
 
 OpenAPI_smf_registration_t *OpenAPI_smf_registration_create(
@@ -54,12 +62,19 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_create(
     char *pcscf_restoration_callback_uri,
     OpenAPI_plmn_id_t *plmn_id,
     char *pgw_fqdn,
+    OpenAPI_ip_address_t *pgw_ip_addr,
     bool is_epdg_ind,
     int epdg_ind,
     char *dereg_callback_uri,
     OpenAPI_registration_reason_e registration_reason,
     char *registration_time,
-    OpenAPI_context_info_t *context_info
+    OpenAPI_context_info_t *context_info,
+    char *pcf_id,
+    char *data_restoration_callback_uri,
+    OpenAPI_list_t *reset_ids,
+    bool is_udr_restart_ind,
+    int udr_restart_ind,
+    char *last_synchronization_time
 );
 void OpenAPI_smf_registration_free(OpenAPI_smf_registration_t *smf_registration);
 OpenAPI_smf_registration_t *OpenAPI_smf_registration_parseFromJSON(cJSON *smf_registrationJSON);

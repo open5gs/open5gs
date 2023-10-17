@@ -1,7 +1,7 @@
 /*
  * access_tech.h
  *
- * 
+ * Represents the access technology
  */
 
 #ifndef _OpenAPI_access_tech_H_

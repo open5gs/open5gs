@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -32,14 +32,14 @@ static void ogs_nas_eps_message_test1(abts_case *tc, void *data)
     ogs_nas_eps_message_t message;
     ogs_pkbuf_t *pkbuf;
     int rv;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     ogs_pkbuf_trim(pkbuf, 53);
     memcpy(pkbuf->data, 
-            OGS_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), pkbuf->len);
 
     rv = ogs_nas_emm_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -81,7 +81,7 @@ static void ogs_nas_eps_message_test2(abts_case *tc, void *data)
     attach_accept->eps_attach_result.result = 
         OGS_NAS_ATTACH_RESULT_COMBINED_EPS_IMSI_ATTACH;
     attach_accept->t3412_value.unit = 
-        OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
+        OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_1_MM;
     attach_accept->t3412_value.value = 3;
 
     memset(&tai0_list, 0, sizeof(ogs_eps_tai0_list_t));
@@ -90,11 +90,11 @@ static void ogs_nas_eps_message_test2(abts_case *tc, void *data)
     tai0_list.tai[0].num = 1;
     ogs_plmn_id_build(&tai0_list.tai[0].plmn_id, 417, 99, 2);
     tai0_list.tai[0].tac[0] = 12345;
-    ogs_nas_tai_list_build(&attach_accept->tai_list, &tai0_list, &tai2_list);
+    ogs_nas_tai_list_build(&attach_accept->tai_list, &tai0_list, NULL, NULL);
 
     attach_accept->esm_message_container.length = sizeof(esm_buffer);
     attach_accept->esm_message_container.buffer = 
-        OGS_HEX(esm_payload, strlen(esm_payload), esm_buffer);
+        ogs_hex_from_string(esm_payload, esm_buffer, sizeof(esm_buffer));
 
     attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_GUTI_PRESENT;
     attach_accept->guti.length = 11;
@@ -132,7 +132,7 @@ static void ogs_nas_eps_message_test2(abts_case *tc, void *data)
     pkbuf = ogs_nas_eps_plain_encode(&message);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
     ogs_log_hexdump(OGS_LOG_DEBUG, pkbuf->data, pkbuf->len);
-    ABTS_TRUE(tc, memcmp(OGS_HEX(payload, strlen(payload), buffer),
+    ABTS_TRUE(tc, memcmp(ogs_hex_from_string(payload, buffer, sizeof(buffer)),
             pkbuf->data, pkbuf->len) == 0);
 
     ogs_pkbuf_free(pkbuf);
@@ -145,14 +145,14 @@ static void ogs_nas_eps_message_test3(abts_case *tc, void *data)
     ogs_nas_eps_message_t message;
     ogs_pkbuf_t *pkbuf;
     int rv;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     ogs_pkbuf_trim(pkbuf, 7);
     memcpy(pkbuf->data, 
-            OGS_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), pkbuf->len);
 
     rv = ogs_nas_emm_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -179,7 +179,7 @@ static void ogs_nas_eps_message_test4(abts_case *tc, void *data)
 
     pkbuf = ogs_nas_eps_plain_encode(&message);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
-    ABTS_TRUE(tc, memcmp(OGS_HEX(payload, strlen(payload), buffer),
+    ABTS_TRUE(tc, memcmp(ogs_hex_from_string(payload, buffer, sizeof(buffer)),
             pkbuf->data, pkbuf->len) == 0);
 
     ogs_pkbuf_free(pkbuf);
@@ -205,7 +205,7 @@ static void ogs_nas_eps_message_test6(abts_case *tc, void *data)
 {
     /* Identity Request */
     const char *payload = "075501";
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     ogs_nas_eps_message_t message;
     ogs_nas_eps_identity_request_t *identity_request =
@@ -218,7 +218,7 @@ static void ogs_nas_eps_message_test6(abts_case *tc, void *data)
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     ogs_pkbuf_trim(pkbuf, 3);
     memcpy(pkbuf->data, 
-            OGS_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), pkbuf->len);
 
     rv = ogs_nas_emm_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -272,7 +272,7 @@ static void ogs_nas_eps_message_test7(abts_case *tc, void *data)
 
     pkbuf = ogs_nas_eps_plain_encode(&message);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
-    ABTS_TRUE(tc, memcmp(OGS_HEX(payload, strlen(payload), buffer),
+    ABTS_TRUE(tc, memcmp(ogs_hex_from_string(payload, buffer, sizeof(buffer)),
             pkbuf->data, pkbuf->len) == 0);
 
     ogs_pkbuf_free(pkbuf);
@@ -287,7 +287,7 @@ static void ogs_nas_eps_message_test8(abts_case *tc, void *data)
     ogs_nas_eps_message_t message;
     ogs_pkbuf_t *pkbuf;
     int rv;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
     ogs_nas_eps_service_request_t *service_request =
         &message.emm.service_request;
     ogs_nas_ksi_and_sequence_number_t *ksi_and_sequence_number = 
@@ -298,7 +298,7 @@ static void ogs_nas_eps_message_test8(abts_case *tc, void *data)
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     ogs_pkbuf_trim(pkbuf, 4);
     memcpy(pkbuf->data, 
-            OGS_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), pkbuf->len);
 
     /* Decode service request */
     rv = ogs_nas_emm_decode(&message, pkbuf);
@@ -321,10 +321,162 @@ static void ogs_nas_eps_message_test8(abts_case *tc, void *data)
 
     pkbuf = ogs_nas_eps_plain_encode(&message);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
-    ABTS_TRUE(tc, memcmp(OGS_HEX(payload, strlen(payload), buffer),
+    ABTS_TRUE(tc, memcmp(ogs_hex_from_string(payload, buffer, sizeof(buffer)),
             pkbuf->data, pkbuf->len) == 0);
 
     ogs_pkbuf_free(pkbuf);
+}
+
+static void ogs_nas_eps_message_test9(abts_case *tc, void *data)
+{
+    ogs_nas_gprs_timer_t gprs_timer;
+    int rv;
+
+    ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_FATAL);
+
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 1);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 2);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_2_SS,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 1, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 3);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_2_SS,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 2, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 63);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 64);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*2-1);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*2);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_1_MM,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 2, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*2+1);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*30);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_1_MM,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 30, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*31);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_1_MM,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 31, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*32);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*6*8);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_DECI_HH,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 8, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*6*8+1);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*6*31);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_UNIT_MULTIPLES_OF_DECI_HH,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 31, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_from_sec(&gprs_timer, 60*6*32);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 1);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 2);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_2_SS,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 1, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 3);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_2_SS,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 2, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 63);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 64);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*2-1);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*2);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_MM,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 2, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*2+1);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*30);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_MM,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 30, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*31);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_MM,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 31, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*32);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*10*4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_MM,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 4, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*10*4+1);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*10*31);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_MM,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 31, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*10*32);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*10*36);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_HH,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 6, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*60*31);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_HH,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 31, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*60*32);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*60*40);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_HH,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 4, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*60*10*31);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_HH,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 31, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*60*10*32);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_320_HH,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 1, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*60*10*32*31);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_320_HH,
+            gprs_timer.unit);
+    ABTS_INT_EQUAL(tc, 31, gprs_timer.value);
+    rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*60*10*32*32);
+    ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
+
+    ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_ERROR);
 }
 
 abts_suite *test_nas_message(abts_suite *suite)
@@ -343,6 +495,7 @@ abts_suite *test_nas_message(abts_suite *suite)
     abts_run_test(suite, ogs_nas_eps_message_test6, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test7, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test8, NULL);
+    abts_run_test(suite, ogs_nas_eps_message_test9, NULL);
 
     return suite;
 }

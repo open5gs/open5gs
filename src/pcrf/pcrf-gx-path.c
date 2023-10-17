@@ -71,14 +71,24 @@ static __inline__ struct sess_state *new_state(os0_t sid)
 
     ogs_thread_mutex_lock(&sess_state_mutex);
     ogs_pool_alloc(&sess_state_pool, &new);
-    ogs_expect_or_return_val(new, NULL);
+    if (!new) {
+        ogs_error("ogs_pool_alloc() failed");
+        ogs_thread_mutex_unlock(&sess_state_mutex);
+        return NULL;
+    }
     memset(new, 0, sizeof(*new));
-    ogs_thread_mutex_unlock(&sess_state_mutex);
 
     new->sid = (os0_t)ogs_strdup((char *)sid);
-    ogs_expect_or_return_val(new->sid, NULL);
+    if (!new->sid) {
+        ogs_error("ogs_strdup() failed");
+        ogs_pool_free(&sess_state_pool, new);
+        ogs_thread_mutex_unlock(&sess_state_mutex);
+        return NULL;
+    }
 
     ogs_list_init(&new->rx_list);
+
+    ogs_thread_mutex_unlock(&sess_state_mutex);
 
     return new;
 }
@@ -92,16 +102,26 @@ static struct rx_sess_state *add_rx_state(struct sess_state *gx, os0_t sid)
 
     ogs_thread_mutex_lock(&sess_state_mutex);
     ogs_pool_alloc(&rx_sess_state_pool, &new);
-    ogs_expect_or_return_val(new, NULL);
+    if (!new) {
+        ogs_error("ogs_pool_alloc() failed");
+        ogs_thread_mutex_unlock(&sess_state_mutex);
+        return NULL;
+    }
     memset(new, 0, sizeof(*new));
-    ogs_thread_mutex_unlock(&sess_state_mutex);
 
     new->sid = (os0_t)ogs_strdup((char *)sid);
-    ogs_expect_or_return_val(new->sid, NULL);
+    if (!new->sid) {
+        ogs_error("ogs_strdup() failed");
+        ogs_pool_free(&rx_sess_state_pool, new);
+        ogs_thread_mutex_unlock(&sess_state_mutex);
+        return NULL;
+    }
 
     new->gx = gx;
 
     ogs_list_add(&gx->rx_list, new);
+
+    ogs_thread_mutex_unlock(&sess_state_mutex);
 
     return new;
 }
@@ -572,7 +592,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
                 next_rx_sess_data, rx_sess_data) {
             rv = pcrf_rx_send_asr(
                     rx_sess_data->sid, OGS_DIAM_RX_ABORT_CAUSE_BEARER_RELEASED);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
 
             remove_rx_state(rx_sess_data);
         }

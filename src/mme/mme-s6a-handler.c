@@ -39,6 +39,7 @@ static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue,
 uint8_t mme_s6a_handle_aia(
         mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
 {
+    int r;
     ogs_diam_s6a_aia_message_t *aia_message = NULL;
     ogs_diam_e_utran_vector_t *e_utran_vector = NULL;
 
@@ -66,7 +67,9 @@ uint8_t mme_s6a_handle_aia(
     if (mme_ue->nas_eps.ksi == OGS_NAS_KSI_NO_KEY_IS_AVAILABLE)
         mme_ue->nas_eps.ksi = 0;
 
-    ogs_assert(OGS_OK == nas_eps_send_authentication_request(mme_ue));
+    r = nas_eps_send_authentication_request(mme_ue);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
 
     return OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
 }
@@ -77,7 +80,7 @@ uint8_t mme_s6a_handle_ula(
     ogs_diam_s6a_ula_message_t *ula_message = NULL;
     ogs_subscription_data_t *subscription_data = NULL;
     ogs_slice_data_t *slice_data = NULL;
-    int rv, num_of_session;
+    int r, rv, num_of_session;
 
     ogs_assert(mme_ue);
     ogs_assert(s6a_message);
@@ -115,15 +118,41 @@ uint8_t mme_s6a_handle_ula(
             return OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED;
         }
     } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
-        ogs_assert(OGS_OK ==
-            nas_eps_send_tau_accept(mme_ue,
-                S1AP_ProcedureCode_id_InitialContextSetup));
+        r = nas_eps_send_tau_accept(mme_ue,
+                S1AP_ProcedureCode_id_InitialContextSetup);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
     } else {
         ogs_error("Invalid Type[%d]", mme_ue->nas_eps.type);
         return OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED;
     }
 
     return OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
+}
+
+uint8_t mme_s6a_handle_pua(
+        mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
+{
+    ogs_diam_s6a_pua_message_t *pua_message = NULL;
+
+    ogs_assert(mme_ue);
+    ogs_assert(s6a_message);
+    pua_message = &s6a_message->pua_message;
+    ogs_assert(pua_message);
+
+    if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
+        ogs_error("Purge UE failed for IMSI[%s] [%d]", mme_ue->imsi_bcd,
+            s6a_message->result_code);
+        mme_ue_remove(mme_ue);
+        return OGS_ERROR;
+    }
+
+    if (pua_message->pua_flags & OGS_DIAM_S6A_PUA_FLAGS_FREEZE_MTMSI)
+        ogs_debug("Freeze M-TMSI requested but not implemented.");
+
+    mme_ue_remove(mme_ue);
+
+    return OGS_OK;
 }
 
 uint8_t mme_s6a_handle_idr(
@@ -172,6 +201,7 @@ uint8_t mme_s6a_handle_idr(
 
 void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
 {
+    int r;
     ogs_diam_s6a_clr_message_t *clr_message = NULL;
     ogs_assert(mme_ue);
     ogs_assert(s6a_message);
@@ -194,7 +224,6 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
      */
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered)) {
         ogs_warn("UE has already been de-registered");
-        mme_ue_hash_remove(mme_ue);
         mme_ue_remove(mme_ue);
         return;
     }
@@ -232,10 +261,16 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
          * we need to check whether UE is IDLE or not.
          */
         if (ECM_IDLE(mme_ue)) {
-            MME_STORE_PAGING_INFO(mme_ue, MME_PAGING_TYPE_DETACH_TO_UE, NULL);
-            ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
+            MME_STORE_PAGING_INFO(mme_ue,
+                MME_PAGING_TYPE_DETACH_TO_UE, NULL);
+            r = s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         } else {
-            ogs_assert(OGS_OK == nas_eps_send_detach_request(mme_ue));
+            MME_CLEAR_PAGING_INFO(mme_ue);
+            r = nas_eps_send_detach_request(mme_ue);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
                 ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
             } else {

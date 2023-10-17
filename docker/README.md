@@ -81,7 +81,6 @@ export DEBEMAIL='acetcom@gmail.com'
   
   ```
   $ cat ./meson.build
-  $ cat ./docker/webui/Dockerfile
   $ cat ./webui/package.json
   $ cat ./webui/package-lock.json
   $ cat ./docs/assets/webui/install
@@ -99,7 +98,7 @@ export DEBEMAIL='acetcom@gmail.com'
   
   ```
   $ dch -i
-  $ meson subprojects download freeDiameter
+  $ meson subprojects download freeDiameter prometheus-client-c
   $ debuild -S -uc -us -d
   $ osc co home:acetcom:open5gs latest
   $ cd home\:acetcom\:open5gs/latest/
@@ -111,7 +110,7 @@ export DEBEMAIL='acetcom@gmail.com'
   
   ```
   $ dch -i
-  $ meson subprojects download freeDiameter
+  $ meson subprojects download freeDiameter prometheus-client-c
   $ debuild -S -d
   $ dput ppa:open5gs/latest *.source.changes
   ```

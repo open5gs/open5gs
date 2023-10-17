@@ -77,6 +77,7 @@ ausf_ue_t *ausf_ue_find_by_suci_or_supi(char *suci_or_supi);
 ausf_ue_t *ausf_ue_find_by_ctx_id(char *ctx_id);
 
 ausf_ue_t *ausf_ue_cycle(ausf_ue_t *ausf_ue);
+int get_ue_load(void);
 
 #ifdef __cplusplus
 }

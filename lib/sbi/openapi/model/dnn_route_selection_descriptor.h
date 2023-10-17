@@ -1,7 +1,7 @@
 /*
  * dnn_route_selection_descriptor.h
  *
- * Contains the route selector parameters (PDU session types, SSC modes and ATSSS information) per DNN
+ * Contains the route selector parameters (PDU session types, SSC modes and ATSSS information) per DNN 
  */
 
 #ifndef _OpenAPI_dnn_route_selection_descriptor_H_

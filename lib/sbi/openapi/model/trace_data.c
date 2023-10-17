@@ -30,22 +30,42 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_create(
 
 void OpenAPI_trace_data_free(OpenAPI_trace_data_t *trace_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == trace_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(trace_data->trace_ref);
-    ogs_free(trace_data->ne_type_list);
-    ogs_free(trace_data->event_list);
-    ogs_free(trace_data->collection_entity_ipv4_addr);
-    ogs_free(trace_data->collection_entity_ipv6_addr);
-    ogs_free(trace_data->interface_list);
+    if (trace_data->trace_ref) {
+        ogs_free(trace_data->trace_ref);
+        trace_data->trace_ref = NULL;
+    }
+    if (trace_data->ne_type_list) {
+        ogs_free(trace_data->ne_type_list);
+        trace_data->ne_type_list = NULL;
+    }
+    if (trace_data->event_list) {
+        ogs_free(trace_data->event_list);
+        trace_data->event_list = NULL;
+    }
+    if (trace_data->collection_entity_ipv4_addr) {
+        ogs_free(trace_data->collection_entity_ipv4_addr);
+        trace_data->collection_entity_ipv4_addr = NULL;
+    }
+    if (trace_data->collection_entity_ipv6_addr) {
+        ogs_free(trace_data->collection_entity_ipv6_addr);
+        trace_data->collection_entity_ipv6_addr = NULL;
+    }
+    if (trace_data->interface_list) {
+        ogs_free(trace_data->interface_list);
+        trace_data->interface_list = NULL;
+    }
     ogs_free(trace_data);
 }
 
 cJSON *OpenAPI_trace_data_convertToJSON(OpenAPI_trace_data_t *trace_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (trace_data == NULL) {
         ogs_error("OpenAPI_trace_data_convertToJSON() failed [TraceData]");
@@ -53,21 +73,37 @@ cJSON *OpenAPI_trace_data_convertToJSON(OpenAPI_trace_data_t *trace_data)
     }
 
     item = cJSON_CreateObject();
+    if (!trace_data->trace_ref) {
+        ogs_error("OpenAPI_trace_data_convertToJSON() failed [trace_ref]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "traceRef", trace_data->trace_ref) == NULL) {
         ogs_error("OpenAPI_trace_data_convertToJSON() failed [trace_ref]");
         goto end;
     }
 
+    if (trace_data->trace_depth == OpenAPI_trace_depth_NULL) {
+        ogs_error("OpenAPI_trace_data_convertToJSON() failed [trace_depth]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "traceDepth", OpenAPI_trace_depth_ToString(trace_data->trace_depth)) == NULL) {
         ogs_error("OpenAPI_trace_data_convertToJSON() failed [trace_depth]");
         goto end;
     }
 
+    if (!trace_data->ne_type_list) {
+        ogs_error("OpenAPI_trace_data_convertToJSON() failed [ne_type_list]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "neTypeList", trace_data->ne_type_list) == NULL) {
         ogs_error("OpenAPI_trace_data_convertToJSON() failed [ne_type_list]");
         goto end;
     }
 
+    if (!trace_data->event_list) {
+        ogs_error("OpenAPI_trace_data_convertToJSON() failed [event_list]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "eventList", trace_data->event_list) == NULL) {
         ogs_error("OpenAPI_trace_data_convertToJSON() failed [event_list]");
         goto end;
@@ -101,74 +137,75 @@ end:
 OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON)
 {
     OpenAPI_trace_data_t *trace_data_local_var = NULL;
-    cJSON *trace_ref = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "traceRef");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *trace_ref = NULL;
+    cJSON *trace_depth = NULL;
+    OpenAPI_trace_depth_e trace_depthVariable = 0;
+    cJSON *ne_type_list = NULL;
+    cJSON *event_list = NULL;
+    cJSON *collection_entity_ipv4_addr = NULL;
+    cJSON *collection_entity_ipv6_addr = NULL;
+    cJSON *interface_list = NULL;
+    trace_ref = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "traceRef");
     if (!trace_ref) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [trace_ref]");
         goto end;
     }
-
     if (!cJSON_IsString(trace_ref)) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [trace_ref]");
         goto end;
     }
 
-    cJSON *trace_depth = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "traceDepth");
+    trace_depth = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "traceDepth");
     if (!trace_depth) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [trace_depth]");
         goto end;
     }
-
-    OpenAPI_trace_depth_e trace_depthVariable;
     if (!cJSON_IsString(trace_depth)) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [trace_depth]");
         goto end;
     }
     trace_depthVariable = OpenAPI_trace_depth_FromString(trace_depth->valuestring);
 
-    cJSON *ne_type_list = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "neTypeList");
+    ne_type_list = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "neTypeList");
     if (!ne_type_list) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [ne_type_list]");
         goto end;
     }
-
     if (!cJSON_IsString(ne_type_list)) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [ne_type_list]");
         goto end;
     }
 
-    cJSON *event_list = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "eventList");
+    event_list = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "eventList");
     if (!event_list) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [event_list]");
         goto end;
     }
-
     if (!cJSON_IsString(event_list)) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [event_list]");
         goto end;
     }
 
-    cJSON *collection_entity_ipv4_addr = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "collectionEntityIpv4Addr");
-
+    collection_entity_ipv4_addr = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "collectionEntityIpv4Addr");
     if (collection_entity_ipv4_addr) {
-    if (!cJSON_IsString(collection_entity_ipv4_addr)) {
+    if (!cJSON_IsString(collection_entity_ipv4_addr) && !cJSON_IsNull(collection_entity_ipv4_addr)) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [collection_entity_ipv4_addr]");
         goto end;
     }
     }
 
-    cJSON *collection_entity_ipv6_addr = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "collectionEntityIpv6Addr");
-
+    collection_entity_ipv6_addr = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "collectionEntityIpv6Addr");
     if (collection_entity_ipv6_addr) {
-    if (!cJSON_IsString(collection_entity_ipv6_addr)) {
+    if (!cJSON_IsString(collection_entity_ipv6_addr) && !cJSON_IsNull(collection_entity_ipv6_addr)) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [collection_entity_ipv6_addr]");
         goto end;
     }
     }
 
-    cJSON *interface_list = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "interfaceList");
-
+    interface_list = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "interfaceList");
     if (interface_list) {
-    if (!cJSON_IsString(interface_list)) {
+    if (!cJSON_IsString(interface_list) && !cJSON_IsNull(interface_list)) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [interface_list]");
         goto end;
     }
@@ -179,9 +216,9 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON)
         trace_depthVariable,
         ogs_strdup(ne_type_list->valuestring),
         ogs_strdup(event_list->valuestring),
-        collection_entity_ipv4_addr ? ogs_strdup(collection_entity_ipv4_addr->valuestring) : NULL,
-        collection_entity_ipv6_addr ? ogs_strdup(collection_entity_ipv6_addr->valuestring) : NULL,
-        interface_list ? ogs_strdup(interface_list->valuestring) : NULL
+        collection_entity_ipv4_addr && !cJSON_IsNull(collection_entity_ipv4_addr) ? ogs_strdup(collection_entity_ipv4_addr->valuestring) : NULL,
+        collection_entity_ipv6_addr && !cJSON_IsNull(collection_entity_ipv6_addr) ? ogs_strdup(collection_entity_ipv6_addr->valuestring) : NULL,
+        interface_list && !cJSON_IsNull(interface_list) ? ogs_strdup(interface_list->valuestring) : NULL
     );
 
     return trace_data_local_var;

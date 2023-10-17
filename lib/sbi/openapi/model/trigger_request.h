@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "pcscf_address.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,10 +21,12 @@ extern "C" {
 typedef struct OpenAPI_trigger_request_s OpenAPI_trigger_request_t;
 typedef struct OpenAPI_trigger_request_s {
     char *supi;
+    struct OpenAPI_pcscf_address_s *failed_pcscf;
 } OpenAPI_trigger_request_t;
 
 OpenAPI_trigger_request_t *OpenAPI_trigger_request_create(
-    char *supi
+    char *supi,
+    OpenAPI_pcscf_address_t *failed_pcscf
 );
 void OpenAPI_trigger_request_free(OpenAPI_trigger_request_t *trigger_request);
 OpenAPI_trigger_request_t *OpenAPI_trigger_request_parseFromJSON(cJSON *trigger_requestJSON);

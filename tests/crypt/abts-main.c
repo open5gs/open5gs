@@ -24,6 +24,7 @@
 abts_suite *test_aes(abts_suite *suite);
 abts_suite *test_sha(abts_suite *suite);
 abts_suite *test_base64(abts_suite *suite);
+abts_suite *test_ecies(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
@@ -31,6 +32,7 @@ const struct testlist {
     {test_aes},
     {test_sha},
     {test_base64},
+    {test_ecies},
     {NULL},
 };
 
@@ -48,7 +50,7 @@ int main(int argc, const char *const argv[])
         char *log_level;
         char *domain_mask;
     } optarg;
-    const char *argv_out[argc+2]; /* '-e error' is always added */
+    const char *argv_out[argc+3]; /* '-e error' is always added */
     
     abts_suite *suite = NULL;
     ogs_pkbuf_config_t config;

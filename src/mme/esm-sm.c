@@ -68,7 +68,7 @@ void esm_state_final(ogs_fsm_t *s, mme_event_t *e)
 
 void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
 {
-    int rv;
+    int r, rv;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
@@ -122,11 +122,16 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
                     mme_gtp_send_delete_session_request(mme_ue->sgw_ue, sess,
                     OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST));
             } else {
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_deactivate_bearer_context_request(bearer));
+                r = nas_eps_send_deactivate_bearer_context_request(bearer);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
+
+            CLEAR_SGW_S1U_PATH(sess);
+
             OGS_FSM_TRAN(s, esm_state_pdn_will_disconnect);
             break;
+
         case OGS_NAS_EPS_ESM_INFORMATION_RESPONSE:
             ogs_debug("ESM information response");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
@@ -137,30 +142,34 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             h.type = e->nas_type;
             if (h.integrity_protected == 0) {
                 ogs_error("[%s] No Integrity Protected", mme_ue->imsi_bcd);
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_attach_reject(mme_ue,
+                r = nas_eps_send_attach_reject(mme_ue,
                         OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
                 ogs_assert(mme_ue->enb_ue);
-                ogs_assert(OGS_OK ==
-                    s1ap_send_ue_context_release_command(mme_ue->enb_ue,
+                r = s1ap_send_ue_context_release_command(mme_ue->enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, &esm_state_exception);
                 break;
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
                 ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_attach_reject(mme_ue,
+                r = nas_eps_send_attach_reject(mme_ue,
                         OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
                 ogs_assert(mme_ue->enb_ue);
-                ogs_assert(OGS_OK ==
-                    s1ap_send_ue_context_release_command(mme_ue->enb_ue,
+                r = s1ap_send_ue_context_release_command(mme_ue->enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, &esm_state_exception);
                 break;
             }
@@ -174,6 +183,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             break;
         case OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
             ogs_debug("Activate default EPS bearer context accept");
+            MME_UE_LIST_CHECK;
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             /* Check if Initial Context Setup Response or 
@@ -230,18 +240,16 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
                         "Stop retransmission", mme_ue->imsi_bcd);
                 OGS_FSM_TRAN(&bearer->sm, &esm_state_exception);
 
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_pdn_connectivity_reject(sess,
+                r = nas_eps_send_pdn_connectivity_reject(sess,
                         OGS_NAS_ESM_CAUSE_ESM_INFORMATION_NOT_RECEIVED,
-                        e->create_action));
+                        e->create_action);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             } else {
-                rv = nas_eps_send_esm_information_request(bearer);
-                if (rv == OGS_OK) {
-                    bearer->t3489.retry_count++;
-                } else {
-                    ogs_error("nas_eps_send_esm_information_request() failed");
-                    OGS_FSM_TRAN(&bearer->sm, &esm_state_exception);
-                }
+                bearer->t3489.retry_count++;
+                r = nas_eps_send_esm_information_request(bearer);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
             break;
         default:
@@ -258,7 +266,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
 
 void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
 {
-    int rv;
+    int r, rv;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
@@ -309,11 +317,16 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
                     mme_gtp_send_delete_session_request(mme_ue->sgw_ue, sess,
                     OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST));
             } else {
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_deactivate_bearer_context_request(bearer));
+                r = nas_eps_send_deactivate_bearer_context_request(bearer);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
+
+            CLEAR_SGW_S1U_PATH(sess);
+
             OGS_FSM_TRAN(s, esm_state_pdn_will_disconnect);
             break;
+
         case OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_ACCEPT:
             ogs_debug("Modify EPS bearer context accept");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",

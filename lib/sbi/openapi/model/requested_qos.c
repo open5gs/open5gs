@@ -22,18 +22,26 @@ OpenAPI_requested_qos_t *OpenAPI_requested_qos_create(
 
 void OpenAPI_requested_qos_free(OpenAPI_requested_qos_t *requested_qos)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == requested_qos) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(requested_qos->gbr_ul);
-    ogs_free(requested_qos->gbr_dl);
+    if (requested_qos->gbr_ul) {
+        ogs_free(requested_qos->gbr_ul);
+        requested_qos->gbr_ul = NULL;
+    }
+    if (requested_qos->gbr_dl) {
+        ogs_free(requested_qos->gbr_dl);
+        requested_qos->gbr_dl = NULL;
+    }
     ogs_free(requested_qos);
 }
 
 cJSON *OpenAPI_requested_qos_convertToJSON(OpenAPI_requested_qos_t *requested_qos)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (requested_qos == NULL) {
         ogs_error("OpenAPI_requested_qos_convertToJSON() failed [RequestedQos]");
@@ -67,30 +75,31 @@ end:
 OpenAPI_requested_qos_t *OpenAPI_requested_qos_parseFromJSON(cJSON *requested_qosJSON)
 {
     OpenAPI_requested_qos_t *requested_qos_local_var = NULL;
-    cJSON *_5qi = cJSON_GetObjectItemCaseSensitive(requested_qosJSON, "5qi");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *_5qi = NULL;
+    cJSON *gbr_ul = NULL;
+    cJSON *gbr_dl = NULL;
+    _5qi = cJSON_GetObjectItemCaseSensitive(requested_qosJSON, "5qi");
     if (!_5qi) {
         ogs_error("OpenAPI_requested_qos_parseFromJSON() failed [_5qi]");
         goto end;
     }
-
     if (!cJSON_IsNumber(_5qi)) {
         ogs_error("OpenAPI_requested_qos_parseFromJSON() failed [_5qi]");
         goto end;
     }
 
-    cJSON *gbr_ul = cJSON_GetObjectItemCaseSensitive(requested_qosJSON, "gbrUl");
-
+    gbr_ul = cJSON_GetObjectItemCaseSensitive(requested_qosJSON, "gbrUl");
     if (gbr_ul) {
-    if (!cJSON_IsString(gbr_ul)) {
+    if (!cJSON_IsString(gbr_ul) && !cJSON_IsNull(gbr_ul)) {
         ogs_error("OpenAPI_requested_qos_parseFromJSON() failed [gbr_ul]");
         goto end;
     }
     }
 
-    cJSON *gbr_dl = cJSON_GetObjectItemCaseSensitive(requested_qosJSON, "gbrDl");
-
+    gbr_dl = cJSON_GetObjectItemCaseSensitive(requested_qosJSON, "gbrDl");
     if (gbr_dl) {
-    if (!cJSON_IsString(gbr_dl)) {
+    if (!cJSON_IsString(gbr_dl) && !cJSON_IsNull(gbr_dl)) {
         ogs_error("OpenAPI_requested_qos_parseFromJSON() failed [gbr_dl]");
         goto end;
     }
@@ -99,8 +108,8 @@ OpenAPI_requested_qos_t *OpenAPI_requested_qos_parseFromJSON(cJSON *requested_qo
     requested_qos_local_var = OpenAPI_requested_qos_create (
         
         _5qi->valuedouble,
-        gbr_ul ? ogs_strdup(gbr_ul->valuestring) : NULL,
-        gbr_dl ? ogs_strdup(gbr_dl->valuestring) : NULL
+        gbr_ul && !cJSON_IsNull(gbr_ul) ? ogs_strdup(gbr_ul->valuestring) : NULL,
+        gbr_dl && !cJSON_IsNull(gbr_dl) ? ogs_strdup(gbr_dl->valuestring) : NULL
     );
 
     return requested_qos_local_var;

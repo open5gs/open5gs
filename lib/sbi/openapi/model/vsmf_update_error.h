@@ -1,7 +1,7 @@
 /*
  * vsmf_update_error.h
  *
- * 
+ * Error within Update Response from V-SMF, or from I-SMF to SMF
  */
 
 #ifndef _OpenAPI_vsmf_update_error_H_
@@ -13,9 +13,9 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "arp.h"
+#include "ext_problem_details.h"
 #include "n4_information.h"
 #include "ng_ap_cause.h"
-#include "problem_details.h"
 #include "ref_to_binary_data.h"
 
 #ifdef __cplusplus
@@ -24,7 +24,7 @@ extern "C" {
 
 typedef struct OpenAPI_vsmf_update_error_s OpenAPI_vsmf_update_error_t;
 typedef struct OpenAPI_vsmf_update_error_s {
-    struct OpenAPI_problem_details_s *error;
+    struct OpenAPI_ext_problem_details_s *error;
     bool is_pti;
     int pti;
     char *n1sm_cause;
@@ -38,10 +38,11 @@ typedef struct OpenAPI_vsmf_update_error_s {
     struct OpenAPI_n4_information_s *n4_info;
     struct OpenAPI_n4_information_s *n4_info_ext1;
     struct OpenAPI_n4_information_s *n4_info_ext2;
+    struct OpenAPI_n4_information_s *n4_info_ext3;
 } OpenAPI_vsmf_update_error_t;
 
 OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_create(
-    OpenAPI_problem_details_t *error,
+    OpenAPI_ext_problem_details_t *error,
     bool is_pti,
     int pti,
     char *n1sm_cause,
@@ -54,7 +55,8 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_create(
     char *recovery_time,
     OpenAPI_n4_information_t *n4_info,
     OpenAPI_n4_information_t *n4_info_ext1,
-    OpenAPI_n4_information_t *n4_info_ext2
+    OpenAPI_n4_information_t *n4_info_ext2,
+    OpenAPI_n4_information_t *n4_info_ext3
 );
 void OpenAPI_vsmf_update_error_free(OpenAPI_vsmf_update_error_t *vsmf_update_error);
 OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf_update_errorJSON);

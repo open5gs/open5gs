@@ -22,19 +22,30 @@ OpenAPI_transfer_mo_data_req_data_t *OpenAPI_transfer_mo_data_req_data_create(
 
 void OpenAPI_transfer_mo_data_req_data_free(OpenAPI_transfer_mo_data_req_data_t *transfer_mo_data_req_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == transfer_mo_data_req_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_ref_to_binary_data_free(transfer_mo_data_req_data->mo_data);
-    OpenAPI_mo_exp_data_counter_free(transfer_mo_data_req_data->mo_exp_data_counter);
-    OpenAPI_user_location_free(transfer_mo_data_req_data->ue_location);
+    if (transfer_mo_data_req_data->mo_data) {
+        OpenAPI_ref_to_binary_data_free(transfer_mo_data_req_data->mo_data);
+        transfer_mo_data_req_data->mo_data = NULL;
+    }
+    if (transfer_mo_data_req_data->mo_exp_data_counter) {
+        OpenAPI_mo_exp_data_counter_free(transfer_mo_data_req_data->mo_exp_data_counter);
+        transfer_mo_data_req_data->mo_exp_data_counter = NULL;
+    }
+    if (transfer_mo_data_req_data->ue_location) {
+        OpenAPI_user_location_free(transfer_mo_data_req_data->ue_location);
+        transfer_mo_data_req_data->ue_location = NULL;
+    }
     ogs_free(transfer_mo_data_req_data);
 }
 
 cJSON *OpenAPI_transfer_mo_data_req_data_convertToJSON(OpenAPI_transfer_mo_data_req_data_t *transfer_mo_data_req_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (transfer_mo_data_req_data == NULL) {
         ogs_error("OpenAPI_transfer_mo_data_req_data_convertToJSON() failed [TransferMoDataReqData]");
@@ -42,6 +53,10 @@ cJSON *OpenAPI_transfer_mo_data_req_data_convertToJSON(OpenAPI_transfer_mo_data_
     }
 
     item = cJSON_CreateObject();
+    if (!transfer_mo_data_req_data->mo_data) {
+        ogs_error("OpenAPI_transfer_mo_data_req_data_convertToJSON() failed [mo_data]");
+        return NULL;
+    }
     cJSON *mo_data_local_JSON = OpenAPI_ref_to_binary_data_convertToJSON(transfer_mo_data_req_data->mo_data);
     if (mo_data_local_JSON == NULL) {
         ogs_error("OpenAPI_transfer_mo_data_req_data_convertToJSON() failed [mo_data]");
@@ -86,27 +101,40 @@ end:
 OpenAPI_transfer_mo_data_req_data_t *OpenAPI_transfer_mo_data_req_data_parseFromJSON(cJSON *transfer_mo_data_req_dataJSON)
 {
     OpenAPI_transfer_mo_data_req_data_t *transfer_mo_data_req_data_local_var = NULL;
-    cJSON *mo_data = cJSON_GetObjectItemCaseSensitive(transfer_mo_data_req_dataJSON, "moData");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *mo_data = NULL;
+    OpenAPI_ref_to_binary_data_t *mo_data_local_nonprim = NULL;
+    cJSON *mo_exp_data_counter = NULL;
+    OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter_local_nonprim = NULL;
+    cJSON *ue_location = NULL;
+    OpenAPI_user_location_t *ue_location_local_nonprim = NULL;
+    mo_data = cJSON_GetObjectItemCaseSensitive(transfer_mo_data_req_dataJSON, "moData");
     if (!mo_data) {
         ogs_error("OpenAPI_transfer_mo_data_req_data_parseFromJSON() failed [mo_data]");
         goto end;
     }
-
-    OpenAPI_ref_to_binary_data_t *mo_data_local_nonprim = NULL;
     mo_data_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(mo_data);
-
-    cJSON *mo_exp_data_counter = cJSON_GetObjectItemCaseSensitive(transfer_mo_data_req_dataJSON, "moExpDataCounter");
-
-    OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter_local_nonprim = NULL;
-    if (mo_exp_data_counter) {
-    mo_exp_data_counter_local_nonprim = OpenAPI_mo_exp_data_counter_parseFromJSON(mo_exp_data_counter);
+    if (!mo_data_local_nonprim) {
+        ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON failed [mo_data]");
+        goto end;
     }
 
-    cJSON *ue_location = cJSON_GetObjectItemCaseSensitive(transfer_mo_data_req_dataJSON, "ueLocation");
+    mo_exp_data_counter = cJSON_GetObjectItemCaseSensitive(transfer_mo_data_req_dataJSON, "moExpDataCounter");
+    if (mo_exp_data_counter) {
+    mo_exp_data_counter_local_nonprim = OpenAPI_mo_exp_data_counter_parseFromJSON(mo_exp_data_counter);
+    if (!mo_exp_data_counter_local_nonprim) {
+        ogs_error("OpenAPI_mo_exp_data_counter_parseFromJSON failed [mo_exp_data_counter]");
+        goto end;
+    }
+    }
 
-    OpenAPI_user_location_t *ue_location_local_nonprim = NULL;
+    ue_location = cJSON_GetObjectItemCaseSensitive(transfer_mo_data_req_dataJSON, "ueLocation");
     if (ue_location) {
     ue_location_local_nonprim = OpenAPI_user_location_parseFromJSON(ue_location);
+    if (!ue_location_local_nonprim) {
+        ogs_error("OpenAPI_user_location_parseFromJSON failed [ue_location]");
+        goto end;
+    }
     }
 
     transfer_mo_data_req_data_local_var = OpenAPI_transfer_mo_data_req_data_create (
@@ -117,6 +145,18 @@ OpenAPI_transfer_mo_data_req_data_t *OpenAPI_transfer_mo_data_req_data_parseFrom
 
     return transfer_mo_data_req_data_local_var;
 end:
+    if (mo_data_local_nonprim) {
+        OpenAPI_ref_to_binary_data_free(mo_data_local_nonprim);
+        mo_data_local_nonprim = NULL;
+    }
+    if (mo_exp_data_counter_local_nonprim) {
+        OpenAPI_mo_exp_data_counter_free(mo_exp_data_counter_local_nonprim);
+        mo_exp_data_counter_local_nonprim = NULL;
+    }
+    if (ue_location_local_nonprim) {
+        OpenAPI_user_location_free(ue_location_local_nonprim);
+        ue_location_local_nonprim = NULL;
+    }
     return NULL;
 }
 

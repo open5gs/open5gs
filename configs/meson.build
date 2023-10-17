@@ -22,10 +22,13 @@ conf_data.set('sysconfdir', sysconfdir)
 conf_data.set('libdir', libdir)
 conf_data.set('localstatedir', localstatedir)
 
-freediameter_extensions_builddir = join_paths(
-        meson.build_root(), 'subprojects', 'freeDiameter', 'extensions')
-conf_data.set('freediameter_extensions_builddir',
-        freediameter_extensions_builddir)
+build_configs_dir = join_paths(open5gs_build_dir, 'configs')
+conf_data.set('build_configs_dir', build_configs_dir)
+
+build_subprojects_freeDiameter_extensions_dir = join_paths(
+        open5gs_build_dir, 'subprojects', 'freeDiameter', 'extensions')
+conf_data.set('build_subprojects_freeDiameter_extensions_dir',
+        build_subprojects_freeDiameter_extensions_dir)
 
 example_conf = '''
     sample.yaml
@@ -34,7 +37,7 @@ example_conf = '''
     volte.yaml
     vonr.yaml
     slice.yaml
-    srslte.yaml
+    srsenb.yaml
     non3gpp.yaml
 '''.split()
 

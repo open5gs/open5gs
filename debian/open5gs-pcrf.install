@@ -1,4 +1,6 @@
 usr/bin/open5gs-pcrfd
 configs/freeDiameter/pcrf.* etc/freeDiameter
 configs/open5gs/pcrf.yaml etc/open5gs
+configs/open5gs/tls/pcrf.key etc/open5gs/tls
+configs/open5gs/tls/pcrf.crt etc/open5gs/tls
 configs/systemd/open5gs-pcrfd.service lib/systemd/system

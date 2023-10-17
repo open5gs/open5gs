@@ -13,12 +13,12 @@ CHOICE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
                    const asn_per_constraints_t *constraints, void **sptr, asn_per_data_t *pd) {
     const asn_CHOICE_specifics_t *specs = (const asn_CHOICE_specifics_t *)td->specifics;
     asn_dec_rval_t rv;
-    const asn_per_constraint_t *ct;
-    asn_TYPE_member_t *elm;  /* CHOICE's element */
-    void *memb_ptr;
-    void **memb_ptr2;
+    const asn_per_constraint_t *ct = NULL;
+    asn_TYPE_member_t *elm = NULL;  /* CHOICE's element */
+    void *memb_ptr = NULL;
+    void **memb_ptr2 = NULL;
     void *st = *sptr;
-    int value;
+    int value = 0;
 
     if(ASN__STACK_OVERFLOW_CHECK(opt_codec_ctx))
         ASN__DECODE_FAILED;

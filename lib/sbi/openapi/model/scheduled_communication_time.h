@@ -1,7 +1,7 @@
 /*
  * scheduled_communication_time.h
  *
- * 
+ * Identifies time and day of the week when the UE is available for communication.
  */
 
 #ifndef _OpenAPI_scheduled_communication_time_H_

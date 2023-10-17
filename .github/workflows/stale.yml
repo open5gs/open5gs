@@ -1,0 +1,45 @@
+name: Mark stale issues and pull requests
+
+on:
+  schedule:
+  - cron: '30 22 * * *'
+
+jobs:
+  stale:
+
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+    - uses: actions/stale@v5
+      with:
+        debug-only: false
+        operations-per-run: 500
+        enable-statistics: true
+        remove-stale-when-updated: true
+        exempt-issue-labels: 'status:accepted,status:blocked,status:more-info-needed,status:milestone-required,Help Wanted'
+        exempt-all-milestones: true
+        stale-issue-label: 'Housekeeping:ToClose'
+        
+        days-before-stale: 60
+        stale-issue-message: >
+          This issue has been marked as stale because there has been no recent activity on it. If there is
+          no further activity, it will be closed. The Open5GS team is a small but dedicated team with limited 
+          resources and may not be able to address every issue directly. **Do not** attempt to circumvent this 
+          by 'bumping' the issue; doing so will result in it's immediate closure and possibly your exclusion 
+          from participating in any future discussions.      
+        stale-pr-message: >
+          As there has been no recent activity on this PR, it has been marked as stale. It will be automatically
+          closed if no further action is taken.
+        
+        
+        days-before-close: 30
+        days-before-pr-close: -1
+        close-issue-message: >
+          This issue has been closed automatically due to lack of activity. This has been done to try
+          and reduce the amount of noise. Please do not comment any further. The Open5GS Team may choose to
+          re-open this issue if necessary.
+        close-pr-message: >
+          This PR has been closed due to an absence of activity.

@@ -1,0 +1,434 @@
+openapi: 3.0.0
+
+info:
+  title: Npcf_BDTPolicyControl Service API
+  version: 1.2.0
+  description: |
+    PCF BDT Policy Control Service.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.554 V17.4.0; 5G System; Background Data Transfer Policy Control Service.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.554/'
+
+servers:
+  - url: '{apiRoot}/npcf-bdtpolicycontrol/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - npcf-bdtpolicycontrol
+
+paths:
+  /bdtpolicies:
+    post:
+      summary: Create a new Individual BDT policy
+      operationId: CreateBDTPolicy
+      tags:
+        - BDT policies (Collection)
+      requestBody:
+        description: >
+          Contains information for the creation of a new Individual BDT policy resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BdtReqData'
+      responses:
+        '201':
+          description: Background data transfer policies offered to an ASP.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BdtPolicy'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created individual BDT policy resource,
+                according to the structure
+                {apiRoot}/npcf-bdtpolicycontrol/v1/bdtpolicies/{bdtPolicyId}
+              required: true
+              schema:
+                type: string
+        '303':
+          description: >
+            See Other. The result of the POST request would be equivalent to the
+            existing Individual BDT policy resource.
+          headers:
+            Location:
+              description: Contains the URI of the existing individual BDT policy resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        BdtNotification:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/Notification'
+              responses:
+                '204':
+                  description: No Content, a reception of the BDT notification was successful.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /bdtpolicies/{bdtPolicyId}:
+    get:
+      summary: Read an Individual BDT policy
+      operationId: GetBDTPolicy
+      tags:
+        - Individual BDT policy (Document)
+      parameters:
+        - name: bdtPolicyId
+          description: String identifying the individual BDT policy resource in the PCF.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Background data transfer policies offered to and selected by an ASP.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BdtPolicy'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Update an Individual BDT policy
+      operationId: UpdateBDTPolicy
+      tags:
+        - Individual BDT policy (Document)
+      parameters:
+      - name: bdtPolicyId
+        description: String identifying the individual BDT policy resource in the PCF.
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: >
+          Contains modification instruction to be performed on the BdtPolicy data
+          structure to select a transfer policy and in addition, may indicate whether
+          the BDT warning notification is enabled or disabled.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/PatchBdtPolicy'
+      responses:
+        '200':
+          description: >
+            The Individual BDT Policy resource is modified and a representation of that
+            resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BdtPolicy'
+        '204':
+          description: The Individual BDT Policy resource is modified.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            npcf-bdtpolicycontrol: Access to the Npcf_BDTPolicyControl API
+
+  schemas:
+
+# Structured data types
+
+    BdtPolicy:
+      description: Represents an Individual BDT policy resource.
+      type: object
+      properties:
+        bdtPolData:
+          $ref: '#/components/schemas/BdtPolicyData'
+        bdtReqData:
+          $ref: '#/components/schemas/BdtReqData'
+
+    BdtReqData:
+      description: >
+        Contains service requirements for creation a new Individual BDT policy resource.
+      type: object
+      required:
+      - aspId
+      - desTimeInt
+      - numOfUes
+      - volPerUe
+      properties:
+        aspId:
+          $ref: '#/components/schemas/AspId'
+        desTimeInt:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        interGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        nwAreaInfo:
+          $ref: '#/components/schemas/NetworkAreaInfo'
+        numOfUes:
+          description: Indicates a number of UEs.
+          type: integer
+        volPerUe:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/UsageThreshold'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        trafficDes:
+          $ref: 'TS29122_ResourceManagementOfBdt.yaml#/components/schemas/TrafficDescriptor'
+        warnNotifReq:
+          description: Indicates whether the BDT warning notification is enabled or disabled.
+          type: boolean
+          default: false
+
+    BdtPolicyData:
+      description: Describes the authorization data of an Individual BDT policy resource.
+      type: object
+      required:
+      - bdtRefId
+      - transfPolicies
+      properties:
+        bdtRefId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/BdtReferenceId'
+        transfPolicies:
+          description: Contains transfer policies.
+          type: array
+          items:
+            $ref: '#/components/schemas/TransferPolicy'
+          minItems: 1
+        selTransPolicyId:
+          description: Contains an identity of the selected transfer policy.
+          type: integer
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    PatchBdtPolicy:
+      description: >
+        Describes the updates in authorization data of an Individual BDT Policy created
+        by the PCF.
+      type: object
+      properties:
+        bdtPolData:
+          $ref: '#/components/schemas/BdtPolicyDataPatch'
+        bdtReqData:
+          $ref: '#/components/schemas/BdtReqDataPatch'
+
+    BdtPolicyDataPatch:
+      description: >
+        A JSON Merge Patch body schema containing modification instruction to be performed
+        on the bdtPolData attribute of the BdtPolicy data structure to select a transfer
+        policy. Adds selTransPolicyId to BdtPolicyData data structure.
+      type: object
+      required:
+      - selTransPolicyId
+      properties:
+        selTransPolicyId:
+          description: >
+            Contains an identity (i.e. transPolicyId value) of the selected transfer
+            policy. If the BdtNotification_5G feature is supported value 0 indicates that
+            no transfer policy is selected.
+          type: integer
+
+    BdtReqDataPatch:
+      description: >
+        A JSON Merge Patch body schema containing modification instruction to be performed
+        on the bdtReqData attribute of the BdtPolicy data structure to indicate whether
+        the BDT warning notification is enabled or disabled. Modifies warnNotifReq from
+        BdtReqData data structure.
+      type: object
+      properties:
+        warnNotifReq:
+          description: Indicates whether the BDT warning notification is enabled or disabled.
+          type: boolean
+
+    TransferPolicy:
+      description: Describes a transfer policy.
+      type: object
+      required:
+      - ratingGroup
+      - recTimeInt
+      - transPolicyId
+      properties:
+        maxBitRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxBitRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        ratingGroup:
+          description: Indicates a rating group for the recommended time window.
+          type: integer
+        recTimeInt:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        transPolicyId:
+          description: Contains an identity of a transfer policy.
+          type: integer
+
+    NetworkAreaInfo:
+      description: >
+        Describes a network area information in which the NF service consumer requests
+        the number of UEs.
+      type: object
+      properties:
+        ecgis:
+          description: Contains a list of E-UTRA cell identities.
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ecgi'
+          minItems: 1
+        ncgis:
+          description: Contains a list of NR cell identities.
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+          minItems: 1
+        gRanNodeIds:
+          description: Contains a list of NG RAN nodes.
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/GlobalRanNodeId'
+          minItems: 1
+        tais:
+          description: Contains a list of tracking area identities.
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+          minItems: 1
+
+    Notification:
+      description: Describes a BDT notification.
+      type: object
+      required:
+      - bdtRefId
+      properties:
+        bdtRefId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/BdtReferenceId'
+        candPolicies:
+          description: >
+            Contains a list of the candidate transfer policies from which the AF may
+            select a new transfer policy due to a network performance is below the criteria
+            set by the operator.
+          type: array
+          items:
+            $ref: '#/components/schemas/TransferPolicy'
+          minItems: 1
+        nwAreaInfo:
+          $ref: '#/components/schemas/NetworkAreaInfo'
+        timeWindow:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+
+# Simple data types
+
+    AspId:
+      description: Contains an identity of an application service provider.
+      type: string
+

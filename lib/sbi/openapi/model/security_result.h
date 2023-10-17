@@ -1,7 +1,7 @@
 /*
  * security_result.h
  *
- * 
+ * Security Result
  */
 
 #ifndef _OpenAPI_security_result_H_

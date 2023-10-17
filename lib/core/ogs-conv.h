@@ -28,8 +28,14 @@
 extern "C" {
 #endif
 
-#define OGS_HEX(I, I_LEN, O) ogs_ascii_to_hex((char*)I, I_LEN, O, sizeof(O))
-void *ogs_ascii_to_hex(char *in, int in_len, void *out, int out_len);
+int ogs_ascii_to_hex(char *in, int in_len, void *out, int out_len);
+static ogs_inline void *ogs_hex_from_string(
+        const char *str, void *out, int out_len)
+{
+    ogs_ascii_to_hex((char*)str, strlen(str), out, out_len);
+    return out;
+}
+
 void *ogs_hex_to_ascii(void *in, int in_len, void *out, int out_len);
 void *ogs_uint64_to_buffer(uint64_t num, int size, void *buffer);
 uint64_t ogs_buffer_to_uint64(void *buffer, int size);
@@ -48,6 +54,8 @@ char *ogs_uint64_to_string(uint64_t x);
 
 ogs_uint24_t ogs_uint24_from_string(char *str);
 uint64_t ogs_uint64_from_string(char *str);
+
+double *ogs_alloc_double(double value);
 
 #ifdef __cplusplus
 }

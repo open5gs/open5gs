@@ -1,0 +1,327 @@
+openapi: 3.0.0
+
+info:
+  version: '2.1.2'
+  title: 'NSSF NS Selection'
+  description: |
+    NSSF Network Slice Selection Service.
+    © 2021, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nnssf-nsselection
+servers:
+  - url: '{apiRoot}/nnssf-nsselection/v2'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+externalDocs:
+  description: 3GPP TS 29.531 V16.7.0; 5G System; Network Slice Selection Services; Stage 3
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.531/
+paths:
+  /network-slice-information:
+    get:
+      summary:  Retrieve the Network Slice Selection Information
+      tags:
+        - Network Slice Information (Document)
+      operationId: NSSelectionGet
+      parameters:
+        - name: nf-type
+          in: query
+          description: NF type of the NF service consumer
+          required: true
+          schema:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NFType'
+        - name: nf-id
+          in: query
+          description: NF Instance ID of the NF service consumer
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        - name: slice-info-request-for-registration
+          in: query
+          description: Requested network slice information during Registration procedure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceInfoForRegistration'
+        - name: slice-info-request-for-pdu-session
+          in: query
+          description: Requested network slice information during PDU session establishment procedure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceInfoForPDUSession'
+        - name: slice-info-request-for-ue-cu
+          in: query
+          description: Requested network slice information during UE confuguration update procedure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceInfoForUEConfigurationUpdate'
+        - name: home-plmn-id
+          in: query
+          description: PLMN ID of the HPLMN
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        - name: tai
+          in: query
+          description: TAI of the UE
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the NFs in the target slice instance
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+      responses:
+        '200':
+          description: OK (Successful Network Slice Selection)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizedNetworkSliceInfo'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nnssf-nsselection: Access to the Nnssf_NSSelection API
+  schemas:
+    AuthorizedNetworkSliceInfo:
+      type: object
+      properties:
+        allowedNssaiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllowedNssai'
+          minItems: 1
+        configuredNssai:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConfiguredSnssai'
+          minItems: 1
+        targetAmfSet:
+          type: string
+          pattern: '^[0-9]{3}-[0-9]{2-3}-[A-Fa-f0-9]{2}-[0-3][A-Fa-f0-9]{2}$'
+        candidateAmfList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+          minItems: 1
+        rejectedNssaiInPlmn:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        rejectedNssaiInTa:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        nsiInformation:
+          $ref: '#/components/schemas/NsiInformation'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        nrfAmfSet:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        nrfAmfSetNfMgtUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        nrfAmfSetAccessTokenUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        targetAmfServiceSet:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfServiceSetId'
+
+    SubscribedSnssai:
+      type: object
+      required:
+        - subscribedSnssai
+      properties:
+        subscribedSnssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        defaultIndication:
+          type: boolean
+
+
+    AllowedSnssai:
+      type: object
+      required:
+        - allowedSnssai
+      properties:
+        allowedSnssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        nsiInformationList:
+          type: array
+          items:
+            $ref: '#/components/schemas/NsiInformation'
+          minItems: 1
+        mappedHomeSnssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+
+    AllowedNssai:
+      type: object
+      required:
+        - allowedSnssaiList
+        - accessType
+      properties:
+        allowedSnssaiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllowedSnssai'
+          minItems: 1
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+
+    NsiInformation:
+      type: object
+      required:
+        - nrfId
+      properties:
+        nrfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        nsiId:
+          $ref: '#/components/schemas/NsiId'
+        nrfNfMgtUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        nrfAccessTokenUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+
+    MappingOfSnssai:
+      type: object
+      required:
+        - servingSnssai
+        - homeSnssai
+      properties:
+        servingSnssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        homeSnssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+
+
+    SliceInfoForRegistration:
+      type: object
+      properties:
+        subscribedNssai:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscribedSnssai'
+          minItems: 1
+        allowedNssaiCurrentAccess:
+          $ref: '#/components/schemas/AllowedNssai'
+        allowedNssaiOtherAccess:
+          $ref: '#/components/schemas/AllowedNssai'
+        sNssaiForMapping:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        requestedNssai:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        defaultConfiguredSnssaiInd:
+          type: boolean
+        mappingOfNssai:
+          type: array
+          items:
+            $ref: '#/components/schemas/MappingOfSnssai'
+          minItems: 1
+        requestMapping:
+          type: boolean
+
+    SliceInfoForPDUSession:
+      type: object
+      required:
+        - sNssai
+        - roamingIndication
+      properties:
+        sNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        roamingIndication:
+          $ref: '#/components/schemas/RoamingIndication'
+        homeSnssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+
+    SliceInfoForUEConfigurationUpdate:
+      type: object
+      properties:
+        subscribedNssai:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscribedSnssai'
+          minItems: 1
+        allowedNssaiCurrentAccess:
+          $ref: '#/components/schemas/AllowedNssai'
+        allowedNssaiOtherAccess:
+          $ref: '#/components/schemas/AllowedNssai'
+        defaultConfiguredSnssaiInd:
+          type: boolean
+        requestedNssai:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        mappingOfNssai:
+          type: array
+          items:
+            $ref: '#/components/schemas/MappingOfSnssai'
+          minItems: 1
+
+    ConfiguredSnssai:
+      type: object
+      required:
+        - configuredSnssai
+      properties:
+        configuredSnssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        mappedHomeSnssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+
+
+    RoamingIndication:
+#      anyOf:
+#        - type: string
+          type: string
+          enum:
+            - NON_ROAMING
+            - LOCAL_BREAKOUT
+            - HOME_ROUTED_ROAMING
+#        - type: string
+    NsiId:
+      type: string

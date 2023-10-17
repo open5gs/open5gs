@@ -6,7 +6,7 @@
 
 char* OpenAPI_report_amount_mdt_ToString(OpenAPI_report_amount_mdt_e report_amount_mdt)
 {
-    const char *report_amount_mdtArray[] =  { "NULL", "_1", "_2", "_4", "_8", "_16", "_32", "_64", "infinity" };
+    const char *report_amount_mdtArray[] =  { "NULL", "1", "2", "4", "8", "16", "32", "64", "infinity" };
     size_t sizeofArray = sizeof(report_amount_mdtArray) / sizeof(report_amount_mdtArray[0]);
     if (report_amount_mdt < sizeofArray)
         return (char *)report_amount_mdtArray[report_amount_mdt];
@@ -17,7 +17,7 @@ char* OpenAPI_report_amount_mdt_ToString(OpenAPI_report_amount_mdt_e report_amou
 OpenAPI_report_amount_mdt_e OpenAPI_report_amount_mdt_FromString(char* report_amount_mdt)
 {
     int stringToReturn = 0;
-    const char *report_amount_mdtArray[] =  { "NULL", "_1", "_2", "_4", "_8", "_16", "_32", "_64", "infinity" };
+    const char *report_amount_mdtArray[] =  { "NULL", "1", "2", "4", "8", "16", "32", "64", "infinity" };
     size_t sizeofArray = sizeof(report_amount_mdtArray) / sizeof(report_amount_mdtArray[0]);
     while (stringToReturn < sizeofArray) {
         if (strcmp(report_amount_mdt, report_amount_mdtArray[stringToReturn]) == 0) {

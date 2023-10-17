@@ -1,7 +1,7 @@
 /*
  * charging_information.h
  *
- * 
+ * Contains the addresses of the charging functions.
  */
 
 #ifndef _OpenAPI_charging_information_H_

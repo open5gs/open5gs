@@ -1,7 +1,7 @@
 /*
  * ue_initiated_resource_request.h
  *
- * 
+ * Indicates that a UE requests specific QoS handling for the selected SDF.
  */
 
 #ifndef _OpenAPI_ue_initiated_resource_request_H_

@@ -1,7 +1,7 @@
 /*
  * backup_amf_info.h
  *
- * 
+ * Provides details of the Backup AMF.
  */
 
 #ifndef _OpenAPI_backup_amf_info_H_

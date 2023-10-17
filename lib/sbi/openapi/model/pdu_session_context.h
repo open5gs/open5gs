@@ -1,7 +1,7 @@
 /*
  * pdu_session_context.h
  *
- * 
+ * Represents a PDU Session Context in UE Context
  */
 
 #ifndef _OpenAPI_pdu_session_context_H_
@@ -15,6 +15,8 @@
 #include "access_type.h"
 #include "cn_assisted_ran_para.h"
 #include "ebi_arp_mapping.h"
+#include "ip_address.h"
+#include "plmn_id.h"
 #include "sbi_binding_level.h"
 #include "snssai.h"
 
@@ -49,6 +51,20 @@ typedef struct OpenAPI_pdu_session_context_s {
     bool is_ma_pdu_session;
     int ma_pdu_session;
     struct OpenAPI_cn_assisted_ran_para_s *cn_assisted_ran_para;
+    char *nrf_management_uri;
+    char *nrf_discovery_uri;
+    char *nrf_access_token_uri;
+    char *smf_binding_info;
+    char *vsmf_binding_info;
+    char *ismf_binding_info;
+    struct OpenAPI_snssai_s *additional_snssai;
+    char *inter_plmn_api_root;
+    char *pgw_fqdn;
+    struct OpenAPI_ip_address_s *pgw_ip_addr;
+    struct OpenAPI_plmn_id_s *plmn_id;
+    char *anchor_smf_supported_features;
+    bool is_anchor_smf_oauth2_required;
+    int anchor_smf_oauth2_required;
 } OpenAPI_pdu_session_context_t;
 
 OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_create(
@@ -76,7 +92,21 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_create(
     char *smf_service_instance_id,
     bool is_ma_pdu_session,
     int ma_pdu_session,
-    OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para
+    OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para,
+    char *nrf_management_uri,
+    char *nrf_discovery_uri,
+    char *nrf_access_token_uri,
+    char *smf_binding_info,
+    char *vsmf_binding_info,
+    char *ismf_binding_info,
+    OpenAPI_snssai_t *additional_snssai,
+    char *inter_plmn_api_root,
+    char *pgw_fqdn,
+    OpenAPI_ip_address_t *pgw_ip_addr,
+    OpenAPI_plmn_id_t *plmn_id,
+    char *anchor_smf_supported_features,
+    bool is_anchor_smf_oauth2_required,
+    int anchor_smf_oauth2_required
 );
 void OpenAPI_pdu_session_context_free(OpenAPI_pdu_session_context_t *pdu_session_context);
 OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *pdu_session_contextJSON);

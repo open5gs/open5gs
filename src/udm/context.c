@@ -24,6 +24,7 @@ static udm_context_t self;
 int __udm_log_domain;
 
 static OGS_POOL(udm_ue_pool, udm_ue_t);
+static OGS_POOL(udm_sess_pool, udm_sess_t);
 
 static int context_initialized = 0;
 
@@ -37,6 +38,7 @@ void udm_context_init(void)
     ogs_log_install_domain(&__udm_log_domain, "udm", ogs_core()->log.level);
 
     ogs_pool_init(&udm_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&udm_sess_pool, ogs_app()->pool.sess);
 
     ogs_list_init(&self.udm_ue_list);
     self.suci_hash = ogs_hash_make();
@@ -59,6 +61,7 @@ void udm_context_final(void)
     ogs_hash_destroy(self.supi_hash);
 
     ogs_pool_final(&udm_ue_pool);
+    ogs_pool_final(&udm_sess_pool);
 
     context_initialized = 0;
 }
@@ -106,6 +109,9 @@ int udm_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(udm_key, "discovery")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(udm_key, "hnet")) {
+                    rv = ogs_sbi_context_parse_hnet_config(&udm_iter);
+                    if (rv != OGS_OK) return rv;
                 } else
                     ogs_warn("unknown key `%s`", udm_key);
             }
@@ -126,19 +132,41 @@ udm_ue_t *udm_ue_add(char *suci)
     ogs_assert(suci);
 
     ogs_pool_alloc(&udm_ue_pool, &udm_ue);
-    ogs_assert(udm_ue);
+    if (!udm_ue) {
+        ogs_error("No memory pool [%s]", suci);
+        return NULL;
+    }
     memset(udm_ue, 0, sizeof *udm_ue);
+
+    /* SBI Type */
+    udm_ue->sbi.type = OGS_SBI_OBJ_UE_TYPE;
 
     udm_ue->ctx_id = ogs_msprintf("%d",
             (int)ogs_pool_index(&udm_ue_pool, udm_ue));
-    ogs_assert(udm_ue->ctx_id);
+    if (!udm_ue->ctx_id) {
+        ogs_error("No memory for udm_ue->ctx_id [%s]", suci);
+        ogs_pool_free(&udm_ue_pool, udm_ue);
+        return NULL;
+    }
 
     udm_ue->suci = ogs_strdup(suci);
-    ogs_assert(udm_ue->suci);
-    ogs_hash_set(self.suci_hash, udm_ue->suci, strlen(udm_ue->suci), udm_ue);
+    if (!udm_ue->suci) {
+        ogs_error("No memory for udm_ue->suci [%s]", suci);
+        ogs_free(udm_ue->ctx_id);
+        ogs_pool_free(&udm_ue_pool, udm_ue);
+        return NULL;
+    }
 
     udm_ue->supi = ogs_supi_from_supi_or_suci(udm_ue->suci);
-    ogs_assert(udm_ue->supi);
+    if (!udm_ue->supi) {
+        ogs_error("No memory for udm_ue->supi [%s]", suci);
+        ogs_free(udm_ue->suci);
+        ogs_free(udm_ue->ctx_id);
+        ogs_pool_free(&udm_ue_pool, udm_ue);
+        return NULL;
+    }
+
+    ogs_hash_set(self.suci_hash, udm_ue->suci, strlen(udm_ue->suci), udm_ue);
     ogs_hash_set(self.supi_hash, udm_ue->supi, strlen(udm_ue->supi), udm_ue);
 
     memset(&e, 0, sizeof(e));
@@ -164,6 +192,8 @@ void udm_ue_remove(udm_ue_t *udm_ue)
 
     /* Free SBI object memory */
     ogs_sbi_object_free(&udm_ue->sbi);
+
+    udm_sess_remove_all(udm_ue);
 
     OpenAPI_auth_event_free(udm_ue->auth_event);
     OpenAPI_amf3_gpp_access_registration_free(
@@ -194,7 +224,7 @@ void udm_ue_remove(udm_ue_t *udm_ue)
     ogs_pool_free(&udm_ue_pool, udm_ue);
 }
 
-void udm_ue_remove_all()
+void udm_ue_remove_all(void)
 {
     udm_ue_t *udm_ue = NULL, *next = NULL;;
 
@@ -229,7 +259,93 @@ udm_ue_t *udm_ue_find_by_ctx_id(char *ctx_id)
     return ogs_pool_find(&udm_ue_pool, atoll(ctx_id));
 }
 
+udm_sess_t *udm_sess_add(udm_ue_t *udm_ue, uint8_t psi)
+{
+    udm_event_t e;
+    udm_sess_t *sess = NULL;
+
+    ogs_assert(udm_ue);
+    ogs_assert(psi != OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED);
+
+    ogs_pool_alloc(&udm_sess_pool, &sess);
+    ogs_assert(sess);
+    memset(sess, 0, sizeof *sess);
+
+    /* SBI Type */
+    sess->sbi.type = OGS_SBI_OBJ_SESS_TYPE;
+
+    sess->udm_ue = udm_ue;
+    sess->psi = psi;
+
+    memset(&e, 0, sizeof(e));
+    e.sess = sess;
+    ogs_fsm_init(&sess->sm, udm_sess_state_initial, udm_sess_state_final, &e);
+
+    ogs_list_add(&udm_ue->sess_list, sess);
+
+    return sess;
+}
+
+void udm_sess_remove(udm_sess_t *sess)
+{
+    udm_event_t e;
+
+    ogs_assert(sess);
+    ogs_assert(sess->udm_ue);
+
+    ogs_list_remove(&sess->udm_ue->sess_list, sess);
+
+    memset(&e, 0, sizeof(e));
+    e.sess = sess;
+    ogs_fsm_fini(&sess->sm, &e);
+
+    /* Free SBI object memory */
+    if (ogs_list_count(&sess->sbi.xact_list))
+        ogs_error("Session transaction [%d]",
+                ogs_list_count(&sess->sbi.xact_list));
+    ogs_sbi_object_free(&sess->sbi);
+
+    OpenAPI_smf_registration_free(sess->smf_registration);
+
+    if (sess->smf_instance_id)
+        ogs_free(sess->smf_instance_id);
+
+    ogs_pool_free(&udm_sess_pool, sess);
+}
+
+void udm_sess_remove_all(udm_ue_t *udm_ue)
+{
+    udm_sess_t *sess = NULL, *next_sess = NULL;
+
+    ogs_assert(udm_ue);
+
+    ogs_list_for_each_safe(&udm_ue->sess_list, next_sess, sess)
+        udm_sess_remove(sess);
+}
+
+udm_sess_t *udm_sess_find_by_psi(udm_ue_t *udm_ue, uint8_t psi)
+{
+    udm_sess_t *sess = NULL;
+
+    ogs_list_for_each(&udm_ue->sess_list, sess)
+        if (psi == sess->psi) return sess;
+
+    return NULL;
+}
+
 udm_ue_t *udm_ue_cycle(udm_ue_t *udm_ue)
 {
     return ogs_pool_cycle(&udm_ue_pool, udm_ue);
+}
+
+udm_sess_t *udm_sess_cycle(udm_sess_t *sess)
+{
+    return ogs_pool_cycle(&udm_sess_pool, sess);
+}
+
+int get_ue_load(void)
+{
+    return (((ogs_pool_size(&udm_ue_pool) -
+            ogs_pool_avail(&udm_ue_pool)) * 100) /
+            ogs_pool_size(&udm_ue_pool));
 }

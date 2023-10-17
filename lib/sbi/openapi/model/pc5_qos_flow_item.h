@@ -1,7 +1,7 @@
 /*
  * pc5_qos_flow_item.h
  *
- * 
+ * Contains a PC5 QOS flow.
  */
 
 #ifndef _OpenAPI_pc5_qos_flow_item_H_

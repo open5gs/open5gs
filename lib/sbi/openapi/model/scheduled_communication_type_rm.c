@@ -16,16 +16,18 @@ OpenAPI_scheduled_communication_type_rm_t *OpenAPI_scheduled_communication_type_
 
 void OpenAPI_scheduled_communication_type_rm_free(OpenAPI_scheduled_communication_type_rm_t *scheduled_communication_type_rm)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == scheduled_communication_type_rm) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(scheduled_communication_type_rm);
 }
 
 cJSON *OpenAPI_scheduled_communication_type_rm_convertToJSON(OpenAPI_scheduled_communication_type_rm_t *scheduled_communication_type_rm)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (scheduled_communication_type_rm == NULL) {
         ogs_error("OpenAPI_scheduled_communication_type_rm_convertToJSON() failed [ScheduledCommunicationTypeRm]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_scheduled_communication_type_rm_t *OpenAPI_scheduled_communication_type_rm_parseFromJSON(cJSON *scheduled_communication_type_rmJSON)
 {
     OpenAPI_scheduled_communication_type_rm_t *scheduled_communication_type_rm_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     scheduled_communication_type_rm_local_var = OpenAPI_scheduled_communication_type_rm_create (
     );
 

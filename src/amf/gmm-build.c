@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -29,7 +29,7 @@ static uint16_t get_pdu_session_reactivation_result(amf_ue_t *amf_ue);
 
 ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
 {
-    int served_tai_index = 0;
+    int rv, served_tai_index = 0;
     ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_nas_5gs_message_t message;
@@ -50,6 +50,7 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     ogs_nas_pdu_session_reactivation_result_t *pdu_session_reactivation_result =
         &registration_accept->pdu_session_reactivation_result;
     ogs_nas_gprs_timer_3_t *t3512_value = &registration_accept->t3512_value;
+    ogs_nas_gprs_timer_2_t *t3502_value = &registration_accept->t3502_value;
 
     ogs_assert(amf_ue);
 
@@ -100,6 +101,7 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     ogs_assert(OGS_OK ==
         ogs_nas_5gs_tai_list_build(&registration_accept->tai_list,
             &amf_self()->served_tai[served_tai_index].list0,
+            &amf_self()->served_tai[served_tai_index].list1,
             &amf_self()->served_tai[served_tai_index].list2));
 
     /* Set Allowed NSSAI */
@@ -124,21 +126,27 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     registration_accept->presencemask |=
         OGS_NAS_5GS_REGISTRATION_ACCEPT_5GS_NETWORK_FEATURE_SUPPORT_PRESENT;
     network_feature_support->length = 2;
-    network_feature_support->ims_vops_3gpp = 1;
+    network_feature_support->
+        ims_voice_over_ps_session_over_3gpp_access_indicator = 1;
 
-    /* Set T3512 */
-    registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_T3512_VALUE_PRESENT;
+    /* Set T3512 : Mandatory in Open5GS */
+    ogs_assert(amf_self()->time.t3512.value);
+    rv = ogs_nas_gprs_timer_3_from_sec(
+            &t3512_value->t, amf_self()->time.t3512.value);
+    ogs_assert(rv == OGS_OK);
+    registration_accept->presencemask |=
+        OGS_NAS_5GS_REGISTRATION_ACCEPT_T3512_VALUE_PRESENT;
     t3512_value->length = 1;
-    t3512_value->unit = OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_1_HH;
-    t3512_value->value = 9;
 
-#if 0
     /* Set T3502 */
-    registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_T3502_VALUE_PRESENT;
-    registration_accept->t3502_value.length = 1;
-    registration_accept->t3502_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
-    registration_accept->t3502_value.value = 12;
-#endif
+    if (amf_self()->time.t3502.value) {
+        rv = ogs_nas_gprs_timer_from_sec(
+                &t3502_value->t, amf_self()->time.t3502.value);
+        ogs_assert(rv == OGS_OK);
+        registration_accept->presencemask |=
+            OGS_NAS_5GS_REGISTRATION_ACCEPT_T3502_VALUE_PRESENT;
+        t3502_value->length = 1;
+    }
 
     if (amf_ue->nas.present.pdu_session_status) {
         registration_accept->presencemask |=
@@ -164,11 +172,16 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     return pkbuf;
 }
 
-ogs_pkbuf_t *gmm_build_registration_reject(ogs_nas_5gmm_cause_t gmm_cause)
+ogs_pkbuf_t *gmm_build_registration_reject(
+        amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause)
 {
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_registration_reject_t *registration_reject =
         &message.gmm.registration_reject;
+    ogs_nas_rejected_nssai_t *rejected_nssai =
+        &registration_reject->rejected_nssai;
+
+    ogs_assert(amf_ue);
 
     memset(&message, 0, sizeof(message));
     message.gmm.h.extended_protocol_discriminator =
@@ -176,6 +189,14 @@ ogs_pkbuf_t *gmm_build_registration_reject(ogs_nas_5gmm_cause_t gmm_cause)
     message.gmm.h.message_type = OGS_NAS_5GS_REGISTRATION_REJECT;
 
     registration_reject->gmm_cause = gmm_cause;
+
+    if (amf_ue->rejected_nssai.num_of_s_nssai) {
+        ogs_nas_build_rejected_nssai(rejected_nssai,
+                amf_ue->rejected_nssai.s_nssai,
+                amf_ue->rejected_nssai.num_of_s_nssai);
+        registration_reject->presencemask |=
+            OGS_NAS_5GS_REGISTRATION_REJECT_REJECTED_NSSAI_PRESENT;
+    }
 
     return ogs_nas_5gs_plain_encode(&message);
 }
@@ -276,8 +297,10 @@ ogs_pkbuf_t *gmm_build_de_registration_accept(amf_ue_t *amf_ue)
     return nas_5gs_security_encode(amf_ue, &message);
 }
 
-ogs_pkbuf_t *gmm_build_de_registration_request(amf_ue_t *amf_ue,
-        OpenAPI_deregistration_reason_e dereg_reason)
+ogs_pkbuf_t *gmm_build_de_registration_request(
+        amf_ue_t *amf_ue,
+        OpenAPI_deregistration_reason_e dereg_reason,
+        ogs_nas_5gmm_cause_t gmm_cause)
 {
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_deregistration_request_to_ue_t *dereg_req =
@@ -300,12 +323,11 @@ ogs_pkbuf_t *gmm_build_de_registration_request(amf_ue_t *amf_ue,
         dereg_reason == OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED;
     dereg_req->de_registration_type.access_type = OGS_ACCESS_TYPE_3GPP;
 
-    dereg_req->presencemask |=
-        OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_5GMM_CAUSE_PRESENT;
-    dereg_req->gmm_cause =
-        (dereg_reason == OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED
-         ? OGS_5GMM_CAUSE_IMPLICITLY_DE_REGISTERED
-         : OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+    if (gmm_cause) {
+        dereg_req->presencemask |=
+            OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE_5GMM_CAUSE_PRESENT;
+        dereg_req->gmm_cause = gmm_cause;
+    }
 
     return nas_5gs_security_encode(amf_ue, &message);
 }
@@ -650,9 +672,9 @@ ogs_pkbuf_t *gmm_build_dl_nas_transport(amf_sess_t *sess,
         dl_nas_transport->presencemask |=
             OGS_NAS_5GS_DL_NAS_TRANSPORT_BACK_OFF_TIMER_VALUE_PRESENT;
         back_off_timer_value->length = 1;
-        back_off_timer_value->unit =
-            OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_2_SS;
-        back_off_timer_value->value = backoff_time / 2;
+        back_off_timer_value->t.unit =
+            OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_2_SS;
+        back_off_timer_value->t.value = backoff_time / 2;
     }
 
     gmmbuf = nas_5gs_security_encode(amf_ue, &message);

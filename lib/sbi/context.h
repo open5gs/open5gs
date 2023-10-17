@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -29,6 +29,7 @@ extern "C" {
 #endif
 
 #define OGS_MAX_NUM_OF_NF_INFO 8
+#define OGS_MAX_NUM_OF_SCP_DOMAIN 8
 
 typedef struct ogs_sbi_client_s ogs_sbi_client_t;
 typedef struct ogs_sbi_smf_info_s ogs_sbi_smf_info_t;
@@ -49,7 +50,14 @@ typedef struct ogs_sbi_discovery_config_s {
 typedef struct ogs_sbi_context_s {
     ogs_sbi_discovery_config_t discovery_config; /* SCP Discovery Delegated */
 
-    uint32_t sbi_port;                      /* SBI local port */
+#define OGS_HOME_NETWORK_PKI_VALUE_MIN 1
+#define OGS_HOME_NETWORK_PKI_VALUE_MAX 254
+
+    struct {
+        uint8_t avail;
+        uint8_t scheme;
+        uint8_t key[OGS_ECCKEY_LEN]; /* 32 bytes Private Key */
+    } hnet[OGS_HOME_NETWORK_PKI_VALUE_MAX+1]; /* PKI Value : 1 ~ 254 */
 
     ogs_list_t server_list;
     ogs_list_t client_list;
@@ -57,6 +65,7 @@ typedef struct ogs_sbi_context_s {
     ogs_uuid_t uuid;
 
     ogs_list_t nf_instance_list;
+    ogs_list_t subscription_spec_list;
     ogs_list_t subscription_data_list;
 
     ogs_sbi_nf_instance_t *nf_instance;     /* SELF NF Instance */
@@ -83,6 +92,21 @@ typedef struct ogs_sbi_nf_instance_s {
     ogs_timer_t *t_heartbeat_interval;      /* heartbeat interval */
     ogs_timer_t *t_no_heartbeat;            /* check heartbeat */
     ogs_timer_t *t_validity;                /* check validation */
+
+    /*
+     * Issues #2034
+     *
+     * Other NF instances are obtained through NRF
+     * or created directly through configuration files.
+     *
+     * Other NFs created by the config file should not be passed
+     * through NRF discovery or anything like that.
+     *
+     * Since self-created NF Instances do not have an ID,
+     * they are implemented to exclude them from NRF Discovery.
+     */
+#define NF_INSTANCE_EXCLUDED_FROM_DISCOVERY(__nFInstance) \
+    (!(__nFInstance) || !((__nFInstance)->id))
 
 #define NF_INSTANCE_ID(__nFInstance) \
     ((__nFInstance) ? ((__nFInstance)->id) : NULL)
@@ -193,6 +217,7 @@ typedef struct ogs_sbi_nf_service_s {
     struct {
         ogs_sockaddr_t *ipv4;
         ogs_sockaddr_t *ipv6;
+        bool is_port;
         int port;
     } addr[OGS_SBI_MAX_NUM_OF_IP_ADDRESS];
 
@@ -208,14 +233,27 @@ typedef struct ogs_sbi_nf_service_s {
     void *client;
 } ogs_sbi_nf_service_t;
 
+typedef struct ogs_sbi_subscription_spec_s {
+    ogs_lnode_t lnode;
+
+    struct {
+        OpenAPI_nf_type_e nf_type;          /* nfType */
+        char *service_name;                 /* ServiceName */
+    } subscr_cond;
+
+} ogs_sbi_subscription_spec_t;
+
 typedef struct ogs_sbi_subscription_data_s {
     ogs_lnode_t lnode;
 
+#define OGS_SBI_VALIDITY_SEC(v) \
+        ogs_time_sec(v) + (ogs_time_usec(v) ? 1 : 0)
     struct {
         int validity_duration;
     } time;
 
     ogs_timer_t *t_validity;                /* check validation */
+    ogs_timer_t *t_patch;                   /* for sending PATCH */
 
     char *id;                               /* SubscriptionId */
     char *req_nf_instance_id;               /* reqNfInstanceId */
@@ -260,6 +298,18 @@ typedef struct ogs_sbi_smf_info_s {
     } nr_tai_range[OGS_MAX_NUM_OF_TAI];
 } ogs_sbi_smf_info_t;
 
+typedef struct ogs_sbi_scp_info_s {
+    ogs_port_t http, https;
+
+    int num_of_domain;
+    struct {
+        char *name;
+        char *fqdn;
+        ogs_port_t http, https;
+    } domain[OGS_MAX_NUM_OF_SCP_DOMAIN];
+
+} ogs_sbi_scp_info_t;
+
 typedef struct ogs_sbi_amf_info_s {
     int amf_set_id;
     int amf_region_id;
@@ -291,14 +341,16 @@ typedef struct ogs_sbi_nf_info_s {
     union {
         ogs_sbi_smf_info_t smf;
         ogs_sbi_amf_info_t amf;
+        ogs_sbi_scp_info_t scp;
     };
 } ogs_sbi_nf_info_t;
 
-void ogs_sbi_context_init(void);
+void ogs_sbi_context_init(OpenAPI_nf_type_e nf_type);
 void ogs_sbi_context_final(void);
 ogs_sbi_context_t *ogs_sbi_self(void);
 int ogs_sbi_context_parse_config(
         const char *local, const char *nrf, const char *scp);
+int ogs_sbi_context_parse_hnet_config(ogs_yaml_iter_t *root_iter);
 
 bool ogs_sbi_nf_service_is_available(const char *name);
 
@@ -350,8 +402,7 @@ void ogs_sbi_nf_info_remove_all(ogs_list_t *list);
 ogs_sbi_nf_info_t *ogs_sbi_nf_info_find(
         ogs_list_t *list, OpenAPI_nf_type_e nf_type);
 
-void ogs_sbi_nf_instance_build_default(
-        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_type_e nf_type);
+void ogs_sbi_nf_instance_build_default(ogs_sbi_nf_instance_t *nf_instance);
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
         ogs_sbi_nf_instance_t *nf_instance, const char *name);
 
@@ -363,7 +414,10 @@ ogs_sbi_client_t *ogs_sbi_client_find_by_service_type(
 
 void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
 
-OpenAPI_uri_scheme_e ogs_sbi_default_uri_scheme(void);
+OpenAPI_uri_scheme_e ogs_sbi_server_default_scheme(void);
+OpenAPI_uri_scheme_e ogs_sbi_client_default_scheme(void);
+int ogs_sbi_server_default_port(void);
+int ogs_sbi_client_default_port(void);
 
 #define OGS_SBI_SETUP_NF_INSTANCE(__cTX, __nFInstance) \
     do { \
@@ -400,6 +454,12 @@ void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact);
 void ogs_sbi_xact_remove_all(ogs_sbi_object_t *sbi_object);
 ogs_sbi_xact_t *ogs_sbi_xact_cycle(ogs_sbi_xact_t *xact);
 
+ogs_sbi_subscription_spec_t *ogs_sbi_subscription_spec_add(
+        OpenAPI_nf_type_e nf_type, const char *service_name);
+void ogs_sbi_subscription_spec_remove(
+        ogs_sbi_subscription_spec_t *subscription_spec);
+void ogs_sbi_subscription_spec_remove_all(void);
+
 ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_add(void);
 void ogs_sbi_subscription_data_set_id(
         ogs_sbi_subscription_data_t *subscription_data, char *id);
@@ -409,8 +469,6 @@ void ogs_sbi_subscription_data_remove_all_by_nf_instance_id(
         char *nf_instance_id);
 void ogs_sbi_subscription_data_remove_all(void);
 ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_find(char *id);
-void ogs_sbi_subscription_data_build_default(
-        OpenAPI_nf_type_e nf_type, const char *service_name);
 
 #ifdef __cplusplus
 }

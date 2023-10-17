@@ -1,7 +1,7 @@
 /*
  * n2_information_transfer_error.h
  *
- * 
+ * Data within a failure response for a non-UE related N2 Information Transfer
  */
 
 #ifndef _OpenAPI_n2_information_transfer_error_H_

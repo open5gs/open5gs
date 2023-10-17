@@ -1,7 +1,7 @@
 /*
  * pcf_binding.h
  *
- * 
+ * Identifies an Individual PCF for a PDU Session binding.
  */
 
 #ifndef _OpenAPI_pcf_binding_H_

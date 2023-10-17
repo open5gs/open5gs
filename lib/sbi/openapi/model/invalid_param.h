@@ -1,7 +1,7 @@
 /*
  * invalid_param.h
  *
- * 
+ * It contains an invalid parameter and a related description.
  */
 
 #ifndef _OpenAPI_invalid_param_H_

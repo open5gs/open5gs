@@ -1,7 +1,7 @@
 /*
  * sm_policy_control.h
  *
- * 
+ * Contains the parameters used to request the SM policies and the SM policies authorized by the PCF.
  */
 
 #ifndef _OpenAPI_sm_policy_control_H_

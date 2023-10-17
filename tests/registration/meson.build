@@ -20,6 +20,7 @@ test5gc_registration_sources = files('''
     simple-test.c
     guti-test.c
     auth-test.c
+    ecc-test.c
     idle-test.c
     dereg-test.c
     paging-test.c

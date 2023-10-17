@@ -1,0 +1,411 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-data-reporting-provisioning
+  version: 1.0.1
+  description: |
+    API for 3GPP Data Reporting and Provisioning.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.522 V17.7.0; 5G System; Network Exposure Function Northbound APIs.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.522/'
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/3gpp-data-reporting-provisioning/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 5.2.4 of 3GPP TS 29.122.
+
+paths:
+  /sessions:
+    post:
+      summary: Create a new Data Reporting Provisioning Session.
+      operationId: CreateDataRepProvSession
+      tags:
+        - Data Reporting Provisioning Sessions
+      requestBody:
+        description: >
+          Representation of the Data Reporting Provisioning Session to be created in the NEF.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS26532_Ndcaf_DataReportingProvisioning.yaml#/components/schemas/DataReportingProvisioningSession'
+      responses:
+        '201':
+          description: Created. Successful creation of a new Data Reporting Provisioning Session.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS26532_Ndcaf_DataReportingProvisioning.yaml#/components/schemas/DataReportingProvisioningSession'
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/3gpp-data-reporting-provisioning/v1/sessions/{sessionId}
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /sessions/{sessionId}:
+    parameters:
+      - name: sessionId
+        in: path
+        description: Identifier of the Data Reporting Provisioning Session.
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Request the retrieval of an existing Individual Data Reporting Provisioning Session resource.
+      operationId: GetIndDataRepProvSession
+      tags:
+        - Individual Data Reporting Provisioning Session
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Data Reporting Provisioning Session resource is
+            Successfully returned.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS26532_Ndcaf_DataReportingProvisioning.yaml#/components/schemas/DataReportingProvisioningSession'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Deletes an already existing Individual Data Reporting Provisioning Session resource.
+      operationId: DeleteIndDataRepProvSession
+      tags:
+        - Individual Data Reporting Provisioning Session
+      responses:
+        '204':
+          description: >
+            No Content. The concerned Individual Data Reporting Provisioning Session resource was
+            successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /sessions/{sessionId}/configurations:
+    parameters:
+      - name: sessionId
+        in: path
+        description: Identifier of the Data Reporting Provisioning Session.
+        required: true
+        schema:
+          type: string
+    post:
+      summary: Create a new Data Reporting Configuration resource.
+      operationId: CreateDataRepConfig
+      tags:
+        - Data Reporting Configurations
+      requestBody:
+        description: >
+          Representation of the Data Reporting Configuration to be created in the NEF.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS26532_Ndcaf_DataReportingProvisioning.yaml#/components/schemas/DataReportingConfiguration'
+      responses:
+        '201':
+          description: Created. Successful creation of a new Data Reporting Configuration.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS26532_Ndcaf_DataReportingProvisioning.yaml#/components/schemas/DataReportingConfiguration'
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/3gpp-data-reporting-provisioning/v1/sessions/{sessionId}/configurations/{configurationId}
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /sessions/{sessionId}/configurations/{configurationId}:
+    parameters:
+      - name: sessionId
+        in: path
+        description: Identifier of the Data Reporting Provisioning Session.
+        required: true
+        schema:
+          type: string
+      - name: configurationId
+        in: path
+        description: Identifier of the Data Reporting Configuration.
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Request the retrieval of an existing Individual Data Reporting Configuration resource.
+      operationId: GetIndDataRepConfig
+      tags:
+        - Individual Data Reporting Configuration
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Data Reporting Configuration resource is successfully
+            returned.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS26532_Ndcaf_DataReportingProvisioning.yaml#/components/schemas/DataReportingConfiguration'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request to update an existing Individual Data Reporting Configuration resource.
+      operationId: UpdateIndDataRepConfig
+      tags:
+        - Individual Data Reporting Configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS26532_Ndcaf_DataReportingProvisioning.yaml#/components/schemas/DataReportingConfiguration'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Data Reporting Configuration resource was successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS26532_Ndcaf_DataReportingProvisioning.yaml#/components/schemas/DataReportingConfiguration'
+        '204':
+          description: >
+            No Content. The Individual Data Reporting Configuration resource was successfully
+            updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request to modify an existing Individual Data Reporting Configuration resource.
+      operationId: ModifyIndDataRepConfig
+      tags:
+        - Individual Data Reporting Configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS26532_Ndcaf_DataReportingProvisioning.yaml#/components/schemas/DataReportingConfigurationPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Data Reporting Configuration resource was successfully modified.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS26532_Ndcaf_DataReportingProvisioning.yaml#/components/schemas/DataReportingConfiguration'
+        '204':
+          description: >
+            No Content. The Individual Data Reporting Configuration resource was successfully
+            modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Deletes an already existing Data Reporting Configuration resource.
+      operationId: DeleteIndDataRepConfig
+      tags:
+        - Individual Data Reporting Configuration
+      responses:
+        '204':
+          description: >
+            No Content. The concerned Individual Data Reporting Configuration resource was
+            successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}

@@ -1,0 +1,168 @@
+openapi: 3.0.0
+
+info:
+  version: 1.0.1
+  title: Namf_MBSCommunication
+  description: |
+    AMF Communication Service for MBS.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.518 V17.8.0; 5G System; Access and Mobility Management Services
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.518/'
+
+servers:
+  - url: '{apiRoot}/namf-mbs-comm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - namf-mbs-comm
+
+paths:
+  /n2-messages/transfer:
+    post:
+      summary: Namf_MBSCommunication N2 Message Transfer service Operation
+      tags:
+        - N2Messages Handler (custom operation)
+      operationId: N2MessageTransfer
+      requestBody:
+        content:
+          multipart/related:  # message with binary body part(s)
+            schema:
+              type: object
+              properties: # Request parts
+                jsonData:
+                  $ref: '#/components/schemas/MbsN2MessageTransferReqData'
+                binaryDataN2Information:
+                  type: string
+                  format: binary
+            encoding:
+              jsonData:
+                contentType:  application/json
+              binaryDataN2Information:
+                contentType:  application/vnd.3gpp.ngap
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string
+        required: true
+      responses:
+        '200':
+          description: MBS N2 Message Transfer successfully initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MbsN2MessageTransferRspData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            namf-mbs-comm: Access to the Namf_MBSCommunication API
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    MbsN2MessageTransferReqData:
+      description: Data within MBS N2 Message Transfer Request
+      type: object
+      properties:
+        mbsSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsSessionId'
+        areaSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AreaSessionId'
+        n2MbsSmInfo:
+          $ref: '#/components/schemas/N2MbsSmInfo'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - mbsSessionId
+        - n2MbsSmInfo
+
+
+
+    MbsN2MessageTransferRspData:
+      description: Data within MBS N2 Message Transfer Response
+      type: object
+      properties:
+        result:
+          $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N2InformationTransferResult'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - result
+
+
+
+
+    N2MbsSmInfo:
+      description: N2 MBS Session Management information
+      type: object
+      properties:
+        ngapIeType:
+          $ref: '#/components/schemas/MbsNgapIeType'
+        ngapData:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+      required:
+        - ngapIeType
+        - ngapData
+
+#
+# SIMPLE DATA TYPES
+#
+
+
+#
+# ENUMERATIONS
+#
+
+    MbsNgapIeType:
+      description: NGAP Information Element Type
+      anyOf:
+      - type: string
+        enum:
+          - MBS_SES_ACT_REQ
+          - MBS_SES_DEACT_REQ
+          - MBS_SES_UPD_REQ
+      - type: string

@@ -1,7 +1,7 @@
 /*
  * route_information.h
  *
- * 
+ * At least one of the \&quot;ipv4Addr\&quot; attribute and the \&quot;ipv6Addr\&quot; attribute shall be included in the \&quot;RouteInformation\&quot; data type.  
  */
 
 #ifndef _OpenAPI_route_information_H_

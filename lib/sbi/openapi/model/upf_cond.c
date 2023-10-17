@@ -45,24 +45,32 @@ OpenAPI_upf_cond_t *OpenAPI_upf_cond_create(
 
 void OpenAPI_upf_cond_free(OpenAPI_upf_cond_t *upf_cond)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == upf_cond) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(upf_cond->smf_serving_area, node) {
-        ogs_free(node->data);
+    if (upf_cond->smf_serving_area) {
+        OpenAPI_list_for_each(upf_cond->smf_serving_area, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(upf_cond->smf_serving_area);
+        upf_cond->smf_serving_area = NULL;
     }
-    OpenAPI_list_free(upf_cond->smf_serving_area);
-    OpenAPI_list_for_each(upf_cond->tai_list, node) {
-        OpenAPI_tai_free(node->data);
+    if (upf_cond->tai_list) {
+        OpenAPI_list_for_each(upf_cond->tai_list, node) {
+            OpenAPI_tai_free(node->data);
+        }
+        OpenAPI_list_free(upf_cond->tai_list);
+        upf_cond->tai_list = NULL;
     }
-    OpenAPI_list_free(upf_cond->tai_list);
     ogs_free(upf_cond);
 }
 
 cJSON *OpenAPI_upf_cond_convertToJSON(OpenAPI_upf_cond_t *upf_cond)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (upf_cond == NULL) {
         ogs_error("OpenAPI_upf_cond_convertToJSON() failed [UpfCond]");
@@ -70,25 +78,27 @@ cJSON *OpenAPI_upf_cond_convertToJSON(OpenAPI_upf_cond_t *upf_cond)
     }
 
     item = cJSON_CreateObject();
+    if (upf_cond->condition_type == OpenAPI_upf_cond_CONDITIONTYPE_NULL) {
+        ogs_error("OpenAPI_upf_cond_convertToJSON() failed [condition_type]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "conditionType", OpenAPI_condition_typeupf_cond_ToString(upf_cond->condition_type)) == NULL) {
         ogs_error("OpenAPI_upf_cond_convertToJSON() failed [condition_type]");
         goto end;
     }
 
     if (upf_cond->smf_serving_area) {
-    cJSON *smf_serving_area = cJSON_AddArrayToObject(item, "smfServingArea");
-    if (smf_serving_area == NULL) {
+    cJSON *smf_serving_areaList = cJSON_AddArrayToObject(item, "smfServingArea");
+    if (smf_serving_areaList == NULL) {
         ogs_error("OpenAPI_upf_cond_convertToJSON() failed [smf_serving_area]");
         goto end;
     }
-
-    OpenAPI_lnode_t *smf_serving_area_node;
-    OpenAPI_list_for_each(upf_cond->smf_serving_area, smf_serving_area_node)  {
-    if (cJSON_AddStringToObject(smf_serving_area, "", (char*)smf_serving_area_node->data) == NULL) {
-        ogs_error("OpenAPI_upf_cond_convertToJSON() failed [smf_serving_area]");
-        goto end;
+    OpenAPI_list_for_each(upf_cond->smf_serving_area, node) {
+        if (cJSON_AddStringToObject(smf_serving_areaList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_upf_cond_convertToJSON() failed [smf_serving_area]");
+            goto end;
+        }
     }
-                    }
     }
 
     if (upf_cond->tai_list) {
@@ -97,17 +107,13 @@ cJSON *OpenAPI_upf_cond_convertToJSON(OpenAPI_upf_cond_t *upf_cond)
         ogs_error("OpenAPI_upf_cond_convertToJSON() failed [tai_list]");
         goto end;
     }
-
-    OpenAPI_lnode_t *tai_list_node;
-    if (upf_cond->tai_list) {
-        OpenAPI_list_for_each(upf_cond->tai_list, tai_list_node) {
-            cJSON *itemLocal = OpenAPI_tai_convertToJSON(tai_list_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_upf_cond_convertToJSON() failed [tai_list]");
-                goto end;
-            }
-            cJSON_AddItemToArray(tai_listList, itemLocal);
+    OpenAPI_list_for_each(upf_cond->tai_list, node) {
+        cJSON *itemLocal = OpenAPI_tai_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_upf_cond_convertToJSON() failed [tai_list]");
+            goto end;
         }
+        cJSON_AddItemToArray(tai_listList, itemLocal);
     }
     }
 
@@ -118,66 +124,67 @@ end:
 OpenAPI_upf_cond_t *OpenAPI_upf_cond_parseFromJSON(cJSON *upf_condJSON)
 {
     OpenAPI_upf_cond_t *upf_cond_local_var = NULL;
-    cJSON *condition_type = cJSON_GetObjectItemCaseSensitive(upf_condJSON, "conditionType");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *condition_type = NULL;
+    OpenAPI_upf_cond_condition_type_e condition_typeVariable = 0;
+    cJSON *smf_serving_area = NULL;
+    OpenAPI_list_t *smf_serving_areaList = NULL;
+    cJSON *tai_list = NULL;
+    OpenAPI_list_t *tai_listList = NULL;
+    condition_type = cJSON_GetObjectItemCaseSensitive(upf_condJSON, "conditionType");
     if (!condition_type) {
         ogs_error("OpenAPI_upf_cond_parseFromJSON() failed [condition_type]");
         goto end;
     }
-
-    OpenAPI_upf_cond_condition_type_e condition_typeVariable;
     if (!cJSON_IsString(condition_type)) {
         ogs_error("OpenAPI_upf_cond_parseFromJSON() failed [condition_type]");
         goto end;
     }
     condition_typeVariable = OpenAPI_condition_typeupf_cond_FromString(condition_type->valuestring);
 
-    cJSON *smf_serving_area = cJSON_GetObjectItemCaseSensitive(upf_condJSON, "smfServingArea");
-
-    OpenAPI_list_t *smf_serving_areaList;
+    smf_serving_area = cJSON_GetObjectItemCaseSensitive(upf_condJSON, "smfServingArea");
     if (smf_serving_area) {
-    cJSON *smf_serving_area_local;
-    if (!cJSON_IsArray(smf_serving_area)) {
-        ogs_error("OpenAPI_upf_cond_parseFromJSON() failed [smf_serving_area]");
-        goto end;
-    }
-    smf_serving_areaList = OpenAPI_list_create();
+        cJSON *smf_serving_area_local = NULL;
+        if (!cJSON_IsArray(smf_serving_area)) {
+            ogs_error("OpenAPI_upf_cond_parseFromJSON() failed [smf_serving_area]");
+            goto end;
+        }
 
-    cJSON_ArrayForEach(smf_serving_area_local, smf_serving_area) {
-    if (!cJSON_IsString(smf_serving_area_local)) {
-        ogs_error("OpenAPI_upf_cond_parseFromJSON() failed [smf_serving_area]");
-        goto end;
-    }
-    OpenAPI_list_add(smf_serving_areaList , ogs_strdup(smf_serving_area_local->valuestring));
-    }
+        smf_serving_areaList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(smf_serving_area_local, smf_serving_area) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(smf_serving_area_local)) {
+                ogs_error("OpenAPI_upf_cond_parseFromJSON() failed [smf_serving_area]");
+                goto end;
+            }
+            OpenAPI_list_add(smf_serving_areaList, ogs_strdup(smf_serving_area_local->valuestring));
+        }
     }
 
-    cJSON *tai_list = cJSON_GetObjectItemCaseSensitive(upf_condJSON, "taiList");
-
-    OpenAPI_list_t *tai_listList;
+    tai_list = cJSON_GetObjectItemCaseSensitive(upf_condJSON, "taiList");
     if (tai_list) {
-    cJSON *tai_list_local_nonprimitive;
-    if (!cJSON_IsArray(tai_list)){
-        ogs_error("OpenAPI_upf_cond_parseFromJSON() failed [tai_list]");
-        goto end;
-    }
-
-    tai_listList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(tai_list_local_nonprimitive, tai_list ) {
-        if (!cJSON_IsObject(tai_list_local_nonprimitive)) {
+        cJSON *tai_list_local = NULL;
+        if (!cJSON_IsArray(tai_list)) {
             ogs_error("OpenAPI_upf_cond_parseFromJSON() failed [tai_list]");
             goto end;
         }
-        OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local_nonprimitive);
 
-        if (!tai_listItem) {
-            ogs_error("No tai_listItem");
-            OpenAPI_list_free(tai_listList);
-            goto end;
+        tai_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(tai_list_local, tai_list) {
+            if (!cJSON_IsObject(tai_list_local)) {
+                ogs_error("OpenAPI_upf_cond_parseFromJSON() failed [tai_list]");
+                goto end;
+            }
+            OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local);
+            if (!tai_listItem) {
+                ogs_error("No tai_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(tai_listList, tai_listItem);
         }
-
-        OpenAPI_list_add(tai_listList, tai_listItem);
-    }
     }
 
     upf_cond_local_var = OpenAPI_upf_cond_create (
@@ -188,6 +195,20 @@ OpenAPI_upf_cond_t *OpenAPI_upf_cond_parseFromJSON(cJSON *upf_condJSON)
 
     return upf_cond_local_var;
 end:
+    if (smf_serving_areaList) {
+        OpenAPI_list_for_each(smf_serving_areaList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(smf_serving_areaList);
+        smf_serving_areaList = NULL;
+    }
+    if (tai_listList) {
+        OpenAPI_list_for_each(tai_listList, node) {
+            OpenAPI_tai_free(node->data);
+        }
+        OpenAPI_list_free(tai_listList);
+        tai_listList = NULL;
+    }
     return NULL;
 }
 

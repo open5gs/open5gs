@@ -25,12 +25,11 @@ static void bsf_main(void *data);
 
 static int initialized = 0;
 
-int bsf_initialize()
+int bsf_initialize(void)
 {
     int rv;
 
-    ogs_sbi_context_init();
-
+    ogs_sbi_context_init(OpenAPI_nf_type_BSF);
     bsf_context_init();
 
     rv = ogs_sbi_context_parse_config("bsf", "nrf", "scp");

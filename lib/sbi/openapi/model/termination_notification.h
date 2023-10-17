@@ -1,7 +1,7 @@
 /*
  * termination_notification.h
  *
- * 
+ * Represents a Termination Notification.
  */
 
 #ifndef _OpenAPI_termination_notification_H_

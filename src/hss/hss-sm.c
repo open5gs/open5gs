@@ -31,6 +31,7 @@ void hss_state_initial(ogs_fsm_t *s, ogs_event_t *e)
 
     ogs_assert(s);
 
+#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
     if (ogs_app()->use_mongodb_change_stream) {
         ogs_dbi_collection_watch_init();
 
@@ -41,6 +42,7 @@ void hss_state_initial(ogs_fsm_t *s, ogs_event_t *e)
 
         OGS_FSM_TRAN(s, &hss_state_operational);
     }
+#endif
 }
 
 void hss_state_final(ogs_fsm_t *s, ogs_event_t *e)

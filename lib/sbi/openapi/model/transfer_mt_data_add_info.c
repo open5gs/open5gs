@@ -20,16 +20,18 @@ OpenAPI_transfer_mt_data_add_info_t *OpenAPI_transfer_mt_data_add_info_create(
 
 void OpenAPI_transfer_mt_data_add_info_free(OpenAPI_transfer_mt_data_add_info_t *transfer_mt_data_add_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == transfer_mt_data_add_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(transfer_mt_data_add_info);
 }
 
 cJSON *OpenAPI_transfer_mt_data_add_info_convertToJSON(OpenAPI_transfer_mt_data_add_info_t *transfer_mt_data_add_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (transfer_mt_data_add_info == NULL) {
         ogs_error("OpenAPI_transfer_mt_data_add_info_convertToJSON() failed [TransferMtDataAddInfo]");
@@ -51,8 +53,9 @@ end:
 OpenAPI_transfer_mt_data_add_info_t *OpenAPI_transfer_mt_data_add_info_parseFromJSON(cJSON *transfer_mt_data_add_infoJSON)
 {
     OpenAPI_transfer_mt_data_add_info_t *transfer_mt_data_add_info_local_var = NULL;
-    cJSON *max_waiting_time = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_add_infoJSON, "maxWaitingTime");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *max_waiting_time = NULL;
+    max_waiting_time = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_add_infoJSON, "maxWaitingTime");
     if (max_waiting_time) {
     if (!cJSON_IsNumber(max_waiting_time)) {
         ogs_error("OpenAPI_transfer_mt_data_add_info_parseFromJSON() failed [max_waiting_time]");

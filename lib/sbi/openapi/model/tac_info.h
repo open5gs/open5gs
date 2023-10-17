@@ -1,7 +1,7 @@
 /*
  * tac_info.h
  *
- * 
+ * contains tracking area information (tracking area codes).
  */
 
 #ifndef _OpenAPI_tac_info_H_

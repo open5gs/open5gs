@@ -1,0 +1,383 @@
+openapi: 3.0.0
+
+info:
+  version: '1.0.0'
+  title: 'Nhss_gbaSDM'
+  description: |
+    Nhss Subscriber Data Management Service for GBA.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.562 Home Subscriber Server (HSS) Services, version 17.5.0
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.562/'
+
+servers:
+  - url: '{apiRoot}/nhss-gba-sdm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nhss-gba-sdm
+
+paths:
+  /{ueId}/subscriber-data:
+    get:
+      summary: Retrieve the subscriber data of a user
+      operationId: GetSubscriberData
+      tags:
+        - Subscriber Data (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nhss-gba-sdm
+        - oAuth2ClientCredentials:
+          - nhss-gba-sdm
+          - nhss-gba-sdm:subscriber-data:read
+      parameters:
+        - name: ueId
+          in: path
+          description: UE Identity
+          required: true
+          schema:
+            $ref: '#/components/schemas/UeId'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GbaSubscriberData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /{ueId}/subscriptions:
+    post:
+      summary: Subscribe to notifications
+      operationId: GbaSdmSubscribe
+      tags:
+        - GBA SDM Subscriptions (Collection)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nhss-gba-sdm
+        - oAuth2ClientCredentials:
+          - nhss-gba-sdm
+          - nhss-gba-sdm:subscriptions:create
+      parameters:
+        - name: ueId
+          in: path
+          description: UE Identity
+          required: true
+          schema:
+            $ref: '#/components/schemas/UeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GbaSdmSubscription'
+        required: true
+      responses:
+        '201':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GbaSdmSubscription'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/nhss-gba-sdm/<apiVersion>/{ueId}/subscriptions/{subscriptionId}
+              required: true
+              schema:
+                type: string
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        datachangeNotification:
+          '{request.body#/callbackReference}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ModificationNotification'
+              responses:
+                '204':
+                  description: Successful Notification response
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /{ueId}/subscriptions/{subscriptionId}:
+    delete:
+      summary: Unsubscribe from notifications
+      operationId: GbaSdmUnsubscribe
+      tags:
+        - GBA SDM Subscription (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nhss-gba-sdm
+        - oAuth2ClientCredentials:
+          - nhss-gba-sdm
+          - nhss-gba-sdm:subscription:modify
+      parameters:
+        - name: ueId
+          in: path
+          description: UE Identity
+          required: true
+          schema:
+            $ref: '#/components/schemas/UeId'
+        - name: subscriptionId
+          in: path
+          description: Id of the Subscription
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successful response
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify the subscription
+      operationId: GbaSdmSubsModify
+      tags:
+        - GBA SDM Subscription (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nhss-gba-sdm
+        - oAuth2ClientCredentials:
+          - nhss-gba-sdm
+          - nhss-gba-sdm:subscription:modify
+      parameters:
+        - name: ueId
+          in: path
+          description: UE Identity
+          required: true
+          schema:
+            $ref: '#/components/schemas/UeId'
+        - name: subscriptionId
+          in: path
+          description: Id of the Subscription
+          required: true
+          schema:
+            type: string
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '204':
+          description: Successful modification
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nhss-gba-sdm: Access to the Nhss GBA Subscription Data Management API
+            nhss-gba-sdm:subscriber-data:read: Access to read the GBA Subscriber Data resource
+            nhss-gba-sdm:subscriptions:create: Access to create Subscriptions resources
+            nhss-gba-sdm:subscription:modify: Access to update/delete a Subscription resource
+
+  schemas:
+
+#
+# COMPLEX TYPES:
+#
+
+    GbaSubscriberData:
+      description: >
+        GBA subscriber data of the UE; it includes the GBA User Security Settings (GUSS) data
+      type: object
+      properties:
+        guss:
+          $ref: '#/components/schemas/Guss'
+
+    Guss:
+      description: >
+        GBA User Security Settings of the UE; it includes information about the BSF,
+        and a list of User Security Settings
+      type: object
+      properties:
+        bsfInfo:
+          $ref: '#/components/schemas/BsfInfo'
+        ussList:
+          type: array
+          items:
+            $ref: 'TS29309_Nbsp_GBA.yaml#/components/schemas/UssListItem'
+          minItems: 1
+
+    BsfInfo:
+      description: >
+        Information about the BSF; it includes an indication of whether GBA or GBA_U is to be used,
+        the key lifetime and a user-specific list of security features
+      type: object
+      properties:
+        uiccType:
+          $ref: '#/components/schemas/UiccType'
+        lifeTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        securityFeatures:
+          type: array
+          items:
+            $ref: 'TS29309_Nbsp_GBA.yaml#/components/schemas/SecFeature'
+          minItems: 1
+
+    GbaSdmSubscription:
+      description: >
+        Information about a subscription created in the HSS, so the consumer (e.g. BSF) can be
+        notified when there are changes on the monitored data
+      type: object
+      required:
+        - nfInstanceId
+        - callbackReference
+        - monitoredResourceUris
+      properties:
+        nfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        callbackReference:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        monitoredResourceUris:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+        expires:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+
+#
+# SIMPLE TYPES:
+#
+
+    UeId:
+      description: UE ID can be MSISDN, IMSI, IMPI or IMPU
+      anyOf:
+        - $ref: '#/components/schemas/Msisdn'
+        - $ref: '#/components/schemas/Imsi'
+        - $ref: 'TS29562_Nhss_imsSDM.yaml#/components/schemas/ImsUeId'
+
+    Msisdn:
+      description: MS-ISDN of the UE
+      type: string
+      pattern: '^msisdn-[0-9]{5,15}$'
+
+    Imsi:
+      description: IMSI of the UE
+      type: string
+      pattern: '^imsi-[0-9]{5,15}$'
+
+#
+# ENUMS:
+#
+
+    UiccType:
+      description: Indicates whether GBA or GBA_U is to be used
+      anyOf:
+        - type: string
+          enum:
+            - GBA
+            - GBA_U
+        - type: string

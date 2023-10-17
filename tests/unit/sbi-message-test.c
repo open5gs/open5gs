@@ -506,6 +506,43 @@ static void sbi_message_test5(abts_case *tc, void *data)
 
 static void sbi_message_test6(abts_case *tc, void *data)
 {
+    ogs_s_nssai_t s_nssai1, s_nssai2;
+    char *string = NULL;
+    bool rc = false;
+
+    memset(&s_nssai1, 0, sizeof(ogs_s_nssai_t));
+
+    s_nssai1.sst = 255;
+    s_nssai1.sd.v = 0x19cde0;
+
+    string = ogs_sbi_s_nssai_to_string(&s_nssai1);
+    ABTS_PTR_NOTNULL(tc, string);
+
+    rc = ogs_sbi_s_nssai_from_string(&s_nssai2, string);
+    ABTS_TRUE(tc, rc == true);
+
+    ogs_free(string);
+
+    ABTS_INT_EQUAL(tc, s_nssai1.sst, s_nssai2.sst);
+    ABTS_INT_EQUAL(tc, s_nssai1.sd.v, s_nssai2.sd.v);
+
+    s_nssai1.sst = 1;
+    s_nssai1.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+
+    string = ogs_sbi_s_nssai_to_string(&s_nssai1);
+    ABTS_PTR_NOTNULL(tc, string);
+
+    rc = ogs_sbi_s_nssai_from_string(&s_nssai2, string);
+    ABTS_TRUE(tc, rc == true);
+
+    ogs_free(string);
+
+    ABTS_INT_EQUAL(tc, s_nssai1.sst, s_nssai2.sst);
+    ABTS_INT_EQUAL(tc, s_nssai1.sd.v, s_nssai2.sd.v);
+}
+
+static void sbi_message_test7(abts_case *tc, void *data)
+{
     cJSON *item = NULL, *item2 = NULL;
     char *content = NULL;
     OpenAPI_smf_selection_subscription_data_t SmfSelectionSubscriptionData;
@@ -553,12 +590,11 @@ static void sbi_message_test6(abts_case *tc, void *data)
             OpenAPI_list_free(DnnInfoList);
 
         memset(&s_nssai, 0, sizeof(s_nssai));
-        s_nssai.sst = 1;
-        s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+        s_nssai.sst = 255;
+        s_nssai.sd.v = 0x19cde0;
 
         SubscribedSnssaiInfoMap = OpenAPI_map_create(
-                ogs_sbi_s_nssai_to_string(&s_nssai),
-                SubscribedSnssaiInfo);
+                ogs_sbi_s_nssai_to_string(&s_nssai), SubscribedSnssaiInfo);
         ogs_assert(SubscribedSnssaiInfoMap);
         ogs_assert(SubscribedSnssaiInfoMap->key);
 
@@ -611,8 +647,8 @@ static void sbi_message_test6(abts_case *tc, void *data)
         if (SubscribedSnssaiInfoMap) {
             memset(&s_nssai, 0, sizeof(s_nssai));
             ogs_sbi_s_nssai_from_string(&s_nssai, SubscribedSnssaiInfoMap->key);
-            ABTS_INT_EQUAL(tc, 1, s_nssai.sst);
-            ABTS_INT_EQUAL(tc, OGS_S_NSSAI_NO_SD_VALUE, s_nssai.sd.v);
+            ABTS_INT_EQUAL(tc, 255, s_nssai.sst);
+            ABTS_INT_EQUAL(tc, 0x19cde0, s_nssai.sd.v);
         }
     }
 
@@ -621,11 +657,11 @@ static void sbi_message_test6(abts_case *tc, void *data)
     content = cJSON_Print(item);
     cJSON_Delete(item);
     ogs_assert(content);
-    ABTS_INT_EQUAL(tc, 148, (int)strlen(content));
+    ABTS_INT_EQUAL(tc, 139, (int)strlen(content));
     ogs_free(content);
 }
 
-static void sbi_message_test7(abts_case *tc, void *data)
+static void sbi_message_test8(abts_case *tc, void *data)
 {
     ABTS_INT_EQUAL(tc, OpenAPI_nf_type_NRF,
         ogs_sbi_service_type_to_nf_type(OGS_SBI_SERVICE_TYPE_NNRF_NFM));
@@ -795,6 +831,7 @@ abts_suite *test_sbi_message(abts_suite *suite)
     abts_run_test(suite, sbi_message_test5, NULL);
     abts_run_test(suite, sbi_message_test6, NULL);
     abts_run_test(suite, sbi_message_test7, NULL);
+    abts_run_test(suite, sbi_message_test8, NULL);
 
     return suite;
 }

@@ -48,6 +48,7 @@ bool pcf_nudr_dr_handle_query_am_data(
         OpenAPI_policy_association_t PolicyAssociation;
         OpenAPI_ambr_t UeAmbr;
         OpenAPI_list_t *TriggerList = NULL;
+        OpenAPI_lnode_t *node = NULL;
 
         if (!recvmsg->AmPolicyData) {
             strerror = ogs_msprintf("[%s] No AmPolicyData", pcf_ue->supi);
@@ -97,10 +98,10 @@ bool pcf_nudr_dr_handle_query_am_data(
                 subscribed_ue_ambr.downlink = ogs_sbi_bitrate_from_string(
                         pcf_ue->subscribed_ue_ambr->downlink);
 
-                if (((subscribed_ue_ambr.uplink / 1024) !=
-                     (subscription_data.ambr.uplink / 1024)) ||
-                    ((subscribed_ue_ambr.downlink / 1024) !=
-                     (subscription_data.ambr.downlink / 1024))) {
+                if (((subscribed_ue_ambr.uplink / 1000) !=
+                     (subscription_data.ambr.uplink / 1000)) ||
+                    ((subscribed_ue_ambr.downlink / 1000) !=
+                     (subscription_data.ambr.downlink / 1000))) {
 
                     OpenAPI_list_add(TriggerList,
                             (void *)OpenAPI_request_trigger_UE_AMBR_CH);
@@ -147,6 +148,20 @@ bool pcf_nudr_dr_handle_query_am_data(
 
         ogs_subscription_data_free(&subscription_data);
 
+        OpenAPI_list_for_each(PolicyAssociation.request->allowed_snssais, node) {
+            struct OpenAPI_snssai_s *Snssai = node->data;
+            if (Snssai) {
+                ogs_s_nssai_t s_nssai;
+                s_nssai.sst = Snssai->sst;
+                s_nssai.sd = ogs_s_nssai_sd_from_string(Snssai->sd);
+
+                pcf_metrics_inst_by_slice_add(&pcf_ue->guami.plmn_id,
+                        &s_nssai, PCF_METR_CTR_PA_POLICYAMASSOSUCC, 1);
+            } else {
+                ogs_error("[%s] No Snssai", pcf_ue->supi);
+            }
+        }
+
         return true;
 
     DEFAULT
@@ -174,6 +189,7 @@ bool pcf_nudr_dr_handle_query_sm_data(
     char *strerror = NULL;
     pcf_ue_t *pcf_ue = NULL;
     ogs_sbi_server_t *server = NULL;
+    int r;
 
     ogs_assert(sess);
     pcf_ue = sess->pcf_ue;
@@ -212,14 +228,16 @@ bool pcf_nudr_dr_handle_query_sm_data(
         }
 
         if (nf_instance) {
-            ogs_assert(true ==
-                    pcf_sess_sbi_discover_and_send(
+            r = pcf_sess_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
                         pcf_nbsf_management_build_register,
-                        sess, stream, nf_instance));
+                        sess, stream, nf_instance);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         } else {
-            ogs_expect(true ==
-                    pcf_sess_sbi_discover_only(sess, stream, service_type));
+            r = pcf_sess_sbi_discover_only(sess, stream, service_type);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         }
 
         return true;

@@ -1,7 +1,7 @@
 /*
  * location_info.h
  *
- * 
+ * Represents UE location information.
  */
 
 #ifndef _OpenAPI_location_info_H_
@@ -12,7 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "registration_location_info.h"
+#include "user_location.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,17 +20,19 @@ extern "C" {
 
 typedef struct OpenAPI_location_info_s OpenAPI_location_info_t;
 typedef struct OpenAPI_location_info_s {
-    char *supi;
-    char *gpsi;
-    OpenAPI_list_t *registration_location_info_list;
-    char *supported_features;
+    struct OpenAPI_user_location_s *loc;
+    bool is_ratio;
+    int ratio;
+    bool is_confidence;
+    int confidence;
 } OpenAPI_location_info_t;
 
 OpenAPI_location_info_t *OpenAPI_location_info_create(
-    char *supi,
-    char *gpsi,
-    OpenAPI_list_t *registration_location_info_list,
-    char *supported_features
+    OpenAPI_user_location_t *loc,
+    bool is_ratio,
+    int ratio,
+    bool is_confidence,
+    int confidence
 );
 void OpenAPI_location_info_free(OpenAPI_location_info_t *location_info);
 OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_infoJSON);

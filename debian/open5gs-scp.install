@@ -1,3 +1,5 @@
 usr/bin/open5gs-scpd
 configs/open5gs/scp.yaml etc/open5gs
+configs/open5gs/tls/scp.key etc/open5gs/tls
+configs/open5gs/tls/scp.crt etc/open5gs/tls
 configs/systemd/open5gs-scpd.service lib/systemd/system

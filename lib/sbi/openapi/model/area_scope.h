@@ -1,7 +1,7 @@
 /*
  * area_scope.h
  *
- * 
+ * Contain the area based on Cells or Tracking Areas.
  */
 
 #ifndef _OpenAPI_area_scope_H_

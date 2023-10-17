@@ -37,7 +37,7 @@ int app_initialize(const char *const argv[])
     bool user_config = false;
     int i = 0;
 
-    for (i = 0; argv[i]; i++) {
+    for (i = 0; argv[i] && i < OGS_ARG_MAX-3; i++) {
         if (strcmp("-c", argv[i]) == 0) {
             user_config = true; 
         }
@@ -82,7 +82,7 @@ int app_initialize(const char *const argv[])
      * 
      * If freeDiameter is not used, it uses a delay of less than 4 seconds.
      */
-    ogs_msleep(500);
+    ogs_msleep(300);
 
     return OGS_OK;;
 }
@@ -112,6 +112,7 @@ void test_5gc_init(void)
     ogs_log_install_domain(&__ogs_dbi_domain, "dbi", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_gtp_domain, "gtp", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__ogs_sbi_domain, "sbi", OGS_LOG_ERROR);
 
     ogs_sctp_init(ogs_app()->usrsctp.udp_port);
     ogs_assert(ogs_dbi_init(ogs_app()->db_uri) == OGS_OK);

@@ -55,7 +55,10 @@ ogs_sock_t *ogs_sock_create(void)
     ogs_sock_t *sock = NULL;
 
     sock = ogs_calloc(1, sizeof(*sock));
-    ogs_expect_or_return_val(sock, NULL);
+    if (!sock) {
+        ogs_error("ogs_calloc() failed");
+        return NULL;
+    }
 
     sock->fd = INVALID_SOCKET;
 
@@ -84,6 +87,8 @@ ogs_sock_t *ogs_sock_socket(int family, int type, int protocol)
     sock->family = family;
     sock->fd = socket(sock->family, type, protocol);
     if (sock->fd < 0) {
+        ogs_sock_destroy(sock);
+        
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
             "socket create(%d:%d:%d) failed", sock->family, type, protocol);
         return NULL;

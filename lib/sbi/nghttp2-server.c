@@ -75,6 +75,7 @@ typedef struct ogs_sbi_session_s {
     int32_t                 last_stream_id;
 
     struct h2_settings      settings;
+    SSL*                    ssl;
 } ogs_sbi_session_t;
 
 typedef struct ogs_sbi_stream_s {
@@ -116,6 +117,189 @@ static void server_final(void)
     ogs_pool_final(&session_pool);
 }
 
+#ifndef OPENSSL_NO_NEXTPROTONEG
+static int next_proto_cb(SSL *ssl, const unsigned char **data,
+                         unsigned int *len, void *arg)
+{
+    static unsigned char next_proto_list[256];
+    (void)ssl;
+    (void)arg;
+
+    next_proto_list[0] = NGHTTP2_PROTO_VERSION_ID_LEN;
+    memcpy(&next_proto_list[1], NGHTTP2_PROTO_VERSION_ID, NGHTTP2_PROTO_VERSION_ID_LEN);
+
+    *data = next_proto_list;
+    *len = 1 + NGHTTP2_PROTO_VERSION_ID_LEN;
+    return SSL_TLSEXT_ERR_OK;
+}
+#endif
+
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+static int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
+                                unsigned char *outlen, const unsigned char *in,
+                                unsigned int inlen, void *arg)
+{
+    int rv;
+    (void)ssl;
+    (void)arg;
+
+    rv = nghttp2_select_next_protocol((unsigned char **)out, outlen, in, inlen);
+    if (rv != 1) {
+        return SSL_TLSEXT_ERR_NOACK;
+    }
+
+    return SSL_TLSEXT_ERR_OK;
+}
+#endif /* OPENSSL_VERSION_NUMBER >= 0x10002000L */
+
+static int ssl_ctx_set_proto_versions(SSL_CTX *ssl_ctx, int min, int max)
+{
+#if OPENSSL_VERSION_NUMBER >= 0x1010000fL
+  if (SSL_CTX_set_min_proto_version(ssl_ctx, min) != 1 ||
+      SSL_CTX_set_max_proto_version(ssl_ctx, max) != 1) {
+    return -1;
+  }
+  return 0;
+#else /* !(OPENSSL_VERSION_NUMBER >= 0x1010000fL) */
+  long int opts = 0;
+
+  // TODO We depends on the ordering of protocol version macro in
+  // OpenSSL.
+  if (min > TLS1_VERSION) {
+    opts |= SSL_OP_NO_TLSv1;
+  }
+  if (min > TLS1_1_VERSION) {
+    opts |= SSL_OP_NO_TLSv1_1;
+  }
+  if (min > TLS1_2_VERSION) {
+    opts |= SSL_OP_NO_TLSv1_2;
+  }
+
+  if (max < TLS1_2_VERSION) {
+    opts |= SSL_OP_NO_TLSv1_2;
+  }
+  if (max < TLS1_1_VERSION) {
+    opts |= SSL_OP_NO_TLSv1_1;
+  }
+
+  SSL_CTX_set_options(ssl_ctx, opts);
+
+  return 0;
+#endif /* OPENSSL_VERSION_NUMBER >= 0x1010000fL */
+}
+
+static SSL_CTX *create_ssl_ctx(const char *key_file, const char *cert_file)
+{
+    SSL_CTX *ssl_ctx;
+    uint64_t ssl_opts;
+
+    ogs_assert(key_file);
+    ogs_assert(cert_file);
+
+    ssl_ctx = SSL_CTX_new(TLS_server_method());
+    if (!ssl_ctx) {
+        ogs_error("Could not create SSL/TLS context: %s", ERR_error_string(ERR_get_error(), NULL));
+        return NULL;
+    }
+
+    ssl_opts = (SSL_OP_ALL & ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS) |
+                  SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION |
+                  SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION |
+                  SSL_OP_SINGLE_ECDH_USE | SSL_OP_SINGLE_DH_USE |
+                  SSL_OP_CIPHER_SERVER_PREFERENCE
+#if OPENSSL_VERSION_NUMBER >= 0x10101000L
+                  // The reason for disabling built-in anti-replay in
+                  // OpenSSL is that it only works if client gets back
+                  // to the same server.  The freshness check
+                  // described in
+                  // https://tools.ietf.org/html/rfc8446#section-8.3
+                  // is still performed.
+                  | SSL_OP_NO_ANTI_REPLAY
+#endif /* OPENSSL_VERSION_NUMBER >= 0x10101000L */
+        ;
+
+
+    SSL_CTX_set_options(ssl_ctx, ssl_opts);
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    if (SSL_CTX_set1_curves_list(ssl_ctx, "P-256") != 1) {
+        ogs_error("SSL_CTX_set1_curves_list failed: %s", ERR_error_string(ERR_get_error(), NULL));
+        return NULL;
+    }
+#endif /* !(OPENSSL_VERSION_NUMBER >= 0x30000000L) */
+
+    SSL_CTX_set_mode(ssl_ctx, SSL_MODE_AUTO_RETRY);
+    SSL_CTX_set_mode(ssl_ctx, SSL_MODE_RELEASE_BUFFERS);
+
+    if (SSL_CTX_set_default_verify_paths(ssl_ctx) != 1) {
+        ogs_warn("Could not load system trusted ca certificates: %s",
+                ERR_error_string(ERR_get_error(), NULL));
+    }
+
+#define OGS_TLS_MIN_VERSION TLS1_VERSION
+#ifdef TLS1_3_VERSION
+#define OGS_TLS_MAX_VERSION TLS1_3_VERSION
+#else  /* !TLS1_3_VERSION */
+#define OGS_TLS_MAX_VERSION TLS1_2_VERSION
+#endif /* TLS1_3_VERSION */
+    if (ssl_ctx_set_proto_versions(
+                ssl_ctx, OGS_TLS_MIN_VERSION, OGS_TLS_MAX_VERSION) != 0) {
+        ogs_error("Could not set TLS versions [%d:%d]",
+                    OGS_TLS_MIN_VERSION, OGS_TLS_MAX_VERSION);
+        return NULL;
+    }
+
+#define DEFAULT_CIPHER_LIST \
+    "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-" \
+    "AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-" \
+    "POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-" \
+    "AES256-GCM-SHA384"
+    if (SSL_CTX_set_cipher_list(ssl_ctx, DEFAULT_CIPHER_LIST) == 0) {
+        ogs_error("%s", ERR_error_string(ERR_get_error(), NULL));
+        return NULL;
+    }
+
+    if (SSL_CTX_use_PrivateKey_file(ssl_ctx, key_file, SSL_FILETYPE_PEM) != 1) {
+        ogs_error("Could not read private key file - key_file=%s", key_file);
+        return NULL;
+    }
+    if (SSL_CTX_use_certificate_chain_file(ssl_ctx, cert_file) != 1) {
+        ogs_error("Could not read certificate file - cert_file=%s ", cert_file);
+        return NULL;
+    }
+    if (SSL_CTX_check_private_key(ssl_ctx) != 1) {
+        ogs_error("SSL_CTX_check_private_key failed: %s",
+                ERR_error_string(ERR_get_error(), NULL));
+        return NULL;
+    }
+
+#ifndef OPENSSL_NO_NEXTPROTONEG
+    SSL_CTX_set_next_protos_advertised_cb(ssl_ctx, next_proto_cb, NULL);
+#endif /* !OPENSSL_NO_NEXTPROTONEG */
+
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+    SSL_CTX_set_alpn_select_cb(ssl_ctx, alpn_select_proto_cb, NULL);
+#endif /* OPENSSL_VERSION_NUMBER >= 0x10002000L */
+
+    return ssl_ctx;
+}
+
+static int verify_callback(int preverify_ok, X509_STORE_CTX *ctx)
+{
+    if (!preverify_ok) {
+        int err = X509_STORE_CTX_get_error(ctx);
+        int depth = X509_STORE_CTX_get_error_depth(ctx);
+        if (err == X509_V_ERR_CERT_HAS_EXPIRED && depth == 0) {
+            ogs_error("The client certificate has expired, but is accepted by "
+                        "configuration");
+            return 1;
+        }
+        ogs_error("client certificate verify error:num=%d:%s:depth=%d",
+                err, X509_verify_cert_error_string(err), depth);
+    }
+    return preverify_ok;
+}
+
 static int server_start(ogs_sbi_server_t *server,
         int (*cb)(ogs_sbi_request_t *request, void *data))
 {
@@ -127,9 +311,68 @@ static int server_start(ogs_sbi_server_t *server,
     addr = server->node.addr;
     ogs_assert(addr);
 
+    /* Create SSL CTX */
+    if (ogs_app()->sbi.server.no_tls == false) {
+
+        server->ssl_ctx = create_ssl_ctx(
+                    ogs_app()->sbi.server.key,
+                    ogs_app()->sbi.server.cert);
+        if (!server->ssl_ctx) {
+            ogs_error("Cannot create SSL CTX");
+            return OGS_ERROR;
+        }
+
+        if (ogs_app()->sbi.server.no_verify == false) {
+            if (ogs_app()->sbi.server.cacert) {
+                STACK_OF(X509_NAME) *cert_names = NULL;
+
+                if (SSL_CTX_load_verify_locations(server->ssl_ctx,
+                        ogs_app()->sbi.server.cacert, NULL) != 1) {
+                    ogs_error("Could not load trusted ca certificates "
+                            "from %s:%s", ogs_app()->sbi.server.cacert,
+                            ERR_error_string(ERR_get_error(), NULL));
+
+                    if (server->ssl_ctx)
+                        SSL_CTX_free(server->ssl_ctx);
+
+                    return OGS_ERROR;
+                }
+
+                /*
+                 * It is heard that SSL_CTX_load_verify_locations() may leave
+                 * error even though it returns success. See
+                 * http://forum.nginx.org/read.php?29,242540
+                 */
+                cert_names = SSL_load_client_CA_file(
+                        ogs_app()->sbi.server.cacert);
+                if (!cert_names) {
+                    ogs_error("Could not load ca certificates from %s:%s",
+                        ogs_app()->sbi.server.cacert,
+                        ERR_error_string(ERR_get_error(), NULL));
+
+                    if (server->ssl_ctx)
+                        SSL_CTX_free(server->ssl_ctx);
+
+                    return OGS_ERROR;
+                }
+                SSL_CTX_set_client_CA_list(server->ssl_ctx, cert_names);
+            }
+
+            SSL_CTX_set_verify(
+                    server->ssl_ctx,
+                    SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE |
+                    SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+                    verify_callback);
+        }
+    }
+
     sock = ogs_tcp_server(addr, server->node.option);
     if (!sock) {
         ogs_error("Cannot start SBI server");
+
+        if (server->ssl_ctx)
+            SSL_CTX_free(server->ssl_ctx);
+
         return OGS_ERROR;
     }
 
@@ -145,9 +388,12 @@ static int server_start(ogs_sbi_server_t *server,
 
     hostname = ogs_gethostname(addr);
     if (hostname)
-        ogs_info("nghttp2_server() [%s]:%d", hostname, OGS_PORT(addr));
+        ogs_info("nghttp2_server() [%s://%s]:%d",
+                server->ssl_ctx ? "https" : "http",
+                hostname, OGS_PORT(addr));
     else
-        ogs_info("nghttp2_server() [%s]:%d",
+        ogs_info("nghttp2_server() [%s://%s]:%d",
+                server->ssl_ctx ? "https" : "http",
                 OGS_ADDR(addr, buf), OGS_PORT(addr));
 
     return OGS_OK;
@@ -156,6 +402,10 @@ static int server_start(ogs_sbi_server_t *server,
 static void server_stop(ogs_sbi_server_t *server)
 {
     ogs_assert(server);
+
+    /* Free SSL CTX */
+    if (server->ssl_ctx)
+        SSL_CTX_free(server->ssl_ctx);
 
     if (server->node.poll)
         ogs_pollset_remove(server->node.poll);
@@ -305,6 +555,11 @@ static bool server_send_rspmem_persistent(
 
     ogs_assert(response);
 
+    if (response->status >= 600) {
+        ogs_error("Invalid response status [%d]", response->status);
+        return false;
+    }
+
     stream = ogs_pool_cycle(&stream_pool, stream);
     if (!stream) {
         ogs_error("stream has already been removed");
@@ -330,12 +585,20 @@ static bool server_send_rspmem_persistent(
         nvlen++;
 
     nva = ogs_calloc(nvlen, sizeof(nghttp2_nv));
-    ogs_expect_or_return_val(nva, false);
+    if (!nva) {
+        ogs_error("ogs_calloc() failed");
+        return false;
+    }
 
     i = 0;
 
-    ogs_expect_or_return_val(response->status < 600, false);
-    ogs_assert(strlen(status_string[response->status]) == 3);
+    if (strlen(status_string[response->status]) != 3) {
+        ogs_fatal("response status [%d]", response->status);
+        ogs_fatal("status string [%s]", status_string[response->status]);
+        ogs_assert_if_reached();
+        return false;
+    }
+
     add_header(&nva[i++], ":status", status_string[response->status]);
 
     ogs_snprintf(srv_version, sizeof(srv_version),
@@ -424,11 +687,18 @@ static ogs_sbi_stream_t *stream_add(
     ogs_assert(sbi_sess);
 
     ogs_pool_alloc(&stream_pool, &stream);
-    ogs_expect_or_return_val(stream, NULL);
+    if (!stream) {
+        ogs_error("ogs_pool_alloc() failed");
+        return NULL;
+    }
     memset(stream, 0, sizeof(ogs_sbi_stream_t));
 
     stream->request = ogs_sbi_request_new();
-    ogs_expect_or_return_val(stream->request, NULL);
+    if (!stream->request) {
+        ogs_error("ogs_sbi_request_new() failed");
+        ogs_pool_free(&stream_pool, stream);
+        return NULL;
+    }
 
     stream->stream_id = stream_id;
     sbi_sess->last_stream_id = stream_id;
@@ -475,15 +745,32 @@ static ogs_sbi_session_t *session_add(
     ogs_assert(sock);
 
     ogs_pool_alloc(&session_pool, &sbi_sess);
-    ogs_expect_or_return_val(sbi_sess, NULL);
+    if (!sbi_sess) {
+        ogs_error("ogs_pool_alloc() failed");
+        return NULL;
+    }
     memset(sbi_sess, 0, sizeof(ogs_sbi_session_t));
 
     sbi_sess->server = server;
     sbi_sess->sock = sock;
 
     sbi_sess->addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_expect_or_return_val(sbi_sess->addr, NULL);
+    if (!sbi_sess->addr) {
+        ogs_error("ogs_calloc() failed");
+        ogs_pool_free(&session_pool, sbi_sess);
+        return NULL;
+    }
     memcpy(sbi_sess->addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
+
+    if (server->ssl_ctx) {
+        sbi_sess->ssl = SSL_new(server->ssl_ctx);
+        if (!sbi_sess->ssl) {
+            ogs_error("SSL_new() failed");
+            ogs_pool_free(&session_pool, sbi_sess);
+            ogs_free(sbi_sess->addr);
+            return NULL;
+        }
+    }
 
     ogs_list_add(&server->session_list, sbi_sess);
 
@@ -501,11 +788,14 @@ static void session_remove(ogs_sbi_session_t *sbi_sess)
 
     ogs_list_remove(&server->session_list, sbi_sess);
 
+    if (sbi_sess->ssl)
+        SSL_free(sbi_sess->ssl);
+
     stream_remove_all(sbi_sess);
     nghttp2_session_del(sbi_sess->session);
 
-    ogs_assert(sbi_sess->poll.read);
-    ogs_pollset_remove(sbi_sess->poll.read);
+    if (sbi_sess->poll.read)
+        ogs_pollset_remove(sbi_sess->poll.read);
 
     if (sbi_sess->poll.write)
         ogs_pollset_remove(sbi_sess->poll.write);
@@ -566,6 +856,18 @@ static void accept_handler(short when, ogs_socket_t fd, void *data)
     sbi_sess = session_add(server, new);
     ogs_assert(sbi_sess);
 
+    if (sbi_sess->ssl) {
+        int err;
+        SSL_set_fd(sbi_sess->ssl, new->fd);
+        SSL_set_accept_state(sbi_sess->ssl);
+        err = SSL_accept(sbi_sess->ssl);
+        if (err <= 0) {
+            ogs_error("SSL_accept failed [%s]", ERR_error_string(ERR_get_error(), NULL));
+            session_remove(sbi_sess);
+            return;
+        }
+    }
+
     sbi_sess->poll.read = ogs_pollset_add(ogs_app()->pollset,
         OGS_POLLIN, new->fd, recv_handler, sbi_sess);
     ogs_assert(sbi_sess->poll.read);
@@ -595,7 +897,11 @@ static void recv_handler(short when, ogs_socket_t fd, void *data)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
 
-    n = ogs_recv(fd, pkbuf->data, OGS_MAX_SDU_LEN, 0);
+    if (sbi_sess->ssl)
+        n = SSL_read(sbi_sess->ssl, pkbuf->data, OGS_MAX_SDU_LEN);
+    else
+        n = ogs_recv(fd, pkbuf->data, OGS_MAX_SDU_LEN, 0);
+
     if (n > 0) {
         ogs_pkbuf_put(pkbuf, n);
 
@@ -606,6 +912,32 @@ static void recv_handler(short when, ogs_socket_t fd, void *data)
             ogs_error("nghttp2_session_mem_recv() failed (%d:%s)",
                         (int)readlen, nghttp2_strerror((int)readlen));
             session_remove(sbi_sess);
+        } else {
+            /*
+             * Issues #2385
+             *
+             * Nokia AMF is sending GOAWAY because it didn't get
+             * ACK SETTINGS packet for the SETTINGS it set,
+             * this is according to http2 RFC, all settings must be
+             * ACK or connection will be dropped.
+             *
+             * Open5GS is not ACKing pure settings packets,
+             * looks like it is waiting for a header
+             * like POST/GET first to trigger
+             * sending settings ACK and then headers reply.
+             */
+
+            /*
+             * [SOLVED]
+             *
+             * Whether or not to send a Setting ACK is determined
+             * by the nghttp2 library. Therefore, when nghttp2 informs us
+             * that it want to send an SETTING frame with ACK
+             * by nghttp2_session_want_write(), we need to call session_send()
+             * directly to send it.
+             */
+            if (nghttp2_session_want_write(sbi_sess->session))
+                session_send(sbi_sess);
         }
     } else {
         if (n < 0) {
@@ -734,40 +1066,15 @@ static int on_frame_recv(nghttp2_session *session,
     ogs_assert(session);
     ogs_assert(frame);
 
-    stream = nghttp2_session_get_stream_user_data(session, frame->hd.stream_id);
-    if (!stream) {
-        if (frame->hd.type == NGHTTP2_SETTINGS) {
-            sbi_sess->settings.max_concurrent_streams =
-                nghttp2_session_get_remote_settings(
-                    session, NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS);
-            sbi_sess->settings.enable_push =
-                nghttp2_session_get_remote_settings(
-                    session, NGHTTP2_SETTINGS_ENABLE_PUSH);
-            ogs_debug("MAX_CONCURRENT_STREAMS = %d",
-                sbi_sess->settings.max_concurrent_streams);
-            ogs_debug("ENABLE_PUSH = %s",
-                sbi_sess->settings.enable_push ? "TRUE" : "false");
-
-        } else if (frame->hd.type == NGHTTP2_GOAWAY) {
-            rv = nghttp2_submit_goaway(
-                 session, NGHTTP2_FLAG_NONE, sbi_sess->last_stream_id,
-                 NGHTTP2_NO_ERROR, NULL, 0);
-            if (rv != 0) {
-                ogs_error("nghttp2_submit_goaway() failed (%d:%s)",
-                            rv, nghttp2_strerror(rv));
-                return OGS_ERROR;
-            }
-
-            session_send(sbi_sess);
-        }
-        return 0;
-    }
-
-    request = stream->request;
-    ogs_assert(request);
-
     switch (frame->hd.type) {
     case NGHTTP2_HEADERS:
+        stream = nghttp2_session_get_stream_user_data(
+                session, frame->hd.stream_id);
+        if (!stream) return 0;
+
+        request = stream->request;
+        ogs_assert(request);
+
         if (frame->headers.cat == NGHTTP2_HCAT_REQUEST) {
             const char *expect100 =
                 ogs_sbi_header_get(request->http.headers, OGS_SBI_EXPECT);
@@ -790,6 +1097,13 @@ static int on_frame_recv(nghttp2_session *session,
         OGS_GNUC_FALLTHROUGH;
 
     case NGHTTP2_DATA:
+        stream = nghttp2_session_get_stream_user_data(
+                session, frame->hd.stream_id);
+        if (!stream) return 0;
+
+        request = stream->request;
+        ogs_assert(request);
+
         /* HEADERS or DATA frame with +END_STREAM flag */
         if (frame->hd.flags & NGHTTP2_FLAG_END_STREAM) {
             ogs_log_level_e level = OGS_LOG_DEBUG;
@@ -820,8 +1134,66 @@ static int on_frame_recv(nghttp2_session *session,
 
                 return 0;
             }
-            break;
+        } else {
+            /* TODO : Need to implement the timeouf of reading STREAM */
         }
+        break;
+    case NGHTTP2_SETTINGS:
+        ogs_debug("FLAGS(0x%x) [%s]",
+                frame->hd.flags,
+                frame->hd.flags & NGHTTP2_FLAG_ACK ? "ACK" : "NO-ACK");
+
+        if ((frame->hd.flags & NGHTTP2_FLAG_ACK) == 0) {
+            sbi_sess->settings.max_concurrent_streams =
+                nghttp2_session_get_remote_settings(
+                    session, NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS);
+            sbi_sess->settings.enable_push =
+                nghttp2_session_get_remote_settings(
+                    session, NGHTTP2_SETTINGS_ENABLE_PUSH);
+            ogs_debug("MAX_CONCURRENT_STREAMS = %d",
+                sbi_sess->settings.max_concurrent_streams);
+            ogs_debug("ENABLE_PUSH = %s",
+                sbi_sess->settings.enable_push ? "TRUE" : "false");
+
+            return 0;
+        }
+
+        /*
+         * TODO:
+         *
+         * if Setting ACK received, need to stop Timer.
+         * Otherwise, we need to send NGHTTP2_GOAWAY
+         */
+        break;
+    case NGHTTP2_GOAWAY:
+#if 0 /* It is not neeed in other nghttp2 example */
+        rv = nghttp2_submit_goaway(
+             session, NGHTTP2_FLAG_NONE, sbi_sess->last_stream_id,
+             NGHTTP2_NO_ERROR, NULL, 0);
+        if (rv != 0) {
+            ogs_error("nghttp2_submit_goaway() failed (%d:%s)",
+                        rv, nghttp2_strerror(rv));
+            return OGS_ERROR;
+        }
+
+        session_send(sbi_sess);
+#endif
+        ogs_info("GOAWAY received: last-stream-id=%d",
+                frame->goaway.last_stream_id);
+        ogs_info("error_code=%d", frame->goaway.error_code);
+        break;
+    case NGHTTP2_RST_STREAM:
+        ogs_info("RST_STREAM received: stream_id=%d", frame->hd.stream_id);
+        break;
+    case NGHTTP2_PING:
+        if (frame->hd.flags & NGHTTP2_FLAG_ACK)
+            ogs_info("PING ACK received");
+        break;
+    case NGHTTP2_PUSH_PROMISE:
+        ogs_info("PUSH_PROMISE recieved: stream_id=%d", frame->hd.stream_id);
+        ogs_info("promised_stream_id=%d",
+                frame->push_promise.promised_stream_id);
+        break;
     default:
         break;
     }
@@ -923,8 +1295,12 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
 
         j = 0;
         while(params[j].key && params[j].val) {
-            ogs_sbi_header_set(request->http.params,
-                    params[j].key, params[j].val);
+            if (strlen(params[j].key))
+                ogs_sbi_header_set(request->http.params,
+                        params[j].key, params[j].val);
+            else
+                ogs_warn("No KEY in Query-Parms");
+
             j++;
         }
 
@@ -1294,7 +1670,11 @@ static void session_write_callback(short when, ogs_socket_t fd, void *data)
     ogs_assert(pkbuf);
     ogs_list_remove(&sbi_sess->write_queue, pkbuf);
 
-    ogs_send(fd, pkbuf->data, pkbuf->len, 0);
+    if (sbi_sess->ssl)
+        SSL_write(sbi_sess->ssl, pkbuf->data, pkbuf->len);
+    else
+        ogs_send(fd, pkbuf->data, pkbuf->len, 0);
+
     ogs_log_hexdump(OGS_LOG_DEBUG, pkbuf->data, pkbuf->len);
 
     ogs_pkbuf_free(pkbuf);

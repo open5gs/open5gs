@@ -90,13 +90,18 @@ $ sudo pfctl -e -f /etc/pf.anchors/org.open5gs
 
 Install the depedencies for building the source code.
 ```bash
-$ brew install mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd nghttp2 pkg-config libusrsctp libtins talloc
+$ brew install mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd nghttp2 pkg-config libusrsctp libtins talloc cmake
 ```
 
-Install Bison and Create soft link.
+Install Bison PATH
 ```bash
 $ brew install bison
 $ export PATH="/usr/local/opt/bison/bin:$PATH"
+```
+
+Configure OpenSSL PKG_CONFIG_PATH
+```bash
+$ export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig:$PKG_CONFIG_PATH"
 ```
 
 Install Meson using Homebrew.

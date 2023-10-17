@@ -1,7 +1,7 @@
 /*
  * events_subsc_put_data.h
  *
- * Identifies the events the application subscribes to within an Events Subscription sub-resource data. It may contain the notification of the already met events
+ * Identifies the events the application subscribes to within an Events Subscription sub-resource data. It may contain the notification of the already met events. 
  */
 
 #ifndef _OpenAPI_events_subsc_put_data_H_
@@ -20,6 +20,7 @@
 #include "af_event_notification.h"
 #include "af_event_subscription.h"
 #include "an_gw_address.h"
+#include "app_detection_report.h"
 #include "bridge_management_container.h"
 #include "events_notification.h"
 #include "events_subsc_req_data.h"
@@ -35,6 +36,7 @@
 #include "requested_qos_monitoring_parameter.h"
 #include "required_access_info.h"
 #include "resources_allocation_info.h"
+#include "satellite_backhaul_category.h"
 #include "usage_threshold.h"
 #include "user_location.h"
 
@@ -51,6 +53,10 @@ typedef struct OpenAPI_events_subsc_put_data_s {
     OpenAPI_list_t *req_anis;
     struct OpenAPI_usage_threshold_s *usg_thres;
     char *notif_corre_id;
+    OpenAPI_list_t *af_app_ids;
+    bool is_direct_notif_ind;
+    int direct_notif_ind;
+    OpenAPI_list_t *ad_reports;
     OpenAPI_access_type_e access_type;
     struct OpenAPI_additional_access_info_s *add_access_info;
     struct OpenAPI_additional_access_info_s *rel_access_info;
@@ -68,7 +74,9 @@ typedef struct OpenAPI_events_subsc_put_data_s {
     OpenAPI_list_t *qos_mon_reports;
     OpenAPI_list_t *ran_nas_rel_causes;
     OpenAPI_rat_type_e rat_type;
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_category;
     struct OpenAPI_user_location_s *ue_loc;
+    char *ue_loc_time;
     char *ue_time_zone;
     struct OpenAPI_accumulated_usage_s *usg_rep;
     struct OpenAPI_bridge_management_container_s *tsn_bridge_man_cont;
@@ -84,6 +92,10 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_create(
     OpenAPI_list_t *req_anis,
     OpenAPI_usage_threshold_t *usg_thres,
     char *notif_corre_id,
+    OpenAPI_list_t *af_app_ids,
+    bool is_direct_notif_ind,
+    int direct_notif_ind,
+    OpenAPI_list_t *ad_reports,
     OpenAPI_access_type_e access_type,
     OpenAPI_additional_access_info_t *add_access_info,
     OpenAPI_additional_access_info_t *rel_access_info,
@@ -101,7 +113,9 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_create(
     OpenAPI_list_t *qos_mon_reports,
     OpenAPI_list_t *ran_nas_rel_causes,
     OpenAPI_rat_type_e rat_type,
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_category,
     OpenAPI_user_location_t *ue_loc,
+    char *ue_loc_time,
     char *ue_time_zone,
     OpenAPI_accumulated_usage_t *usg_rep,
     OpenAPI_bridge_management_container_t *tsn_bridge_man_cont,

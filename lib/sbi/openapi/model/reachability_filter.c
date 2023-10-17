@@ -16,16 +16,18 @@ OpenAPI_reachability_filter_t *OpenAPI_reachability_filter_create(
 
 void OpenAPI_reachability_filter_free(OpenAPI_reachability_filter_t *reachability_filter)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == reachability_filter) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(reachability_filter);
 }
 
 cJSON *OpenAPI_reachability_filter_convertToJSON(OpenAPI_reachability_filter_t *reachability_filter)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (reachability_filter == NULL) {
         ogs_error("OpenAPI_reachability_filter_convertToJSON() failed [ReachabilityFilter]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_reachability_filter_t *OpenAPI_reachability_filter_parseFromJSON(cJSON *reachability_filterJSON)
 {
     OpenAPI_reachability_filter_t *reachability_filter_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     reachability_filter_local_var = OpenAPI_reachability_filter_create (
     );
 

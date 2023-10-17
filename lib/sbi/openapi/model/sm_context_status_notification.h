@@ -1,7 +1,7 @@
 /*
  * sm_context_status_notification.h
  *
- * 
+ * Data within Notify SM Context Status Request
  */
 
 #ifndef _OpenAPI_sm_context_status_notification_H_
@@ -15,6 +15,7 @@
 #include "apn_rate_status.h"
 #include "small_data_rate_status.h"
 #include "status_info.h"
+#include "target_dnai_info.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,12 +29,16 @@ typedef struct OpenAPI_sm_context_status_notification_s {
     bool is_ddn_failure_status;
     int ddn_failure_status;
     OpenAPI_list_t *notify_correlation_ids_forddn_failure;
+    char *new_intermediate_smf_id;
     char *new_smf_id;
     char *new_smf_set_id;
     char *old_smf_id;
     char *old_sm_context_ref;
     char *alt_anchor_smf_uri;
     char *alt_anchor_smf_id;
+    struct OpenAPI_target_dnai_info_s *target_dnai_info;
+    char *old_pdu_session_ref;
+    char *inter_plmn_api_root;
 } OpenAPI_sm_context_status_notification_t;
 
 OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification_create(
@@ -43,12 +48,16 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
     bool is_ddn_failure_status,
     int ddn_failure_status,
     OpenAPI_list_t *notify_correlation_ids_forddn_failure,
+    char *new_intermediate_smf_id,
     char *new_smf_id,
     char *new_smf_set_id,
     char *old_smf_id,
     char *old_sm_context_ref,
     char *alt_anchor_smf_uri,
-    char *alt_anchor_smf_id
+    char *alt_anchor_smf_id,
+    OpenAPI_target_dnai_info_t *target_dnai_info,
+    char *old_pdu_session_ref,
+    char *inter_plmn_api_root
 );
 void OpenAPI_sm_context_status_notification_free(OpenAPI_sm_context_status_notification_t *sm_context_status_notification);
 OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification_parseFromJSON(cJSON *sm_context_status_notificationJSON);

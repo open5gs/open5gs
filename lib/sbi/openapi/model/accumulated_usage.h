@@ -1,7 +1,7 @@
 /*
  * accumulated_usage.h
  *
- * 
+ * Represents an accumulated usage.
  */
 
 #ifndef _OpenAPI_accumulated_usage_H_

@@ -23,12 +23,11 @@ static ogs_thread_t *thread;
 static void ausf_main(void *data);
 static int initialized = 0;
 
-int ausf_initialize()
+int ausf_initialize(void)
 {
     int rv;
 
-    ogs_sbi_context_init();
-
+    ogs_sbi_context_init(OpenAPI_nf_type_AUSF);
     ausf_context_init();
 
     rv = ogs_sbi_context_parse_config("ausf", "nrf", "scp");

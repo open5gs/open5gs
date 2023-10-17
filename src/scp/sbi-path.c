@@ -40,7 +40,7 @@ int scp_sbi_open(void)
     ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Build NF instance information. It will be transmitted to NRF. */
-    ogs_sbi_nf_instance_build_default(nf_instance, OpenAPI_nf_type_SCP);
+    ogs_sbi_nf_instance_build_default(nf_instance);
 
     /*
      * If the SCP is running in Model D,
@@ -69,15 +69,15 @@ int scp_sbi_open(void)
     /* If the SCP has an NRF client and does not delegate to Next-SCP */
     if (nrf_client && !next_scp) {
 
-        /* Build Subscription-Data */
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_AMF, NULL);
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_AUSF, NULL);
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_BSF, NULL);
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_NSSF, NULL);
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_PCF, NULL);
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_SMF, NULL);
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_UDM, NULL);
-        ogs_sbi_subscription_data_build_default(OpenAPI_nf_type_UDR, NULL);
+        /* Setup Subscription-Data */
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_AMF, NULL);
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_AUSF, NULL);
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_BSF, NULL);
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_NSSF, NULL);
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_PCF, NULL);
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_SMF, NULL);
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_UDM, NULL);
+        ogs_sbi_subscription_spec_add(OpenAPI_nf_type_UDR, NULL);
     }
 
     if (ogs_sbi_server_start_all(request_handler) != OGS_OK)
@@ -201,6 +201,11 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                 service_type = ogs_sbi_service_type_from_name(
                                     discovery_option->service_names[0]);
             }
+        } else if (!strcasecmp(key,
+                    OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_FEATURES)) {
+            if (val)
+                discovery_option->requester_features =
+                    ogs_uint64_from_string(val);
         } else if (!strcasecmp(key, OGS_SBI_SCHEME)) {
             /* ':scheme' will be automatically filled in later */
         } else if (!strcasecmp(key, OGS_SBI_AUTHORITY)) {
@@ -277,11 +282,14 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
             ogs_free(apiroot);
 
         } else if (headers.target_apiroot) {
+            bool rc;
+            OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
             ogs_sockaddr_t *addr = NULL;
 
             /* Find or Add Client Instance */
-            addr = ogs_sbi_getaddr_from_uri(headers.target_apiroot);
-            if (!addr) {
+            rc = ogs_sbi_getaddr_from_uri(
+                    &scheme, &addr, headers.target_apiroot);
+            if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
                 ogs_error("Invalid Target-apiRoot [%s]",
                         headers.target_apiroot);
 
@@ -291,13 +299,12 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                 return OGS_ERROR;
             }
 
-            client = ogs_sbi_client_find(addr);
+            client = ogs_sbi_client_find(scheme, addr);
             if (!client) {
-                client = ogs_sbi_client_add(addr);
+                client = ogs_sbi_client_add(scheme, addr);
                 ogs_assert(client);
             }
             OGS_SBI_SETUP_CLIENT(assoc, client);
-
             ogs_freeaddrinfo(addr);
 
             /* Setup New URI */
@@ -412,10 +419,12 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
 
             /* Find or Add Client Instance */
             if (nnrf_disc) {
+                bool rc;
+                OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
                 ogs_sockaddr_t *addr = NULL;
 
-                addr = ogs_sbi_getaddr_from_uri(nnrf_disc);
-                if (!addr) {
+                rc = ogs_sbi_getaddr_from_uri(&scheme, &addr, nnrf_disc);
+                if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
                     ogs_error("Invalid nnrf-disc [%s]", nnrf_disc);
 
                     ogs_sbi_discovery_option_free(discovery_option);
@@ -424,13 +433,12 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                     return OGS_ERROR;
                 }
 
-                nrf_client = ogs_sbi_client_find(addr);
+                nrf_client = ogs_sbi_client_find(scheme, addr);
                 if (!nrf_client) {
-                    nrf_client = ogs_sbi_client_add(addr);
+                    nrf_client = ogs_sbi_client_add(scheme, addr);
                     ogs_assert(nrf_client);
                 }
                 OGS_SBI_SETUP_CLIENT(assoc, nrf_client);
-
                 ogs_freeaddrinfo(addr);
             }
 
@@ -552,7 +560,7 @@ static int response_handler(
             ogs_error("No NF-Instance ID");
     }
 
-    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+    ogs_expect(true == ogs_sbi_server_send_response(stream, response));
     scp_assoc_remove(assoc);
 
     return OGS_OK;

@@ -21,10 +21,12 @@ extern "C" {
 typedef struct OpenAPI_gmlc_info_s OpenAPI_gmlc_info_t;
 typedef struct OpenAPI_gmlc_info_s {
     OpenAPI_list_t *serving_client_types;
+    OpenAPI_list_t *gmlc_numbers;
 } OpenAPI_gmlc_info_t;
 
 OpenAPI_gmlc_info_t *OpenAPI_gmlc_info_create(
-    OpenAPI_list_t *serving_client_types
+    OpenAPI_list_t *serving_client_types,
+    OpenAPI_list_t *gmlc_numbers
 );
 void OpenAPI_gmlc_info_free(OpenAPI_gmlc_info_t *gmlc_info);
 OpenAPI_gmlc_info_t *OpenAPI_gmlc_info_parseFromJSON(cJSON *gmlc_infoJSON);

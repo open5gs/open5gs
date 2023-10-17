@@ -20,18 +20,26 @@ OpenAPI_plmn_id_t *OpenAPI_plmn_id_create(
 
 void OpenAPI_plmn_id_free(OpenAPI_plmn_id_t *plmn_id)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == plmn_id) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(plmn_id->mcc);
-    ogs_free(plmn_id->mnc);
+    if (plmn_id->mcc) {
+        ogs_free(plmn_id->mcc);
+        plmn_id->mcc = NULL;
+    }
+    if (plmn_id->mnc) {
+        ogs_free(plmn_id->mnc);
+        plmn_id->mnc = NULL;
+    }
     ogs_free(plmn_id);
 }
 
 cJSON *OpenAPI_plmn_id_convertToJSON(OpenAPI_plmn_id_t *plmn_id)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (plmn_id == NULL) {
         ogs_error("OpenAPI_plmn_id_convertToJSON() failed [PlmnId]");
@@ -39,11 +47,19 @@ cJSON *OpenAPI_plmn_id_convertToJSON(OpenAPI_plmn_id_t *plmn_id)
     }
 
     item = cJSON_CreateObject();
+    if (!plmn_id->mcc) {
+        ogs_error("OpenAPI_plmn_id_convertToJSON() failed [mcc]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "mcc", plmn_id->mcc) == NULL) {
         ogs_error("OpenAPI_plmn_id_convertToJSON() failed [mcc]");
         goto end;
     }
 
+    if (!plmn_id->mnc) {
+        ogs_error("OpenAPI_plmn_id_convertToJSON() failed [mnc]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "mnc", plmn_id->mnc) == NULL) {
         ogs_error("OpenAPI_plmn_id_convertToJSON() failed [mnc]");
         goto end;
@@ -56,23 +72,24 @@ end:
 OpenAPI_plmn_id_t *OpenAPI_plmn_id_parseFromJSON(cJSON *plmn_idJSON)
 {
     OpenAPI_plmn_id_t *plmn_id_local_var = NULL;
-    cJSON *mcc = cJSON_GetObjectItemCaseSensitive(plmn_idJSON, "mcc");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *mcc = NULL;
+    cJSON *mnc = NULL;
+    mcc = cJSON_GetObjectItemCaseSensitive(plmn_idJSON, "mcc");
     if (!mcc) {
         ogs_error("OpenAPI_plmn_id_parseFromJSON() failed [mcc]");
         goto end;
     }
-
     if (!cJSON_IsString(mcc)) {
         ogs_error("OpenAPI_plmn_id_parseFromJSON() failed [mcc]");
         goto end;
     }
 
-    cJSON *mnc = cJSON_GetObjectItemCaseSensitive(plmn_idJSON, "mnc");
+    mnc = cJSON_GetObjectItemCaseSensitive(plmn_idJSON, "mnc");
     if (!mnc) {
         ogs_error("OpenAPI_plmn_id_parseFromJSON() failed [mnc]");
         goto end;
     }
-
     if (!cJSON_IsString(mnc)) {
         ogs_error("OpenAPI_plmn_id_parseFromJSON() failed [mnc]");
         goto end;

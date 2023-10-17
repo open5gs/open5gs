@@ -1,7 +1,7 @@
 /*
  * access_type.h
  *
- * 
+ * Indicates whether the access is  via 3GPP or via non-3GPP.
  */
 
 #ifndef _OpenAPI_access_type_H_

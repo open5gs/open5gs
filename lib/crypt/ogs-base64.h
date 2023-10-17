@@ -15,7 +15,29 @@
  */
 
 /*
- * Copyright (C) 2019-2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2000-2012 Free Software Foundation, Inc.
+ *
+ * Author: Nikos Mavrogiannopoulos
+ *
+ * This file is part of GnuTLS.
+ *
+ * The GnuTLS is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>
+ *
+ */
+
+/*
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -53,6 +75,12 @@ int ogs_base64_encode(
         char *encoded, const char *string, int len);
 int ogs_base64_encode_binary(
         char *encoded, const unsigned char *string, int len);
+
+int ogs_fbase64_decode(const char *header,
+        const uint8_t *data, size_t data_size, ogs_datum_t *result);
+
+int ogs_pem_decode_curve25519_key(const char *filename, uint8_t *key);
+int ogs_pem_decode_secp256r1_key(const char *filename, uint8_t *key);
 
 #ifdef __cplusplus
 }

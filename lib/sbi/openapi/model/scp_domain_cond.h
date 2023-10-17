@@ -1,7 +1,7 @@
 /*
  * scp_domain_cond.h
  *
- * Subscription to a set of NF or SCP instances belonging to certain SCP domains
+ * Subscription to a set of NF or SCP or SEPP instances belonging to certain SCP domains 
  */
 
 #ifndef _OpenAPI_scp_domain_cond_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "nf_type.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,10 +21,12 @@ extern "C" {
 typedef struct OpenAPI_scp_domain_cond_s OpenAPI_scp_domain_cond_t;
 typedef struct OpenAPI_scp_domain_cond_s {
     OpenAPI_list_t *scp_domains;
+    OpenAPI_list_t *nf_type_list;
 } OpenAPI_scp_domain_cond_t;
 
 OpenAPI_scp_domain_cond_t *OpenAPI_scp_domain_cond_create(
-    OpenAPI_list_t *scp_domains
+    OpenAPI_list_t *scp_domains,
+    OpenAPI_list_t *nf_type_list
 );
 void OpenAPI_scp_domain_cond_free(OpenAPI_scp_domain_cond_t *scp_domain_cond);
 OpenAPI_scp_domain_cond_t *OpenAPI_scp_domain_cond_parseFromJSON(cJSON *scp_domain_condJSON);

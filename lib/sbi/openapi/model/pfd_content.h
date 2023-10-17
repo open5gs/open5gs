@@ -1,7 +1,7 @@
 /*
  * pfd_content.h
  *
- * 
+ * Represents the content of a PFD for an application identifier.
  */
 
 #ifndef _OpenAPI_pfd_content_H_

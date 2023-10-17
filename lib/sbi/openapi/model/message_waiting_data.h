@@ -1,7 +1,7 @@
 /*
  * message_waiting_data.h
  *
- * 
+ * Message Waiting Data list.
  */
 
 #ifndef _OpenAPI_message_waiting_data_H_

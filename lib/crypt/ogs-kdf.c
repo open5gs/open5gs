@@ -262,6 +262,43 @@ void ogs_kdf_nh_gnb(uint8_t *kamf, uint8_t *sync_input, uint8_t *kgnb)
             FC_FOR_NH_GNB_DERIVATION, param, kgnb);
 }
 
+/*
+ * TS33.501 Annex C.3.4.1 Profile A
+ * TS33.501 Annex C.3.4.2 Profile B
+ * ANSI-X9.63-KDF
+ */
+void ogs_kdf_ansi_x963(
+        uint8_t *z, size_t z_len, uint8_t *info, size_t info_len,
+        uint8_t *ek, uint8_t *icb, uint8_t *mk)
+{
+    uint8_t input[ECC_BYTES+4+ECC_BYTES+1];
+    uint8_t output[OGS_KEY_LEN+OGS_IVEC_LEN+OGS_SHA256_DIGEST_SIZE];
+    uint32_t counter = 0;
+    size_t counter_len = sizeof(counter);
+
+    ogs_assert(z);
+    ogs_assert(info);
+    ogs_assert(ek);
+    ogs_assert(icb);
+    ogs_assert(mk);
+
+    ogs_assert((z_len+counter_len+info_len) <= (ECC_BYTES+4+ECC_BYTES+1));
+
+    memcpy(input, z, z_len);
+    counter = htobe32(1);
+    memcpy(input+z_len, &counter, counter_len);
+    memcpy(input+z_len+counter_len, info, info_len);
+
+    ogs_sha256(input, z_len+counter_len+info_len, output);
+    memcpy(ek, output, OGS_KEY_LEN);
+    memcpy(icb, output+OGS_KEY_LEN, OGS_IVEC_LEN);
+
+    counter = htobe32(2);
+    memcpy(input+z_len, &counter, counter_len);
+
+    ogs_sha256(input, z_len+counter_len+info_len, mk);
+}
+
 /* TS33.401 Annex A.2 KASME derivation function */
 void ogs_auc_kasme(const uint8_t *ck, const uint8_t *ik,
         const uint8_t *plmn_id, const uint8_t *sqn,  const uint8_t *ak,

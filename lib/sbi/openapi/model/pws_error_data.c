@@ -18,16 +18,18 @@ OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_create(
 
 void OpenAPI_pws_error_data_free(OpenAPI_pws_error_data_t *pws_error_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == pws_error_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(pws_error_data);
 }
 
 cJSON *OpenAPI_pws_error_data_convertToJSON(OpenAPI_pws_error_data_t *pws_error_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (pws_error_data == NULL) {
         ogs_error("OpenAPI_pws_error_data_convertToJSON() failed [PWSErrorData]");
@@ -47,12 +49,13 @@ end:
 OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_parseFromJSON(cJSON *pws_error_dataJSON)
 {
     OpenAPI_pws_error_data_t *pws_error_data_local_var = NULL;
-    cJSON *namf_cause = cJSON_GetObjectItemCaseSensitive(pws_error_dataJSON, "namfCause");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *namf_cause = NULL;
+    namf_cause = cJSON_GetObjectItemCaseSensitive(pws_error_dataJSON, "namfCause");
     if (!namf_cause) {
         ogs_error("OpenAPI_pws_error_data_parseFromJSON() failed [namf_cause]");
         goto end;
     }
-
     if (!cJSON_IsNumber(namf_cause)) {
         ogs_error("OpenAPI_pws_error_data_parseFromJSON() failed [namf_cause]");
         goto end;

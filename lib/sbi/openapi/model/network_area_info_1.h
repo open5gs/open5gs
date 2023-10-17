@@ -12,10 +12,10 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "ecgi_1.h"
-#include "global_ran_node_id_1.h"
-#include "ncgi_1.h"
-#include "tai_1.h"
+#include "ecgi.h"
+#include "global_ran_node_id.h"
+#include "ncgi.h"
+#include "tai.h"
 
 #ifdef __cplusplus
 extern "C" {

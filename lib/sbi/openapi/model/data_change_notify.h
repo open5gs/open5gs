@@ -1,7 +1,7 @@
 /*
  * data_change_notify.h
  *
- * 
+ * Container for data which have changed and notification was requested when changed.
  */
 
 #ifndef _OpenAPI_data_change_notify_H_

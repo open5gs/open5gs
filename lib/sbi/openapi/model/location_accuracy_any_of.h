@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_location_accuracy_any_of_NULL = 0, OpenAPI_location_accuracy_any_of_CELL_LEVEL, OpenAPI_location_accuracy_any_of_TA_LEVEL, OpenAPI_location_accuracy_any_of_N3IWF_LEVEL, OpenAPI_location_accuracy_any_of_UE_IP, OpenAPI_location_accuracy_any_of_UE_PORT } OpenAPI_location_accuracy_any_of_e;
+typedef enum { OpenAPI_location_accuracy_any_of_NULL = 0, OpenAPI_location_accuracy_any_of_CELL_LEVEL, OpenAPI_location_accuracy_any_of_RAN_NODE_LEVEL, OpenAPI_location_accuracy_any_of_TA_LEVEL, OpenAPI_location_accuracy_any_of_N3IWF_LEVEL, OpenAPI_location_accuracy_any_of_UE_IP, OpenAPI_location_accuracy_any_of_UE_PORT } OpenAPI_location_accuracy_any_of_e;
 
 char* OpenAPI_location_accuracy_any_of_ToString(OpenAPI_location_accuracy_any_of_e location_accuracy_any_of);
 

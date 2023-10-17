@@ -23,12 +23,11 @@ static ogs_thread_t *thread;
 static void udr_main(void *data);
 static int initialized = 0;
 
-int udr_initialize()
+int udr_initialize(void)
 {
     int rv;
 
-    ogs_sbi_context_init();
-
+    ogs_sbi_context_init(OpenAPI_nf_type_UDR);
     udr_context_init();
 
     rv = ogs_sbi_context_parse_config("udr", "nrf", "scp");

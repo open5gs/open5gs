@@ -1,7 +1,7 @@
 /*
  * hsmf_update_error.h
  *
- * 
+ * Error within Update Response from H-SMF, or from SMF to I-SMF
  */
 
 #ifndef _OpenAPI_hsmf_update_error_H_

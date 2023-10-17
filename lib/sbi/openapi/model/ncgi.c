@@ -22,19 +22,30 @@ OpenAPI_ncgi_t *OpenAPI_ncgi_create(
 
 void OpenAPI_ncgi_free(OpenAPI_ncgi_t *ncgi)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ncgi) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_plmn_id_free(ncgi->plmn_id);
-    ogs_free(ncgi->nr_cell_id);
-    ogs_free(ncgi->nid);
+    if (ncgi->plmn_id) {
+        OpenAPI_plmn_id_free(ncgi->plmn_id);
+        ncgi->plmn_id = NULL;
+    }
+    if (ncgi->nr_cell_id) {
+        ogs_free(ncgi->nr_cell_id);
+        ncgi->nr_cell_id = NULL;
+    }
+    if (ncgi->nid) {
+        ogs_free(ncgi->nid);
+        ncgi->nid = NULL;
+    }
     ogs_free(ncgi);
 }
 
 cJSON *OpenAPI_ncgi_convertToJSON(OpenAPI_ncgi_t *ncgi)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ncgi == NULL) {
         ogs_error("OpenAPI_ncgi_convertToJSON() failed [Ncgi]");
@@ -42,6 +53,10 @@ cJSON *OpenAPI_ncgi_convertToJSON(OpenAPI_ncgi_t *ncgi)
     }
 
     item = cJSON_CreateObject();
+    if (!ncgi->plmn_id) {
+        ogs_error("OpenAPI_ncgi_convertToJSON() failed [plmn_id]");
+        return NULL;
+    }
     cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(ncgi->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_ncgi_convertToJSON() failed [plmn_id]");
@@ -53,6 +68,10 @@ cJSON *OpenAPI_ncgi_convertToJSON(OpenAPI_ncgi_t *ncgi)
         goto end;
     }
 
+    if (!ncgi->nr_cell_id) {
+        ogs_error("OpenAPI_ncgi_convertToJSON() failed [nr_cell_id]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "nrCellId", ncgi->nr_cell_id) == NULL) {
         ogs_error("OpenAPI_ncgi_convertToJSON() failed [nr_cell_id]");
         goto end;
@@ -72,30 +91,35 @@ end:
 OpenAPI_ncgi_t *OpenAPI_ncgi_parseFromJSON(cJSON *ncgiJSON)
 {
     OpenAPI_ncgi_t *ncgi_local_var = NULL;
-    cJSON *plmn_id = cJSON_GetObjectItemCaseSensitive(ncgiJSON, "plmnId");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *plmn_id = NULL;
+    OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
+    cJSON *nr_cell_id = NULL;
+    cJSON *nid = NULL;
+    plmn_id = cJSON_GetObjectItemCaseSensitive(ncgiJSON, "plmnId");
     if (!plmn_id) {
         ogs_error("OpenAPI_ncgi_parseFromJSON() failed [plmn_id]");
         goto end;
     }
-
-    OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (!plmn_id_local_nonprim) {
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        goto end;
+    }
 
-    cJSON *nr_cell_id = cJSON_GetObjectItemCaseSensitive(ncgiJSON, "nrCellId");
+    nr_cell_id = cJSON_GetObjectItemCaseSensitive(ncgiJSON, "nrCellId");
     if (!nr_cell_id) {
         ogs_error("OpenAPI_ncgi_parseFromJSON() failed [nr_cell_id]");
         goto end;
     }
-
     if (!cJSON_IsString(nr_cell_id)) {
         ogs_error("OpenAPI_ncgi_parseFromJSON() failed [nr_cell_id]");
         goto end;
     }
 
-    cJSON *nid = cJSON_GetObjectItemCaseSensitive(ncgiJSON, "nid");
-
+    nid = cJSON_GetObjectItemCaseSensitive(ncgiJSON, "nid");
     if (nid) {
-    if (!cJSON_IsString(nid)) {
+    if (!cJSON_IsString(nid) && !cJSON_IsNull(nid)) {
         ogs_error("OpenAPI_ncgi_parseFromJSON() failed [nid]");
         goto end;
     }
@@ -104,11 +128,15 @@ OpenAPI_ncgi_t *OpenAPI_ncgi_parseFromJSON(cJSON *ncgiJSON)
     ncgi_local_var = OpenAPI_ncgi_create (
         plmn_id_local_nonprim,
         ogs_strdup(nr_cell_id->valuestring),
-        nid ? ogs_strdup(nid->valuestring) : NULL
+        nid && !cJSON_IsNull(nid) ? ogs_strdup(nid->valuestring) : NULL
     );
 
     return ncgi_local_var;
 end:
+    if (plmn_id_local_nonprim) {
+        OpenAPI_plmn_id_free(plmn_id_local_nonprim);
+        plmn_id_local_nonprim = NULL;
+    }
     return NULL;
 }
 

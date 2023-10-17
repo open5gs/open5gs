@@ -1,7 +1,7 @@
 /*
  * point_uncertainty_circle.h
  *
- * 
+ * Ellipsoid point with uncertainty circle.
  */
 
 #ifndef _OpenAPI_point_uncertainty_circle_H_
@@ -14,7 +14,6 @@
 #include "../include/binary.h"
 #include "gad_shape.h"
 #include "geographical_coordinates.h"
-#include "point_uncertainty_circle_all_of.h"
 #include "supported_gad_shapes.h"
 
 #ifdef __cplusplus

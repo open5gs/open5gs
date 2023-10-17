@@ -16,16 +16,18 @@ OpenAPI_traffic_profile_rm_t *OpenAPI_traffic_profile_rm_create(
 
 void OpenAPI_traffic_profile_rm_free(OpenAPI_traffic_profile_rm_t *traffic_profile_rm)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == traffic_profile_rm) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(traffic_profile_rm);
 }
 
 cJSON *OpenAPI_traffic_profile_rm_convertToJSON(OpenAPI_traffic_profile_rm_t *traffic_profile_rm)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (traffic_profile_rm == NULL) {
         ogs_error("OpenAPI_traffic_profile_rm_convertToJSON() failed [TrafficProfileRm]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_traffic_profile_rm_t *OpenAPI_traffic_profile_rm_parseFromJSON(cJSON *traffic_profile_rmJSON)
 {
     OpenAPI_traffic_profile_rm_t *traffic_profile_rm_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     traffic_profile_rm_local_var = OpenAPI_traffic_profile_rm_create (
     );
 

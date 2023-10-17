@@ -16,16 +16,18 @@ OpenAPI_access_type_rm_t *OpenAPI_access_type_rm_create(
 
 void OpenAPI_access_type_rm_free(OpenAPI_access_type_rm_t *access_type_rm)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == access_type_rm) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(access_type_rm);
 }
 
 cJSON *OpenAPI_access_type_rm_convertToJSON(OpenAPI_access_type_rm_t *access_type_rm)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (access_type_rm == NULL) {
         ogs_error("OpenAPI_access_type_rm_convertToJSON() failed [AccessTypeRm]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_access_type_rm_t *OpenAPI_access_type_rm_parseFromJSON(cJSON *access_type_rmJSON)
 {
     OpenAPI_access_type_rm_t *access_type_rm_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     access_type_rm_local_var = OpenAPI_access_type_rm_create (
     );
 

@@ -14,6 +14,8 @@
 #include "../include/binary.h"
 #include "amf3_gpp_access_registration.h"
 #include "amf_non3_gpp_access_registration.h"
+#include "ip_sm_gw_registration.h"
+#include "nwdaf_registration_info.h"
 #include "smf_registration_info.h"
 #include "smsf_registration.h"
 
@@ -28,6 +30,8 @@ typedef struct OpenAPI_registration_data_sets_s {
     struct OpenAPI_smf_registration_info_s *smf_registration;
     struct OpenAPI_smsf_registration_s *smsf3_gpp;
     struct OpenAPI_smsf_registration_s *smsf_non3_gpp;
+    struct OpenAPI_ip_sm_gw_registration_s *ip_sm_gw;
+    struct OpenAPI_nwdaf_registration_info_s *nwdaf_registration;
 } OpenAPI_registration_data_sets_t;
 
 OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_create(
@@ -35,7 +39,9 @@ OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_create(
     OpenAPI_amf_non3_gpp_access_registration_t *amf_non3_gpp,
     OpenAPI_smf_registration_info_t *smf_registration,
     OpenAPI_smsf_registration_t *smsf3_gpp,
-    OpenAPI_smsf_registration_t *smsf_non3_gpp
+    OpenAPI_smsf_registration_t *smsf_non3_gpp,
+    OpenAPI_ip_sm_gw_registration_t *ip_sm_gw,
+    OpenAPI_nwdaf_registration_info_t *nwdaf_registration
 );
 void OpenAPI_registration_data_sets_free(OpenAPI_registration_data_sets_t *registration_data_sets);
 OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_parseFromJSON(cJSON *registration_data_setsJSON);

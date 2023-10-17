@@ -48,14 +48,10 @@ static void test1_func(abts_case *tc, void *data)
     mobile_identity_suci.routing_indicator2 = 0xf;
     mobile_identity_suci.routing_indicator3 = 0xf;
     mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x47;
-    mobile_identity_suci.scheme_output[3] = 0x78;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 12);
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "00004778");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -167,7 +163,7 @@ static void test1_func(abts_case *tc, void *data)
     sess = test_sess_add_by_dnn_and_psi(test_ue, "internet", 10);
     ogs_assert(sess);
 
-    sess->pti = 0;
+    sess->pti = 20;
     sess->pdu_session_type = OGS_PDU_SESSION_TYPE_IPV4;
 
     sess->ul_nas_transport_param.request_type =

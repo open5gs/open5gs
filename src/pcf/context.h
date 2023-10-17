@@ -26,6 +26,7 @@
 #include "ogs-dbi.h"
 
 #include "pcf-sm.h"
+#include "metrics.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -94,6 +95,9 @@ struct pcf_sess_s {
 
     char *ipv4addr_string;
     char *ipv6prefix_string;
+
+    OpenAPI_list_t *ipv4_frame_route_list;
+    OpenAPI_list_t *ipv6_frame_route_list;
 
     uint32_t ipv4addr;
     struct {
@@ -170,6 +174,7 @@ int pcf_app_remove(pcf_app_t *app);
 void pcf_app_remove_all(pcf_sess_t *sess);
 pcf_app_t *pcf_app_find(uint32_t index);
 pcf_app_t *pcf_app_find_by_app_session_id(char *app_session_id);
+int pcf_instance_get_load(void);
 
 #ifdef __cplusplus
 }

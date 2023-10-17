@@ -1,7 +1,7 @@
 /*
  * af_event_notification.h
  *
- * describes the event information delivered in the notification
+ * Describes the event information delivered in the notification.
  */
 
 #ifndef _OpenAPI_af_event_notification_H_
@@ -12,8 +12,8 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "af_event.h"
 #include "flows.h"
+#include "npcf_af_event.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,12 +21,12 @@ extern "C" {
 
 typedef struct OpenAPI_af_event_notification_s OpenAPI_af_event_notification_t;
 typedef struct OpenAPI_af_event_notification_s {
-    OpenAPI_af_event_e event;
+    OpenAPI_npcf_af_event_e event;
     OpenAPI_list_t *flows;
 } OpenAPI_af_event_notification_t;
 
 OpenAPI_af_event_notification_t *OpenAPI_af_event_notification_create(
-    OpenAPI_af_event_e event,
+    OpenAPI_npcf_af_event_e event,
     OpenAPI_list_t *flows
 );
 void OpenAPI_af_event_notification_free(OpenAPI_af_event_notification_t *af_event_notification);

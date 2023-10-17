@@ -1,7 +1,7 @@
 /*
  * n1_n2_msg_txfr_err_detail.h
  *
- * 
+ * N1/N2 Message Transfer Error Details
  */
 
 #ifndef _OpenAPI_n1_n2_msg_txfr_err_detail_H_

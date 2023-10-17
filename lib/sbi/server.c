@@ -179,7 +179,7 @@ bool ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
     if (message) {
         problem.type = ogs_msprintf("/%s/%s",
                 message->h.service.name, message->h.api.version);
-        ogs_expect_or_return_val(problem.type, false);
+        ogs_expect(problem.type);
         if (message->h.resource.component[1])
             problem.instance = ogs_msprintf("/%s/%s",
                     message->h.resource.component[0],
@@ -187,7 +187,7 @@ bool ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
         else
             problem.instance =
                     ogs_msprintf("/%s", message->h.resource.component[0]);
-        ogs_expect_or_return_val(problem.instance, NULL);
+        ogs_expect(problem.instance);
     }
     if (status) {
         problem.is_status = true;

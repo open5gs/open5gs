@@ -16,16 +16,18 @@ OpenAPI_data_ind_t *OpenAPI_data_ind_create(
 
 void OpenAPI_data_ind_free(OpenAPI_data_ind_t *data_ind)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == data_ind) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(data_ind);
 }
 
 cJSON *OpenAPI_data_ind_convertToJSON(OpenAPI_data_ind_t *data_ind)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (data_ind == NULL) {
         ogs_error("OpenAPI_data_ind_convertToJSON() failed [DataInd]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_data_ind_t *OpenAPI_data_ind_parseFromJSON(cJSON *data_indJSON)
 {
     OpenAPI_data_ind_t *data_ind_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     data_ind_local_var = OpenAPI_data_ind_create (
     );
 

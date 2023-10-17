@@ -16,6 +16,9 @@
 #include "an_node_type.h"
 #include "external_client_type.h"
 #include "rat_type.h"
+#include "supported_gad_shapes.h"
+#include "tai.h"
+#include "tai_range.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,6 +31,9 @@ typedef struct OpenAPI_lmf_info_s {
     OpenAPI_list_t *serving_access_types;
     OpenAPI_list_t *serving_an_node_types;
     OpenAPI_list_t *serving_rat_types;
+    OpenAPI_list_t *tai_list;
+    OpenAPI_list_t *tai_range_list;
+    OpenAPI_list_t *supported_gad_shapes;
 } OpenAPI_lmf_info_t;
 
 OpenAPI_lmf_info_t *OpenAPI_lmf_info_create(
@@ -35,7 +41,10 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_create(
     char *lmf_id,
     OpenAPI_list_t *serving_access_types,
     OpenAPI_list_t *serving_an_node_types,
-    OpenAPI_list_t *serving_rat_types
+    OpenAPI_list_t *serving_rat_types,
+    OpenAPI_list_t *tai_list,
+    OpenAPI_list_t *tai_range_list,
+    OpenAPI_list_t *supported_gad_shapes
 );
 void OpenAPI_lmf_info_free(OpenAPI_lmf_info_t *lmf_info);
 OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON);

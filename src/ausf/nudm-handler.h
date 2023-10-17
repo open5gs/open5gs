@@ -30,6 +30,8 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 bool ausf_nudm_ueau_handle_result_confirmation_inform(ausf_ue_t *ausf_ue,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+bool ausf_nudm_ueau_handle_auth_removal_ind(ausf_ue_t *ausf_ue,
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 #ifdef __cplusplus
 }
 #endif

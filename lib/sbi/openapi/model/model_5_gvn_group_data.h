@@ -29,7 +29,11 @@ typedef struct OpenAPI_model_5_gvn_group_data_s {
     OpenAPI_list_t *app_descriptors;
     bool is_secondary_auth;
     int secondary_auth;
+    bool is_dn_aaa_ip_address_allocation;
+    int dn_aaa_ip_address_allocation;
     struct OpenAPI_ip_address_1_s *dn_aaa_address;
+    OpenAPI_list_t *additional_dn_aaa_addresses;
+    char *dn_aaa_fqdn;
 } OpenAPI_model_5_gvn_group_data_t;
 
 OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_create(
@@ -39,7 +43,11 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_create(
     OpenAPI_list_t *app_descriptors,
     bool is_secondary_auth,
     int secondary_auth,
-    OpenAPI_ip_address_1_t *dn_aaa_address
+    bool is_dn_aaa_ip_address_allocation,
+    int dn_aaa_ip_address_allocation,
+    OpenAPI_ip_address_1_t *dn_aaa_address,
+    OpenAPI_list_t *additional_dn_aaa_addresses,
+    char *dn_aaa_fqdn
 );
 void OpenAPI_model_5_gvn_group_data_free(OpenAPI_model_5_gvn_group_data_t *model_5_gvn_group_data);
 OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_parseFromJSON(cJSON *model_5_gvn_group_dataJSON);

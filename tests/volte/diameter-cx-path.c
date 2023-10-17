@@ -237,13 +237,28 @@ static void test_cx_uaa_cb(void *data, struct msg **msg)
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(new == 0);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
+    if (new != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
 
     ret = fd_sess_state_retrieve(test_cx_reg, session, &sess_data);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(sess_data);
-    ogs_expect_or_return((void *)sess_data == data);
+    if (ret != 0) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if (!sess_data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if ((void *)sess_data != data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
 
     test_ue = sess_data->test_ue;
     ogs_assert(test_ue);
@@ -434,8 +449,10 @@ static void test_cx_send_mar(struct sess_state *sess_data)
         uint64_t sqn_ms;
         int i;
 
-        OGS_HEX(test_ue->k_string, strlen(test_ue->k_string), test_ue->k);
-        OGS_HEX(test_ue->opc_string, strlen(test_ue->opc_string), test_ue->opc);
+        ogs_hex_from_string(
+                test_ue->k_string, test_ue->k, sizeof(test_ue->k));
+        ogs_hex_from_string(
+                test_ue->opc_string, test_ue->opc, sizeof(test_ue->opc));
 
         milenage_f2345(test_ue->opc, test_ue->k, test_ue->rand,
                 NULL, NULL, NULL, NULL, ak);
@@ -541,13 +558,28 @@ static void test_cx_maa_cb(void *data, struct msg **msg)
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(new == 0);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
+    if (new != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
 
     ret = fd_sess_state_retrieve(test_cx_reg, session, &sess_data);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(sess_data);
-    ogs_expect_or_return((void *)sess_data == data);
+    if (ret != 0) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if (!sess_data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if ((void *)sess_data != data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
 
     test_ue = sess_data->test_ue;
     ogs_assert(test_ue);
@@ -809,13 +841,28 @@ static void test_cx_saa_cb(void *data, struct msg **msg)
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(new == 0);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
+    if (new != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
 
     ret = fd_sess_state_retrieve(test_cx_reg, session, &sess_data);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(sess_data);
-    ogs_expect_or_return((void *)sess_data == data);
+    if (ret != 0) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if (!sess_data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if ((void *)sess_data != data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
 
     test_ue = sess_data->test_ue;
     ogs_assert(test_ue);
@@ -1038,13 +1085,28 @@ static void test_cx_lia_cb(void *data, struct msg **msg)
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(new == 0);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
+    if (new != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
 
     ret = fd_sess_state_retrieve(test_cx_reg, session, &sess_data);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(sess_data);
-    ogs_expect_or_return((void *)sess_data == data);
+    if (ret != 0) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if (!sess_data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if ((void *)sess_data != data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
 
     test_ue = sess_data->test_ue;
     ogs_assert(test_ue);

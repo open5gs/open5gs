@@ -6,7 +6,9 @@
 
 OpenAPI_condition_data_t *OpenAPI_condition_data_create(
     char *cond_id,
+    bool is_activation_time_null,
     char *activation_time,
+    bool is_deactivation_time_null,
     char *deactivation_time,
     OpenAPI_access_type_e access_type,
     OpenAPI_rat_type_e rat_type
@@ -16,7 +18,9 @@ OpenAPI_condition_data_t *OpenAPI_condition_data_create(
     ogs_assert(condition_data_local_var);
 
     condition_data_local_var->cond_id = cond_id;
+    condition_data_local_var->is_activation_time_null = is_activation_time_null;
     condition_data_local_var->activation_time = activation_time;
+    condition_data_local_var->is_deactivation_time_null = is_deactivation_time_null;
     condition_data_local_var->deactivation_time = deactivation_time;
     condition_data_local_var->access_type = access_type;
     condition_data_local_var->rat_type = rat_type;
@@ -26,19 +30,30 @@ OpenAPI_condition_data_t *OpenAPI_condition_data_create(
 
 void OpenAPI_condition_data_free(OpenAPI_condition_data_t *condition_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == condition_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(condition_data->cond_id);
-    ogs_free(condition_data->activation_time);
-    ogs_free(condition_data->deactivation_time);
+    if (condition_data->cond_id) {
+        ogs_free(condition_data->cond_id);
+        condition_data->cond_id = NULL;
+    }
+    if (condition_data->activation_time) {
+        ogs_free(condition_data->activation_time);
+        condition_data->activation_time = NULL;
+    }
+    if (condition_data->deactivation_time) {
+        ogs_free(condition_data->deactivation_time);
+        condition_data->deactivation_time = NULL;
+    }
     ogs_free(condition_data);
 }
 
 cJSON *OpenAPI_condition_data_convertToJSON(OpenAPI_condition_data_t *condition_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (condition_data == NULL) {
         ogs_error("OpenAPI_condition_data_convertToJSON() failed [ConditionData]");
@@ -46,6 +61,10 @@ cJSON *OpenAPI_condition_data_convertToJSON(OpenAPI_condition_data_t *condition_
     }
 
     item = cJSON_CreateObject();
+    if (!condition_data->cond_id) {
+        ogs_error("OpenAPI_condition_data_convertToJSON() failed [cond_id]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "condId", condition_data->cond_id) == NULL) {
         ogs_error("OpenAPI_condition_data_convertToJSON() failed [cond_id]");
         goto end;
@@ -56,6 +75,11 @@ cJSON *OpenAPI_condition_data_convertToJSON(OpenAPI_condition_data_t *condition_
         ogs_error("OpenAPI_condition_data_convertToJSON() failed [activation_time]");
         goto end;
     }
+    } else if (condition_data->is_activation_time_null) {
+        if (cJSON_AddNullToObject(item, "activationTime") == NULL) {
+            ogs_error("OpenAPI_condition_data_convertToJSON() failed [activation_time]");
+            goto end;
+        }
     }
 
     if (condition_data->deactivation_time) {
@@ -63,16 +87,21 @@ cJSON *OpenAPI_condition_data_convertToJSON(OpenAPI_condition_data_t *condition_
         ogs_error("OpenAPI_condition_data_convertToJSON() failed [deactivation_time]");
         goto end;
     }
+    } else if (condition_data->is_deactivation_time_null) {
+        if (cJSON_AddNullToObject(item, "deactivationTime") == NULL) {
+            ogs_error("OpenAPI_condition_data_convertToJSON() failed [deactivation_time]");
+            goto end;
+        }
     }
 
-    if (condition_data->access_type) {
+    if (condition_data->access_type != OpenAPI_access_type_NULL) {
     if (cJSON_AddStringToObject(item, "accessType", OpenAPI_access_type_ToString(condition_data->access_type)) == NULL) {
         ogs_error("OpenAPI_condition_data_convertToJSON() failed [access_type]");
         goto end;
     }
     }
 
-    if (condition_data->rat_type) {
+    if (condition_data->rat_type != OpenAPI_rat_type_NULL) {
     if (cJSON_AddStringToObject(item, "ratType", OpenAPI_rat_type_ToString(condition_data->rat_type)) == NULL) {
         ogs_error("OpenAPI_condition_data_convertToJSON() failed [rat_type]");
         goto end;
@@ -86,38 +115,45 @@ end:
 OpenAPI_condition_data_t *OpenAPI_condition_data_parseFromJSON(cJSON *condition_dataJSON)
 {
     OpenAPI_condition_data_t *condition_data_local_var = NULL;
-    cJSON *cond_id = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "condId");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *cond_id = NULL;
+    cJSON *activation_time = NULL;
+    cJSON *deactivation_time = NULL;
+    cJSON *access_type = NULL;
+    OpenAPI_access_type_e access_typeVariable = 0;
+    cJSON *rat_type = NULL;
+    OpenAPI_rat_type_e rat_typeVariable = 0;
+    cond_id = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "condId");
     if (!cond_id) {
         ogs_error("OpenAPI_condition_data_parseFromJSON() failed [cond_id]");
         goto end;
     }
-
     if (!cJSON_IsString(cond_id)) {
         ogs_error("OpenAPI_condition_data_parseFromJSON() failed [cond_id]");
         goto end;
     }
 
-    cJSON *activation_time = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "activationTime");
-
+    activation_time = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "activationTime");
     if (activation_time) {
-    if (!cJSON_IsString(activation_time)) {
+    if (!cJSON_IsNull(activation_time)) {
+    if (!cJSON_IsString(activation_time) && !cJSON_IsNull(activation_time)) {
         ogs_error("OpenAPI_condition_data_parseFromJSON() failed [activation_time]");
         goto end;
     }
     }
+    }
 
-    cJSON *deactivation_time = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "deactivationTime");
-
+    deactivation_time = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "deactivationTime");
     if (deactivation_time) {
-    if (!cJSON_IsString(deactivation_time)) {
+    if (!cJSON_IsNull(deactivation_time)) {
+    if (!cJSON_IsString(deactivation_time) && !cJSON_IsNull(deactivation_time)) {
         ogs_error("OpenAPI_condition_data_parseFromJSON() failed [deactivation_time]");
         goto end;
     }
     }
+    }
 
-    cJSON *access_type = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "accessType");
-
-    OpenAPI_access_type_e access_typeVariable;
+    access_type = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "accessType");
     if (access_type) {
     if (!cJSON_IsString(access_type)) {
         ogs_error("OpenAPI_condition_data_parseFromJSON() failed [access_type]");
@@ -126,9 +162,7 @@ OpenAPI_condition_data_t *OpenAPI_condition_data_parseFromJSON(cJSON *condition_
     access_typeVariable = OpenAPI_access_type_FromString(access_type->valuestring);
     }
 
-    cJSON *rat_type = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "ratType");
-
-    OpenAPI_rat_type_e rat_typeVariable;
+    rat_type = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "ratType");
     if (rat_type) {
     if (!cJSON_IsString(rat_type)) {
         ogs_error("OpenAPI_condition_data_parseFromJSON() failed [rat_type]");
@@ -139,8 +173,10 @@ OpenAPI_condition_data_t *OpenAPI_condition_data_parseFromJSON(cJSON *condition_
 
     condition_data_local_var = OpenAPI_condition_data_create (
         ogs_strdup(cond_id->valuestring),
-        activation_time ? ogs_strdup(activation_time->valuestring) : NULL,
-        deactivation_time ? ogs_strdup(deactivation_time->valuestring) : NULL,
+        activation_time && cJSON_IsNull(activation_time) ? true : false,
+        activation_time && !cJSON_IsNull(activation_time) ? ogs_strdup(activation_time->valuestring) : NULL,
+        deactivation_time && cJSON_IsNull(deactivation_time) ? true : false,
+        deactivation_time && !cJSON_IsNull(deactivation_time) ? ogs_strdup(deactivation_time->valuestring) : NULL,
         access_type ? access_typeVariable : 0,
         rat_type ? rat_typeVariable : 0
     );

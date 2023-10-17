@@ -23,7 +23,7 @@
 static void s1ap_message_test1(abts_case *tc, void *data)
 {
     /* S1SetupRequest */
-    const char *payload = 
+    const char *payload =
         "0011002d000004003b00090000f11040"
         "54f64010003c400903004a4c542d3632"
         "3100400007000c0e4000f11000894001"
@@ -32,12 +32,12 @@ static void s1ap_message_test1(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-            OGS_HEX(payload, strlen(payload), hexbuf), 49);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 49);
 
     result = ogs_s1ap_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
@@ -49,7 +49,7 @@ static void s1ap_message_test1(abts_case *tc, void *data)
 static void s1ap_message_test2(abts_case *tc, void *data)
 {
     /* InitialUE(Attach Request) */
-    const char *payload = 
+    const char *payload =
         "000c406f000006000800020001001a00"
         "3c3b17df675aa8050741020bf600f110"
         "000201030003e605f070000010000502"
@@ -62,12 +62,12 @@ static void s1ap_message_test2(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-            OGS_HEX(payload, strlen(payload), hexbuf), 115);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 115);
 
     result = ogs_s1ap_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
@@ -79,7 +79,7 @@ static void s1ap_message_test2(abts_case *tc, void *data)
 static void s1ap_message_test3(abts_case *tc, void *data)
 {
     /* initial context setup response */
-    const char *payload = 
+    const char *payload =
         "2009002500000300004005c0020000bf"
         "0008400200010033400f000032400a0a"
         "1f0a0123c601000908";
@@ -87,12 +87,12 @@ static void s1ap_message_test3(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-            OGS_HEX(payload, strlen(payload), hexbuf), 41);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 41);
 
     result = ogs_s1ap_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
@@ -104,7 +104,7 @@ static void s1ap_message_test3(abts_case *tc, void *data)
 static void s1ap_message_test4(abts_case *tc, void *data)
 {
     /* InitialUE(Service Request) */
-    const char *payload = 
+    const char *payload =
         "000c402d000005000800020071001a00 0504c706b410004300060013f1890001"
         "006440080013f189400bb75000864001 40006440080013f189400bb750004340"
         "060013f18900014300060013f1890001 006440080013f189400db09000864001"
@@ -113,12 +113,12 @@ static void s1ap_message_test4(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-            OGS_HEX(payload, strlen(payload), hexbuf), 128);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 128);
 
     result = ogs_s1ap_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
@@ -138,12 +138,12 @@ static void s1ap_message_test5(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-            OGS_HEX(payload, strlen(payload), hexbuf), 78);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 78);
 
     result = ogs_s1ap_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
@@ -163,12 +163,12 @@ static void s1ap_message_test6(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-            OGS_HEX(payload, strlen(payload), hexbuf), 78);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 78);
 
     result = ogs_s1ap_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
@@ -188,12 +188,12 @@ static void s1ap_message_test7(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     ogs_pkbuf_t *pkbuf;
     int result;
-    char hexbuf[OGS_MAX_SDU_LEN];
+    char hexbuf[OGS_HUGE_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
-            OGS_HEX(payload, strlen(payload), hexbuf), 78);
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 78);
 
     result = ogs_s1ap_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
@@ -363,7 +363,7 @@ static void s1ap_message_test8(abts_case *tc, void *data)
         SecurityKey->size = 32;
         SecurityKey->buf = CALLOC(SecurityKey->size, sizeof(uint8_t));
         SecurityKey->bits_unused = 0;
-        OGS_HEX(kenb_string, strlen(kenb_string), kenb);
+        ogs_hex_from_string(kenb_string, kenb, sizeof(kenb));
         memcpy(SecurityKey->buf, kenb, SecurityKey->size);
     }
 
@@ -520,7 +520,7 @@ static void s1ap_message_test8(abts_case *tc, void *data)
         UERadioCapability = &ie->value.choice.UERadioCapability;
 
         ogs_assert(UERadioCapability);
-        OGS_HEX(radio_string, strlen(radio_string), radio);
+        ogs_hex_from_string(radio_string, radio, sizeof(radio));
         ogs_s1ap_buffer_to_OCTET_STRING(
                 radio, TEST8_RADIO_SIZE, UERadioCapability);
     }
@@ -543,7 +543,7 @@ static void s1ap_message_test8(abts_case *tc, void *data)
         Masked_IMEISV->size = 8;
         Masked_IMEISV->buf = CALLOC(Masked_IMEISV->size, sizeof(uint8_t));
         Masked_IMEISV->bits_unused = 0;
-        OGS_HEX(masked_string, strlen(masked_string), masked);
+        ogs_hex_from_string(masked_string, masked, sizeof(masked));
         memcpy(Masked_IMEISV->buf, masked, Masked_IMEISV->size);
     }
     {
@@ -739,7 +739,7 @@ static void s1ap_message_test9(abts_case *tc, void *data)
         SecurityKey->size = 32;
         SecurityKey->buf = CALLOC(SecurityKey->size, sizeof(uint8_t));
         SecurityKey->bits_unused = 0;
-        OGS_HEX(kenb_string, strlen(kenb_string), kenb);
+        ogs_hex_from_string(kenb_string, kenb, sizeof(kenb));
         memcpy(SecurityKey->buf, kenb, SecurityKey->size);
     }
 
@@ -896,7 +896,7 @@ static void s1ap_message_test9(abts_case *tc, void *data)
         UERadioCapability = &ie->value.choice.UERadioCapability;
 
         ogs_assert(UERadioCapability);
-        OGS_HEX(radio_string, strlen(radio_string), radio);
+        ogs_hex_from_string(radio_string, radio, sizeof(radio));
         ogs_s1ap_buffer_to_OCTET_STRING(
                 radio, TEST9_RADIO_SIZE, UERadioCapability);
     }
@@ -919,7 +919,7 @@ static void s1ap_message_test9(abts_case *tc, void *data)
         Masked_IMEISV->size = 8;
         Masked_IMEISV->buf = CALLOC(Masked_IMEISV->size, sizeof(uint8_t));
         Masked_IMEISV->bits_unused = 0;
-        OGS_HEX(masked_string, strlen(masked_string), masked);
+        ogs_hex_from_string(masked_string, masked, sizeof(masked));
         memcpy(Masked_IMEISV->buf, masked, Masked_IMEISV->size);
     }
     {
@@ -1115,7 +1115,7 @@ static void s1ap_message_test10(abts_case *tc, void *data)
         SecurityKey->size = 32;
         SecurityKey->buf = CALLOC(SecurityKey->size, sizeof(uint8_t));
         SecurityKey->bits_unused = 0;
-        OGS_HEX(kenb_string, strlen(kenb_string), kenb);
+        ogs_hex_from_string(kenb_string, kenb, sizeof(kenb));
         memcpy(SecurityKey->buf, kenb, SecurityKey->size);
     }
 
@@ -1272,7 +1272,7 @@ static void s1ap_message_test10(abts_case *tc, void *data)
         UERadioCapability = &ie->value.choice.UERadioCapability;
 
         ogs_assert(UERadioCapability);
-        OGS_HEX(radio_string, strlen(radio_string), radio);
+        ogs_hex_from_string(radio_string, radio, sizeof(radio));
         ogs_s1ap_buffer_to_OCTET_STRING(
                 radio, TEST10_RADIO_SIZE, UERadioCapability);
     }
@@ -1295,7 +1295,7 @@ static void s1ap_message_test10(abts_case *tc, void *data)
         Masked_IMEISV->size = 8;
         Masked_IMEISV->buf = CALLOC(Masked_IMEISV->size, sizeof(uint8_t));
         Masked_IMEISV->bits_unused = 0;
-        OGS_HEX(masked_string, strlen(masked_string), masked);
+        ogs_hex_from_string(masked_string, masked, sizeof(masked));
         memcpy(Masked_IMEISV->buf, masked, Masked_IMEISV->size);
     }
     {

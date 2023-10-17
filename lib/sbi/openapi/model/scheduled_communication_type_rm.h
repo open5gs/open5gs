@@ -1,7 +1,7 @@
 /*
  * scheduled_communication_type_rm.h
  *
- * 
+ * This enumeration is defined in the same way as the &#39;ScheduledCommunicationTypen&#39; enumeration, but with the OpenAPI &#39;nullable: true&#39; property.\&quot;  
  */
 
 #ifndef _OpenAPI_scheduled_communication_type_rm_H_

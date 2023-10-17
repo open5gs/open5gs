@@ -1,60 +1,72 @@
 #
-# logger:
-#
 #  o Set OGS_LOG_INFO to all domain level
 #   - If `level` is omitted, the default level is OGS_LOG_INFO)
 #   - If `domain` is omitted, the all domain level is set from 'level'
-#    (Nothing is needed)
+#    (Default values are used, so no configuration is required)
 #
 #  o Set OGS_LOG_ERROR to all domain level
 #   - `level` can be set with none, fatal, error, warn, info, debug, trace
+#  logger:
 #    level: error
 #
 #  o Set OGS_LOG_DEBUG to mme/emm domain level
+#  logger:
 #    level: debug
 #    domain: mme,emm
 #
 #  o Set OGS_LOG_TRACE to all domain level
+#  logger:
 #    level: trace
-#    domain: core,pfcp,gtp,upf,event,tlv,mem,sock
+#    domain: core,sbi,ausf,event,tlv,mem,sock
 #
 logger:
     file: @localstatedir@/log/open5gs/upf.log
 
 #
-# upf:
-#
 #  <PFCP Server>
 #
 #  o PFCP Server(127.0.0.7:8805, ::1:8805)
+#  upf:
 #    pfcp:
 #      - addr: 127.0.0.7
 #      - addr: ::1
 #
 #  o PFCP-U Server(127.0.0.1:2152, [::1]:2152)
+#  upf:
 #    pfcp:
 #      name: localhost
 #
 #  o PFCP Option (Default)
 #    - so_bindtodevice : NULL
 #
+#  upf:
 #    pfcp:
 #      addr: 127.0.0.7
 #      option:
 #        so_bindtodevice: vrf-blue
 #
+#  o Provide custom PFCP address to be advertised to SMF in PFCP association
+#      request/respond
+#  upf:
+#    pfcp:
+#      - addr: 0.0.0.0
+#        advertise: open5gs-smf.svc.local
+#
 #  <GTP-U Server>>
 #
 #  o GTP-U Server(127.0.0.7:2152, [::1]:2152)
+#  upf:
 #    gtpu:
 #      - addr: 127.0.0.7
 #      - addr: ::1
 #
 #  o GTP-U Server(127.0.0.1:2152, [::1]:2152)
+#  upf:
 #    gtpu:
 #      name: localhost
 #
 #  o User Plane IP Resource information
+#  upf:
 #    gtpu:
 #      - addr:
 #        - 127.0.0.7
@@ -70,20 +82,24 @@ logger:
 #        source_interface: 1
 #
 #  o Provide custom UPF GTP-U address to be advertised inside NGAP messages
+#  upf:
 #    gtpu:
 #      - addr: 10.4.128.21
 #        advertise: 172.24.15.30
 #
+#  upf:
 #    gtpu:
 #      - addr: 10.4.128.21
 #        advertise:
 #        - 127.0.0.1
 #        - ::1
 #
+#  upf:
 #    gtpu:
 #      - addr: 10.4.128.21
 #        advertise: upf1.5gc.mnc001.mcc001.3gppnetwork.org
 #
+#  upf:
 #    gtpu:
 #      - dev: ens3
 #        advertise: upf1.5gc.mnc001.mcc001.3gppnetwork.org
@@ -91,6 +107,7 @@ logger:
 #  o GTP-U Option (Default)
 #    - so_bindtodevice : NULL
 #
+#  upf:
 #    gtpu:
 #      addr: 127.0.0.7
 #      option:
@@ -104,6 +121,7 @@ logger:
 #  o IPv4 Pool
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #
+#  upf:
 #    subnet:
 #      addr: 10.45.0.1/16
 #
@@ -111,6 +129,7 @@ logger:
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #    $ sudo ip addr add 2001:db8:cafe::1/48 dev ogstun
 #
+#  upf:
 #    subnet:
 #      - addr: 10.45.0.1/16
 #      - addr: 2001:db8:cafe::1/48
@@ -125,6 +144,7 @@ logger:
 #
 #    ; If the UE has unknown DNN/APN(not internet/ims), SMF/UPF will crash.
 #
+#  upf:
 #    subnet:
 #      - addr: 10.45.0.1/16
 #        dnn: internet
@@ -138,6 +158,7 @@ logger:
 #  o Specific DNN/APN with the FALLBACK SUBNET(10.47.0.1/16)
 #    ; Note that put the FALLBACK SUBNET last to avoid SMF/UPF crash.
 #
+#  upf:
 #    subnet:
 #      - addr: 10.45.0.1/16
 #        dnn: internet
@@ -151,6 +172,7 @@ logger:
 #    $ sudo ip addr add 10.46.0.1/16 dev ogstun3
 #    $ sudo ip addr add 2001:db8:babe::1/48 dev ogstun3
 #
+#  upf:
 #    subnet:
 #      - addr: 10.45.0.1/16
 #        dnn: internet
@@ -164,6 +186,14 @@ logger:
 #        dnn: ims
 #        dev: ogstun3
 #
+#  <Metrics Server>
+#
+#  o Metrics Server(http://<any address>:9090)
+#  upf:
+#    metrics:
+#    - addr: 0.0.0.0
+#      port: 9090
+#
 upf:
     pfcp:
       - addr: 127.0.0.7
@@ -172,52 +202,56 @@ upf:
     subnet:
       - addr: 10.45.0.1/16
       - addr: 2001:db8:cafe::1/48
+    metrics:
+      - addr: 127.0.0.7
+        port: 9090
 
-#
-# smf:
 #
 #  <PFCP Client>>
 #
 #  o PFCP Client(127.0.0.4:8805)
-#
+#  smf:
 #    pfcp:
 #      addr: 127.0.0.4
 #
 smf:
 
 #
-# parameter:
-#
 #  o Number of output streams per SCTP associations.
-#      sctp_streams: 30
+#  parameter:
+#    sctp_streams: 30
 #
 #  o Disable use of IPv4 addresses (only IPv6)
-#      no_ipv4: true
+#  parameter:
+#    no_ipv4: true
 #
 #  o Disable use of IPv6 addresses (only IPv4)
-#      no_ipv6: true
+#  parameter:
+#    no_ipv6: true
 #
 #  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
-#      prefer_ipv4: true
+#  parameter:
+#    prefer_ipv4: true
 #
 parameter:
 
 #
-# max:
-#
 # o Maximum Number of UE
-#    ue: 1024
+# max:
+#   ue: 1024
+#
 # o Maximum Number of Peer(S1AP/NGAP, DIAMETER, GTP, PFCP or SBI)
-#    peer: 64
+# max:
+#   peer: 64
 #
 max:
 
 #
-# time:
-#
 #  o Message Wait Duration (Default : 10,000 ms = 10 seconds)
+#    (Default values are used, so no configuration is required)
 #
 #  o Message Wait Duration (3000 ms)
+#  time:
 #    message:
 #        duration: 3000
 time:

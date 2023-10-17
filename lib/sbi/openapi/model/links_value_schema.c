@@ -18,17 +18,22 @@ OpenAPI_links_value_schema_t *OpenAPI_links_value_schema_create(
 
 void OpenAPI_links_value_schema_free(OpenAPI_links_value_schema_t *links_value_schema)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == links_value_schema) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(links_value_schema->href);
+    if (links_value_schema->href) {
+        ogs_free(links_value_schema->href);
+        links_value_schema->href = NULL;
+    }
     ogs_free(links_value_schema);
 }
 
 cJSON *OpenAPI_links_value_schema_convertToJSON(OpenAPI_links_value_schema_t *links_value_schema)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (links_value_schema == NULL) {
         ogs_error("OpenAPI_links_value_schema_convertToJSON() failed [LinksValueSchema]");
@@ -50,17 +55,18 @@ end:
 OpenAPI_links_value_schema_t *OpenAPI_links_value_schema_parseFromJSON(cJSON *links_value_schemaJSON)
 {
     OpenAPI_links_value_schema_t *links_value_schema_local_var = NULL;
-    cJSON *href = cJSON_GetObjectItemCaseSensitive(links_value_schemaJSON, "href");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *href = NULL;
+    href = cJSON_GetObjectItemCaseSensitive(links_value_schemaJSON, "href");
     if (href) {
-    if (!cJSON_IsString(href)) {
+    if (!cJSON_IsString(href) && !cJSON_IsNull(href)) {
         ogs_error("OpenAPI_links_value_schema_parseFromJSON() failed [href]");
         goto end;
     }
     }
 
     links_value_schema_local_var = OpenAPI_links_value_schema_create (
-        href ? ogs_strdup(href->valuestring) : NULL
+        href && !cJSON_IsNull(href) ? ogs_strdup(href->valuestring) : NULL
     );
 
     return links_value_schema_local_var;

@@ -22,21 +22,29 @@ OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_c
 
 void OpenAPI_qos_notification_control_info_free(OpenAPI_qos_notification_control_info_t *qos_notification_control_info)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == qos_notification_control_info) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(qos_notification_control_info->flows, node) {
-        OpenAPI_flows_free(node->data);
+    if (qos_notification_control_info->flows) {
+        OpenAPI_list_for_each(qos_notification_control_info->flows, node) {
+            OpenAPI_flows_free(node->data);
+        }
+        OpenAPI_list_free(qos_notification_control_info->flows);
+        qos_notification_control_info->flows = NULL;
     }
-    OpenAPI_list_free(qos_notification_control_info->flows);
-    ogs_free(qos_notification_control_info->alt_ser_req);
+    if (qos_notification_control_info->alt_ser_req) {
+        ogs_free(qos_notification_control_info->alt_ser_req);
+        qos_notification_control_info->alt_ser_req = NULL;
+    }
     ogs_free(qos_notification_control_info);
 }
 
 cJSON *OpenAPI_qos_notification_control_info_convertToJSON(OpenAPI_qos_notification_control_info_t *qos_notification_control_info)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (qos_notification_control_info == NULL) {
         ogs_error("OpenAPI_qos_notification_control_info_convertToJSON() failed [QosNotificationControlInfo]");
@@ -44,6 +52,10 @@ cJSON *OpenAPI_qos_notification_control_info_convertToJSON(OpenAPI_qos_notificat
     }
 
     item = cJSON_CreateObject();
+    if (qos_notification_control_info->notif_type == OpenAPI_qos_notif_type_NULL) {
+        ogs_error("OpenAPI_qos_notification_control_info_convertToJSON() failed [notif_type]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "notifType", OpenAPI_qos_notif_type_ToString(qos_notification_control_info->notif_type)) == NULL) {
         ogs_error("OpenAPI_qos_notification_control_info_convertToJSON() failed [notif_type]");
         goto end;
@@ -55,17 +67,13 @@ cJSON *OpenAPI_qos_notification_control_info_convertToJSON(OpenAPI_qos_notificat
         ogs_error("OpenAPI_qos_notification_control_info_convertToJSON() failed [flows]");
         goto end;
     }
-
-    OpenAPI_lnode_t *flows_node;
-    if (qos_notification_control_info->flows) {
-        OpenAPI_list_for_each(qos_notification_control_info->flows, flows_node) {
-            cJSON *itemLocal = OpenAPI_flows_convertToJSON(flows_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_qos_notification_control_info_convertToJSON() failed [flows]");
-                goto end;
-            }
-            cJSON_AddItemToArray(flowsList, itemLocal);
+    OpenAPI_list_for_each(qos_notification_control_info->flows, node) {
+        cJSON *itemLocal = OpenAPI_flows_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_qos_notification_control_info_convertToJSON() failed [flows]");
+            goto end;
         }
+        cJSON_AddItemToArray(flowsList, itemLocal);
     }
     }
 
@@ -83,52 +91,50 @@ end:
 OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_parseFromJSON(cJSON *qos_notification_control_infoJSON)
 {
     OpenAPI_qos_notification_control_info_t *qos_notification_control_info_local_var = NULL;
-    cJSON *notif_type = cJSON_GetObjectItemCaseSensitive(qos_notification_control_infoJSON, "notifType");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *notif_type = NULL;
+    OpenAPI_qos_notif_type_e notif_typeVariable = 0;
+    cJSON *flows = NULL;
+    OpenAPI_list_t *flowsList = NULL;
+    cJSON *alt_ser_req = NULL;
+    notif_type = cJSON_GetObjectItemCaseSensitive(qos_notification_control_infoJSON, "notifType");
     if (!notif_type) {
         ogs_error("OpenAPI_qos_notification_control_info_parseFromJSON() failed [notif_type]");
         goto end;
     }
-
-    OpenAPI_qos_notif_type_e notif_typeVariable;
     if (!cJSON_IsString(notif_type)) {
         ogs_error("OpenAPI_qos_notification_control_info_parseFromJSON() failed [notif_type]");
         goto end;
     }
     notif_typeVariable = OpenAPI_qos_notif_type_FromString(notif_type->valuestring);
 
-    cJSON *flows = cJSON_GetObjectItemCaseSensitive(qos_notification_control_infoJSON, "flows");
-
-    OpenAPI_list_t *flowsList;
+    flows = cJSON_GetObjectItemCaseSensitive(qos_notification_control_infoJSON, "flows");
     if (flows) {
-    cJSON *flows_local_nonprimitive;
-    if (!cJSON_IsArray(flows)){
-        ogs_error("OpenAPI_qos_notification_control_info_parseFromJSON() failed [flows]");
-        goto end;
-    }
-
-    flowsList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(flows_local_nonprimitive, flows ) {
-        if (!cJSON_IsObject(flows_local_nonprimitive)) {
+        cJSON *flows_local = NULL;
+        if (!cJSON_IsArray(flows)) {
             ogs_error("OpenAPI_qos_notification_control_info_parseFromJSON() failed [flows]");
             goto end;
         }
-        OpenAPI_flows_t *flowsItem = OpenAPI_flows_parseFromJSON(flows_local_nonprimitive);
 
-        if (!flowsItem) {
-            ogs_error("No flowsItem");
-            OpenAPI_list_free(flowsList);
-            goto end;
+        flowsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(flows_local, flows) {
+            if (!cJSON_IsObject(flows_local)) {
+                ogs_error("OpenAPI_qos_notification_control_info_parseFromJSON() failed [flows]");
+                goto end;
+            }
+            OpenAPI_flows_t *flowsItem = OpenAPI_flows_parseFromJSON(flows_local);
+            if (!flowsItem) {
+                ogs_error("No flowsItem");
+                goto end;
+            }
+            OpenAPI_list_add(flowsList, flowsItem);
         }
-
-        OpenAPI_list_add(flowsList, flowsItem);
-    }
     }
 
-    cJSON *alt_ser_req = cJSON_GetObjectItemCaseSensitive(qos_notification_control_infoJSON, "altSerReq");
-
+    alt_ser_req = cJSON_GetObjectItemCaseSensitive(qos_notification_control_infoJSON, "altSerReq");
     if (alt_ser_req) {
-    if (!cJSON_IsString(alt_ser_req)) {
+    if (!cJSON_IsString(alt_ser_req) && !cJSON_IsNull(alt_ser_req)) {
         ogs_error("OpenAPI_qos_notification_control_info_parseFromJSON() failed [alt_ser_req]");
         goto end;
     }
@@ -137,11 +143,18 @@ OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_p
     qos_notification_control_info_local_var = OpenAPI_qos_notification_control_info_create (
         notif_typeVariable,
         flows ? flowsList : NULL,
-        alt_ser_req ? ogs_strdup(alt_ser_req->valuestring) : NULL
+        alt_ser_req && !cJSON_IsNull(alt_ser_req) ? ogs_strdup(alt_ser_req->valuestring) : NULL
     );
 
     return qos_notification_control_info_local_var;
 end:
+    if (flowsList) {
+        OpenAPI_list_for_each(flowsList, node) {
+            OpenAPI_flows_free(node->data);
+        }
+        OpenAPI_list_free(flowsList);
+        flowsList = NULL;
+    }
     return NULL;
 }
 

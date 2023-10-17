@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -54,7 +54,7 @@ def write_file(f, string):
 def output_header_to_file(f):
     now = datetime.datetime.now()
     f.write("""/*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -90,10 +90,10 @@ def usage():
     print("-h        Print this help and return")
 
 def v_upper(v):
-    return re.sub('3GPP', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).upper())
+    return re.sub('5GS', 'FiveGS', re.sub('3GPP', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).upper()))
 
 def v_lower(v):
-    return re.sub('3gpp', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).lower())
+    return re.sub('5gs', 'fivegs', re.sub('3gpp', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).lower()))
 
 def get_cells(cells):
     note = cells[0].text
@@ -149,6 +149,26 @@ def get_cells(cells):
         ie_type = 'PFCP Session Retention Information within PFCP Association Setup Request'
     elif ie_type.find('GTP-U Path QoS Report') != -1:
         ie_type = 'GTP-U Path QoS Report PFCP Node Report Request'
+    elif ie_type.find('Provide RDS configuration information') != -1:
+        ie_type = 'Provide RDS Configuration Information'
+    elif ie_type.find('RDS configuration information') != -1:
+        ie_type = 'RDS Configuration Information'
+    elif ie_type.find('Group Id') != -1:
+        ie_type = 'Group ID'
+    elif ie_type.find('Group-Id') != -1:
+        ie_type = 'Group ID'
+    elif ie_type.find('L2TP session Indications') != -1:
+        ie_type = 'L2TP Session Indications'
+    elif ie_type.find('L2TP User Authentication') != -1:
+        ie_type = 'L2TP User Authentication IE'
+    elif ie_type.find('IP Address and Port Number Replacement') != -1:
+        ie_type = 'IP Address and Port number Replacement'
+    elif ie_type.find('User Plane Node Management Information Container') != -1:
+        ie_type = 'Bridge Management Information Container'
+    elif ie_type.find('TSC Management Information') != -1:
+        ie_type = 'TSC Management Information IE within PFCP Session Modification Request'
+    elif ie_type.find('Query Packet Rate Status') != -1:
+        ie_type = 'Query Packet Rate Status IE within PFCP Session Modification Request'
     if ie_type not in type_list.keys():
         assert False, "Unknown IE type : [" \
                 + cells[-1].text + "]" + "(" + ie_type + ")"
@@ -170,6 +190,9 @@ def get_cells(cells):
     if ie_type == 'User Plane IP Resource Information':
         tlv_more = "3"
     if ie_type == 'SDF Filter':
+        tlv_more = "7"
+    if (ie_type == 'Framed-Route' or
+        ie_type == 'Framed-IPv6-Route'):
         tlv_more = "7"
     if (ie_type == 'Usage Report Session Report Request' or
         ie_type == 'Usage Report Session Deletion Response' or
@@ -399,17 +422,19 @@ msg_list["PFCP Association Release Request"]["table"] = 24
 msg_list["PFCP Association Release Response"]["table"] = 25
 msg_list["PFCP Version Not Supported Response"]["table"] = 0
 msg_list["PFCP Node Report Request"]["table"] = 26
-msg_list["PFCP Node Report Response"]["table"] = 32
-msg_list["PFCP Session Set Deletion Request"]["table"] = 33
-msg_list["PFCP Session Set Deletion Response"]["table"] = 34
-msg_list["PFCP Session Establishment Request"]["table"] = 35
-msg_list["PFCP Session Establishment Response"]["table"] = 60
-msg_list["PFCP Session Modification Request"]["table"] = 70
-msg_list["PFCP Session Modification Response"]["table"] = 95
-msg_list["PFCP Session Deletion Request"]["table"] = 100
-msg_list["PFCP Session Deletion Response"]["table"] = 101
-msg_list["PFCP Session Report Request"]["table"] = 104
-msg_list["PFCP Session Report Response"]["table"] = 116
+msg_list["PFCP Node Report Response"]["table"] = 33
+msg_list["PFCP Session Set Deletion Request"]["table"] = 34
+msg_list["PFCP Session Set Deletion Response"]["table"] = 35
+msg_list["PFCP Session Set Modification Request"]["table"] = 36
+msg_list["PFCP Session Set Modification Response"]["table"] = 38
+msg_list["PFCP Session Establishment Request"]["table"] = 39
+msg_list["PFCP Session Establishment Response"]["table"] = 72
+msg_list["PFCP Session Modification Request"]["table"] = 86
+msg_list["PFCP Session Modification Response"]["table"] = 112
+msg_list["PFCP Session Deletion Request"]["table"] = 117
+msg_list["PFCP Session Deletion Response"]["table"] = 118
+msg_list["PFCP Session Report Request"]["table"] = 121
+msg_list["PFCP Session Report Response"]["table"] = 133
 
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
@@ -423,12 +448,13 @@ for key in msg_list.keys():
             f = open(cachefile, 'w')
 
             table = document.tables[msg_list[key]["table"]]
-            if key.find('Association') != -1:
-                start_i = 1
-            elif key.find('Heartbeat') != -1:
-                start_i = 1
-            else:
-                start_i = 2
+#            if key.find('Association') != -1:
+#                start_i = 1
+#            elif key.find('Heartbeat') != -1:
+#                start_i = 1
+#            else:
+#                start_i = 2
+            start_i = 2
 
             ies = []
             write_file(f, "ies = []\n")
@@ -493,6 +519,7 @@ type_list["Paging Policy Indicator"]["size"] = 1            # Type 158
 type_list["PFCPSRReq-Flags"]["size"] = 1                    # Type 161
 type_list["PFCPAUReq-Flags"]["size"] = 1                    # Type 162
 type_list["Quota Validity Time"]["size"] = 4                # Type 181
+type_list["PFCPSEReq-Flags"]["size"] = 1                    # Type 186
 type_list["Data Status"]["size"] = 1                        # Type 260
 
 f = open(outdir + 'message.h', 'w')
@@ -577,42 +604,46 @@ for k, v in group_list.items():
         v["index"] = "8"
     if v_lower(k) == "redundant_transmission_forwarding_parameters":
         v["index"] = "9"
-    if v_lower(k) == "create_far":
+    if v_lower(k) == "mbs_multicast_parameters":
         v["index"] = "10"
-    if v_lower(k) == "update_forwarding_parameters":
+    if v_lower(k) == "add_mbs_unicast_parameters":
         v["index"] = "11"
-    if v_lower(k) == "update_duplicating_parameters":
+    if v_lower(k) == "create_far":
         v["index"] = "12"
-    if v_lower(k) == "update_far":
+    if v_lower(k) == "update_forwarding_parameters":
         v["index"] = "13"
-    if v_lower(k) == "pfd_context":
+    if v_lower(k) == "update_duplicating_parameters":
         v["index"] = "14"
-    if v_lower(k) == "application_id_s_pfds":
+    if v_lower(k) == "update_far":
         v["index"] = "15"
-    if v_lower(k) == "ethernet_traffic_information":
+    if v_lower(k) == "pfd_context":
         v["index"] = "16"
-    if v_lower(k) == "_access_forwarding_action_information":
+    if v_lower(k) == "application_id_s_pfds":
         v["index"] = "17"
-    if v_lower(k) == "non__access_forwarding_action_information":
+    if v_lower(k) == "ethernet_traffic_information":
         v["index"] = "18"
-    if v_lower(k) == "update__access_forwarding_action_information":
+    if v_lower(k) == "_access_forwarding_action_information":
         v["index"] = "19"
-    if v_lower(k) == "update_non__access_forwarding_action_information":
+    if v_lower(k) == "non__access_forwarding_action_information":
         v["index"] = "20"
-    if v_lower(k) == "access_availability_report":
+    if v_lower(k) == "update__access_forwarding_action_information":
         v["index"] = "21"
-    if v_lower(k) == "qos_monitoring_report":
+    if v_lower(k) == "update_non__access_forwarding_action_information":
         v["index"] = "22"
-    if v_lower(k) == "mptcp_parameters":
+    if v_lower(k) == "access_availability_report":
         v["index"] = "23"
-    if v_lower(k) == "atsss_ll_parameters":
+    if v_lower(k) == "qos_monitoring_report":
         v["index"] = "24"
-    if v_lower(k) == "pmf_parameters":
+    if v_lower(k) == "mptcp_parameters":
         v["index"] = "25"
-    if v_lower(k) == "join_ip_multicast_information_ie_within_usage_report":
+    if v_lower(k) == "atsss_ll_parameters":
         v["index"] = "26"
-    if v_lower(k) == "leave_ip_multicast_information_ie_within_usage_report":
+    if v_lower(k) == "pmf_parameters":
         v["index"] = "27"
+    if v_lower(k) == "join_ip_multicast_information_ie_within_usage_report":
+        v["index"] = "28"
+    if v_lower(k) == "leave_ip_multicast_information_ie_within_usage_report":
+        v["index"] = "29"
 
 tmp = [(k, v["index"]) for k, v in group_list.items()]
 sorted_group_list = sorted(tmp, key=lambda tup: int(tup[1]), reverse=False)
@@ -682,7 +713,8 @@ for (k, v) in sorted_msg_list:
 f.write("   };\n");
 f.write("} ogs_pfcp_message_t;\n\n")
 
-f.write("""int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t *pkbuf);
+f.write("""ogs_pfcp_message_t *ogs_pfcp_parse_msg(ogs_pkbuf_t *pkbuf);
+void ogs_pfcp_message_free(ogs_pfcp_message_t *pfcp_message);
 ogs_pkbuf_t *ogs_pfcp_build_msg(ogs_pfcp_message_t *pfcp_message);
 
 #ifdef __cplusplus
@@ -761,27 +793,36 @@ for (k, v) in sorted_msg_list:
         f.write("}};\n\n")
 f.write("\n")
 
-f.write("""int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t *pkbuf)
+f.write("""ogs_pfcp_message_t *ogs_pfcp_parse_msg(ogs_pkbuf_t *pkbuf)
 {
     int rv = OGS_ERROR;
     ogs_pfcp_header_t *h = NULL;
     uint16_t size = 0;
 
-    ogs_assert(pfcp_message);
+    ogs_pfcp_message_t *pfcp_message = NULL;
+
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
 
     h = (ogs_pfcp_header_t *)pkbuf->data;
     ogs_assert(h);
 
-    memset(pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
+    if (!pfcp_message) {
+        ogs_error("No memory");
+        return NULL;
+    }
 
     if (h->seid_presence)
         size = OGS_PFCP_HEADER_LEN;
     else
         size = OGS_PFCP_HEADER_LEN-OGS_PFCP_SEID_LEN;
 
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+        ogs_error("ogs_pkbuf_pull() failed [len:%d]", pkbuf->len);
+        ogs_pfcp_message_free(pfcp_message);
+        return NULL;
+    }
     memcpy(&pfcp_message->h, pkbuf->data - size, size);
 
     if (h->seid_presence) {
@@ -791,7 +832,7 @@ f.write("""int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t 
     }
 
     if (pkbuf->len == 0)
-        return OGS_OK;
+        return pfcp_message;
 
     switch(pfcp_message->h.type)
     {
@@ -799,15 +840,28 @@ f.write("""int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t 
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("        case OGS_%s_TYPE:\n" % v_upper(k))
-        f.write("            rv = ogs_tlv_parse_msg(&pfcp_message->%s,\n" % v_lower(k))
-        f.write("                    &ogs_pfcp_msg_desc_%s, pkbuf, OGS_TLV_MODE_T2_L2);\n" % v_lower(k))
+        if k != "PFCP Session Deletion Request" and k != "PFCP Version Not Supported Response":
+            f.write("            rv = ogs_tlv_parse_msg(&pfcp_message->%s,\n" % v_lower(k))
+            f.write("                    &ogs_pfcp_msg_desc_%s, pkbuf, OGS_TLV_MODE_T2_L2);\n" % v_lower(k))
+            f.write("            ogs_expect(rv == OGS_OK);\n")
         f.write("            break;\n")
 f.write("""        default:
             ogs_warn("Not implemented(type:%d)", pfcp_message->h.type);
             break;
     }
 
-    return rv;
+    if (rv != OGS_OK) {
+        ogs_pfcp_message_free(pfcp_message);
+        return NULL;
+    }
+
+    return pfcp_message;
+}
+
+void ogs_pfcp_message_free(ogs_pfcp_message_t *pfcp_message)
+{
+    ogs_assert(pfcp_message);
+    ogs_free(pfcp_message);
 }
 
 """)

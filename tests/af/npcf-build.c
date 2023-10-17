@@ -76,7 +76,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     memset(&AscReqData, 0, sizeof(AscReqData));
 
     server = ogs_list_first(&ogs_sbi_self()->server_list);
-    ogs_expect_or_return_val(server, NULL);
+    ogs_assert(server);
 
     memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION;
@@ -84,7 +84,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_APP_SESSIONS;
     header.resource.component[1] = (char *)sess->af_app_session_id;
     AscReqData.notif_uri = ogs_sbi_server_uri(server, &header);
-    ogs_expect_or_return_val(AscReqData.notif_uri, NULL);
+    ogs_assert(AscReqData.notif_uri);
 
     AscReqData.supp_feat =
         ogs_uint64_to_string(sess->policyauthorization_features);
@@ -101,13 +101,13 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     ogs_assert(EventList);
 
     Event = ogs_calloc(1, sizeof(*Event));
-    ogs_expect_or_return_val(Event, NULL);
-    Event->event = OpenAPI_af_event_CHARGING_CORRELATION;
+    ogs_assert(Event);
+    Event->event = OpenAPI_npcf_af_event_CHARGING_CORRELATION;
     OpenAPI_list_add(EventList, Event);
 
     Event = ogs_calloc(1, sizeof(*Event));
-    ogs_expect_or_return_val(Event, NULL);
-    Event->event = OpenAPI_af_event_ANI_REPORT;
+    ogs_assert(Event);
+    Event->event = OpenAPI_npcf_af_event_ANI_REPORT;
     Event->notif_method = OpenAPI_af_notif_method_ONE_TIME;
     OpenAPI_list_add(EventList, Event);
 
@@ -133,7 +133,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     ogs_assert(MediaComponentList);
 
     MediaComponent = ogs_calloc(1, sizeof(*MediaComponent));
-    ogs_expect_or_return_val(MediaComponent, NULL);
+    ogs_assert(MediaComponent);
 
     MediaComponent->med_comp_n = (i++);
     MediaComponent->f_status = OpenAPI_flow_status_ENABLED;
@@ -188,7 +188,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
 
     /* Sub Component #1 */
     SubComponent = ogs_calloc(1, sizeof(*SubComponent));
-    ogs_expect_or_return_val(SubComponent, NULL);
+    ogs_assert(SubComponent);
 
     SubComponent->f_num = (j++);
     SubComponent->flow_usage = OpenAPI_flow_usage_NO_INFO;
@@ -230,7 +230,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
 
     /* Sub Component #2 */
     SubComponent = ogs_calloc(1, sizeof(*SubComponent));
-    ogs_expect_or_return_val(SubComponent, NULL);
+    ogs_assert(SubComponent);
 
     SubComponent->f_num = (j++);
     SubComponent->flow_usage = OpenAPI_flow_usage_RTCP;
@@ -367,7 +367,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_update(
 
     OpenAPI_list_t *SubComponentList = NULL;
     OpenAPI_map_t *SubComponentMap = NULL;
-    OpenAPI_media_sub_component_t *SubComponent = NULL;
+    OpenAPI_media_sub_component_rm_t *SubComponent = NULL;
 
     OpenAPI_list_t *fDescList = NULL;
     OpenAPI_list_t *codecList = NULL;
@@ -411,7 +411,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_update(
     ogs_assert(MediaComponentList);
 
     MediaComponent = ogs_calloc(1, sizeof(*MediaComponent));
-    ogs_expect_or_return_val(MediaComponent, NULL);
+    ogs_assert(MediaComponent);
 
     MediaComponent->med_comp_n = (i++);
     MediaComponent->f_status = OpenAPI_flow_status_ENABLED;
@@ -466,7 +466,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_update(
 
     /* Sub Component #1 */
     SubComponent = ogs_calloc(1, sizeof(*SubComponent));
-    ogs_expect_or_return_val(SubComponent, NULL);
+    ogs_assert(SubComponent);
 
     SubComponent->f_num = (j++);
     SubComponent->flow_usage = OpenAPI_flow_usage_NO_INFO;
@@ -503,7 +503,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_update(
 
     /* Sub Component #2 */
     SubComponent = ogs_calloc(1, sizeof(*SubComponent));
-    ogs_expect_or_return_val(SubComponent, NULL);
+    ogs_assert(SubComponent);
 
     SubComponent->f_num = (j++);
     SubComponent->flow_usage = OpenAPI_flow_usage_RTCP;
@@ -679,7 +679,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
     memset(&AscReqData, 0, sizeof(AscReqData));
 
     server = ogs_list_first(&ogs_sbi_self()->server_list);
-    ogs_expect_or_return_val(server, NULL);
+    ogs_assert(server);
 
     memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION;
@@ -687,7 +687,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
     header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_APP_SESSIONS;
     header.resource.component[1] = (char *)sess->af_app_session_id;
     AscReqData.notif_uri = ogs_sbi_server_uri(server, &header);
-    ogs_expect_or_return_val(AscReqData.notif_uri, NULL);
+    ogs_assert(AscReqData.notif_uri);
 
     AscReqData.supp_feat =
         ogs_uint64_to_string(sess->policyauthorization_features);
@@ -704,13 +704,13 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
     ogs_assert(EventList);
 
     Event = ogs_calloc(1, sizeof(*Event));
-    ogs_expect_or_return_val(Event, NULL);
-    Event->event = OpenAPI_af_event_CHARGING_CORRELATION;
+    ogs_assert(Event);
+    Event->event = OpenAPI_npcf_af_event_CHARGING_CORRELATION;
     OpenAPI_list_add(EventList, Event);
 
     Event = ogs_calloc(1, sizeof(*Event));
-    ogs_expect_or_return_val(Event, NULL);
-    Event->event = OpenAPI_af_event_ANI_REPORT;
+    ogs_assert(Event);
+    Event->event = OpenAPI_npcf_af_event_ANI_REPORT;
     Event->notif_method = OpenAPI_af_notif_method_ONE_TIME;
     OpenAPI_list_add(EventList, Event);
 
@@ -736,7 +736,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
     ogs_assert(MediaComponentList);
 
     MediaComponent = ogs_calloc(1, sizeof(*MediaComponent));
-    ogs_expect_or_return_val(MediaComponent, NULL);
+    ogs_assert(MediaComponent);
 
     MediaComponent->med_comp_n = (i++);
     MediaComponent->f_status = OpenAPI_flow_status_ENABLED;
@@ -808,7 +808,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
 
     /* Sub Component #1 */
     SubComponent = ogs_calloc(1, sizeof(*SubComponent));
-    ogs_expect_or_return_val(SubComponent, NULL);
+    ogs_assert(SubComponent);
 
     SubComponent->f_num = (j++);
     SubComponent->flow_usage = OpenAPI_flow_usage_NO_INFO;
@@ -834,7 +834,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
 
     /* Sub Component #2 */
     SubComponent = ogs_calloc(1, sizeof(*SubComponent));
-    ogs_expect_or_return_val(SubComponent, NULL);
+    ogs_assert(SubComponent);
 
     SubComponent->f_num = (j++);
     SubComponent->flow_usage = OpenAPI_flow_usage_NO_INFO;
@@ -862,7 +862,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
     MediaComponent->med_sub_comps = SubComponentList;
 
     MediaComponent = ogs_calloc(1, sizeof(*MediaComponent));
-    ogs_expect_or_return_val(MediaComponent, NULL);
+    ogs_assert(MediaComponent);
 
     MediaComponent->med_comp_n = (i++);
     MediaComponent->f_status = OpenAPI_flow_status_ENABLED;
@@ -937,7 +937,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
 
     /* Sub Component #1 */
     SubComponent = ogs_calloc(1, sizeof(*SubComponent));
-    ogs_expect_or_return_val(SubComponent, NULL);
+    ogs_assert(SubComponent);
 
     SubComponent->f_num = (j++);
     SubComponent->flow_usage = OpenAPI_flow_usage_NO_INFO;
@@ -963,7 +963,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
 
     /* Sub Component #2 */
     SubComponent = ogs_calloc(1, sizeof(*SubComponent));
-    ogs_expect_or_return_val(SubComponent, NULL);
+    ogs_assert(SubComponent);
 
     SubComponent->f_num = (j++);
     SubComponent->flow_usage = OpenAPI_flow_usage_NO_INFO;

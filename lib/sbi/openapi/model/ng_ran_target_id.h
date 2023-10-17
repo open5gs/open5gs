@@ -1,7 +1,7 @@
 /*
  * ng_ran_target_id.h
  *
- * 
+ * Indicates a NG RAN as target of the handover
  */
 
 #ifndef _OpenAPI_ng_ran_target_id_H_

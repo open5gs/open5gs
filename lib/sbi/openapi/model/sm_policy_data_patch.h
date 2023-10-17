@@ -21,11 +21,13 @@ extern "C" {
 
 typedef struct OpenAPI_sm_policy_data_patch_s OpenAPI_sm_policy_data_patch_t;
 typedef struct OpenAPI_sm_policy_data_patch_s {
+    bool is_um_data_null;
     OpenAPI_list_t* um_data;
     OpenAPI_list_t* sm_policy_snssai_data;
 } OpenAPI_sm_policy_data_patch_t;
 
 OpenAPI_sm_policy_data_patch_t *OpenAPI_sm_policy_data_patch_create(
+    bool is_um_data_null,
     OpenAPI_list_t* um_data,
     OpenAPI_list_t* sm_policy_snssai_data
 );

@@ -1,7 +1,7 @@
 /*
  * send_mo_data_req_data.h
  *
- * 
+ * Data within Send MO Data Request
  */
 
 #ifndef _OpenAPI_send_mo_data_req_data_H_

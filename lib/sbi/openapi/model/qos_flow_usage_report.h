@@ -1,7 +1,7 @@
 /*
  * qos_flow_usage_report.h
  *
- * 
+ * Contains QoS flows usage data information.
  */
 
 #ifndef _OpenAPI_qos_flow_usage_report_H_

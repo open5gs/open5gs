@@ -1,3 +1,5 @@
 usr/bin/open5gs-nrfd
 configs/open5gs/nrf.yaml etc/open5gs
+configs/open5gs/tls/nrf.key etc/open5gs/tls
+configs/open5gs/tls/nrf.crt etc/open5gs/tls
 configs/systemd/open5gs-nrfd.service lib/systemd/system

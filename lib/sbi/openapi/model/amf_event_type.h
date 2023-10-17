@@ -1,7 +1,7 @@
 /*
  * amf_event_type.h
  *
- * 
+ * Describes the supported event types of Namf_EventExposure Service
  */
 
 #ifndef _OpenAPI_amf_event_type_H_

@@ -1,7 +1,7 @@
 /*
  * up_path_chg_event.h
  *
- * 
+ * Contains the UP path change event subscription from the AF.
  */
 
 #ifndef _OpenAPI_up_path_chg_event_H_

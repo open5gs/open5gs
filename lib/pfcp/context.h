@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -48,12 +48,14 @@ typedef struct ogs_pfcp_context_s {
 
     ogs_list_t      pfcp_list;      /* PFCP IPv4 Server List */
     ogs_list_t      pfcp_list6;     /* PFCP IPv6 Server List */
+    ogs_sockaddr_t  *pfcp_advertise; /* PFCP Advertise Addr */
+    ogs_sockaddr_t  *pfcp_advertise6;
     ogs_sock_t      *pfcp_sock;     /* PFCP IPv4 Socket */
     ogs_sock_t      *pfcp_sock6;    /* PFCP IPv6 Socket */
     ogs_sockaddr_t  *pfcp_addr;     /* PFCP IPv4 Address */
     ogs_sockaddr_t  *pfcp_addr6;    /* PFCP IPv6 Address */
 
-    uint32_t        pfcp_started;   /* UTC time when the PFCP entity started */
+    uint32_t        local_recovery; /* UTC time */
 
     /* CP Function Features */
     ogs_pfcp_cp_function_features_t cp_function_features;
@@ -103,8 +105,8 @@ typedef struct ogs_pfcp_node_s {
     uint64_t        nr_cell_id[OGS_MAX_NUM_OF_CELL_ID];
     uint8_t         num_of_nr_cell_id;
 
-    /* flag to enable/ disable full list RR for this node */
-    uint8_t         rr_enable;
+    uint32_t        remote_recovery; /* UTC time */
+    bool            restoration_required;
 
     ogs_list_t      gtpu_resource_list; /* User Plane IP Resource Information */
 
@@ -135,7 +137,9 @@ typedef struct ogs_pfcp_bar_s ogs_pfcp_bar_t;
 
 typedef struct ogs_pfcp_pdr_s {
     ogs_pfcp_object_t       obj;
-    uint32_t                index;
+
+    ogs_pool_id_t           *teid_node;  /* A node of TEID */
+    ogs_pool_id_t           teid;
 
     ogs_lnode_t             to_create_node;
     ogs_lnode_t             to_modify_node;
@@ -159,6 +163,9 @@ typedef struct ogs_pfcp_pdr_s {
 
     ogs_pfcp_ue_ip_addr_t   ue_ip_addr;
     int                     ue_ip_addr_len;
+
+    char                    **ipv4_framed_routes;
+    char                    **ipv6_framed_routes;
 
     ogs_pfcp_f_teid_t       f_teid;
     int                     f_teid_len;
@@ -394,9 +401,13 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find(
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
         ogs_pfcp_sess_t *sess, ogs_pfcp_pdr_id_t id);
 
+void ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr);
+
 void ogs_pfcp_object_teid_hash_set(
-        ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr);
+        ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr,
+        bool restoration_indication);
 ogs_pfcp_object_t *ogs_pfcp_object_find_by_teid(uint32_t teid);
+int ogs_pfcp_object_count_by_teid(ogs_pfcp_sess_t *sess, uint32_t teid);
 
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_choose_id(
         ogs_pfcp_sess_t *sess, uint8_t choose_id);
@@ -416,7 +427,11 @@ ogs_pfcp_far_t *ogs_pfcp_far_find_or_add(
         ogs_pfcp_sess_t *sess, ogs_pfcp_far_id_t id);
 
 void ogs_pfcp_far_f_teid_hash_set(ogs_pfcp_far_t *far);
-ogs_pfcp_far_t *ogs_pfcp_far_find_by_error_indication(ogs_pkbuf_t *pkbuf);
+ogs_pfcp_far_t *ogs_pfcp_far_find_by_gtpu_error_indication(
+        ogs_pkbuf_t *pkbuf);
+ogs_pfcp_far_t *ogs_pfcp_far_find_by_pfcp_session_report(
+        ogs_pfcp_sess_t *sess,
+        ogs_pfcp_tlv_error_indication_report_t *error_indication_report);
 
 void ogs_pfcp_far_teid_hash_set(ogs_pfcp_far_t *far);
 ogs_pfcp_far_t *ogs_pfcp_far_find_by_teid(uint32_t teid);

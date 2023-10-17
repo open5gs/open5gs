@@ -1,7 +1,7 @@
 /*
  * up_security_1.h
  *
- * 
+ * Contains Userplain security information.
  */
 
 #ifndef _OpenAPI_up_security_1_H_

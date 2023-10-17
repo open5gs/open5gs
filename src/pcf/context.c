@@ -121,6 +121,8 @@ int pcf_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(pcf_key, "discovery")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(pcf_key, "metrics")) {
+                    /* handle config in metrics library */
                 } else
                     ogs_warn("unknown key `%s`", pcf_key);
             }
@@ -181,6 +183,9 @@ void pcf_ue_remove(pcf_ue_t *pcf_ue)
     ogs_fsm_fini(&pcf_ue->sm, &e);
 
     /* Free SBI object memory */
+    if (ogs_list_count(&pcf_ue->sbi.xact_list))
+        ogs_error("UE transaction [%d]",
+                ogs_list_count(&pcf_ue->sbi.xact_list));
     ogs_sbi_object_free(&pcf_ue->sbi);
 
     pcf_sess_remove_all(pcf_ue);
@@ -209,7 +214,7 @@ void pcf_ue_remove(pcf_ue_t *pcf_ue)
     ogs_pool_free(&pcf_ue_pool, pcf_ue);
 }
 
-void pcf_ue_remove_all()
+void pcf_ue_remove_all(void)
 {
     pcf_ue_t *pcf_ue = NULL, *next = NULL;;
 
@@ -291,6 +296,9 @@ void pcf_sess_remove(pcf_sess_t *sess)
     ogs_fsm_fini(&sess->sm, &e);
 
     /* Free SBI object memory */
+    if (ogs_list_count(&sess->sbi.xact_list))
+        ogs_error("Session transaction [%d]",
+                ogs_list_count(&sess->sbi.xact_list));
     ogs_sbi_object_free(&sess->sbi);
 
     pcf_app_remove_all(sess);
@@ -311,6 +319,9 @@ void pcf_sess_remove(pcf_sess_t *sess)
 
     clear_ipv4addr(sess);
     clear_ipv6prefix(sess);
+
+    OpenAPI_clear_and_free_string_list(sess->ipv4_frame_route_list);
+    OpenAPI_clear_and_free_string_list(sess->ipv6_frame_route_list);
 
     if (sess->subscribed_sess_ambr)
         OpenAPI_ambr_free(sess->subscribed_sess_ambr);
@@ -362,10 +373,16 @@ bool pcf_sess_set_ipv4addr(pcf_sess_t *sess, char *ipv4addr_string)
     clear_ipv4addr(sess);
 
     rv = ogs_ipv4_from_string(&sess->ipv4addr, ipv4addr_string);
-    ogs_expect_or_return_val(rv == OGS_OK, false);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_ipv4_from_string() failed");
+        return false;
+    }
 
     sess->ipv4addr_string = ogs_strdup(ipv4addr_string);
-    ogs_expect_or_return_val(sess->ipv4addr_string, false);
+    if (!sess->ipv4addr_string) {
+        ogs_error("ogs_strdup() failed");
+        return false;
+    }
 
     ogs_hash_set(self.ipv4addr_hash,
             &sess->ipv4addr, sizeof(sess->ipv4addr), sess);
@@ -384,12 +401,18 @@ bool pcf_sess_set_ipv6prefix(pcf_sess_t *sess, char *ipv6prefix_string)
 
     rv = ogs_ipv6prefix_from_string(
             sess->ipv6prefix.addr6, &sess->ipv6prefix.len, ipv6prefix_string);
-    ogs_expect_or_return_val(rv == OGS_OK, false);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_ipv6prefix_from_string() failed");
+        return false;
+    }
 
     ogs_assert(sess->ipv6prefix.len == OGS_IPV6_128_PREFIX_LEN);
 
     sess->ipv6prefix_string = ogs_strdup(ipv6prefix_string);
-    ogs_expect_or_return_val(sess->ipv6prefix_string, false);
+    if (!sess->ipv6prefix_string) {
+        ogs_error("ogs_strdup() failed");
+        return false;
+    }
 
     ogs_hash_set(self.ipv6prefix_hash,
             &sess->ipv6prefix, (sess->ipv6prefix.len >> 3) + 1, sess);
@@ -426,7 +449,10 @@ pcf_sess_t *pcf_sess_find_by_ipv4addr(char *ipv4addr_string)
     ogs_assert(ipv4addr_string);
 
     rv = ogs_ipv4_from_string(&ipv4addr, ipv4addr_string);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_ipv4_from_string() failed");
+        return NULL;
+    }
 
     return ogs_hash_get(self.ipv4addr_hash, &ipv4addr, sizeof(ipv4addr));
 }
@@ -460,7 +486,10 @@ pcf_sess_t *pcf_sess_find_by_ipv6addr(char *ipv6addr_string)
     ogs_assert(ipv6addr_string);
 
     rv = ogs_inet_pton(AF_INET6, ipv6addr_string, &tmp);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_inet_pton() failed");
+        return NULL;
+    }
 
     memcpy(ipv6prefix.addr6, tmp.sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
     ipv6prefix.len = OGS_IPV6_128_PREFIX_LEN;
@@ -564,4 +593,11 @@ pcf_app_t *pcf_app_find_by_app_session_id(char *app_session_id)
 {
     ogs_assert(app_session_id);
     return pcf_app_find(atoll(app_session_id));
+}
+
+int pcf_instance_get_load(void)
+{
+    return (((ogs_pool_size(&pcf_ue_pool) -
+            ogs_pool_avail(&pcf_ue_pool)) * 100) /
+            ogs_pool_size(&pcf_ue_pool));
 }

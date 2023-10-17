@@ -3,10 +3,10 @@ title: FreeBSD
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
-This guide is based on **FreeBSD-11.4-STABLE**.
+This guide is based on **FreeBSD-13.1-STABLE**.
 {: .blue}
 
-## Install **FreeBSD-11.4-STABLE** from Vagrant box (optional)
+## Install **FreeBSD-13.1-STABLE** from Vagrant box (optional)
 ---
 Vagrant provides a simple way to create and deploy Virtual Machines from
 pre-built images using VirtualBox, libvirt, or VMWare as a hypervisor engine.
@@ -20,13 +20,13 @@ The instructions to install Vagrant are provided at
 [vagrantup.com](https://www.vagrantup.com/).
 
 
-### Create a FreeBSD-11.4-STABLE Virtual Machine using Vagrant
+### Create a FreeBSD-13.1-STABLE Virtual Machine using Vagrant
 ---
 
 Use the supplied `Vagrantfile` in the `vagrant` directory to create the
 virtual machine.
 
-Note that this Vagrantfile is identical to the base FreeBSD 11 box, with
+Note that this Vagrantfile is identical to the base FreeBSD 13 box, with
 the exception that the amount of virtual memory has been increased to 1GB:
 
 ```bash
@@ -37,7 +37,7 @@ vagrant up --provider virtualbox
 ### Log into the newly created FreeBSD VM
 ---
 
-Use SSH to log into the FreeBSD 11 VM:
+Use SSH to log into the FreeBSD 13 VM:
 
 ```bash
 vagrant ssh
@@ -45,17 +45,17 @@ vagrant ssh
 
 Note that the Open5GS source is *not* copied into the VM.  The instructions
 below provide the step by step instructions for setting up Open5GS for
-either a bare metal or virtual FreeBSD 11 system.
+either a bare metal or virtual FreeBSD 13 system.
 
 The rest of the commands below are performed inside the FreeBSD VM as the
-user 'vagrant', or on your bare metal FreeBSD 11 system as any normal user.
+user 'vagrant', or on your bare metal FreeBSD 13 system as any normal user.
 
 ### Getting MongoDB
 ---
 
 Install MongoDB with package manager.
 ```bash
-$ sudo pkg install mongodb44
+$ sudo pkg install mongodb50
 ```
 
 Run MongoDB server.
@@ -102,12 +102,37 @@ $ sudo sysctl -w net.inet6.ip6.forwarding=1
 `$ sudo ./misc/netconf.sh`
 {: .notice--info}
 
+### Load the SCTP kernel module
+---
+
+Update `/etc/rc.conf` to load the SCTP kernel module.
+
+```diff
+$ diff -u /etc/rc.conf.old /etc/rc.conf.new
+--- /etc/rc.conf.old	2022-11-19 12:35:07.718151000 +0000
++++ /etc/rc.conf.new	2022-11-19 12:34:59.160560000 +0000
+@@ -11,3 +11,4 @@
+ sendmail_submit_enable="NO"
+ sendmail_outbound_enable="NO"
+ sendmail_msp_queue_enable="NO"
++kld_list="sctp"
+```
+
+This is important that you must reboot as shown below.
+
+```bash
+[host] $ vagrant halt
+[host] $ vagrant up --provider virtualbox
+[host] $ # ssh back into the VM after it reboots...
+[host] $ vagrant ssh
+```
+
 ### Building Open5GS
 ---
 
 Install the depedencies for building the source code.
 ```bash
-$ sudo pkg install meson ninja gcc bison gsed pkgconf git mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd nghttp2 talloc
+$ sudo pkg install meson cmake ninja gcc bison gsed pkgconf git cmake mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd nghttp2 talloc
 ```
 
 Configure gcc PATH
@@ -136,7 +161,7 @@ $ meson build --prefix=`pwd`/install
 $ ninja -C build
 ```
 
-**Note:** No source code changes are required for FreeBSD 11.x version. However, in FreeBSD 12.x version, we'll getting a crash with segmentation fault when calling basename(3). To avoid this, you need to change the freeDiameter source code as below.
+**Note:** No source code changes are required for FreeBSD 11.x version. However, in FreeBSD 12.x/13.x version, we'll getting a crash with segmentation fault when calling basename(3). To avoid this, you need to change the freeDiameter source code as below.
 {: .blue}
 
 ```diff
@@ -200,7 +225,7 @@ $ cd ../
 [Node.js](https://nodejs.org/) is required to build WebUI of Open5GS
 
 ```bash
-$ sudo pkg install node
+$ sudo pkg install npm
 ```
 
 Install the dependencies to run WebUI

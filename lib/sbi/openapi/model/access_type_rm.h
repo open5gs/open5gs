@@ -1,7 +1,7 @@
 /*
  * access_type_rm.h
  *
- * 
+ * Indicates wether the access is via 3GPP or via non-3GPP but with the OpenAPI  &#39;nullable: true&#39; property.\&quot; 
  */
 
 #ifndef _OpenAPI_access_type_rm_H_

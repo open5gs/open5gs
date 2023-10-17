@@ -1,7 +1,7 @@
 /*
  * wireline_area.h
  *
- * 
+ * One and only one of the \&quot;globLineIds\&quot;, \&quot;hfcNIds\&quot;, \&quot;areaCodeB\&quot; and \&quot;areaCodeC\&quot; attributes shall be included in a WirelineArea data structure 
  */
 
 #ifndef _OpenAPI_wireline_area_H_

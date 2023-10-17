@@ -40,7 +40,7 @@ ogs_mongoc_mongoc_client_get_server_status (mongoc_client_t *client, /* IN */
 
    BSON_ASSERT (client);
 
-   BSON_APPEND_INT32 (&cmd, "serverStatus", 1);
+   BSON_APPEND_INT32 (&cmd, "ping", 1);
    ret = mongoc_client_command_simple (
       client, "admin", &cmd, read_prefs, reply, error);
    bson_destroy (&cmd);
@@ -176,7 +176,7 @@ int ogs_dbi_init(const char *db_uri)
     return OGS_OK;
 }
 
-void ogs_dbi_final()
+void ogs_dbi_final(void)
 {
     if (self.collection.subscriber) {
         mongoc_collection_destroy(self.collection.subscriber);

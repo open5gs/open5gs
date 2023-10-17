@@ -21,10 +21,12 @@ extern "C" {
 typedef struct OpenAPI_sor_update_info_s OpenAPI_sor_update_info_t;
 typedef struct OpenAPI_sor_update_info_s {
     struct OpenAPI_plmn_id_s *vplmn_id;
+    char *supported_features;
 } OpenAPI_sor_update_info_t;
 
 OpenAPI_sor_update_info_t *OpenAPI_sor_update_info_create(
-    OpenAPI_plmn_id_t *vplmn_id
+    OpenAPI_plmn_id_t *vplmn_id,
+    char *supported_features
 );
 void OpenAPI_sor_update_info_free(OpenAPI_sor_update_info_t *sor_update_info);
 OpenAPI_sor_update_info_t *OpenAPI_sor_update_info_parseFromJSON(cJSON *sor_update_infoJSON);

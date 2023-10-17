@@ -1,7 +1,7 @@
 /*
  * v2x_information.h
  *
- * 
+ * V2X related N2 information
  */
 
 #ifndef _OpenAPI_v2x_information_H_

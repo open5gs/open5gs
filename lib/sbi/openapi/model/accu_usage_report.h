@@ -1,7 +1,7 @@
 /*
  * accu_usage_report.h
  *
- * 
+ * Contains the accumulated usage report information.
  */
 
 #ifndef _OpenAPI_accu_usage_report_H_

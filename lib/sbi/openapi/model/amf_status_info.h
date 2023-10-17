@@ -1,7 +1,7 @@
 /*
  * amf_status_info.h
  *
- * 
+ * AMF Status Information
  */
 
 #ifndef _OpenAPI_amf_status_info_H_

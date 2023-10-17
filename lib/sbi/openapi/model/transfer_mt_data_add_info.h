@@ -1,7 +1,7 @@
 /*
  * transfer_mt_data_add_info.h
  *
- * 
+ * Transfer MT Data Error Response Additional Information
  */
 
 #ifndef _OpenAPI_transfer_mt_data_add_info_H_

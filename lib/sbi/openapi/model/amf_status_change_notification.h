@@ -1,7 +1,7 @@
 /*
  * amf_status_change_notification.h
  *
- * 
+ * Data within an AMF Status Change Notification request
  */
 
 #ifndef _OpenAPI_amf_status_change_notification_H_

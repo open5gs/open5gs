@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -24,6 +24,7 @@ static sgwu_context_t self;
 int __sgwu_log_domain;
 
 static OGS_POOL(sgwu_sess_pool, sgwu_sess_t);
+static OGS_POOL(sgwu_sxa_seid_pool, ogs_pool_id_t);
 
 static int context_initialized = 0;
 
@@ -43,11 +44,15 @@ void sgwu_context_init(void)
 
     ogs_list_init(&self.sess_list);
     ogs_pool_init(&sgwu_sess_pool, ogs_app()->pool.sess);
+    ogs_pool_init(&sgwu_sxa_seid_pool, ogs_app()->pool.sess);
+    ogs_pool_random_id_generate(&sgwu_sxa_seid_pool);
 
-    self.seid_hash = ogs_hash_make();
-    ogs_assert(self.seid_hash);
-    self.f_seid_hash = ogs_hash_make();
-    ogs_assert(self.f_seid_hash);
+    self.sgwu_sxa_seid_hash = ogs_hash_make();
+    ogs_assert(self.sgwu_sxa_seid_hash);
+    self.sgwc_sxa_seid_hash = ogs_hash_make();
+    ogs_assert(self.sgwc_sxa_seid_hash);
+    self.sgwc_sxa_f_seid_hash = ogs_hash_make();
+    ogs_assert(self.sgwc_sxa_f_seid_hash);
 
     context_initialized = 1;
 }
@@ -58,12 +63,15 @@ void sgwu_context_final(void)
 
     sgwu_sess_remove_all();
 
-    ogs_assert(self.seid_hash);
-    ogs_hash_destroy(self.seid_hash);
-    ogs_assert(self.f_seid_hash);
-    ogs_hash_destroy(self.f_seid_hash);
+    ogs_assert(self.sgwu_sxa_seid_hash);
+    ogs_hash_destroy(self.sgwu_sxa_seid_hash);
+    ogs_assert(self.sgwc_sxa_seid_hash);
+    ogs_hash_destroy(self.sgwc_sxa_seid_hash);
+    ogs_assert(self.sgwc_sxa_f_seid_hash);
+    ogs_hash_destroy(self.sgwc_sxa_f_seid_hash);
 
     ogs_pool_final(&sgwu_sess_pool);
+    ogs_pool_final(&sgwu_sxa_seid_pool);
 
     context_initialized = 0;
 }
@@ -137,10 +145,14 @@ sgwu_sess_t *sgwu_sess_add(ogs_pfcp_f_seid_t *cp_f_seid)
 
     ogs_pfcp_pool_init(&sess->pfcp);
 
-    sess->index = ogs_pool_index(&sgwu_sess_pool, sess);
-    ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
+    /* Set SEID */
+    ogs_pool_alloc(&sgwu_sxa_seid_pool, &sess->sgwu_sxa_seid_node);
+    ogs_assert(sess->sgwu_sxa_seid_node);
 
-    sess->sgwu_sxa_seid = sess->index;
+    sess->sgwu_sxa_seid = *(sess->sgwu_sxa_seid_node);
+
+    ogs_hash_set(self.sgwu_sxa_seid_hash, &sess->sgwu_sxa_seid,
+            sizeof(sess->sgwu_sxa_seid), sess);
 
     /* Since F-SEID is composed of ogs_ip_t and uint64-seid,
      * all these values must be put into the structure-sgwc_sxa_f_eid
@@ -149,9 +161,9 @@ sgwu_sess_t *sgwu_sess_add(ogs_pfcp_f_seid_t *cp_f_seid)
     ogs_assert(OGS_OK ==
             ogs_pfcp_f_seid_to_ip(cp_f_seid, &sess->sgwc_sxa_f_seid.ip));
 
-    ogs_hash_set(self.f_seid_hash, &sess->sgwc_sxa_f_seid,
+    ogs_hash_set(self.sgwc_sxa_f_seid_hash, &sess->sgwc_sxa_f_seid,
             sizeof(sess->sgwc_sxa_f_seid), sess);
-    ogs_hash_set(self.seid_hash, &sess->sgwc_sxa_f_seid.seid,
+    ogs_hash_set(self.sgwc_sxa_seid_hash, &sess->sgwc_sxa_f_seid.seid,
             sizeof(sess->sgwc_sxa_f_seid.seid), sess);
 
     ogs_info("UE F-SEID[UP:0x%lx CP:0x%lx]",
@@ -172,13 +184,17 @@ int sgwu_sess_remove(sgwu_sess_t *sess)
     ogs_list_remove(&self.sess_list, sess);
     ogs_pfcp_sess_clear(&sess->pfcp);
 
-    ogs_hash_set(self.seid_hash, &sess->sgwc_sxa_f_seid.seid,
+    ogs_hash_set(self.sgwu_sxa_seid_hash, &sess->sgwu_sxa_seid,
+            sizeof(sess->sgwu_sxa_seid), NULL);
+
+    ogs_hash_set(self.sgwc_sxa_seid_hash, &sess->sgwc_sxa_f_seid.seid,
             sizeof(sess->sgwc_sxa_f_seid.seid), NULL);
-    ogs_hash_set(self.f_seid_hash, &sess->sgwc_sxa_f_seid,
+    ogs_hash_set(self.sgwc_sxa_f_seid_hash, &sess->sgwc_sxa_f_seid,
             sizeof(sess->sgwc_sxa_f_seid), NULL);
 
     ogs_pfcp_pool_final(&sess->pfcp);
 
+    ogs_pool_free(&sgwu_sxa_seid_pool, sess->sgwu_sxa_seid_node);
     ogs_pool_free(&sgwu_sess_pool, sess);
 
     ogs_info("[Removed] Number of SGWU-sessions is now %d",
@@ -189,21 +205,16 @@ int sgwu_sess_remove(sgwu_sess_t *sess)
 
 void sgwu_sess_remove_all(void)
 {
-    sgwu_sess_t *sess = NULL, *next = NULL;;
+    sgwu_sess_t *sess = NULL, *next = NULL;
 
     ogs_list_for_each_safe(&self.sess_list, next, sess) {
         sgwu_sess_remove(sess);
     }
 }
 
-sgwu_sess_t *sgwu_sess_find(uint32_t index)
-{
-    return ogs_pool_find(&sgwu_sess_pool, index);
-}
-
 sgwu_sess_t *sgwu_sess_find_by_sgwc_sxa_seid(uint64_t seid)
 {
-    return (sgwu_sess_t *)ogs_hash_get(self.seid_hash, &seid, sizeof(seid));
+    return ogs_hash_get(self.sgwc_sxa_seid_hash, &seid, sizeof(seid));
 }
 
 sgwu_sess_t *sgwu_sess_find_by_sgwc_sxa_f_seid(ogs_pfcp_f_seid_t *f_seid)
@@ -217,12 +228,12 @@ sgwu_sess_t *sgwu_sess_find_by_sgwc_sxa_f_seid(ogs_pfcp_f_seid_t *f_seid)
     ogs_assert(OGS_OK == ogs_pfcp_f_seid_to_ip(f_seid, &key.ip));
     key.seid = f_seid->seid;
 
-    return (sgwu_sess_t *)ogs_hash_get(self.f_seid_hash, &key, sizeof(key));
+    return ogs_hash_get(self.sgwc_sxa_f_seid_hash, &key, sizeof(key));
 }
 
 sgwu_sess_t *sgwu_sess_find_by_sgwu_sxa_seid(uint64_t seid)
 {
-    return sgwu_sess_find(seid);
+    return ogs_hash_get(self.sgwu_sxa_seid_hash, &seid, sizeof(seid));
 }
 
 sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message)
@@ -244,7 +255,10 @@ sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message)
     sess = sgwu_sess_find_by_sgwc_sxa_f_seid(f_seid);
     if (!sess) {
         sess = sgwu_sess_add(f_seid);
-        if (!sess) return NULL;
+        if (!sess) {
+            ogs_error("No Session Context");
+            return NULL;
+        }
     }
     ogs_assert(sess);
 

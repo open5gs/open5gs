@@ -32,6 +32,10 @@ ogs_pkbuf_t *s1ap_build_setup_rsp(void);
 ogs_pkbuf_t *s1ap_build_setup_failure(
     S1AP_Cause_PR group, long cause, long time_to_wait);
 
+ogs_pkbuf_t *s1ap_build_enb_configuration_update_ack(void);
+ogs_pkbuf_t *s1ap_build_enb_configuration_update_failure(
+    S1AP_Cause_PR group, long cause, long time_to_wait);
+
 ogs_pkbuf_t *s1ap_build_downlink_nas_transport(
     enb_ue_t *enb_ue, ogs_pkbuf_t *emmbuf);
 
@@ -55,6 +59,8 @@ ogs_pkbuf_t *s1ap_build_paging(
 
 ogs_pkbuf_t *s1ap_build_mme_configuration_transfer(
     S1AP_SONConfigurationTransfer_t *son_configuration_transfer);
+
+ogs_pkbuf_t *s1ap_build_direct_information_transfer(const uint8_t *buf, size_t buf_len);
 
 ogs_pkbuf_t *s1ap_build_path_switch_ack(
         mme_ue_t *mme_ue, bool e_rab_to_switched_in_uplink_list);

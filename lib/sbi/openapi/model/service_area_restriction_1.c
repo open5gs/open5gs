@@ -28,20 +28,25 @@ OpenAPI_service_area_restriction_1_t *OpenAPI_service_area_restriction_1_create(
 
 void OpenAPI_service_area_restriction_1_free(OpenAPI_service_area_restriction_1_t *service_area_restriction_1)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == service_area_restriction_1) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_list_for_each(service_area_restriction_1->areas, node) {
-        OpenAPI_area_1_free(node->data);
+    if (service_area_restriction_1->areas) {
+        OpenAPI_list_for_each(service_area_restriction_1->areas, node) {
+            OpenAPI_area_1_free(node->data);
+        }
+        OpenAPI_list_free(service_area_restriction_1->areas);
+        service_area_restriction_1->areas = NULL;
     }
-    OpenAPI_list_free(service_area_restriction_1->areas);
     ogs_free(service_area_restriction_1);
 }
 
 cJSON *OpenAPI_service_area_restriction_1_convertToJSON(OpenAPI_service_area_restriction_1_t *service_area_restriction_1)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (service_area_restriction_1 == NULL) {
         ogs_error("OpenAPI_service_area_restriction_1_convertToJSON() failed [ServiceAreaRestriction_1]");
@@ -49,7 +54,7 @@ cJSON *OpenAPI_service_area_restriction_1_convertToJSON(OpenAPI_service_area_res
     }
 
     item = cJSON_CreateObject();
-    if (service_area_restriction_1->restriction_type) {
+    if (service_area_restriction_1->restriction_type != OpenAPI_restriction_type_NULL) {
     if (cJSON_AddStringToObject(item, "restrictionType", OpenAPI_restriction_type_ToString(service_area_restriction_1->restriction_type)) == NULL) {
         ogs_error("OpenAPI_service_area_restriction_1_convertToJSON() failed [restriction_type]");
         goto end;
@@ -62,17 +67,13 @@ cJSON *OpenAPI_service_area_restriction_1_convertToJSON(OpenAPI_service_area_res
         ogs_error("OpenAPI_service_area_restriction_1_convertToJSON() failed [areas]");
         goto end;
     }
-
-    OpenAPI_lnode_t *areas_node;
-    if (service_area_restriction_1->areas) {
-        OpenAPI_list_for_each(service_area_restriction_1->areas, areas_node) {
-            cJSON *itemLocal = OpenAPI_area_1_convertToJSON(areas_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_service_area_restriction_1_convertToJSON() failed [areas]");
-                goto end;
-            }
-            cJSON_AddItemToArray(areasList, itemLocal);
+    OpenAPI_list_for_each(service_area_restriction_1->areas, node) {
+        cJSON *itemLocal = OpenAPI_area_1_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_service_area_restriction_1_convertToJSON() failed [areas]");
+            goto end;
         }
+        cJSON_AddItemToArray(areasList, itemLocal);
     }
     }
 
@@ -97,9 +98,14 @@ end:
 OpenAPI_service_area_restriction_1_t *OpenAPI_service_area_restriction_1_parseFromJSON(cJSON *service_area_restriction_1JSON)
 {
     OpenAPI_service_area_restriction_1_t *service_area_restriction_1_local_var = NULL;
-    cJSON *restriction_type = cJSON_GetObjectItemCaseSensitive(service_area_restriction_1JSON, "restrictionType");
-
-    OpenAPI_restriction_type_e restriction_typeVariable;
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *restriction_type = NULL;
+    OpenAPI_restriction_type_e restriction_typeVariable = 0;
+    cJSON *areas = NULL;
+    OpenAPI_list_t *areasList = NULL;
+    cJSON *max_num_of_tas = NULL;
+    cJSON *max_num_of_tas_for_not_allowed_areas = NULL;
+    restriction_type = cJSON_GetObjectItemCaseSensitive(service_area_restriction_1JSON, "restrictionType");
     if (restriction_type) {
     if (!cJSON_IsString(restriction_type)) {
         ogs_error("OpenAPI_service_area_restriction_1_parseFromJSON() failed [restriction_type]");
@@ -108,37 +114,31 @@ OpenAPI_service_area_restriction_1_t *OpenAPI_service_area_restriction_1_parseFr
     restriction_typeVariable = OpenAPI_restriction_type_FromString(restriction_type->valuestring);
     }
 
-    cJSON *areas = cJSON_GetObjectItemCaseSensitive(service_area_restriction_1JSON, "areas");
-
-    OpenAPI_list_t *areasList;
+    areas = cJSON_GetObjectItemCaseSensitive(service_area_restriction_1JSON, "areas");
     if (areas) {
-    cJSON *areas_local_nonprimitive;
-    if (!cJSON_IsArray(areas)){
-        ogs_error("OpenAPI_service_area_restriction_1_parseFromJSON() failed [areas]");
-        goto end;
-    }
-
-    areasList = OpenAPI_list_create();
-
-    cJSON_ArrayForEach(areas_local_nonprimitive, areas ) {
-        if (!cJSON_IsObject(areas_local_nonprimitive)) {
+        cJSON *areas_local = NULL;
+        if (!cJSON_IsArray(areas)) {
             ogs_error("OpenAPI_service_area_restriction_1_parseFromJSON() failed [areas]");
             goto end;
         }
-        OpenAPI_area_1_t *areasItem = OpenAPI_area_1_parseFromJSON(areas_local_nonprimitive);
 
-        if (!areasItem) {
-            ogs_error("No areasItem");
-            OpenAPI_list_free(areasList);
-            goto end;
+        areasList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(areas_local, areas) {
+            if (!cJSON_IsObject(areas_local)) {
+                ogs_error("OpenAPI_service_area_restriction_1_parseFromJSON() failed [areas]");
+                goto end;
+            }
+            OpenAPI_area_1_t *areasItem = OpenAPI_area_1_parseFromJSON(areas_local);
+            if (!areasItem) {
+                ogs_error("No areasItem");
+                goto end;
+            }
+            OpenAPI_list_add(areasList, areasItem);
         }
-
-        OpenAPI_list_add(areasList, areasItem);
-    }
     }
 
-    cJSON *max_num_of_tas = cJSON_GetObjectItemCaseSensitive(service_area_restriction_1JSON, "maxNumOfTAs");
-
+    max_num_of_tas = cJSON_GetObjectItemCaseSensitive(service_area_restriction_1JSON, "maxNumOfTAs");
     if (max_num_of_tas) {
     if (!cJSON_IsNumber(max_num_of_tas)) {
         ogs_error("OpenAPI_service_area_restriction_1_parseFromJSON() failed [max_num_of_tas]");
@@ -146,8 +146,7 @@ OpenAPI_service_area_restriction_1_t *OpenAPI_service_area_restriction_1_parseFr
     }
     }
 
-    cJSON *max_num_of_tas_for_not_allowed_areas = cJSON_GetObjectItemCaseSensitive(service_area_restriction_1JSON, "maxNumOfTAsForNotAllowedAreas");
-
+    max_num_of_tas_for_not_allowed_areas = cJSON_GetObjectItemCaseSensitive(service_area_restriction_1JSON, "maxNumOfTAsForNotAllowedAreas");
     if (max_num_of_tas_for_not_allowed_areas) {
     if (!cJSON_IsNumber(max_num_of_tas_for_not_allowed_areas)) {
         ogs_error("OpenAPI_service_area_restriction_1_parseFromJSON() failed [max_num_of_tas_for_not_allowed_areas]");
@@ -166,6 +165,13 @@ OpenAPI_service_area_restriction_1_t *OpenAPI_service_area_restriction_1_parseFr
 
     return service_area_restriction_1_local_var;
 end:
+    if (areasList) {
+        OpenAPI_list_for_each(areasList, node) {
+            OpenAPI_area_1_free(node->data);
+        }
+        OpenAPI_list_free(areasList);
+        areasList = NULL;
+    }
     return NULL;
 }
 

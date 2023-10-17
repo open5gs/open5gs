@@ -1,7 +1,7 @@
 /*
  * ext_problem_details.h
  *
- * 
+ * Extended Problem Details
  */
 
 #ifndef _OpenAPI_ext_problem_details_H_
@@ -15,8 +15,6 @@
 #include "access_token_err.h"
 #include "access_token_req.h"
 #include "invalid_param.h"
-#include "problem_details.h"
-#include "problem_details_add_info.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,7 +1,7 @@
 /*
  * retrieve_data.h
  *
- * 
+ * Data within Retrieve Request
  */
 
 #ifndef _OpenAPI_retrieve_data_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "pdu_session_context_type.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,11 +22,13 @@ typedef struct OpenAPI_retrieve_data_s OpenAPI_retrieve_data_t;
 typedef struct OpenAPI_retrieve_data_s {
     bool is_small_data_rate_status_req;
     int small_data_rate_status_req;
+    OpenAPI_pdu_session_context_type_e pdu_session_context_type;
 } OpenAPI_retrieve_data_t;
 
 OpenAPI_retrieve_data_t *OpenAPI_retrieve_data_create(
     bool is_small_data_rate_status_req,
-    int small_data_rate_status_req
+    int small_data_rate_status_req,
+    OpenAPI_pdu_session_context_type_e pdu_session_context_type
 );
 void OpenAPI_retrieve_data_free(OpenAPI_retrieve_data_t *retrieve_data);
 OpenAPI_retrieve_data_t *OpenAPI_retrieve_data_parseFromJSON(cJSON *retrieve_dataJSON);

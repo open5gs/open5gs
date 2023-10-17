@@ -1,7 +1,7 @@
 /*
  * link.h
  *
- * 
+ * It contains the URI of the linked resource.
  */
 
 #ifndef _OpenAPI_link_H_

@@ -1,7 +1,7 @@
 /*
  * battery_indication.h
  *
- * 
+ * Parameters \&quot;replaceableInd\&quot; and \&quot;rechargeableInd\&quot; are only included if the value of Parameter \&quot;batteryInd\&quot; is true. 
  */
 
 #ifndef _OpenAPI_battery_indication_H_

@@ -115,7 +115,7 @@ aper_open_type_put(const asn_TYPE_descriptor_t *td,
 	FREEMEM(buf);
 	if(toGo) return -1;
 
-	ASN_DEBUG("Open type put %s of length %ld + overhead (1byte?)",
+	ASN_DEBUG("Open type put %s of length %zd + overhead (1byte?)",
 			  td->name, size);
 
 	return 0;

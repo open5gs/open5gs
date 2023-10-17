@@ -1,7 +1,7 @@
 /*
  * ip_end_point.h
  *
- * IP addressing information of a given NFService; it consists on, e.g. IP address, TCP port, transport protocol...
+ * IP addressing information of a given NFService; it consists on, e.g. IP address, TCP port, transport protocol... 
  */
 
 #ifndef _OpenAPI_ip_end_point_H_

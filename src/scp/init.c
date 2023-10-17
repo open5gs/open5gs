@@ -25,12 +25,11 @@ static void scp_main(void *data);
 
 static int initialized = 0;
 
-int scp_initialize()
+int scp_initialize(void)
 {
     int rv;
 
-    ogs_sbi_context_init();
-
+    ogs_sbi_context_init(OpenAPI_nf_type_SCP);
     scp_context_init();
 
     rv = ogs_sbi_context_parse_config("scp", "nrf", "next_scp");

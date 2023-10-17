@@ -1,7 +1,7 @@
 /*
  * inter_freq_target_info.h
  *
- * 
+ * Indicates the Inter Frequency Target information.
  */
 
 #ifndef _OpenAPI_inter_freq_target_info_H_

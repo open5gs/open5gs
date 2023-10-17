@@ -1,7 +1,7 @@
 /*
  * uncertainty_ellipse.h
  *
- * 
+ * Ellipse with uncertainty.
  */
 
 #ifndef _OpenAPI_uncertainty_ellipse_H_

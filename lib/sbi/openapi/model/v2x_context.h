@@ -1,7 +1,7 @@
 /*
  * v2x_context.h
  *
- * 
+ * Represents the V2X services related parameters
  */
 
 #ifndef _OpenAPI_v2x_context_H_

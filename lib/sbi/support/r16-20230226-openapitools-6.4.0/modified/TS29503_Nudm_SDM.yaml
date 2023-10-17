@@ -1,0 +1,2900 @@
+openapi: 3.0.0
+
+info:
+  version: '2.1.4'
+  title: 'Nudm_SDM'
+  description: |
+    Nudm Subscriber Data Management Service.
+    © 2021, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.503 Unified Data Management Services, version 16.8.0
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.503/'
+
+servers:
+  - url: '{apiRoot}/nudm-sdm/v2'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - oAuth2ClientCredentials:
+    - nudm-sdm
+  - {}
+
+paths:
+  /{supi}:
+    get:
+      summary: retrieve multiple data sets
+      operationId: GetDataSets
+      tags:
+        - Retrieval of multiple data sets
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: dataset-names
+          in: query
+          style: form
+          explode: false
+          description: List of dataset names
+          required: true
+          schema:
+             $ref: '#/components/schemas/DatasetNames'
+        - name: plmn-id
+          in: query
+          description: serving PLMN ID
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionDataSets'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/nssai:
+    get:
+      summary: retrieve a UE's subscribed NSSAI
+      operationId: GetNSSAI
+      tags:
+        - Slice Selection Subscription Data Retrieval
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: plmn-id
+          in: query
+          description: serving PLMN ID
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Nssai'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/ue-context-in-amf-data:
+    get:
+      summary: retrieve a UE's UE Context In AMF Data
+      operationId: GetUeCtxInAmfData
+      tags:
+        - UE Context In AMF Data Retrieval
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeContextInAmfData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/am-data:
+    get:
+      summary: retrieve a UE's Access and Mobility Subscription Data
+      operationId: GetAmData
+      tags:
+        - Access and Mobility Subscription Data Retrieval
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: plmn-id
+          in: query
+          description: serving PLMN ID
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessAndMobilitySubscriptionData'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/am-data/ecr-data:
+    get:
+      summary: retrieve a UE's subscribed Enhanced Coverage Restriction Data
+      operationId: GetEcrData
+      tags:
+        - Enhanced Coverage Restriction Data Retrieval
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnhancedCoverageRestrictionData'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/smf-select-data:
+    get:
+      summary: retrieve a UE's SMF Selection Subscription Data
+      operationId: GetSmfSelData
+      tags:
+        - SMF Selection Subscription Data Retrieval
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: plmn-id
+          in: query
+          description: serving PLMN ID
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmfSelectionSubscriptionData'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/ue-context-in-smf-data:
+    get:
+      summary: retrieve a UE's UE Context In SMF Data
+      operationId: GetUeCtxInSmfData
+      tags:
+        - UE Context In SMF Data Retrieval
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeContextInSmfData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/ue-context-in-smsf-data:
+    get:
+      summary: retrieve a UE's UE Context In SMSF Data
+      operationId: GetUeCtxInSmsfData
+      tags:
+        - UE Context In SMSF Data Retrieval
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeContextInSmsfData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/trace-data:
+    get:
+      summary: retrieve a UE's Trace Configuration Data
+      operationId: GetTraceConfigData
+      tags:
+        - Trace Configuration Data Retrieval
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: plmn-id
+          in: query
+          description: serving PLMN ID
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraceDataResponse'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/sm-data:
+    get:
+      summary: retrieve a UE's Session Management Subscription Data
+      operationId: GetSmData
+      tags:
+        - Session Management Subscription Data Retrieval
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: single-nssai
+          in: query
+          content:
+            application/json:
+              schema:
+               $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        - name: dnn
+          in: query
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        - name: plmn-id
+          in: query
+          content:
+            application/json:
+              schema:
+               $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SessionManagementSubscriptionData'
+                minItems: 1
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/sms-data:
+    get:
+      summary: retrieve a UE's SMS Subscription Data
+      operationId: GetSmsData
+      tags:
+        - SMS Subscription Data Retrieval
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: plmn-id
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmsSubscriptionData'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/sms-mng-data:
+    get:
+      summary: retrieve a UE's SMS Management Subscription Data
+      operationId: GetSmsMngtData
+      tags:
+        - SMS Management Subscription Data Retrieval
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: plmn-id
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmsManagementSubscriptionData'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{ueId}/lcs-privacy-data:
+    get:
+      summary: retrieve a UE's LCS Privacy Subscription Data
+      operationId: GetLcsPrivacyData
+      tags:
+        - LCS Privacy Data Retrieval
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LcsPrivacyData'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+  /{supi}/lcs-mo-data:
+    get:
+      summary: retrieve a UE's LCS Mobile Originated Subscription Data
+      operationId: GetLcsMoData
+      tags:
+        - LCS Mobile Originated Data Retrieval
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LcsMoData'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/lcs-bca-data:
+    get:
+      summary: retrieve a UE's LCS Broadcast Assistance Data Types Subscription Data
+      operationId: GetLcsBcaData
+      tags:
+        - LCS Broadcast Assistance Data Types Retrieval
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: plmn-id
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LcsBroadcastAssistanceTypesData'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+  /{supi}/v2x-data:
+    get:
+      summary: retrieve a UE's V2X Subscription Data
+      operationId: GetV2xData
+      tags:
+        - V2X Subscription Data Retrieval
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V2xSubscriptionData'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+  /{ueId}/sdm-subscriptions:
+    post:
+      summary: subscribe to notifications
+      operationId: Subscribe
+      tags:
+        - Subscription Creation
+      parameters:
+        - name: ueId
+          in: path
+          description: Identity of the user
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SdmSubscription'
+        required: true
+      responses:
+        '201':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SdmSubscription'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nudm-sdm/<apiVersion>/{supi}/sdm-subscriptions/{subscriptionId}'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+      callbacks:
+        datachangeNotification:
+          '{request.body#/callbackReference}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ModificationNotification'
+              responses:
+                '204':
+                  description: Successful Notification response
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  description: Unexpected error
+  /{ueId}/sdm-subscriptions/{subscriptionId}:
+    delete:
+      summary: unsubscribe from notifications
+      operationId: Unsubscribe
+      tags:
+        - Subscription Deletion
+      parameters:
+        - name: ueId
+          in: path
+          description: Identity of the user
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: subscriptionId
+          in: path
+          description: Id of the SDM Subscription
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+    patch:
+      summary: modify the subscription
+      operationId: Modify
+      tags:
+        - Subscription Modification
+      parameters:
+        - name: ueId
+          in: path
+          description: Identity of the user
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: subscriptionId
+          in: path
+          description: Id of the SDM Subscription
+          required: true
+          schema:
+            type: string
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/SdmSubsModification'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SdmSubscription'
+                  - $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{ueId}/id-translation-result:
+    get:
+      summary: retrieve a UE's SUPI or GPSI
+      operationId: GetSupiOrGpsi
+      tags:
+        - GPSI to SUPI Translation
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: app-port-id
+          in: query
+          description: Application port identifier
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppPortId'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdTranslationResult'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/am-data/sor-ack:
+    put:
+      summary: Nudm_Sdm Info service operation
+      operationId: SorAckInfo
+      tags:
+        - Providing acknowledgement of Steering of Roaming
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcknowledgeInfo'
+      responses:
+        '204':
+          description: Successful acknowledgement
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/am-data/upu-ack:
+    put:
+      summary: Nudm_Sdm Info for UPU service operation
+      operationId: UpuAck
+      tags:
+        - Providing acknowledgement of UE Parameters Update
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcknowledgeInfo'
+      responses:
+        '204':
+          description: Successful acknowledgement
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/am-data/subscribed-snssais-ack:
+    put:
+      summary: Nudm_Sdm Info operation for S-NSSAIs acknowledgement
+      operationId: S-NSSAIs Ack
+      tags:
+        - Providing acknowledgement of S-NSSAIs Update
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcknowledgeInfo'
+      responses:
+        '204':
+          description: Successful acknowledgement
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/am-data/cag-ack:
+    put:
+      summary: Nudm_Sdm Info operation for CAG acknowledgement
+      operationId: CAG Ack
+      tags:
+        - Providing acknowledgement of CAG Update
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcknowledgeInfo'
+      responses:
+        '204':
+          description: Successful acknowledgement
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /{supi}/am-data/update-sor:
+    post:
+      summary: Nudm_Sdm custom operation to trigger SOR info update
+      operationId: Update SOR Info
+      tags:
+        - Trigger SOR info update
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SorUpdateInfo'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SorInfo'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /shared-data:
+    get:
+      summary: retrieve shared data
+      operationId: GetSharedData
+      tags:
+        - Retrieval of shared data
+      parameters:
+        - name: shared-data-ids
+          in: query
+          description: List of shared data ids
+          required: true
+          style: form
+          explode: false
+          schema:
+             $ref: '#/components/schemas/SharedDataIds'
+        - name: supportedFeatures
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SharedData'
+                minItems: 1
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /shared-data-subscriptions:
+    post:
+      summary: subscribe to notifications for shared data
+      operationId: SubscribeToSharedData
+      tags:
+        - Subscription Creation for shared data
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SdmSubscription'
+        required: true
+      responses:
+        '201':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SdmSubscription'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nudm-sdm/<apiVersion>/shared-data-subscriptions/{subscriptionId}'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        default:
+          description: Unexpected error
+      callbacks:
+        datachangeNotification:
+          '{request.body#/callbackReference}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ModificationNotification'
+              responses:
+                '204':
+                  description: Successful Notification response
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  description: Unexpected error
+  /shared-data-subscriptions/{subscriptionId}:
+    delete:
+      summary: unsubscribe from notifications for shared data
+      operationId: UnsubscribeForSharedData
+      tags:
+        - Subscription Deletion for shared data
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Id of the Shared data Subscription
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+    patch:
+      summary: modify the subscription
+      operationId: ModifySharedDataSubs
+      tags:
+        - Subscription Modification
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Id of the SDM Subscription
+          required: true
+          schema:
+            type: string
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/SdmSubsModification'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SdmSubscription'
+                  - $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+  /group-data/group-identifiers:
+    get:
+      summary: Mapping of Group Identifiers
+      operationId: GetGroupIdentifiers
+      tags:
+        - Group Identifiers
+      parameters:
+        - name: ext-group-id
+          in: query
+          description: External Group Identifier
+          required: false
+          schema:
+            $ref: '#/components/schemas/ExtGroupId'
+        - name: int-group-id
+          in: query
+          description: Internal Group Identifier
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        - name: ue-id-ind
+          in: query
+          description: Indication whether UE identifiers are required or not
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupIdentifiers'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nudm-sdm: Access to the nudm-sdm API
+
+  schemas:
+
+# COMPLEX TYPES:
+
+    DatasetNames:
+      type: array
+      items:
+        $ref: '#/components/schemas/DataSetName'
+      minItems: 2
+      uniqueItems: true
+
+    SubscriptionDataSets:
+      type: object
+      properties:
+        amData:
+          $ref: '#/components/schemas/AccessAndMobilitySubscriptionData'
+        smfSelData:
+          $ref: '#/components/schemas/SmfSelectionSubscriptionData'
+        uecAmfData:
+          $ref: '#/components/schemas/UeContextInAmfData'
+        uecSmfData:
+          $ref: '#/components/schemas/UeContextInSmfData'
+        uecSmsfData:
+          $ref: '#/components/schemas/UeContextInSmsfData'
+        smsSubsData:
+          $ref: '#/components/schemas/SmsSubscriptionData'
+        smData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionManagementSubscriptionData'
+          minItems: 1
+        traceData:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+        smsMngData:
+          $ref: '#/components/schemas/SmsManagementSubscriptionData'
+        lcsPrivacyData:
+          $ref: '#/components/schemas/LcsPrivacyData'
+        lcsMoData:
+          $ref: '#/components/schemas/LcsMoData'
+        v2xData:
+          $ref: '#/components/schemas/V2xSubscriptionData'
+        lcsBroadcastAssistanceTypesData:
+          $ref: '#/components/schemas/LcsBroadcastAssistanceTypesData'
+
+    UeContextInSmsfData:
+      type: object
+      properties:
+        smsfInfo3GppAccess:
+          $ref: '#/components/schemas/SmsfInfo'
+        smsfInfoNon3GppAccess:
+          $ref: '#/components/schemas/SmsfInfo'
+
+    SmsfInfo:
+      type: object
+      required:
+        - smsfInstanceId
+        - plmnId
+      properties:
+        smsfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+
+    AccessAndMobilitySubscriptionData:
+      type: object
+      properties:
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        gpsis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        internalGroupIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+          minItems: 1
+        sharedVnGroupDataIds:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SharedDataId'
+          minProperties: 1
+        subscribedUeAmbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AmbrRm'
+        nssai:
+          $ref: '#/components/schemas/Nssai'
+        ratRestrictions:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        forbiddenAreas:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Area'
+        serviceAreaRestriction:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ServiceAreaRestriction'
+        coreNetworkTypeRestrictions:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/CoreNetworkType'
+        rfspIndex:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RfspIndexRm'
+        subsRegTimer:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSecRm'
+        ueUsageType:
+          $ref: '#/components/schemas/UeUsageType'
+        mpsPriority:
+          $ref: '#/components/schemas/MpsPriorityIndicator'
+        mcsPriority:
+          $ref: '#/components/schemas/McsPriorityIndicator'
+        activeTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSecRm'
+        sorInfo:
+          $ref: '#/components/schemas/SorInfo'
+        sorInfoExpectInd:
+          type: boolean
+        sorafRetrieval:
+          type: boolean
+          default: false
+        sorUpdateIndicatorList:
+          type: array
+          items:
+            $ref: '#/components/schemas/SorUpdateIndicator'
+          minItems: 1
+        upuInfo:
+          $ref: '#/components/schemas/UpuInfo'
+        micoAllowed:
+          $ref: '#/components/schemas/MicoAllowed'
+        sharedAmDataIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/SharedDataId'
+          minItems: 1
+        odbPacketServices:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/OdbPacketServices'
+        subscribedDnnList:
+          type: array
+          items:
+#            anyOf:
+#              - $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+#              - $ref: 'TS29571_CommonData.yaml#/components/schemas/WildcardDnn'
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        serviceGapTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        mdtUserConsent:
+          $ref: '#/components/schemas/MdtUserConsent'
+        mdtConfiguration:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MdtConfiguration'
+        traceData:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+        cagData:
+          $ref: '#/components/schemas/CagData'
+        stnSr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/StnSr'
+        cMsisdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/CMsisdn'
+        nbIoTUePriority:
+          $ref: '#/components/schemas/NbIoTUePriority'
+        nssaiInclusionAllowed:
+          type: boolean
+          default: false
+        rgWirelineCharacteristics:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RgWirelineCharacteristics'
+        ecRestrictionDataWb:
+          $ref: '#/components/schemas/EcRestrictionDataWb'
+        ecRestrictionDataNb:
+          type: boolean
+          default: false
+        expectedUeBehaviourList:
+          $ref: '#/components/schemas/ExpectedUeBehaviourData'
+        primaryRatRestrictions:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        secondaryRatRestrictions:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        edrxParametersList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EdrxParameters'
+          minItems: 1
+        ptwParametersList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PtwParameters'
+          minItems: 1
+        iabOperationAllowed:
+          type: boolean
+          default: false
+        wirelineForbiddenAreas:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/WirelineArea'
+        wirelineServiceAreaRestriction:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/WirelineServiceAreaRestriction'
+
+    CagData:
+      type: object
+      required:
+        - cagInfos
+      properties:
+        cagInfos:
+          description: A map (list of key-value pairs where PlmnId serves as key) of CagInfo
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CagInfo'
+        provisioningTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+
+    CagInfo:
+      type: object
+      required:
+        - allowedCagList
+      properties:
+        allowedCagList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/CagId'
+        cagOnlyIndicator:
+          type: boolean
+
+    SmfSelectionSubscriptionData:
+      type: object
+      properties:
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        subscribedSnssaiInfos:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SnssaiInfo'
+        sharedSnssaiInfosId:
+          $ref: '#/components/schemas/SharedDataId'
+
+    SnssaiInfo:
+      type: object
+      required:
+        - dnnInfos
+      properties:
+        dnnInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnnInfo'
+          minItems: 1
+
+    DnnInfo:
+      type: object
+      required:
+        - dnn
+      properties:
+        dnn:
+#          anyOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/WildcardDnn'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        defaultDnnIndicator:
+          $ref: '#/components/schemas/DnnIndicator'
+        lboRoamingAllowed:
+          $ref: '#/components/schemas/LboRoamingAllowed'
+        iwkEpsInd:
+          $ref: '#/components/schemas/IwkEpsInd'
+        dnnBarred:
+          type: boolean
+        invokeNefInd:
+          type: boolean
+        smfList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+          minItems: 1
+        sameSmfInd:
+          type: boolean
+
+    Nssai:
+      type: object
+      required:
+       - defaultSingleNssais
+      properties:
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        defaultSingleNssais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        singleNssais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        provisioningTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        additionalSnssaiData:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/AdditionalSnssaiData'
+          minProperties: 1
+      nullable: true
+
+    UeContextInAmfData:
+      type: object
+      properties:
+        epsInterworkingInfo:
+          $ref: 'TS29503_Nudm_UECM.yaml#/components/schemas/EpsInterworkingInfo'
+
+    UeContextInSmfData:
+      type: object
+      properties:
+        pduSessions:
+          description: A map (list of key-value pairs where PduSessionId serves as key) of PduSessions
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PduSession'
+        pgwInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/PgwInfo'
+          minItems: 1
+        emergencyInfo:
+          $ref: '#/components/schemas/EmergencyInfo'
+
+    EmergencyInfo:
+      type: object
+      oneOf:
+        - required:
+          - pgwFqdn
+        - required:
+          - pgwIpAddress
+      properties:
+        pgwFqdn:
+          type: string
+        pgwIpAddress:
+          $ref: '#/components/schemas/IpAddress'
+        smfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        epdgInd:
+          type: boolean
+          default: false
+
+
+    PduSession:
+      type: object
+      required:
+        - dnn
+        - smfInstanceId
+        - plmnId
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        smfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        singleNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+
+    PgwInfo:
+      type: object
+      required:
+        - dnn
+        - pgwFqdn
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        pgwFqdn:
+          type: string
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        epdgInd:
+          type: boolean
+          default: false
+
+    SessionManagementSubscriptionData:
+      type: object
+      required:
+        - singleNssai
+      properties:
+        singleNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dnnConfigurations:
+          description: A map (list of key-value pairs where Dnn, or optionally the Wildcard DNN, serves as key) of DnnConfigurations
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DnnConfiguration'
+        internalGroupIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+          minItems: 1
+        sharedVnGroupDataIds:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SharedDataId'
+          minProperties: 1
+        sharedDnnConfigurationsId:
+          $ref: '#/components/schemas/SharedDataId'
+        odbPacketServices:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/OdbPacketServices'
+        traceData:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+        sharedTraceDataId:
+          $ref: '#/components/schemas/SharedDataId'
+        expectedUeBehavioursList:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ExpectedUeBehaviourData'
+          minProperties: 1
+        suggestedPacketNumDlList:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SuggestedPacketNumDl'
+          minProperties: 1
+        3gppChargingCharacteristics:
+          $ref: '#/components/schemas/3GppChargingCharacteristics'
+
+    DnnConfiguration:
+      type: object
+      required:
+        - pduSessionTypes
+        - sscModes
+      properties:
+        pduSessionTypes:
+          $ref: '#/components/schemas/PduSessionTypes'
+        sscModes:
+          $ref: '#/components/schemas/SscModes'
+        iwkEpsInd:
+          $ref: '#/components/schemas/IwkEpsInd'
+        5gQosProfile:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SubscribedDefaultQos'
+        sessionAmbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ambr'
+        3gppChargingCharacteristics:
+          $ref: '#/components/schemas/3GppChargingCharacteristics'
+        staticIpAddress:
+          type: array
+          items:
+            $ref: '#/components/schemas/IpAddress'
+          minItems: 1
+          maxItems: 2
+        upSecurity:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UpSecurity'
+        pduSessionContinuityInd:
+          $ref: '#/components/schemas/PduSessionContinuityInd'
+        niddNefId:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NefId'
+        niddInfo:
+          $ref: '#/components/schemas/NiddInformation'
+        redundantSessionAllowed:
+          type: boolean
+        acsInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AcsInfo'
+        ipv4FrameRouteList:
+          type: array
+          items:
+            $ref: '#/components/schemas/FrameRouteInfo'
+          minItems: 1
+        ipv6FrameRouteList:
+          type: array
+          items:
+            $ref: '#/components/schemas/FrameRouteInfo'
+          minItems: 1
+        atsssAllowed:
+          type: boolean
+          default: false
+        secondaryAuth:
+          type: boolean
+        dnAaaIpAddressAllocation:
+          type: boolean
+        dnAaaAddress:
+          $ref: '#/components/schemas/IpAddress'
+        iptvAccCtrlInfo:
+          type: string
+
+    NiddInformation:
+      type: object
+      required:
+        - afId
+      properties:
+        afId:
+          type: string
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        extGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExternalGroupId'
+
+    IpAddress:
+      type: object
+      oneOf:
+        - required:
+          - ipv4Addr
+        - required:
+          - ipv6Addr
+        - required:
+          - ipv6Prefix
+      properties:
+        ipv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipv6Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        ipv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+
+    PduSessionTypes:
+      type: object
+      required:
+        - defaultSessionType
+      properties:
+        defaultSessionType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+        allowedSessionTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+          minItems: 1
+
+    SscModes:
+      type: object
+      required:
+        - defaultSscMode
+      properties:
+        defaultSscMode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SscMode'
+        allowedSscModes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SscMode'
+          minItems: 1
+          maxItems: 2
+
+    SmsSubscriptionData:
+      type: object
+      properties:
+        smsSubscribed:
+          $ref: '#/components/schemas/SmsSubscribed'
+        sharedSmsSubsDataId:
+          $ref: '#/components/schemas/SharedDataId'
+
+    SmsManagementSubscriptionData:
+      type: object
+      properties:
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        mtSmsSubscribed:
+          type: boolean
+        mtSmsBarringAll:
+          type: boolean
+        mtSmsBarringRoaming:
+          type: boolean
+        moSmsSubscribed:
+          type: boolean
+        moSmsBarringAll:
+          type: boolean
+        moSmsBarringRoaming:
+          type: boolean
+        sharedSmsMngDataIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/SharedDataId'
+          minItems: 1
+        traceData:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+
+    SdmSubscription:
+      type: object
+      required:
+        - nfInstanceId
+        - callbackReference
+        - monitoredResourceUris
+      properties:
+        nfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        implicitUnsubscribe:
+          type: boolean
+        expires:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        callbackReference:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        amfServiceName:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/ServiceName'
+        monitoredResourceUris:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+        singleNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        subscriptionId:
+          type: string
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        immediateReport:
+          type: boolean
+          default: false
+        report:
+          $ref: '#/components/schemas/SubscriptionDataSets'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        contextInfo:
+          $ref: '#/components/schemas/ContextInfo'
+
+    SdmSubsModification:
+      type: object
+      properties:
+        expires:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        monitoredResourceUris:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+
+    ModificationNotification:
+      type: object
+      required:
+        - notifyItems
+      properties:
+        notifyItems:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NotifyItem'
+          minItems: 1
+
+    IdTranslationResult:
+      type: object
+      required:
+        - supi
+      properties:
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+
+    AcknowledgeInfo:
+      type: object
+      required:
+        - provisioningTime
+      properties:
+        sorMacIue:
+          $ref: 'TS29509_Nausf_SoRProtection.yaml#/components/schemas/SorMac'
+        upuMacIue:
+          $ref: 'TS29509_Nausf_UPUProtection.yaml#/components/schemas/UpuMac'
+        securedPacket:
+          $ref: '#/components/schemas/SecuredPacket'
+        provisioningTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        ueNotReachable:
+          type: boolean
+          default: false
+
+    SorInfo:
+      type: object
+      properties:
+        steeringContainer:
+          $ref: '#/components/schemas/SteeringContainer'
+        ackInd:
+          $ref: 'TS29509_Nausf_SoRProtection.yaml#/components/schemas/AckInd'
+        sorMacIausf:
+          $ref: 'TS29509_Nausf_SoRProtection.yaml#/components/schemas/SorMac'
+        countersor:
+          $ref: 'TS29509_Nausf_SoRProtection.yaml#/components/schemas/CounterSor'
+        provisioningTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - ackInd
+        - provisioningTime
+
+    SharedDataIds:
+      type: array
+      items:
+        $ref: '#/components/schemas/SharedDataId'
+      minItems: 1
+      uniqueItems: true
+
+    UpuInfo:
+      type: object
+      properties:
+        upuDataList:
+          type: array
+          items:
+            $ref: 'TS29509_Nausf_UPUProtection.yaml#/components/schemas/UpuData'
+          minItems: 1
+        upuRegInd:
+          $ref: '#/components/schemas/UpuRegInd'
+        upuAckInd:
+          $ref: 'TS29509_Nausf_UPUProtection.yaml#/components/schemas/UpuAckInd'
+        upuMacIausf:
+          $ref: 'TS29509_Nausf_UPUProtection.yaml#/components/schemas/UpuMac'
+        counterUpu:
+          $ref: 'TS29509_Nausf_UPUProtection.yaml#/components/schemas/CounterUpu'
+        provisioningTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - upuDataList
+        - upuAckInd
+        - upuRegInd
+        - provisioningTime
+
+
+    SharedData:
+      type: object
+      required:
+        - sharedDataId
+      properties:
+        sharedDataId:
+          $ref: '#/components/schemas/SharedDataId'
+        sharedAmData:
+          $ref: '#/components/schemas/AccessAndMobilitySubscriptionData'
+        sharedSmsSubsData:
+          $ref: '#/components/schemas/SmsSubscriptionData'
+        sharedSmsMngSubsData:
+          $ref: '#/components/schemas/SmsManagementSubscriptionData'
+        sharedDnnConfigurations:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DnnConfiguration'
+        sharedTraceData:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+        sharedSnssaiInfos:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SnssaiInfo'
+        sharedVnGroupDatas:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/VnGroupData'
+          minProperties: 1
+
+    TraceDataResponse:
+      type: object
+      properties:
+        traceData:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+        sharedTraceDataId:
+          $ref: '#/components/schemas/SharedDataId'
+
+    SteeringContainer:
+      oneOf:
+        - type: array
+          items:
+            $ref: 'TS29509_Nausf_SoRProtection.yaml#/components/schemas/SteeringInfo'
+          minItems: 1
+        - $ref: '#/components/schemas/SecuredPacket'
+
+    GroupIdentifiers:
+      type: object
+      properties:
+        extGroupId:
+          $ref: '#/components/schemas/ExtGroupId'
+        intGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        ueIdList:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeId'
+          minItems: 1
+
+    VnGroupData:
+      type: object
+      properties:
+        pduSessionTypes:
+          $ref: '#/components/schemas/PduSessionTypes'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        singleNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        appDescriptors:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppDescriptor'
+          minItems: 1
+
+    AppDescriptor:
+      type: object
+      properties:
+        osId:
+          $ref: 'TS29519_Policy_Data.yaml#/components/schemas/OsId'
+        appId:
+          type: string
+
+    AdditionalSnssaiData:
+      type: object
+      properties:
+        requiredAuthnAuthz:
+          type: boolean
+
+    AppPortId:
+      type: object
+      properties:
+        destinationPort:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint16'
+        originatorPort:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint16'
+
+    LcsPrivacyData:
+      type: object
+      properties:
+        lpi:
+          $ref: '#/components/schemas/Lpi'
+        unrelatedClass:
+          $ref: '#/components/schemas/UnrelatedClass'
+        plmnOperatorClasses:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlmnOperatorClass'
+          minItems: 1
+
+    Lpi:
+      type: object
+      required:
+        - locationPrivacyInd
+      properties:
+        locationPrivacyInd:
+          $ref: '#/components/schemas/LocationPrivacyInd'
+        validTimePeriod:
+          $ref: '#/components/schemas/ValidTimePeriod'
+
+    UnrelatedClass:
+      type: object
+      required:
+        - defaultUnrelatedClass
+      properties:
+        defaultUnrelatedClass:
+          $ref: '#/components/schemas/DefaultUnrelatedClass'
+        externalUnrelatedClass:
+          $ref: '#/components/schemas/ExternalUnrelatedClass'
+        serviceTypeUnrelatedClasses:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceTypeUnrelatedClass'
+          minItems: 1
+
+    PlmnOperatorClass:
+      type: object
+      required:
+        - lcsClientClass
+        - lcsClientIds
+      properties:
+        lcsClientClass:
+          $ref: '#/components/schemas/LcsClientClass'
+        lcsClientIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/LcsClientId'
+          minItems: 1
+
+    ValidTimePeriod:
+      type: object
+      properties:
+        startTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        endTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+
+    ExternalUnrelatedClass:
+      properties:
+        lcsClientExternals:
+          type: array
+          items:
+            $ref: '#/components/schemas/LcsClientExternal'
+          minItems: 1
+        afExternals:
+          type: array
+          items:
+            $ref: '#/components/schemas/AfExternal'
+          minItems: 1
+        lcsClientGroupExternals:
+          type: array
+          items:
+            $ref: '#/components/schemas/LcsClientGroupExternal'
+          minItems: 1
+
+    AfExternal:
+      type: object
+      properties:
+        afId:
+          $ref: '#/components/schemas/AfId'
+        allowedGeographicArea:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+        privacyCheckRelatedAction:
+          $ref: '#/components/schemas/PrivacyCheckRelatedAction'
+        validTimePeriod:
+          $ref: '#/components/schemas/ValidTimePeriod'
+
+    LcsClientExternal:
+      type: object
+      properties:
+        allowedGeographicArea:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+        privacyCheckRelatedAction:
+          $ref: '#/components/schemas/PrivacyCheckRelatedAction'
+        validTimePeriod:
+          $ref: '#/components/schemas/ValidTimePeriod'
+
+    LcsClientGroupExternal:
+      type: object
+      properties:
+        lcsClientGroupId:
+          $ref: '#/components/schemas/ExtGroupId'
+        allowedGeographicArea:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+        privacyCheckRelatedAction:
+          $ref: '#/components/schemas/PrivacyCheckRelatedAction'
+        validTimePeriod:
+          $ref: '#/components/schemas/ValidTimePeriod'
+
+    ServiceTypeUnrelatedClass:
+      type: object
+      required:
+        - serviceType
+      properties:
+        serviceType:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LcsServiceType'
+        allowedGeographicArea:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+        privacyCheckRelatedAction:
+          $ref: '#/components/schemas/PrivacyCheckRelatedAction'
+        codeWordInd:
+          $ref: '#/components/schemas/CodeWordInd'
+        validTimePeriod:
+          $ref: '#/components/schemas/ValidTimePeriod'
+        codeWordList:
+          type: array
+          items:
+            $ref: '#/components/schemas/CodeWord'
+          minItems: 1
+
+    LcsMoData:
+      type: object
+      required:
+        - allowedServiceClasses
+      properties:
+        allowedServiceClasses:
+          type: array
+          items:
+            $ref: '#/components/schemas/LcsMoServiceClass'
+          minItems: 1
+
+    LcsBroadcastAssistanceTypesData:
+      type: object
+      required:
+        - locationAssistanceType
+      properties:
+        locationAssistanceType:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Binary'
+          minItems: 1
+
+    EcRestrictionDataWb:
+      type: object
+#      anyOf:
+#        - required: [ ecModeARestricted ]
+#        - required: [ ecModeBRestricted ]
+      properties:
+        ecModeARestricted:
+          type: boolean
+        ecModeBRestricted:
+          type: boolean
+
+    ExpectedUeBehaviourData:
+      type: object
+      properties:
+        stationaryIndication:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/StationaryIndication'
+        communicationDurationTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        periodicTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        scheduledCommunicationTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ScheduledCommunicationTime'
+        scheduledCommunicationType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ScheduledCommunicationType'
+        expectedUmts:
+          type: array
+          items:
+            $ref: 'TS29503_Nudm_PP.yaml#/components/schemas/LocationArea'
+          minItems: 1
+          description: Identifies the UE's expected geographical movement. The attribute is only applicable in 5G.
+        trafficProfile:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TrafficProfile'
+        batteryIndication:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BatteryIndication'
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+
+
+    SuggestedPacketNumDl:
+      type: object
+      required:
+        - suggestedPacketNumDl
+      properties:
+        suggestedPacketNumDl:
+          type: integer
+          minimum: 1
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+
+    FrameRouteInfo:
+      type: object
+      properties:
+        ipv4Mask:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4AddrMask'
+        ipv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+
+    SorUpdateInfo:
+      type: object
+      required:
+        - vplmnId
+      properties:
+        vplmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+
+    EnhancedCoverageRestrictionData:
+      type: object
+      properties:
+        plmnEcInfoList:
+          type: array
+          items:
+            $ref: 'TS29503_Nudm_PP.yaml#/components/schemas/PlmnEcInfo'
+          minItems: 1
+
+    EdrxParameters:
+      type: object
+      required:
+        - ratType
+        - edrxValue
+      properties:
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        edrxValue:
+          type: string
+          pattern: '^([0-1]{4})$'
+
+    PtwParameters:
+      type: object
+      required:
+        - operationMode
+        - ptwValue
+      properties:
+        operationMode:
+          $ref: '#/components/schemas/OperationMode'
+        ptwValue:
+          type: string
+          pattern: '^([0-1]{4})$'
+
+    UeId:
+      type: object
+      required:
+        - supi
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+
+    V2xSubscriptionData:
+      type: object
+      properties:
+        nrV2xServicesAuth:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NrV2xAuth'
+        lteV2xServicesAuth:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/LteV2xAuth'
+        nrUePc5Ambr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        ltePc5Ambr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+
+    DefaultUnrelatedClass:
+      type: object
+      properties:
+        allowedGeographicArea:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+        privacyCheckRelatedAction:
+          $ref: '#/components/schemas/PrivacyCheckRelatedAction'
+        codeWordInd:
+          $ref: '#/components/schemas/CodeWordInd'
+        validTimePeriod:
+          $ref: '#/components/schemas/ValidTimePeriod'
+        codeWordList:
+          type: array
+          items:
+            $ref: '#/components/schemas/CodeWord'
+          minItems: 1
+
+    ContextInfo:
+      type: object
+      properties:
+        origHeaders:
+          type: array
+          items:
+            type: string
+          minItems: 1
+
+# SIMPLE TYPES:
+
+    UeUsageType:
+      type: integer
+
+    MpsPriorityIndicator:
+      type: boolean
+
+    McsPriorityIndicator:
+      type: boolean
+
+    DnnIndicator:
+      type: boolean
+
+    LboRoamingAllowed:
+      type: boolean
+
+    SmsSubscribed:
+      type: boolean
+
+    3GppChargingCharacteristics:
+      type: string
+
+    MicoAllowed:
+      type: boolean
+
+    SharedDataId:
+      type: string
+      pattern: '^[0-9]{5,6}-.+$'
+
+    IwkEpsInd:
+      type: boolean
+
+    SecuredPacket:
+      type: string
+      format: base64
+
+    UpuRegInd:
+      type: boolean
+
+    ExtGroupId:
+      type: string
+      pattern: '^extgroupid-[^@]+@[^@]+$'
+
+    NbIoTUePriority:
+      type: integer
+      minimum: 0
+      maximum: 255
+
+    CodeWord:
+      type: string
+
+    AfId:
+      type: string
+
+    LcsClientId:
+      type: string
+
+
+
+# ENUMS:
+
+    DataSetName:
+#      anyOf:
+#        - type: string
+          type: string
+          enum:
+          - AM
+          - SMF_SEL
+          - UEC_SMF
+          - UEC_SMSF
+          - SMS_SUB
+          - SM
+          - TRACE
+          - SMS_MNG
+          - LCS_PRIVACY
+          - LCS_MO
+          - UEC_AMF
+          - V2X
+#        - type: string
+
+    PduSessionContinuityInd:
+#      anyOf:
+#        - type: string
+          type: string
+          enum:
+          - MAINTAIN_PDUSESSION
+          - RECONNECT_PDUSESSION
+          - RELEASE_PDUSESSION
+#        - type: string
+
+    LocationPrivacyInd:
+#      anyOf:
+#        - type: string
+          type: string
+          enum:
+          - LOCATION_DISALLOWED
+          - LOCATION_ALLOWED
+#        - type: string
+
+    PrivacyCheckRelatedAction:
+#      anyOf:
+#        - type: string
+          type: string
+          enum:
+          - LOCATION_NOT_ALLOWED
+          - LOCATION_ALLOWED_WITH_NOTIFICATION
+          - LOCATION_ALLOWED_WITHOUT_NOTIFICATION
+          - LOCATION_ALLOWED_WITHOUT_RESPONSE
+          - LOCATION_RESTRICTED_WITHOUT_RESPONSE
+#        - type: string
+
+    LcsClientClass:
+#      anyOf:
+#        - type: string
+          type: string
+          enum:
+          - BROADCAST_SERVICE
+          - OM_IN_HPLMN
+          - OM_IN_VPLMN
+          - ANONYMOUS_LOCATION_SERVICE
+          - SPECIFIC_SERVICE
+#        - type: string
+
+    LcsMoServiceClass:
+#      anyOf:
+#        - type: string
+          type: string
+          enum:
+          - BASIC_SELF_LOCATION
+          - AUTONOMOUS_SELF_LOCATION
+          - TRANSFER_TO_THIRD_PARTY
+#        - type: string
+
+    OperationMode:
+#      anyOf:
+#        - type: string
+          type: string
+          enum:
+          - WB_S1
+          - NB_S1
+          - WB_N1
+          - NB_N1
+#        - type: string
+
+    SorUpdateIndicator:
+#      anyOf:
+#        - type: string
+          type: string
+          enum:
+          - INITIAL_REGISTRATION
+          - EMERGENCY_REGISTRATION
+#        - type: string
+
+    CodeWordInd:
+#      anyOf:
+#        - type: string
+          type: string
+          enum:
+          - CODEWORD_CHECK_IN_UE
+          - CODEWORD_CHECK_IN_GMLC
+#        - type: string
+
+    MdtUserConsent:
+#      anyOf:
+#        - type: string
+          type: string
+          enum:
+          - CONSENT_NOT_GIVEN
+          - CONSENT_GIVEN
+#        - type: string

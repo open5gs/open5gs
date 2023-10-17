@@ -1,7 +1,7 @@
 /*
  * route_to_location.h
  *
- * 
+ * At least one of the \&quot;routeInfo\&quot; attribute and the \&quot;routeProfId\&quot; attribute shall be included in the \&quot;RouteToLocation\&quot; data type. 
  */
 
 #ifndef _OpenAPI_route_to_location_H_
@@ -21,13 +21,17 @@ extern "C" {
 typedef struct OpenAPI_route_to_location_s OpenAPI_route_to_location_t;
 typedef struct OpenAPI_route_to_location_s {
     char *dnai;
+    bool is_route_info_null;
     struct OpenAPI_route_information_s *route_info;
+    bool is_route_prof_id_null;
     char *route_prof_id;
 } OpenAPI_route_to_location_t;
 
 OpenAPI_route_to_location_t *OpenAPI_route_to_location_create(
     char *dnai,
+    bool is_route_info_null,
     OpenAPI_route_information_t *route_info,
+    bool is_route_prof_id_null,
     char *route_prof_id
 );
 void OpenAPI_route_to_location_free(OpenAPI_route_to_location_t *route_to_location);

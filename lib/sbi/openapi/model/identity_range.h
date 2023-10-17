@@ -1,7 +1,7 @@
 /*
  * identity_range.h
  *
- * A range of GPSIs (subscriber identities), either based on a numeric range, or based on regular-expression matching
+ * A range of GPSIs (subscriber identities), either based on a numeric range, or based on regular-expression matching 
  */
 
 #ifndef _OpenAPI_identity_range_H_

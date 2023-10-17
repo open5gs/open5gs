@@ -1,7 +1,7 @@
 /*
  * small_data_rate_status_info.h
  *
- * 
+ * Represents the small data rate status
  */
 
 #ifndef _OpenAPI_small_data_rate_status_info_H_

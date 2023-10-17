@@ -11,9 +11,9 @@ ies.append({ "ie_value" : "Temporary Mobile Group Identity", "presence" : "Manda
 ies.append({ "ie_value" : "MBMS Service Area", "presence" : "Mandatory", "reference" : "7.7.60"})
 ies.append({ "ie_value" : "MBMS Session Identifier", "presence" : "Optional", "reference" : "7.7.65"})
 ies.append({ "ie_value" : "MBMS 2G/3G Indicator", "presence" : "Mandatory", "reference" : "7.7.66"})
-ies.append({ "ie_value" : "MBMS Session Duration ", "presence" : "Mandatory ", "reference" : "7.7.59"})
+ies.append({ "ie_value" : "MBMS Session Duration", "presence" : "Mandatory", "reference" : "7.7.59"})
 ies.append({ "ie_value" : "MBMS Session Repetition Number", "presence" : "Optional", "reference" : "7.7.69"})
 ies.append({ "ie_value" : "MBMS Time To Data Transfer", "presence" : "Mandatory", "reference" : "7.7.70"})
 ies.append({ "ie_value" : "MBMS Flow Identifier", "presence" : "Optional", "reference" : "7.7.84"})
-ies.append({ "ie_value" : "MBMS IP Multicast Distribution ", "presence" : "Optional", "reference" : "7.7.85"})
+ies.append({ "ie_value" : "MBMS IP Multicast Distribution", "presence" : "Optional", "reference" : "7.7.85"})
 msg_list[key]["ies"] = ies

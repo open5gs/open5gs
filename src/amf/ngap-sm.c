@@ -39,6 +39,8 @@ void ngap_state_final(ogs_fsm_t *s, amf_event_t *e)
 
 void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
 {
+    int r;
+
     amf_gnb_t *gnb = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
@@ -145,11 +147,9 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case NGAP_ProcedureCode_id_PDUSessionResourceRelease:
                 ngap_handle_pdu_session_resource_release_response(gnb, pdu);
                 break;
-#if 0
             case NGAP_ProcedureCode_id_UEContextModification:
                 ngap_handle_ue_context_modification_response(gnb, pdu);
                 break;
-#endif
             case NGAP_ProcedureCode_id_UEContextRelease:
                 ngap_handle_ue_context_release_complete(gnb, pdu);
                 break;
@@ -170,11 +170,9 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case NGAP_ProcedureCode_id_InitialContextSetup :
                 ngap_handle_initial_context_setup_failure(gnb, pdu);
                 break;
-#if 0
             case NGAP_ProcedureCode_id_UEContextModification:
                 ngap_handle_ue_context_modification_failure(gnb, pdu);
                 break;
-#endif
             case NGAP_ProcedureCode_id_HandoverResourceAllocation :
                 ngap_handle_handover_failure(gnb, pdu);
                 break;
@@ -196,7 +194,10 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_assert(e->ran_ue);
             ogs_assert(e->pkbuf);
 
-            ogs_expect(OGS_OK == ngap_send_to_ran_ue(e->ran_ue, e->pkbuf));
+            r = ngap_send_to_ran_ue(e->ran_ue, e->pkbuf);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+
             ogs_timer_delete(e->timer);
             break;
         default:

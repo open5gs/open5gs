@@ -27,15 +27,18 @@ extern "C" {
 #endif
 
 ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue);
-ogs_pkbuf_t *gmm_build_registration_reject(ogs_nas_5gmm_cause_t gmm_cause);
+ogs_pkbuf_t *gmm_build_registration_reject(
+        amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause);
 
 ogs_pkbuf_t *gmm_build_service_accept(amf_ue_t *amf_ue);
 ogs_pkbuf_t *gmm_build_service_reject(
         amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause);
 
 ogs_pkbuf_t *gmm_build_de_registration_accept(amf_ue_t *amf_ue);
-ogs_pkbuf_t *gmm_build_de_registration_request(amf_ue_t *amf_ue,
-        OpenAPI_deregistration_reason_e dereg_reason);
+ogs_pkbuf_t *gmm_build_de_registration_request(
+        amf_ue_t *amf_ue,
+        OpenAPI_deregistration_reason_e dereg_reason,
+        ogs_nas_5gmm_cause_t gmm_cause);
 
 ogs_pkbuf_t *gmm_build_identity_request(amf_ue_t *amf_ue);
 ogs_pkbuf_t *gmm_build_security_mode_command(amf_ue_t *amf_ue);
@@ -56,14 +59,6 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
 ogs_pkbuf_t *gmm_build_dl_nas_transport(amf_sess_t *sess,
         uint8_t payload_container_type, ogs_pkbuf_t *payload,
         ogs_nas_5gmm_cause_t cause, uint8_t backoff_time);
-
-ogs_pkbuf_t *gmm_build_tau_accept(amf_ue_t *amf_ue);
-ogs_pkbuf_t *gmm_build_tau_reject(
-        ogs_nas_5gmm_cause_t gmm_cause, amf_ue_t *amf_ue);
-
-ogs_pkbuf_t *gmm_build_cs_service_notification(amf_ue_t *amf_ue);
-ogs_pkbuf_t *gmm_build_downlink_nas_transport(
-        amf_ue_t *amf_ue, uint8_t *buffer, uint8_t length);
 
 ogs_pkbuf_t *gmm_build_status(amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t cause);
 

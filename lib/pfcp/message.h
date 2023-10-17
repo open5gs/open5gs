@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,8 +20,8 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-06-29 14:29:16.169884 by acetcom
- * from 29244-g91-modified.docx
+ * Created on: 2023-08-18 22:15:59.578047 by acetcom
+ * from 29244-h71-modified.docx
  ******************************************************************************/
 
 #if !defined(OGS_PFCP_INSIDE) && !defined(OGS_PFCP_COMPILATION)
@@ -79,6 +79,8 @@ typedef struct ogs_pfcp_header_s {
 #define OGS_PFCP_NODE_REPORT_RESPONSE_TYPE 13
 #define OGS_PFCP_SESSION_SET_DELETION_REQUEST_TYPE 14
 #define OGS_PFCP_SESSION_SET_DELETION_RESPONSE_TYPE 15
+#define OGS_PFCP_SESSION_SET_MODIFICATION_REQUEST_TYPE 16
+#define OGS_PFCP_SESSION_SET_MODIFICATION_RESPONSE_TYPE 17
 #define OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE 50
 #define OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE 51
 #define OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE 52
@@ -285,7 +287,7 @@ typedef struct ogs_pfcp_header_s {
 #define OGS_PFCP_CREATED_BRIDGE_INFO_FOR_TSC_TYPE 195
 #define OGS_PFCP_DS_TT_PORT_NUMBER_TYPE 196
 #define OGS_PFCP_NW_TT_PORT_NUMBER_TYPE 197
-#define OGS_PFCP_TSN_BRIDGE_ID_TYPE 198
+#define OGS_PFCP_FiveGS_USER_PLANE_NODE_TYPE 198
 #define OGS_PFCP_TSC_MANAGEMENT_INFORMATION_IE_WITHIN_PFCP_SESSION_MODIFICATION_REQUEST_TYPE 199
 #define OGS_PFCP_TSC_MANAGEMENT_INFORMATION_IE_WITHIN_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE 200
 #define OGS_PFCP_TSC_MANAGEMENT_INFORMATION_IE_WITHIN_PFCP_SESSION_REPORT_REQUEST_TYPE 201
@@ -293,7 +295,7 @@ typedef struct ogs_pfcp_header_s {
 #define OGS_PFCP_CLOCK_DRIFT_CONTROL_INFORMATION_TYPE 203
 #define OGS_PFCP_REQUESTED_CLOCK_DRIFT_INFORMATION_TYPE 204
 #define OGS_PFCP_CLOCK_DRIFT_REPORT_TYPE 205
-#define OGS_PFCP_TSN_TIME_DOMAIN_NUMBER_TYPE 206
+#define OGS_PFCP_TIME_DOMAIN_NUMBER_TYPE 206
 #define OGS_PFCP_TIME_OFFSET_THRESHOLD_TYPE 207
 #define OGS_PFCP_CUMULATIVE_RATERATIO_THRESHOLD_TYPE 208
 #define OGS_PFCP_TIME_OFFSET_MEASUREMENT_TYPE 209
@@ -359,6 +361,56 @@ typedef struct ogs_pfcp_header_s {
 #define OGS_PFCP_VALIDITY_TIMER_TYPE 269
 #define OGS_PFCP_REDUNDANT_TRANSMISSION_FORWARDING_PARAMETERS_TYPE 270
 #define OGS_PFCP_TRANSPORT_DELAY_REPORTING_TYPE 271
+#define OGS_PFCP_PARTIAL_FAILURE_INFORMATION_TYPE 272
+#define OGS_PFCP_SPARE_TYPE 273
+#define OGS_PFCP_OFFENDING_IE_INFORMATION_TYPE 274
+#define OGS_PFCP_RAT_TYPE_TYPE 275
+#define OGS_PFCP_L2TP_TUNNEL_INFORMATION_TYPE 276
+#define OGS_PFCP_L2TP_SESSION_INFORMATION_TYPE 277
+#define OGS_PFCP_L2TP_USER_AUTHENTICATION_IE_TYPE 278
+#define OGS_PFCP_CREATED_L2TP_SESSION_TYPE 279
+#define OGS_PFCP_LNS_ADDRESS_TYPE 280
+#define OGS_PFCP_TUNNEL_PREFERENCE_TYPE 281
+#define OGS_PFCP_CALLING_NUMBER_TYPE 282
+#define OGS_PFCP_CALLED_NUMBER_TYPE 283
+#define OGS_PFCP_L2TP_SESSION_INDICATIONS_TYPE 284
+#define OGS_PFCP_DNS_SERVER_ADDRESS_TYPE 285
+#define OGS_PFCP_NBNS_SERVER_ADDRESS_TYPE 286
+#define OGS_PFCP_MAXIMUM_RECEIVE_UNIT_TYPE 287
+#define OGS_PFCP_THRESHOLDS_TYPE 288
+#define OGS_PFCP_STEERING_MODE_INDICATOR_TYPE 289
+#define OGS_PFCP_PFCP_SESSION_CHANGE_INFO_TYPE 290
+#define OGS_PFCP_GROUP_ID_TYPE 291
+#define OGS_PFCP_CP_IP_ADDRESS_TYPE 292
+#define OGS_PFCP_IP_ADDRESS_AND_PORT_NUMBER_REPLACEMENT_TYPE 293
+#define OGS_PFCP_DNS_QUERY_FILTER_TYPE 294
+#define OGS_PFCP_DIRECT_REPORTING_INFORMATION_TYPE 295
+#define OGS_PFCP_EVENT_NOTIFICATION_URI_TYPE 296
+#define OGS_PFCP_NOTIFICATION_CORRELATION_ID_TYPE 297
+#define OGS_PFCP_REPORTING_FLAGS_TYPE 298
+#define OGS_PFCP_PREDEFINED_RULES_NAME_TYPE 299
+#define OGS_PFCP_MBS_SESSION_N4MB_CONTROL_INFORMATION_TYPE 300
+#define OGS_PFCP_MBS_MULTICAST_PARAMETERS_TYPE 301
+#define OGS_PFCP_ADD_MBS_UNICAST_PARAMETERS_TYPE 302
+#define OGS_PFCP_MBS_SESSION_N4MB_INFORMATION_TYPE 303
+#define OGS_PFCP_REMOVE_MBS_UNICAST_PARAMETERS_TYPE 304
+#define OGS_PFCP_MBS_SESSION_IDENTIFIER_TYPE 305
+#define OGS_PFCP_MULTICAST_TRANSPORT_INFORMATION_TYPE 306
+#define OGS_PFCP_MBSN4MBREQ_FLAGS_TYPE 307
+#define OGS_PFCP_LOCAL_INGRESS_TUNNEL_TYPE 308
+#define OGS_PFCP_MBS_UNICAST_PARAMETERS_ID_TYPE 309
+#define OGS_PFCP_MBS_SESSION_N4_CONTROL_INFORMATION_TYPE 310
+#define OGS_PFCP_MBS_SESSION_N4_INFORMATION_TYPE 311
+#define OGS_PFCP_MBSN4RESP_FLAGS_TYPE 312
+#define OGS_PFCP_TUNNEL_PASSWORD_TYPE 313
+#define OGS_PFCP_AREA_SESSION_ID_TYPE 314
+#define OGS_PFCP_PEER_UP_RESTART_REPORT_TYPE 315
+#define OGS_PFCP_DSCP_TO_PPI_CONTROL_INFORMATION_TYPE 316
+#define OGS_PFCP_DSCP_TO_PPI_MAPPING_INFORMATION_TYPE 317
+#define OGS_PFCP_PFCPSDRSP_FLAGS_TYPE 318
+#define OGS_PFCP_QER_INDICATIONS_TYPE 319
+#define OGS_PFCP_VENDOR_SPECIFIC_NODE_REPORT_TYPE_TYPE 320
+#define OGS_PFCP_CONFIGURED_TIME_DOMAIN_TYPE 321
 
 /* Information Element TLV Descriptor */
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_cause;
@@ -506,10 +558,10 @@ extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_packet_rate_status;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_bridge_info_for_tsc;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_ds_tt_port_number;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_nw_tt_port_number;
-extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_tsn_bridge_id;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_fivegs_user_plane_node;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_port_management_information_container;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_requested_clock_drift_information;
-extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_tsn_time_domain_number;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_time_domain_number;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_time_offset_threshold;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_cumulative_rateratio_threshold;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_time_offset_measurement;
@@ -551,6 +603,45 @@ extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mptcp_applicable_indication;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_bridge_management_information_container;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_number_of_ue_ip_addresses;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_validity_timer;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_spare;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_offending_ie_information;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_rat_type;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_l2tp_user_authentication_ie;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_lns_address;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_tunnel_preference;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_calling_number;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_called_number;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_l2tp_session_indications;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_dns_server_address;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_nbns_server_address;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_maximum_receive_unit;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_thresholds;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_steering_mode_indicator;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_group_id;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_cp_ip_address;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_ip_address_and_port_number_replacement;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_dns_query_filter;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_direct_reporting_information;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_event_notification_uri;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_notification_correlation_id;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_reporting_flags;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_predefined_rules_name;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4mb_information;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_remove_mbs_unicast_parameters;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_identifier;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_multicast_transport_information;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbsn4mbreq_flags;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_local_ingress_tunnel;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_unicast_parameters_id;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbsn4resp_flags;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_tunnel_password;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_area_session_id;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_peer_up_restart_report;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_dscp_to_ppi_mapping_information;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcpsdrsp_flags;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_qer_indications;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_vendor_specific_node_report_type;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_configured_time_domain;
 
 /* Group Information Element TLV Descriptor */
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_ethernet_packet_filter;
@@ -562,6 +653,8 @@ extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_pdr;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_forwarding_parameters;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_duplicating_parameters;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_redundant_transmission_forwarding_parameters;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_multicast_parameters;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_add_mbs_unicast_parameters;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_far;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_forwarding_parameters;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_duplicating_parameters;
@@ -634,6 +727,15 @@ extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_provide_rds_configuration_information;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_query_packet_rate_status_ie_within_pfcp_session_modification_request;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_packet_rate_status_report_ie_within_pfcp_session_modification_response;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_ue_ip_address_usage_information;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_partial_failure_information;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_l2tp_tunnel_information;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_l2tp_session_information;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_created_l2tp_session;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcp_session_change_info;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4mb_control_information;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4_information;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4_control_information;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_dscp_to_ppi_control_information;
 
 /* Message Descriptor */
 extern ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_heartbeat_request;
@@ -651,6 +753,8 @@ extern ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_node_report_request;
 extern ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_node_report_response;
 extern ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_set_deletion_request;
 extern ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_set_deletion_response;
+extern ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_set_modification_request;
+extern ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_set_modification_response;
 extern ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_establishment_request;
 extern ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_establishment_response;
 extern ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_modification_request;
@@ -799,17 +903,17 @@ typedef ogs_tlv_uint32_t ogs_pfcp_tlv_quota_validity_time_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_number_of_reports_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_pfcpasrsp_flags_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_cp_pfcp_entity_ip_address_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_pfcpsereq_flags_t;
+typedef ogs_tlv_uint8_t ogs_pfcp_tlv_pfcpsereq_flags_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_ip_multicast_address_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_source_ip_address_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_packet_rate_status_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_create_bridge_info_for_tsc_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_ds_tt_port_number_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_nw_tt_port_number_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_tsn_bridge_id_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_fivegs_user_plane_node_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_port_management_information_container_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_requested_clock_drift_information_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_tsn_time_domain_number_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_time_domain_number_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_time_offset_threshold_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_cumulative_rateratio_threshold_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_time_offset_measurement_t;
@@ -851,6 +955,45 @@ typedef ogs_tlv_octet_t ogs_pfcp_tlv_mptcp_applicable_indication_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_bridge_management_information_container_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_number_of_ue_ip_addresses_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_validity_timer_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_spare_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_offending_ie_information_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_rat_type_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_l2tp_user_authentication_ie_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_lns_address_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_tunnel_preference_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_calling_number_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_called_number_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_l2tp_session_indications_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_dns_server_address_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_nbns_server_address_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_maximum_receive_unit_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_thresholds_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_steering_mode_indicator_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_group_id_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_cp_ip_address_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_ip_address_and_port_number_replacement_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_dns_query_filter_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_direct_reporting_information_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_event_notification_uri_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_notification_correlation_id_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_reporting_flags_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_predefined_rules_name_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_mbs_session_n4mb_information_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_remove_mbs_unicast_parameters_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_mbs_session_identifier_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_multicast_transport_information_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_mbsn4mbreq_flags_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_local_ingress_tunnel_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_mbs_unicast_parameters_id_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_mbsn4resp_flags_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_tunnel_password_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_area_session_id_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_peer_up_restart_report_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_dscp_to_ppi_mapping_information_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_pfcpsdrsp_flags_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_qer_indications_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_vendor_specific_node_report_type_t;
+typedef ogs_tlv_octet_t ogs_pfcp_tlv_configured_time_domain_t;
 
 /* Structure for Group Information Element */
 typedef struct ogs_pfcp_tlv_ethernet_packet_filter_s {
@@ -880,6 +1023,7 @@ typedef struct ogs_pfcp_tlv_pdi_s {
     ogs_tlv_presence_t presence;
     ogs_pfcp_tlv_source_interface_t source_interface;
     ogs_pfcp_tlv_f_teid_t local_f_teid;
+    ogs_pfcp_tlv_local_ingress_tunnel_t local_ingress_tunnel;
     ogs_pfcp_tlv_network_instance_t network_instance;
     ogs_pfcp_tlv_redundant_transmission_parameters_t redundant_transmission_detection_parameters;
     ogs_pfcp_tlv_ue_ip_address_t ue_ip_address;
@@ -889,11 +1033,14 @@ typedef struct ogs_pfcp_tlv_pdi_s {
     ogs_pfcp_tlv_ethernet_pdu_session_information_t ethernet_pdu_session_information;
     ogs_pfcp_tlv_ethernet_packet_filter_t ethernet_packet_filter;
     ogs_pfcp_tlv_qfi_t qfi;
-    ogs_pfcp_tlv_framed_route_t framed_route;
+    ogs_pfcp_tlv_framed_route_t framed_route[8];
     ogs_pfcp_tlv_framed_routing_t framed_routing;
-    ogs_pfcp_tlv_framed_ipv6_route_t framed_ipv6_route;
+    ogs_pfcp_tlv_framed_ipv6_route_t framed_ipv6_route[8];
     ogs_pfcp_tlv__interface_type_t source_interface_type;
     ogs_pfcp_tlv_ip_multicast_addressing_info_within_pfcp_session_establishment_request_t ip_multicast_addressing_info;
+    ogs_pfcp_tlv_dns_query_filter_t dns_query_filter;
+    ogs_pfcp_tlv_mbs_session_identifier_t mbs_session_identifier;
+    ogs_pfcp_tlv_area_session_id_t area_session_id;
 } ogs_pfcp_tlv_pdi_t;
 
 typedef struct ogs_pfcp_tlv_transport_delay_reporting_s {
@@ -920,6 +1067,7 @@ typedef struct ogs_pfcp_tlv_create_pdr_s {
     ogs_pfcp_tlv_ue_ip_address_t ue_ip_address_pool_identity;
     ogs_pfcp_tlv_mptcp_applicable_indication_t mptcp_applicable_indication;
     ogs_pfcp_tlv_transport_delay_reporting_t transport_delay_reporting;
+    ogs_pfcp_tlv_rat_type_t rat_type;
 } ogs_pfcp_tlv_create_pdr_t;
 
 typedef struct ogs_pfcp_tlv_forwarding_parameters_s {
@@ -935,6 +1083,7 @@ typedef struct ogs_pfcp_tlv_forwarding_parameters_s {
     ogs_pfcp_tlv_proxying_t proxying;
     ogs_pfcp_tlv__interface_type_t destination_interface_type;
     ogs_pfcp_tlv_data_network_access_identifier_t data_network_access_identifier;
+    ogs_pfcp_tlv_ip_address_and_port_number_replacement_t ip_address_and_port_number_replacement;
 } ogs_pfcp_tlv_forwarding_parameters_t;
 
 typedef struct ogs_pfcp_tlv_duplicating_parameters_s {
@@ -951,6 +1100,25 @@ typedef struct ogs_pfcp_tlv_redundant_transmission_forwarding_parameters_s {
     ogs_pfcp_tlv_network_instance_t network_instance_for_redundant_transmission;
 } ogs_pfcp_tlv_redundant_transmission_forwarding_parameters_t;
 
+typedef struct ogs_pfcp_tlv_mbs_multicast_parameters_s {
+    ogs_tlv_presence_t presence;
+    ogs_pfcp_tlv_destination_interface_t destination_interface;
+    ogs_pfcp_tlv_network_instance_t network_instance;
+    ogs_pfcp_tlv_outer_header_creation_t outer_header_creation;
+    ogs_pfcp_tlv_transport_level_marking_t transport_level_marking;
+    ogs_pfcp_tlv__interface_type_t destination_interface_type;
+} ogs_pfcp_tlv_mbs_multicast_parameters_t;
+
+typedef struct ogs_pfcp_tlv_add_mbs_unicast_parameters_s {
+    ogs_tlv_presence_t presence;
+    ogs_pfcp_tlv_destination_interface_t destination_interface;
+    ogs_pfcp_tlv_mbs_unicast_parameters_id_t mbs_unicast_parameters_id;
+    ogs_pfcp_tlv_network_instance_t network_instance;
+    ogs_pfcp_tlv_outer_header_creation_t outer_header_creation;
+    ogs_pfcp_tlv_transport_level_marking_t transport_level_marking;
+    ogs_pfcp_tlv__interface_type_t destination_interface_type;
+} ogs_pfcp_tlv_add_mbs_unicast_parameters_t;
+
 typedef struct ogs_pfcp_tlv_create_far_s {
     ogs_tlv_presence_t presence;
     ogs_pfcp_tlv_far_id_t far_id;
@@ -959,6 +1127,8 @@ typedef struct ogs_pfcp_tlv_create_far_s {
     ogs_pfcp_tlv_duplicating_parameters_t duplicating_parameters;
     ogs_pfcp_tlv_bar_id_t bar_id;
     ogs_pfcp_tlv_redundant_transmission_forwarding_parameters_t redundant_transmission_forwarding_parameters;
+    ogs_pfcp_tlv_mbs_multicast_parameters_t mbs_multicast_parameters;
+    ogs_pfcp_tlv_add_mbs_unicast_parameters_t add_mbs_unicast_parameters;
 } ogs_pfcp_tlv_create_far_t;
 
 typedef struct ogs_pfcp_tlv_update_forwarding_parameters_s {
@@ -974,6 +1144,7 @@ typedef struct ogs_pfcp_tlv_update_forwarding_parameters_s {
     ogs_pfcp_tlv_traffic_endpoint_id_t linked_traffic_endpoint_id;
     ogs_pfcp_tlv__interface_type_t destination_interface_type;
     ogs_pfcp_tlv_data_network_access_identifier_t data_network_access_identifier;
+    ogs_pfcp_tlv_ip_address_and_port_number_replacement_t ip_address_and_port_number_replacement;
 } ogs_pfcp_tlv_update_forwarding_parameters_t;
 
 typedef struct ogs_pfcp_tlv_update_duplicating_parameters_s {
@@ -992,6 +1163,8 @@ typedef struct ogs_pfcp_tlv_update_far_s {
     ogs_pfcp_tlv_update_duplicating_parameters_t update_duplicating_parameters;
     ogs_pfcp_tlv_redundant_transmission_forwarding_parameters_t redundant_transmission_forwarding_parameters;
     ogs_pfcp_tlv_bar_id_t bar_id;
+    ogs_pfcp_tlv_add_mbs_unicast_parameters_t add_mbs_unicast_parameters;
+    ogs_pfcp_tlv_remove_mbs_unicast_parameters_t remove_mbs_unicast_parameters;
 } ogs_pfcp_tlv_update_far_t;
 
 typedef struct ogs_pfcp_tlv_pfd_context_s {
@@ -1017,6 +1190,7 @@ typedef struct ogs_pfcp_tlv__access_forwarding_action_information_s {
     ogs_pfcp_tlv_weight_t weight;
     ogs_pfcp_tlv_priority_t priority;
     ogs_pfcp_tlv_urr_id_t urr_id[8];
+    ogs_pfcp_tlv_rat_type_t rat_type;
 } ogs_pfcp_tlv__access_forwarding_action_information_t;
 
 typedef struct ogs_pfcp_tlv_non__access_forwarding_action_information_s {
@@ -1025,6 +1199,7 @@ typedef struct ogs_pfcp_tlv_non__access_forwarding_action_information_s {
     ogs_pfcp_tlv_weight_t weight;
     ogs_pfcp_tlv_priority_t priority;
     ogs_pfcp_tlv_urr_id_t urr_id[8];
+    ogs_pfcp_tlv_rat_type_t rat_type;
 } ogs_pfcp_tlv_non__access_forwarding_action_information_t;
 
 typedef struct ogs_pfcp_tlv_update__access_forwarding_action_information_s {
@@ -1033,6 +1208,7 @@ typedef struct ogs_pfcp_tlv_update__access_forwarding_action_information_s {
     ogs_pfcp_tlv_weight_t weight;
     ogs_pfcp_tlv_priority_t priority;
     ogs_pfcp_tlv_urr_id_t urr_id;
+    ogs_pfcp_tlv_rat_type_t rat_type;
 } ogs_pfcp_tlv_update__access_forwarding_action_information_t;
 
 typedef struct ogs_pfcp_tlv_update_non__access_forwarding_action_information_s {
@@ -1041,6 +1217,7 @@ typedef struct ogs_pfcp_tlv_update_non__access_forwarding_action_information_s {
     ogs_pfcp_tlv_weight_t weight;
     ogs_pfcp_tlv_priority_t priority;
     ogs_pfcp_tlv_urr_id_t urr_id;
+    ogs_pfcp_tlv_rat_type_t rat_type;
 } ogs_pfcp_tlv_update_non__access_forwarding_action_information_t;
 
 typedef struct ogs_pfcp_tlv_access_availability_report_s {
@@ -1070,6 +1247,7 @@ typedef struct ogs_pfcp_tlv_atsss_ll_parameters_s {
 typedef struct ogs_pfcp_tlv_pmf_parameters_s {
     ogs_tlv_presence_t presence;
     ogs_pfcp_tlv_pmf_address_information_t pmf_address_information;
+    ogs_pfcp_tlv_qfi_t qos_flow_identifier;
 } ogs_pfcp_tlv_pmf_parameters_t;
 
 typedef struct ogs_pfcp_tlv_join_ip_multicast_information_ie_within_usage_report_s {
@@ -1115,6 +1293,9 @@ typedef struct ogs_pfcp_tlv_create_urr_s {
     ogs_pfcp_tlv_ethernet_inactivity_timer_t ethernet_inactivity_timer;
     ogs_pfcp_tlv_additional_monitoring_time_t additional_monitoring_time;
     ogs_pfcp_tlv_number_of_reports_t number_of_reports;
+    ogs_pfcp_tlv_application_id_t exempted_application_id_for_quota_action;
+    ogs_pfcp_tlv_sdf_filter_t exempted_sdf_filter_for_quota_action[8];
+    ogs_pfcp_tlv_user_plane_inactivity_timer_t user_plane_inactivity_timer;
 } ogs_pfcp_tlv_create_urr_t;
 
 typedef struct ogs_pfcp_tlv_create_qer_s {
@@ -1132,6 +1313,7 @@ typedef struct ogs_pfcp_tlv_create_qer_s {
     ogs_pfcp_tlv_paging_policy_indicator_t paging_policy_indicator;
     ogs_pfcp_tlv_averaging_window_t averaging_window;
     ogs_pfcp_tlv_qer_control_indications_t qer_control_indications;
+    ogs_pfcp_tlv_qer_indications_t qer_indications;
 } ogs_pfcp_tlv_create_qer_t;
 
 typedef struct ogs_pfcp_tlv_created_pdr_s {
@@ -1140,6 +1322,7 @@ typedef struct ogs_pfcp_tlv_created_pdr_s {
     ogs_pfcp_tlv_f_teid_t local_f_teid;
     ogs_pfcp_tlv_f_teid_t local_f_teid_for_redundant_transmission;
     ogs_pfcp_tlv_ue_ip_address_t ue_ip_address;
+    ogs_pfcp_tlv_local_ingress_tunnel_t local_ingress_tunnel;
 } ogs_pfcp_tlv_created_pdr_t;
 
 typedef struct ogs_pfcp_tlv_update_pdr_s {
@@ -1157,6 +1340,7 @@ typedef struct ogs_pfcp_tlv_update_pdr_s {
     ogs_pfcp_tlv_deactivation_time_t deactivation_time;
     ogs_pfcp_tlv_ip_multicast_addressing_info_within_pfcp_session_establishment_request_t ip_multicast_addressing_info;
     ogs_pfcp_tlv_transport_delay_reporting_t transport_delay_reporting;
+    ogs_pfcp_tlv_rat_type_t rat_type;
 } ogs_pfcp_tlv_update_pdr_t;
 
 typedef struct ogs_pfcp_tlv_update_bar_pfcp_session_report_response_s {
@@ -1199,6 +1383,9 @@ typedef struct ogs_pfcp_tlv_update_urr_s {
     ogs_pfcp_tlv_ethernet_inactivity_timer_t ethernet_inactivity_timer;
     ogs_pfcp_tlv_additional_monitoring_time_t additional_monitoring_time;
     ogs_pfcp_tlv_number_of_reports_t number_of_reports;
+    ogs_pfcp_tlv_application_id_t exempted_application_id_for_quota_action;
+    ogs_pfcp_tlv_sdf_filter_t exempted_sdf_filter_for_quota_action[8];
+    ogs_pfcp_tlv_user_plane_inactivity_timer_t user_plane_inactivity_timer;
 } ogs_pfcp_tlv_update_urr_t;
 
 typedef struct ogs_pfcp_tlv_update_qer_s {
@@ -1315,6 +1502,7 @@ typedef struct ogs_pfcp_tlv_usage_report_session_report_request_s {
     ogs_pfcp_tlv_ethernet_traffic_information_t ethernet_traffic_information;
     ogs_pfcp_tlv_join_ip_multicast_information_ie_within_usage_report_t join_ip_muticast_information;
     ogs_pfcp_tlv_leave_ip_multicast_information_ie_within_usage_report_t leave_ip_muticast_information;
+    ogs_pfcp_tlv_predefined_rules_name_t predefined_rules_name;
 } ogs_pfcp_tlv_usage_report_session_report_request_t;
 
 typedef struct ogs_pfcp_tlv_downlink_data_report_s {
@@ -1364,11 +1552,16 @@ typedef struct ogs_pfcp_tlv_create_traffic_endpoint_s {
     ogs_pfcp_tlv_redundant_transmission_parameters_t redundant_transmission_detection_parameters;
     ogs_pfcp_tlv_ue_ip_address_t ue_ip_address;
     ogs_pfcp_tlv_ethernet_pdu_session_information_t ethernet_pdu_session_information;
-    ogs_pfcp_tlv_framed_route_t framed_route;
+    ogs_pfcp_tlv_framed_route_t framed_route[8];
     ogs_pfcp_tlv_framed_routing_t framed_routing;
-    ogs_pfcp_tlv_framed_ipv6_route_t framed_ipv6_route;
+    ogs_pfcp_tlv_framed_ipv6_route_t framed_ipv6_route[8];
     ogs_pfcp_tlv_qfi_t qfi;
     ogs_pfcp_tlv__interface_type_t source_interface_type;
+    ogs_pfcp_tlv_local_ingress_tunnel_t local_ingress_tunnel;
+    ogs_pfcp_tlv_ip_multicast_addressing_info_within_pfcp_session_establishment_request_t ip_multicast_addressing_info;
+    ogs_pfcp_tlv_mbs_session_identifier_t mbs_session_identifier;
+    ogs_pfcp_tlv_area_session_id_t area_session_id;
+    ogs_pfcp_tlv_rat_type_t rat_type;
 } ogs_pfcp_tlv_create_traffic_endpoint_t;
 
 typedef struct ogs_pfcp_tlv_created_traffic_endpoint_s {
@@ -1377,6 +1570,7 @@ typedef struct ogs_pfcp_tlv_created_traffic_endpoint_s {
     ogs_pfcp_tlv_f_teid_t local_f_teid;
     ogs_pfcp_tlv_f_teid_t local_f_teid_for_redundant_transmission;
     ogs_pfcp_tlv_ue_ip_address_t ue_ip_address;
+    ogs_pfcp_tlv_local_ingress_tunnel_t local_ingress_tunnel;
 } ogs_pfcp_tlv_created_traffic_endpoint_t;
 
 typedef struct ogs_pfcp_tlv_remove_traffic_endpoint_s {
@@ -1391,6 +1585,8 @@ typedef struct ogs_pfcp_tlv_create_mar_s {
     ogs_pfcp_tlv_steering_mode_t steering_mode;
     ogs_pfcp_tlv__access_forwarding_action_information_t _access_forwarding_action_information;
     ogs_pfcp_tlv_non__access_forwarding_action_information_t non__access_forwarding_action_information;
+    ogs_pfcp_tlv_thresholds_t threshold_values;
+    ogs_pfcp_tlv_steering_mode_indicator_t steering_mode_indicator;
 } ogs_pfcp_tlv_create_mar_t;
 
 typedef struct ogs_pfcp_tlv_remove_mar_s {
@@ -1407,6 +1603,8 @@ typedef struct ogs_pfcp_tlv_update_mar_s {
     ogs_pfcp_tlv_update_non__access_forwarding_action_information_t update_non__access_forwarding_action_information;
     ogs_pfcp_tlv__access_forwarding_action_information_t _access_forwarding_action_information;
     ogs_pfcp_tlv_non__access_forwarding_action_information_t non__access_forwarding_action_information;
+    ogs_pfcp_tlv_thresholds_t threshold_values;
+    ogs_pfcp_tlv_steering_mode_indicator_t steering_mode_indicator;
 } ogs_pfcp_tlv_update_mar_t;
 
 typedef struct ogs_pfcp_tlv_pfcp_session_retention_information_within_pfcp_association_setup_request_s {
@@ -1422,44 +1620,48 @@ typedef struct ogs_pfcp_tlv_user_plane_path_recovery_report_s {
 typedef struct ogs_pfcp_tlv_created_bridge_info_for_tsc_s {
     ogs_tlv_presence_t presence;
     ogs_pfcp_tlv_ds_tt_port_number_t ds_tt_port_number;
-    ogs_pfcp_tlv_tsn_bridge_id_t tsn_bridge_id;
+    ogs_pfcp_tlv_fivegs_user_plane_node_t fivegs_user_plane_node;
 } ogs_pfcp_tlv_created_bridge_info_for_tsc_t;
 
 typedef struct ogs_pfcp_tlv_tsc_management_information_ie_within_pfcp_session_modification_request_s {
     ogs_tlv_presence_t presence;
     ogs_pfcp_tlv_port_management_information_container_t port_management_information_container;
-    ogs_pfcp_tlv_bridge_management_information_container_t bridge_management_information_container;
+    ogs_pfcp_tlv_bridge_management_information_container_t user_plane_node_management_information_container;
     ogs_pfcp_tlv_nw_tt_port_number_t nw_tt_port_number;
 } ogs_pfcp_tlv_tsc_management_information_ie_within_pfcp_session_modification_request_t;
 
 typedef struct ogs_pfcp_tlv_tsc_management_information_ie_within_pfcp_session_modification_response_s {
     ogs_tlv_presence_t presence;
     ogs_pfcp_tlv_port_management_information_container_t port_management_information_container;
-    ogs_pfcp_tlv_bridge_management_information_container_t bridge_management_information_container;
+    ogs_pfcp_tlv_bridge_management_information_container_t user_plane_node_management_information_container;
     ogs_pfcp_tlv_nw_tt_port_number_t nw_tt_port_number;
 } ogs_pfcp_tlv_tsc_management_information_ie_within_pfcp_session_modification_response_t;
 
 typedef struct ogs_pfcp_tlv_tsc_management_information_ie_within_pfcp_session_report_request_s {
     ogs_tlv_presence_t presence;
     ogs_pfcp_tlv_port_management_information_container_t port_management_information_container;
-    ogs_pfcp_tlv_bridge_management_information_container_t bridge_management_information_container;
+    ogs_pfcp_tlv_bridge_management_information_container_t user_plane_node_management_information_container;
     ogs_pfcp_tlv_nw_tt_port_number_t nw_tt_port_number;
 } ogs_pfcp_tlv_tsc_management_information_ie_within_pfcp_session_report_request_t;
 
 typedef struct ogs_pfcp_tlv_clock_drift_control_information_s {
     ogs_tlv_presence_t presence;
     ogs_pfcp_tlv_requested_clock_drift_information_t requested_clock_drift_information;
-    ogs_pfcp_tlv_tsn_time_domain_number_t tsn_time_domain_number;
+    ogs_pfcp_tlv_time_domain_number_t time_domain_number;
+    ogs_pfcp_tlv_configured_time_domain_t configured_time_domain;
     ogs_pfcp_tlv_time_offset_threshold_t time_offset_threshold;
     ogs_pfcp_tlv_cumulative_rateratio_threshold_t cumulative_rateratio_threshold;
 } ogs_pfcp_tlv_clock_drift_control_information_t;
 
 typedef struct ogs_pfcp_tlv_clock_drift_report_s {
     ogs_tlv_presence_t presence;
-    ogs_pfcp_tlv_tsn_time_domain_number_t tsn_time_domain_number;
+    ogs_pfcp_tlv_time_domain_number_t time_domain_number;
     ogs_pfcp_tlv_time_offset_measurement_t time_offset_measurement;
     ogs_pfcp_tlv_cumulative_rateratio_measurement_t cumulative_rateratio_measurement;
     ogs_pfcp_tlv_time_stamp_t time_stamp;
+    ogs_pfcp_tlv_network_instance_t network_instance;
+    ogs_pfcp_tlv_apn_dnn_t apn_dnn;
+    ogs_pfcp_tlv_s_nssai_t s_nssai;
 } ogs_pfcp_tlv_clock_drift_report_t;
 
 typedef struct ogs_pfcp_tlv_remove_srr_s {
@@ -1472,6 +1674,7 @@ typedef struct ogs_pfcp_tlv_create_srr_s {
     ogs_pfcp_tlv_srr_id_t srr_id;
     ogs_pfcp_tlv_access_availability_control_information_t access_availability_control_information;
     ogs_pfcp_tlv_qos_monitoring_per_qos_flow_control_information_t qos_monitoring_per_qos_flow_control_information;
+    ogs_pfcp_tlv_direct_reporting_information_t direct_reporting_information;
 } ogs_pfcp_tlv_create_srr_t;
 
 typedef struct ogs_pfcp_tlv_update_srr_s {
@@ -1479,6 +1682,7 @@ typedef struct ogs_pfcp_tlv_update_srr_s {
     ogs_pfcp_tlv_srr_id_t srr_id;
     ogs_pfcp_tlv_access_availability_control_information_t access_availability_control_information;
     ogs_pfcp_tlv_qos_monitoring_per_qos_flow_control_information_t qos_monitoring_per_qos_flow_control_information;
+    ogs_pfcp_tlv_direct_reporting_information_t direct_reporting_information;
 } ogs_pfcp_tlv_update_srr_t;
 
 typedef struct ogs_pfcp_tlv_session_report_s {
@@ -1574,7 +1778,72 @@ typedef struct ogs_pfcp_tlv_ue_ip_address_usage_information_s {
     ogs_pfcp_tlv_number_of_ue_ip_addresses_t number_of_ue_ip_addresses;
     ogs_pfcp_tlv_network_instance_t network_instance;
     ogs_pfcp_tlv_ue_ip_address_t ue_ip_address_pool_id;
+    ogs_pfcp_tlv_s_nssai_t s_nssai;
 } ogs_pfcp_tlv_ue_ip_address_usage_information_t;
+
+typedef struct ogs_pfcp_tlv_partial_failure_information_s {
+    ogs_tlv_presence_t presence;
+    ogs_pfcp_tlv_failed_rule_id_t failed_rule_id;
+    ogs_pfcp_tlv_cause_t failure_cause;
+    ogs_pfcp_tlv_offending_ie_information_t offending_ie_information;
+} ogs_pfcp_tlv_partial_failure_information_t;
+
+typedef struct ogs_pfcp_tlv_l2tp_tunnel_information_s {
+    ogs_tlv_presence_t presence;
+    ogs_pfcp_tlv_lns_address_t lns_address;
+    ogs_pfcp_tlv_tunnel_password_t tunnel_password;
+    ogs_pfcp_tlv_tunnel_preference_t tunnel_preference;
+} ogs_pfcp_tlv_l2tp_tunnel_information_t;
+
+typedef struct ogs_pfcp_tlv_l2tp_session_information_s {
+    ogs_tlv_presence_t presence;
+    ogs_pfcp_tlv_calling_number_t calling_number;
+    ogs_pfcp_tlv_called_number_t called_number;
+    ogs_pfcp_tlv_maximum_receive_unit_t maximum_receive_unit;
+    ogs_pfcp_tlv_l2tp_session_indications_t l2tp_session_indications;
+    ogs_pfcp_tlv_l2tp_user_authentication_ie_t l2tp_user_authentication;
+} ogs_pfcp_tlv_l2tp_session_information_t;
+
+typedef struct ogs_pfcp_tlv_created_l2tp_session_s {
+    ogs_tlv_presence_t presence;
+    ogs_pfcp_tlv_dns_server_address_t dns_server_address;
+    ogs_pfcp_tlv_nbns_server_address_t nbns_server_address;
+    ogs_pfcp_tlv_lns_address_t lns_address;
+} ogs_pfcp_tlv_created_l2tp_session_t;
+
+typedef struct ogs_pfcp_tlv_pfcp_session_change_info_s {
+    ogs_tlv_presence_t presence;
+    ogs_pfcp_tlv_fq_csid_t pgw_c_smf_fq_csid;
+    ogs_pfcp_tlv_group_id_t group_id;
+    ogs_pfcp_tlv_cp_ip_address_t cp_ip_address;
+    ogs_pfcp_tlv_alternative_smf_ip_address_t alternative_smf_pgw_c_ip_address;
+} ogs_pfcp_tlv_pfcp_session_change_info_t;
+
+typedef struct ogs_pfcp_tlv_mbs_session_n4mb_control_information_s {
+    ogs_tlv_presence_t presence;
+    ogs_pfcp_tlv_mbs_session_identifier_t mbs_session_identifier;
+    ogs_pfcp_tlv_area_session_id_t area_session_id;
+    ogs_pfcp_tlv_mbsn4mbreq_flags_t mbsn4mbreq_flags;
+    ogs_pfcp_tlv_multicast_transport_information_t multicast_transport_information_for_n3mb_and_or_n19mb;
+} ogs_pfcp_tlv_mbs_session_n4mb_control_information_t;
+
+typedef struct ogs_pfcp_tlv_mbs_session_n4_information_s {
+    ogs_tlv_presence_t presence;
+    ogs_pfcp_tlv_multicast_transport_information_t multicast_transport_information;
+} ogs_pfcp_tlv_mbs_session_n4_information_t;
+
+typedef struct ogs_pfcp_tlv_mbs_session_n4_control_information_s {
+    ogs_tlv_presence_t presence;
+    ogs_pfcp_tlv_mbs_session_identifier_t mbs_session_identifier;
+    ogs_pfcp_tlv_area_session_id_t area_session_id;
+    ogs_pfcp_tlv_multicast_transport_information_t multicast_transport_information;
+} ogs_pfcp_tlv_mbs_session_n4_control_information_t;
+
+typedef struct ogs_pfcp_tlv_dscp_to_ppi_control_information_s {
+    ogs_tlv_presence_t presence;
+    ogs_pfcp_tlv_dscp_to_ppi_mapping_information_t dscp_to_ppi_mapping_information;
+    ogs_pfcp_tlv_qfi_t qfi;
+} ogs_pfcp_tlv_dscp_to_ppi_control_information_t;
 
 /* Structure for Message */
 typedef struct ogs_pfcp_heartbeat_request_s {
@@ -1650,6 +1919,7 @@ typedef struct ogs_pfcp_association_update_response_s {
     ogs_pfcp_tlv_cause_t cause;
     ogs_pfcp_tlv_up_function_features_t up_function_features;
     ogs_pfcp_tlv_cp_function_features_t cp_function_features;
+    ogs_pfcp_tlv_user_plane_ip_resource_information_t user_plane_ip_resource_information[4];
     ogs_pfcp_tlv_ue_ip_address_usage_information_t ue_ip_address_usage_information;
 } ogs_pfcp_association_update_response_t;
 
@@ -1668,10 +1938,12 @@ typedef struct ogs_pfcp_version_not_supported_response_s {
 typedef struct ogs_pfcp_node_report_request_s {
     ogs_pfcp_tlv_node_id_t node_id;
     ogs_pfcp_tlv_node_report_type_t node_report_type;
+    ogs_pfcp_tlv_vendor_specific_node_report_type_t vendor_specific_node_report_type;
     ogs_pfcp_tlv_user_plane_path_failure_report_t user_plane_path_failure_report;
     ogs_pfcp_tlv_user_plane_path_recovery_report_t user_plane_path_recovery_report;
     ogs_pfcp_tlv_clock_drift_report_t clock_drift_report;
     ogs_pfcp_tlv_gtp_u_path_qos_report_pfcp_node_report_request_t gtp_u_path_qos_report;
+    ogs_pfcp_tlv_peer_up_restart_report_t peer_up_restart_report;
 } ogs_pfcp_node_report_request_t;
 
 typedef struct ogs_pfcp_node_report_response_s {
@@ -1683,8 +1955,8 @@ typedef struct ogs_pfcp_node_report_response_s {
 typedef struct ogs_pfcp_session_set_deletion_request_s {
     ogs_pfcp_tlv_node_id_t node_id;
     ogs_pfcp_tlv_fq_csid_t sgw_c_fq_csid;
-    ogs_pfcp_tlv_fq_csid_t pgw_c_fq_csid;
-    ogs_pfcp_tlv_fq_csid_t pgw_u_sgw_u_fq_csid;
+    ogs_pfcp_tlv_fq_csid_t pgw_c_smf_fq_csid;
+    ogs_pfcp_tlv_fq_csid_t pgw_u_sgw_u__upf_fq_csid;
     ogs_pfcp_tlv_fq_csid_t twan_fq_csid;
     ogs_pfcp_tlv_fq_csid_t epdg_fq_csid;
     ogs_pfcp_tlv_fq_csid_t mme_fq_csid;
@@ -1695,6 +1967,17 @@ typedef struct ogs_pfcp_session_set_deletion_response_s {
     ogs_pfcp_tlv_cause_t cause;
     ogs_pfcp_tlv_offending_ie_t offending_ie;
 } ogs_pfcp_session_set_deletion_response_t;
+
+typedef struct ogs_pfcp_session_set_modification_request_s {
+    ogs_pfcp_tlv_node_id_t node_id;
+    ogs_pfcp_tlv_pfcp_session_change_info_t pfcp_session_change_info;
+} ogs_pfcp_session_set_modification_request_t;
+
+typedef struct ogs_pfcp_session_set_modification_response_s {
+    ogs_pfcp_tlv_node_id_t node_id;
+    ogs_pfcp_tlv_cause_t cause;
+    ogs_pfcp_tlv_offending_ie_t offending_ie;
+} ogs_pfcp_session_set_modification_response_t;
 
 typedef struct ogs_pfcp_session_establishment_request_s {
     ogs_pfcp_tlv_node_id_t node_id;
@@ -1708,7 +1991,7 @@ typedef struct ogs_pfcp_session_establishment_request_s {
     ogs_pfcp_tlv_pdn_type_t pdn_type;
     ogs_pfcp_tlv_fq_csid_t sgw_c_fq_csid;
     ogs_pfcp_tlv_fq_csid_t mme_fq_csid;
-    ogs_pfcp_tlv_fq_csid_t pgw_c_fq_csid;
+    ogs_pfcp_tlv_fq_csid_t pgw_c_smf_fq_csid;
     ogs_pfcp_tlv_fq_csid_t epdg_fq_csid;
     ogs_pfcp_tlv_fq_csid_t twan_fq_csid;
     ogs_pfcp_tlv_user_plane_inactivity_timer_t user_plane_inactivity_timer;
@@ -1723,6 +2006,13 @@ typedef struct ogs_pfcp_session_establishment_request_s {
     ogs_pfcp_tlv_recovery_time_stamp_t recovery_time_stamp;
     ogs_pfcp_tlv_s_nssai_t s_nssai;
     ogs_pfcp_tlv_provide_rds_configuration_information_t provide_rds_configuration_information;
+    ogs_pfcp_tlv_rat_type_t rat_type;
+    ogs_pfcp_tlv_l2tp_tunnel_information_t l2tp_tunnel_information;
+    ogs_pfcp_tlv_l2tp_session_information_t l2tp_session_information;
+    ogs_pfcp_tlv_group_id_t group_id;
+    ogs_pfcp_tlv_mbs_session_n4mb_control_information_t mbs_session_n4mb_control_information;
+    ogs_pfcp_tlv_mbs_session_n4_control_information_t mbs_session_n4_control_information;
+    ogs_pfcp_tlv_dscp_to_ppi_control_information_t dscp_to_ppi_control_information;
 } ogs_pfcp_session_establishment_request_t;
 
 typedef struct ogs_pfcp_session_establishment_response_s {
@@ -1733,12 +2023,16 @@ typedef struct ogs_pfcp_session_establishment_response_s {
     ogs_pfcp_tlv_created_pdr_t created_pdr[16];
     ogs_pfcp_tlv_load_control_information_t load_control_information;
     ogs_pfcp_tlv_overload_control_information_t overload_control_information;
-    ogs_pfcp_tlv_fq_csid_t pgw_u_sgw_u_fq_csid;
+    ogs_pfcp_tlv_fq_csid_t pgw_u_sgw_u__upf_fq_csid;
     ogs_pfcp_tlv_failed_rule_id_t failed_rule_id;
     ogs_pfcp_tlv_created_traffic_endpoint_t created_traffic_endpoint;
     ogs_pfcp_tlv_created_bridge_info_for_tsc_t created_bridge_info_for_tsc;
     ogs_pfcp_tlv_atsss_control_parameters_t atsss_control_parameters;
     ogs_pfcp_tlv_rds_configuration_information_t rds_configuration_information;
+    ogs_pfcp_tlv_partial_failure_information_t partial_failure_information;
+    ogs_pfcp_tlv_created_l2tp_session_t created_l2tp_session;
+    ogs_pfcp_tlv_mbs_session_n4mb_information_t mbs_session_n4mb_information;
+    ogs_pfcp_tlv_mbs_session_n4_information_t mbs_session_n4_information;
 } ogs_pfcp_session_establishment_response_t;
 
 typedef struct ogs_pfcp_session_modification_request_s {
@@ -1763,7 +2057,7 @@ typedef struct ogs_pfcp_session_modification_request_s {
     ogs_pfcp_tlv_update_traffic_endpoint_t update_traffic_endpoint;
     ogs_pfcp_tlv_pfcpsmreq_flags_t pfcpsmreq_flags;
     ogs_pfcp_tlv_query_urr_t query_urr;
-    ogs_pfcp_tlv_fq_csid_t pgw_c_fq_csid;
+    ogs_pfcp_tlv_fq_csid_t pgw_c_smf_fq_csid;
     ogs_pfcp_tlv_fq_csid_t sgw_c_fq_csid;
     ogs_pfcp_tlv_fq_csid_t mme_fq_csid;
     ogs_pfcp_tlv_fq_csid_t epdg_fq_csid;
@@ -1784,6 +2078,10 @@ typedef struct ogs_pfcp_session_modification_request_s {
     ogs_pfcp_tlv_access_availability_information_t access_availability_information;
     ogs_pfcp_tlv_query_packet_rate_status_ie_within_pfcp_session_modification_request_t query_packet_rate_status;
     ogs_pfcp_tlv_s_nssai_t s_nssai;
+    ogs_pfcp_tlv_rat_type_t rat_type;
+    ogs_pfcp_tlv_group_id_t group_id;
+    ogs_pfcp_tlv_mbs_session_n4_control_information_t mbs_session_n4_control_information;
+    ogs_pfcp_tlv_dscp_to_ppi_control_information_t dscp_to_ppi_control_information;
 } ogs_pfcp_session_modification_request_t;
 
 typedef struct ogs_pfcp_session_modification_response_s {
@@ -1796,10 +2094,12 @@ typedef struct ogs_pfcp_session_modification_response_s {
     ogs_pfcp_tlv_failed_rule_id_t failed_rule_id;
     ogs_pfcp_tlv_additional_usage_reports_information_t additional_usage_reports_information;
     ogs_pfcp_tlv_created_traffic_endpoint_t created_updated_traffic_endpoint;
-    ogs_pfcp_tlv_tsc_management_information_ie_within_pfcp_session_modification_response_t tsc_management_information;
+    ogs_pfcp_tlv_tsc_management_information_ie_within_pfcp_session_modification_request_t tsc_management_information;
     ogs_pfcp_tlv_atsss_control_parameters_t atsss_control_parameters;
     ogs_pfcp_tlv_updated_pdr_t updated_pdr;
-    ogs_pfcp_tlv_packet_rate_status_report_ie_within_pfcp_session_modification_response_t packet_rate_status_report;
+    ogs_pfcp_tlv_packet_rate_status_report_t packet_rate_status_report;
+    ogs_pfcp_tlv_partial_failure_information_t partial_failure_information;
+    ogs_pfcp_tlv_mbs_session_n4_information_t mbs_session_n4_information;
 } ogs_pfcp_session_modification_response_t;
 
 typedef struct ogs_pfcp_session_deletion_request_s {
@@ -1814,6 +2114,8 @@ typedef struct ogs_pfcp_session_deletion_response_s {
     ogs_pfcp_tlv_additional_usage_reports_information_t additional_usage_reports_information;
     ogs_pfcp_tlv_packet_rate_status_report_t packet_rate_status_report;
     ogs_pfcp_tlv_session_report_t session_report;
+    ogs_pfcp_tlv_mbs_session_n4_information_t mbs_session_n4_information;
+    ogs_pfcp_tlv_pfcpsdrsp_flags_t pfcpsdrsp_flags;
 } ogs_pfcp_session_deletion_response_t;
 
 typedef struct ogs_pfcp_session_report_request_s {
@@ -1827,8 +2129,9 @@ typedef struct ogs_pfcp_session_report_request_s {
     ogs_pfcp_tlv_pfcpsrreq_flags_t pfcpsrreq_flags;
     ogs_pfcp_tlv_f_seid_t old_cp_f_seid;
     ogs_pfcp_tlv_packet_rate_status_report_t packet_rate_status_report;
-    ogs_pfcp_tlv_tsc_management_information_ie_within_pfcp_session_report_request_t tsc_management_information;
+    ogs_pfcp_tlv_tsc_management_information_ie_within_pfcp_session_modification_request_t tsc_management_information;
     ogs_pfcp_tlv_session_report_t session_report;
+    ogs_pfcp_tlv_cause_t cause;
 } ogs_pfcp_session_report_request_t;
 
 typedef struct ogs_pfcp_session_report_response_s {
@@ -1839,6 +2142,9 @@ typedef struct ogs_pfcp_session_report_response_s {
     ogs_pfcp_tlv_f_seid_t cp_f_seid;
     ogs_pfcp_tlv_f_teid_t n4_u_f_teid;
     ogs_pfcp_tlv_alternative_smf_ip_address_t alternative_smf_ip_address;
+    ogs_pfcp_tlv_fq_csid_t pgw_c_smf_fq_csid;
+    ogs_pfcp_tlv_group_id_t group_id;
+    ogs_pfcp_tlv_node_id_t node_id;
 } ogs_pfcp_session_report_response_t;
 
 typedef struct ogs_pfcp_message_s {
@@ -1859,6 +2165,8 @@ typedef struct ogs_pfcp_message_s {
         ogs_pfcp_node_report_response_t pfcp_node_report_response;
         ogs_pfcp_session_set_deletion_request_t pfcp_session_set_deletion_request;
         ogs_pfcp_session_set_deletion_response_t pfcp_session_set_deletion_response;
+        ogs_pfcp_session_set_modification_request_t pfcp_session_set_modification_request;
+        ogs_pfcp_session_set_modification_response_t pfcp_session_set_modification_response;
         ogs_pfcp_session_establishment_request_t pfcp_session_establishment_request;
         ogs_pfcp_session_establishment_response_t pfcp_session_establishment_response;
         ogs_pfcp_session_modification_request_t pfcp_session_modification_request;
@@ -1870,7 +2178,8 @@ typedef struct ogs_pfcp_message_s {
    };
 } ogs_pfcp_message_t;
 
-int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t *pkbuf);
+ogs_pfcp_message_t *ogs_pfcp_parse_msg(ogs_pkbuf_t *pkbuf);
+void ogs_pfcp_message_free(ogs_pfcp_message_t *pfcp_message);
 ogs_pkbuf_t *ogs_pfcp_build_msg(ogs_pfcp_message_t *pfcp_message);
 
 #ifdef __cplusplus

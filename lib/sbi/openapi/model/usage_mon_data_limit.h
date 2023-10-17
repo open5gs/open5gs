@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "time_period.h"
 #include "usage_mon_data_scope.h"
 #include "usage_mon_level.h"
 #include "usage_threshold.h"
@@ -28,7 +29,7 @@ typedef struct OpenAPI_usage_mon_data_limit_s {
     char *start_date;
     char *end_date;
     struct OpenAPI_usage_threshold_s *usage_limit;
-    char *reset_period;
+    struct OpenAPI_time_period_s *reset_period;
 } OpenAPI_usage_mon_data_limit_t;
 
 OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_create(
@@ -38,7 +39,7 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_create(
     char *start_date,
     char *end_date,
     OpenAPI_usage_threshold_t *usage_limit,
-    char *reset_period
+    OpenAPI_time_period_t *reset_period
 );
 void OpenAPI_usage_mon_data_limit_free(OpenAPI_usage_mon_data_limit_t *usage_mon_data_limit);
 OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON *usage_mon_data_limitJSON);

@@ -1,7 +1,7 @@
 /*
  * n1_n2_msg_txfr_failure_notification.h
  *
- * 
+ * Data within a N1/N2 Message Transfer Failure Notification request
  */
 
 #ifndef _OpenAPI_n1_n2_msg_txfr_failure_notification_H_

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -29,17 +29,18 @@ int __gsm_log_domain;
 
 static OGS_POOL(smf_gtp_node_pool, smf_gtp_node_t);
 static OGS_POOL(smf_ue_pool, smf_ue_t);
-static OGS_POOL(smf_sess_pool, smf_sess_t);
 static OGS_POOL(smf_bearer_pool, smf_bearer_t);
-
 static OGS_POOL(smf_pf_pool, smf_pf_t);
+
+static OGS_POOL(smf_sess_pool, smf_sess_t);
+static OGS_POOL(smf_n4_seid_pool, ogs_pool_id_t);
 
 static int context_initialized = 0;
 
 static int num_of_smf_sess = 0;
 
 static void stats_add_smf_session(void);
-static void stats_remove_smf_session(void);
+static void stats_remove_smf_session(smf_sess_t *sess);
 
 int smf_ctf_config_init(smf_ctf_config_t *ctf_config)
 {
@@ -48,7 +49,7 @@ int smf_ctf_config_init(smf_ctf_config_t *ctf_config)
 }
 
 /* Shall Gy session be used according to policy and state? 1: yes, 0: no, -1: reject */
-int smf_use_gy_iface()
+int smf_use_gy_iface(void)
 {
     switch (smf_self()->ctf_config.enabled) {
     case SMF_CTF_ENABLED_AUTO:
@@ -82,23 +83,26 @@ void smf_context_init(void)
 
     ogs_pool_init(&smf_gtp_node_pool, ogs_app()->pool.nf);
     ogs_pool_init(&smf_ue_pool, ogs_app()->max.ue);
-    ogs_pool_init(&smf_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&smf_bearer_pool, ogs_app()->pool.bearer);
-
     ogs_pool_init(&smf_pf_pool,
             ogs_app()->pool.bearer * OGS_MAX_NUM_OF_FLOW_IN_BEARER);
+
+    ogs_pool_init(&smf_sess_pool, ogs_app()->pool.sess);
+    ogs_pool_init(&smf_n4_seid_pool, ogs_app()->pool.sess);
+    ogs_pool_random_id_generate(&smf_n4_seid_pool);
 
     self.supi_hash = ogs_hash_make();
     ogs_assert(self.supi_hash);
     self.imsi_hash = ogs_hash_make();
     ogs_assert(self.imsi_hash);
+    self.smf_n4_seid_hash = ogs_hash_make();
+    ogs_assert(self.smf_n4_seid_hash);
     self.ipv4_hash = ogs_hash_make();
     ogs_assert(self.ipv4_hash);
     self.ipv6_hash = ogs_hash_make();
     ogs_assert(self.ipv6_hash);
     self.n1n2message_hash = ogs_hash_make();
     ogs_assert(self.n1n2message_hash);
-
 
     context_initialized = 1;
 }
@@ -114,6 +118,8 @@ void smf_context_final(void)
     ogs_hash_destroy(self.supi_hash);
     ogs_assert(self.imsi_hash);
     ogs_hash_destroy(self.imsi_hash);
+    ogs_assert(self.smf_n4_seid_hash);
+    ogs_hash_destroy(self.smf_n4_seid_hash);
     ogs_assert(self.ipv4_hash);
     ogs_hash_destroy(self.ipv4_hash);
     ogs_assert(self.ipv6_hash);
@@ -123,9 +129,10 @@ void smf_context_final(void)
 
     ogs_pool_final(&smf_ue_pool);
     ogs_pool_final(&smf_bearer_pool);
-    ogs_pool_final(&smf_sess_pool);
-
     ogs_pool_final(&smf_pf_pool);
+
+    ogs_pool_final(&smf_sess_pool);
+    ogs_pool_final(&smf_n4_seid_pool);
 
     ogs_list_for_each_entry_safe(&self.sgw_s5c_list, next_gnode, gnode, node) {
         smf_gtp_node_t *smf_gnode = gnode->data_ptr;
@@ -719,8 +726,6 @@ int smf_context_parse_config(void)
                                 do {
                                     const char *mcc = NULL, *mnc = NULL;
                                     int num_of_tac = 0;
-                                    ogs_uint24_t tac[OGS_MAX_NUM_OF_TAI];
-                                    int num_of_range = 0;
                                     ogs_uint24_t start[OGS_MAX_NUM_OF_TAI];
                                     ogs_uint24_t end[OGS_MAX_NUM_OF_TAI];
 
@@ -767,55 +772,25 @@ int smf_context_parse_config(void)
                                             }
                                         } else if (!strcmp(tai_key, "tac")) {
                                             ogs_yaml_iter_t tac_iter;
-                                            ogs_yaml_iter_recurse(
-                                                    &tai_iter, &tac_iter);
+                                            ogs_yaml_iter_recurse(&tai_iter,
+                                                    &tac_iter);
                                             ogs_assert(ogs_yaml_iter_type(
-                                                        &tac_iter) !=
-                                                        YAML_MAPPING_NODE);
-
-                                            do {
-                                                const char *v = NULL;
-
-                                                ogs_assert(num_of_tac <
-                                                        OGS_MAX_NUM_OF_TAI);
-                                                if (ogs_yaml_iter_type(
-                                                        &tac_iter) ==
-                                                        YAML_SEQUENCE_NODE) {
-                                                    if (!ogs_yaml_iter_next(
-                                                            &tac_iter))
-                                                        break;
-                                                }
-
-                                                v = ogs_yaml_iter_value(
-                                                        &tac_iter);
-                                                if (v) {
-                                                    tac[num_of_tac].v = atoi(v);
-                                                    num_of_tac++;
-                                                }
-                                            } while (
-                                                ogs_yaml_iter_type(&tac_iter) ==
-                                                    YAML_SEQUENCE_NODE);
-                                        } else if (!strcmp(tai_key, "range")) {
-                                            ogs_yaml_iter_t range_iter;
-                                            ogs_yaml_iter_recurse(
-                                                    &tai_iter, &range_iter);
-                                            ogs_assert(ogs_yaml_iter_type(
-                                                        &range_iter) !=
+                                                    &tac_iter) !=
                                                         YAML_MAPPING_NODE);
                                             do {
                                                 char *v = NULL;
                                                 char *low = NULL, *high = NULL;
 
                                                 if (ogs_yaml_iter_type(
-                                                        &range_iter) ==
+                                                        &tac_iter) ==
                                                         YAML_SEQUENCE_NODE) {
                                                     if (!ogs_yaml_iter_next(
-                                                                &range_iter))
+                                                                &tac_iter))
                                                         break;
                                                 }
 
                                                 v = (char *)ogs_yaml_iter_value(
-                                                            &range_iter);
+                                                            &tac_iter);
                                                 if (v) {
                                                     low = strsep(&v, "-");
                                                     if (low && strlen(low) == 0)
@@ -826,20 +801,36 @@ int smf_context_parse_config(void)
                                                             strlen(high) == 0)
                                                         high = NULL;
 
-                                                    if (low && high) {
-                                                        ogs_assert(
-                                                            num_of_range <
+                                                    if (low) {
+                                                        ogs_assert(num_of_tac <
                                                             OGS_MAX_NUM_OF_TAI);
-                                                        start[num_of_range].v =
+                                                        start[num_of_tac].v =
                                                             atoi(low);
-                                                        end[num_of_range].v =
-                                                            atoi(high);
-                                                        num_of_range++;
+                                                        if (high) {
+                                                            end[num_of_tac].v =
+                                                                atoi(high);
+                                                            if (end[num_of_tac].
+                                                                    v <
+                                                                start[
+                                                                    num_of_tac].
+                                                                    v)
+                                                                ogs_error(
+                                                                "Invalid TAI "
+                                                                "range: LOW:%s,"
+                                                                "HIGH:%s",
+                                                                    low, high);
+                                                            else
+                                                                num_of_tac++;
+                                                        } else {
+                                                            end[num_of_tac].v =
+                                                                start[
+                                                                num_of_tac].v;
+                                                            num_of_tac++;
+                                                        }
                                                     }
                                                 }
                                             } while (
-                                                ogs_yaml_iter_type(
-                                                    &range_iter) ==
+                                                ogs_yaml_iter_type(&tac_iter) ==
                                                     YAML_SEQUENCE_NODE);
 
                                         } else
@@ -847,47 +838,55 @@ int smf_context_parse_config(void)
                                                     tai_key);
                                     }
 
-                                    if (mcc && mnc) {
-                                        int i;
-
-                                        if (num_of_range) {
-                                            ogs_assert(num_of_nr_tai_range <
-                                                    OGS_MAX_NUM_OF_TAI);
-                                            ogs_plmn_id_build(
-                                                &smf_info->nr_tai_range
-                                                    [num_of_nr_tai_range].
-                                                        plmn_id,
-                                                atoi(mcc), atoi(mnc),
-                                                strlen(mnc));
-                                            for (i = 0; i < num_of_range; i++) {
-                                                smf_info->nr_tai_range
-                                                    [num_of_nr_tai_range].
-                                                        start[i].v = start[i].v;
-                                                smf_info->nr_tai_range
-                                                    [num_of_nr_tai_range].
-                                                        end[i].v = end[i].v;
-                                            }
-                                            smf_info->nr_tai_range
-                                                [num_of_nr_tai_range].
-                                                    num_of_tac_range =
-                                                        num_of_range;
-                                            num_of_nr_tai_range++;
-                                        } else if (num_of_tac) {
-                                            for (i = 0; i < num_of_tac; i++) {
+                                    if (mcc && mnc && num_of_tac) {
+                                        int tac, num_of_tac_range = 0;
+                                        for (tac = 0; tac < num_of_tac; tac++) {
+                                            ogs_assert(end[tac].v >=
+                                                    start[tac].v);
+                                            if (start[tac].v == end[tac].v) {
                                                 ogs_assert(num_of_nr_tai <
                                                         OGS_MAX_NUM_OF_TAI);
                                                 ogs_plmn_id_build(
-                                                        &smf_info->nr_tai
-                                                        [num_of_nr_tai].plmn_id,
+                                                    &smf_info->nr_tai[
+                                                        num_of_nr_tai].plmn_id,
                                                     atoi(mcc), atoi(mnc),
                                                     strlen(mnc));
                                                 smf_info->nr_tai[num_of_nr_tai].
-                                                    tac.v = tac[i].v;
+                                                    tac.v = start[tac].v;
                                                 num_of_nr_tai++;
+                                            } else if (start[tac].v <
+                                                    end[tac].v) {
+                                                ogs_assert(num_of_nr_tai_range <
+                                                        OGS_MAX_NUM_OF_TAI);
+                                                ogs_assert(num_of_tac_range <
+                                                        OGS_MAX_NUM_OF_TAI);
+                                                smf_info->nr_tai_range[
+                                                    num_of_nr_tai_range].
+                                                    start[num_of_tac_range].v =
+                                                        start[tac].v;
+                                                smf_info->nr_tai_range[
+                                                    num_of_nr_tai_range].
+                                                    end[num_of_tac_range].v =
+                                                    end[tac].v;
+                                                num_of_tac_range++;
                                             }
-                                        } else {
-                                            ogs_warn("No TAC info");
                                         }
+                                        if (num_of_tac_range) {
+                                            ogs_plmn_id_build(
+                                                &smf_info->nr_tai_range[
+                                                num_of_nr_tai_range].plmn_id,
+                                                atoi(mcc), atoi(mnc),
+                                                strlen(mnc));
+                                            smf_info->nr_tai_range[
+                                                num_of_nr_tai_range].
+                                                num_of_tac_range =
+                                                num_of_tac_range;
+                                            num_of_nr_tai_range++;
+                                        }
+                                    } else {
+                                        ogs_warn("Ignore tai : mcc(%p), "
+                                                "mnc(%p), num_of_tac(%d)",
+                                                mcc, mnc, num_of_tac);
                                     }
                                 } while (ogs_yaml_iter_type(&tai_array) ==
                                         YAML_SEQUENCE_NODE);
@@ -898,7 +897,6 @@ int smf_context_parse_config(void)
                             } else
                                 ogs_warn("unknown key `%s`", info_key);
                         }
-
                     } while (ogs_yaml_iter_type(&info_array) ==
                             YAML_SEQUENCE_NODE);
 
@@ -966,7 +964,10 @@ smf_gtp_node_t *smf_gtp_node_new(ogs_gtp_node_t *gnode)
     char addr[OGS_ADDRSTRLEN];
 
     ogs_pool_alloc(&smf_gtp_node_pool, &smf_gnode);
-    ogs_expect_or_return_val(smf_gnode, NULL);
+    if (!smf_gnode) {
+        ogs_error("ogs_pool_alloc() failed");
+        return NULL;
+    }
     memset(smf_gnode, 0, sizeof(smf_gtp_node_t));
 
     addr[0] = '\0';
@@ -1017,8 +1018,10 @@ smf_ue_t *smf_ue_add_by_supi(char *supi)
 
     ogs_assert(supi);
 
-    if ((smf_ue = smf_ue_add()) == NULL)
+    if ((smf_ue = smf_ue_add()) == NULL) {
+        ogs_error("smf_ue_add_by_supi() failed");
         return NULL;
+    }
 
     smf_ue->supi = ogs_strdup(supi);
     ogs_assert(smf_ue->supi);
@@ -1204,8 +1207,14 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type)
     ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
 
     /* Set TEID & SEID */
-    sess->smf_n4_teid = sess->index;
-    sess->smf_n4_seid = sess->index;
+    ogs_pool_alloc(&smf_n4_seid_pool, &sess->smf_n4_seid_node);
+    ogs_assert(sess->smf_n4_seid_node);
+
+    sess->smf_n4_teid = *(sess->smf_n4_seid_node);
+    sess->smf_n4_seid = *(sess->smf_n4_seid_node);
+
+    ogs_hash_set(self.smf_n4_seid_hash, &sess->smf_n4_seid,
+            sizeof(sess->smf_n4_seid), sess);
 
     /* Set Charging ID */
     sess->charging.id = sess->index;
@@ -1409,9 +1418,18 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     sess->index = ogs_pool_index(&smf_sess_pool, sess);
     ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
 
+    /* Set TEID & SEID */
+    ogs_pool_alloc(&smf_n4_seid_pool, &sess->smf_n4_seid_node);
+    ogs_assert(sess->smf_n4_seid_node);
+
+    sess->smf_n4_teid = *(sess->smf_n4_seid_node);
+    sess->smf_n4_seid = *(sess->smf_n4_seid_node);
+
+    ogs_hash_set(self.smf_n4_seid_hash, &sess->smf_n4_seid,
+            sizeof(sess->smf_n4_seid), sess);
+
     /* Set SmContextRef in 5GC */
-    sess->sm_context_ref = ogs_msprintf("%d",
-            (int)ogs_pool_index(&smf_sess_pool, sess));
+    sess->sm_context_ref = ogs_msprintf("%d", sess->index);
     ogs_assert(sess->sm_context_ref);
 
     /* Create BAR in PFCP Session */
@@ -1425,10 +1443,6 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     sess->s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
     sess->mapped_hplmn.sst = 0;
     sess->mapped_hplmn.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
-
-    /* Set TEID & SEID */
-    sess->smf_n4_teid = sess->index;
-    sess->smf_n4_seid = sess->index;
 
     /* Set Charging Id */
     sess->charging.id = sess->index;
@@ -1455,7 +1469,10 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
 
     ogs_assert(message);
     SmContextCreateData = message->SmContextCreateData;
-    ogs_assert(SmContextCreateData);
+    if (!SmContextCreateData) {
+        ogs_error("No SmContextCreateData");
+        return NULL;
+    }
 
     if (!SmContextCreateData->supi) {
         ogs_error("No SUPI");
@@ -1470,14 +1487,18 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
     smf_ue = smf_ue_find_by_supi(SmContextCreateData->supi);
     if (!smf_ue) {
         smf_ue = smf_ue_add_by_supi(SmContextCreateData->supi);
-        if (!smf_ue)
+        if (!smf_ue) {
+            ogs_error("smf_ue_add_by_supi() failed");
             return NULL;
+        }
     }
 
     sess = smf_sess_find_by_psi(smf_ue, SmContextCreateData->pdu_session_id);
     if (sess) {
         ogs_warn("OLD Session Will Release [SUPI:%s,PDU Session identity:%d]",
                 SmContextCreateData->supi, SmContextCreateData->pdu_session_id);
+        smf_metrics_inst_by_slice_add(&sess->plmn_id, &sess->s_nssai,
+                SMF_METR_GAUGE_SM_SESSIONNBR, -1);
         smf_sess_remove(sess);
     }
 
@@ -1543,7 +1564,6 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
                 sess->session.name, (uint8_t *)&sess->session.ue_ip.addr);
         if (!sess->ipv4) {
             ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
-            ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
             return cause_value;
         }
         sess->session.paa.addr = sess->ipv4->addr[0];
@@ -1554,7 +1574,6 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
                 sess->session.name, sess->session.ue_ip.addr6);
         if (!sess->ipv6) {
             ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
-            ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
             return cause_value;
         }
 
@@ -1570,7 +1589,6 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
                 sess->session.name, (uint8_t *)&sess->session.ue_ip.addr);
         if (!sess->ipv4) {
             ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
-            ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
             return cause_value;
         }
         sess->ipv6 = ogs_pfcp_ue_ip_alloc(&cause_value, AF_INET6,
@@ -1629,68 +1647,6 @@ void smf_sess_set_paging_n1n2message_location(
             sess);
 }
 
-smf_sess_t *smf_sess_find_by_error_indication_report(
-        smf_ue_t *smf_ue,
-        ogs_pfcp_tlv_error_indication_report_t *error_indication_report)
-{
-    smf_sess_t *sess = NULL;
-    ogs_pfcp_f_teid_t *remote_f_teid = NULL;
-
-    uint32_t teid;
-    uint16_t len;  /* OGS_IPV4_LEN or OGS_IPV6_LEN */
-    uint32_t addr[4];
-
-    ogs_assert(smf_ue);
-    ogs_assert(error_indication_report);
-
-    if (error_indication_report->presence == 0) {
-        ogs_error("No Error Indication Report");
-        return NULL;
-    }
-
-    if (error_indication_report->remote_f_teid.presence == 0) {
-        ogs_error("No Remote F-TEID");
-        return NULL;
-    }
-
-    remote_f_teid = error_indication_report->remote_f_teid.data;
-    ogs_assert(remote_f_teid);
-
-    teid = be32toh(remote_f_teid->teid);
-    if (remote_f_teid->ipv4 && remote_f_teid->ipv6) {
-        ogs_error("User plane should not set both IPv4 and IPv6");
-        return NULL;
-    } else if (remote_f_teid->ipv4) {
-        len = OGS_IPV4_LEN;
-        memcpy(addr, &remote_f_teid->addr, len);
-    } else if (remote_f_teid->ipv6) {
-        len = OGS_IPV6_LEN;
-        memcpy(addr, remote_f_teid->addr6, len);
-    } else {
-        ogs_error("No IPv4 and IPv6");
-        return NULL;
-    }
-
-    ogs_list_reverse_for_each(&smf_ue->sess_list, sess) {
-        if (teid == sess->gnb_n3_teid) {
-            if (len == OGS_IPV4_LEN && sess->gnb_n3_ip.ipv4 &&
-                memcmp(addr, &sess->gnb_n3_ip.addr, len) == 0) {
-                return sess;
-            } else if (len == OGS_IPV6_LEN && sess->gnb_n3_ip.ipv6 &&
-                        memcmp(addr, sess->gnb_n3_ip.addr6, len) == 0) {
-                return sess;
-            }
-        }
-    }
-
-    ogs_error("Cannot find the session context "
-            "[TEID:%d,LEN:%d,ADDR:%08x %08x %08x %08x]",
-            teid, len, be32toh(addr[0]), be32toh(addr[1]),
-            be32toh(addr[2]), be32toh(addr[3]));
-
-    return NULL;
-}
-
 void smf_sess_remove(smf_sess_t *sess)
 {
     int i;
@@ -1717,16 +1673,20 @@ void smf_sess_remove(smf_sess_t *sess)
     ogs_fsm_fini(&sess->sm, &e);
 
     OGS_TLV_CLEAR_DATA(&sess->gtp.ue_pco);
+    OGS_TLV_CLEAR_DATA(&sess->gtp.ue_epco);
     OGS_TLV_CLEAR_DATA(&sess->gtp.user_location_information);
     OGS_TLV_CLEAR_DATA(&sess->gtp.ue_timezone);
     OGS_TLV_CLEAR_DATA(&sess->gtp.charging_characteristics);
     OGS_TLV_CLEAR_DATA(&sess->gtp.v1.qos);
 
-    OGS_NAS_CLEAR_DATA(&sess->nas.ue_pco);
+    OGS_NAS_CLEAR_DATA(&sess->nas.ue_epco);
 
     for (i = 0; i < sess->policy.num_of_pcc_rule; i++)
         OGS_PCC_RULE_FREE(&sess->policy.pcc_rule[i]);
     sess->policy.num_of_pcc_rule = 0;
+
+    ogs_hash_set(self.smf_n4_seid_hash, &sess->smf_n4_seid,
+            sizeof(sess->smf_n4_seid), NULL);
 
     if (sess->ipv4) {
         ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, NULL);
@@ -1759,6 +1719,23 @@ void smf_sess_remove(smf_sess_t *sess)
 
     if (sess->session.name)
         ogs_free(sess->session.name);
+
+    if (sess->session.ipv4_framed_routes) {
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            if (!sess->session.ipv4_framed_routes[i])
+                break;
+            ogs_free(sess->session.ipv4_framed_routes[i]);
+        }
+        ogs_free(sess->session.ipv4_framed_routes);
+    }
+    if (sess->session.ipv6_framed_routes) {
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            if (!sess->session.ipv6_framed_routes[i])
+                break;
+            ogs_free(sess->session.ipv6_framed_routes[i]);
+        }
+        ogs_free(sess->session.ipv6_framed_routes);
+    }
 
     if (sess->upf_n3_addr)
         ogs_freeaddrinfo(sess->upf_n3_addr);
@@ -1797,7 +1774,9 @@ void smf_sess_remove(smf_sess_t *sess)
         smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_GTP2_SESSIONS_ACTIVE);
         break;
     }
-    stats_remove_smf_session();
+    stats_remove_smf_session(sess);
+
+    ogs_pool_free(&smf_n4_seid_pool, sess->smf_n4_seid_node);
     ogs_pool_free(&smf_sess_pool, sess);
 }
 
@@ -1811,19 +1790,14 @@ void smf_sess_remove_all(smf_ue_t *smf_ue)
         smf_sess_remove(sess);
 }
 
-smf_sess_t *smf_sess_find(uint32_t index)
-{
-    return ogs_pool_find(&smf_sess_pool, index);
-}
-
 smf_sess_t *smf_sess_find_by_teid(uint32_t teid)
 {
-    return smf_sess_find(teid);
+    return smf_sess_find_by_seid(teid);
 }
 
 smf_sess_t *smf_sess_find_by_seid(uint64_t seid)
 {
-    return smf_sess_find(seid);
+    return ogs_hash_get(self.smf_n4_seid_hash, &seid, sizeof(seid));
 }
 
 smf_sess_t *smf_sess_find_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type)
@@ -1855,6 +1829,11 @@ smf_sess_t *smf_sess_find_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     }
 
     return NULL;
+}
+
+smf_sess_t *smf_sess_find(uint32_t index)
+{
+    return ogs_pool_find(&smf_sess_pool, index);
 }
 
 smf_sess_t *smf_sess_find_by_charging_id(uint32_t charging_id)
@@ -1927,10 +1906,6 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     memset(qos_flow, 0, sizeof *qos_flow);
 
     smf_pf_identifier_pool_init(qos_flow);
-
-    qos_flow->index = ogs_pool_index(&smf_bearer_pool, qos_flow);
-    ogs_assert(qos_flow->index > 0 && qos_flow->index <=
-            ogs_app()->pool.bearer);
 
     ogs_list_init(&qos_flow->pf_list);
 
@@ -2028,6 +2003,9 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     qos_flow->sess = sess;
 
     ogs_list_add(&sess->bearer_list, qos_flow);
+    smf_metrics_inst_by_5qi_add(&sess->plmn_id, &sess->s_nssai,
+            sess->session.qos.index, SMF_METR_GAUGE_SM_QOSFLOWNBR, 1);
+    smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_BEARERS_ACTIVE);
 
     return qos_flow;
 }
@@ -2109,37 +2087,51 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
             pdr->f_teid.choose_id = OGS_PFCP_INDIRECT_DATA_FORWARDING_CHOOSE_ID;
             pdr->f_teid_len = 2;
         } else {
-            ogs_gtpu_resource_t *resource = NULL;
+            /*
+             * CHOOSE_ID is set in INDIRECT so that all PDRs must be set
+             * to the same TEID.
+             *
+             * If sess->handover.upf_dl_teid is set in the PDR of
+             * the first QoS flow, the PDRs of the remaining QoS flows use
+             * the same TEID.
+             */
+            if (ogs_list_first(&sess->bearer_list) == qos_flow) {
+                ogs_gtpu_resource_t *resource = NULL;
 
-            if (sess->handover.upf_dl_addr)
-                ogs_freeaddrinfo(sess->handover.upf_dl_addr);
-            if (sess->handover.upf_dl_addr6)
-                ogs_freeaddrinfo(sess->handover.upf_dl_addr6);
+                if (sess->handover.upf_dl_addr)
+                    ogs_freeaddrinfo(sess->handover.upf_dl_addr);
+                if (sess->handover.upf_dl_addr6)
+                    ogs_freeaddrinfo(sess->handover.upf_dl_addr6);
 
-            resource = ogs_pfcp_find_gtpu_resource(
-                    &sess->pfcp_node->gtpu_resource_list,
-                    sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
+                resource = ogs_pfcp_find_gtpu_resource(
+                        &sess->pfcp_node->gtpu_resource_list,
+                        sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
 
-            if (resource) {
-                ogs_user_plane_ip_resource_info_to_sockaddr(&resource->info,
-                    &sess->handover.upf_dl_addr, &sess->handover.upf_dl_addr6);
-                if (resource->info.teidri)
-                    sess->handover.upf_dl_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
-                            pdr->index, resource->info.teidri,
-                            resource->info.teid_range);
-                else
-                    sess->handover.upf_dl_teid = pdr->index;
-            } else {
-                if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
-                    ogs_assert(OGS_OK == ogs_copyaddrinfo(
-                        &sess->handover.upf_dl_addr, &sess->pfcp_node->addr));
-                else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
-                    ogs_assert(OGS_OK == ogs_copyaddrinfo(
-                        &sess->handover.upf_dl_addr6, &sess->pfcp_node->addr));
-                else
-                    ogs_assert_if_reached();
+                if (resource) {
+                    ogs_user_plane_ip_resource_info_to_sockaddr(&resource->info,
+                        &sess->handover.upf_dl_addr,
+                        &sess->handover.upf_dl_addr6);
+                    if (resource->info.teidri)
+                        sess->handover.upf_dl_teid =
+                            OGS_PFCP_GTPU_INDEX_TO_TEID(
+                                pdr->teid, resource->info.teidri,
+                                resource->info.teid_range);
+                    else
+                        sess->handover.upf_dl_teid = pdr->teid;
+                } else {
+                    if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+                        ogs_assert(OGS_OK == ogs_copyaddrinfo(
+                            &sess->handover.upf_dl_addr,
+                            &sess->pfcp_node->addr));
+                    else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+                        ogs_assert(OGS_OK == ogs_copyaddrinfo(
+                            &sess->handover.upf_dl_addr6,
+                            &sess->pfcp_node->addr));
+                    else
+                        ogs_assert_if_reached();
 
-                sess->handover.upf_dl_teid = pdr->index;
+                    sess->handover.upf_dl_teid = pdr->teid;
+                }
             }
 
             ogs_assert(OGS_OK ==
@@ -2356,10 +2348,6 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
 
     smf_pf_identifier_pool_init(bearer);
 
-    bearer->index = ogs_pool_index(&smf_bearer_pool, bearer);
-    ogs_assert(bearer->index > 0 && bearer->index <=
-            ogs_app()->pool.bearer);
-
     ogs_list_init(&bearer->pf_list);
 
     /* PDR */
@@ -2466,7 +2454,7 @@ int smf_bearer_remove(smf_bearer_t *bearer)
 
     smf_pf_identifier_pool_final(bearer);
 
-    if (bearer->qfi_node)
+    if (SMF_IS_QOF_FLOW(bearer))
         ogs_pool_free(&bearer->sess->qfi_pool, bearer->qfi_node);
 
     ogs_pool_free(&smf_bearer_pool, bearer);
@@ -3019,78 +3007,69 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
 
 void smf_qfi_pool_init(smf_sess_t *sess)
 {
-    int i;
-
     ogs_assert(sess);
 
-    ogs_index_init(&sess->qfi_pool, OGS_MAX_QOS_FLOW_ID);
-
-    for (i = 1; i <= OGS_MAX_QOS_FLOW_ID; i++) {
-        sess->qfi_pool.array[i-1] = i;
-    }
+    ogs_pool_create(&sess->qfi_pool, OGS_MAX_QOS_FLOW_ID);
+    ogs_pool_sequence_id_generate(&sess->qfi_pool);
 }
 
 void smf_qfi_pool_final(smf_sess_t *sess)
 {
     ogs_assert(sess);
 
-    ogs_index_final(&sess->qfi_pool);
+    ogs_pool_destroy(&sess->qfi_pool);
 }
 
 void smf_pf_identifier_pool_init(smf_bearer_t *bearer)
 {
-    int i;
-
     ogs_assert(bearer);
 
-    ogs_index_init(&bearer->pf_identifier_pool, OGS_MAX_NUM_OF_FLOW_IN_BEARER);
-
-    for (i = 1; i <= OGS_MAX_NUM_OF_FLOW_IN_BEARER; i++) {
-        bearer->pf_identifier_pool.array[i-1] = i;
-    }
+    ogs_pool_create(&bearer->pf_identifier_pool, OGS_MAX_NUM_OF_FLOW_IN_BEARER);
+    ogs_pool_sequence_id_generate(&bearer->pf_identifier_pool);
 }
 
 void smf_pf_identifier_pool_final(smf_bearer_t *bearer)
 {
     ogs_assert(bearer);
 
-    ogs_index_final(&bearer->pf_identifier_pool);
+    ogs_pool_destroy(&bearer->pf_identifier_pool);
 }
 
 void smf_pf_precedence_pool_init(smf_sess_t *sess)
 {
-    int i;
-
     ogs_assert(sess);
 
-    ogs_index_init(&sess->pf_precedence_pool,
+    ogs_pool_create(&sess->pf_precedence_pool,
             OGS_MAX_NUM_OF_BEARER * OGS_MAX_NUM_OF_FLOW_IN_BEARER);
-
-    for (i = 1; i <=
-            OGS_MAX_NUM_OF_BEARER * OGS_MAX_NUM_OF_FLOW_IN_BEARER; i++) {
-        sess->pf_precedence_pool.array[i-1] = i;
-    }
+    ogs_pool_sequence_id_generate(&sess->pf_precedence_pool);
 }
 
 void smf_pf_precedence_pool_final(smf_sess_t *sess)
 {
     ogs_assert(sess);
 
-    ogs_index_final(&sess->pf_precedence_pool);
+    ogs_pool_destroy(&sess->pf_precedence_pool);
 }
 
 static void stats_add_smf_session(void)
 {
-    smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_SESSIONS_ACTIVE);
     num_of_smf_sess = num_of_smf_sess + 1;
     ogs_info("[Added] Number of SMF-Sessions is now %d", num_of_smf_sess);
 }
 
-static void stats_remove_smf_session(void)
+static void stats_remove_smf_session(smf_sess_t *sess)
 {
-    smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_SESSIONS_ACTIVE);
+    ogs_assert(sess);
+
     num_of_smf_sess = num_of_smf_sess - 1;
     ogs_info("[Removed] Number of SMF-Sessions is now %d", num_of_smf_sess);
+}
+
+int smf_instance_get_load(void)
+{
+    return (((ogs_pool_size(&smf_sess_pool) -
+            ogs_pool_avail(&smf_sess_pool)) * 100) /
+            ogs_pool_size(&smf_sess_pool));
 }
 
 int smf_integrity_protection_indication_value2enum(const char *value)

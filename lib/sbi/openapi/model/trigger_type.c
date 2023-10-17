@@ -16,16 +16,18 @@ OpenAPI_trigger_type_t *OpenAPI_trigger_type_create(
 
 void OpenAPI_trigger_type_free(OpenAPI_trigger_type_t *trigger_type)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == trigger_type) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(trigger_type);
 }
 
 cJSON *OpenAPI_trigger_type_convertToJSON(OpenAPI_trigger_type_t *trigger_type)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (trigger_type == NULL) {
         ogs_error("OpenAPI_trigger_type_convertToJSON() failed [TriggerType]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_trigger_type_t *OpenAPI_trigger_type_parseFromJSON(cJSON *trigger_typeJSON)
 {
     OpenAPI_trigger_type_t *trigger_type_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     trigger_type_local_var = OpenAPI_trigger_type_create (
     );
 

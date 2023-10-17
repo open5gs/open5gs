@@ -24,6 +24,8 @@ void ogs_nas_eps_imsi_to_bcd(
 {
     int bcd_len;
 
+    ogs_assert(imsi && imsi_len);
+
     bcd[0] = '0' + imsi->digit1;
     bcd[1] = '0' + imsi->digit2;
     bcd[2] = '0' + imsi->digit3;

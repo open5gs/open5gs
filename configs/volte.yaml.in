@@ -2,6 +2,18 @@ db_uri: mongodb://localhost/open5gs
 
 logger:
 
+sbi:
+    server:
+      no_tls: true
+      cacert: @build_configs_dir@/open5gs/tls/ca.crt
+      key: @build_configs_dir@/open5gs/tls/testserver.key
+      cert: @build_configs_dir@/open5gs/tls/testserver.crt
+    client:
+      no_tls: true
+      cacert: @build_configs_dir@/open5gs/tls/ca.crt
+      key: @build_configs_dir@/open5gs/tls/testclient.key
+      cert: @build_configs_dir@/open5gs/tls/testclient.crt
+
 parameter:
 #    no_nrf: true
 #    no_scp: true
@@ -28,14 +40,14 @@ mme:
       listen_on: 127.0.0.2
       no_fwd: true
       load_extension:
-        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
           conf: 0x8888
-        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
-        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
-        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
-        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
       connect:
         - identity: hss.localdomain
           addr: 127.0.0.8
@@ -98,14 +110,14 @@ smf:
       listen_on: 127.0.0.4
       no_fwd: true
       load_extension:
-        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
           conf: 0x8888
-        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
-        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
-        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
-        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
       connect:
         - identity: pcrf.localdomain
           addr: 127.0.0.9
@@ -154,6 +166,9 @@ upf:
     subnet:
       - addr: 10.45.0.1/16
       - addr: 2001:db8:cafe::1/48
+    metrics:
+      - addr: 127.0.0.7
+        port: 9090
 
 hss:
     freeDiameter:
@@ -162,14 +177,14 @@ hss:
       listen_on: 127.0.0.8
       no_fwd: true
       load_extension:
-        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
           conf: 0x8888
-        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
-        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
-        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
-        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
       connect:
         - identity: mme.localdomain
           addr: 127.0.0.2
@@ -182,14 +197,14 @@ pcrf:
       listen_on: 127.0.0.9
       no_fwd: true
       load_extension:
-        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
           conf: 0x8888
-        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
-        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
-        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
-        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+        - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
       connect:
         - identity: smf.localdomain
           addr: 127.0.0.4
@@ -217,6 +232,9 @@ pcf:
     sbi:
       - addr: 127.0.0.13
         port: 7777
+    metrics:
+      - addr: 127.0.0.13
+        port: 9090
 
 nssf:
     sbi:
@@ -237,3 +255,9 @@ udr:
     sbi:
       - addr: 127.0.0.20
         port: 7777
+
+time:
+  t3412:
+    value: 540     # 9 mintues * 60 = 540 seconds
+  t3512:
+    value: 540     # 9 mintues * 60 = 540 seconds

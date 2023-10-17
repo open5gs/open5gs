@@ -16,16 +16,18 @@ OpenAPI_access_right_status_t *OpenAPI_access_right_status_create(
 
 void OpenAPI_access_right_status_free(OpenAPI_access_right_status_t *access_right_status)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == access_right_status) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(access_right_status);
 }
 
 cJSON *OpenAPI_access_right_status_convertToJSON(OpenAPI_access_right_status_t *access_right_status)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (access_right_status == NULL) {
         ogs_error("OpenAPI_access_right_status_convertToJSON() failed [AccessRightStatus]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_access_right_status_t *OpenAPI_access_right_status_parseFromJSON(cJSON *access_right_statusJSON)
 {
     OpenAPI_access_right_status_t *access_right_status_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     access_right_status_local_var = OpenAPI_access_right_status_create (
     );
 

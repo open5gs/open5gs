@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -31,9 +31,12 @@
 int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer, 
         ogs_nas_eps_pdn_connectivity_request_t *req, int create_action)
 {
+    int r;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     uint8_t security_protected_required = 0;
+
+    MME_UE_LIST_CHECK;
 
     ogs_assert(bearer);
     sess = bearer->sess;
@@ -44,7 +47,16 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     ogs_assert(req);
 
     ogs_assert(MME_UE_HAVE_IMSI(mme_ue));
-    ogs_assert(SECURITY_CONTEXT_IS_VALID(mme_ue));
+
+    if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+        ogs_error("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+        r = nas_eps_send_pdn_connectivity_reject(
+                sess, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                create_action);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
+    }
 
     memcpy(&sess->request_type, &req->request_type, sizeof(sess->request_type));
 
@@ -65,9 +77,11 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
                             mme_ue, req->access_point_name.apn);
         if (!sess->session) {
             /* Invalid APN */
-            ogs_assert(OGS_OK ==
-                nas_eps_send_pdn_connectivity_reject(
-                    sess, OGS_NAS_ESM_CAUSE_MISSING_OR_UNKNOWN_APN, create_action));
+            r = nas_eps_send_pdn_connectivity_reject(
+                    sess, OGS_NAS_ESM_CAUSE_MISSING_OR_UNKNOWN_APN,
+                    create_action);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             ogs_warn("Invalid APN[%s]", req->access_point_name.apn);
             return OGS_ERROR;
         }
@@ -80,9 +94,11 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
             if (derived_pdn_type == 0) {
                 ogs_error("Cannot derived PDN Type [UE:%d,HSS:%d]",
                     sess->request_type.type, sess->session->session_type);
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_pdn_connectivity_reject(
-                        sess, OGS_NAS_ESM_CAUSE_UNKNOWN_PDN_TYPE, create_action));
+                r = nas_eps_send_pdn_connectivity_reject(
+                        sess, OGS_NAS_ESM_CAUSE_UNKNOWN_PDN_TYPE,
+                        create_action);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
                 return OGS_ERROR;
             }
         } else {
@@ -92,9 +108,17 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     }
 
     if (req->presencemask &
+        OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT) {
+        ogs_nas_extended_protocol_configuration_options_t
+            *extended_protocol_configuration_options =
+            &req->extended_protocol_configuration_options;
+
+        OGS_NAS_STORE_DATA(&sess->ue_epco,
+            extended_protocol_configuration_options);
+    } else if (req->presencemask &
         OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT) {
         ogs_nas_protocol_configuration_options_t
-            *protocol_configuration_options = 
+            *protocol_configuration_options =
             &req->protocol_configuration_options;
 
         OGS_NAS_STORE_DATA(&sess->ue_pco, protocol_configuration_options);
@@ -102,7 +126,9 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
 
     if (security_protected_required) {
         CLEAR_BEARER_TIMER(bearer->t3489);
-        ogs_assert(OGS_OK == nas_eps_send_esm_information_request(bearer));
+        r = nas_eps_send_esm_information_request(bearer);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
 
         return OGS_OK;
     }
@@ -137,9 +163,10 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
             mme_gtp_send_create_session_request(sess, create_action));
     } else {
         ogs_error("No APN");
-        ogs_assert(OGS_OK ==
-            nas_eps_send_pdn_connectivity_reject(
-                sess, OGS_NAS_ESM_CAUSE_MISSING_OR_UNKNOWN_APN, create_action));
+        r = nas_eps_send_pdn_connectivity_reject(
+                sess, OGS_NAS_ESM_CAUSE_MISSING_OR_UNKNOWN_APN, create_action);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
     }
 
@@ -149,6 +176,7 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
 int esm_handle_information_response(mme_sess_t *sess, 
         ogs_nas_eps_esm_information_response_t *rsp)
 {
+    int r;
     mme_ue_t *mme_ue = NULL;
 
     ogs_assert(sess);
@@ -157,6 +185,8 @@ int esm_handle_information_response(mme_sess_t *sess,
 
     ogs_assert(rsp);
 
+    MME_UE_LIST_CHECK;
+
     if (rsp->presencemask &
             OGS_NAS_EPS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT) {
         sess->session = mme_session_find_by_apn(
@@ -164,9 +194,17 @@ int esm_handle_information_response(mme_sess_t *sess,
     }
 
     if (rsp->presencemask &
+        OGS_NAS_EPS_ESM_INFORMATION_RESPONSE_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT) {
+        ogs_nas_extended_protocol_configuration_options_t
+            *extended_protocol_configuration_options =
+            &rsp->extended_protocol_configuration_options;
+
+        OGS_NAS_STORE_DATA(&sess->ue_epco,
+            extended_protocol_configuration_options);
+    } else if (rsp->presencemask &
         OGS_NAS_EPS_ESM_INFORMATION_RESPONSE_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT) {
         ogs_nas_protocol_configuration_options_t
-            *protocol_configuration_options = 
+            *protocol_configuration_options =
                 &rsp->protocol_configuration_options;
         OGS_NAS_STORE_DATA(&sess->ue_pco, protocol_configuration_options);
     }
@@ -183,10 +221,11 @@ int esm_handle_information_response(mme_sess_t *sess,
             if (derived_pdn_type == 0) {
                 ogs_error("Cannot derived PDN Type [UE:%d,HSS:%d]",
                     sess->request_type.type, sess->session->session_type);
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_pdn_connectivity_reject(
+                r = nas_eps_send_pdn_connectivity_reject(
                         sess, OGS_NAS_ESM_CAUSE_UNKNOWN_PDN_TYPE,
-                        OGS_GTP_CREATE_IN_ATTACH_REQUEST));
+                        OGS_GTP_CREATE_IN_ATTACH_REQUEST);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
                 return OGS_ERROR;
             }
         } else {
@@ -203,8 +242,9 @@ int esm_handle_information_response(mme_sess_t *sess,
                 ogs_assert(OGS_OK ==
                     sgsap_send_location_update_request(mme_ue));
             } else {
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_attach_accept(mme_ue));
+                r = nas_eps_send_attach_accept(mme_ue);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
         } else {
             ogs_assert(OGS_OK ==
@@ -217,10 +257,11 @@ int esm_handle_information_response(mme_sess_t *sess,
         else
             ogs_error("No APN");
 
-        ogs_assert(OGS_OK ==
-            nas_eps_send_pdn_connectivity_reject(
+        r = nas_eps_send_pdn_connectivity_reject(
                 sess, OGS_NAS_ESM_CAUSE_MISSING_OR_UNKNOWN_APN,
-                OGS_GTP_CREATE_IN_ATTACH_REQUEST));
+                OGS_GTP_CREATE_IN_ATTACH_REQUEST);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
     }
 
@@ -230,6 +271,7 @@ int esm_handle_information_response(mme_sess_t *sess,
 int esm_handle_bearer_resource_allocation_request(
         mme_bearer_t *bearer, ogs_nas_eps_message_t *message)
 {
+    int r;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
 
@@ -239,9 +281,10 @@ int esm_handle_bearer_resource_allocation_request(
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
 
-    ogs_assert(OGS_OK ==
-        nas_eps_send_bearer_resource_allocation_reject(
-            mme_ue, sess->pti, OGS_NAS_ESM_CAUSE_NETWORK_FAILURE));
+    r = nas_eps_send_bearer_resource_allocation_reject(
+            mme_ue, sess->pti, OGS_NAS_ESM_CAUSE_NETWORK_FAILURE);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
 
     return OGS_OK;
 }

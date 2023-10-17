@@ -1,7 +1,7 @@
 /*
  * sor_data.h
  *
- * 
+ * Used to store the status of the latest SOR data update.
  */
 
 #ifndef _OpenAPI_sor_data_H_
@@ -24,13 +24,17 @@ typedef struct OpenAPI_sor_data_s {
     OpenAPI_ue_update_status_e ue_update_status;
     char *sor_xmac_iue;
     char *sor_mac_iue;
+    bool is_me_support_of_sor_cmci;
+    int me_support_of_sor_cmci;
 } OpenAPI_sor_data_t;
 
 OpenAPI_sor_data_t *OpenAPI_sor_data_create(
     char *provisioning_time,
     OpenAPI_ue_update_status_e ue_update_status,
     char *sor_xmac_iue,
-    char *sor_mac_iue
+    char *sor_mac_iue,
+    bool is_me_support_of_sor_cmci,
+    int me_support_of_sor_cmci
 );
 void OpenAPI_sor_data_free(OpenAPI_sor_data_t *sor_data);
 OpenAPI_sor_data_t *OpenAPI_sor_data_parseFromJSON(cJSON *sor_dataJSON);

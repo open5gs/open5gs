@@ -1,7 +1,7 @@
 /*
  * seaf_data.h
  *
- * 
+ * Represents SEAF data derived from data received from AUSF
  */
 
 #ifndef _OpenAPI_seaf_data_H_

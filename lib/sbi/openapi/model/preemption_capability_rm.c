@@ -16,16 +16,18 @@ OpenAPI_preemption_capability_rm_t *OpenAPI_preemption_capability_rm_create(
 
 void OpenAPI_preemption_capability_rm_free(OpenAPI_preemption_capability_rm_t *preemption_capability_rm)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == preemption_capability_rm) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(preemption_capability_rm);
 }
 
 cJSON *OpenAPI_preemption_capability_rm_convertToJSON(OpenAPI_preemption_capability_rm_t *preemption_capability_rm)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (preemption_capability_rm == NULL) {
         ogs_error("OpenAPI_preemption_capability_rm_convertToJSON() failed [PreemptionCapabilityRm]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_preemption_capability_rm_t *OpenAPI_preemption_capability_rm_parseFromJSON(cJSON *preemption_capability_rmJSON)
 {
     OpenAPI_preemption_capability_rm_t *preemption_capability_rm_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     preemption_capability_rm_local_var = OpenAPI_preemption_capability_rm_create (
     );
 

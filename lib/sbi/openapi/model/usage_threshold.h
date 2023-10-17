@@ -1,7 +1,7 @@
 /*
  * usage_threshold.h
  *
- * 
+ * Represents a usage threshold.
  */
 
 #ifndef _OpenAPI_usage_threshold_H_

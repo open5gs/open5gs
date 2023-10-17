@@ -1,7 +1,7 @@
 /*
  * sign.h
  *
- * 
+ * Sign of the DIF value.
  */
 
 #ifndef _OpenAPI_sign_H_

@@ -57,7 +57,7 @@ void ogs_app_context_final(void)
     initialized = 0;
 }
 
-ogs_app_context_t *ogs_app()
+ogs_app_context_t *ogs_app(void)
 {
     return &self;
 }
@@ -76,13 +76,13 @@ static void recalculate_pool_size(void)
     self.pool.message = self.max.ue * POOL_NUM_PER_UE;
     self.pool.event = self.max.ue * POOL_NUM_PER_UE;
     self.pool.socket = self.max.ue * POOL_NUM_PER_UE;
-    self.pool.subscription = self.max.ue * POOL_NUM_PER_UE;
     self.pool.xact = self.max.ue * POOL_NUM_PER_UE;
     self.pool.stream = self.max.ue * POOL_NUM_PER_UE;
 
     self.pool.nf = self.max.peer;
 #define NF_SERVICE_PER_NF_INSTANCE 16
     self.pool.nf_service = self.pool.nf * NF_SERVICE_PER_NF_INSTANCE;
+    self.pool.subscription = self.pool.nf * NF_SERVICE_PER_NF_INSTANCE;
 
     self.pool.gtp_node = self.pool.nf;
     if (self.max.gtp_peer)
@@ -352,12 +352,8 @@ int ogs_app_context_parse_config(void)
                         ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key,
                             "use_mongodb_change_stream")) {
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
                     self.use_mongodb_change_stream = 
                         ogs_yaml_iter_bool(&parameter_iter);
-#else
-                    self.use_mongodb_change_stream = false;
-#endif
                 } else
                     ogs_warn("unknown key `%s`", parameter_key);
             }
@@ -429,6 +425,10 @@ int ogs_app_context_parse_config(void)
                     const char *v = ogs_yaml_iter_value(&pool_iter);
                     if (v)
                         self.pool.defconfig.cluster_8192_pool = atoi(v);
+                } else if (!strcmp(pool_key, "32768")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.pool.defconfig.cluster_32768_pool = atoi(v);
                 } else if (!strcmp(pool_key, "big")) {
                     const char *v = ogs_yaml_iter_value(&pool_iter);
                     if (v)
@@ -515,8 +515,79 @@ int ogs_app_context_parse_config(void)
                         } else
                             ogs_warn("unknown key `%s`", msg_key);
                     }
+                } else if (!strcmp(time_key, "t3502")) {
+                    /* handle config in amf */
+                } else if (!strcmp(time_key, "t3512")) {
+                    /* handle config in amf */
+                } else if (!strcmp(time_key, "t3402")) {
+                    /* handle config in mme */
+                } else if (!strcmp(time_key, "t3412")) {
+                    /* handle config in mme */
+                } else if (!strcmp(time_key, "t3423")) {
+                    /* handle config in mme */
                 } else
                     ogs_warn("unknown key `%s`", time_key);
+            }
+        } else if (!strcmp(root_key, "sbi")) {
+            ogs_yaml_iter_t tls_iter;
+            ogs_yaml_iter_recurse(&root_iter, &tls_iter);
+            while (ogs_yaml_iter_next(&tls_iter)) {
+                const char *tls_key = ogs_yaml_iter_key(&tls_iter);
+                ogs_assert(tls_key);
+                if (!strcmp(tls_key, "server")) {
+                    ogs_yaml_iter_t server_iter;
+                    ogs_yaml_iter_recurse(&tls_iter, &server_iter);
+
+                    while (ogs_yaml_iter_next(&server_iter)) {
+                        const char *server_key =
+                            ogs_yaml_iter_key(&server_iter);
+                        ogs_assert(server_key);
+                        if (!strcmp(server_key, "no_tls")) {
+                            self.sbi.server.no_tls =
+                                ogs_yaml_iter_bool(&server_iter);
+                        } else if (!strcmp(server_key, "no_verify")) {
+                            self.sbi.server.no_verify =
+                                ogs_yaml_iter_bool(&server_iter);
+                        } else if (!strcmp(server_key, "cacert")) {
+                            self.sbi.server.cacert =
+                                ogs_yaml_iter_value(&server_iter);
+                        } else if (!strcmp(server_key, "cert")) {
+                            self.sbi.server.cert =
+                                ogs_yaml_iter_value(&server_iter);
+                        } else if (!strcmp(server_key, "key")) {
+                            self.sbi.server.key =
+                                ogs_yaml_iter_value(&server_iter);
+                        } else
+                            ogs_warn("unknown key `%s`", server_key);
+                    }
+                } else if (!strcmp(tls_key, "client")) {
+                    ogs_yaml_iter_t client_iter;
+                    ogs_yaml_iter_recurse(&tls_iter, &client_iter);
+
+                    while (ogs_yaml_iter_next(&client_iter)) {
+                        const char *client_key =
+                            ogs_yaml_iter_key(&client_iter);
+                        ogs_assert(client_key);
+                        if (!strcmp(client_key, "no_tls")) {
+                            self.sbi.client.no_tls =
+                                ogs_yaml_iter_bool(&client_iter);
+                        } else if (!strcmp(client_key, "no_verify")) {
+                            self.sbi.client.no_verify =
+                                ogs_yaml_iter_bool(&client_iter);
+                        } else if (!strcmp(client_key, "cacert")) {
+                            self.sbi.client.cacert =
+                                ogs_yaml_iter_value(&client_iter);
+                        } else if (!strcmp(client_key, "cert")) {
+                            self.sbi.client.cert =
+                                ogs_yaml_iter_value(&client_iter);
+                        } else if (!strcmp(client_key, "key")) {
+                            self.sbi.client.key =
+                                ogs_yaml_iter_value(&client_iter);
+                        } else
+                            ogs_warn("unknown key `%s`", client_key);
+                    }
+                } else
+                    ogs_warn("unknown key `%s`", tls_key);
             }
         }
     }

@@ -92,6 +92,10 @@ const char *mme_timer_get_name(mme_timer_e id)
         return "MME_TIMER_T3470";
     case MME_TIMER_T3489:
         return "MME_TIMER_T3489";
+    case MME_TIMER_MOBILE_REACHABLE:
+        return "MME_TIMER_MOBILE_REACHABLE";
+    case MME_TIMER_IMPLICIT_DETACH:
+        return "MME_TIMER_IMPLICIT_DETACH";
     case MME_TIMER_SGS_CLI_CONN_TO_SRV:
         return "MME_TIMER_SGS_CLI_CONN_TO_SRV";
     case MME_TIMER_S1_HOLDING:
@@ -159,6 +163,14 @@ void mme_timer_t3460_expire(void *data)
 void mme_timer_t3470_expire(void *data)
 {
     emm_timer_event_send(MME_TIMER_T3470, data);
+}
+void mme_timer_mobile_reachable_expire(void *data)
+{
+    emm_timer_event_send(MME_TIMER_MOBILE_REACHABLE, data);
+}
+void mme_timer_implicit_detach_expire(void *data)
+{
+    emm_timer_event_send(MME_TIMER_IMPLICIT_DETACH, data);
 }
 
 static void esm_timer_event_send(

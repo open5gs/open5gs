@@ -26,17 +26,22 @@ OpenAPI_n1_n2_msg_txfr_err_detail_t *OpenAPI_n1_n2_msg_txfr_err_detail_create(
 
 void OpenAPI_n1_n2_msg_txfr_err_detail_free(OpenAPI_n1_n2_msg_txfr_err_detail_t *n1_n2_msg_txfr_err_detail)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == n1_n2_msg_txfr_err_detail) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    OpenAPI_arp_free(n1_n2_msg_txfr_err_detail->highest_prio_arp);
+    if (n1_n2_msg_txfr_err_detail->highest_prio_arp) {
+        OpenAPI_arp_free(n1_n2_msg_txfr_err_detail->highest_prio_arp);
+        n1_n2_msg_txfr_err_detail->highest_prio_arp = NULL;
+    }
     ogs_free(n1_n2_msg_txfr_err_detail);
 }
 
 cJSON *OpenAPI_n1_n2_msg_txfr_err_detail_convertToJSON(OpenAPI_n1_n2_msg_txfr_err_detail_t *n1_n2_msg_txfr_err_detail)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (n1_n2_msg_txfr_err_detail == NULL) {
         ogs_error("OpenAPI_n1_n2_msg_txfr_err_detail_convertToJSON() failed [N1N2MsgTxfrErrDetail]");
@@ -78,8 +83,12 @@ end:
 OpenAPI_n1_n2_msg_txfr_err_detail_t *OpenAPI_n1_n2_msg_txfr_err_detail_parseFromJSON(cJSON *n1_n2_msg_txfr_err_detailJSON)
 {
     OpenAPI_n1_n2_msg_txfr_err_detail_t *n1_n2_msg_txfr_err_detail_local_var = NULL;
-    cJSON *retry_after = cJSON_GetObjectItemCaseSensitive(n1_n2_msg_txfr_err_detailJSON, "retryAfter");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *retry_after = NULL;
+    cJSON *highest_prio_arp = NULL;
+    OpenAPI_arp_t *highest_prio_arp_local_nonprim = NULL;
+    cJSON *max_waiting_time = NULL;
+    retry_after = cJSON_GetObjectItemCaseSensitive(n1_n2_msg_txfr_err_detailJSON, "retryAfter");
     if (retry_after) {
     if (!cJSON_IsNumber(retry_after)) {
         ogs_error("OpenAPI_n1_n2_msg_txfr_err_detail_parseFromJSON() failed [retry_after]");
@@ -87,15 +96,16 @@ OpenAPI_n1_n2_msg_txfr_err_detail_t *OpenAPI_n1_n2_msg_txfr_err_detail_parseFrom
     }
     }
 
-    cJSON *highest_prio_arp = cJSON_GetObjectItemCaseSensitive(n1_n2_msg_txfr_err_detailJSON, "highestPrioArp");
-
-    OpenAPI_arp_t *highest_prio_arp_local_nonprim = NULL;
+    highest_prio_arp = cJSON_GetObjectItemCaseSensitive(n1_n2_msg_txfr_err_detailJSON, "highestPrioArp");
     if (highest_prio_arp) {
     highest_prio_arp_local_nonprim = OpenAPI_arp_parseFromJSON(highest_prio_arp);
+    if (!highest_prio_arp_local_nonprim) {
+        ogs_error("OpenAPI_arp_parseFromJSON failed [highest_prio_arp]");
+        goto end;
+    }
     }
 
-    cJSON *max_waiting_time = cJSON_GetObjectItemCaseSensitive(n1_n2_msg_txfr_err_detailJSON, "maxWaitingTime");
-
+    max_waiting_time = cJSON_GetObjectItemCaseSensitive(n1_n2_msg_txfr_err_detailJSON, "maxWaitingTime");
     if (max_waiting_time) {
     if (!cJSON_IsNumber(max_waiting_time)) {
         ogs_error("OpenAPI_n1_n2_msg_txfr_err_detail_parseFromJSON() failed [max_waiting_time]");
@@ -113,6 +123,10 @@ OpenAPI_n1_n2_msg_txfr_err_detail_t *OpenAPI_n1_n2_msg_txfr_err_detail_parseFrom
 
     return n1_n2_msg_txfr_err_detail_local_var;
 end:
+    if (highest_prio_arp_local_nonprim) {
+        OpenAPI_arp_free(highest_prio_arp_local_nonprim);
+        highest_prio_arp_local_nonprim = NULL;
+    }
     return NULL;
 }
 

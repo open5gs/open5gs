@@ -1,7 +1,7 @@
 /*
  * volume_timed_report.h
  *
- * 
+ * Contains Usage data information.
  */
 
 #ifndef _OpenAPI_volume_timed_report_H_

@@ -1,7 +1,7 @@
 /*
  * n2_info_content.h
  *
- * 
+ * Represents a transparent N2 information content to be relayed by AMF
  */
 
 #ifndef _OpenAPI_n2_info_content_H_

@@ -1,7 +1,7 @@
 /*
  * non_ue_n2_info_subscription_created_data.h
  *
- * 
+ * Data for the created subscription for non-UE specific N2 information notification
  */
 
 #ifndef _OpenAPI_non_ue_n2_info_subscription_created_data_H_

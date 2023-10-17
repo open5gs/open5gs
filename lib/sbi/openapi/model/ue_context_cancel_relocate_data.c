@@ -20,18 +20,26 @@ OpenAPI_ue_context_cancel_relocate_data_t *OpenAPI_ue_context_cancel_relocate_da
 
 void OpenAPI_ue_context_cancel_relocate_data_free(OpenAPI_ue_context_cancel_relocate_data_t *ue_context_cancel_relocate_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == ue_context_cancel_relocate_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ue_context_cancel_relocate_data->supi);
-    OpenAPI_ref_to_binary_data_free(ue_context_cancel_relocate_data->relocation_cancel_request);
+    if (ue_context_cancel_relocate_data->supi) {
+        ogs_free(ue_context_cancel_relocate_data->supi);
+        ue_context_cancel_relocate_data->supi = NULL;
+    }
+    if (ue_context_cancel_relocate_data->relocation_cancel_request) {
+        OpenAPI_ref_to_binary_data_free(ue_context_cancel_relocate_data->relocation_cancel_request);
+        ue_context_cancel_relocate_data->relocation_cancel_request = NULL;
+    }
     ogs_free(ue_context_cancel_relocate_data);
 }
 
 cJSON *OpenAPI_ue_context_cancel_relocate_data_convertToJSON(OpenAPI_ue_context_cancel_relocate_data_t *ue_context_cancel_relocate_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (ue_context_cancel_relocate_data == NULL) {
         ogs_error("OpenAPI_ue_context_cancel_relocate_data_convertToJSON() failed [UeContextCancelRelocateData]");
@@ -46,6 +54,10 @@ cJSON *OpenAPI_ue_context_cancel_relocate_data_convertToJSON(OpenAPI_ue_context_
     }
     }
 
+    if (!ue_context_cancel_relocate_data->relocation_cancel_request) {
+        ogs_error("OpenAPI_ue_context_cancel_relocate_data_convertToJSON() failed [relocation_cancel_request]");
+        return NULL;
+    }
     cJSON *relocation_cancel_request_local_JSON = OpenAPI_ref_to_binary_data_convertToJSON(ue_context_cancel_relocate_data->relocation_cancel_request);
     if (relocation_cancel_request_local_JSON == NULL) {
         ogs_error("OpenAPI_ue_context_cancel_relocate_data_convertToJSON() failed [relocation_cancel_request]");
@@ -64,31 +76,40 @@ end:
 OpenAPI_ue_context_cancel_relocate_data_t *OpenAPI_ue_context_cancel_relocate_data_parseFromJSON(cJSON *ue_context_cancel_relocate_dataJSON)
 {
     OpenAPI_ue_context_cancel_relocate_data_t *ue_context_cancel_relocate_data_local_var = NULL;
-    cJSON *supi = cJSON_GetObjectItemCaseSensitive(ue_context_cancel_relocate_dataJSON, "supi");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *supi = NULL;
+    cJSON *relocation_cancel_request = NULL;
+    OpenAPI_ref_to_binary_data_t *relocation_cancel_request_local_nonprim = NULL;
+    supi = cJSON_GetObjectItemCaseSensitive(ue_context_cancel_relocate_dataJSON, "supi");
     if (supi) {
-    if (!cJSON_IsString(supi)) {
+    if (!cJSON_IsString(supi) && !cJSON_IsNull(supi)) {
         ogs_error("OpenAPI_ue_context_cancel_relocate_data_parseFromJSON() failed [supi]");
         goto end;
     }
     }
 
-    cJSON *relocation_cancel_request = cJSON_GetObjectItemCaseSensitive(ue_context_cancel_relocate_dataJSON, "relocationCancelRequest");
+    relocation_cancel_request = cJSON_GetObjectItemCaseSensitive(ue_context_cancel_relocate_dataJSON, "relocationCancelRequest");
     if (!relocation_cancel_request) {
         ogs_error("OpenAPI_ue_context_cancel_relocate_data_parseFromJSON() failed [relocation_cancel_request]");
         goto end;
     }
-
-    OpenAPI_ref_to_binary_data_t *relocation_cancel_request_local_nonprim = NULL;
     relocation_cancel_request_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(relocation_cancel_request);
+    if (!relocation_cancel_request_local_nonprim) {
+        ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON failed [relocation_cancel_request]");
+        goto end;
+    }
 
     ue_context_cancel_relocate_data_local_var = OpenAPI_ue_context_cancel_relocate_data_create (
-        supi ? ogs_strdup(supi->valuestring) : NULL,
+        supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,
         relocation_cancel_request_local_nonprim
     );
 
     return ue_context_cancel_relocate_data_local_var;
 end:
+    if (relocation_cancel_request_local_nonprim) {
+        OpenAPI_ref_to_binary_data_free(relocation_cancel_request_local_nonprim);
+        relocation_cancel_request_local_nonprim = NULL;
+    }
     return NULL;
 }
 

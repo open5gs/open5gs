@@ -1,32 +1,32 @@
 #
-# logger:
-#
 #  o Set OGS_LOG_INFO to all domain level
 #   - If `level` is omitted, the default level is OGS_LOG_INFO)
 #   - If `domain` is omitted, the all domain level is set from 'level'
-#    (Nothing is needed)
+#    (Default values are used, so no configuration is required)
 #
 #  o Set OGS_LOG_ERROR to all domain level
 #   - `level` can be set with none, fatal, error, warn, info, debug, trace
+#  logger:
 #    level: error
 #
 #  o Set OGS_LOG_DEBUG to mme/emm domain level
+#  logger:
 #    level: debug
 #    domain: mme,emm
 #
 #  o Set OGS_LOG_TRACE to all domain level
+#  logger:
 #    level: trace
-#    domain: core,pfcp,gtp,sgwc,event,tlv,mem,sock
+#    domain: core,sbi,ausf,event,tlv,mem,sock
 #
 logger:
     file: @localstatedir@/log/open5gs/sgwc.log
 
 #
-# sgwc:
-#
 #  <GTP-C Server>
 #
 #  o GTP-C Server(127.0.0.3:2123, [fd69:f21d:873c:fa::2]:2123)
+#  sgwc:
 #    gtpc:
 #      addr:
 #        - 127.0.0.3
@@ -34,6 +34,7 @@ logger:
 #
 #  o On SGW, Same Configuration(127.0.0.3:2123,
 #  [fd69:f21d:873c:fa::2]:2123) as below.
+#  sgwc:
 #    gtpc:
 #      - addr: 127.0.0.3
 #      - addr: fd69:f21d:873c:fa::2
@@ -41,6 +42,7 @@ logger:
 #  o GTP-C Option (Default)
 #    - so_bindtodevice : NULL
 #
+#  sgwc:
 #    gtpc:
 #      addr: 127.0.0.3
 #      option:
@@ -49,21 +51,31 @@ logger:
 #  <PFCP Server>
 #
 #  o PFCP Server(127.0.0.3:8805, ::1:8805)
+#  sgwc:
 #    pfcp:
 #      - addr: 127.0.0.3
 #      - addr: ::1
 #
 #  o PFCP-U Server(127.0.0.1:2152, [::1]:2152)
+#  sgwc:
 #    pfcp:
 #      name: localhost
 #
 #  o PFCP Option (Default)
 #    - so_bindtodevice : NULL
 #
+#  sgwc:
 #    pfcp:
 #      addr: 127.0.0.3
 #      option:
 #        so_bindtodevice: vrf-blue
+#
+#  o Provide custom PFCP address to be advertised in PFCP association
+#      request/respond
+#  sgwc:
+#    pfcp:
+#      - addr: 0.0.0.0
+#        advertise: open5gs-smf.svc.local
 #
 sgwc:
     gtpc:
@@ -72,12 +84,10 @@ sgwc:
       - addr: 127.0.0.3
 
 #
-# sgwu:
-#
 #  <PFCP Client>>
 #
 #  o PFCP Client(127.0.0.6:8805)
-#
+#  sgwu:
 #    pfcp:
 #      addr: 127.0.0.6
 #
@@ -123,40 +133,45 @@ sgwu:
       - addr: 127.0.0.6
 
 #
-# parameter:
-#
 #  o Disable use of IPv4 addresses (only IPv6)
-#      no_ipv4: true
+#  parameter:
+#    no_ipv4: true
 #
 #  o Disable use of IPv6 addresses (only IPv4)
-#      no_ipv6: true
+#  parameter:
+#    no_ipv6: true
 #
 #  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
-#      prefer_ipv4: true
+#  parameter:
+#    prefer_ipv4: true
 #
 #  o Disable selection of SGW-U PFCP in Round-Robin manner
-#      no_pfcp_rr_select: true
+#  parameter:
+#    no_pfcp_rr_select: true
 #
 parameter:
 
 #
-# max:
-#
 # o Maximum Number of UE
-#    ue: 1024
+# max:
+#   ue: 1024
+#
 # o Maximum Number of Peer(S1AP/NGAP, DIAMETER, GTP, PFCP or SBI)
-#    peer: 64
+# max:
+#   peer: 64
+#
 # o Maximum Number of GTP peer nodes per SGWC/SMF
-#    gtp_peer: 64
+# max:
+#   gtp_peer: 64
 #
 max:
 
 #
-# time:
-#
 #  o Message Wait Duration (Default : 10,000 ms = 10 seconds)
+#    (Default values are used, so no configuration is required)
 #
 #  o Message Wait Duration (3000 ms)
+#  time:
 #    message:
 #        duration: 3000
 time:

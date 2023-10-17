@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -67,21 +67,10 @@ void af_nbsf_management_handle_pcf_binding(
         if (!IpEndPoint) continue;
 
         if (sess->pcf.num_of_ip < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
-            if (!IpEndPoint->is_port) {
-                if (ogs_sbi_default_uri_scheme() ==
-                        OpenAPI_uri_scheme_http)
-                    port = OGS_SBI_HTTP_PORT;
-                else if (ogs_sbi_default_uri_scheme() ==
-                        OpenAPI_uri_scheme_https)
-                    port = OGS_SBI_HTTPS_PORT;
-                else {
-                    ogs_fatal("Invalid scheme [%d]",
-                        ogs_sbi_default_uri_scheme());
-                    ogs_assert_if_reached();
-                }
-            } else {
+            if (!IpEndPoint->is_port)
+                port = ogs_sbi_client_default_port();
+            else
                 port = IpEndPoint->port;
-            }
 
             if (IpEndPoint->ipv4_address) {
                 rv = ogs_getaddrinfo(&addr, AF_UNSPEC,
@@ -95,6 +84,7 @@ void af_nbsf_management_handle_pcf_binding(
             }
 
             if (addr || addr6) {
+                sess->pcf.ip[sess->pcf.num_of_ip].is_port = IpEndPoint->is_port;
                 sess->pcf.ip[sess->pcf.num_of_ip].port = port;
                 sess->pcf.ip[sess->pcf.num_of_ip].addr = addr;
                 sess->pcf.ip[sess->pcf.num_of_ip].addr6 = addr6;

@@ -32,6 +32,9 @@ typedef struct ogs_sbi_server_s ogs_sbi_server_t;
 typedef struct ogs_sbi_client_s ogs_sbi_client_t;
 typedef struct ogs_sbi_header_s ogs_sbi_header_t;
 
+char *ogs_supi_from_suci(char *suci);
+char *ogs_supi_from_supi_or_suci(char *supi_or_suci);
+
 char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h);
 char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h);
 char *ogs_sbi_client_apiroot(ogs_sbi_client_t *client);
@@ -39,8 +42,9 @@ char *ogs_sbi_client_uri(ogs_sbi_client_t *client, ogs_sbi_header_t *h);
 
 char *ogs_sbi_parse_uri(char *uri, const char *delim, char **saveptr);
 
-ogs_sockaddr_t *ogs_sbi_getaddr_from_uri(char *uri);
-char *ogs_sbi_getpath_from_uri(char *uri);
+bool ogs_sbi_getaddr_from_uri(
+        OpenAPI_uri_scheme_e *scheme, ogs_sockaddr_t **addr, char *uri);
+bool ogs_sbi_getpath_from_uri(char **path, char *uri);
 
 #define OGS_SBI_BITRATE_BPS     0
 #define OGS_SBI_BITRATE_KBPS    1
@@ -58,6 +62,9 @@ bool ogs_sbi_time_from_string(ogs_time_t *time, char *str);
 
 #define OGS_SBI_RFC7231_DATE_LEN (34)
 int ogs_sbi_rfc7231_string(char *date_str, ogs_time_t time);
+
+char *ogs_sbi_s_nssai_to_json(ogs_s_nssai_t *s_nssai);
+bool ogs_sbi_s_nssai_from_json(ogs_s_nssai_t *s_nssai, char *str);
 
 char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai);
 bool ogs_sbi_s_nssai_from_string(ogs_s_nssai_t *s_nssai, char *str);

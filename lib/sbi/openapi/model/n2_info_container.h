@@ -1,7 +1,7 @@
 /*
  * n2_info_container.h
  *
- * 
+ * N2 information container
  */
 
 #ifndef _OpenAPI_n2_info_container_H_
@@ -16,6 +16,7 @@
 #include "n2_ran_information.h"
 #include "n2_sm_information.h"
 #include "nrppa_information.h"
+#include "pro_se_information.h"
 #include "pws_information.h"
 #include "v2x_information.h"
 
@@ -31,6 +32,7 @@ typedef struct OpenAPI_n2_info_container_s {
     struct OpenAPI_nrppa_information_s *nrppa_info;
     struct OpenAPI_pws_information_s *pws_info;
     struct OpenAPI_v2x_information_s *v2x_info;
+    struct OpenAPI_pro_se_information_s *prose_info;
 } OpenAPI_n2_info_container_t;
 
 OpenAPI_n2_info_container_t *OpenAPI_n2_info_container_create(
@@ -39,7 +41,8 @@ OpenAPI_n2_info_container_t *OpenAPI_n2_info_container_create(
     OpenAPI_n2_ran_information_t *ran_info,
     OpenAPI_nrppa_information_t *nrppa_info,
     OpenAPI_pws_information_t *pws_info,
-    OpenAPI_v2x_information_t *v2x_info
+    OpenAPI_v2x_information_t *v2x_info,
+    OpenAPI_pro_se_information_t *prose_info
 );
 void OpenAPI_n2_info_container_free(OpenAPI_n2_info_container_t *n2_info_container);
 OpenAPI_n2_info_container_t *OpenAPI_n2_info_container_parseFromJSON(cJSON *n2_info_containerJSON);

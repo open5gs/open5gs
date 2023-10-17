@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,8 +20,8 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2022-06-29 14:29:16.181253 by acetcom
- * from 29244-g91-modified.docx
+ * Created on: 2023-08-18 22:15:59.596820 by acetcom
+ * from 29244-h71-modified.docx
  ******************************************************************************/
 
 #include "ogs-pfcp.h"
@@ -1546,10 +1546,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_cp_pfcp_entity_ip_address =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcpsereq_flags =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT8,
     "PFCPSEReq-Flags",
     OGS_PFCP_PFCPSEREQ_FLAGS_TYPE,
-    0,
+    1,
     0,
     sizeof(ogs_pfcp_tlv_pfcpsereq_flags_t),
     { NULL }
@@ -1621,14 +1621,14 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_nw_tt_port_number =
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_pfcp_tlv_desc_tsn_bridge_id =
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_fivegs_user_plane_node =
 {
     OGS_TLV_VAR_STR,
-    "TSN Bridge ID",
-    OGS_PFCP_TSN_BRIDGE_ID_TYPE,
+    "5GS User Plane Node",
+    OGS_PFCP_FiveGS_USER_PLANE_NODE_TYPE,
     0,
     0,
-    sizeof(ogs_pfcp_tlv_tsn_bridge_id_t),
+    sizeof(ogs_pfcp_tlv_fivegs_user_plane_node_t),
     { NULL }
 };
 
@@ -1654,14 +1654,14 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_requested_clock_drift_information =
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_pfcp_tlv_desc_tsn_time_domain_number =
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_time_domain_number =
 {
     OGS_TLV_VAR_STR,
-    "TSN Time Domain Number",
-    OGS_PFCP_TSN_TIME_DOMAIN_NUMBER_TYPE,
+    "Time Domain Number",
+    OGS_PFCP_TIME_DOMAIN_NUMBER_TYPE,
     0,
     0,
-    sizeof(ogs_pfcp_tlv_tsn_time_domain_number_t),
+    sizeof(ogs_pfcp_tlv_time_domain_number_t),
     { NULL }
 };
 
@@ -2116,6 +2116,435 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_validity_timer =
     { NULL }
 };
 
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_spare =
+{
+    OGS_TLV_VAR_STR,
+    "Spare",
+    OGS_PFCP_SPARE_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_spare_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_offending_ie_information =
+{
+    OGS_TLV_VAR_STR,
+    "Offending IE Information",
+    OGS_PFCP_OFFENDING_IE_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_offending_ie_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_rat_type =
+{
+    OGS_TLV_VAR_STR,
+    "RAT Type",
+    OGS_PFCP_RAT_TYPE_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_rat_type_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_l2tp_user_authentication_ie =
+{
+    OGS_TLV_VAR_STR,
+    "L2TP User Authentication IE",
+    OGS_PFCP_L2TP_USER_AUTHENTICATION_IE_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_l2tp_user_authentication_ie_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_lns_address =
+{
+    OGS_TLV_VAR_STR,
+    "LNS Address",
+    OGS_PFCP_LNS_ADDRESS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_lns_address_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_tunnel_preference =
+{
+    OGS_TLV_VAR_STR,
+    "Tunnel Preference",
+    OGS_PFCP_TUNNEL_PREFERENCE_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_tunnel_preference_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_calling_number =
+{
+    OGS_TLV_VAR_STR,
+    "Calling Number",
+    OGS_PFCP_CALLING_NUMBER_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_calling_number_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_called_number =
+{
+    OGS_TLV_VAR_STR,
+    "Called Number",
+    OGS_PFCP_CALLED_NUMBER_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_called_number_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_l2tp_session_indications =
+{
+    OGS_TLV_VAR_STR,
+    "L2TP Session Indications",
+    OGS_PFCP_L2TP_SESSION_INDICATIONS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_l2tp_session_indications_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_dns_server_address =
+{
+    OGS_TLV_VAR_STR,
+    "DNS Server Address",
+    OGS_PFCP_DNS_SERVER_ADDRESS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_dns_server_address_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_nbns_server_address =
+{
+    OGS_TLV_VAR_STR,
+    "NBNS Server Address",
+    OGS_PFCP_NBNS_SERVER_ADDRESS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_nbns_server_address_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_maximum_receive_unit =
+{
+    OGS_TLV_VAR_STR,
+    "Maximum Receive Unit",
+    OGS_PFCP_MAXIMUM_RECEIVE_UNIT_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_maximum_receive_unit_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_thresholds =
+{
+    OGS_TLV_VAR_STR,
+    "Thresholds",
+    OGS_PFCP_THRESHOLDS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_thresholds_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_steering_mode_indicator =
+{
+    OGS_TLV_VAR_STR,
+    "Steering Mode Indicator",
+    OGS_PFCP_STEERING_MODE_INDICATOR_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_steering_mode_indicator_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_group_id =
+{
+    OGS_TLV_VAR_STR,
+    "Group ID",
+    OGS_PFCP_GROUP_ID_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_group_id_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_cp_ip_address =
+{
+    OGS_TLV_VAR_STR,
+    "CP IP Address",
+    OGS_PFCP_CP_IP_ADDRESS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_cp_ip_address_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_ip_address_and_port_number_replacement =
+{
+    OGS_TLV_VAR_STR,
+    "IP Address and Port number Replacement",
+    OGS_PFCP_IP_ADDRESS_AND_PORT_NUMBER_REPLACEMENT_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_ip_address_and_port_number_replacement_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_dns_query_filter =
+{
+    OGS_TLV_VAR_STR,
+    "DNS Query Filter",
+    OGS_PFCP_DNS_QUERY_FILTER_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_dns_query_filter_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_direct_reporting_information =
+{
+    OGS_TLV_VAR_STR,
+    "Direct Reporting Information",
+    OGS_PFCP_DIRECT_REPORTING_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_direct_reporting_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_event_notification_uri =
+{
+    OGS_TLV_VAR_STR,
+    "Event Notification URI",
+    OGS_PFCP_EVENT_NOTIFICATION_URI_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_event_notification_uri_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_notification_correlation_id =
+{
+    OGS_TLV_VAR_STR,
+    "Notification Correlation ID",
+    OGS_PFCP_NOTIFICATION_CORRELATION_ID_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_notification_correlation_id_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_reporting_flags =
+{
+    OGS_TLV_VAR_STR,
+    "Reporting Flags",
+    OGS_PFCP_REPORTING_FLAGS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_reporting_flags_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_predefined_rules_name =
+{
+    OGS_TLV_VAR_STR,
+    "Predefined Rules Name",
+    OGS_PFCP_PREDEFINED_RULES_NAME_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_predefined_rules_name_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4mb_information =
+{
+    OGS_TLV_VAR_STR,
+    "MBS Session N4mb Information",
+    OGS_PFCP_MBS_SESSION_N4MB_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_mbs_session_n4mb_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_remove_mbs_unicast_parameters =
+{
+    OGS_TLV_VAR_STR,
+    "Remove MBS Unicast Parameters",
+    OGS_PFCP_REMOVE_MBS_UNICAST_PARAMETERS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_remove_mbs_unicast_parameters_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_identifier =
+{
+    OGS_TLV_VAR_STR,
+    "MBS Session Identifier",
+    OGS_PFCP_MBS_SESSION_IDENTIFIER_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_mbs_session_identifier_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_multicast_transport_information =
+{
+    OGS_TLV_VAR_STR,
+    "Multicast Transport Information",
+    OGS_PFCP_MULTICAST_TRANSPORT_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_multicast_transport_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbsn4mbreq_flags =
+{
+    OGS_TLV_VAR_STR,
+    "MBSN4mbReq-Flags",
+    OGS_PFCP_MBSN4MBREQ_FLAGS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_mbsn4mbreq_flags_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_local_ingress_tunnel =
+{
+    OGS_TLV_VAR_STR,
+    "Local Ingress Tunnel",
+    OGS_PFCP_LOCAL_INGRESS_TUNNEL_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_local_ingress_tunnel_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_unicast_parameters_id =
+{
+    OGS_TLV_VAR_STR,
+    "MBS Unicast Parameters ID",
+    OGS_PFCP_MBS_UNICAST_PARAMETERS_ID_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_mbs_unicast_parameters_id_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbsn4resp_flags =
+{
+    OGS_TLV_VAR_STR,
+    "MBSN4Resp-Flags",
+    OGS_PFCP_MBSN4RESP_FLAGS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_mbsn4resp_flags_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_tunnel_password =
+{
+    OGS_TLV_VAR_STR,
+    "Tunnel Password",
+    OGS_PFCP_TUNNEL_PASSWORD_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_tunnel_password_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_area_session_id =
+{
+    OGS_TLV_VAR_STR,
+    "Area Session ID",
+    OGS_PFCP_AREA_SESSION_ID_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_area_session_id_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_peer_up_restart_report =
+{
+    OGS_TLV_VAR_STR,
+    "Peer UP Restart Report",
+    OGS_PFCP_PEER_UP_RESTART_REPORT_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_peer_up_restart_report_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_dscp_to_ppi_mapping_information =
+{
+    OGS_TLV_VAR_STR,
+    "DSCP to PPI Mapping Information",
+    OGS_PFCP_DSCP_TO_PPI_MAPPING_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_dscp_to_ppi_mapping_information_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcpsdrsp_flags =
+{
+    OGS_TLV_VAR_STR,
+    "PFCPSDRsp-Flags",
+    OGS_PFCP_PFCPSDRSP_FLAGS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_pfcpsdrsp_flags_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_qer_indications =
+{
+    OGS_TLV_VAR_STR,
+    "QER Indications",
+    OGS_PFCP_QER_INDICATIONS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_qer_indications_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_vendor_specific_node_report_type =
+{
+    OGS_TLV_VAR_STR,
+    "Vendor-Specific Node Report Type",
+    OGS_PFCP_VENDOR_SPECIFIC_NODE_REPORT_TYPE_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_vendor_specific_node_report_type_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_configured_time_domain =
+{
+    OGS_TLV_VAR_STR,
+    "Configured Time Domain",
+    OGS_PFCP_CONFIGURED_TIME_DOMAIN_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_configured_time_domain_t),
+    { NULL }
+};
+
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_ethernet_packet_filter =
 {
     OGS_TLV_COMPOUND,
@@ -2178,6 +2607,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_pdi =
     {
         &ogs_pfcp_tlv_desc_source_interface,
         &ogs_pfcp_tlv_desc_f_teid,
+        &ogs_pfcp_tlv_desc_local_ingress_tunnel,
         &ogs_pfcp_tlv_desc_network_instance,
         &ogs_pfcp_tlv_desc_redundant_transmission_parameters,
         &ogs_pfcp_tlv_desc_ue_ip_address,
@@ -2189,10 +2619,15 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_pdi =
         &ogs_pfcp_tlv_desc_ethernet_packet_filter,
         &ogs_pfcp_tlv_desc_qfi,
         &ogs_pfcp_tlv_desc_framed_route,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_framed_routing,
         &ogs_pfcp_tlv_desc_framed_ipv6_route,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc__interface_type,
         &ogs_pfcp_tlv_desc_ip_multicast_addressing_info_within_pfcp_session_establishment_request,
+        &ogs_pfcp_tlv_desc_dns_query_filter,
+        &ogs_pfcp_tlv_desc_mbs_session_identifier,
+        &ogs_pfcp_tlv_desc_area_session_id,
         NULL,
     }
 };
@@ -2238,6 +2673,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_pdr =
         &ogs_pfcp_tlv_desc_ue_ip_address,
         &ogs_pfcp_tlv_desc_mptcp_applicable_indication,
         &ogs_pfcp_tlv_desc_transport_delay_reporting,
+        &ogs_pfcp_tlv_desc_rat_type,
         NULL,
     }
 };
@@ -2262,6 +2698,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_forwarding_parameters =
         &ogs_pfcp_tlv_desc_proxying,
         &ogs_pfcp_tlv_desc__interface_type,
         &ogs_pfcp_tlv_desc_data_network_access_identifier,
+        &ogs_pfcp_tlv_desc_ip_address_and_port_number_replacement,
         NULL,
     }
 };
@@ -2298,6 +2735,43 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_redundant_transmission_forwarding_parameters =
     }
 };
 
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_multicast_parameters =
+{
+    OGS_TLV_COMPOUND,
+    "MBS Multicast Parameters",
+    OGS_PFCP_MBS_MULTICAST_PARAMETERS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_mbs_multicast_parameters_t),
+    {
+        &ogs_pfcp_tlv_desc_destination_interface,
+        &ogs_pfcp_tlv_desc_network_instance,
+        &ogs_pfcp_tlv_desc_outer_header_creation,
+        &ogs_pfcp_tlv_desc_transport_level_marking,
+        &ogs_pfcp_tlv_desc__interface_type,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_add_mbs_unicast_parameters =
+{
+    OGS_TLV_COMPOUND,
+    "Add MBS Unicast Parameters",
+    OGS_PFCP_ADD_MBS_UNICAST_PARAMETERS_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_add_mbs_unicast_parameters_t),
+    {
+        &ogs_pfcp_tlv_desc_destination_interface,
+        &ogs_pfcp_tlv_desc_mbs_unicast_parameters_id,
+        &ogs_pfcp_tlv_desc_network_instance,
+        &ogs_pfcp_tlv_desc_outer_header_creation,
+        &ogs_pfcp_tlv_desc_transport_level_marking,
+        &ogs_pfcp_tlv_desc__interface_type,
+        NULL,
+    }
+};
+
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_far =
 {
     OGS_TLV_COMPOUND,
@@ -2313,6 +2787,8 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_far =
         &ogs_pfcp_tlv_desc_duplicating_parameters,
         &ogs_pfcp_tlv_desc_bar_id,
         &ogs_pfcp_tlv_desc_redundant_transmission_forwarding_parameters,
+        &ogs_pfcp_tlv_desc_mbs_multicast_parameters,
+        &ogs_pfcp_tlv_desc_add_mbs_unicast_parameters,
         NULL,
     }
 };
@@ -2337,6 +2813,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_forwarding_parameters =
         &ogs_pfcp_tlv_desc_traffic_endpoint_id,
         &ogs_pfcp_tlv_desc__interface_type,
         &ogs_pfcp_tlv_desc_data_network_access_identifier,
+        &ogs_pfcp_tlv_desc_ip_address_and_port_number_replacement,
         NULL,
     }
 };
@@ -2373,6 +2850,8 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_far =
         &ogs_pfcp_tlv_desc_update_duplicating_parameters,
         &ogs_pfcp_tlv_desc_redundant_transmission_forwarding_parameters,
         &ogs_pfcp_tlv_desc_bar_id,
+        &ogs_pfcp_tlv_desc_add_mbs_unicast_parameters,
+        &ogs_pfcp_tlv_desc_remove_mbs_unicast_parameters,
         NULL,
     }
 };
@@ -2435,6 +2914,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc__access_forwarding_action_information =
         &ogs_pfcp_tlv_desc_priority,
         &ogs_pfcp_tlv_desc_urr_id,
         &ogs_tlv_desc_more8,
+        &ogs_pfcp_tlv_desc_rat_type,
         NULL,
     }
 };
@@ -2453,6 +2933,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_non__access_forwarding_action_information =
         &ogs_pfcp_tlv_desc_priority,
         &ogs_pfcp_tlv_desc_urr_id,
         &ogs_tlv_desc_more8,
+        &ogs_pfcp_tlv_desc_rat_type,
         NULL,
     }
 };
@@ -2470,6 +2951,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update__access_forwarding_action_information =
         &ogs_pfcp_tlv_desc_weight,
         &ogs_pfcp_tlv_desc_priority,
         &ogs_pfcp_tlv_desc_urr_id,
+        &ogs_pfcp_tlv_desc_rat_type,
         NULL,
     }
 };
@@ -2487,6 +2969,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_non__access_forwarding_action_informatio
         &ogs_pfcp_tlv_desc_weight,
         &ogs_pfcp_tlv_desc_priority,
         &ogs_pfcp_tlv_desc_urr_id,
+        &ogs_pfcp_tlv_desc_rat_type,
         NULL,
     }
 };
@@ -2561,6 +3044,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_pmf_parameters =
     sizeof(ogs_pfcp_tlv_pmf_parameters_t),
     {
         &ogs_pfcp_tlv_desc_pmf_address_information,
+        &ogs_pfcp_tlv_desc_qfi,
         NULL,
     }
 };
@@ -2633,6 +3117,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_urr =
         &ogs_pfcp_tlv_desc_ethernet_inactivity_timer,
         &ogs_pfcp_tlv_desc_additional_monitoring_time,
         &ogs_pfcp_tlv_desc_number_of_reports,
+        &ogs_pfcp_tlv_desc_application_id,
+        &ogs_pfcp_tlv_desc_sdf_filter,
+        &ogs_tlv_desc_more8,
+        &ogs_pfcp_tlv_desc_user_plane_inactivity_timer,
         NULL,
     }
 };
@@ -2659,6 +3147,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_qer =
         &ogs_pfcp_tlv_desc_paging_policy_indicator,
         &ogs_pfcp_tlv_desc_averaging_window,
         &ogs_pfcp_tlv_desc_qer_control_indications,
+        &ogs_pfcp_tlv_desc_qer_indications,
         NULL,
     }
 };
@@ -2676,6 +3165,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_created_pdr =
         &ogs_pfcp_tlv_desc_f_teid,
         &ogs_pfcp_tlv_desc_f_teid,
         &ogs_pfcp_tlv_desc_ue_ip_address,
+        &ogs_pfcp_tlv_desc_local_ingress_tunnel,
         NULL,
     }
 };
@@ -2702,6 +3192,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_pdr =
         &ogs_pfcp_tlv_desc_deactivation_time,
         &ogs_pfcp_tlv_desc_ip_multicast_addressing_info_within_pfcp_session_establishment_request,
         &ogs_pfcp_tlv_desc_transport_delay_reporting,
+        &ogs_pfcp_tlv_desc_rat_type,
         NULL,
     }
 };
@@ -2762,6 +3253,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_urr =
         &ogs_pfcp_tlv_desc_ethernet_inactivity_timer,
         &ogs_pfcp_tlv_desc_additional_monitoring_time,
         &ogs_pfcp_tlv_desc_number_of_reports,
+        &ogs_pfcp_tlv_desc_application_id,
+        &ogs_pfcp_tlv_desc_sdf_filter,
+        &ogs_tlv_desc_more8,
+        &ogs_pfcp_tlv_desc_user_plane_inactivity_timer,
         NULL,
     }
 };
@@ -2986,6 +3481,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_usage_report_session_report_request =
         &ogs_pfcp_tlv_desc_ethernet_traffic_information,
         &ogs_pfcp_tlv_desc_join_ip_multicast_information_ie_within_usage_report,
         &ogs_pfcp_tlv_desc_leave_ip_multicast_information_ie_within_usage_report,
+        &ogs_pfcp_tlv_desc_predefined_rules_name,
         NULL,
     }
 };
@@ -3099,10 +3595,17 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_traffic_endpoint =
         &ogs_pfcp_tlv_desc_ue_ip_address,
         &ogs_pfcp_tlv_desc_ethernet_pdu_session_information,
         &ogs_pfcp_tlv_desc_framed_route,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_framed_routing,
         &ogs_pfcp_tlv_desc_framed_ipv6_route,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_qfi,
         &ogs_pfcp_tlv_desc__interface_type,
+        &ogs_pfcp_tlv_desc_local_ingress_tunnel,
+        &ogs_pfcp_tlv_desc_ip_multicast_addressing_info_within_pfcp_session_establishment_request,
+        &ogs_pfcp_tlv_desc_mbs_session_identifier,
+        &ogs_pfcp_tlv_desc_area_session_id,
+        &ogs_pfcp_tlv_desc_rat_type,
         NULL,
     }
 };
@@ -3120,6 +3623,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_created_traffic_endpoint =
         &ogs_pfcp_tlv_desc_f_teid,
         &ogs_pfcp_tlv_desc_f_teid,
         &ogs_pfcp_tlv_desc_ue_ip_address,
+        &ogs_pfcp_tlv_desc_local_ingress_tunnel,
         NULL,
     }
 };
@@ -3152,6 +3656,8 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_mar =
         &ogs_pfcp_tlv_desc_steering_mode,
         &ogs_pfcp_tlv_desc__access_forwarding_action_information,
         &ogs_pfcp_tlv_desc_non__access_forwarding_action_information,
+        &ogs_pfcp_tlv_desc_thresholds,
+        &ogs_pfcp_tlv_desc_steering_mode_indicator,
         NULL,
     }
 };
@@ -3186,6 +3692,8 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_mar =
         &ogs_pfcp_tlv_desc_update_non__access_forwarding_action_information,
         &ogs_pfcp_tlv_desc__access_forwarding_action_information,
         &ogs_pfcp_tlv_desc_non__access_forwarding_action_information,
+        &ogs_pfcp_tlv_desc_thresholds,
+        &ogs_pfcp_tlv_desc_steering_mode_indicator,
         NULL,
     }
 };
@@ -3228,7 +3736,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_created_bridge_info_for_tsc =
     sizeof(ogs_pfcp_tlv_created_bridge_info_for_tsc_t),
     {
         &ogs_pfcp_tlv_desc_ds_tt_port_number,
-        &ogs_pfcp_tlv_desc_tsn_bridge_id,
+        &ogs_pfcp_tlv_desc_fivegs_user_plane_node,
         NULL,
     }
 };
@@ -3291,7 +3799,8 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_clock_drift_control_information =
     sizeof(ogs_pfcp_tlv_clock_drift_control_information_t),
     {
         &ogs_pfcp_tlv_desc_requested_clock_drift_information,
-        &ogs_pfcp_tlv_desc_tsn_time_domain_number,
+        &ogs_pfcp_tlv_desc_time_domain_number,
+        &ogs_pfcp_tlv_desc_configured_time_domain,
         &ogs_pfcp_tlv_desc_time_offset_threshold,
         &ogs_pfcp_tlv_desc_cumulative_rateratio_threshold,
         NULL,
@@ -3307,10 +3816,13 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_clock_drift_report =
     0,
     sizeof(ogs_pfcp_tlv_clock_drift_report_t),
     {
-        &ogs_pfcp_tlv_desc_tsn_time_domain_number,
+        &ogs_pfcp_tlv_desc_time_domain_number,
         &ogs_pfcp_tlv_desc_time_offset_measurement,
         &ogs_pfcp_tlv_desc_cumulative_rateratio_measurement,
         &ogs_pfcp_tlv_desc_time_stamp,
+        &ogs_pfcp_tlv_desc_network_instance,
+        &ogs_pfcp_tlv_desc_apn_dnn,
+        &ogs_pfcp_tlv_desc_s_nssai,
         NULL,
     }
 };
@@ -3341,6 +3853,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_srr =
         &ogs_pfcp_tlv_desc_srr_id,
         &ogs_pfcp_tlv_desc_access_availability_control_information,
         &ogs_pfcp_tlv_desc_qos_monitoring_per_qos_flow_control_information,
+        &ogs_pfcp_tlv_desc_direct_reporting_information,
         NULL,
     }
 };
@@ -3357,6 +3870,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_update_srr =
         &ogs_pfcp_tlv_desc_srr_id,
         &ogs_pfcp_tlv_desc_access_availability_control_information,
         &ogs_pfcp_tlv_desc_qos_monitoring_per_qos_flow_control_information,
+        &ogs_pfcp_tlv_desc_direct_reporting_information,
         NULL,
     }
 };
@@ -3569,6 +4083,152 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_ue_ip_address_usage_information =
         &ogs_pfcp_tlv_desc_number_of_ue_ip_addresses,
         &ogs_pfcp_tlv_desc_network_instance,
         &ogs_pfcp_tlv_desc_ue_ip_address,
+        &ogs_pfcp_tlv_desc_s_nssai,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_partial_failure_information =
+{
+    OGS_TLV_COMPOUND,
+    "Partial Failure Information",
+    OGS_PFCP_PARTIAL_FAILURE_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_partial_failure_information_t),
+    {
+        &ogs_pfcp_tlv_desc_failed_rule_id,
+        &ogs_pfcp_tlv_desc_cause,
+        &ogs_pfcp_tlv_desc_offending_ie_information,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_l2tp_tunnel_information =
+{
+    OGS_TLV_COMPOUND,
+    "L2TP Tunnel Information",
+    OGS_PFCP_L2TP_TUNNEL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_l2tp_tunnel_information_t),
+    {
+        &ogs_pfcp_tlv_desc_lns_address,
+        &ogs_pfcp_tlv_desc_tunnel_password,
+        &ogs_pfcp_tlv_desc_tunnel_preference,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_l2tp_session_information =
+{
+    OGS_TLV_COMPOUND,
+    "L2TP Session Information",
+    OGS_PFCP_L2TP_SESSION_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_l2tp_session_information_t),
+    {
+        &ogs_pfcp_tlv_desc_calling_number,
+        &ogs_pfcp_tlv_desc_called_number,
+        &ogs_pfcp_tlv_desc_maximum_receive_unit,
+        &ogs_pfcp_tlv_desc_l2tp_session_indications,
+        &ogs_pfcp_tlv_desc_l2tp_user_authentication_ie,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_created_l2tp_session =
+{
+    OGS_TLV_COMPOUND,
+    "Created L2TP Session",
+    OGS_PFCP_CREATED_L2TP_SESSION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_created_l2tp_session_t),
+    {
+        &ogs_pfcp_tlv_desc_dns_server_address,
+        &ogs_pfcp_tlv_desc_nbns_server_address,
+        &ogs_pfcp_tlv_desc_lns_address,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcp_session_change_info =
+{
+    OGS_TLV_COMPOUND,
+    "PFCP Session Change Info",
+    OGS_PFCP_PFCP_SESSION_CHANGE_INFO_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_pfcp_session_change_info_t),
+    {
+        &ogs_pfcp_tlv_desc_fq_csid,
+        &ogs_pfcp_tlv_desc_group_id,
+        &ogs_pfcp_tlv_desc_cp_ip_address,
+        &ogs_pfcp_tlv_desc_alternative_smf_ip_address,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4mb_control_information =
+{
+    OGS_TLV_COMPOUND,
+    "MBS Session N4mb Control Information",
+    OGS_PFCP_MBS_SESSION_N4MB_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_mbs_session_n4mb_control_information_t),
+    {
+        &ogs_pfcp_tlv_desc_mbs_session_identifier,
+        &ogs_pfcp_tlv_desc_area_session_id,
+        &ogs_pfcp_tlv_desc_mbsn4mbreq_flags,
+        &ogs_pfcp_tlv_desc_multicast_transport_information,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4_information =
+{
+    OGS_TLV_COMPOUND,
+    "MBS Session N4 Information",
+    OGS_PFCP_MBS_SESSION_N4_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_mbs_session_n4_information_t),
+    {
+        &ogs_pfcp_tlv_desc_multicast_transport_information,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4_control_information =
+{
+    OGS_TLV_COMPOUND,
+    "MBS Session N4 Control Information",
+    OGS_PFCP_MBS_SESSION_N4_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_mbs_session_n4_control_information_t),
+    {
+        &ogs_pfcp_tlv_desc_mbs_session_identifier,
+        &ogs_pfcp_tlv_desc_area_session_id,
+        &ogs_pfcp_tlv_desc_multicast_transport_information,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_dscp_to_ppi_control_information =
+{
+    OGS_TLV_COMPOUND,
+    "DSCP to PPI Control Information",
+    OGS_PFCP_DSCP_TO_PPI_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_dscp_to_ppi_control_information_t),
+    {
+        &ogs_pfcp_tlv_desc_dscp_to_ppi_mapping_information,
+        &ogs_pfcp_tlv_desc_qfi,
         NULL,
     }
 };
@@ -3688,6 +4348,8 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_association_update_response =
         &ogs_pfcp_tlv_desc_cause,
         &ogs_pfcp_tlv_desc_up_function_features,
         &ogs_pfcp_tlv_desc_cp_function_features,
+        &ogs_pfcp_tlv_desc_user_plane_ip_resource_information,
+        &ogs_tlv_desc_more4,
         &ogs_pfcp_tlv_desc_ue_ip_address_usage_information,
     NULL,
 }};
@@ -3726,10 +4388,12 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_node_report_request =
     0, 0, 0, 0, {
         &ogs_pfcp_tlv_desc_node_id,
         &ogs_pfcp_tlv_desc_node_report_type,
+        &ogs_pfcp_tlv_desc_vendor_specific_node_report_type,
         &ogs_pfcp_tlv_desc_user_plane_path_failure_report,
         &ogs_pfcp_tlv_desc_user_plane_path_recovery_report,
         &ogs_pfcp_tlv_desc_clock_drift_report,
         &ogs_pfcp_tlv_desc_gtp_u_path_qos_report_pfcp_node_report_request,
+        &ogs_pfcp_tlv_desc_peer_up_restart_report,
     NULL,
 }};
 
@@ -3763,6 +4427,27 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_set_deletion_response =
 {
     OGS_TLV_MESSAGE,
     "PFCP Session Set Deletion Response",
+    0, 0, 0, 0, {
+        &ogs_pfcp_tlv_desc_node_id,
+        &ogs_pfcp_tlv_desc_cause,
+        &ogs_pfcp_tlv_desc_offending_ie,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_set_modification_request =
+{
+    OGS_TLV_MESSAGE,
+    "PFCP Session Set Modification Request",
+    0, 0, 0, 0, {
+        &ogs_pfcp_tlv_desc_node_id,
+        &ogs_pfcp_tlv_desc_pfcp_session_change_info,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_set_modification_response =
+{
+    OGS_TLV_MESSAGE,
+    "PFCP Session Set Modification Response",
     0, 0, 0, 0, {
         &ogs_pfcp_tlv_desc_node_id,
         &ogs_pfcp_tlv_desc_cause,
@@ -3805,6 +4490,13 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_establishment_request =
         &ogs_pfcp_tlv_desc_recovery_time_stamp,
         &ogs_pfcp_tlv_desc_s_nssai,
         &ogs_pfcp_tlv_desc_provide_rds_configuration_information,
+        &ogs_pfcp_tlv_desc_rat_type,
+        &ogs_pfcp_tlv_desc_l2tp_tunnel_information,
+        &ogs_pfcp_tlv_desc_l2tp_session_information,
+        &ogs_pfcp_tlv_desc_group_id,
+        &ogs_pfcp_tlv_desc_mbs_session_n4mb_control_information,
+        &ogs_pfcp_tlv_desc_mbs_session_n4_control_information,
+        &ogs_pfcp_tlv_desc_dscp_to_ppi_control_information,
     NULL,
 }};
 
@@ -3827,6 +4519,10 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_establishment_response =
         &ogs_pfcp_tlv_desc_created_bridge_info_for_tsc,
         &ogs_pfcp_tlv_desc_atsss_control_parameters,
         &ogs_pfcp_tlv_desc_rds_configuration_information,
+        &ogs_pfcp_tlv_desc_partial_failure_information,
+        &ogs_pfcp_tlv_desc_created_l2tp_session,
+        &ogs_pfcp_tlv_desc_mbs_session_n4mb_information,
+        &ogs_pfcp_tlv_desc_mbs_session_n4_information,
     NULL,
 }};
 
@@ -3889,6 +4585,10 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_modification_request =
         &ogs_pfcp_tlv_desc_access_availability_information,
         &ogs_pfcp_tlv_desc_query_packet_rate_status_ie_within_pfcp_session_modification_request,
         &ogs_pfcp_tlv_desc_s_nssai,
+        &ogs_pfcp_tlv_desc_rat_type,
+        &ogs_pfcp_tlv_desc_group_id,
+        &ogs_pfcp_tlv_desc_mbs_session_n4_control_information,
+        &ogs_pfcp_tlv_desc_dscp_to_ppi_control_information,
     NULL,
 }};
 
@@ -3908,10 +4608,12 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_modification_response =
         &ogs_pfcp_tlv_desc_failed_rule_id,
         &ogs_pfcp_tlv_desc_additional_usage_reports_information,
         &ogs_pfcp_tlv_desc_created_traffic_endpoint,
-        &ogs_pfcp_tlv_desc_tsc_management_information_ie_within_pfcp_session_modification_response,
+        &ogs_pfcp_tlv_desc_tsc_management_information_ie_within_pfcp_session_modification_request,
         &ogs_pfcp_tlv_desc_atsss_control_parameters,
         &ogs_pfcp_tlv_desc_updated_pdr,
-        &ogs_pfcp_tlv_desc_packet_rate_status_report_ie_within_pfcp_session_modification_response,
+        &ogs_pfcp_tlv_desc_packet_rate_status_report,
+        &ogs_pfcp_tlv_desc_partial_failure_information,
+        &ogs_pfcp_tlv_desc_mbs_session_n4_information,
     NULL,
 }};
 
@@ -3937,6 +4639,8 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_deletion_response =
         &ogs_pfcp_tlv_desc_additional_usage_reports_information,
         &ogs_pfcp_tlv_desc_packet_rate_status_report,
         &ogs_pfcp_tlv_desc_session_report,
+        &ogs_pfcp_tlv_desc_mbs_session_n4_information,
+        &ogs_pfcp_tlv_desc_pfcpsdrsp_flags,
     NULL,
 }};
 
@@ -3956,8 +4660,9 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_report_request =
         &ogs_pfcp_tlv_desc_pfcpsrreq_flags,
         &ogs_pfcp_tlv_desc_f_seid,
         &ogs_pfcp_tlv_desc_packet_rate_status_report,
-        &ogs_pfcp_tlv_desc_tsc_management_information_ie_within_pfcp_session_report_request,
+        &ogs_pfcp_tlv_desc_tsc_management_information_ie_within_pfcp_session_modification_request,
         &ogs_pfcp_tlv_desc_session_report,
+        &ogs_pfcp_tlv_desc_cause,
     NULL,
 }};
 
@@ -3973,31 +4678,43 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_report_response =
         &ogs_pfcp_tlv_desc_f_seid,
         &ogs_pfcp_tlv_desc_f_teid,
         &ogs_pfcp_tlv_desc_alternative_smf_ip_address,
+        &ogs_pfcp_tlv_desc_fq_csid,
+        &ogs_pfcp_tlv_desc_group_id,
+        &ogs_pfcp_tlv_desc_node_id,
     NULL,
 }};
 
 
-int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t *pkbuf)
+ogs_pfcp_message_t *ogs_pfcp_parse_msg(ogs_pkbuf_t *pkbuf)
 {
     int rv = OGS_ERROR;
     ogs_pfcp_header_t *h = NULL;
     uint16_t size = 0;
 
-    ogs_assert(pfcp_message);
+    ogs_pfcp_message_t *pfcp_message = NULL;
+
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
 
     h = (ogs_pfcp_header_t *)pkbuf->data;
     ogs_assert(h);
 
-    memset(pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+    pfcp_message = ogs_calloc(1, sizeof(*pfcp_message));
+    if (!pfcp_message) {
+        ogs_error("No memory");
+        return NULL;
+    }
 
     if (h->seid_presence)
         size = OGS_PFCP_HEADER_LEN;
     else
         size = OGS_PFCP_HEADER_LEN-OGS_PFCP_SEID_LEN;
 
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+        ogs_error("ogs_pkbuf_pull() failed [len:%d]", pkbuf->len);
+        ogs_pfcp_message_free(pfcp_message);
+        return NULL;
+    }
     memcpy(&pfcp_message->h, pkbuf->data - size, size);
 
     if (h->seid_presence) {
@@ -4007,108 +4724,146 @@ int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t *pkbuf)
     }
 
     if (pkbuf->len == 0)
-        return OGS_OK;
+        return pfcp_message;
 
     switch(pfcp_message->h.type)
     {
         case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_heartbeat_request,
                     &ogs_pfcp_msg_desc_pfcp_heartbeat_request, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_HEARTBEAT_RESPONSE_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_heartbeat_response,
                     &ogs_pfcp_msg_desc_pfcp_heartbeat_response, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_PFD_MANAGEMENT_REQUEST_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_pfd_management_request,
                     &ogs_pfcp_msg_desc_pfcp_pfd_management_request, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_PFD_MANAGEMENT_RESPONSE_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_pfd_management_response,
                     &ogs_pfcp_msg_desc_pfcp_pfd_management_response, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_association_setup_request,
                     &ogs_pfcp_msg_desc_pfcp_association_setup_request, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_association_setup_response,
                     &ogs_pfcp_msg_desc_pfcp_association_setup_response, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_ASSOCIATION_UPDATE_REQUEST_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_association_update_request,
                     &ogs_pfcp_msg_desc_pfcp_association_update_request, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_ASSOCIATION_UPDATE_RESPONSE_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_association_update_response,
                     &ogs_pfcp_msg_desc_pfcp_association_update_response, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_ASSOCIATION_RELEASE_REQUEST_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_association_release_request,
                     &ogs_pfcp_msg_desc_pfcp_association_release_request, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_ASSOCIATION_RELEASE_RESPONSE_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_association_release_response,
                     &ogs_pfcp_msg_desc_pfcp_association_release_response, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_VERSION_NOT_SUPPORTED_RESPONSE_TYPE:
-            rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_version_not_supported_response,
-                    &ogs_pfcp_msg_desc_pfcp_version_not_supported_response, pkbuf, OGS_TLV_MODE_T2_L2);
             break;
         case OGS_PFCP_NODE_REPORT_REQUEST_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_node_report_request,
                     &ogs_pfcp_msg_desc_pfcp_node_report_request, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_NODE_REPORT_RESPONSE_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_node_report_response,
                     &ogs_pfcp_msg_desc_pfcp_node_report_response, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_SESSION_SET_DELETION_REQUEST_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_session_set_deletion_request,
                     &ogs_pfcp_msg_desc_pfcp_session_set_deletion_request, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_SESSION_SET_DELETION_RESPONSE_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_session_set_deletion_response,
                     &ogs_pfcp_msg_desc_pfcp_session_set_deletion_response, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
+            break;
+        case OGS_PFCP_SESSION_SET_MODIFICATION_REQUEST_TYPE:
+            rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_session_set_modification_request,
+                    &ogs_pfcp_msg_desc_pfcp_session_set_modification_request, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
+            break;
+        case OGS_PFCP_SESSION_SET_MODIFICATION_RESPONSE_TYPE:
+            rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_session_set_modification_response,
+                    &ogs_pfcp_msg_desc_pfcp_session_set_modification_response, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_session_establishment_request,
                     &ogs_pfcp_msg_desc_pfcp_session_establishment_request, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_session_establishment_response,
                     &ogs_pfcp_msg_desc_pfcp_session_establishment_response, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_session_modification_request,
                     &ogs_pfcp_msg_desc_pfcp_session_modification_request, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_session_modification_response,
                     &ogs_pfcp_msg_desc_pfcp_session_modification_response, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:
-            rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_session_deletion_request,
-                    &ogs_pfcp_msg_desc_pfcp_session_deletion_request, pkbuf, OGS_TLV_MODE_T2_L2);
             break;
         case OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_session_deletion_response,
                     &ogs_pfcp_msg_desc_pfcp_session_deletion_response, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_SESSION_REPORT_REQUEST_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_session_report_request,
                     &ogs_pfcp_msg_desc_pfcp_session_report_request, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         case OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE:
             rv = ogs_tlv_parse_msg(&pfcp_message->pfcp_session_report_response,
                     &ogs_pfcp_msg_desc_pfcp_session_report_response, pkbuf, OGS_TLV_MODE_T2_L2);
+            ogs_expect(rv == OGS_OK);
             break;
         default:
             ogs_warn("Not implemented(type:%d)", pfcp_message->h.type);
             break;
     }
 
-    return rv;
+    if (rv != OGS_OK) {
+        ogs_pfcp_message_free(pfcp_message);
+        return NULL;
+    }
+
+    return pfcp_message;
+}
+
+void ogs_pfcp_message_free(ogs_pfcp_message_t *pfcp_message)
+{
+    ogs_assert(pfcp_message);
+    ogs_free(pfcp_message);
 }
 
 ogs_pkbuf_t *ogs_pfcp_build_msg(ogs_pfcp_message_t *pfcp_message)
@@ -4177,6 +4932,14 @@ ogs_pkbuf_t *ogs_pfcp_build_msg(ogs_pfcp_message_t *pfcp_message)
         case OGS_PFCP_SESSION_SET_DELETION_RESPONSE_TYPE:
             pkbuf = ogs_tlv_build_msg(&ogs_pfcp_msg_desc_pfcp_session_set_deletion_response,
                     &pfcp_message->pfcp_session_set_deletion_response, OGS_TLV_MODE_T2_L2);
+            break;
+        case OGS_PFCP_SESSION_SET_MODIFICATION_REQUEST_TYPE:
+            pkbuf = ogs_tlv_build_msg(&ogs_pfcp_msg_desc_pfcp_session_set_modification_request,
+                    &pfcp_message->pfcp_session_set_modification_request, OGS_TLV_MODE_T2_L2);
+            break;
+        case OGS_PFCP_SESSION_SET_MODIFICATION_RESPONSE_TYPE:
+            pkbuf = ogs_tlv_build_msg(&ogs_pfcp_msg_desc_pfcp_session_set_modification_response,
+                    &pfcp_message->pfcp_session_set_modification_response, OGS_TLV_MODE_T2_L2);
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
             pkbuf = ogs_tlv_build_msg(&ogs_pfcp_msg_desc_pfcp_session_establishment_request,

@@ -28,21 +28,38 @@ OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_create(
 
 void OpenAPI_av_eap_aka_prime_free(OpenAPI_av_eap_aka_prime_t *av_eap_aka_prime)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == av_eap_aka_prime) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(av_eap_aka_prime->rand);
-    ogs_free(av_eap_aka_prime->xres);
-    ogs_free(av_eap_aka_prime->autn);
-    ogs_free(av_eap_aka_prime->ck_prime);
-    ogs_free(av_eap_aka_prime->ik_prime);
+    if (av_eap_aka_prime->rand) {
+        ogs_free(av_eap_aka_prime->rand);
+        av_eap_aka_prime->rand = NULL;
+    }
+    if (av_eap_aka_prime->xres) {
+        ogs_free(av_eap_aka_prime->xres);
+        av_eap_aka_prime->xres = NULL;
+    }
+    if (av_eap_aka_prime->autn) {
+        ogs_free(av_eap_aka_prime->autn);
+        av_eap_aka_prime->autn = NULL;
+    }
+    if (av_eap_aka_prime->ck_prime) {
+        ogs_free(av_eap_aka_prime->ck_prime);
+        av_eap_aka_prime->ck_prime = NULL;
+    }
+    if (av_eap_aka_prime->ik_prime) {
+        ogs_free(av_eap_aka_prime->ik_prime);
+        av_eap_aka_prime->ik_prime = NULL;
+    }
     ogs_free(av_eap_aka_prime);
 }
 
 cJSON *OpenAPI_av_eap_aka_prime_convertToJSON(OpenAPI_av_eap_aka_prime_t *av_eap_aka_prime)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (av_eap_aka_prime == NULL) {
         ogs_error("OpenAPI_av_eap_aka_prime_convertToJSON() failed [AvEapAkaPrime]");
@@ -50,11 +67,19 @@ cJSON *OpenAPI_av_eap_aka_prime_convertToJSON(OpenAPI_av_eap_aka_prime_t *av_eap
     }
 
     item = cJSON_CreateObject();
+    if (av_eap_aka_prime->av_type == OpenAPI_av_type_NULL) {
+        ogs_error("OpenAPI_av_eap_aka_prime_convertToJSON() failed [av_type]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "avType", OpenAPI_av_type_ToString(av_eap_aka_prime->av_type)) == NULL) {
         ogs_error("OpenAPI_av_eap_aka_prime_convertToJSON() failed [av_type]");
         goto end;
     }
 
+    if (!av_eap_aka_prime->rand) {
+        ogs_error("OpenAPI_av_eap_aka_prime_convertToJSON() failed [rand]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "rand", av_eap_aka_prime->rand) == NULL) {
         ogs_error("OpenAPI_av_eap_aka_prime_convertToJSON() failed [rand]");
         goto end;
@@ -67,6 +92,10 @@ cJSON *OpenAPI_av_eap_aka_prime_convertToJSON(OpenAPI_av_eap_aka_prime_t *av_eap
     }
     }
 
+    if (!av_eap_aka_prime->autn) {
+        ogs_error("OpenAPI_av_eap_aka_prime_convertToJSON() failed [autn]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "autn", av_eap_aka_prime->autn) == NULL) {
         ogs_error("OpenAPI_av_eap_aka_prime_convertToJSON() failed [autn]");
         goto end;
@@ -93,63 +122,64 @@ end:
 OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_parseFromJSON(cJSON *av_eap_aka_primeJSON)
 {
     OpenAPI_av_eap_aka_prime_t *av_eap_aka_prime_local_var = NULL;
-    cJSON *av_type = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "avType");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *av_type = NULL;
+    OpenAPI_av_type_e av_typeVariable = 0;
+    cJSON *rand = NULL;
+    cJSON *xres = NULL;
+    cJSON *autn = NULL;
+    cJSON *ck_prime = NULL;
+    cJSON *ik_prime = NULL;
+    av_type = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "avType");
     if (!av_type) {
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [av_type]");
         goto end;
     }
-
-    OpenAPI_av_type_e av_typeVariable;
     if (!cJSON_IsString(av_type)) {
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [av_type]");
         goto end;
     }
     av_typeVariable = OpenAPI_av_type_FromString(av_type->valuestring);
 
-    cJSON *rand = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "rand");
+    rand = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "rand");
     if (!rand) {
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [rand]");
         goto end;
     }
-
     if (!cJSON_IsString(rand)) {
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [rand]");
         goto end;
     }
 
-    cJSON *xres = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "xres");
-
+    xres = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "xres");
     if (xres) {
-    if (!cJSON_IsString(xres)) {
+    if (!cJSON_IsString(xres) && !cJSON_IsNull(xres)) {
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [xres]");
         goto end;
     }
     }
 
-    cJSON *autn = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "autn");
+    autn = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "autn");
     if (!autn) {
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [autn]");
         goto end;
     }
-
     if (!cJSON_IsString(autn)) {
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [autn]");
         goto end;
     }
 
-    cJSON *ck_prime = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "ckPrime");
-
+    ck_prime = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "ckPrime");
     if (ck_prime) {
-    if (!cJSON_IsString(ck_prime)) {
+    if (!cJSON_IsString(ck_prime) && !cJSON_IsNull(ck_prime)) {
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [ck_prime]");
         goto end;
     }
     }
 
-    cJSON *ik_prime = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "ikPrime");
-
+    ik_prime = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "ikPrime");
     if (ik_prime) {
-    if (!cJSON_IsString(ik_prime)) {
+    if (!cJSON_IsString(ik_prime) && !cJSON_IsNull(ik_prime)) {
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [ik_prime]");
         goto end;
     }
@@ -158,10 +188,10 @@ OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_parseFromJSON(cJSON *av_eap
     av_eap_aka_prime_local_var = OpenAPI_av_eap_aka_prime_create (
         av_typeVariable,
         ogs_strdup(rand->valuestring),
-        xres ? ogs_strdup(xres->valuestring) : NULL,
+        xres && !cJSON_IsNull(xres) ? ogs_strdup(xres->valuestring) : NULL,
         ogs_strdup(autn->valuestring),
-        ck_prime ? ogs_strdup(ck_prime->valuestring) : NULL,
-        ik_prime ? ogs_strdup(ik_prime->valuestring) : NULL
+        ck_prime && !cJSON_IsNull(ck_prime) ? ogs_strdup(ck_prime->valuestring) : NULL,
+        ik_prime && !cJSON_IsNull(ik_prime) ? ogs_strdup(ik_prime->valuestring) : NULL
     );
 
     return av_eap_aka_prime_local_var;

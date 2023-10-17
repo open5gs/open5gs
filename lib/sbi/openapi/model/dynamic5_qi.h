@@ -1,7 +1,7 @@
 /*
  * dynamic5_qi.h
  *
- * 
+ * It indicates the QoS Characteristics for a Non-standardised or not pre-configured 5QI for downlink and uplink. 
  */
 
 #ifndef _OpenAPI_dynamic5_qi_H_

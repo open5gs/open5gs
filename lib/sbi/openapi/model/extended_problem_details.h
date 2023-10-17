@@ -15,9 +15,7 @@
 #include "acceptable_service_info.h"
 #include "access_token_err.h"
 #include "access_token_req.h"
-#include "extended_problem_details_all_of.h"
 #include "invalid_param.h"
-#include "problem_details.h"
 
 #ifdef __cplusplus
 extern "C" {

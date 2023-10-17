@@ -16,16 +16,18 @@ OpenAPI_amf_event_trigger_t *OpenAPI_amf_event_trigger_create(
 
 void OpenAPI_amf_event_trigger_free(OpenAPI_amf_event_trigger_t *amf_event_trigger)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == amf_event_trigger) {
         return;
     }
-    OpenAPI_lnode_t *node;
     ogs_free(amf_event_trigger);
 }
 
 cJSON *OpenAPI_amf_event_trigger_convertToJSON(OpenAPI_amf_event_trigger_t *amf_event_trigger)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (amf_event_trigger == NULL) {
         ogs_error("OpenAPI_amf_event_trigger_convertToJSON() failed [AmfEventTrigger]");
@@ -40,6 +42,7 @@ end:
 OpenAPI_amf_event_trigger_t *OpenAPI_amf_event_trigger_parseFromJSON(cJSON *amf_event_triggerJSON)
 {
     OpenAPI_amf_event_trigger_t *amf_event_trigger_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     amf_event_trigger_local_var = OpenAPI_amf_event_trigger_create (
     );
 

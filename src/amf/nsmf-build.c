@@ -42,6 +42,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     amf_ue = sess->amf_ue;
     ogs_assert(amf_ue);
     ogs_assert(amf_ue->nas.access_type);
+    ogs_assert(ran_ue_cycle(amf_ue->ran_ue));
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
@@ -51,6 +52,10 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
         (char *)OGS_SBI_RESOURCE_NAME_SM_CONTEXTS;
 
     memset(&SmContextCreateData, 0, sizeof(SmContextCreateData));
+    memset(&sNssai, 0, sizeof(sNssai));
+    memset(&hplmnSnssai, 0, sizeof(hplmnSnssai));
+    memset(&header, 0, sizeof(header));
+    memset(&ueLocation, 0, sizeof(ueLocation));
 
     SmContextCreateData.serving_nf_id =
         NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
@@ -86,12 +91,10 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     }
     SmContextCreateData.dnn = sess->dnn;
 
-    memset(&sNssai, 0, sizeof(sNssai));
     sNssai.sst = sess->s_nssai.sst;
     sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
     SmContextCreateData.s_nssai = &sNssai;
 
-    memset(&hplmnSnssai, 0, sizeof(hplmnSnssai));
     if (sess->mapped_hplmn.sst) {
         hplmnSnssai.sst = sess->mapped_hplmn.sst;
         hplmnSnssai.sd = ogs_s_nssai_sd_to_string(sess->mapped_hplmn.sd);
@@ -105,7 +108,6 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     }
     SmContextCreateData.an_type = amf_ue->nas.access_type; 
 
-    memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_CALLBACK;
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] = amf_ue->supi;
@@ -130,7 +132,6 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
 
     SmContextCreateData.rat_type = amf_ue_rat_type(amf_ue);
 
-    memset(&ueLocation, 0, sizeof(ueLocation));
     ueLocation.nr_location = ogs_sbi_build_nr_location(
             &amf_ue->nr_tai, &amf_ue->nr_cgi);
     if (!ueLocation.nr_location) {
@@ -244,6 +245,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
     message.h.resource.component[1] = sess->sm_context_ref;
     message.h.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_MODIFY;
 
+    memset(&ueLocation, 0, sizeof(ueLocation));
     memset(&SmContextUpdateData, 0, sizeof(SmContextUpdateData));
 
     message.SmContextUpdateData = &SmContextUpdateData;
@@ -301,7 +303,6 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
         ngApCause.value = param->ngApCause.value;
     }
 
-    memset(&ueLocation, 0, sizeof(ueLocation));
     if (param->ue_location) {
         ueLocation.nr_location = ogs_sbi_build_nr_location(
                 &amf_ue->nr_tai, &amf_ue->nr_cgi);

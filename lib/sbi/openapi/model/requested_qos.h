@@ -1,7 +1,7 @@
 /*
  * requested_qos.h
  *
- * 
+ * Contains the QoS information requested by the UE.
  */
 
 #ifndef _OpenAPI_requested_qos_H_

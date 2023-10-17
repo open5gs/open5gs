@@ -1,3 +1,5 @@
 usr/bin/open5gs-nssfd
 configs/open5gs/nssf.yaml etc/open5gs
+configs/open5gs/tls/nssf.key etc/open5gs/tls
+configs/open5gs/tls/nssf.crt etc/open5gs/tls
 configs/systemd/open5gs-nssfd.service lib/systemd/system

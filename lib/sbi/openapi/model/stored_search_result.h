@@ -1,7 +1,7 @@
 /*
  * stored_search_result.h
  *
- * Contains a complete search result (i.e. a number of discovered NF Instances), stored by NRF as a consequence of a prior search result
+ * Contains a complete search result (i.e. a number of discovered NF Instances), stored by NRF as a consequence of a prior search result 
  */
 
 #ifndef _OpenAPI_stored_search_result_H_

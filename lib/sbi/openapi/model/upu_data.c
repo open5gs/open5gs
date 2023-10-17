@@ -5,38 +5,50 @@
 #include "upu_data.h"
 
 OpenAPI_upu_data_t *OpenAPI_upu_data_create(
-    char *provisioning_time,
-    OpenAPI_ue_update_status_e ue_update_status,
-    char *upu_xmac_iue,
-    char *upu_mac_iue
+    char *sec_packet,
+    OpenAPI_list_t *default_conf_nssai,
+    char *routing_id
 )
 {
     OpenAPI_upu_data_t *upu_data_local_var = ogs_malloc(sizeof(OpenAPI_upu_data_t));
     ogs_assert(upu_data_local_var);
 
-    upu_data_local_var->provisioning_time = provisioning_time;
-    upu_data_local_var->ue_update_status = ue_update_status;
-    upu_data_local_var->upu_xmac_iue = upu_xmac_iue;
-    upu_data_local_var->upu_mac_iue = upu_mac_iue;
+    upu_data_local_var->sec_packet = sec_packet;
+    upu_data_local_var->default_conf_nssai = default_conf_nssai;
+    upu_data_local_var->routing_id = routing_id;
 
     return upu_data_local_var;
 }
 
 void OpenAPI_upu_data_free(OpenAPI_upu_data_t *upu_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == upu_data) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(upu_data->provisioning_time);
-    ogs_free(upu_data->upu_xmac_iue);
-    ogs_free(upu_data->upu_mac_iue);
+    if (upu_data->sec_packet) {
+        ogs_free(upu_data->sec_packet);
+        upu_data->sec_packet = NULL;
+    }
+    if (upu_data->default_conf_nssai) {
+        OpenAPI_list_for_each(upu_data->default_conf_nssai, node) {
+            OpenAPI_snssai_free(node->data);
+        }
+        OpenAPI_list_free(upu_data->default_conf_nssai);
+        upu_data->default_conf_nssai = NULL;
+    }
+    if (upu_data->routing_id) {
+        ogs_free(upu_data->routing_id);
+        upu_data->routing_id = NULL;
+    }
     ogs_free(upu_data);
 }
 
 cJSON *OpenAPI_upu_data_convertToJSON(OpenAPI_upu_data_t *upu_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (upu_data == NULL) {
         ogs_error("OpenAPI_upu_data_convertToJSON() failed [UpuData]");
@@ -44,26 +56,32 @@ cJSON *OpenAPI_upu_data_convertToJSON(OpenAPI_upu_data_t *upu_data)
     }
 
     item = cJSON_CreateObject();
-    if (cJSON_AddStringToObject(item, "provisioningTime", upu_data->provisioning_time) == NULL) {
-        ogs_error("OpenAPI_upu_data_convertToJSON() failed [provisioning_time]");
-        goto end;
-    }
-
-    if (cJSON_AddStringToObject(item, "ueUpdateStatus", OpenAPI_ue_update_status_ToString(upu_data->ue_update_status)) == NULL) {
-        ogs_error("OpenAPI_upu_data_convertToJSON() failed [ue_update_status]");
-        goto end;
-    }
-
-    if (upu_data->upu_xmac_iue) {
-    if (cJSON_AddStringToObject(item, "upuXmacIue", upu_data->upu_xmac_iue) == NULL) {
-        ogs_error("OpenAPI_upu_data_convertToJSON() failed [upu_xmac_iue]");
+    if (upu_data->sec_packet) {
+    if (cJSON_AddStringToObject(item, "secPacket", upu_data->sec_packet) == NULL) {
+        ogs_error("OpenAPI_upu_data_convertToJSON() failed [sec_packet]");
         goto end;
     }
     }
 
-    if (upu_data->upu_mac_iue) {
-    if (cJSON_AddStringToObject(item, "upuMacIue", upu_data->upu_mac_iue) == NULL) {
-        ogs_error("OpenAPI_upu_data_convertToJSON() failed [upu_mac_iue]");
+    if (upu_data->default_conf_nssai) {
+    cJSON *default_conf_nssaiList = cJSON_AddArrayToObject(item, "defaultConfNssai");
+    if (default_conf_nssaiList == NULL) {
+        ogs_error("OpenAPI_upu_data_convertToJSON() failed [default_conf_nssai]");
+        goto end;
+    }
+    OpenAPI_list_for_each(upu_data->default_conf_nssai, node) {
+        cJSON *itemLocal = OpenAPI_snssai_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_upu_data_convertToJSON() failed [default_conf_nssai]");
+            goto end;
+        }
+        cJSON_AddItemToArray(default_conf_nssaiList, itemLocal);
+    }
+    }
+
+    if (upu_data->routing_id) {
+    if (cJSON_AddStringToObject(item, "routingId", upu_data->routing_id) == NULL) {
+        ogs_error("OpenAPI_upu_data_convertToJSON() failed [routing_id]");
         goto end;
     }
     }
@@ -75,57 +93,66 @@ end:
 OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON)
 {
     OpenAPI_upu_data_t *upu_data_local_var = NULL;
-    cJSON *provisioning_time = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "provisioningTime");
-    if (!provisioning_time) {
-        ogs_error("OpenAPI_upu_data_parseFromJSON() failed [provisioning_time]");
-        goto end;
-    }
-
-    if (!cJSON_IsString(provisioning_time)) {
-        ogs_error("OpenAPI_upu_data_parseFromJSON() failed [provisioning_time]");
-        goto end;
-    }
-
-    cJSON *ue_update_status = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "ueUpdateStatus");
-    if (!ue_update_status) {
-        ogs_error("OpenAPI_upu_data_parseFromJSON() failed [ue_update_status]");
-        goto end;
-    }
-
-    OpenAPI_ue_update_status_e ue_update_statusVariable;
-    if (!cJSON_IsString(ue_update_status)) {
-        ogs_error("OpenAPI_upu_data_parseFromJSON() failed [ue_update_status]");
-        goto end;
-    }
-    ue_update_statusVariable = OpenAPI_ue_update_status_FromString(ue_update_status->valuestring);
-
-    cJSON *upu_xmac_iue = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "upuXmacIue");
-
-    if (upu_xmac_iue) {
-    if (!cJSON_IsString(upu_xmac_iue)) {
-        ogs_error("OpenAPI_upu_data_parseFromJSON() failed [upu_xmac_iue]");
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *sec_packet = NULL;
+    cJSON *default_conf_nssai = NULL;
+    OpenAPI_list_t *default_conf_nssaiList = NULL;
+    cJSON *routing_id = NULL;
+    sec_packet = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "secPacket");
+    if (sec_packet) {
+    if (!cJSON_IsString(sec_packet) && !cJSON_IsNull(sec_packet)) {
+        ogs_error("OpenAPI_upu_data_parseFromJSON() failed [sec_packet]");
         goto end;
     }
     }
 
-    cJSON *upu_mac_iue = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "upuMacIue");
+    default_conf_nssai = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "defaultConfNssai");
+    if (default_conf_nssai) {
+        cJSON *default_conf_nssai_local = NULL;
+        if (!cJSON_IsArray(default_conf_nssai)) {
+            ogs_error("OpenAPI_upu_data_parseFromJSON() failed [default_conf_nssai]");
+            goto end;
+        }
 
-    if (upu_mac_iue) {
-    if (!cJSON_IsString(upu_mac_iue)) {
-        ogs_error("OpenAPI_upu_data_parseFromJSON() failed [upu_mac_iue]");
+        default_conf_nssaiList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(default_conf_nssai_local, default_conf_nssai) {
+            if (!cJSON_IsObject(default_conf_nssai_local)) {
+                ogs_error("OpenAPI_upu_data_parseFromJSON() failed [default_conf_nssai]");
+                goto end;
+            }
+            OpenAPI_snssai_t *default_conf_nssaiItem = OpenAPI_snssai_parseFromJSON(default_conf_nssai_local);
+            if (!default_conf_nssaiItem) {
+                ogs_error("No default_conf_nssaiItem");
+                goto end;
+            }
+            OpenAPI_list_add(default_conf_nssaiList, default_conf_nssaiItem);
+        }
+    }
+
+    routing_id = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "routingId");
+    if (routing_id) {
+    if (!cJSON_IsString(routing_id) && !cJSON_IsNull(routing_id)) {
+        ogs_error("OpenAPI_upu_data_parseFromJSON() failed [routing_id]");
         goto end;
     }
     }
 
     upu_data_local_var = OpenAPI_upu_data_create (
-        ogs_strdup(provisioning_time->valuestring),
-        ue_update_statusVariable,
-        upu_xmac_iue ? ogs_strdup(upu_xmac_iue->valuestring) : NULL,
-        upu_mac_iue ? ogs_strdup(upu_mac_iue->valuestring) : NULL
+        sec_packet && !cJSON_IsNull(sec_packet) ? ogs_strdup(sec_packet->valuestring) : NULL,
+        default_conf_nssai ? default_conf_nssaiList : NULL,
+        routing_id && !cJSON_IsNull(routing_id) ? ogs_strdup(routing_id->valuestring) : NULL
     );
 
     return upu_data_local_var;
 end:
+    if (default_conf_nssaiList) {
+        OpenAPI_list_for_each(default_conf_nssaiList, node) {
+            OpenAPI_snssai_free(node->data);
+        }
+        OpenAPI_list_free(default_conf_nssaiList);
+        default_conf_nssaiList = NULL;
+    }
     return NULL;
 }
 

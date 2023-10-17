@@ -44,7 +44,7 @@ void upf_state_operational(ogs_fsm_t *s, upf_event_t *e)
     int rv;
     ogs_pkbuf_t *recvbuf = NULL;
 
-    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_message_t *pfcp_message = NULL;
     ogs_pfcp_node_t *node = NULL;
     ogs_pfcp_xact_t *xact = NULL;
 
@@ -66,27 +66,35 @@ void upf_state_operational(ogs_fsm_t *s, upf_event_t *e)
         node = e->pfcp_node;
         ogs_assert(node);
 
-        if (ogs_pfcp_parse_msg(&pfcp_message, recvbuf) != OGS_OK) {
+        /*
+         * Issue #1911
+         *
+         * Because ogs_pfcp_message_t is over 80kb in size,
+         * it can cause stack overflow.
+         * To avoid this, the pfcp_message structure uses heap memory.
+         */
+        if ((pfcp_message = ogs_pfcp_parse_msg(recvbuf)) == NULL) {
             ogs_error("ogs_pfcp_parse_msg() failed");
             ogs_pkbuf_free(recvbuf);
             break;
         }
 
-        rv = ogs_pfcp_xact_receive(node, &pfcp_message.h, &xact);
+        rv = ogs_pfcp_xact_receive(node, &pfcp_message->h, &xact);
         if (rv != OGS_OK) {
             ogs_pkbuf_free(recvbuf);
+            ogs_pfcp_message_free(pfcp_message);
             break;
         }
 
-        e->pfcp_message = &pfcp_message;
+        e->pfcp_message = pfcp_message;
         e->pfcp_xact = xact;
         ogs_fsm_dispatch(&node->sm, e);
         if (OGS_FSM_CHECK(&node->sm, upf_pfcp_state_exception)) {
             ogs_error("PFCP state machine exception");
-            break;
         }
 
         ogs_pkbuf_free(recvbuf);
+        ogs_pfcp_message_free(pfcp_message);
         break;
     case UPF_EVT_N4_TIMER:
     case UPF_EVT_N4_NO_HEARTBEAT:

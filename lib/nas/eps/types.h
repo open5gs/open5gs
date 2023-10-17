@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -55,6 +55,14 @@ typedef struct ogs_nas_location_area_identification_s {
 } __attribute__ ((packed)) ogs_nas_location_area_identification_t;
 
 typedef ogs_nas_location_area_identification_t ogs_nas_lai_t;
+
+/* 3GPP TS 24.008 10.5.5.15 Routing area identification */
+typedef struct ogs_nas_routing_area_identification_s {
+    ogs_nas_location_area_identification_t lai;
+    uint8_t rac;
+} __attribute__ ((packed)) ogs_nas_routing_area_identification_t;
+
+typedef ogs_nas_routing_area_identification_t ogs_nas_rai_t;
 
 /* 9.9.2.3 Mobile identity
  * See subclause 10.5.1.4 in 3GPP TS 24.008 [13].
@@ -122,7 +130,7 @@ typedef struct ogs_nas_mobile_identity_s {
 /*9.9.2.5 Mobile station classmark 3
  * See subclause 10.5.1.7 in 3GPP TS 24.008 [13].
  * O TLV 2-34 */
-#define OGS_NAS_MAX_MOBILE_STATION_CLASSMARK_3_LEN 32
+#define OGS_NAS_MAX_MOBILE_STATION_CLASSMARK_3_LEN 33
 typedef struct ogs_nas_mobile_station_classmark_3_s {
     uint8_t length;
     uint8_t buffer[OGS_NAS_MAX_MOBILE_STATION_CLASSMARK_3_LEN];
@@ -144,9 +152,9 @@ ED3(uint8_t type:4;,
 #define OGS_NAS_ADDITIONAL_UPDATE_TYPE_CIOT_RESERVED 3
 typedef struct ogs_nas_additional_update_type_s {
 ED4(uint8_t type:4;,
-    uint8_t pnb_ciot:2;,
-    uint8_t saf:1;,
-    uint8_t autv:1;)
+    uint8_t preferred_ciot_network_behaviour:2;,
+    uint8_t signalling_active_flag:1;,
+    uint8_t additional_update_type_value:1;)
 } __attribute__ ((packed)) ogs_nas_additional_update_type_t;
 
 /* 9.9.3.4a Ciphering key sequence number
@@ -343,6 +351,12 @@ ED8(uint8_t signalling_for_a_maximum_number_of_16_eps_bearer_contexts:1;,
     uint8_t header_compression_for_control_plan_ciot_eps_optimization:1;,
     uint8_t s1_u_data_transfer:1;,
     uint8_t user_plane_ciot_eps_optimization :1;)
+ED6(uint8_t spare:3;,
+    uint8_t paging_timing_collision_control:1;,
+    uint8_t paging_restriction:1;,
+    uint8_t reject_paging_request:1;,
+    uint8_t paging_indication_for_voice_services:1;,
+    uint8_t nas_signalling_connection_release:1;)
 } __attribute__ ((packed)) ogs_nas_eps_network_feature_support_t;
 
 /* 9.9.3.13 EPS update result
@@ -426,12 +440,15 @@ ED8(uint8_t ps_inter_rat_ho_from_geran_to_utran_iu_mode_capability:1;,
     uint8_t epc_capability:1;,
     uint8_t nf_capability:1;,
     uint8_t geran_network_sharing_capability:1;)
-ED6(uint8_t user_plane_integrity_protection_support:1;,
+ED8(uint8_t user_plane_integrity_protection_support:1;,
     uint8_t gia4:1;,
     uint8_t gia5:1;,
     uint8_t gia6:1;,
     uint8_t gia7:1;,
-    uint8_t spare:3;)
+    uint8_t epco_ie_indicator:1;,
+    uint8_t restriction_on_usex_of_enhanced_coverage_capability:1;,
+    uint8_t dual_connectivity_of_e_utra_with_nr_capability:1;)
+    uint8_t spare2[4];
 } __attribute__ ((packed)) ogs_nas_ms_network_capability_t;
 
 /* 9.9.3.20A MS network feature support
@@ -537,6 +554,22 @@ typedef struct ogs_eps_tai0_list_s {
     } __attribute__ ((packed)) tai[OGS_MAX_NUM_OF_TAI];
 } __attribute__ ((packed)) ogs_eps_tai0_list_t;
 
+typedef struct ogs_eps_tai1_list_s {
+    struct {
+    ED3(uint8_t spare:1;,
+        uint8_t type:2;,
+        uint8_t num:5;)
+        /*
+         * Do not change 'ogs_plmn_id_t' to 'ogs_nas_plmn_id_t'.
+         * Use 'ogs_plmn_id_t' for easy implementation.
+         * ogs_nas_tai_list_build() changes to NAS format(ogs_nas_plmn_id_t)
+         * and is sent to the UE.
+         */
+        ogs_plmn_id_t plmn_id;
+        uint16_t tac;
+    } __attribute__ ((packed)) tai[OGS_MAX_NUM_OF_TAI];
+} __attribute__ ((packed)) ogs_eps_tai1_list_t;
+
 typedef struct ogs_eps_tai2_list_s {
 ED3(uint8_t spare:1;,
     uint8_t type:2;,
@@ -556,8 +589,11 @@ typedef struct ogs_nas_tracking_area_identity_list_s {
     uint8_t buffer[OGS_NAS_EPS_MAX_TAI_LIST_LEN];
 } __attribute__ ((packed)) ogs_nas_tracking_area_identity_list_t;
 
-int ogs_nas_tai_list_build(ogs_nas_tracking_area_identity_list_t *target,
-        ogs_eps_tai0_list_t *source0, ogs_eps_tai2_list_t *source2);
+int ogs_nas_tai_list_build(
+        ogs_nas_tracking_area_identity_list_t *target,
+        ogs_eps_tai0_list_t *source0,
+        ogs_eps_tai1_list_t *source1,
+        ogs_eps_tai2_list_t *source2);
 
 
 /* 9.9.3.35 UE radio capability information update needed
@@ -745,13 +781,41 @@ typedef struct ogs_nas_n1_ue_network_capability_s {
     };
 } ogs_nas_n1_ue_network_capability_t;
 
+/* 9.9.3.58 UE radio capability ID availability
+ * O TLV 3 */
+typedef struct ogs_nas_ue_radio_capability_id_availability_s {
+    uint8_t length;
+ED2(uint8_t spare:5;,
+    uint8_t value:3;)
+} __attribute__ ((packed)) ogs_nas_ue_radio_capability_id_availability_t;
+
 /* 9.9.3.59 UE radio capability ID request
- * O TV 1 */
+ * O TLV 3 */
 typedef struct ogs_nas_ue_radio_capability_id_request_s {
+    uint8_t length;
 ED3(uint8_t type:4;,
     uint8_t spare:3;,
     uint8_t ue_radio_capability_id_available:1;)
 } __attribute__ ((packed)) ogs_nas_ue_radio_capability_id_request_t;
+
+/* 9.9.3.63 NB-S1 DRX parameter
+ * O TLV 3 */
+typedef struct ogs_nas_nb_s1_drx_parameter_s {
+    uint8_t length;
+ED2(uint8_t spare:4;,
+    uint8_t value:4;)
+} __attribute__ ((packed)) ogs_nas_nb_s1_drx_parameter_t;
+
+/* 9.9.3.64 IMSI offset
+ * O TLV 4 */
+typedef struct ogs_nas_imsi_offset_s {
+    uint8_t length;
+    uint16_t value;
+} __attribute__ ((packed)) ogs_nas_imsi_offset_t;
+
+/* 9.9.3.67 EPS additional request result
+ * O TLV 3 */
+typedef struct ogs_nas_additional_request_result_s ogs_nas_eps_additional_request_result_t;
 
 /* 9.9.4.1 Access point name
  * See subclause 10.5.6.1 in 3GPP TS 24.008 [13].

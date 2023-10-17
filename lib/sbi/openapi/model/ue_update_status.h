@@ -1,7 +1,7 @@
 /*
  * ue_update_status.h
  *
- * 
+ * Status of the procedure.
  */
 
 #ifndef _OpenAPI_ue_update_status_H_

@@ -23,7 +23,9 @@
 bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
         ogs_sbi_message_t *recvmsg)
 {
+    int r;
     char *strerror = NULL;
+    uint8_t cause_value = 0;
     smf_ue_t *smf_ue = NULL;
     ogs_pkbuf_t *n1smbuf = NULL;
 
@@ -45,6 +47,8 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     OpenAPI_ambr_t *sessionAmbr = NULL;
     OpenAPI_list_t *staticIpAddress = NULL;
     OpenAPI_ip_address_t *ipAddress = NULL;
+    OpenAPI_list_t *ipv4FrameRouteList = NULL;
+    OpenAPI_list_t *ipv6FrameRouteList = NULL;
     OpenAPI_lnode_t *node = NULL, *node2 = NULL;
 
     ogs_assert(sess);
@@ -92,7 +96,8 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
 
         ogs_warn("%s", strerror);
         smf_sbi_send_sm_context_create_error(stream,
-                OGS_SBI_HTTP_STATUS_NOT_FOUND, strerror, NULL, n1smbuf);
+                OGS_SBI_HTTP_STATUS_NOT_FOUND, OGS_SBI_APP_ERRNO_NULL,
+                strerror, NULL, n1smbuf);
         ogs_free(strerror);
 
         return false;
@@ -242,6 +247,50 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
                 }
             }
 
+            ipv4FrameRouteList = dnnConfiguration->ipv4_frame_route_list;
+            if (ipv4FrameRouteList) {
+                int i;
+                for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+                    if (!sess->session.ipv4_framed_routes ||
+                        !sess->session.ipv4_framed_routes[i])
+                        break;
+                    ogs_free(sess->session.ipv4_framed_routes[i]);
+                }
+                if (!sess->session.ipv4_framed_routes)
+                    sess->session.ipv4_framed_routes = ogs_calloc(
+                            OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                            sizeof(sess->session.ipv4_framed_routes[0]));
+                i = 0;
+                OpenAPI_list_for_each(ipv4FrameRouteList, node2) {
+                    OpenAPI_frame_route_info_t *route = node2->data;
+                    if (i >= OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI) break;
+                    if (!route) continue;
+                    sess->session.ipv4_framed_routes[i++] = ogs_strdup(route->ipv4_mask);
+                }
+            }
+
+            ipv6FrameRouteList = dnnConfiguration->ipv6_frame_route_list;
+            if (ipv6FrameRouteList) {
+                int i;
+                for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+                    if (!sess->session.ipv6_framed_routes ||
+                        !sess->session.ipv6_framed_routes[i])
+                        break;
+                    ogs_free(sess->session.ipv6_framed_routes[i]);
+                }
+                if (!sess->session.ipv6_framed_routes)
+                    sess->session.ipv6_framed_routes = ogs_calloc(
+                            OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                            sizeof(sess->session.ipv6_framed_routes[0]));
+                i = 0;
+                OpenAPI_list_for_each(ipv6FrameRouteList, node2) {
+                    OpenAPI_frame_route_info_t *route = node2->data;
+                    if (i >= OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI) break;
+                    if (!route) continue;
+                    sess->session.ipv6_framed_routes[i++] = ogs_strdup(route->ipv6_prefix);
+                }
+            }
+
             /* Succeeded to get PDU Session */
             if (!sess->session.name)
                 sess->session.name = ogs_strdup(dnnConfigurationMap->key);
@@ -259,7 +308,27 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     }
 
     /* Set UE IP Address to the Default DL PDR */
-    ogs_assert(OGS_PFCP_CAUSE_REQUEST_ACCEPTED == smf_sess_set_ue_ip(sess));
+    cause_value = smf_sess_set_ue_ip(sess);
+
+    if (cause_value == OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE) {
+        strerror = ogs_msprintf("[%s:%d] No IP addresses available",
+                smf_ue->supi, sess->psi);
+        ogs_assert(strerror);
+
+        n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
+            OGS_5GSM_CAUSE_INSUFFICIENT_RESOURCES_FOR_SPECIFIC_SLICE_AND_DNN);
+        ogs_assert(n1smbuf);
+
+        ogs_warn("%s", strerror);
+        smf_sbi_send_sm_context_create_error(stream,
+                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                OGS_SBI_APP_ERRNO_NULL, strerror, NULL, n1smbuf);
+        ogs_free(strerror);
+
+        return false;
+    }
+
+    ogs_assert(cause_value == OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
 
     /*********************************************************************
      * Send HTTP_STATUS_CREATED(/nsmf-pdusession/v1/sm-context) to the AMF
@@ -285,12 +354,16 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
+    smf_metrics_inst_by_slice_add(&sess->plmn_id, &sess->s_nssai,
+            SMF_METR_CTR_SM_PDUSESSIONCREATIONSUCC, 1);
+
     ogs_free(sendmsg.http.location);
 
-    ogs_assert(true ==
-        smf_sbi_discover_and_send(
+    r = smf_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
-            smf_npcf_smpolicycontrol_build_create, sess, stream, 0, NULL));
+            smf_npcf_smpolicycontrol_build_create, sess, stream, 0, NULL);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
 
     return true;
 

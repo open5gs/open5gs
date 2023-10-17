@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -78,6 +78,8 @@ ogs_pkbuf_t *testngap_build_handover_failure(test_ue_t *test_ue,
         NGAP_Cause_PR group, long cause);
 ogs_pkbuf_t *testngap_build_handover_cancel(test_ue_t *test_ue,
         NGAP_Cause_PR group, long cause);
+
+ogs_pkbuf_t *test_ngap_build_amf_configuration_ack(int i);
 
 #ifdef __cplusplus
 }

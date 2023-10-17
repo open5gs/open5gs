@@ -1,7 +1,7 @@
 /*
  * steering_info.h
  *
- * 
+ * Contains a combination of one PLMN identity and zero or more access technologies.
  */
 
 #ifndef _OpenAPI_steering_info_H_
@@ -13,7 +13,7 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "access_tech.h"
-#include "plmn_id_1.h"
+#include "plmn_id.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,12 +21,12 @@ extern "C" {
 
 typedef struct OpenAPI_steering_info_s OpenAPI_steering_info_t;
 typedef struct OpenAPI_steering_info_s {
-    struct OpenAPI_plmn_id_1_s *plmn_id;
+    struct OpenAPI_plmn_id_s *plmn_id;
     OpenAPI_list_t *access_tech_list;
 } OpenAPI_steering_info_t;
 
 OpenAPI_steering_info_t *OpenAPI_steering_info_create(
-    OpenAPI_plmn_id_1_t *plmn_id,
+    OpenAPI_plmn_id_t *plmn_id,
     OpenAPI_list_t *access_tech_list
 );
 void OpenAPI_steering_info_free(OpenAPI_steering_info_t *steering_info);

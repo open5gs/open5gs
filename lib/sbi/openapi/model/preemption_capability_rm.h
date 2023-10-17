@@ -1,7 +1,7 @@
 /*
  * preemption_capability_rm.h
  *
- * 
+ * This enumeration is defined in the same way as the &#39;PreemptionCapability&#39; enumeration, but with the OpenAPI &#39;nullable: true&#39; property. 
  */
 
 #ifndef _OpenAPI_preemption_capability_rm_H_

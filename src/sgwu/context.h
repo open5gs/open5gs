@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -37,16 +37,17 @@ extern int __sgwu_log_domain;
 #define OGS_LOG_DOMAIN __sgwu_log_domain
 
 typedef struct sgwu_context_s {
-    ogs_hash_t      *seid_hash;     /* hash table (SEID) */
-    ogs_hash_t      *f_seid_hash;   /* hash table (F-SEID) */
+    ogs_hash_t *sgwu_sxa_seid_hash;    /* hash table (SGWU-SXA-SEID) */
+    ogs_hash_t *sgwc_sxa_seid_hash;    /* hash table (SGWC-SXA-SEID) */
+    ogs_hash_t *sgwc_sxa_f_seid_hash;  /* hash table (SGWC-SXA-F-SEID) */
 
-    ogs_list_t      sess_list;
+    ogs_list_t sess_list;
 } sgwu_context_t;
 
 #define SGWU_SESS(pfcp_sess) ogs_container_of(pfcp_sess, sgwu_sess_t, pfcp)
 typedef struct sgwu_sess_s {
     ogs_lnode_t     lnode;
-    uint32_t        index;              /**< An index of this node */
+    ogs_pool_id_t   *sgwu_sxa_seid_node;    /* A node of SGWU-SXA-SEID */
 
     ogs_pfcp_sess_t pfcp;
 
@@ -70,7 +71,6 @@ sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message);
 sgwu_sess_t *sgwu_sess_add(ogs_pfcp_f_seid_t *f_seid);
 int sgwu_sess_remove(sgwu_sess_t *sess);
 void sgwu_sess_remove_all(void);
-sgwu_sess_t *sgwu_sess_find(uint32_t index);
 sgwu_sess_t *sgwu_sess_find_by_sgwc_sxa_seid(uint64_t seid);
 sgwu_sess_t *sgwu_sess_find_by_sgwc_sxa_f_seid(ogs_pfcp_f_seid_t *f_seid);
 sgwu_sess_t *sgwu_sess_find_by_sgwu_sxa_seid(uint64_t seid);

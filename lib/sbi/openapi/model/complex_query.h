@@ -1,7 +1,7 @@
 /*
  * complex_query.h
  *
- * 
+ * The ComplexQuery data type is either a conjunctive normal form or a disjunctive normal form.  The attribute names \&quot;cnfUnits\&quot; and \&quot;dnfUnits\&quot; (see clause 5.2.4.11 and clause 5.2.4.12)  serve as discriminator. 
  */
 
 #ifndef _OpenAPI_complex_query_H_

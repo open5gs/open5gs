@@ -20,18 +20,26 @@ OpenAPI_acc_net_charging_address_t *OpenAPI_acc_net_charging_address_create(
 
 void OpenAPI_acc_net_charging_address_free(OpenAPI_acc_net_charging_address_t *acc_net_charging_address)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == acc_net_charging_address) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(acc_net_charging_address->an_charg_ipv4_addr);
-    ogs_free(acc_net_charging_address->an_charg_ipv6_addr);
+    if (acc_net_charging_address->an_charg_ipv4_addr) {
+        ogs_free(acc_net_charging_address->an_charg_ipv4_addr);
+        acc_net_charging_address->an_charg_ipv4_addr = NULL;
+    }
+    if (acc_net_charging_address->an_charg_ipv6_addr) {
+        ogs_free(acc_net_charging_address->an_charg_ipv6_addr);
+        acc_net_charging_address->an_charg_ipv6_addr = NULL;
+    }
     ogs_free(acc_net_charging_address);
 }
 
 cJSON *OpenAPI_acc_net_charging_address_convertToJSON(OpenAPI_acc_net_charging_address_t *acc_net_charging_address)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (acc_net_charging_address == NULL) {
         ogs_error("OpenAPI_acc_net_charging_address_convertToJSON() failed [AccNetChargingAddress]");
@@ -60,27 +68,28 @@ end:
 OpenAPI_acc_net_charging_address_t *OpenAPI_acc_net_charging_address_parseFromJSON(cJSON *acc_net_charging_addressJSON)
 {
     OpenAPI_acc_net_charging_address_t *acc_net_charging_address_local_var = NULL;
-    cJSON *an_charg_ipv4_addr = cJSON_GetObjectItemCaseSensitive(acc_net_charging_addressJSON, "anChargIpv4Addr");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *an_charg_ipv4_addr = NULL;
+    cJSON *an_charg_ipv6_addr = NULL;
+    an_charg_ipv4_addr = cJSON_GetObjectItemCaseSensitive(acc_net_charging_addressJSON, "anChargIpv4Addr");
     if (an_charg_ipv4_addr) {
-    if (!cJSON_IsString(an_charg_ipv4_addr)) {
+    if (!cJSON_IsString(an_charg_ipv4_addr) && !cJSON_IsNull(an_charg_ipv4_addr)) {
         ogs_error("OpenAPI_acc_net_charging_address_parseFromJSON() failed [an_charg_ipv4_addr]");
         goto end;
     }
     }
 
-    cJSON *an_charg_ipv6_addr = cJSON_GetObjectItemCaseSensitive(acc_net_charging_addressJSON, "anChargIpv6Addr");
-
+    an_charg_ipv6_addr = cJSON_GetObjectItemCaseSensitive(acc_net_charging_addressJSON, "anChargIpv6Addr");
     if (an_charg_ipv6_addr) {
-    if (!cJSON_IsString(an_charg_ipv6_addr)) {
+    if (!cJSON_IsString(an_charg_ipv6_addr) && !cJSON_IsNull(an_charg_ipv6_addr)) {
         ogs_error("OpenAPI_acc_net_charging_address_parseFromJSON() failed [an_charg_ipv6_addr]");
         goto end;
     }
     }
 
     acc_net_charging_address_local_var = OpenAPI_acc_net_charging_address_create (
-        an_charg_ipv4_addr ? ogs_strdup(an_charg_ipv4_addr->valuestring) : NULL,
-        an_charg_ipv6_addr ? ogs_strdup(an_charg_ipv6_addr->valuestring) : NULL
+        an_charg_ipv4_addr && !cJSON_IsNull(an_charg_ipv4_addr) ? ogs_strdup(an_charg_ipv4_addr->valuestring) : NULL,
+        an_charg_ipv6_addr && !cJSON_IsNull(an_charg_ipv6_addr) ? ogs_strdup(an_charg_ipv6_addr->valuestring) : NULL
     );
 
     return acc_net_charging_address_local_var;

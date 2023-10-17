@@ -105,7 +105,12 @@ static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
     node = ogs_pfcp_node_find(&ogs_pfcp_self()->pfcp_peer_list, &from);
     if (!node) {
         node = ogs_pfcp_node_add(&ogs_pfcp_self()->pfcp_peer_list, &from);
-        ogs_assert(node);
+        if (!node) {
+            ogs_error("No memory: ogs_pfcp_node_add() failed");
+            ogs_pkbuf_free(e->pkbuf);
+            ogs_event_free(e);
+            return;
+        }
 
         node->sock = data;
         pfcp_node_fsm_init(node, false);
@@ -156,6 +161,9 @@ void sgwu_pfcp_close(void)
     ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, pfcp_node)
         pfcp_node_fsm_fini(pfcp_node);
 
+    ogs_freeaddrinfo(ogs_pfcp_self()->pfcp_advertise);
+    ogs_freeaddrinfo(ogs_pfcp_self()->pfcp_advertise6);
+
     ogs_socknode_remove_all(&ogs_pfcp_self()->pfcp_list);
     ogs_socknode_remove_all(&ogs_pfcp_self()->pfcp_list6);
 }
@@ -176,10 +184,16 @@ int sgwu_pfcp_send_session_establishment_response(
 
     sxabuf = sgwu_sxa_build_session_establishment_response(
             h.type, sess, created_pdr, num_of_created_pdr);
-    ogs_expect_or_return_val(sxabuf, OGS_ERROR);
+    if (!sxabuf) {
+        ogs_error("sgwu_sxa_build_session_establishment_response() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_pfcp_xact_update_tx(xact, &h, sxabuf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -196,7 +210,6 @@ int sgwu_pfcp_send_session_modification_response(
     ogs_pfcp_header_t h;
 
     ogs_assert(xact);
-    ogs_assert(created_pdr);
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE;
@@ -204,10 +217,16 @@ int sgwu_pfcp_send_session_modification_response(
 
     sxabuf = sgwu_sxa_build_session_modification_response(
             h.type, sess, created_pdr, num_of_created_pdr);
-    ogs_expect_or_return_val(sxabuf, OGS_ERROR);
+    if (!sxabuf) {
+        ogs_error("sgwu_sxa_build_session_modification_response() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_pfcp_xact_update_tx(xact, &h, sxabuf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -229,10 +248,16 @@ int sgwu_pfcp_send_session_deletion_response(ogs_pfcp_xact_t *xact,
     h.seid = sess->sgwc_sxa_f_seid.seid;
 
     sxabuf = sgwu_sxa_build_session_deletion_response(h.type, sess);
-    ogs_expect_or_return_val(sxabuf, OGS_ERROR);
+    if (!sxabuf) {
+        ogs_error("sgwu_sxa_build_session_deletion_response() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_pfcp_xact_update_tx(xact, &h, sxabuf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -273,13 +298,22 @@ int sgwu_pfcp_send_session_report_request(
     h.seid = sess->sgwc_sxa_f_seid.seid;
 
     xact = ogs_pfcp_xact_local_create(sess->pfcp_node, sess_timeout, sess);
-    ogs_expect_or_return_val(xact, OGS_ERROR);
+    if (!xact) {
+        ogs_error("ogs_pfcp_xact_local_create() failed");
+        return OGS_ERROR;
+    }
 
     sxabuf = ogs_pfcp_build_session_report_request(h.type, report);
-    ogs_expect_or_return_val(sxabuf, OGS_ERROR);
+    if (!sxabuf) {
+        ogs_error("ogs_pfcp_build_session_report_request() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_pfcp_xact_update_tx(xact, &h, sxabuf);
-    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);

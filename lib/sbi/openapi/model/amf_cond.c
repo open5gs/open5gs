@@ -20,18 +20,26 @@ OpenAPI_amf_cond_t *OpenAPI_amf_cond_create(
 
 void OpenAPI_amf_cond_free(OpenAPI_amf_cond_t *amf_cond)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == amf_cond) {
         return;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(amf_cond->amf_set_id);
-    ogs_free(amf_cond->amf_region_id);
+    if (amf_cond->amf_set_id) {
+        ogs_free(amf_cond->amf_set_id);
+        amf_cond->amf_set_id = NULL;
+    }
+    if (amf_cond->amf_region_id) {
+        ogs_free(amf_cond->amf_region_id);
+        amf_cond->amf_region_id = NULL;
+    }
     ogs_free(amf_cond);
 }
 
 cJSON *OpenAPI_amf_cond_convertToJSON(OpenAPI_amf_cond_t *amf_cond)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (amf_cond == NULL) {
         ogs_error("OpenAPI_amf_cond_convertToJSON() failed [AmfCond]");
@@ -60,27 +68,28 @@ end:
 OpenAPI_amf_cond_t *OpenAPI_amf_cond_parseFromJSON(cJSON *amf_condJSON)
 {
     OpenAPI_amf_cond_t *amf_cond_local_var = NULL;
-    cJSON *amf_set_id = cJSON_GetObjectItemCaseSensitive(amf_condJSON, "amfSetId");
-
+    OpenAPI_lnode_t *node = NULL;
+    cJSON *amf_set_id = NULL;
+    cJSON *amf_region_id = NULL;
+    amf_set_id = cJSON_GetObjectItemCaseSensitive(amf_condJSON, "amfSetId");
     if (amf_set_id) {
-    if (!cJSON_IsString(amf_set_id)) {
+    if (!cJSON_IsString(amf_set_id) && !cJSON_IsNull(amf_set_id)) {
         ogs_error("OpenAPI_amf_cond_parseFromJSON() failed [amf_set_id]");
         goto end;
     }
     }
 
-    cJSON *amf_region_id = cJSON_GetObjectItemCaseSensitive(amf_condJSON, "amfRegionId");
-
+    amf_region_id = cJSON_GetObjectItemCaseSensitive(amf_condJSON, "amfRegionId");
     if (amf_region_id) {
-    if (!cJSON_IsString(amf_region_id)) {
+    if (!cJSON_IsString(amf_region_id) && !cJSON_IsNull(amf_region_id)) {
         ogs_error("OpenAPI_amf_cond_parseFromJSON() failed [amf_region_id]");
         goto end;
     }
     }
 
     amf_cond_local_var = OpenAPI_amf_cond_create (
-        amf_set_id ? ogs_strdup(amf_set_id->valuestring) : NULL,
-        amf_region_id ? ogs_strdup(amf_region_id->valuestring) : NULL
+        amf_set_id && !cJSON_IsNull(amf_set_id) ? ogs_strdup(amf_set_id->valuestring) : NULL,
+        amf_region_id && !cJSON_IsNull(amf_region_id) ? ogs_strdup(amf_region_id->valuestring) : NULL
     );
 
     return amf_cond_local_var;

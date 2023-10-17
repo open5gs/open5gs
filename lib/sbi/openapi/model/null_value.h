@@ -1,7 +1,7 @@
 /*
  * null_value.h
  *
- * 
+ * JSON&#39;s null value.
  */
 
 #ifndef _OpenAPI_null_value_H_

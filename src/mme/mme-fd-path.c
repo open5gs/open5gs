@@ -40,6 +40,7 @@ struct sess_state {
 
 static void mme_s6a_aia_cb(void *data, struct msg **msg);
 static void mme_s6a_ula_cb(void *data, struct msg **msg);
+static void mme_s6a_pua_cb(void *data, struct msg **msg);
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
@@ -138,9 +139,10 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
     ogs_assert(ret == 0);
     if (avpch1) {
         ret = fd_msg_avp_hdr(avpch1, &hdr);
-        memcpy(mme_ue->charging_characteristics,
-            OGS_HEX(hdr->avp_value->os.data, (int)hdr->avp_value->os.len, buf), 
-                OGS_CHRGCHARS_LEN);
+        ogs_ascii_to_hex(
+            (char*)hdr->avp_value->os.data, (int)hdr->avp_value->os.len,
+            buf, sizeof(buf));
+        memcpy(mme_ue->charging_characteristics, buf, OGS_CHRGCHARS_LEN);
         mme_ue->charging_characteristics_presence = true;
         *subdatamask = (*subdatamask | OGS_DIAM_S6A_SUBDATA_CC);
     }
@@ -342,10 +344,12 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
                 ogs_assert(ret == 0);
                 if (avpch3) {
                     ret = fd_msg_avp_hdr(avpch3, &hdr);
+                    ogs_ascii_to_hex(
+                        (char*)hdr->avp_value->os.data,
+                        (int)hdr->avp_value->os.len,
+                        buf, sizeof(buf));
                     memcpy(session->charging_characteristics,
-                        OGS_HEX(hdr->avp_value->os.data,
-                            (int)hdr->avp_value->os.len, buf),
-                            OGS_CHRGCHARS_LEN);
+                            buf, OGS_CHRGCHARS_LEN);
                     session->charging_characteristics_presence = true;
                 } else {
                     memcpy(session->charging_characteristics, 
@@ -838,13 +842,28 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(new == 0);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
+    if (new != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
     
     ret = fd_sess_state_retrieve(mme_s6a_reg, session, &sess_data);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(sess_data);
-    ogs_expect_or_return((void *)sess_data == data);
+    if (ret != 0) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if (!sess_data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if ((void *)sess_data != data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
 
     mme_ue = sess_data->mme_ue;
     ogs_assert(mme_ue);
@@ -1215,6 +1234,98 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 }
 
+/* MME Sends Purge UE Request to HSS */
+void mme_s6a_send_pur(mme_ue_t *mme_ue)
+{
+    int ret;
+
+    struct msg *req = NULL;
+    struct avp *avp;
+    union avp_value val;
+    struct sess_state *sess_data = NULL, *svg;
+    struct session *session = NULL;
+
+    ogs_assert(mme_ue);
+
+    ogs_debug("[MME] Purge-UE-Request");
+
+    /* Create the random value to store with the session */
+    sess_data = ogs_calloc(1, sizeof(*sess_data));
+    ogs_assert(sess_data);
+    sess_data->mme_ue = mme_ue;
+
+    /* Create the request */
+    ret = fd_msg_new(ogs_diam_s6a_cmd_pur, MSGFL_ALLOC_ETEID, &req);
+    ogs_assert(ret == 0);
+
+    /* Create a new session */
+    #define OGS_DIAM_S6A_APP_SID_OPT  "app_s6a"
+    ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_S6A_APP_SID_OPT, 
+            CONSTSTRLEN(OGS_DIAM_S6A_APP_SID_OPT));
+    ogs_assert(ret == 0);
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
+    ogs_assert(ret == 0);
+
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set Origin-Host & Origin-Realm */
+    ret = fd_msg_add_origin(req, 0);
+    ogs_assert(ret == 0);
+
+    /* Set the Destination-Realm AVP */
+    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
+    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set the User-Name AVP */
+    ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = (uint8_t *)mme_ue->imsi_bcd;
+    val.os.len  = strlen(mme_ue->imsi_bcd);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            req, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
+
+    ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
+    ogs_assert(ret == 0);
+
+    /* Keep a pointer to the session data for debug purpose,
+     * in real life we would not need it */
+    svg = sess_data;
+
+    /* Store this value in the session */
+    ret = fd_sess_state_store(mme_s6a_reg, session, &sess_data);
+    ogs_assert(ret == 0);
+    ogs_assert(sess_data == 0);
+
+    /* Send the request */
+    ret = fd_msg_send(&req, mme_s6a_pua_cb, svg);
+    ogs_assert(ret == 0);
+
+    /* Increment the counter */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_diam_logger_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+}
+
 /* MME received Update Location Answer from HSS */
 static void mme_s6a_ula_cb(void *data, struct msg **msg)
 {
@@ -1242,13 +1353,28 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(new == 0);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
+    if (new != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
     
     ret = fd_sess_state_retrieve(mme_s6a_reg, session, &sess_data);
-    ogs_expect_or_return(ret == 0);
-    ogs_expect_or_return(sess_data);
-    ogs_expect_or_return((void *)sess_data == data);
+    if (ret != 0) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if (!sess_data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if ((void *)sess_data != data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
 
     mme_ue = sess_data->mme_ue;
     ogs_assert(mme_ue);
@@ -1431,6 +1557,212 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     if (error)
         ogs_diam_logger_self()->stats.nb_errs++;
     else 
+        ogs_diam_logger_self()->stats.nb_recv++;
+
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+
+    /* Display how long it took */
+    if (ts.tv_nsec > sess_data->ts.tv_nsec)
+        ogs_trace("in %d.%06ld sec",
+                (int)(ts.tv_sec - sess_data->ts.tv_sec),
+                (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    else
+        ogs_trace("in %d.%06ld sec",
+                (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
+                (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+
+    ret = fd_msg_free(*msg);
+    ogs_assert(ret == 0);
+    *msg = NULL;
+
+    state_cleanup(sess_data, NULL, NULL);
+    return;
+}
+
+/* MME received Purge UE Answer from HSS */
+static void mme_s6a_pua_cb(void *data, struct msg **msg)
+{
+    int ret;
+
+    struct sess_state *sess_data = NULL;
+    struct timespec ts;
+    struct session *session;
+    struct avp *avp, *avpch;
+    struct avp_hdr *hdr;
+    unsigned long dur;
+    int error = 0;
+    int new;
+
+    mme_event_t *e = NULL;
+    mme_ue_t *mme_ue = NULL;
+    ogs_diam_s6a_message_t *s6a_message = NULL;
+    ogs_diam_s6a_pua_message_t *pua_message = NULL;
+
+    ogs_debug("[MME] Purge-UE-Answer");
+
+    ret = clock_gettime(CLOCK_REALTIME, &ts);
+    ogs_assert(ret == 0);
+
+    /* Search the session, retrieve its data */
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
+    if (new != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
+
+    ret = fd_sess_state_retrieve(mme_s6a_reg, session, &sess_data);
+    if (ret != 0) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if (!sess_data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if ((void *)sess_data != data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+
+    mme_ue = sess_data->mme_ue;
+    ogs_assert(mme_ue);
+
+    /* Set Purge-UE Command */
+    s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
+    ogs_assert(s6a_message);
+    s6a_message->cmd_code = OGS_DIAM_S6A_CMD_CODE_PURGE_UE;
+    pua_message = &s6a_message->pua_message;
+    ogs_assert(pua_message);
+
+    /* AVP: 'Result-Code'(268)
+     * The Result-Code AVP indicates whether a particular request was completed
+     * successfully or whether an error occurred. The Result-Code data field
+     * contains an IANA-managed 32-bit address space representing errors.
+     * Reference: RFC 6733
+     */
+    ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        s6a_message->result_code = hdr->avp_value->i32;
+        s6a_message->err = &s6a_message->result_code;
+        ogs_debug("    Result Code: %d", hdr->avp_value->i32);
+    } else {
+        ret = fd_msg_search_avp(*msg, ogs_diam_experimental_result, &avp);
+        ogs_assert(ret == 0);
+        if (avp) {
+            ret = fd_avp_search_avp(avp,
+                    ogs_diam_experimental_result_code, &avpch);
+            ogs_assert(ret == 0);
+            if (avpch) {
+                ret = fd_msg_avp_hdr(avpch, &hdr);
+                ogs_assert(ret == 0);
+                s6a_message->result_code = hdr->avp_value->i32;
+                s6a_message->exp_err = &s6a_message->result_code;
+                ogs_debug("    Experimental Result Code: %d",
+                        s6a_message->result_code);
+            }
+        } else {
+            ogs_error("no Result-Code");
+            error++;
+        }
+    }
+
+    /* AVP: 'Origin-Host'(264)
+     * The Origin-Host AVP identifies the endpoint that originated the Diameter
+     * message. Relay agents MUST NOT modify this AVP. The value of the
+     * Origin-Host AVP is guaranteed to be unique within a single host.
+     * Reference: RFC 6733
+     */
+    ret = fd_msg_search_avp(*msg, ogs_diam_origin_host, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        ogs_debug("    From '%.*s'",
+                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+    } else {
+        ogs_error("no_Origin-Host");
+        error++;
+    }
+
+    /* AVP: 'Origin-Realm'(296)
+     * This AVP contains the Realm of the originator of any Diameter message
+     * and MUST be present in all messages. This AVP SHOULD be placed as close
+     * to the Diameter header as possible.
+     * Reference: RFC 6733
+     */
+    ret = fd_msg_search_avp(*msg, ogs_diam_origin_realm, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        ogs_debug("         ('%.*s')",
+                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+    } else {
+        ogs_error("no_Origin-Realm");
+        error++;
+    }
+
+    /* AVP: 'PUA-Flags'(1406)
+     * The PUA-Flags AVP contains a bit mask, whose meanings are defined in
+     * table in 29.272 7.3.8/1.
+     * Reference: 3GPP TS 29.272-f70
+     */
+    ret = fd_msg_search_avp(*msg, ogs_diam_s6a_pua_flags, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        pua_message->pua_flags = hdr->avp_value->i32;
+    }
+
+    if (!error) {
+        int rv;
+        e = mme_event_new(MME_EVENT_S6A_MESSAGE);
+        ogs_assert(e);
+        e->mme_ue = mme_ue;
+        e->s6a_message = s6a_message;
+        rv = ogs_queue_push(ogs_app()->queue, e);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
+            ogs_free(s6a_message);
+            mme_event_free(e);
+        } else {
+            ogs_pollset_notify(ogs_app()->pollset);
+        }
+    } else {
+        ogs_free(s6a_message);
+    }
+
+    /* Free the message */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
+        ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    if (ogs_diam_logger_self()->stats.nb_recv) {
+        /* Ponderate in the avg */
+        ogs_diam_logger_self()->stats.avg =
+            (ogs_diam_logger_self()->stats.avg *
+            ogs_diam_logger_self()->stats.nb_recv + dur) /
+            (ogs_diam_logger_self()->stats.nb_recv + 1);
+        /* Min, max */
+        if (dur < ogs_diam_logger_self()->stats.shortest)
+            ogs_diam_logger_self()->stats.shortest = dur;
+        if (dur > ogs_diam_logger_self()->stats.longest)
+            ogs_diam_logger_self()->stats.longest = dur;
+    } else {
+        ogs_diam_logger_self()->stats.shortest = dur;
+        ogs_diam_logger_self()->stats.longest = dur;
+        ogs_diam_logger_self()->stats.avg = dur;
+    }
+    if (error)
+        ogs_diam_logger_self()->stats.nb_errs++;
+    else
         ogs_diam_logger_self()->stats.nb_recv++;
 
     ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
@@ -1701,12 +2033,13 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
         memcpy(ida_ecgi,
                 ogs_nas_from_plmn_id(&ida_plmn_buf, &mme_ue->e_cgi.plmn_id), 3);
         memcpy(ida_ecgi + 3,
-                OGS_HEX(ida_cell_id_hex, sizeof(ida_cell_id_hex), buf), 5);
+                ogs_hex_from_string(ida_cell_id_hex, buf, sizeof(buf)), 5);
 
         ogs_snprintf(ida_tac_hex, sizeof(ida_tac_hex), "%04x", ida_tac);
         memcpy(ida_tai,
                 ogs_nas_from_plmn_id(&ida_plmn_buf, &mme_ue->tai.plmn_id), 3);
-        memcpy(ida_tai + 3, OGS_HEX(ida_tac_hex, sizeof(ida_tac_hex), buf), 2);
+        memcpy(ida_tai + 3,
+                ogs_hex_from_string(ida_tac_hex, buf, sizeof(buf)), 2);
 
         ida_age =
             (ogs_time_now() - mme_ue->ue_location_timestamp) / 1000000 / 60;
@@ -1860,6 +2193,7 @@ int mme_fd_init(void)
     ogs_assert(ret == 0);
 
     /* Specific handler for Cancel-Location-Request */
+    memset(&data, 0, sizeof(data));
     data.command = ogs_diam_s6a_cmd_clr;
     ret = fd_disp_register(mme_ogs_diam_s6a_clr_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_s6a_clr);
