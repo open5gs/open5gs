@@ -1155,6 +1155,10 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
                 OpenAPI_list_add(rat_restrictionsList, (void *)localEnum);
             }
         }
+        if (rat_restrictionsList->count == 0) {
+            ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed: Expected rat_restrictionsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     forbidden_areas = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_data_1JSON, "forbiddenAreas");
@@ -1213,6 +1217,10 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
             } else {
                 OpenAPI_list_add(core_network_type_restrictionsList, (void *)localEnum);
             }
+        }
+        if (core_network_type_restrictionsList->count == 0) {
+            ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed: Expected core_network_type_restrictionsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -1312,6 +1320,10 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
             } else {
                 OpenAPI_list_add(sor_update_indicator_listList, (void *)localEnum);
             }
+        }
+        if (sor_update_indicator_listList->count == 0) {
+            ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed: Expected sor_update_indicator_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -1525,6 +1537,10 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
                 OpenAPI_list_add(primary_rat_restrictionsList, (void *)localEnum);
             }
         }
+        if (primary_rat_restrictionsList->count == 0) {
+            ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed: Expected primary_rat_restrictionsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     secondary_rat_restrictions = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_data_1JSON, "secondaryRatRestrictions");
@@ -1550,6 +1566,10 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
             } else {
                 OpenAPI_list_add(secondary_rat_restrictionsList, (void *)localEnum);
             }
+        }
+        if (secondary_rat_restrictionsList->count == 0) {
+            ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed: Expected secondary_rat_restrictionsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

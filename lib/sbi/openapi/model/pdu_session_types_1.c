@@ -109,6 +109,10 @@ OpenAPI_pdu_session_types_1_t *OpenAPI_pdu_session_types_1_parseFromJSON(cJSON *
                 OpenAPI_list_add(allowed_session_typesList, (void *)localEnum);
             }
         }
+        if (allowed_session_typesList->count == 0) {
+            ogs_error("OpenAPI_pdu_session_types_1_parseFromJSON() failed: Expected allowed_session_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     pdu_session_types_1_local_var = OpenAPI_pdu_session_types_1_create (

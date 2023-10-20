@@ -473,6 +473,10 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
                 OpenAPI_list_add(pdu_session_typesList, (void *)localEnum);
             }
         }
+        if (pdu_session_typesList->count == 0) {
+            ogs_error("OpenAPI_upf_info_parseFromJSON() failed: Expected pdu_session_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     atsss_capability = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "atsssCapability");

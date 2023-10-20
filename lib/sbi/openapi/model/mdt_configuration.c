@@ -523,6 +523,10 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
                 OpenAPI_list_add(measurement_lte_listList, (void *)localEnum);
             }
         }
+        if (measurement_lte_listList->count == 0) {
+            ogs_error("OpenAPI_mdt_configuration_parseFromJSON() failed: Expected measurement_lte_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     measurement_nr_list = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "measurementNrList");
@@ -548,6 +552,10 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
             } else {
                 OpenAPI_list_add(measurement_nr_listList, (void *)localEnum);
             }
+        }
+        if (measurement_nr_listList->count == 0) {
+            ogs_error("OpenAPI_mdt_configuration_parseFromJSON() failed: Expected measurement_nr_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -575,6 +583,10 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
                 OpenAPI_list_add(sensor_measurement_listList, (void *)localEnum);
             }
         }
+        if (sensor_measurement_listList->count == 0) {
+            ogs_error("OpenAPI_mdt_configuration_parseFromJSON() failed: Expected sensor_measurement_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     reporting_trigger_list = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "reportingTriggerList");
@@ -600,6 +612,10 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
             } else {
                 OpenAPI_list_add(reporting_trigger_listList, (void *)localEnum);
             }
+        }
+        if (reporting_trigger_listList->count == 0) {
+            ogs_error("OpenAPI_mdt_configuration_parseFromJSON() failed: Expected reporting_trigger_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -686,6 +702,10 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
                 OpenAPI_list_add(event_listList, (void *)localEnum);
             }
         }
+        if (event_listList->count == 0) {
+            ogs_error("OpenAPI_mdt_configuration_parseFromJSON() failed: Expected event_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     logging_interval = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "loggingInterval");
@@ -756,6 +776,10 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
             } else {
                 OpenAPI_list_add(add_positioning_method_listList, (void *)localEnum);
             }
+        }
+        if (add_positioning_method_listList->count == 0) {
+            ogs_error("OpenAPI_mdt_configuration_parseFromJSON() failed: Expected add_positioning_method_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

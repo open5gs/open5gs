@@ -1139,6 +1139,10 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
                 OpenAPI_list_add(rep_policy_ctrl_req_triggersList, (void *)localEnum);
             }
         }
+        if (rep_policy_ctrl_req_triggersList->count == 0) {
+            ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed: Expected rep_policy_ctrl_req_triggersList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     acc_net_ch_ids = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "accNetChIds");
@@ -1706,6 +1710,10 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
                 OpenAPI_list_add(policy_dec_failure_reportsList, (void *)localEnum);
             }
         }
+        if (policy_dec_failure_reportsList->count == 0) {
+            ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed: Expected policy_dec_failure_reportsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     invalid_policy_decs = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "invalidPolicyDecs");
@@ -1787,6 +1795,10 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
             } else {
                 OpenAPI_list_add(types_of_notifList, (void *)localEnum);
             }
+        }
+        if (types_of_notifList->count == 0) {
+            ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed: Expected types_of_notifList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

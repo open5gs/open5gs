@@ -244,6 +244,10 @@ OpenAPI_reporting_information_t *OpenAPI_reporting_information_parseFromJSON(cJS
                 OpenAPI_list_add(partition_criteriaList, (void *)localEnum);
             }
         }
+        if (partition_criteriaList->count == 0) {
+            ogs_error("OpenAPI_reporting_information_parseFromJSON() failed: Expected partition_criteriaList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     grp_rep_time = cJSON_GetObjectItemCaseSensitive(reporting_informationJSON, "grpRepTime");

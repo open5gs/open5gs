@@ -197,6 +197,10 @@ OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscr
                 OpenAPI_list_add(an_type_listList, (void *)localEnum);
             }
         }
+        if (an_type_listList->count == 0) {
+            ogs_error("OpenAPI_non_ue_n2_info_subscription_create_data_parseFromJSON() failed: Expected an_type_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     n2_information_class = cJSON_GetObjectItemCaseSensitive(non_ue_n2_info_subscription_create_dataJSON, "n2InformationClass");

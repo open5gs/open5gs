@@ -192,6 +192,10 @@ OpenAPI_datalink_reporting_configuration_1_t *OpenAPI_datalink_reporting_configu
                 OpenAPI_list_add(ddd_status_listList, (void *)localEnum);
             }
         }
+        if (ddd_status_listList->count == 0) {
+            ogs_error("OpenAPI_datalink_reporting_configuration_1_parseFromJSON() failed: Expected ddd_status_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     datalink_reporting_configuration_1_local_var = OpenAPI_datalink_reporting_configuration_1_create (

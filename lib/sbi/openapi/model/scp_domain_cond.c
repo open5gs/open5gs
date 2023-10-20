@@ -139,6 +139,10 @@ OpenAPI_scp_domain_cond_t *OpenAPI_scp_domain_cond_parseFromJSON(cJSON *scp_doma
                 OpenAPI_list_add(nf_type_listList, (void *)localEnum);
             }
         }
+        if (nf_type_listList->count == 0) {
+            ogs_error("OpenAPI_scp_domain_cond_parseFromJSON() failed: Expected nf_type_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     scp_domain_cond_local_var = OpenAPI_scp_domain_cond_create (

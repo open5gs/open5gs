@@ -296,6 +296,10 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
                 OpenAPI_list_add(access_typeList, (void *)localEnum);
             }
         }
+        if (access_typeList->count == 0) {
+            ogs_error("OpenAPI_pcscf_info_parseFromJSON() failed: Expected access_typeList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     dnn_list = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "dnnList");

@@ -2623,6 +2623,10 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
                 OpenAPI_list_add(allowed_nf_typesList, (void *)localEnum);
             }
         }
+        if (allowed_nf_typesList->count == 0) {
+            ogs_error("OpenAPI_nf_profile_parseFromJSON() failed: Expected allowed_nf_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     allowed_nf_domains = cJSON_GetObjectItemCaseSensitive(nf_profileJSON, "allowedNfDomains");

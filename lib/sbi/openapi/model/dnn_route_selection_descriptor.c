@@ -149,6 +149,10 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
                 OpenAPI_list_add(ssc_modesList, (void *)localEnum);
             }
         }
+        if (ssc_modesList->count == 0) {
+            ogs_error("OpenAPI_dnn_route_selection_descriptor_parseFromJSON() failed: Expected ssc_modesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     pdu_sess_types = cJSON_GetObjectItemCaseSensitive(dnn_route_selection_descriptorJSON, "pduSessTypes");
@@ -174,6 +178,10 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
             } else {
                 OpenAPI_list_add(pdu_sess_typesList, (void *)localEnum);
             }
+        }
+        if (pdu_sess_typesList->count == 0) {
+            ogs_error("OpenAPI_dnn_route_selection_descriptor_parseFromJSON() failed: Expected pdu_sess_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

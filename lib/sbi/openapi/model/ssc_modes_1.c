@@ -113,6 +113,10 @@ OpenAPI_ssc_modes_1_t *OpenAPI_ssc_modes_1_parseFromJSON(cJSON *ssc_modes_1JSON)
                 OpenAPI_list_add(allowed_ssc_modesList, (void *)localEnum);
             }
         }
+        if (allowed_ssc_modesList->count == 0) {
+            ogs_error("OpenAPI_ssc_modes_1_parseFromJSON() failed: Expected allowed_ssc_modesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     ssc_modes_1_local_var = OpenAPI_ssc_modes_1_create (

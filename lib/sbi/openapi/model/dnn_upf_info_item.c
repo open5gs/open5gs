@@ -309,6 +309,10 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
                 OpenAPI_list_add(pdu_session_typesList, (void *)localEnum);
             }
         }
+        if (pdu_session_typesList->count == 0) {
+            ogs_error("OpenAPI_dnn_upf_info_item_parseFromJSON() failed: Expected pdu_session_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     ipv4_address_ranges = cJSON_GetObjectItemCaseSensitive(dnn_upf_info_itemJSON, "ipv4AddressRanges");

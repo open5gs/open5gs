@@ -291,6 +291,10 @@ OpenAPI_nrf_info_served_udr_info_value_t *OpenAPI_nrf_info_served_udr_info_value
                 OpenAPI_list_add(supported_data_setsList, (void *)localEnum);
             }
         }
+        if (supported_data_setsList->count == 0) {
+            ogs_error("OpenAPI_nrf_info_served_udr_info_value_parseFromJSON() failed: Expected supported_data_setsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     shared_data_id_ranges = cJSON_GetObjectItemCaseSensitive(nrf_info_served_udr_info_valueJSON, "sharedDataIdRanges");

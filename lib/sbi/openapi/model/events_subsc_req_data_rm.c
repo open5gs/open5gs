@@ -256,6 +256,10 @@ OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_parseFromJS
                 OpenAPI_list_add(req_qos_mon_paramsList, (void *)localEnum);
             }
         }
+        if (req_qos_mon_paramsList->count == 0) {
+            ogs_error("OpenAPI_events_subsc_req_data_rm_parseFromJSON() failed: Expected req_qos_mon_paramsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     qos_mon = cJSON_GetObjectItemCaseSensitive(events_subsc_req_data_rmJSON, "qosMon");
@@ -290,6 +294,10 @@ OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_parseFromJS
             } else {
                 OpenAPI_list_add(req_anisList, (void *)localEnum);
             }
+        }
+        if (req_anisList->count == 0) {
+            ogs_error("OpenAPI_events_subsc_req_data_rm_parseFromJSON() failed: Expected req_anisList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

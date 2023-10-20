@@ -404,6 +404,10 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_parseFromJSON(cJSON *smf_infoJSON)
                 OpenAPI_list_add(access_typeList, (void *)localEnum);
             }
         }
+        if (access_typeList->count == 0) {
+            ogs_error("OpenAPI_smf_info_parseFromJSON() failed: Expected access_typeList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     priority = cJSON_GetObjectItemCaseSensitive(smf_infoJSON, "priority");

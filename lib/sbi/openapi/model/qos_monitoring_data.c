@@ -244,6 +244,10 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
                 OpenAPI_list_add(req_qos_mon_paramsList, (void *)localEnum);
             }
         }
+        if (req_qos_mon_paramsList->count == 0) {
+            ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed: Expected req_qos_mon_paramsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
 
     rep_freqs = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "repFreqs");
     if (!rep_freqs) {
@@ -271,6 +275,10 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
             } else {
                 OpenAPI_list_add(rep_freqsList, (void *)localEnum);
             }
+        }
+        if (rep_freqsList->count == 0) {
+            ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed: Expected rep_freqsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
 
     rep_thresh_dl = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "repThreshDl");

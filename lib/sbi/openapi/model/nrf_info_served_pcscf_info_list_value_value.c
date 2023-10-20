@@ -296,6 +296,10 @@ OpenAPI_nrf_info_served_pcscf_info_list_value_value_t *OpenAPI_nrf_info_served_p
                 OpenAPI_list_add(access_typeList, (void *)localEnum);
             }
         }
+        if (access_typeList->count == 0) {
+            ogs_error("OpenAPI_nrf_info_served_pcscf_info_list_value_value_parseFromJSON() failed: Expected access_typeList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     dnn_list = cJSON_GetObjectItemCaseSensitive(nrf_info_served_pcscf_info_list_value_valueJSON, "dnnList");

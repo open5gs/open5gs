@@ -123,6 +123,10 @@ OpenAPI_pro_se_allowed_plmn_t *OpenAPI_pro_se_allowed_plmn_parseFromJSON(cJSON *
                 OpenAPI_list_add(prose_direct_allowedList, (void *)localEnum);
             }
         }
+        if (prose_direct_allowedList->count == 0) {
+            ogs_error("OpenAPI_pro_se_allowed_plmn_parseFromJSON() failed: Expected prose_direct_allowedList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     pro_se_allowed_plmn_local_var = OpenAPI_pro_se_allowed_plmn_create (

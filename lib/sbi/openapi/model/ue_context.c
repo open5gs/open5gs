@@ -1759,6 +1759,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
                 OpenAPI_list_add(am_policy_req_trigger_listList, (void *)localEnum);
             }
         }
+        if (am_policy_req_trigger_listList->count == 0) {
+            ogs_error("OpenAPI_ue_context_parseFromJSON() failed: Expected am_policy_req_trigger_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     pcf_ue_policy_uri = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfUePolicyUri");
@@ -1792,6 +1796,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             } else {
                 OpenAPI_list_add(ue_policy_req_trigger_listList, (void *)localEnum);
             }
+        }
+        if (ue_policy_req_trigger_listList->count == 0) {
+            ogs_error("OpenAPI_ue_context_parseFromJSON() failed: Expected ue_policy_req_trigger_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -1834,6 +1842,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             } else {
                 OpenAPI_list_add(restricted_rat_listList, (void *)localEnum);
             }
+        }
+        if (restricted_rat_listList->count == 0) {
+            ogs_error("OpenAPI_ue_context_parseFromJSON() failed: Expected restricted_rat_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -1893,6 +1905,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             } else {
                 OpenAPI_list_add(restricted_core_nw_type_listList, (void *)localEnum);
             }
+        }
+        if (restricted_core_nw_type_listList->count == 0) {
+            ogs_error("OpenAPI_ue_context_parseFromJSON() failed: Expected restricted_core_nw_type_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -2087,6 +2103,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
                 OpenAPI_list_add(restricted_primary_rat_listList, (void *)localEnum);
             }
         }
+        if (restricted_primary_rat_listList->count == 0) {
+            ogs_error("OpenAPI_ue_context_parseFromJSON() failed: Expected restricted_primary_rat_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     restricted_secondary_rat_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "restrictedSecondaryRatList");
@@ -2112,6 +2132,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             } else {
                 OpenAPI_list_add(restricted_secondary_rat_listList, (void *)localEnum);
             }
+        }
+        if (restricted_secondary_rat_listList->count == 0) {
+            ogs_error("OpenAPI_ue_context_parseFromJSON() failed: Expected restricted_secondary_rat_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

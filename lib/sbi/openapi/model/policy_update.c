@@ -363,6 +363,10 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_parseFromJSON(cJSON *policy_updat
                 OpenAPI_list_add(triggersList, (void *)localEnum);
             }
         }
+        if (triggersList->count == 0) {
+            ogs_error("OpenAPI_policy_update_parseFromJSON() failed: Expected triggersList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_updateJSON, "servAreaRes");

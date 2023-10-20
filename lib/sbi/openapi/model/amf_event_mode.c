@@ -216,6 +216,10 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
                 OpenAPI_list_add(partitioning_criteriaList, (void *)localEnum);
             }
         }
+        if (partitioning_criteriaList->count == 0) {
+            ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed: Expected partitioning_criteriaList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     notif_flag = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "notifFlag");

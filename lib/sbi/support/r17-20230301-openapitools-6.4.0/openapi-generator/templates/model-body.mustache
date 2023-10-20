@@ -842,6 +842,12 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
                 {{/items}}
             {{/isEnum}}
         }
+        {{#isEnum}}
+        if ({{{name}}}List->count == 0) {
+            ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed: Expected {{{name}}}List to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
+        {{/isEnum}}
         {{/isArray}}
         {{#isMap}}
         cJSON *{{{name}}}_local_map = NULL;

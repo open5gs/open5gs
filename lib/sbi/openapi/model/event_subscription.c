@@ -1201,6 +1201,10 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
                 OpenAPI_list_add(nf_typesList, (void *)localEnum);
             }
         }
+        if (nf_typesList->count == 0) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed: Expected nf_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     network_area = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "networkArea");

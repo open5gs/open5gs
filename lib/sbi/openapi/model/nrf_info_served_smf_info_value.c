@@ -404,6 +404,10 @@ OpenAPI_nrf_info_served_smf_info_value_t *OpenAPI_nrf_info_served_smf_info_value
                 OpenAPI_list_add(access_typeList, (void *)localEnum);
             }
         }
+        if (access_typeList->count == 0) {
+            ogs_error("OpenAPI_nrf_info_served_smf_info_value_parseFromJSON() failed: Expected access_typeList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     priority = cJSON_GetObjectItemCaseSensitive(nrf_info_served_smf_info_valueJSON, "priority");

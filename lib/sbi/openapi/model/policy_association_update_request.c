@@ -658,6 +658,10 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
                 OpenAPI_list_add(triggersList, (void *)localEnum);
             }
         }
+        if (triggersList->count == 0) {
+            ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed: Expected triggersList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "servAreaRes");
@@ -859,6 +863,10 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
                 OpenAPI_list_add(access_typesList, (void *)localEnum);
             }
         }
+        if (access_typesList->count == 0) {
+            ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed: Expected access_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     rat_types = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "ratTypes");
@@ -884,6 +892,10 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
             } else {
                 OpenAPI_list_add(rat_typesList, (void *)localEnum);
             }
+        }
+        if (rat_typesList->count == 0) {
+            ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed: Expected rat_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

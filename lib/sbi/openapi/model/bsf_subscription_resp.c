@@ -286,6 +286,10 @@ OpenAPI_bsf_subscription_resp_t *OpenAPI_bsf_subscription_resp_parseFromJSON(cJS
                 OpenAPI_list_add(eventsList, (void *)localEnum);
             }
         }
+        if (eventsList->count == 0) {
+            ogs_error("OpenAPI_bsf_subscription_resp_parseFromJSON() failed: Expected eventsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
 
     notif_uri = cJSON_GetObjectItemCaseSensitive(bsf_subscription_respJSON, "notifUri");
     if (!notif_uri) {

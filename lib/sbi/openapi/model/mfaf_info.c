@@ -168,6 +168,10 @@ OpenAPI_mfaf_info_t *OpenAPI_mfaf_info_parseFromJSON(cJSON *mfaf_infoJSON)
                 OpenAPI_list_add(serving_nf_type_listList, (void *)localEnum);
             }
         }
+        if (serving_nf_type_listList->count == 0) {
+            ogs_error("OpenAPI_mfaf_info_parseFromJSON() failed: Expected serving_nf_type_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     serving_nf_set_id_list = cJSON_GetObjectItemCaseSensitive(mfaf_infoJSON, "servingNfSetIdList");

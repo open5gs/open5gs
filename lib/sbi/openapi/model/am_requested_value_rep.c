@@ -265,6 +265,10 @@ OpenAPI_am_requested_value_rep_t *OpenAPI_am_requested_value_rep_parseFromJSON(c
                 OpenAPI_list_add(access_typesList, (void *)localEnum);
             }
         }
+        if (access_typesList->count == 0) {
+            ogs_error("OpenAPI_am_requested_value_rep_parseFromJSON() failed: Expected access_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     rat_types = cJSON_GetObjectItemCaseSensitive(am_requested_value_repJSON, "ratTypes");
@@ -290,6 +294,10 @@ OpenAPI_am_requested_value_rep_t *OpenAPI_am_requested_value_rep_parseFromJSON(c
             } else {
                 OpenAPI_list_add(rat_typesList, (void *)localEnum);
             }
+        }
+        if (rat_typesList->count == 0) {
+            ogs_error("OpenAPI_am_requested_value_rep_parseFromJSON() failed: Expected rat_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

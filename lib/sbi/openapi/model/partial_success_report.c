@@ -272,6 +272,10 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
                 OpenAPI_list_add(policy_dec_failure_reportsList, (void *)localEnum);
             }
         }
+        if (policy_dec_failure_reportsList->count == 0) {
+            ogs_error("OpenAPI_partial_success_report_parseFromJSON() failed: Expected policy_dec_failure_reportsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     invalid_policy_decs = cJSON_GetObjectItemCaseSensitive(partial_success_reportJSON, "invalidPolicyDecs");

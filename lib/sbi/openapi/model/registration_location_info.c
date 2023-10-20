@@ -210,6 +210,10 @@ OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_parseFr
                 OpenAPI_list_add(access_type_listList, (void *)localEnum);
             }
         }
+        if (access_type_listList->count == 0) {
+            ogs_error("OpenAPI_registration_location_info_parseFromJSON() failed: Expected access_type_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
 
     registration_location_info_local_var = OpenAPI_registration_location_info_create (
         ogs_strdup(amf_instance_id->valuestring),

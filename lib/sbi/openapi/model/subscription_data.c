@@ -507,6 +507,10 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
                 OpenAPI_list_add(req_notif_eventsList, (void *)localEnum);
             }
         }
+        if (req_notif_eventsList->count == 0) {
+            ogs_error("OpenAPI_subscription_data_parseFromJSON() failed: Expected req_notif_eventsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     plmn_id = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "plmnId");

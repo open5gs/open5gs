@@ -262,6 +262,10 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_parseFromJSON(c
                 OpenAPI_list_add(pdu_session_typesList, (void *)localEnum);
             }
         }
+        if (pdu_session_typesList->count == 0) {
+            ogs_error("OpenAPI_model_5_gvn_group_data_parseFromJSON() failed: Expected pdu_session_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     app_descriptors = cJSON_GetObjectItemCaseSensitive(model_5_gvn_group_dataJSON, "appDescriptors");

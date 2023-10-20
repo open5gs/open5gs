@@ -263,6 +263,10 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
                 OpenAPI_list_add(af_eventsList, (void *)localEnum);
             }
         }
+        if (af_eventsList->count == 0) {
+            ogs_error("OpenAPI_nef_cond_parseFromJSON() failed: Expected af_eventsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     snssai_list = cJSON_GetObjectItemCaseSensitive(nef_condJSON, "snssaiList");

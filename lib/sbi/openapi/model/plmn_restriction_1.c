@@ -203,6 +203,10 @@ OpenAPI_plmn_restriction_1_t *OpenAPI_plmn_restriction_1_parseFromJSON(cJSON *pl
                 OpenAPI_list_add(rat_restrictionsList, (void *)localEnum);
             }
         }
+        if (rat_restrictionsList->count == 0) {
+            ogs_error("OpenAPI_plmn_restriction_1_parseFromJSON() failed: Expected rat_restrictionsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     forbidden_areas = cJSON_GetObjectItemCaseSensitive(plmn_restriction_1JSON, "forbiddenAreas");
@@ -262,6 +266,10 @@ OpenAPI_plmn_restriction_1_t *OpenAPI_plmn_restriction_1_parseFromJSON(cJSON *pl
                 OpenAPI_list_add(core_network_type_restrictionsList, (void *)localEnum);
             }
         }
+        if (core_network_type_restrictionsList->count == 0) {
+            ogs_error("OpenAPI_plmn_restriction_1_parseFromJSON() failed: Expected core_network_type_restrictionsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     primary_rat_restrictions = cJSON_GetObjectItemCaseSensitive(plmn_restriction_1JSON, "primaryRatRestrictions");
@@ -288,6 +296,10 @@ OpenAPI_plmn_restriction_1_t *OpenAPI_plmn_restriction_1_parseFromJSON(cJSON *pl
                 OpenAPI_list_add(primary_rat_restrictionsList, (void *)localEnum);
             }
         }
+        if (primary_rat_restrictionsList->count == 0) {
+            ogs_error("OpenAPI_plmn_restriction_1_parseFromJSON() failed: Expected primary_rat_restrictionsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     secondary_rat_restrictions = cJSON_GetObjectItemCaseSensitive(plmn_restriction_1JSON, "secondaryRatRestrictions");
@@ -313,6 +325,10 @@ OpenAPI_plmn_restriction_1_t *OpenAPI_plmn_restriction_1_parseFromJSON(cJSON *pl
             } else {
                 OpenAPI_list_add(secondary_rat_restrictionsList, (void *)localEnum);
             }
+        }
+        if (secondary_rat_restrictionsList->count == 0) {
+            ogs_error("OpenAPI_plmn_restriction_1_parseFromJSON() failed: Expected secondary_rat_restrictionsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

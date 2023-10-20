@@ -144,6 +144,10 @@ OpenAPI_protection_policy_t *OpenAPI_protection_policy_parseFromJSON(cJSON *prot
                 OpenAPI_list_add(data_type_enc_policyList, (void *)localEnum);
             }
         }
+        if (data_type_enc_policyList->count == 0) {
+            ogs_error("OpenAPI_protection_policy_parseFromJSON() failed: Expected data_type_enc_policyList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     protection_policy_local_var = OpenAPI_protection_policy_create (

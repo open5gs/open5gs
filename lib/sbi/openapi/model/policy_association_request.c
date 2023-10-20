@@ -758,6 +758,10 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
                 OpenAPI_list_add(access_typesList, (void *)localEnum);
             }
         }
+        if (access_typesList->count == 0) {
+            ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed: Expected access_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     pei = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "pei");
@@ -826,6 +830,10 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
             } else {
                 OpenAPI_list_add(rat_typesList, (void *)localEnum);
             }
+        }
+        if (rat_typesList->count == 0) {
+            ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed: Expected rat_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

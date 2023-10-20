@@ -144,6 +144,10 @@ OpenAPI_requested_rule_data_t *OpenAPI_requested_rule_data_parseFromJSON(cJSON *
                 OpenAPI_list_add(req_dataList, (void *)localEnum);
             }
         }
+        if (req_dataList->count == 0) {
+            ogs_error("OpenAPI_requested_rule_data_parseFromJSON() failed: Expected req_dataList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
 
     requested_rule_data_local_var = OpenAPI_requested_rule_data_create (
         ref_pcc_rule_idsList,

@@ -287,6 +287,10 @@ OpenAPI_nrf_info_served_lmf_info_value_t *OpenAPI_nrf_info_served_lmf_info_value
                 OpenAPI_list_add(serving_access_typesList, (void *)localEnum);
             }
         }
+        if (serving_access_typesList->count == 0) {
+            ogs_error("OpenAPI_nrf_info_served_lmf_info_value_parseFromJSON() failed: Expected serving_access_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     serving_an_node_types = cJSON_GetObjectItemCaseSensitive(nrf_info_served_lmf_info_valueJSON, "servingAnNodeTypes");
@@ -313,6 +317,10 @@ OpenAPI_nrf_info_served_lmf_info_value_t *OpenAPI_nrf_info_served_lmf_info_value
                 OpenAPI_list_add(serving_an_node_typesList, (void *)localEnum);
             }
         }
+        if (serving_an_node_typesList->count == 0) {
+            ogs_error("OpenAPI_nrf_info_served_lmf_info_value_parseFromJSON() failed: Expected serving_an_node_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     serving_rat_types = cJSON_GetObjectItemCaseSensitive(nrf_info_served_lmf_info_valueJSON, "servingRatTypes");
@@ -338,6 +346,10 @@ OpenAPI_nrf_info_served_lmf_info_value_t *OpenAPI_nrf_info_served_lmf_info_value
             } else {
                 OpenAPI_list_add(serving_rat_typesList, (void *)localEnum);
             }
+        }
+        if (serving_rat_typesList->count == 0) {
+            ogs_error("OpenAPI_nrf_info_served_lmf_info_value_parseFromJSON() failed: Expected serving_rat_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

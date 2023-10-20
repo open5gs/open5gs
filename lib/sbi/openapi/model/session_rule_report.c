@@ -183,6 +183,10 @@ OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_parseFromJSON(cJSON *
                 OpenAPI_list_add(policy_dec_failure_reportsList, (void *)localEnum);
             }
         }
+        if (policy_dec_failure_reportsList->count == 0) {
+            ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed: Expected policy_dec_failure_reportsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     session_rule_report_local_var = OpenAPI_session_rule_report_create (

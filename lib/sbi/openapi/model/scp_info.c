@@ -663,6 +663,10 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
                 OpenAPI_list_add(scp_capabilitiesList, (void *)localEnum);
             }
         }
+        if (scp_capabilitiesList->count == 0) {
+            ogs_error("OpenAPI_scp_info_parseFromJSON() failed: Expected scp_capabilitiesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     scp_info_local_var = OpenAPI_scp_info_create (

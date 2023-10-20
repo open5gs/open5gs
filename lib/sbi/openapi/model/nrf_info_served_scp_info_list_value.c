@@ -663,6 +663,10 @@ OpenAPI_nrf_info_served_scp_info_list_value_t *OpenAPI_nrf_info_served_scp_info_
                 OpenAPI_list_add(scp_capabilitiesList, (void *)localEnum);
             }
         }
+        if (scp_capabilitiesList->count == 0) {
+            ogs_error("OpenAPI_nrf_info_served_scp_info_list_value_parseFromJSON() failed: Expected scp_capabilitiesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     nrf_info_served_scp_info_list_value_local_var = OpenAPI_nrf_info_served_scp_info_list_value_create (

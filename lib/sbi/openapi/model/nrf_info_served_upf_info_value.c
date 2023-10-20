@@ -473,6 +473,10 @@ OpenAPI_nrf_info_served_upf_info_value_t *OpenAPI_nrf_info_served_upf_info_value
                 OpenAPI_list_add(pdu_session_typesList, (void *)localEnum);
             }
         }
+        if (pdu_session_typesList->count == 0) {
+            ogs_error("OpenAPI_nrf_info_served_upf_info_value_parseFromJSON() failed: Expected pdu_session_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     atsss_capability = cJSON_GetObjectItemCaseSensitive(nrf_info_served_upf_info_valueJSON, "atsssCapability");

@@ -1104,6 +1104,10 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
                 OpenAPI_list_add(policy_ctrl_req_triggersList, (void *)localEnum);
             }
         }
+        if (policy_ctrl_req_triggersList->count == 0) {
+            ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed: Expected policy_ctrl_req_triggersList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     last_req_rule_data = cJSON_GetObjectItemCaseSensitive(sm_policy_decisionJSON, "lastReqRuleData");

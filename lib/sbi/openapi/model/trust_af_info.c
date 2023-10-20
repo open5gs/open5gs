@@ -202,6 +202,10 @@ OpenAPI_trust_af_info_t *OpenAPI_trust_af_info_parseFromJSON(cJSON *trust_af_inf
                 OpenAPI_list_add(af_eventsList, (void *)localEnum);
             }
         }
+        if (af_eventsList->count == 0) {
+            ogs_error("OpenAPI_trust_af_info_parseFromJSON() failed: Expected af_eventsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
     }
 
     app_ids = cJSON_GetObjectItemCaseSensitive(trust_af_infoJSON, "appIds");
