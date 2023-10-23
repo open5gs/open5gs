@@ -51,6 +51,7 @@ typedef struct scp_assoc_s {
     ogs_sbi_request_t *request;
     ogs_sbi_service_type_e service_type;
     OpenAPI_nf_type_e requester_nf_type;
+    ogs_sbi_discovery_option_t *discovery_option;
 
     ogs_sbi_nf_instance_t *nf_service_producer;
 } scp_assoc_t;

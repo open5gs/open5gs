@@ -161,6 +161,12 @@ char ogs_from_hex(char ch)
     return isdigit(ch) ? ch - '0' : tolower(ch) - 'a' + 10;
 }
 
+char ogs_to_hex(char ch)
+{
+    static char hex[] = "0123456789ABCDEF";
+    return hex[ch & 15];
+}
+
 char *ogs_uint24_to_0string(ogs_uint24_t x)
 {
     return ogs_msprintf("%06x", x.v);

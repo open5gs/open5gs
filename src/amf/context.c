@@ -2160,8 +2160,6 @@ amf_sess_t *amf_sess_cycle(amf_sess_t *sess)
     return ogs_pool_cycle(&amf_sess_pool, sess);
 }
 
-static bool check_smf_info(ogs_sbi_nf_info_t *nf_info, void *context);
-
 void amf_sbi_select_nf(
         ogs_sbi_object_t *sbi_object,
         ogs_sbi_service_type_e service_type,
@@ -2170,7 +2168,6 @@ void amf_sbi_select_nf(
 {
     OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-    ogs_sbi_nf_info_t *nf_info = NULL;
     amf_sess_t *sess = NULL;
 
     ogs_assert(sbi_object);
@@ -2197,22 +2194,6 @@ void amf_sbi_select_nf(
                     target_nf_type, requester_nf_type, discovery_option) ==
                         false)
                 continue;
-
-            if ((nf_instance->nf_type == OpenAPI_nf_type_SMF) &&
-                (ogs_list_count(&nf_instance->nf_info_list) > 0)) {
-
-                ogs_list_for_each(&nf_instance->nf_info_list, nf_info) {
-                    if (nf_info->nf_type != nf_instance->nf_type)
-                        continue;
-                    if (check_smf_info(nf_info, sess) == false)
-                        continue;
-
-                    break;
-                }
-
-                if (!nf_info)
-                    continue;
-            }
 
             OGS_SBI_SETUP_NF_INSTANCE(
                     sbi_object->service_type_array[service_type], nf_instance);
@@ -2549,90 +2530,6 @@ static void stats_remove_amf_session(void)
     amf_metrics_inst_global_dec(AMF_METR_GLOB_GAUGE_AMF_SESS);
     num_of_amf_sess = num_of_amf_sess - 1;
     ogs_info("[Removed] Number of AMF-Sessions is now %d", num_of_amf_sess);
-}
-
-static bool check_smf_info_s_nssai(
-        ogs_sbi_smf_info_t *smf_info, amf_sess_t *sess);
-static bool check_smf_info_nr_tai(
-        ogs_sbi_smf_info_t *smf_info, amf_sess_t *sess);
-
-static bool check_smf_info(ogs_sbi_nf_info_t *nf_info, void *context)
-{
-    amf_sess_t *sess = NULL;
-
-    ogs_assert(nf_info);
-    ogs_assert(nf_info->nf_type == OpenAPI_nf_type_SMF);
-    sess = context;
-    ogs_assert(sess);
-
-    if (check_smf_info_s_nssai(&nf_info->smf, sess) == false)
-        return false;
-    if (check_smf_info_nr_tai(&nf_info->smf, sess) == false)
-        return false;
-
-    return true;
-}
-
-static bool check_smf_info_s_nssai(
-        ogs_sbi_smf_info_t *smf_info, amf_sess_t *sess)
-{
-    int i, j;
-
-    ogs_assert(sess);
-    ogs_assert(sess->dnn);
-    ogs_assert(smf_info);
-
-    for (i = 0; i < smf_info->num_of_slice; i++) {
-        if (sess->s_nssai.sst == smf_info->slice[i].s_nssai.sst &&
-            sess->s_nssai.sd.v == smf_info->slice[i].s_nssai.sd.v) {
-
-            for (j = 0; j < smf_info->slice[i].num_of_dnn; j++) {
-                if (ogs_strcasecmp(sess->dnn, smf_info->slice[i].dnn[j]) == 0)
-                    return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-static bool check_smf_info_nr_tai(
-        ogs_sbi_smf_info_t *smf_info, amf_sess_t *sess)
-{
-    amf_ue_t *amf_ue = NULL;
-    int i, j;
-
-    ogs_assert(sess);
-    amf_ue = sess->amf_ue;
-    ogs_assert(amf_ue);
-    ogs_assert(smf_info);
-
-    if (smf_info->num_of_nr_tai == 0 && smf_info->num_of_nr_tai_range == 0)
-        return true;
-
-    for (i = 0; i < smf_info->num_of_nr_tai; i++) {
-        if (memcmp(&amf_ue->nr_tai.plmn_id,
-                &smf_info->nr_tai[i].plmn_id, OGS_PLMN_ID_LEN) == 0) {
-            if (amf_ue->nr_tai.tac.v == smf_info->nr_tai[i].tac.v)
-                return true;
-        }
-    }
-
-    for (i = 0; i < smf_info->num_of_nr_tai_range; i++) {
-        if (memcmp(&amf_ue->nr_tai.plmn_id,
-                &smf_info->nr_tai_range[i].plmn_id, OGS_PLMN_ID_LEN) == 0) {
-            for (j = 0; j < smf_info->nr_tai_range[i].num_of_tac_range; j++) {
-                if (amf_ue->nr_tai.tac.v >=
-                    smf_info->nr_tai_range[i].start[j].v &&
-                    amf_ue->nr_tai.tac.v <=
-                    smf_info->nr_tai_range[i].end[j].v) {
-                    return true;
-                }
-            }
-        }
-    }
-
-    return false;
 }
 
 /*

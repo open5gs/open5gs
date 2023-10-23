@@ -201,6 +201,14 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                 service_type = ogs_sbi_service_type_from_name(
                                     discovery_option->service_names[0]);
             }
+        } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_SNSSAIS)) {
+            if (val)
+                ogs_sbi_discovery_option_parse_snssais(discovery_option, val);
+        } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_DNN)) {
+            ogs_sbi_discovery_option_set_dnn(discovery_option, val);
+        } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_TAI)) {
+            if (val)
+                ogs_sbi_discovery_option_parse_tai(discovery_option, val);
         } else if (!strcasecmp(key,
                     OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_FEATURES)) {
             if (val)
@@ -466,18 +474,46 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
         ogs_assert(assoc->service_type);
         assoc->requester_nf_type = requester_nf_type;
         ogs_assert(assoc->requester_nf_type);
+        assoc->discovery_option = discovery_option;
+        ogs_assert(assoc->discovery_option);
 
         ogs_assert(target_nf_type);
-        ogs_assert(discovery_option);
+
+        if (!discovery_option->num_of_service_names) {
+            ogs_error("No service names");
+            scp_assoc_remove(assoc);
+            return OGS_ERROR;
+        } else if (discovery_option->num_of_service_names > 1) {
+    /*
+     * TS29.500
+     * 6.10.3 NF Discovery and Selection for indirect communication
+     *        with Delegated Discovery
+     * 6.10.3.2 Conveyance of NF Discovery Factors
+     *
+     * If the NF service consumer includes more than one service name in the
+     * 3gpp-Sbi-Discovery-service-names header, the service name corresponding
+     * to the service request shall be listed as the first service name
+     * in the header.
+     *
+     * NOTE 3: The SCP can assume that the service request corresponds
+     *         to the first service name in the header.
+     */
+            int i;
+
+            for (i = 1; i < discovery_option->num_of_service_names; i++)
+                ogs_free(discovery_option->service_names[i]);
+            discovery_option->num_of_service_names = 1;
+
+            ogs_error("NOTE 3: The SCP can assume that the service request "
+                    "corresponds to the first service name in the header "
+                    "in TS29.500");
+        }
 
         nrf_request = ogs_nnrf_disc_build_discover(
                     target_nf_type, requester_nf_type, discovery_option);
         if (!nrf_request) {
             ogs_error("ogs_nnrf_disc_build_discover() failed");
-
-            ogs_sbi_discovery_option_free(discovery_option);
             scp_assoc_remove(assoc);
-
             return OGS_ERROR;
         }
 
@@ -486,15 +522,12 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
             ogs_error("ogs_sbi_client_send_request() failed");
 
             scp_assoc_remove(assoc);
-
             ogs_sbi_request_free(nrf_request);
-            ogs_sbi_discovery_option_free(discovery_option);
 
             return OGS_ERROR;
         }
 
         ogs_sbi_request_free(nrf_request);
-        ogs_sbi_discovery_option_free(discovery_option);
 
         return OGS_OK;
     }
@@ -577,7 +610,9 @@ static int discover_handler(
     ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
+    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
     OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
 
     ogs_sbi_request_t scp_request;
     char *apiroot = NULL;
@@ -592,8 +627,12 @@ static int discover_handler(
     ogs_assert(request);
     service_type = assoc->service_type;
     ogs_assert(service_type);
+    target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
+    ogs_assert(target_nf_type);
     requester_nf_type = assoc->requester_nf_type;
     ogs_assert(requester_nf_type);
+    discovery_option = assoc->discovery_option;
+    ogs_assert(discovery_option);
 
     if (status != OGS_OK) {
 
@@ -631,8 +670,8 @@ static int discover_handler(
 
     ogs_nnrf_disc_handle_nf_discover_search_result(message.SearchResult);
 
-    nf_instance = ogs_sbi_nf_instance_find_by_service_type(
-                    service_type, requester_nf_type);
+    nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
+            target_nf_type, requester_nf_type, discovery_option);
     if (!nf_instance) {
         strerror = ogs_msprintf("(NF discover) No NF-Instance [%s:%s]",
                     ogs_sbi_service_type_to_name(service_type),

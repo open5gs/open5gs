@@ -364,10 +364,51 @@ char *ogs_sbi_client_apiroot(ogs_sbi_client_t *client)
  * Thanks Geek Hideout!
  * http://www.geekhideout.com/urlcode.shtml
  */
-static char *url_decode(const char *str)
+char *ogs_sbi_url_encode(const char *str)
 {
     if (str != NULL) {
-        char *pstr = (char*)str;
+        char *pstr = (char *)str;
+        char *buf = ogs_malloc(strlen(str) * 3 + 1);
+        char *pbuf = buf;
+        ogs_assert(buf);
+        while (*pstr) {
+
+            if (*pstr == '"' ||
+                *pstr == '(' ||
+                *pstr == ')' ||
+                *pstr == ',' ||
+                *pstr == '/' ||
+                *pstr == ':' ||
+                *pstr == ';' ||
+                *pstr == '<' ||
+                *pstr == '=' ||
+                *pstr == '>' ||
+                *pstr == '?' ||
+                *pstr == '@' ||
+                *pstr == '[' ||
+                *pstr == '\\' ||
+                *pstr == ']' ||
+                *pstr == '{' ||
+                *pstr == '}') {
+                *pbuf++ = '%';
+                *pbuf++ = ogs_to_hex(*pstr >> 4);
+                *pbuf++ = ogs_to_hex(*pstr & 15);
+            } else
+                *pbuf++ = *pstr;
+
+            pstr++;
+        }
+        *pbuf = '\0';
+        return buf;
+    } else {
+        return NULL;
+    }
+}
+
+char *ogs_sbi_url_decode(const char *str)
+{
+    if (str != NULL) {
+        char *pstr = (char *)str;
         char *buf = ogs_malloc(strlen(str) + 1);
         char *pbuf = buf;
         ogs_assert(buf);
@@ -396,7 +437,7 @@ char *ogs_sbi_parse_uri(char *uri, const char *delim, char **saveptr)
 {
     char *item = NULL;
 
-    item = url_decode(ogs_strtok_r(uri, delim, saveptr));
+    item = ogs_sbi_url_decode(ogs_strtok_r(uri, delim, saveptr));
     if (!item) {
         return NULL;
     }
