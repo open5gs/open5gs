@@ -40,6 +40,9 @@ char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h);
 char *ogs_sbi_client_apiroot(ogs_sbi_client_t *client);
 char *ogs_sbi_client_uri(ogs_sbi_client_t *client, ogs_sbi_header_t *h);
 
+char *ogs_sbi_url_encode(const char *str);
+char *ogs_sbi_url_decode(const char *str);
+
 char *ogs_sbi_parse_uri(char *uri, const char *delim, char **saveptr);
 
 bool ogs_sbi_getaddr_from_uri(

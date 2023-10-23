@@ -402,6 +402,11 @@ void ogs_sbi_nf_info_remove_all(ogs_list_t *list);
 ogs_sbi_nf_info_t *ogs_sbi_nf_info_find(
         ogs_list_t *list, OpenAPI_nf_type_e nf_type);
 
+bool ogs_sbi_check_smf_info_slice(
+        ogs_sbi_smf_info_t *smf_info, ogs_s_nssai_t *s_nssai, char *dnn);
+bool ogs_sbi_check_smf_info_tai(
+        ogs_sbi_smf_info_t *smf_info, ogs_5gs_tai_t *tai);
+
 void ogs_sbi_nf_instance_build_default(ogs_sbi_nf_instance_t *nf_instance);
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
         ogs_sbi_nf_instance_t *nf_instance, const char *name);
@@ -424,7 +429,9 @@ int ogs_sbi_client_default_port(void);
         ogs_assert(__nFInstance); \
         \
         if ((__cTX).nf_instance) { \
-            ogs_warn("NF Instance updated [%s]", (__nFInstance)->id); \
+            ogs_warn("NF Instance [%s] updated [%s]", \
+                    OpenAPI_nf_type_ToString((__nFInstance)->nf_type), \
+                    (__nFInstance)->id); \
             ogs_sbi_nf_instance_remove((__cTX).nf_instance); \
         } \
         \

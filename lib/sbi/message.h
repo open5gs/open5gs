@@ -279,6 +279,12 @@ extern "C" {
     OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_REQUESTER_NF_INSTANCE_ID
 #define OGS_SBI_CUSTOM_DISCOVERY_SERVICE_NAMES  \
     OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_SERVICE_NAMES
+#define OGS_SBI_CUSTOM_DISCOVERY_SNSSAIS  \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_SNSSAIS
+#define OGS_SBI_CUSTOM_DISCOVERY_DNN  \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_DNN
+#define OGS_SBI_CUSTOM_DISCOVERY_TAI  \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_TAI
 #define OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_FEATURES  \
     OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_REQUESTER_FEATURES
 #define OGS_SBI_CUSTOM_PRODUCER_ID       \
@@ -314,6 +320,8 @@ extern "C" {
 #define OGS_SBI_PARAM_PLMN_ID                       "plmn-id"
 #define OGS_SBI_PARAM_SINGLE_NSSAI                  "single-nssai"
 #define OGS_SBI_PARAM_SNSSAI                        "snssai"
+#define OGS_SBI_PARAM_SNSSAIS                       "snssais"
+#define OGS_SBI_PARAM_TAI                           "tai"
 #define OGS_SBI_PARAM_SLICE_INFO_REQUEST_FOR_PDU_SESSION \
         "slice-info-request-for-pdu-session"
 #define OGS_SBI_PARAM_IPV4ADDR                      "ipv4Addr"
@@ -406,6 +414,12 @@ typedef struct ogs_sbi_discovery_option_s {
 
     int num_of_service_names;
     char *service_names[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE];
+
+    int num_of_snssais;
+    ogs_s_nssai_t snssais[OGS_MAX_NUM_OF_SLICE];
+    char *dnn;
+    int num_of_tai;
+    ogs_5gs_tai_t tai[OGS_MAX_NUM_OF_TAI];
 
     uint64_t requester_features;
 } ogs_sbi_discovery_option_t;
@@ -591,6 +605,8 @@ void ogs_sbi_discovery_option_set_target_nf_instance_id(
 void ogs_sbi_discovery_option_set_requester_nf_instance_id(
         ogs_sbi_discovery_option_t *discovery_option,
         char *requester_nf_instance_id);
+void ogs_sbi_discovery_option_set_dnn(
+        ogs_sbi_discovery_option_t *discovery_option, char *dnn);
 
 void ogs_sbi_discovery_option_add_service_names(
         ogs_sbi_discovery_option_t *discovery_option,
@@ -600,6 +616,20 @@ char *ogs_sbi_discovery_option_build_service_names(
 void ogs_sbi_discovery_option_parse_service_names(
         ogs_sbi_discovery_option_t *discovery_option,
         char *service_names);
+
+void ogs_sbi_discovery_option_add_snssais(
+        ogs_sbi_discovery_option_t *discovery_option, ogs_s_nssai_t *s_nssai);
+char *ogs_sbi_discovery_option_build_snssais(
+        ogs_sbi_discovery_option_t *discovery_option);
+void ogs_sbi_discovery_option_parse_snssais(
+        ogs_sbi_discovery_option_t *discovery_option, char *snssais);
+
+void ogs_sbi_discovery_option_add_tai(
+        ogs_sbi_discovery_option_t *discovery_option, ogs_5gs_tai_t *tai);
+char *ogs_sbi_discovery_option_build_tai(
+        ogs_sbi_discovery_option_t *discovery_option);
+void ogs_sbi_discovery_option_parse_tai(
+        ogs_sbi_discovery_option_t *discovery_option, char *tai);
 
 #ifdef __cplusplus
 }

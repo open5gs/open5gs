@@ -283,6 +283,8 @@ void scp_assoc_remove(scp_assoc_t *assoc)
         ogs_sbi_client_remove(assoc->client);
     if (assoc->nrf_client)
         ogs_sbi_client_remove(assoc->nrf_client);
+    if (assoc->discovery_option)
+        ogs_sbi_discovery_option_free(assoc->discovery_option);
 
     ogs_pool_free(&scp_assoc_pool, assoc);
 }

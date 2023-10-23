@@ -1316,6 +1316,62 @@ ogs_sbi_nf_info_t *ogs_sbi_nf_info_find(
     return NULL;
 }
 
+bool ogs_sbi_check_smf_info_slice(
+        ogs_sbi_smf_info_t *smf_info, ogs_s_nssai_t *s_nssai, char *dnn)
+{
+    int i, j;
+
+    ogs_assert(smf_info);
+    ogs_assert(s_nssai);
+    ogs_assert(dnn);
+
+    for (i = 0; i < smf_info->num_of_slice; i++) {
+        if (s_nssai->sst == smf_info->slice[i].s_nssai.sst &&
+            s_nssai->sd.v == smf_info->slice[i].s_nssai.sd.v) {
+
+            for (j = 0; j < smf_info->slice[i].num_of_dnn; j++) {
+                if (ogs_strcasecmp(dnn, smf_info->slice[i].dnn[j]) == 0)
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+bool ogs_sbi_check_smf_info_tai(
+        ogs_sbi_smf_info_t *smf_info, ogs_5gs_tai_t *tai)
+{
+    int i, j;
+
+    ogs_assert(smf_info);
+    ogs_assert(tai);
+
+    if (smf_info->num_of_nr_tai == 0 && smf_info->num_of_nr_tai_range == 0)
+        return true;
+
+    for (i = 0; i < smf_info->num_of_nr_tai; i++) {
+        if (memcmp(&tai->plmn_id,
+                &smf_info->nr_tai[i].plmn_id, OGS_PLMN_ID_LEN) == 0) {
+            if (tai->tac.v == smf_info->nr_tai[i].tac.v)
+                return true;
+        }
+    }
+
+    for (i = 0; i < smf_info->num_of_nr_tai_range; i++) {
+        if (memcmp(&tai->plmn_id,
+                &smf_info->nr_tai_range[i].plmn_id, OGS_PLMN_ID_LEN) == 0) {
+            for (j = 0; j < smf_info->nr_tai_range[i].num_of_tac_range; j++) {
+                if (tai->tac.v >= smf_info->nr_tai_range[i].start[j].v &&
+                    tai->tac.v <= smf_info->nr_tai_range[i].end[j].v) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 void ogs_sbi_nf_instance_build_default(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_sbi_server_t *server = NULL;
@@ -1547,6 +1603,8 @@ bool ogs_sbi_discovery_option_is_matched(
         OpenAPI_nf_type_e requester_nf_type,
         ogs_sbi_discovery_option_t *discovery_option)
 {
+    ogs_sbi_nf_info_t *nf_info = NULL;
+
     ogs_assert(nf_instance);
     ogs_assert(requester_nf_type);
     ogs_assert(discovery_option);
@@ -1579,6 +1637,30 @@ bool ogs_sbi_discovery_option_is_matched(
             if (exist == true) break;
         }
         if (exist == false) return false;
+    }
+
+    ogs_list_for_each(&nf_instance->nf_info_list, nf_info) {
+        if (nf_instance->nf_type != nf_info->nf_type) {
+            ogs_error("Invalid NF-Type [%d:%d]",
+                    nf_instance->nf_type, nf_info->nf_type);
+            return false;
+        }
+
+        switch (nf_info->nf_type) {
+        case OpenAPI_nf_type_SMF:
+            if (discovery_option->num_of_snssais && discovery_option->dnn &&
+                ogs_sbi_check_smf_info_slice(&nf_info->smf,
+                    &discovery_option->snssais[0],
+                    discovery_option->dnn) == false)
+                return false;
+            if (discovery_option->num_of_tai &&
+                ogs_sbi_check_smf_info_tai(&nf_info->smf,
+                    &discovery_option->tai[0]) == false)
+                return false;
+            break;
+        default:
+            break;
+        }
     }
 
     return true;

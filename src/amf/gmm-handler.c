@@ -1244,13 +1244,26 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             sess->s_nssai.sst = selected_slice->s_nssai.sst;
             sess->s_nssai.sd.v = selected_slice->s_nssai.sd.v;
 
-            ogs_info("UE SUPI[%s] DNN[%s] S_NSSAI[SST:%d SD:0x%x]",
-                amf_ue->supi, sess->dnn, sess->s_nssai.sst, sess->s_nssai.sd.v);
+            ogs_info("UE SUPI[%s] DNN[%s] S_NSSAI[SST:%d SD:0x%x] "
+                    "smContextRef [%s]",
+                amf_ue->supi, sess->dnn, sess->s_nssai.sst, sess->s_nssai.sd.v,
+                sess->sm_context_ref ? sess->sm_context_ref : "NULL");
 
             if (!SESSION_CONTEXT_IN_SMF(sess)) {
                 ogs_sbi_nf_instance_t *nf_instance = NULL;
                 ogs_sbi_service_type_e service_type =
                     OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION;
+
+                ogs_sbi_discovery_option_t *discovery_option = NULL;
+
+                discovery_option = ogs_sbi_discovery_option_new();
+                ogs_assert(discovery_option);
+
+                ogs_sbi_discovery_option_add_snssais(
+                        discovery_option, &sess->s_nssai);
+                ogs_sbi_discovery_option_set_dnn(discovery_option, sess->dnn);
+                ogs_sbi_discovery_option_add_tai(
+                        discovery_option, &amf_ue->nr_tai);
 
                 nf_instance = sess->sbi.
                     service_type_array[service_type].nf_instance;
@@ -1263,21 +1276,29 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                             &sess->sbi,
                             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION,
                             requester_nf_type,
-                            NULL);
+                            discovery_option);
                     nf_instance = sess->sbi.
                         service_type_array[service_type].nf_instance;
-                }
+
+                    if (!nf_instance)
+                        ogs_info("No SMF Instance");
+                    else
+                        ogs_info("SMF Instance [%s]", nf_instance->id);
+                } else
+                    ogs_info("SMF Instance [%s]", nf_instance->id);
 
                 if (nf_instance) {
                     r = amf_sess_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION,
+                            discovery_option,
                             amf_nsmf_pdusession_build_create_sm_context,
                             sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
                 } else {
                     r = amf_sess_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NNSSF_NSSELECTION, NULL,
+                            OGS_SBI_SERVICE_TYPE_NNSSF_NSSELECTION,
+                            discovery_option,
                             amf_nnssf_nsselection_build_get, sess, 0, NULL);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);

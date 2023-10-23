@@ -274,6 +274,72 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
                         nf_instance->id);
             }
 
+            if (discovery_option && discovery_option->num_of_snssais) {
+                bool rc = false;
+                char *v = ogs_sbi_discovery_option_build_snssais(
+                        discovery_option);
+                ogs_expect(v);
+
+                if (v) {
+                    char *encoded = ogs_sbi_url_encode(v);
+                    ogs_expect(encoded);
+
+                    if (encoded) {
+            /*
+             * In http.params, the CURL library automatically encodes the URL.
+             * http.headers implements open5gs to directly encode URLs.
+             *
+             * Since it is http.headers,
+             * we need to encode `v` using ogs_sbi_url_encode();
+             */
+                        ogs_sbi_header_set(request->http.headers,
+                                OGS_SBI_CUSTOM_DISCOVERY_SNSSAIS, encoded);
+                        ogs_free(encoded);
+
+                        rc = true;
+                    }
+                    ogs_free(v);
+                }
+
+                if (rc == false)
+                    ogs_error("build failed: snssais(%d)[SST:%d SD:0x%x]",
+                                discovery_option->num_of_snssais,
+                                discovery_option->snssais[0].sst,
+                                discovery_option->snssais[0].sd.v);
+            }
+
+            if (discovery_option && discovery_option->dnn) {
+                ogs_sbi_header_set(request->http.headers,
+                        OGS_SBI_CUSTOM_DISCOVERY_DNN, discovery_option->dnn);
+            }
+
+            if (discovery_option && discovery_option->num_of_tai) {
+                bool rc = false;
+                char *v = ogs_sbi_discovery_option_build_tai(discovery_option);
+                ogs_expect(v);
+
+                if (v) {
+                    char *encoded = ogs_sbi_url_encode(v);
+                    ogs_expect(encoded);
+
+                    if (encoded) {
+                        ogs_sbi_header_set(request->http.headers,
+                                OGS_SBI_CUSTOM_DISCOVERY_TAI, encoded);
+                        ogs_free(encoded);
+
+                        rc = true;
+                    }
+                    ogs_free(v);
+                }
+
+                if (rc == false)
+                    ogs_error("build failed: tai(%d)[PLMN_ID:%06x,TAC:%d]",
+                                discovery_option->num_of_tai,
+                                ogs_plmn_id_hexdump(
+                                    &discovery_option->tai[0].plmn_id),
+                                discovery_option->tai[0].tac.v);
+            }
+
             if (discovery_option &&
                 discovery_option->requester_features) {
                 char *v = ogs_uint64_to_string(
@@ -615,19 +681,39 @@ static void build_default_discovery_parameter(
         if (ogs_sbi_self()->discovery_config.
                 no_service_names == false &&
             discovery_option->num_of_service_names) {
+            bool rc = false;
 
             /* send array items separated by a comma */
             char *v = ogs_sbi_discovery_option_build_service_names(
                         discovery_option);
+            ogs_expect(v);
+
             if (v) {
-                ogs_sbi_header_set(request->http.headers,
-                        OGS_SBI_CUSTOM_DISCOVERY_SERVICE_NAMES, v);
+                char *encoded = ogs_sbi_url_encode(v);
+                ogs_expect(encoded);
+
+                if (encoded) {
+            /*
+             * In http.params, the CURL library automatically encodes the URL.
+             * http.headers implements open5gs to directly encode URLs.
+             *
+             * Since it is http.headers,
+             * we need to encode `v` using ogs_sbi_url_encode();
+             */
+                    ogs_sbi_header_set(request->http.headers,
+                            OGS_SBI_CUSTOM_DISCOVERY_SERVICE_NAMES, encoded);
+                    ogs_free(encoded);
+
+                    rc = true;
+                }
                 ogs_free(v);
-            } else {
+
+            }
+
+            if (rc == false)
                 ogs_warn("invalid service names failed[%d:%s]",
                             discovery_option->num_of_service_names,
                             discovery_option->service_names[0]);
-            }
         }
     }
 

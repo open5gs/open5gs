@@ -820,6 +820,20 @@ static void sbi_message_test8(abts_case *tc, void *data)
         ogs_sbi_service_type_from_name(OGS_SBI_SERVICE_NAME_NNSSAAF_NSSAA));
 }
 
+static void sbi_message_test9(abts_case *tc, void *data)
+{
+    const char *original = "{\"sst\": 1, \"sd\": \"A08923\"}";
+    char *encoded = ogs_sbi_url_encode(original);
+    char *decoded = ogs_sbi_url_decode(encoded);
+
+    ABTS_STR_EQUAL(tc,
+            "%7B%22sst%22%3A 1%2C %22sd%22%3A %22A08923%22%7D", encoded);
+    ABTS_STR_EQUAL(tc, original, decoded);
+
+    ogs_free(encoded);
+    ogs_free(decoded);
+}
+
 abts_suite *test_sbi_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -832,6 +846,7 @@ abts_suite *test_sbi_message(abts_suite *suite)
     abts_run_test(suite, sbi_message_test6, NULL);
     abts_run_test(suite, sbi_message_test7, NULL);
     abts_run_test(suite, sbi_message_test8, NULL);
+    abts_run_test(suite, sbi_message_test9, NULL);
 
     return suite;
 }

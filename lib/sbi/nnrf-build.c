@@ -777,7 +777,7 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
             ogs_error("No TaiItem->tac");
             if (TaiItem) {
                 if (TaiItem->plmn_id)
-                    ogs_free(TaiItem->plmn_id);
+                    ogs_sbi_free_plmn_id(TaiItem->plmn_id);
                 ogs_free(TaiItem);
             }
             free_smf_info(SmfInfo);
@@ -972,7 +972,7 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
             ogs_error("No TaiItem->tac");
             if (TaiItem) {
                 if (TaiItem->plmn_id)
-                    ogs_free(TaiItem->plmn_id);
+                    ogs_sbi_free_plmn_id(TaiItem->plmn_id);
                 ogs_free(TaiItem);
             }
             free_amf_info(AmfInfo);

@@ -388,6 +388,23 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         if (ogs_sbi_self()->discovery_config.no_service_names == false &&
             discovery_option->num_of_service_names) {
 
+    /*
+     * Issues #1730
+     * Send NF discovery query with service-names delimited with comma
+     *
+     * OpenAPI specification for sending NF discovery query with
+     * "service-names" parameter is defined as folowing:
+     *   name: service-names
+     *   ...
+     *   style: form
+     *   explode: false
+     *
+     * According to OpenAPI specification, this means array items
+     * should be delimited with a comma character (example: /users?id=3,4,5).
+     *
+     * See also https://swagger.io/docs/specification/serialization/
+     */
+
             /* send array items separated by a comma */
             char *v = ogs_sbi_discovery_option_build_service_names(
                         discovery_option);
@@ -396,9 +413,45 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
                         OGS_SBI_PARAM_SERVICE_NAMES, v);
                 ogs_free(v);
             } else {
-                ogs_warn("invalid service names failed[%d:%s]",
+                ogs_warn("build failed: service-names[%d:%s]",
                             discovery_option->num_of_service_names,
                             discovery_option->service_names[0]);
+            }
+        }
+        if (discovery_option->num_of_snssais) {
+            char *v = ogs_sbi_discovery_option_build_snssais(discovery_option);
+            if (v) {
+            /*
+             * In http.params, the CURL library automatically encodes the URL.
+             * http.headers implements open5gs to directly encode URLs.
+             *
+             * Since it is http.params, the result is sent as is.
+             */
+                ogs_sbi_header_set(request->http.params,
+                        OGS_SBI_PARAM_SNSSAIS, v);
+                ogs_free(v);
+            } else {
+                ogs_error("build failed: snssais(%d)[SST:%d SD:0x%x]",
+                            discovery_option->num_of_snssais,
+                            discovery_option->snssais[0].sst,
+                            discovery_option->snssais[0].sd.v);
+            }
+        }
+        if (discovery_option->dnn) {
+            ogs_sbi_header_set(request->http.params,
+                    OGS_SBI_PARAM_DNN, discovery_option->dnn);
+        }
+        if (discovery_option->num_of_tai) {
+            char *v = ogs_sbi_discovery_option_build_tai(discovery_option);
+            if (v) {
+                ogs_sbi_header_set(request->http.params, OGS_SBI_PARAM_TAI, v);
+                ogs_free(v);
+            } else {
+                ogs_error("build failed: tai(%d)[PLMN_ID:%06x,TAC:%d]",
+                            discovery_option->num_of_tai,
+                            ogs_plmn_id_hexdump(
+                                &discovery_option->tai[0].plmn_id),
+                            discovery_option->tai[0].tac.v);
             }
         }
         if (discovery_option->requester_features) {
@@ -702,10 +755,45 @@ int ogs_sbi_parse_request(
             }
         } else if (!strcmp(ogs_hash_this_key(hi),
                     OGS_SBI_PARAM_SERVICE_NAMES)) {
+    /*
+     * Issues #1730
+     * Send NF discovery query with service-names delimited with comma
+     *
+     * OpenAPI specification for sending NF discovery query with
+     * "service-names" parameter is defined as folowing:
+     *   name: service-names
+     *   ...
+     *   style: form
+     *   explode: false
+     *
+     * According to OpenAPI specification, this means array items
+     * should be delimited with a comma character (example: /users?id=3,4,5).
+     *
+     * See also https://swagger.io/docs/specification/serialization/
+     */
             char *v = ogs_hash_this_val(hi);
             if (v) {
                 ogs_sbi_discovery_option_parse_service_names(
                         discovery_option, v);
+                discovery_option_presence = true;
+            }
+        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_SNSSAIS)) {
+            char *v = ogs_hash_this_val(hi);
+            if (v) {
+                ogs_sbi_discovery_option_parse_snssais(discovery_option, v);
+                discovery_option_presence = true;
+            }
+        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_DNN)) {
+            char *v = ogs_hash_this_val(hi);
+
+            if (v) {
+                ogs_sbi_discovery_option_set_dnn(discovery_option, v);
+                discovery_option_presence = true;
+            }
+        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_TAI)) {
+            char *v = ogs_hash_this_val(hi);
+            if (v) {
+                ogs_sbi_discovery_option_parse_tai(discovery_option, v);
                 discovery_option_presence = true;
             }
         } else if (!strcmp(ogs_hash_this_key(hi),
@@ -2682,6 +2770,8 @@ void ogs_sbi_discovery_option_free(
         ogs_free(discovery_option->target_nf_instance_id);
     if (discovery_option->requester_nf_instance_id)
         ogs_free(discovery_option->requester_nf_instance_id);
+    if (discovery_option->dnn)
+        ogs_free(discovery_option->dnn);
 
     for (i = 0; i < discovery_option->num_of_service_names; i++)
         ogs_free(discovery_option->service_names[i]);
@@ -2711,6 +2801,16 @@ void ogs_sbi_discovery_option_set_requester_nf_instance_id(
     discovery_option->requester_nf_instance_id =
         ogs_strdup(requester_nf_instance_id);
     ogs_assert(discovery_option->requester_nf_instance_id);
+}
+void ogs_sbi_discovery_option_set_dnn(
+        ogs_sbi_discovery_option_t *discovery_option, char *dnn)
+{
+    ogs_assert(discovery_option);
+    ogs_assert(dnn);
+
+    ogs_assert(!discovery_option->dnn);
+    discovery_option->dnn = ogs_strdup(dnn);
+    ogs_assert(discovery_option->dnn);
 }
 void ogs_sbi_discovery_option_add_service_names(
         ogs_sbi_discovery_option_t *discovery_option,
@@ -2743,6 +2843,22 @@ char *ogs_sbi_discovery_option_build_service_names(
         return NULL;;
     }
 
+    /*
+     * Issues #1730
+     * Send NF discovery query with service-names delimited with comma
+     *
+     * OpenAPI specification for sending NF discovery query with
+     * "service-names" parameter is defined as folowing:
+     *   name: service-names
+     *   ...
+     *   style: form
+     *   explode: false
+     *
+     * According to OpenAPI specification, this means array items
+     * should be delimited with a comma character (example: /users?id=3,4,5).
+     *
+     * See also https://swagger.io/docs/specification/serialization/
+     */
     if (discovery_option->num_of_service_names > 1) {
         for (i = 1; i < discovery_option->num_of_service_names; i++)
             service_names = ogs_mstrcatf(
@@ -2763,14 +2879,236 @@ void ogs_sbi_discovery_option_parse_service_names(
     ogs_assert(discovery_option);
     ogs_assert(service_names);
 
-    v = ogs_strdup(service_names);
-    ogs_assert(v);
+    v = ogs_sbi_url_decode(service_names);
+    if (!v) {
+        ogs_error("ogs_sbi_url_decode() failed : service_names[%s]",
+                service_names);
+        return;
+    }
 
+    /*
+     * Issues #1730
+     * Send NF discovery query with service-names delimited with comma
+     *
+     * OpenAPI specification for sending NF discovery query with
+     * "service-names" parameter is defined as folowing:
+     *   name: service-names
+     *   ...
+     *   style: form
+     *   explode: false
+     *
+     * According to OpenAPI specification, this means array items
+     * should be delimited with a comma character (example: /users?id=3,4,5).
+     *
+     * See also https://swagger.io/docs/specification/serialization/
+     */
     token = ogs_strtok_r(v, ",", &saveptr);
     while (token != NULL) {
         ogs_sbi_discovery_option_add_service_names(discovery_option, token);
         token = ogs_strtok_r(NULL, ",", &saveptr);
     }
+
+    ogs_free(v);
+}
+
+void ogs_sbi_discovery_option_add_snssais(
+        ogs_sbi_discovery_option_t *discovery_option, ogs_s_nssai_t *s_nssai)
+{
+    ogs_assert(discovery_option);
+    ogs_assert(s_nssai);
+
+    ogs_assert(discovery_option->num_of_snssais < OGS_MAX_NUM_OF_SLICE);
+
+    memcpy(&discovery_option->snssais[discovery_option->num_of_snssais],
+            s_nssai, sizeof(ogs_s_nssai_t));
+    discovery_option->num_of_snssais++;
+}
+char *ogs_sbi_discovery_option_build_snssais(
+        ogs_sbi_discovery_option_t *discovery_option)
+{
+    cJSON *item = NULL;
+    char *v = NULL;
+    int i;
+
+    ogs_assert(discovery_option);
+
+    item = cJSON_CreateArray();
+    if (!item) {
+        ogs_error("cJSON_CreateArray() failed");
+        return NULL;
+    }
+
+    for (i = 0; i < discovery_option->num_of_snssais; i++) {
+        OpenAPI_snssai_t sNSSAI;
+        cJSON *snssaiItem = NULL;
+
+        memset(&sNSSAI, 0, sizeof(sNSSAI));
+
+        sNSSAI.sst = discovery_option->snssais[i].sst;
+        sNSSAI.sd = ogs_s_nssai_sd_to_string(discovery_option->snssais[i].sd);
+
+        snssaiItem = OpenAPI_snssai_convertToJSON(&sNSSAI);
+        ogs_assert(snssaiItem);
+        cJSON_AddItemToArray(item, snssaiItem);
+    }
+
+    v = cJSON_PrintUnformatted(item);
+    ogs_expect(v);
+    cJSON_Delete(item);
+
+    return v;
+}
+void ogs_sbi_discovery_option_parse_snssais(
+        ogs_sbi_discovery_option_t *discovery_option, char *snssais)
+{
+    cJSON *item = NULL;
+    cJSON *snssaiItem = NULL;
+    char *v = NULL;
+
+    ogs_assert(discovery_option);
+    ogs_assert(snssais);
+
+    v = ogs_sbi_url_decode(snssais);
+    if (!v) {
+        ogs_error("ogs_sbi_url_decode() failed : snssais[%s]", snssais);
+        return;
+    }
+
+    item = cJSON_Parse(v);
+    if (!item) {
+        ogs_error("Cannot parse snssais[%s]", snssais);
+        ogs_free(v);
+        return;
+    }
+
+    cJSON_ArrayForEach(snssaiItem, item) {
+        if (cJSON_IsObject(snssaiItem)) {
+            OpenAPI_snssai_t *sNSSAI = OpenAPI_snssai_parseFromJSON(snssaiItem);
+
+            if (sNSSAI) {
+                ogs_s_nssai_t s_nssai;
+
+                s_nssai.sst = sNSSAI->sst;
+                s_nssai.sd = ogs_s_nssai_sd_from_string(sNSSAI->sd);
+
+                ogs_sbi_discovery_option_add_snssais(
+                        discovery_option, &s_nssai);
+
+                OpenAPI_snssai_free(sNSSAI);
+            } else {
+                ogs_error("OpenAPI_snssai_parseFromJSON() failed : snssais[%s]",
+                        snssais);
+            }
+        } else {
+            ogs_error("Invalid cJSON Type in snssias[%s]", snssais);
+        }
+    }
+    cJSON_Delete(item);
+
+    ogs_free(v);
+}
+
+void ogs_sbi_discovery_option_add_tai(
+        ogs_sbi_discovery_option_t *discovery_option, ogs_5gs_tai_t *tai)
+{
+    ogs_assert(discovery_option);
+    ogs_assert(tai);
+
+    ogs_assert(discovery_option->num_of_tai < OGS_MAX_NUM_OF_TAI);
+
+    memcpy(&discovery_option->tai[discovery_option->num_of_tai],
+            tai, sizeof(ogs_5gs_tai_t));
+    discovery_option->num_of_tai++;
+}
+char *ogs_sbi_discovery_option_build_tai(
+        ogs_sbi_discovery_option_t *discovery_option)
+{
+    cJSON *item = NULL;
+    char *v = NULL;
+    int i;
+
+    ogs_assert(discovery_option);
+
+    item = cJSON_CreateArray();
+    if (!item) {
+        ogs_error("cJSON_CreateArray() failed");
+        return NULL;
+    }
+
+    for (i = 0; i < discovery_option->num_of_tai; i++) {
+        OpenAPI_tai_t Tai;
+        cJSON *taiItem = NULL;
+
+        memset(&Tai, 0, sizeof(Tai));
+
+        Tai.plmn_id = ogs_sbi_build_plmn_id(&discovery_option->tai[i].plmn_id);
+        ogs_assert(Tai.plmn_id);
+        Tai.tac = ogs_uint24_to_0string(discovery_option->tai[i].tac);
+        ogs_assert(Tai.tac);
+
+        taiItem = OpenAPI_tai_convertToJSON(&Tai);
+        ogs_assert(taiItem);
+        cJSON_AddItemToArray(item, taiItem);
+
+        ogs_sbi_free_plmn_id(Tai.plmn_id);
+        ogs_free(Tai.tac);
+    }
+
+    v = cJSON_PrintUnformatted(item);
+    ogs_expect(v);
+    cJSON_Delete(item);
+
+    return v;
+}
+void ogs_sbi_discovery_option_parse_tai(
+        ogs_sbi_discovery_option_t *discovery_option, char *tai)
+{
+    cJSON *item = NULL;
+    cJSON *taiItem = NULL;
+    char *v = NULL;
+
+    ogs_assert(discovery_option);
+    ogs_assert(tai);
+
+    v = ogs_sbi_url_decode(tai);
+    if (!v) {
+        ogs_error("ogs_sbi_url_decode() failed : tai[%s]", tai);
+        return;
+    }
+
+    item = cJSON_Parse(v);
+    if (!item) {
+        ogs_error("Cannot parse tai[%s]", tai);
+        ogs_free(v);
+        return;
+    }
+
+    cJSON_ArrayForEach(taiItem, item) {
+        if (cJSON_IsObject(taiItem)) {
+            OpenAPI_tai_t *Tai = OpenAPI_tai_parseFromJSON(taiItem);
+
+            if (Tai) {
+                ogs_5gs_tai_t tai;
+
+                memset(&tai, 0, sizeof(tai));
+
+                if (Tai->plmn_id)
+                    ogs_sbi_parse_plmn_id(&tai.plmn_id, Tai->plmn_id);
+                if (Tai->tac)
+                    tai.tac = ogs_uint24_from_string(Tai->tac);
+
+                ogs_sbi_discovery_option_add_tai(discovery_option, &tai);
+
+                OpenAPI_tai_free(Tai);
+            } else {
+                ogs_error("OpenAPI_snssai_parseFromJSON() failed : tai[%s]",
+                        tai);
+            }
+        } else {
+            ogs_error("Invalid cJSON Type in snssias[%s]", tai);
+        }
+    }
+    cJSON_Delete(item);
 
     ogs_free(v);
 }
