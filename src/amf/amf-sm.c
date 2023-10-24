@@ -875,6 +875,19 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             break;
         }
 
+        /*
+         * Inbetween receiving an NGAP message, processing it, re-sending a 5GMM
+         * message back into a message queue, and processing that message, another
+         * message (either from SBI, NGAP or a timer event) could already be
+         * received and processed, which could cause amf_ue/ran_ue context to
+         * deallocate.
+         */
+        if (!ran_ue_cycle(ran_ue)) {
+            ogs_error("NG context has already been removed");
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
+
         amf_ue = ran_ue->amf_ue;
         if (!amf_ue) {
             amf_ue = amf_ue_find_by_message(&nas_message);
@@ -962,6 +975,20 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
              */
             CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
             CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
+        }
+
+
+        /*
+         * Inbetween receiving an NGAP message, processing it, re-sending a 5GMM
+         * message back into a message queue, and processing that message, another
+         * message (either from SBI, NGAP or a timer event) could already be
+         * received and processed, which could cause amf_ue/ran_ue context to
+         * deallocate.
+         */
+        if (!amf_ue_cycle(amf_ue)) {
+            ogs_error("UE(amf-ue) context has already been removed");
+            ogs_pkbuf_free(pkbuf);
+            break;
         }
 
         ogs_assert(amf_ue);
