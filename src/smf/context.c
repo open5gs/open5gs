@@ -946,6 +946,16 @@ int smf_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(smf_key, "metrics")) {
                     /* handle config in metrics library */
+                } else if (!strcmp(smf_key, "sgi_nwi")) {
+                    const char* str_sgi = ogs_yaml_iter_value(&smf_iter);
+                    ogs_assert(str_sgi);
+                    self.sgi_nwi = str_sgi;                    
+                } else if (!strcmp(smf_key, "use_upg")) {
+                    const char* str_use_upg = ogs_yaml_iter_value(&smf_iter);
+                    ogs_assert(str_use_upg);
+                    if(!strcmp(str_use_upg, "true")) {
+                        self.use_upg = true;
+                    }
                 } else
                     ogs_warn("unknown key `%s`", smf_key);
             }

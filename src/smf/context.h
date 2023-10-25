@@ -93,6 +93,9 @@ typedef struct smf_context_s {
 
     uint16_t        mtu;            /* MTU to advertise in PCO */
 
+    bool use_upg;
+    const char* sgi_nwi;
+
     struct  {
         const char *integrity_protection_indication;
         const char *confidentiality_protection_indication;

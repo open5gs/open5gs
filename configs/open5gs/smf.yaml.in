@@ -597,6 +597,14 @@ sbi:
 #      maximum_integrity_protected_data_rate_uplink: bitrate64kbs|maximum-UE-rate
 #      maximum_integrity_protected_data_rate_downlink: bitrate64kbs|maximum-UE-rate
 #
+#    o Add support for travelping upg pgw:
+#      travelping upg needs nwi network instance name 
+#      to route traffic to/from sgi interface
+#
+#    use_upg : true
+#    sgi_nwi : sgi
+#
+#
 smf:
     sbi:
       - addr: 127.0.0.4
