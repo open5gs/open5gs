@@ -2219,6 +2219,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
         AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
+        amf_metrics_reg_time_stop(amf_ue);
 
         xact_count = amf_sess_xact_count(amf_ue);
 
