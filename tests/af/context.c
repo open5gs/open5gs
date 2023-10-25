@@ -289,8 +289,15 @@ static ogs_sbi_client_t *find_client_by_fqdn(
 
     client = ogs_sbi_client_find(scheme, addr);
     if (!client) {
+        ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
         client = ogs_sbi_client_add(scheme, addr);
-        ogs_assert(client);
+        if (!client) {
+            char buf[OGS_ADDRSTRLEN];
+            ogs_error("%s: ogs_sbi_client_add() failed [%s]:%d",
+                    OGS_FUNC, OGS_ADDR(addr, buf), OGS_PORT(addr));
+            ogs_freeaddrinfo(addr);
+            return NULL;
+        }
     }
 
     ogs_freeaddrinfo(addr);
@@ -323,8 +330,13 @@ void af_sess_associate_pcf_client(af_sess_t *sess)
         if (addr) {
             client = ogs_sbi_client_find(scheme, addr);
             if (!client) {
+                ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
                 client = ogs_sbi_client_add(scheme, addr);
-                ogs_assert(client);
+                if (!client) {
+                    char buf[OGS_ADDRSTRLEN];
+                    ogs_error("%s: ogs_sbi_client_add() failed [%s]:%d",
+                            OGS_FUNC, OGS_ADDR(addr, buf), OGS_PORT(addr));
+                }
             }
         }
     }

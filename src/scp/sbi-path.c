@@ -309,8 +309,19 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
 
             client = ogs_sbi_client_find(scheme, addr);
             if (!client) {
+                ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
                 client = ogs_sbi_client_add(scheme, addr);
-                ogs_assert(client);
+                if (!client) {
+                    char buf[OGS_ADDRSTRLEN];
+                    ogs_error("ogs_sbi_client_add() failed [%s]:%d",
+                            OGS_ADDR(addr, buf), OGS_PORT(addr));
+
+                    ogs_freeaddrinfo(addr);
+                    ogs_sbi_discovery_option_free(discovery_option);
+                    scp_assoc_remove(assoc);
+
+                    return OGS_ERROR;
+                }
             }
             OGS_SBI_SETUP_CLIENT(assoc, client);
             ogs_freeaddrinfo(addr);
@@ -443,8 +454,19 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
 
                 nrf_client = ogs_sbi_client_find(scheme, addr);
                 if (!nrf_client) {
+                    ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
                     nrf_client = ogs_sbi_client_add(scheme, addr);
-                    ogs_assert(nrf_client);
+                    if (!nrf_client) {
+                        char buf[OGS_ADDRSTRLEN];
+                        ogs_error("ogs_sbi_client_add() failed [%s]:%d",
+                                OGS_ADDR(addr, buf), OGS_PORT(addr));
+
+                        ogs_freeaddrinfo(addr);
+                        ogs_sbi_discovery_option_free(discovery_option);
+                        scp_assoc_remove(assoc);
+
+                        return OGS_ERROR;
+                    }
                 }
                 OGS_SBI_SETUP_CLIENT(assoc, nrf_client);
                 ogs_freeaddrinfo(addr);

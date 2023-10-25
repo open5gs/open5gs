@@ -93,8 +93,15 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
 
     client = ogs_sbi_client_find(scheme, addr);
     if (!client) {
+        ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
         client = ogs_sbi_client_add(scheme, addr);
-        ogs_assert(client);
+        if (!client) {
+            char buf[OGS_ADDRSTRLEN];
+            ogs_error("%s: ogs_sbi_client_add() failed [%s]:%d",
+                    OGS_FUNC, OGS_ADDR(addr, buf), OGS_PORT(addr));
+            ogs_freeaddrinfo(addr);
+            return false;
+        }
     }
     OGS_SBI_SETUP_CLIENT(&pcf_ue->namf, client);
     ogs_freeaddrinfo(addr);
@@ -276,8 +283,16 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
 
     client = ogs_sbi_client_find(scheme, addr);
     if (!client) {
+        ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
         client = ogs_sbi_client_add(scheme, addr);
-        ogs_assert(client);
+        if (!client) {
+            char buf[OGS_ADDRSTRLEN];
+            strerror = ogs_msprintf("%s: ogs_sbi_client_add() failed [%s]:%d",
+                    OGS_FUNC, OGS_ADDR(addr, buf), OGS_PORT(addr));
+            status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
+            ogs_freeaddrinfo(addr);
+            goto cleanup;
+        }
     }
     OGS_SBI_SETUP_CLIENT(&sess->nsmf, client);
     ogs_freeaddrinfo(addr);
@@ -599,8 +614,16 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
 
     client = ogs_sbi_client_find(scheme, addr);
     if (!client) {
+        ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
         client = ogs_sbi_client_add(scheme, addr);
-        ogs_assert(client);
+        if (!client) {
+            char buf[OGS_ADDRSTRLEN];
+            strerror = ogs_msprintf("%s: ogs_sbi_client_add() failed [%s]:%d",
+                    OGS_FUNC, OGS_ADDR(addr, buf), OGS_PORT(addr));
+            status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
+            ogs_freeaddrinfo(addr);
+            goto cleanup;
+        }
     }
     OGS_SBI_SETUP_CLIENT(&app_session->naf, client);
     ogs_freeaddrinfo(addr);

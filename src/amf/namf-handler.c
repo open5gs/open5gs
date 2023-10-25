@@ -248,8 +248,15 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
 
                 client = ogs_sbi_client_find(scheme, addr);
                 if (!client) {
+                    ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
                     client = ogs_sbi_client_add(scheme, addr);
-                    ogs_assert(client);
+                    if (!client) {
+                        char buf[OGS_ADDRSTRLEN];
+                        ogs_error("%s: ogs_sbi_client_add() failed [%s]:%d",
+                                OGS_FUNC, OGS_ADDR(addr, buf), OGS_PORT(addr));
+                        ogs_freeaddrinfo(addr);
+                        return OGS_ERROR;
+                    }
                 }
                 OGS_SBI_SETUP_CLIENT(&sess->paging, client);
                 ogs_freeaddrinfo(addr);

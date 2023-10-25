@@ -580,6 +580,7 @@ int ogs_sbi_context_parse_config(
 
                         if (addr == NULL) continue;
 
+                        ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
                         client = ogs_sbi_client_add(
                                     ogs_sbi_client_default_scheme(), addr);
                         ogs_assert(client);
@@ -683,6 +684,7 @@ int ogs_sbi_context_parse_config(
 
                         if (addr == NULL) continue;
 
+                        ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
                         client = ogs_sbi_client_add(
                                     ogs_sbi_client_default_scheme(), addr);
                         ogs_assert(client);
@@ -805,8 +807,6 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void)
     ogs_assert(nf_instance);
     memset(nf_instance, 0, sizeof(ogs_sbi_nf_instance_t));
 
-    ogs_debug("ogs_sbi_nf_instance_add()");
-
     OGS_OBJECT_REF(nf_instance);
 
     nf_instance->time.heartbeat_interval =
@@ -817,6 +817,9 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void)
     nf_instance->load = OGS_SBI_DEFAULT_LOAD;
 
     ogs_list_add(&ogs_sbi_self()->nf_instance_list, nf_instance);
+
+    ogs_debug("[%s:%d] NFInstance added with Ref",
+            nf_instance->id, nf_instance->reference_count);
 
     return nf_instance;
 }
@@ -913,12 +916,16 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_assert(nf_instance);
 
-    ogs_debug("ogs_sbi_nf_instance_remove()");
+    ogs_debug("[%s:%d] NFInstance UnRef",
+            nf_instance->id, nf_instance->reference_count);
 
     if (OGS_OBJECT_IS_REF(nf_instance)) {
         OGS_OBJECT_UNREF(nf_instance);
         return;
     }
+
+    ogs_debug("[%s:%d] NFInstance removed",
+            nf_instance->id, nf_instance->reference_count);
 
     ogs_list_remove(&ogs_sbi_self()->nf_instance_list, nf_instance);
 
@@ -1519,8 +1526,15 @@ static ogs_sbi_client_t *find_client_by_fqdn(
 
     client = ogs_sbi_client_find(scheme, addr);
     if (!client) {
+        ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
         client = ogs_sbi_client_add(scheme, addr);
-        ogs_assert(client);
+        if (!client) {
+            char buf[OGS_ADDRSTRLEN];
+            ogs_error("%s: ogs_sbi_client_add() failed [%s]:%d",
+                    OGS_FUNC, OGS_ADDR(addr, buf), OGS_PORT(addr));
+            ogs_freeaddrinfo(addr);
+            return NULL;
+        }
     }
 
     ogs_freeaddrinfo(addr);
@@ -1548,8 +1562,14 @@ static ogs_sbi_client_t *nf_instance_find_client(
         if (addr) {
             client = ogs_sbi_client_find(scheme, addr);
             if (!client) {
+                ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
                 client = ogs_sbi_client_add(scheme, addr);
-                ogs_assert(client);
+                if (!client) {
+                    char buf[OGS_ADDRSTRLEN];
+                    ogs_error("%s: ogs_sbi_client_add() failed [%s]:%d",
+                            OGS_FUNC, OGS_ADDR(addr, buf), OGS_PORT(addr));
+                    return NULL;
+                }
             }
         }
     }
@@ -1578,12 +1598,19 @@ static void nf_service_associate_client(ogs_sbi_nf_service_t *nf_service)
         if (addr) {
             client = ogs_sbi_client_find(nf_service->scheme, addr);
             if (!client) {
+                ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
                 client = ogs_sbi_client_add(nf_service->scheme, addr);
-                ogs_assert(client);
+                if (!client) {
+                    char buf[OGS_ADDRSTRLEN];
+                    ogs_error("%s: ogs_sbi_client_add() failed [%s]:%d",
+                            OGS_FUNC, OGS_ADDR(addr, buf), OGS_PORT(addr));
+                }
             }
         }
     }
 
+    ogs_debug("[%s] NFService associated [%s]",
+            nf_service->name, nf_service->id);
     if (client)
         OGS_SBI_SETUP_CLIENT(nf_service, client);
 }

@@ -30,13 +30,13 @@ extern "C" {
 
 #define OGS_SBI_SETUP_CLIENT(__cTX, __pClient) \
     do { \
+        char buf[OGS_ADDRSTRLEN]; \
         ogs_assert((__cTX)); \
         ogs_assert((__pClient)); \
         \
         if ((__cTX)->client) { \
             ogs_sbi_client_t *client = NULL; \
             ogs_sockaddr_t *addr = NULL; \
-            char buf[OGS_ADDRSTRLEN]; \
             \
             client = ((__cTX)->client); \
             ogs_assert(client); \
@@ -49,6 +49,10 @@ extern "C" {
         \
         OGS_OBJECT_REF(__pClient); \
         ((__cTX)->client) = (__pClient); \
+        ogs_debug("[%d] CLIENT Ref [%s:%d]", \
+                (__pClient)->reference_count, \
+                OGS_ADDR((__pClient)->node.addr, buf), \
+                OGS_PORT((__pClient)->node.addr)); \
     } while(0)
 
 typedef int (*ogs_sbi_client_cb_f)(

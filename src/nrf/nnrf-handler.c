@@ -344,6 +344,7 @@ bool nrf_nnrf_handle_nf_status_subscribe(
 
     client = ogs_sbi_client_find(scheme, addr);
     if (!client) {
+        ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
         client = ogs_sbi_client_add(scheme, addr);
         ogs_assert(client);
     }

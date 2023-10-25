@@ -747,7 +747,7 @@ bool ogs_nnrf_nfm_handle_nf_status_notify(
                 ogs_sbi_nf_fsm_tran(
                         nf_instance, ogs_sbi_nf_state_de_registered);
             } else {
-                ogs_info("[%s:%d] NF removed",
+                ogs_info("[%s:%d] (NRF-notify) NF_DEREGISTERED event",
                         nf_instance->id, nf_instance->reference_count);
                 ogs_sbi_nf_fsm_fini((nf_instance));
                 ogs_sbi_nf_instance_remove(nf_instance);

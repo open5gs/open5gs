@@ -103,17 +103,20 @@ ogs_sbi_client_t *ogs_sbi_client_add(
 {
     ogs_sbi_client_t *client = NULL;
     CURLM *multi = NULL;
+    char buf[OGS_ADDRSTRLEN];
 
     ogs_assert(scheme);
     ogs_assert(addr);
 
     ogs_pool_alloc(&client_pool, &client);
-    ogs_assert(client);
+    if (!client) {
+        ogs_error("No memory in client_pool");
+        return NULL;
+    }
     memset(client, 0, sizeof(ogs_sbi_client_t));
 
     client->scheme = scheme;
 
-    ogs_debug("ogs_sbi_client_add[%s]", OpenAPI_uri_scheme_ToString(scheme));
     OGS_OBJECT_REF(client);
 
     ogs_assert(OGS_OK == ogs_copyaddrinfo(&client->node.addr, addr));
@@ -141,6 +144,9 @@ ogs_sbi_client_t *ogs_sbi_client_add(
 
     ogs_list_add(&ogs_sbi_self()->client_list, client);
 
+    ogs_debug("[%d] CLEINT added with Ref [%s:%d]",
+                client->reference_count, OGS_ADDR(addr, buf), OGS_PORT(addr));
+
     return client;
 }
 
@@ -153,14 +159,17 @@ void ogs_sbi_client_remove(ogs_sbi_client_t *client)
 
     addr = client->node.addr;
     ogs_assert(addr);
-    ogs_debug("ogs_sbi_client_remove() [%s:%d]",
-                OGS_ADDR(addr, buf), OGS_PORT(addr));
+    ogs_debug("[%d] CLEINT UnRef [%s:%d]",
+                client->reference_count, OGS_ADDR(addr, buf), OGS_PORT(addr));
 
     /* ogs_sbi_client_t is always created with reference context */
     if (OGS_OBJECT_IS_REF(client)) {
         OGS_OBJECT_UNREF(client);
         return;
     }
+
+    ogs_debug("[%d] CLEINT removed [%s:%d]",
+                client->reference_count, OGS_ADDR(addr, buf), OGS_PORT(addr));
 
     ogs_list_remove(&ogs_sbi_self()->client_list, client);
 
