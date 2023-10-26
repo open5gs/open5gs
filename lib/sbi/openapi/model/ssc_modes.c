@@ -107,10 +107,15 @@ OpenAPI_ssc_modes_t *OpenAPI_ssc_modes_parseFromJSON(cJSON *ssc_modesJSON)
             }
             localEnum = OpenAPI_ssc_mode_FromString(allowed_ssc_modes_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_ssc_mode_FromString(allowed_ssc_modes_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"allowed_ssc_modes\" is not supported. Ignoring it ...",
+                         allowed_ssc_modes_local->valuestring);
+            } else {
+                OpenAPI_list_add(allowed_ssc_modesList, (void *)localEnum);
             }
-            OpenAPI_list_add(allowed_ssc_modesList, (void *)localEnum);
+        }
+        if (allowed_ssc_modesList->count == 0) {
+            ogs_error("OpenAPI_ssc_modes_parseFromJSON() failed: Expected allowed_ssc_modesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

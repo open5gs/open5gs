@@ -1774,10 +1774,15 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             }
             localEnum = OpenAPI_policy_req_trigger_FromString(am_policy_req_trigger_list_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_policy_req_trigger_FromString(am_policy_req_trigger_list_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"am_policy_req_trigger_list\" is not supported. Ignoring it ...",
+                         am_policy_req_trigger_list_local->valuestring);
+            } else {
+                OpenAPI_list_add(am_policy_req_trigger_listList, (void *)localEnum);
             }
-            OpenAPI_list_add(am_policy_req_trigger_listList, (void *)localEnum);
+        }
+        if (am_policy_req_trigger_listList->count == 0) {
+            ogs_error("OpenAPI_ue_context_parseFromJSON() failed: Expected am_policy_req_trigger_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -1807,10 +1812,15 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             }
             localEnum = OpenAPI_policy_req_trigger_FromString(ue_policy_req_trigger_list_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_policy_req_trigger_FromString(ue_policy_req_trigger_list_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"ue_policy_req_trigger_list\" is not supported. Ignoring it ...",
+                         ue_policy_req_trigger_list_local->valuestring);
+            } else {
+                OpenAPI_list_add(ue_policy_req_trigger_listList, (void *)localEnum);
             }
-            OpenAPI_list_add(ue_policy_req_trigger_listList, (void *)localEnum);
+        }
+        if (ue_policy_req_trigger_listList->count == 0) {
+            ogs_error("OpenAPI_ue_context_parseFromJSON() failed: Expected ue_policy_req_trigger_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -1848,10 +1858,15 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             }
             localEnum = OpenAPI_rat_type_FromString(restricted_rat_list_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_rat_type_FromString(restricted_rat_list_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"restricted_rat_list\" is not supported. Ignoring it ...",
+                         restricted_rat_list_local->valuestring);
+            } else {
+                OpenAPI_list_add(restricted_rat_listList, (void *)localEnum);
             }
-            OpenAPI_list_add(restricted_rat_listList, (void *)localEnum);
+        }
+        if (restricted_rat_listList->count == 0) {
+            ogs_error("OpenAPI_ue_context_parseFromJSON() failed: Expected restricted_rat_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -1906,10 +1921,15 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             }
             localEnum = OpenAPI_core_network_type_FromString(restricted_core_nw_type_list_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_core_network_type_FromString(restricted_core_nw_type_list_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"restricted_core_nw_type_list\" is not supported. Ignoring it ...",
+                         restricted_core_nw_type_list_local->valuestring);
+            } else {
+                OpenAPI_list_add(restricted_core_nw_type_listList, (void *)localEnum);
             }
-            OpenAPI_list_add(restricted_core_nw_type_listList, (void *)localEnum);
+        }
+        if (restricted_core_nw_type_listList->count == 0) {
+            ogs_error("OpenAPI_ue_context_parseFromJSON() failed: Expected restricted_core_nw_type_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -2100,10 +2120,15 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             }
             localEnum = OpenAPI_rat_type_FromString(restricted_primary_rat_list_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_rat_type_FromString(restricted_primary_rat_list_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"restricted_primary_rat_list\" is not supported. Ignoring it ...",
+                         restricted_primary_rat_list_local->valuestring);
+            } else {
+                OpenAPI_list_add(restricted_primary_rat_listList, (void *)localEnum);
             }
-            OpenAPI_list_add(restricted_primary_rat_listList, (void *)localEnum);
+        }
+        if (restricted_primary_rat_listList->count == 0) {
+            ogs_error("OpenAPI_ue_context_parseFromJSON() failed: Expected restricted_primary_rat_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -2125,10 +2150,15 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
             }
             localEnum = OpenAPI_rat_type_FromString(restricted_secondary_rat_list_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_rat_type_FromString(restricted_secondary_rat_list_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"restricted_secondary_rat_list\" is not supported. Ignoring it ...",
+                         restricted_secondary_rat_list_local->valuestring);
+            } else {
+                OpenAPI_list_add(restricted_secondary_rat_listList, (void *)localEnum);
             }
-            OpenAPI_list_add(restricted_secondary_rat_listList, (void *)localEnum);
+        }
+        if (restricted_secondary_rat_listList->count == 0) {
+            ogs_error("OpenAPI_ue_context_parseFromJSON() failed: Expected restricted_secondary_rat_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

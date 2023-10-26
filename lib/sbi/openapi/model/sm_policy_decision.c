@@ -1158,10 +1158,15 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
             }
             localEnum = OpenAPI_policy_control_request_trigger_FromString(policy_ctrl_req_triggers_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_policy_control_request_trigger_FromString(policy_ctrl_req_triggers_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"policy_ctrl_req_triggers\" is not supported. Ignoring it ...",
+                         policy_ctrl_req_triggers_local->valuestring);
+            } else {
+                OpenAPI_list_add(policy_ctrl_req_triggersList, (void *)localEnum);
             }
-            OpenAPI_list_add(policy_ctrl_req_triggersList, (void *)localEnum);
+        }
+        if (policy_ctrl_req_triggersList->count == 0) {
+            ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed: Expected policy_ctrl_req_triggersList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
     }

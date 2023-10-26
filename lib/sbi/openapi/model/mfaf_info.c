@@ -162,10 +162,15 @@ OpenAPI_mfaf_info_t *OpenAPI_mfaf_info_parseFromJSON(cJSON *mfaf_infoJSON)
             }
             localEnum = OpenAPI_nf_type_FromString(serving_nf_type_list_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_nf_type_FromString(serving_nf_type_list_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"serving_nf_type_list\" is not supported. Ignoring it ...",
+                         serving_nf_type_list_local->valuestring);
+            } else {
+                OpenAPI_list_add(serving_nf_type_listList, (void *)localEnum);
             }
-            OpenAPI_list_add(serving_nf_type_listList, (void *)localEnum);
+        }
+        if (serving_nf_type_listList->count == 0) {
+            ogs_error("OpenAPI_mfaf_info_parseFromJSON() failed: Expected serving_nf_type_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

@@ -281,10 +281,15 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
             }
             localEnum = OpenAPI_access_type_FromString(serving_access_types_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_access_type_FromString(serving_access_types_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"serving_access_types\" is not supported. Ignoring it ...",
+                         serving_access_types_local->valuestring);
+            } else {
+                OpenAPI_list_add(serving_access_typesList, (void *)localEnum);
             }
-            OpenAPI_list_add(serving_access_typesList, (void *)localEnum);
+        }
+        if (serving_access_typesList->count == 0) {
+            ogs_error("OpenAPI_lmf_info_parseFromJSON() failed: Expected serving_access_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -306,10 +311,15 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
             }
             localEnum = OpenAPI_an_node_type_FromString(serving_an_node_types_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_an_node_type_FromString(serving_an_node_types_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"serving_an_node_types\" is not supported. Ignoring it ...",
+                         serving_an_node_types_local->valuestring);
+            } else {
+                OpenAPI_list_add(serving_an_node_typesList, (void *)localEnum);
             }
-            OpenAPI_list_add(serving_an_node_typesList, (void *)localEnum);
+        }
+        if (serving_an_node_typesList->count == 0) {
+            ogs_error("OpenAPI_lmf_info_parseFromJSON() failed: Expected serving_an_node_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -331,10 +341,15 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
             }
             localEnum = OpenAPI_rat_type_FromString(serving_rat_types_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_rat_type_FromString(serving_rat_types_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"serving_rat_types\" is not supported. Ignoring it ...",
+                         serving_rat_types_local->valuestring);
+            } else {
+                OpenAPI_list_add(serving_rat_typesList, (void *)localEnum);
             }
-            OpenAPI_list_add(serving_rat_typesList, (void *)localEnum);
+        }
+        if (serving_rat_typesList->count == 0) {
+            ogs_error("OpenAPI_lmf_info_parseFromJSON() failed: Expected serving_rat_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

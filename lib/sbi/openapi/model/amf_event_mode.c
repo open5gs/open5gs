@@ -210,10 +210,15 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
             }
             localEnum = OpenAPI_partitioning_criteria_FromString(partitioning_criteria_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_partitioning_criteria_FromString(partitioning_criteria_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"partitioning_criteria\" is not supported. Ignoring it ...",
+                         partitioning_criteria_local->valuestring);
+            } else {
+                OpenAPI_list_add(partitioning_criteriaList, (void *)localEnum);
             }
-            OpenAPI_list_add(partitioning_criteriaList, (void *)localEnum);
+        }
+        if (partitioning_criteriaList->count == 0) {
+            ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed: Expected partitioning_criteriaList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

@@ -287,10 +287,15 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
             }
             localEnum = OpenAPI_requested_qos_monitoring_parameter_FromString(req_qos_mon_params_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_requested_qos_monitoring_parameter_FromString(req_qos_mon_params_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"req_qos_mon_params\" is not supported. Ignoring it ...",
+                         req_qos_mon_params_local->valuestring);
+            } else {
+                OpenAPI_list_add(req_qos_mon_paramsList, (void *)localEnum);
             }
-            OpenAPI_list_add(req_qos_mon_paramsList, (void *)localEnum);
+        }
+        if (req_qos_mon_paramsList->count == 0) {
+            ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed: Expected req_qos_mon_paramsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
 
     rep_freqs = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "repFreqs");
@@ -314,10 +319,15 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
             }
             localEnum = OpenAPI_reporting_frequency_FromString(rep_freqs_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_reporting_frequency_FromString(rep_freqs_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"rep_freqs\" is not supported. Ignoring it ...",
+                         rep_freqs_local->valuestring);
+            } else {
+                OpenAPI_list_add(rep_freqsList, (void *)localEnum);
             }
-            OpenAPI_list_add(rep_freqsList, (void *)localEnum);
+        }
+        if (rep_freqsList->count == 0) {
+            ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed: Expected rep_freqsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
 
     rep_thresh_dl = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "repThreshDl");
