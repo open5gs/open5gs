@@ -25,7 +25,7 @@ int app_initialize(const char *const argv[])
 
     rv = udm_initialize();
     if (rv != OGS_OK) {
-        ogs_error("Failed to intialize UDM");
+        ogs_error("Failed to initialize UDM");
         return rv;
     }
     ogs_info("UDM initialize...done");

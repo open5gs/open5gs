@@ -25,7 +25,7 @@ int app_initialize(const char *const argv[])
 
     rv = nssf_initialize();
     if (rv != OGS_OK) {
-        ogs_warn("Failed to intialize NSSF");
+        ogs_warn("Failed to initialize NSSF");
         return rv;
     }
     ogs_info("NSSF initialize...done");

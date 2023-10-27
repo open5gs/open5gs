@@ -25,7 +25,7 @@ int app_initialize(const char *const argv[])
 
     rv = pcrf_initialize();
     if (rv != OGS_OK) {
-        ogs_warn("Failed to intialize PCRF");
+        ogs_warn("Failed to initialize PCRF");
         return rv;
     }
     ogs_info("PCRF initialize...done");

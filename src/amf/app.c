@@ -27,7 +27,7 @@ int app_initialize(const char *const argv[])
     ogs_sctp_init(ogs_app()->usrsctp.udp_port);
     rv = amf_initialize();
     if (rv != OGS_OK) {
-        ogs_error("Failed to intialize AMF");
+        ogs_error("Failed to initialize AMF");
         return rv;
     }
     ogs_info("AMF initialize...done");
