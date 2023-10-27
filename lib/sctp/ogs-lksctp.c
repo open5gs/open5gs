@@ -40,7 +40,7 @@ ogs_sock_t *ogs_sctp_socket(int family, int type)
     new = ogs_sock_socket(family, type, IPPROTO_SCTP);
     if (!new) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "ogs_sock_socket(faimly:%d type:%d) failed", family, type);
+                "ogs_sock_socket(family:%d type:%d) failed", family, type);
         return NULL;
     }
 
