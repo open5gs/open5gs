@@ -155,6 +155,7 @@ static int amf_context_validation(void)
     }
 
     if (self.served_tai[0].list0.tai[0].num == 0 &&
+        self.served_tai[0].list1.tai[0].num == 0 &&
         self.served_tai[0].list2.num == 0) {
         ogs_error("No amf.tai.plmn_id|tac in '%s'", ogs_app()->file);
         return OGS_ERROR;
@@ -1099,37 +1100,54 @@ int amf_context_nf_info(void)
         }
 
         nf_info->amf.num_of_nr_tai = 0;
-        int i = 0, j = 0, info_tai_i = 0;
+        int i = 0, j = 0, k = 0, info_tai_i = 0;
         for (i = 0; i < self.num_of_served_tai; i++) {
-            if (self.served_tai[i].list2.num) {
-                for (j = 0; j < self.served_tai[i].list2.num; j++) {
+            ogs_5gs_tai0_list_t *list0 = &self.served_tai[i].list0;
+            ogs_5gs_tai1_list_t *list1 = &self.served_tai[i].list1;
+            ogs_5gs_tai2_list_t *list2 = &self.served_tai[i].list2;
+
+            for (j = 0; list0->tai[j].num; j++) {
+                for (k = 0; k < list0->tai[j].num; k++) {
                     for (served_i = 0; served_i < info_i; served_i++) {
-                        if (ogs_plmn_id_hexdump
-                                (&self.served_tai[i].list2.tai[j].plmn_id) ==
-                                ogs_plmn_id_hexdump
-                                (&nf_info->amf.guami[served_i].plmn_id)) {
+                        if (ogs_plmn_id_hexdump(&list0->tai[j].plmn_id) ==
+                                ogs_plmn_id_hexdump(
+                                    &nf_info->amf.guami[served_i].plmn_id)) {
                             nf_info->amf.nr_tai[info_tai_i].plmn_id =
-                                    self.served_tai[i].list2.tai[j].plmn_id;
+                                    list0->tai[j].plmn_id;
                             nf_info->amf.nr_tai[info_tai_i].tac =
-                                    self.served_tai[i].list2.tai[j].tac;
+                                    list0->tai[j].tac[k];
                             nf_info->amf.num_of_nr_tai++;
                             info_tai_i++;
                         }
                     }
                 }
             }
-            for (j = 0; self.served_tai[i].list0.tai[j].num; j++) {
-                int k = 0;
-                for (k = 0; k < self.served_tai[i].list0.tai[j].num; k++) {
+            for (j = 0; list1->tai[j].num; j++) {
+                for (k = 0; k < list1->tai[j].num; k++) {
                     for (served_i = 0; served_i < info_i; served_i++) {
-                        if (ogs_plmn_id_hexdump
-                                (&self.served_tai[i].list0.tai[j].plmn_id) ==
-                                ogs_plmn_id_hexdump
-                                (&nf_info->amf.guami[served_i].plmn_id)) {
+                        if (ogs_plmn_id_hexdump(&list1->tai[j].plmn_id) ==
+                                ogs_plmn_id_hexdump(
+                                    &nf_info->amf.guami[served_i].plmn_id)) {
                             nf_info->amf.nr_tai[info_tai_i].plmn_id =
-                                    self.served_tai[i].list0.tai[j].plmn_id;
+                                    list1->tai[j].plmn_id;
+                            nf_info->amf.nr_tai[info_tai_i].tac.v =
+                                    list1->tai[j].tac.v+k;
+                            nf_info->amf.num_of_nr_tai++;
+                            info_tai_i++;
+                        }
+                    }
+                }
+            }
+            if (list2->num) {
+                for (j = 0; j < list2->num; j++) {
+                    for (served_i = 0; served_i < info_i; served_i++) {
+                        if (ogs_plmn_id_hexdump(&list2->tai[j].plmn_id) ==
+                                ogs_plmn_id_hexdump(
+                                    &nf_info->amf.guami[served_i].plmn_id)) {
+                            nf_info->amf.nr_tai[info_tai_i].plmn_id =
+                                    list2->tai[j].plmn_id;
                             nf_info->amf.nr_tai[info_tai_i].tac =
-                                    self.served_tai[i].list0.tai[j].tac[k];
+                                    list2->tai[j].tac;
                             nf_info->amf.num_of_nr_tai++;
                             info_tai_i++;
                         }
