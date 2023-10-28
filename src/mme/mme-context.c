@@ -259,6 +259,7 @@ static int mme_context_validation(void)
     }
 
     if (self.served_tai[0].list0.tai[0].num == 0 &&
+        self.served_tai[0].list1.tai[0].num == 0 &&
         self.served_tai[0].list2.num == 0) {
         ogs_error("No mme.tai.plmn_id|tac in '%s'", ogs_app()->file);
         return OGS_ERROR;
