@@ -243,8 +243,6 @@ bool ausf_nudm_ueau_handle_auth_removal_ind(ausf_ue_t *ausf_ue,
     ogs_assert(ausf_ue);
     ogs_assert(stream);
 
-    OGS_FSM_TRAN(&ausf_ue->sm, &ausf_ue_state_deleted);
-
     memset(&sendmsg, 0, sizeof(sendmsg));
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
     ogs_assert(response);

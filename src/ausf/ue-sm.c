@@ -172,6 +172,7 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                 CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
                     ausf_nudm_ueau_handle_auth_removal_ind(
                             ausf_ue, stream, message);
+                    OGS_FSM_TRAN(s, &ausf_ue_state_deleted);
                     break;
 
                 DEFAULT
