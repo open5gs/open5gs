@@ -27,7 +27,7 @@ int app_initialize(const char *const argv[])
     ogs_sctp_init(ogs_app()->usrsctp.udp_port);
     rv = mme_initialize();
     if (rv != OGS_OK) {
-        ogs_error("Failed to intialize MME");
+        ogs_error("Failed to initialize MME");
         return rv;
     }
     ogs_info("MME initialize...done");

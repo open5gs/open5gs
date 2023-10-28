@@ -25,7 +25,7 @@ int app_initialize(const char *const argv[])
 
     rv = udr_initialize();
     if (rv != OGS_OK) {
-        ogs_warn("Failed to intialize UDR");
+        ogs_warn("Failed to initialize UDR");
         return rv;
     }
     ogs_info("UDR initialize...done");

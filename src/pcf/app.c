@@ -25,7 +25,7 @@ int app_initialize(const char *const argv[])
 
     rv = pcf_initialize();
     if (rv != OGS_OK) {
-        ogs_error("Failed to intialize PCF");
+        ogs_error("Failed to initialize PCF");
         return rv;
     }
     ogs_info("PCF initialize...done");

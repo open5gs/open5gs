@@ -25,7 +25,7 @@ int app_initialize(const char *const argv[])
 
     rv = bsf_initialize();
     if (rv != OGS_OK) {
-        ogs_error("Failed to intialize BSF");
+        ogs_error("Failed to initialize BSF");
         return rv;
     }
     ogs_info("BSF initialize...done");

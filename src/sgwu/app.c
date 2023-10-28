@@ -25,7 +25,7 @@ int app_initialize(const char *const argv[])
 
     rv = sgwu_initialize();
     if (rv != OGS_OK) {
-        ogs_error("Failed to intialize SGW-U");
+        ogs_error("Failed to initialize SGW-U");
         return rv;
     }
     ogs_info("SGW-U initialize...done");

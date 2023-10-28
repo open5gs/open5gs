@@ -25,7 +25,7 @@ int app_initialize(const char *const argv[])
 
     rv = hss_initialize();
     if (rv != OGS_OK) {
-        ogs_warn("Failed to intialize HSS");
+        ogs_warn("Failed to initialize HSS");
         return rv;
     }
     ogs_info("HSS initialize...done");
