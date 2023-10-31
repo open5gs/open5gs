@@ -66,6 +66,8 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [Monitoring Metrics with Prometheus](https://github.com/s5uishida/open5gs_5gc_ueransim_metrics_sample_config)
   - [Frame Routing](https://github.com/s5uishida/open5gs_5gc_ueransim_framed_routing_sample_config)
   - [VPP-UPF with DPDK](https://github.com/s5uishida/open5gs_5gc_ueransim_vpp_upf_dpdk_sample_config)
+  - [UERANSIM with eUPF(eBPF/XDP UPF)](https://github.com/s5uishida/open5gs_5gc_ueransim_eupf_sample_config)
+  - [srsRAN with eUPF(eBPF/XDP UPF)](https://github.com/s5uishida/open5gs_epc_srsran_eupf_sample_config)
  
 - @gradiant helm charts
   - [Open5GS EPC and SRS LTE in kubernetes](https://gradiant.github.io/openverso-charts/open5gs-srslte.html)
