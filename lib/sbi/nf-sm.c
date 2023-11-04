@@ -37,6 +37,7 @@ void ogs_sbi_nf_fsm_tran(ogs_sbi_nf_instance_t *nf_instance, void *state)
     ogs_event_t e;
 
     ogs_assert(nf_instance);
+    ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
 
     memset(&e, 0, sizeof(e));
     e.sbi.data = nf_instance;

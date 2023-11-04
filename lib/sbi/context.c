@@ -818,7 +818,9 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void)
 
     ogs_list_add(&ogs_sbi_self()->nf_instance_list, nf_instance);
 
-    ogs_debug("[%s:%d] NFInstance added with Ref",
+    ogs_debug("[%s] NFInstance added with Ref [%s:%d]",
+            nf_instance->nf_type ?
+                OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
             nf_instance->id, nf_instance->reference_count);
 
     return nf_instance;
@@ -916,7 +918,9 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_assert(nf_instance);
 
-    ogs_debug("[%s:%d] NFInstance UnRef",
+    ogs_debug("[%s] NFInstance UnRef [%s:%d]",
+            nf_instance->nf_type ?
+                OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
             nf_instance->id, nf_instance->reference_count);
 
     if (OGS_OBJECT_IS_REF(nf_instance)) {
@@ -924,7 +928,9 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
         return;
     }
 
-    ogs_debug("[%s:%d] NFInstance removed",
+    ogs_debug("[%s] NFInstance removed [%s:%d]",
+            nf_instance->nf_type ?
+                OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
             nf_instance->id, nf_instance->reference_count);
 
     ogs_list_remove(&ogs_sbi_self()->nf_instance_list, nf_instance);
@@ -1728,6 +1734,11 @@ void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance)
 
     client = nf_instance_find_client(nf_instance);
     ogs_assert(client);
+
+    ogs_debug("[%s] NFInstance associated [%s:%d]",
+            nf_instance->nf_type ?
+                OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
+            nf_instance->id, nf_instance->reference_count);
 
     OGS_SBI_SETUP_CLIENT(nf_instance, client);
 
