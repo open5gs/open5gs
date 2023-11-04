@@ -143,6 +143,21 @@ static int client_discover_cb(
 
             ogs_sbi_nf_instance_set_id(nf_instance, producer_id);
             ogs_sbi_nf_instance_set_type(nf_instance, target_nf_type);
+
+            ogs_sbi_nf_fsm_init(nf_instance);
+
+            ogs_info("[%s] (SCP-discover) NF registered [%s:%d]",
+                    nf_instance->nf_type ?
+                        OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
+                    nf_instance->id, nf_instance->reference_count);
+        } else {
+            ogs_warn("[%s] (SCP-discover) NF has already been added [%s:%d]",
+                    nf_instance->nf_type ?
+                        OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
+                    nf_instance->id, nf_instance->reference_count);
+
+            ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
+            ogs_sbi_nf_fsm_tran(nf_instance, ogs_sbi_nf_state_registered);
         }
 
         OGS_SBI_SETUP_NF_INSTANCE(
