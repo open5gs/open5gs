@@ -22,6 +22,9 @@
 static ogs_app_global_conf_t global_conf;
 static ogs_app_local_conf_t local_conf;
 
+static OGS_POOL(slice_conf_pool, ogs_app_slice_conf_t);
+static OGS_POOL(sess_conf_pool, ogs_app_sess_conf_t);
+
 static int initialized = 0;
 
 int ogs_app_config_init(void)
@@ -31,6 +34,10 @@ int ogs_app_config_init(void)
     memset(&global_conf, 0, sizeof(ogs_app_global_conf_t));
     memset(&local_conf, 0, sizeof(ogs_app_local_conf_t));
 
+    ogs_pool_init(&slice_conf_pool, OGS_MAX_NUM_OF_SLICE);
+    ogs_pool_init(&sess_conf_pool,
+            OGS_MAX_NUM_OF_SLICE*OGS_MAX_NUM_OF_SESS);
+
     initialized = 1;
 
     return OGS_OK;
@@ -39,6 +46,11 @@ int ogs_app_config_init(void)
 void ogs_app_config_final(void)
 {
     ogs_assert(initialized == 1);
+
+    ogs_app_slice_conf_remove_all();
+
+    ogs_pool_final(&slice_conf_pool);
+    ogs_pool_final(&sess_conf_pool);
 
     initialized = 0;
 }
@@ -297,6 +309,12 @@ int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent)
                     if (v) global_conf.pkbuf_config.cluster_big_pool = atoi(v);
                 } else
                     ogs_warn("unknown key `%s`", pool_key);
+            }
+        } else if (!strcmp(global_key, OGS_SLICE_STRING)) {
+            rv = ogs_app_parse_slice_conf(&global_iter);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_slice_conf_parse_config() failed");
+                return rv;
             }
         }
     }
@@ -718,4 +736,650 @@ int ogs_app_parse_sockopt_config(
     }
 
     return OGS_OK;
+}
+
+static int slice_conf_prepare(void)
+{
+    return OGS_OK;
+}
+
+static int slice_conf_validation(void)
+{
+    return OGS_OK;
+}
+
+static int parse_br_conf(ogs_yaml_iter_t *parent, ogs_bitrate_t *br)
+{
+    ogs_yaml_iter_t br_iter;
+    ogs_yaml_iter_recurse(parent, &br_iter);
+
+    while (ogs_yaml_iter_next(&br_iter)) {
+        const char *br_key = ogs_yaml_iter_key(&br_iter);
+        ogs_assert(br_key);
+        if (!strcmp(br_key, OGS_DOWNLINK_STRING)) {
+            uint8_t unit = 0;
+            int n;
+
+            ogs_yaml_iter_t downlink_iter;
+            ogs_yaml_iter_recurse(&br_iter, &downlink_iter);
+
+            while (ogs_yaml_iter_next(&downlink_iter)) {
+                const char *downlink_key =
+                    ogs_yaml_iter_key(&downlink_iter);
+                ogs_assert(downlink_key);
+                if (!strcmp(downlink_key, OGS_VALUE_STRING)) {
+                    const char *v = ogs_yaml_iter_value(&downlink_iter);
+                    if (v) br->downlink = atoi(v);
+                } else if (!strcmp(downlink_key, OGS_UNIT_STRING)) {
+                    const char *v = ogs_yaml_iter_value(&downlink_iter);
+                    if (v) {
+                        unit = atoi(v);
+                        if (unit == 0 || unit == 1 || unit == 2 ||
+                            unit == 3 || unit == 4) {
+                        } else {
+                            ogs_error("Unknown Unit [%d]", unit);
+                            return OGS_ERROR;
+                        }
+                    }
+                } else
+                    ogs_warn("unknown key `%s`", downlink_key);
+            }
+
+            for (n = 0; n < unit; n++)
+                br->downlink *= 1000;
+        } else if (!strcmp(br_key, OGS_UPLINK_STRING)) {
+            uint8_t unit = 0;
+            int n;
+
+            ogs_yaml_iter_t uplink_iter;
+            ogs_yaml_iter_recurse(&br_iter, &uplink_iter);
+
+            while (ogs_yaml_iter_next(&uplink_iter)) {
+                const char *uplink_key =
+                    ogs_yaml_iter_key(&uplink_iter);
+                ogs_assert(uplink_key);
+                if (!strcmp(uplink_key, OGS_VALUE_STRING)) {
+                    const char *v = ogs_yaml_iter_value(&uplink_iter);
+                    if (v) br->uplink = atoi(v);
+                } else if (!strcmp(uplink_key, OGS_UNIT_STRING)) {
+                    const char *v = ogs_yaml_iter_value(&uplink_iter);
+                    if (v) {
+                        unit = atoi(v);
+                        if (unit == 0 || unit == 1 || unit == 2 ||
+                            unit == 3 || unit == 4) {
+                        } else {
+                            ogs_error("Unknown Unit [%d]", unit);
+                            return OGS_ERROR;
+                        }
+                    }
+                } else
+                    ogs_warn("unknown key `%s`", uplink_key);
+            }
+
+            for (n = 0; n < unit; n++)
+                br->uplink *= 1000;
+        } else
+            ogs_warn("unknown key `%s`", br_key);
+    }
+
+    return OGS_OK;
+}
+
+static int parse_qos_conf(ogs_yaml_iter_t *parent, ogs_qos_t *qos)
+{
+    int rv;
+    ogs_yaml_iter_t qos_iter;
+
+    ogs_assert(parent);
+    ogs_assert(qos);
+
+    ogs_yaml_iter_recurse(parent, &qos_iter);
+    while (ogs_yaml_iter_next(&qos_iter)) {
+        const char *qos_key = ogs_yaml_iter_key(&qos_iter);
+        ogs_assert(qos_key);
+        if (!strcmp(qos_key, OGS_INDEX_STRING)) {
+            const char *v = ogs_yaml_iter_value(&qos_iter);
+            if (v) {
+                uint8_t index = atoi(v);
+                if (index == 1 || index == 2 || index == 3 || index == 4 ||
+                    index == 65 || index == 66 || index == 67 || index == 75 ||
+                    index == 71 || index == 72 || index == 73 || index == 74 ||
+                    index == 76 || index == 5 || index == 6 || index == 7 ||
+                    index == 8 || index == 9 || index == 69 || index == 70 ||
+                    index == 79 || index == 80 || index == 82 || index == 83 ||
+                    index == 84 || index == 85 || index == 86)
+                    qos->index = index;
+                else {
+                    ogs_error("Unknown QCI [%d]", index);
+                    return OGS_ERROR;
+                }
+            }
+        } else if (!strcmp(qos_key, OGS_ARP_STRING)) {
+            ogs_yaml_iter_t arp_iter;
+            ogs_yaml_iter_recurse(&qos_iter, &arp_iter);
+            while (ogs_yaml_iter_next(&arp_iter)) {
+                const char *arp_key = ogs_yaml_iter_key(&arp_iter);
+                ogs_assert(arp_key);
+                if (!strcmp(arp_key, OGS_PRIORITY_LEVEL_STRING)) {
+                    const char *v = ogs_yaml_iter_value(&arp_iter);
+                    if (v) {
+                        uint8_t priority_level = atoi(v);
+                        if (priority_level >= 1 && priority_level <= 15)
+                            qos->arp.priority_level = priority_level;
+                        else {
+                            ogs_error("Unknown Priority Level [%d]",
+                                    priority_level);
+                            return OGS_ERROR;
+                        }
+                    }
+                } else if (!strcmp(arp_key, OGS_PRE_EMPTION_CAPABILITY_STRING)) {
+                    const char *v = ogs_yaml_iter_value(&arp_iter);
+                    if (v) {
+                        uint8_t pre_emption_capability = atoi(v);
+                        if (pre_emption_capability ==
+                                OGS_5GC_PRE_EMPTION_DISABLED ||
+                            pre_emption_capability ==
+                            OGS_5GC_PRE_EMPTION_ENABLED)
+                            qos->arp.pre_emption_capability =
+                                pre_emption_capability;
+                        else {
+                            ogs_error("Unknown Preemption Capability [%d]",
+                                    pre_emption_capability);
+                            return OGS_ERROR;
+                        }
+                    }
+                } else if (!strcmp(arp_key,
+                            OGS_PRE_EMPTION_VULNERABILITY_STRING)) {
+                    const char *v = ogs_yaml_iter_value(&arp_iter);
+                    if (v) {
+                        uint8_t pre_emption_vulnerability = atoi(v);
+                        if (pre_emption_vulnerability ==
+                                OGS_5GC_PRE_EMPTION_DISABLED ||
+                            pre_emption_vulnerability ==
+                            OGS_5GC_PRE_EMPTION_ENABLED)
+                            qos->arp.pre_emption_vulnerability =
+                                pre_emption_vulnerability;
+                        else {
+                            ogs_error("Unknown Preemption Vulnerablility [%d]",
+                                    pre_emption_vulnerability);
+                            return OGS_ERROR;
+                        }
+                    }
+                } else
+                    ogs_warn("unknown key `%s`", arp_key);
+            }
+        } else if (!strcmp(qos_key, OGS_MBR_STRING)) {
+            rv = parse_br_conf(&qos_iter, &qos->mbr);
+            if (rv != OGS_OK) {
+                ogs_error("parse_br_conf() failed");
+                return rv;
+            }
+        } else if (!strcmp(qos_key, OGS_GBR_STRING)) {
+            rv = parse_br_conf(&qos_iter, &qos->gbr);
+            if (rv != OGS_OK) {
+                ogs_error("parse_br_conf() failed");
+                return rv;
+            }
+        }
+    }
+
+    return OGS_OK;
+}
+
+int ogs_app_parse_slice_conf(ogs_yaml_iter_t *parent)
+{
+    int rv, i, j, k;
+    ogs_yaml_iter_t slice_array, slice_iter;
+
+    ogs_assert(parent);
+
+    rv = slice_conf_prepare();
+    if (rv != OGS_OK) return rv;
+
+    ogs_yaml_iter_recurse(parent, &slice_array);
+    do {
+        uint8_t sst;
+        ogs_uint24_t sd;
+        bool default_indicator = false;
+
+        ogs_session_data_t session_data_array[OGS_MAX_NUM_OF_SESS];
+        int num_of_session_data = 0;
+
+        sst = 0;
+        sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+        memset(session_data_array, 0, sizeof(session_data_array));
+
+        if (ogs_yaml_iter_type(&slice_array) == YAML_MAPPING_NODE) {
+            memcpy(&slice_iter, &slice_array, sizeof(ogs_yaml_iter_t));
+        } else if (ogs_yaml_iter_type(&slice_array) == YAML_SEQUENCE_NODE) {
+            if (!ogs_yaml_iter_next(&slice_array))
+                break;
+            ogs_yaml_iter_recurse(&slice_array, &slice_iter);
+        } else if (ogs_yaml_iter_type(&slice_array) == YAML_SCALAR_NODE) {
+            break;
+        } else
+            ogs_assert_if_reached();
+
+        while (ogs_yaml_iter_next(&slice_iter)) {
+            const char *slice_key = ogs_yaml_iter_key(&slice_iter);
+            ogs_assert(slice_key);
+            if (!strcmp(slice_key, OGS_SST_STRING)) {
+                const char *v = ogs_yaml_iter_value(&slice_iter);
+                if (v) {
+                    sst = atoi(v);
+                    if (sst == 1 || sst == 2 || sst == 3 || sst == 4) {
+                    } else {
+                        ogs_error("Unknown SST [%d]", sst);
+                        return OGS_ERROR;
+                    }
+                }
+            } else if (!strcmp(slice_key, OGS_SD_STRING)) {
+                const char *v = ogs_yaml_iter_value(&slice_iter);
+                if (v) sd = ogs_s_nssai_sd_from_string(v);
+            } else if (!strcmp(slice_key, OGS_DEFAULT_INDICATOR_STRING)) {
+                default_indicator = ogs_yaml_iter_bool(&slice_iter);
+            } else if (!strcmp(slice_key, OGS_SESSION_STRING)) {
+                ogs_yaml_iter_t session_array, session_iter;
+                ogs_yaml_iter_recurse(&slice_iter, &session_array);
+                do {
+                    ogs_session_data_t *session_data =
+                        &session_data_array[num_of_session_data];
+
+                    if (ogs_yaml_iter_type(&session_array) ==
+                            YAML_MAPPING_NODE) {
+                        memcpy(&session_iter, &session_array,
+                                sizeof(ogs_yaml_iter_t));
+                    } else if (ogs_yaml_iter_type(&session_array) ==
+                            YAML_SEQUENCE_NODE) {
+                        if (!ogs_yaml_iter_next(&session_array))
+                            break;
+                        ogs_yaml_iter_recurse(&session_array, &session_iter);
+                    } else if (ogs_yaml_iter_type(&session_array) ==
+                            YAML_SCALAR_NODE) {
+                        break;
+                    } else
+                        ogs_assert_if_reached();
+
+                    while (ogs_yaml_iter_next(&session_iter)) {
+                        const char *session_key =
+                            ogs_yaml_iter_key(&session_iter);
+                        ogs_assert(session_key);
+                        if (!strcmp(session_key, OGS_NAME_STRING)) {
+                            session_data->session.name =
+                                (char *)ogs_yaml_iter_value(&session_iter);
+                        } else if (!strcmp(session_key, OGS_TYPE_STRING)) {
+                            const char *v = ogs_yaml_iter_value(&session_iter);
+                            if (v) {
+                                uint8_t session_type = atoi(v);
+                                if (session_type == OGS_PDU_SESSION_TYPE_IPV4 ||
+                                    session_type == OGS_PDU_SESSION_TYPE_IPV6 ||
+                                    session_type ==
+                                    OGS_PDU_SESSION_TYPE_IPV4V6 ||
+                                    session_type ==
+                                    OGS_PDU_SESSION_TYPE_UNSTRUCTURED ||
+                                    session_type ==
+                                    OGS_PDU_SESSION_TYPE_ETHERNET)
+                                    session_data->session.session_type = session_type;
+                                else {
+                                    ogs_error("Unknown Session Type [%d]",
+                                            session_type);
+                                    return OGS_ERROR;
+                                }
+                            }
+                        } else if (!strcmp(session_key, OGS_AMBR_STRING)) {
+                            rv = parse_br_conf(&session_iter,
+                                    &session_data->session.ambr);
+                            if (rv != OGS_OK) {
+                                ogs_error("parse_qos_conf() failed");
+                                return rv;
+                            }
+                        } else if (!strcmp(session_key, OGS_QOS_STRING)) {
+                            rv = parse_qos_conf(&session_iter,
+                                    &session_data->session.qos);
+                            if (rv != OGS_OK) {
+                                ogs_error("parse_qos_conf() failed");
+                                return rv;
+                            }
+                        } else if (!strcmp(session_key, OGS_PCC_RULE_STRING)) {
+                            ogs_yaml_iter_t pcc_rule_array, pcc_rule_iter;
+                            ogs_yaml_iter_recurse(&session_iter,
+                                    &pcc_rule_array);
+                            do {
+                                ogs_pcc_rule_t *pcc_rule = NULL;
+
+                                ogs_assert(session_data->num_of_pcc_rule <
+                                        OGS_MAX_NUM_OF_PCC_RULE);
+                                pcc_rule = &session_data->
+                                    pcc_rule[session_data->num_of_pcc_rule];
+
+                                if (ogs_yaml_iter_type(&pcc_rule_array) ==
+                                        YAML_MAPPING_NODE) {
+                                    memcpy(&pcc_rule_iter, &pcc_rule_array,
+                                            sizeof(ogs_yaml_iter_t));
+                                } else if (ogs_yaml_iter_type(
+                                            &pcc_rule_array) ==
+                                        YAML_SEQUENCE_NODE) {
+                                    if (!ogs_yaml_iter_next(&pcc_rule_array))
+                                        break;
+                                    ogs_yaml_iter_recurse(
+                                            &pcc_rule_array, &pcc_rule_iter);
+                                } else if (ogs_yaml_iter_type(
+                                            &pcc_rule_array) ==
+                                        YAML_SCALAR_NODE) {
+                                    break;
+                                } else
+                                    ogs_assert_if_reached();
+
+                                while (ogs_yaml_iter_next(&pcc_rule_iter)) {
+                                    const char *pcc_rule_key =
+                                        ogs_yaml_iter_key(&pcc_rule_iter);
+                                    ogs_assert(pcc_rule_key);
+                                    if (!strcmp(pcc_rule_key,
+                                                OGS_QOS_STRING)) {
+                                        rv = parse_qos_conf(&pcc_rule_iter,
+                                                &pcc_rule->qos);
+                                        if (rv != OGS_OK) {
+                                            ogs_error(
+                                                    "parse_qos_conf() failed");
+                                            return rv;
+                                        }
+                                    } else if (!strcmp(pcc_rule_key,
+                                                OGS_FLOW_STRING)) {
+                                        ogs_yaml_iter_t flow_array, flow_iter;
+                                        ogs_yaml_iter_recurse(
+                                                &pcc_rule_iter, &flow_array);
+                                        do {
+                                            ogs_flow_t *flow = NULL;
+
+                                            ogs_assert(pcc_rule->num_of_flow <
+                                            OGS_MAX_NUM_OF_FLOW_IN_PCC_RULE);
+                                            flow = &pcc_rule->flow
+                                                [pcc_rule->num_of_flow];
+
+                                            if (ogs_yaml_iter_type(
+                                                        &flow_array) ==
+                                                    YAML_MAPPING_NODE) {
+                                                memcpy(&flow_iter, &flow_array,
+                                                    sizeof(ogs_yaml_iter_t));
+                                            } else if (ogs_yaml_iter_type(
+                                                        &flow_array) ==
+                                                    YAML_SEQUENCE_NODE) {
+                                                if (!ogs_yaml_iter_next(
+                                                            &flow_array))
+                                                    break;
+                                                ogs_yaml_iter_recurse(
+                                                    &flow_array, &flow_iter);
+                                            } else if (ogs_yaml_iter_type(
+                                                        &flow_array) ==
+                                                    YAML_SCALAR_NODE) {
+                                                break;
+                                            } else
+                                                ogs_assert_if_reached();
+
+                                            while (ogs_yaml_iter_next(
+                                                        &flow_iter)) {
+                                                const char *flow_key =
+                                                    ogs_yaml_iter_key(
+                                                            &flow_iter);
+                                                ogs_assert(flow_key);
+                                                if (!strcmp(flow_key,
+                                                    OGS_DIRECTION_STRING)) {
+                                                    const char *v =
+                                                        ogs_yaml_iter_value(
+                                                                &flow_iter);
+                                                    if (v) {
+                                                        uint8_t direction =
+                                                            atoi(v);
+                                                        if (direction == OGS_FLOW_DOWNLINK_ONLY ||
+                                                            direction == OGS_FLOW_UPLINK_ONLY)
+                                                            flow->direction = direction;
+                                                        else {
+                                                            ogs_error("Unknown "
+                                                            "Direction [%d]",
+                                                            direction);
+                                                            return OGS_ERROR;
+                                                        }
+                                                    }
+                                                } else if (!strcmp(flow_key,
+                                                    OGS_DESCRIPTION_STRING)) {
+                                                    flow->description =
+                                                        (char *)
+                                                        ogs_yaml_iter_value(
+                                                                &flow_iter);
+                                                }
+                                            }
+
+                                            if (flow->direction &&
+                                                flow->description)
+                                                pcc_rule->num_of_flow++;
+
+                                        } while (ogs_yaml_iter_type(
+                                                    &flow_array) ==
+                                                YAML_SEQUENCE_NODE);
+
+                                    } else
+                                        ogs_warn("unknown key `%s`",
+                                                pcc_rule_key);
+                                }
+
+                                if (pcc_rule->qos.index &&
+                                    pcc_rule->qos.arp.priority_level &&
+                                    pcc_rule->qos.arp.pre_emption_capability &&
+                                    pcc_rule->qos.arp.
+                                    pre_emption_vulnerability)
+                                    session_data->num_of_pcc_rule++;
+
+                            } while (ogs_yaml_iter_type(&pcc_rule_array) ==
+                                    YAML_SEQUENCE_NODE);
+
+                        } else
+                            ogs_warn("unknown key `%s`", session_key);
+                    }
+
+                    num_of_session_data++;
+
+                } while (ogs_yaml_iter_type(&session_array) ==
+                        YAML_SEQUENCE_NODE);
+            } else
+                ogs_warn("unknown key `%s`", slice_key);
+        }
+
+        if (sst) {
+            ogs_app_slice_conf_t *slice_conf =
+                ogs_app_slice_conf_add(sst, sd);
+            if (!slice_conf) {
+                ogs_error("ogs_app_slice_conf_add() failed");
+                return OGS_ERROR;
+            }
+            slice_conf->data.default_indicator = default_indicator;
+
+            for (i = 0; i < num_of_session_data; i++) {
+                ogs_session_data_t *session_data = &session_data_array[i];
+                ogs_app_sess_conf_t *sess_conf =
+                    ogs_app_sess_conf_add(slice_conf,
+                            session_data->session.name);
+                if (!sess_conf) {
+                    ogs_error("ogs_app_sess_conf_add() failed");
+                    return OGS_ERROR;
+                }
+
+                sess_conf->data.session.session_type =
+                    session_data->session.session_type;
+
+                memcpy(&sess_conf->data.session.ambr,
+                        &session_data->session.ambr,
+                        sizeof(sess_conf->data.session.ambr));
+                memcpy(&sess_conf->data.session.qos,
+                        &session_data->session.qos,
+                        sizeof(sess_conf->data.session.qos));
+
+                sess_conf->data.num_of_pcc_rule =
+                    session_data->num_of_pcc_rule;
+                for (j = 0; j < sess_conf->data.num_of_pcc_rule; j++) {
+                    memcpy(&sess_conf->data.pcc_rule[j].qos,
+                            &session_data->pcc_rule[j].qos,
+                            sizeof(sess_conf->data.pcc_rule[j].qos));
+
+                    sess_conf->data.pcc_rule[j].num_of_flow =
+                        session_data->pcc_rule[j].num_of_flow;
+
+                    for (k = 0; k < sess_conf->data.
+                            pcc_rule[j].num_of_flow; k++) {
+                        sess_conf->data.pcc_rule[j].flow[k].direction =
+                            session_data->pcc_rule[j].flow[k].direction;;
+                        sess_conf->data.pcc_rule[j].flow[k].description =
+                            ogs_strdup(session_data->pcc_rule[j].
+                                flow[k].description);
+                        ogs_assert(sess_conf->data.pcc_rule[j].
+                                flow[k].description);
+                    }
+                }
+            }
+        }
+
+    } while (ogs_yaml_iter_type(&slice_array) == YAML_SEQUENCE_NODE);
+
+    rv = slice_conf_validation();
+    if (rv != OGS_OK) return rv;
+
+    return OGS_OK;
+}
+
+ogs_app_slice_conf_t *ogs_app_slice_conf_add(uint8_t sst, ogs_uint24_t sd)
+{
+    ogs_app_slice_conf_t *slice_conf = NULL;
+
+    ogs_assert(sst);
+
+    ogs_pool_alloc(&slice_conf_pool, &slice_conf);
+    if (!slice_conf) {
+        ogs_error("Maximum number of slice_conf[%d] reached",
+                OGS_MAX_NUM_OF_SLICE);
+        return NULL;
+    }
+    memset(slice_conf, 0, sizeof *slice_conf);
+
+    slice_conf->data.s_nssai.sst = sst;
+    slice_conf->data.s_nssai.sd.v = sd.v;
+
+    ogs_list_init(&slice_conf->sess_list);
+
+    ogs_list_add(&global_conf.slice_list, slice_conf);
+
+    ogs_info("SLICE config added [%d]",
+            ogs_list_count(&global_conf.slice_list));
+    return slice_conf;
+}
+ogs_app_slice_conf_t *ogs_app_slice_conf_find_by_s_nssai(
+        uint8_t sst, ogs_uint24_t sd)
+{
+    ogs_app_slice_conf_t *slice_conf = NULL;
+
+    ogs_assert(sst);
+
+    ogs_list_for_each(&global_conf.slice_list, slice_conf) {
+        if (slice_conf->data.s_nssai.sst == sst &&
+                slice_conf->data.s_nssai.sd.v == sd.v)
+            break;
+    }
+
+    return slice_conf;
+}
+void ogs_app_slice_conf_remove(ogs_app_slice_conf_t *slice_conf)
+{
+    ogs_assert(slice_conf);
+
+    ogs_list_remove(&global_conf.slice_list, slice_conf);
+
+    ogs_app_sess_conf_remove_all(slice_conf);
+
+    ogs_pool_free(&slice_conf_pool, slice_conf);
+
+    ogs_info("SLICE config removed [%d]",
+            ogs_list_count(&global_conf.slice_list));
+}
+void ogs_app_slice_conf_remove_all(void)
+{
+    ogs_app_slice_conf_t *slice_conf = NULL, *next_conf = NULL;;
+
+    ogs_list_for_each_safe(&global_conf.slice_list, next_conf, slice_conf)
+        ogs_app_slice_conf_remove(slice_conf);
+}
+
+ogs_app_sess_conf_t *ogs_app_sess_conf_add(
+        ogs_app_slice_conf_t *slice_conf, char *name)
+{
+    ogs_app_sess_conf_t *sess_conf = NULL;
+
+    ogs_assert(slice_conf);
+    ogs_assert(name);
+
+    ogs_pool_alloc(&sess_conf_pool, &sess_conf);
+    if (!sess_conf) {
+        ogs_error("Maximum number of sess_conf[%d] reached",
+                OGS_MAX_NUM_OF_SLICE);
+        return NULL;
+    }
+    memset(sess_conf, 0, sizeof *sess_conf);
+
+    sess_conf->data.session.name = ogs_strdup(name);
+    if (!sess_conf->data.session.name) {
+        ogs_error("Not enough memroy for %s", name);
+        ogs_pool_free(&sess_conf_pool, sess_conf);
+        return NULL;
+    }
+
+    ogs_list_add(&slice_conf->sess_list, sess_conf);
+
+    sess_conf->slice_conf = slice_conf;
+
+    ogs_info("SESSION config added [%d]",
+            ogs_list_count(&slice_conf->sess_list));
+    return sess_conf;
+}
+ogs_app_sess_conf_t *ogs_app_sess_conf_find_by_dnn(
+        ogs_app_slice_conf_t *slice_conf, char *name)
+{
+    ogs_app_sess_conf_t *sess_conf = NULL;
+
+    ogs_assert(slice_conf);
+    ogs_assert(name);
+
+    ogs_list_for_each(&slice_conf->sess_list, sess_conf) {
+        ogs_assert(sess_conf->data.session.name);
+        if (strcmp(sess_conf->data.session.name, name) == 0)
+            break;
+    }
+
+    return sess_conf;
+}
+void ogs_app_sess_conf_remove(ogs_app_sess_conf_t *sess_conf)
+{
+    int j, k;
+    ogs_app_slice_conf_t *slice_conf = NULL;
+
+    ogs_assert(sess_conf);
+    slice_conf = sess_conf->slice_conf;
+    ogs_assert(slice_conf);
+
+    ogs_list_remove(&slice_conf->sess_list, sess_conf);
+
+    for (j = 0; j < sess_conf->data.num_of_pcc_rule; j++) {
+        for (k = 0; k < sess_conf->data.  pcc_rule[j].num_of_flow; k++)
+            ogs_free(sess_conf->data.pcc_rule[j].flow[k].description);
+    }
+    ogs_free(sess_conf->data.session.name);
+
+    ogs_pool_free(&sess_conf_pool, sess_conf);
+
+    ogs_info("SESSION config removed [%d]",
+            ogs_list_count(&slice_conf->sess_list));
+}
+void ogs_app_sess_conf_remove_all(
+        ogs_app_slice_conf_t *slice_conf)
+{
+    ogs_app_sess_conf_t *sess_conf = NULL, *next_conf = NULL;;
+
+    ogs_list_for_each_safe(&slice_conf->sess_list, next_conf, sess_conf)
+        ogs_app_sess_conf_remove(sess_conf);
 }
