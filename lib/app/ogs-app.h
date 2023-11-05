@@ -27,8 +27,8 @@
 extern int __ogs_app_domain;
 
 #include "app/ogs-yaml.h"
-#include "app/ogs-context.h"
 #include "app/ogs-config.h"
+#include "app/ogs-context.h"
 #include "app/ogs-init.h"
 
 #undef OGS_APP_INSIDE

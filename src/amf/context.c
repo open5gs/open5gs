@@ -58,11 +58,11 @@ void amf_context_init(void)
     ogs_list_init(&self.ngap_list6);
 
     /* Allocate TWICE the pool to check if maximum number of gNBs is reached */
-    ogs_pool_init(&amf_gnb_pool, ogs_app()->max.peer*2);
-    ogs_pool_init(&amf_ue_pool, ogs_app()->max.ue);
-    ogs_pool_init(&ran_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&amf_gnb_pool, ogs_global_conf()->max.peer*2);
+    ogs_pool_init(&amf_ue_pool, ogs_global_conf()->max.ue);
+    ogs_pool_init(&ran_ue_pool, ogs_global_conf()->max.ue);
     ogs_pool_init(&amf_sess_pool, ogs_app()->pool.sess);
-    ogs_pool_init(&m_tmsi_pool, ogs_app()->max.ue*2);
+    ogs_pool_init(&m_tmsi_pool, ogs_global_conf()->max.ue*2);
     ogs_pool_random_id_generate(&m_tmsi_pool);
 
     ogs_list_init(&self.gnb_list);
@@ -308,7 +308,7 @@ int amf_context_parse_config(void)
                                     } else if (!strcmp(server_key, "dev")) {
                                         dev = ogs_yaml_iter_value(&server_iter);
                                     } else if (!strcmp(server_key, "option")) {
-                                        rv = ogs_app_config_parse_sockopt(
+                                        rv = ogs_global_conf_parse_sockopt(
                                                 &server_iter, &option);
                                         if (rv != OGS_OK) {
                                             ogs_error("ogs_app_config_parse_"
@@ -329,11 +329,13 @@ int amf_context_parse_config(void)
                                 }
 
                                 if (addr) {
-                                    if (ogs_app()->parameter.no_ipv4 == 0)
+                                    if (ogs_global_conf()->parameter.
+                                            no_ipv4 == 0)
                                         ogs_socknode_add(
                                             &self.ngap_list, AF_INET, addr,
                                             is_option ? &option : NULL);
-                                    if (ogs_app()->parameter.no_ipv6 == 0)
+                                    if (ogs_global_conf()->parameter.
+                                            no_ipv6 == 0)
                                         ogs_socknode_add(
                                             &self.ngap_list6, AF_INET6, addr,
                                             is_option ? &option : NULL);
@@ -342,9 +344,11 @@ int amf_context_parse_config(void)
 
                                 if (dev) {
                                     rv = ogs_socknode_probe(
-                                            ogs_app()->parameter.no_ipv4 ?
+                                            ogs_global_conf()->parameter.
+                                            no_ipv4 ?
                                                 NULL : &self.ngap_list,
-                                            ogs_app()->parameter.no_ipv6 ?
+                                            ogs_global_conf()->parameter.
+                                            no_ipv6 ?
                                                 NULL : &self.ngap_list6,
                                             dev, port,
                                             is_option ? &option : NULL);
@@ -1329,14 +1333,14 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
     }
 
     ran_ue->index = ogs_pool_index(&ran_ue_pool, ran_ue);
-    ogs_assert(ran_ue->index > 0 && ran_ue->index <= ogs_app()->max.ue);
+    ogs_assert(ran_ue->index > 0 && ran_ue->index <= ogs_global_conf()->max.ue);
 
     ran_ue->ran_ue_ngap_id = ran_ue_ngap_id;
     ran_ue->amf_ue_ngap_id = ran_ue->index;
 
     /*
      * SCTP output stream identification
-     * Default ogs_app()->parameter.sctp_streams : 30
+     * Default ogs_global_conf()->parameter.sctp_streams : 30
      *   0 : Non UE signalling
      *   1-29 : UE specific association
      */
@@ -2410,7 +2414,7 @@ int amf_m_tmsi_pool_generate(void)
     int index = 0;
 
     ogs_trace("M-TMSI Pool try to generate...");
-    while (index < ogs_app()->max.ue*2) {
+    while (index < ogs_global_conf()->max.ue*2) {
         amf_m_tmsi_t *m_tmsi = NULL;
         int conflict = 0;
 

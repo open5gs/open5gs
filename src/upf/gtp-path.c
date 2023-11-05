@@ -203,7 +203,7 @@ static void _gtpv1_tun_recv_common_cb(
         pdr = fallback_pdr;
 
     if (!pdr) {
-        if (ogs_app()->parameter.multicast) {
+        if (ogs_global_conf()->parameter.multicast) {
             upf_gtp_handle_multicast(recvbuf);
         }
         goto cleanup;

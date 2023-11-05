@@ -39,7 +39,7 @@ void scp_context_init(void)
     ogs_log_install_domain(&__scp_log_domain, "scp", ogs_core()->log.level);
 
 #define MAX_NUM_OF_SCP_ASSOC 8
-    max_num_of_scp_assoc = ogs_app()->max.ue * MAX_NUM_OF_SCP_ASSOC;
+    max_num_of_scp_assoc = ogs_global_conf()->max.ue * MAX_NUM_OF_SCP_ASSOC;
 
     ogs_pool_init(&scp_assoc_pool, max_num_of_scp_assoc);
 

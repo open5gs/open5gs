@@ -186,7 +186,7 @@ int ogs_metrics_context_parse_config(const char *local)
                                     } else if (!strcmp(server_key, "dev")) {
                                         dev = ogs_yaml_iter_value(&server_iter);
                                     } else if (!strcmp(server_key, "option")) {
-                                        rv = ogs_app_config_parse_sockopt(
+                                        rv = ogs_global_conf_parse_sockopt(
                                                 &server_iter, &option);
                                         if (rv != OGS_OK) {
                                             ogs_error("ogs_app_config_parse_"
@@ -210,10 +210,10 @@ int ogs_metrics_context_parse_config(const char *local)
                                 ogs_list_init(&list6);
 
                                 if (addr) {
-                                    if (ogs_app()->parameter.no_ipv4 == 0)
+                                    if (ogs_global_conf()->parameter.no_ipv4 == 0)
                                         ogs_socknode_add(
                                             &list, AF_INET, addr, NULL);
-                                    if (ogs_app()->parameter.no_ipv6 == 0)
+                                    if (ogs_global_conf()->parameter.no_ipv6 == 0)
                                         ogs_socknode_add(
                                             &list6, AF_INET6, addr, NULL);
                                     ogs_freeaddrinfo(addr);
@@ -221,9 +221,9 @@ int ogs_metrics_context_parse_config(const char *local)
 
                                 if (dev) {
                                     rv = ogs_socknode_probe(
-                                        ogs_app()->parameter.no_ipv4 ?
+                                        ogs_global_conf()->parameter.no_ipv4 ?
                                         NULL : &list,
-                                        ogs_app()->parameter.no_ipv6 ?
+                                        ogs_global_conf()->parameter.no_ipv6 ?
                                         NULL : &list6,
                                         dev, port, NULL);
                                     ogs_assert(rv == OGS_OK);

@@ -212,13 +212,16 @@ int parse_config(void)
                                 }
 
                                 ogs_filter_ip_version(&addr,
-                                        ogs_app()->parameter.no_ipv4,
+                                        ogs_global_conf()->parameter.
+                                        no_ipv4,
 #if 0 /* Only IPv4 is supporeted in Test-GTPv2C */
-                                        ogs_app()->parameter.no_ipv6,
+                                        ogs_global_conf()->parameter.
+                                        no_ipv6,
 #else
                                         1,
 #endif
-                                        ogs_app()->parameter.prefer_ipv4);
+                                        ogs_global_conf()->parameter.
+                                        prefer_ipv4);
 
                                 if (addr == NULL) continue;
 

@@ -44,7 +44,7 @@ void sepp_context_init(void)
     ogs_pool_init(&sepp_node_pool, max_num_of_sepp_node);
 
 #define MAX_NUM_OF_SEPP_ASSOC 8
-    max_num_of_sepp_assoc = ogs_app()->max.ue * MAX_NUM_OF_SEPP_ASSOC;
+    max_num_of_sepp_assoc = ogs_global_conf()->max.ue * MAX_NUM_OF_SEPP_ASSOC;
     ogs_pool_init(&sepp_assoc_pool, max_num_of_sepp_assoc);
 
     context_initialized = 1;

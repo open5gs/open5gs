@@ -180,7 +180,7 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                     } else if (!strcmp(server_key, "dev")) {
                                         dev = ogs_yaml_iter_value(&server_iter);
                                     } else if (!strcmp(server_key, "option")) {
-                                        rv = ogs_app_config_parse_sockopt(
+                                        rv = ogs_global_conf_parse_sockopt(
                                                 &server_iter, &option);
                                         if (rv != OGS_OK) {
                                             ogs_error("ogs_app_config_parse_"
@@ -206,11 +206,13 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                 }
 
                                 if (addr) {
-                                    if (ogs_app()->parameter.no_ipv4 == 0)
+                                    if (ogs_global_conf()->parameter.
+                                            no_ipv4 == 0)
                                         ogs_socknode_add(
                                             &self.gtpc_list, AF_INET, addr,
                                             is_option ? &option : NULL);
-                                    if (ogs_app()->parameter.no_ipv6 == 0)
+                                    if (ogs_global_conf()->parameter.
+                                            no_ipv6 == 0)
                                         ogs_socknode_add(
                                             &self.gtpc_list6, AF_INET6, addr,
                                             is_option ? &option : NULL);
@@ -219,9 +221,11 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
 
                                 if (dev) {
                                     rv = ogs_socknode_probe(
-                                            ogs_app()->parameter.no_ipv4 ?
+                                            ogs_global_conf()->parameter.
+                                            no_ipv4 ?
                                                 NULL : &self.gtpc_list,
-                                            ogs_app()->parameter.no_ipv6 ?
+                                            ogs_global_conf()->parameter.
+                                            no_ipv6 ?
                                                 NULL : &self.gtpc_list6,
                                             dev, port,
                                             is_option ? &option : NULL);
@@ -371,7 +375,7 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                     } else if (!strcmp(server_key, "dev")) {
                                         dev = ogs_yaml_iter_value(&server_iter);
                                     } else if (!strcmp(server_key, "option")) {
-                                        rv = ogs_app_config_parse_sockopt(
+                                        rv = ogs_global_conf_parse_sockopt(
                                                 &server_iter, &option);
                                         if (rv != OGS_OK) {
                                             ogs_error("ogs_app_config_parse_"
@@ -411,11 +415,13 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                 ogs_list_init(&list6);
 
                                 if (addr) {
-                                    if (ogs_app()->parameter.no_ipv4 == 0)
+                                    if (ogs_global_conf()->parameter.
+                                            no_ipv4 == 0)
                                         ogs_socknode_add(
                                             &list, AF_INET, addr,
                                             is_option ? &option : NULL);
-                                    if (ogs_app()->parameter.no_ipv6 == 0)
+                                    if (ogs_global_conf()->parameter.
+                                            no_ipv6 == 0)
                                         ogs_socknode_add(
                                             &list6, AF_INET6, addr,
                                             is_option ? &option : NULL);
@@ -424,9 +430,9 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
 
                                 if (dev) {
                                     rv = ogs_socknode_probe(
-                                        ogs_app()->parameter.no_ipv4 ?
+                                        ogs_global_conf()->parameter.no_ipv4 ?
                                         NULL : &list,
-                                        ogs_app()->parameter.no_ipv6 ?
+                                        ogs_global_conf()->parameter.no_ipv6 ?
                                         NULL : &list6,
                                         dev, port,
                                         is_option ? &option : NULL);
@@ -584,9 +590,9 @@ ogs_gtp_node_t *ogs_gtp_node_add_by_f_teid(
 
     rv = ogs_filter_ip_version(
             &addr,
-            ogs_app()->parameter.no_ipv4,
-            ogs_app()->parameter.no_ipv6,
-            ogs_app()->parameter.prefer_ipv4);
+            ogs_global_conf()->parameter.no_ipv4,
+            ogs_global_conf()->parameter.no_ipv6,
+            ogs_global_conf()->parameter.prefer_ipv4);
     if (!addr) {
         ogs_error("ogs_filter_ip_version() failed");
         return NULL;
@@ -712,9 +718,9 @@ ogs_gtp_node_t *ogs_gtp_node_add_by_ip(
 
     rv = ogs_filter_ip_version(
             &addr,
-            ogs_app()->parameter.no_ipv4,
-            ogs_app()->parameter.no_ipv6,
-            ogs_app()->parameter.prefer_ipv4);
+            ogs_global_conf()->parameter.no_ipv4,
+            ogs_global_conf()->parameter.no_ipv6,
+            ogs_global_conf()->parameter.prefer_ipv4);
     if (!addr) {
         ogs_error("ogs_filter_ip_version() failed");
         return NULL;

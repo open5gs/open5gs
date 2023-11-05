@@ -351,7 +351,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                     } else if (!strcmp(server_key, "dev")) {
                                         dev = ogs_yaml_iter_value(&server_iter);
                                     } else if (!strcmp(server_key, "option")) {
-                                        rv = ogs_app_config_parse_sockopt(
+                                        rv = ogs_global_conf_parse_sockopt(
                                                 &server_iter, &option);
                                         if (rv != OGS_OK) {
                                             ogs_error("ogs_app_config_parse_"
@@ -375,11 +375,13 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 }
 
                                 if (addr) {
-                                    if (ogs_app()->parameter.no_ipv4 == 0)
+                                    if (ogs_global_conf()->
+                                            parameter.no_ipv4 == 0)
                                         ogs_socknode_add(
                                             &self.pfcp_list, AF_INET, addr,
                                             is_option ? &option : NULL);
-                                    if (ogs_app()->parameter.no_ipv6 == 0)
+                                    if (ogs_global_conf()->
+                                            parameter.no_ipv6 == 0)
                                         ogs_socknode_add(
                                             &self.pfcp_list6, AF_INET6, addr,
                                             is_option ? &option : NULL);
@@ -394,14 +396,16 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 }
 
                                 if (addr) {
-                                    if (ogs_app()->parameter.no_ipv4 == 0 &&
+                                    if (ogs_global_conf()->
+                                            parameter.no_ipv4 == 0 &&
                                         !self.pfcp_advertise) {
                                         ogs_copyaddrinfo(
                                                 &self.pfcp_advertise, addr);
                                         ogs_filteraddrinfo(
                                                 &self.pfcp_advertise, AF_INET);
                                     }
-                                    if (ogs_app()->parameter.no_ipv6 == 0 &&
+                                    if (ogs_global_conf()->
+                                            parameter.no_ipv6 == 0 &&
                                         !self.pfcp_advertise6) {
                                         ogs_copyaddrinfo(
                                                 &self.pfcp_advertise6, addr);
@@ -414,9 +418,11 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
 
                                 if (dev) {
                                     rv = ogs_socknode_probe(
-                                            ogs_app()->parameter.no_ipv4 ?
+                                            ogs_global_conf()->
+                                            parameter.no_ipv4 ?
                                                 NULL : &self.pfcp_list,
-                                            ogs_app()->parameter.no_ipv6 ?
+                                            ogs_global_conf()->
+                                            parameter.no_ipv6 ?
                                                 NULL : &self.pfcp_list6,
                                             dev, self.pfcp_port,
                                             is_option ? &option : NULL);
@@ -684,9 +690,11 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                         }
 
                                         ogs_filter_ip_version(&addr,
-                                                ogs_app()->parameter.no_ipv4,
-                                                ogs_app()->parameter.no_ipv6,
-                                                ogs_app()->parameter.
+                                                ogs_global_conf()->parameter.
+                                                no_ipv4,
+                                                ogs_global_conf()->parameter.
+                                                no_ipv6,
+                                                ogs_global_conf()->parameter.
                                                 prefer_ipv4);
 
                                         if (addr == NULL) continue;

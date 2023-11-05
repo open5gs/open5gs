@@ -105,17 +105,17 @@ void mme_context_init(void)
     ogs_pool_init(&mme_csmap_pool, ogs_app()->pool.csmap);
 
     /* Allocate TWICE the pool to check if maximum number of eNBs is reached */
-    ogs_pool_init(&mme_enb_pool, ogs_app()->max.peer*2);
+    ogs_pool_init(&mme_enb_pool, ogs_global_conf()->max.peer*2);
 
-    ogs_pool_init(&mme_ue_pool, ogs_app()->max.ue);
-    ogs_pool_init(&mme_s11_teid_pool, ogs_app()->max.ue);
+    ogs_pool_init(&mme_ue_pool, ogs_global_conf()->max.ue);
+    ogs_pool_init(&mme_s11_teid_pool, ogs_global_conf()->max.ue);
     ogs_pool_random_id_generate(&mme_s11_teid_pool);
 
-    ogs_pool_init(&enb_ue_pool, ogs_app()->max.ue);
-    ogs_pool_init(&sgw_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&enb_ue_pool, ogs_global_conf()->max.ue);
+    ogs_pool_init(&sgw_ue_pool, ogs_global_conf()->max.ue);
     ogs_pool_init(&mme_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&mme_bearer_pool, ogs_app()->pool.bearer);
-    ogs_pool_init(&m_tmsi_pool, ogs_app()->max.ue*2);
+    ogs_pool_init(&m_tmsi_pool, ogs_global_conf()->max.ue*2);
     ogs_pool_random_id_generate(&m_tmsi_pool);
 
     self.enb_addr_hash = ogs_hash_make();
@@ -640,7 +640,7 @@ int mme_context_parse_config(void)
                                     } else if (!strcmp(server_key, "dev")) {
                                         dev = ogs_yaml_iter_value(&server_iter);
                                     } else if (!strcmp(server_key, "option")) {
-                                        rv = ogs_app_config_parse_sockopt(
+                                        rv = ogs_global_conf_parse_sockopt(
                                                 &server_iter, &option);
                                         if (rv != OGS_OK) {
                                             ogs_error("ogs_app_config_parse_"
@@ -661,11 +661,13 @@ int mme_context_parse_config(void)
                                 }
 
                                 if (addr) {
-                                    if (ogs_app()->parameter.no_ipv4 == 0)
+                                    if (ogs_global_conf()->parameter.
+                                            no_ipv4 == 0)
                                         ogs_socknode_add(
                                             &self.s1ap_list, AF_INET, addr,
                                             is_option ? &option : NULL);
-                                    if (ogs_app()->parameter.no_ipv6 == 0)
+                                    if (ogs_global_conf()->parameter.
+                                            no_ipv6 == 0)
                                         ogs_socknode_add(
                                             &self.s1ap_list6, AF_INET6, addr,
                                             is_option ? &option : NULL);
@@ -674,9 +676,11 @@ int mme_context_parse_config(void)
 
                                 if (dev) {
                                     rv = ogs_socknode_probe(
-                                            ogs_app()->parameter.no_ipv4 ?
+                                            ogs_global_conf()->parameter.
+                                            no_ipv4 ?
                                                 NULL : &self.s1ap_list,
-                                            ogs_app()->parameter.no_ipv6 ?
+                                            ogs_global_conf()->parameter.
+                                            no_ipv6 ?
                                                 NULL : &self.s1ap_list6,
                                             dev, port,
                                             is_option ? &option : NULL);
@@ -877,9 +881,11 @@ int mme_context_parse_config(void)
                                         }
 
                                         ogs_filter_ip_version(&addr,
-                                                ogs_app()->parameter.no_ipv4,
-                                                ogs_app()->parameter.no_ipv6,
-                                                ogs_app()->parameter.
+                                                ogs_global_conf()->parameter.
+                                                no_ipv4,
+                                                ogs_global_conf()->parameter.
+                                                no_ipv6,
+                                                ogs_global_conf()->parameter.
                                                 prefer_ipv4);
 
                                         if (addr == NULL) continue;
@@ -1104,9 +1110,11 @@ int mme_context_parse_config(void)
                                         }
 
                                         ogs_filter_ip_version(&addr,
-                                                ogs_app()->parameter.no_ipv4,
-                                                ogs_app()->parameter.no_ipv6,
-                                                ogs_app()->parameter.
+                                                ogs_global_conf()->parameter.
+                                                no_ipv4,
+                                                ogs_global_conf()->parameter.
+                                                no_ipv6,
+                                                ogs_global_conf()->parameter.
                                                 prefer_ipv4);
 
                                         if (addr == NULL) continue;
@@ -1349,9 +1357,11 @@ int mme_context_parse_config(void)
                                         }
 
                                         ogs_filter_ip_version(&addr,
-                                                ogs_app()->parameter.no_ipv4,
-                                                ogs_app()->parameter.no_ipv6,
-                                                ogs_app()->parameter.
+                                                ogs_global_conf()->parameter.
+                                                no_ipv4,
+                                                ogs_global_conf()->parameter.
+                                                no_ipv6,
+                                                ogs_global_conf()->parameter.
                                                 prefer_ipv4);
 
                                         if (addr == NULL) continue;
@@ -2032,7 +2042,7 @@ int mme_context_parse_config(void)
                                             self.sgsap_port = port;
                                         }
                                     } else if (!strcmp(server_key, "option")) {
-                                        rv = ogs_app_config_parse_sockopt(
+                                        rv = ogs_global_conf_parse_sockopt(
                                                 &server_iter, &option);
                                         if (rv != OGS_OK) {
                                             ogs_error("ogs_app_config_parse_"
@@ -2272,9 +2282,10 @@ int mme_context_parse_config(void)
                                 }
 
                                 ogs_filter_ip_version(&addr,
-                                        ogs_app()->parameter.no_ipv4,
-                                        ogs_app()->parameter.no_ipv6,
-                                        ogs_app()->parameter.prefer_ipv4);
+                                        ogs_global_conf()->parameter.no_ipv4,
+                                        ogs_global_conf()->parameter.no_ipv6,
+                                        ogs_global_conf()->parameter.
+                                        prefer_ipv4);
 
                                 if (addr == NULL) continue;
 
@@ -2912,14 +2923,14 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
     }
 
     enb_ue->index = ogs_pool_index(&enb_ue_pool, enb_ue);
-    ogs_assert(enb_ue->index > 0 && enb_ue->index <= ogs_app()->max.ue);
+    ogs_assert(enb_ue->index > 0 && enb_ue->index <= ogs_global_conf()->max.ue);
 
     enb_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
     enb_ue->mme_ue_s1ap_id = enb_ue->index;
 
     /*
      * SCTP output stream identification
-     * Default ogs_app()->parameter.sctp_streams : 30
+     * Default ogs_global_conf()->parameter.sctp_streams : 30
      *   0 : Non UE signalling
      *   1-29 : UE specific association
      */
@@ -4525,7 +4536,7 @@ int mme_m_tmsi_pool_generate(void)
     int index = 0;
 
     ogs_trace("M-TMSI Pool try to generate...");
-    while (index < ogs_app()->max.ue*2) {
+    while (index < ogs_global_conf()->max.ue*2) {
         mme_m_tmsi_t *m_tmsi = NULL;
         int conflict = 0;
 

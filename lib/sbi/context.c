@@ -377,7 +377,8 @@ int ogs_sbi_context_parse_config(
                                 const char *client_key =
                                     ogs_yaml_iter_key(&client_iter);
                                 ogs_assert(client_key);
-                                if (ogs_app()->parameter.no_nrf == false &&
+                                if (ogs_global_conf()->
+                                        parameter.no_nrf == false &&
                                     nrf && !strcmp(client_key, nrf)) {
                                     ogs_yaml_iter_t nrf_array, nrf_iter;
                                     ogs_yaml_iter_recurse(&client_iter,
@@ -424,8 +425,8 @@ int ogs_sbi_context_parse_config(
 
                                     } while (ogs_yaml_iter_type(&nrf_array) ==
                                             YAML_SEQUENCE_NODE);
-                                } else if (
-                                        ogs_app()->parameter.no_scp == false &&
+                                } else if (ogs_global_conf()->
+                                        parameter.no_scp == false &&
                                         scp && !strcmp(client_key, scp)) {
                                     ogs_yaml_iter_t scp_array, scp_iter;
                                     ogs_yaml_iter_recurse(
@@ -756,9 +757,9 @@ int ogs_sbi_context_parse_server_config(
             } else if (!strcmp(server_key, "verify_client_cacert")) {
                 verify_client_cacert = ogs_yaml_iter_value(&server_iter);
             } else if (!strcmp(server_key, "option")) {
-                rv = ogs_app_config_parse_sockopt(&server_iter, &option);
+                rv = ogs_global_conf_parse_sockopt(&server_iter, &option);
                 if (rv != OGS_OK) {
-                    ogs_error("ogs_app_config_parse_sockopt() failed");
+                    ogs_error("ogs_global_conf_parse_sockopt() failed");
                     return rv;
                 }
                 is_option = true;
@@ -787,17 +788,17 @@ int ogs_sbi_context_parse_server_config(
         ogs_list_init(&list6);
 
         if (addr) {
-            if (ogs_app()->parameter.no_ipv4 == 0)
+            if (ogs_global_conf()->parameter.no_ipv4 == 0)
                 ogs_socknode_add(&list, AF_INET, addr, NULL);
-            if (ogs_app()->parameter.no_ipv6 == 0)
+            if (ogs_global_conf()->parameter.no_ipv6 == 0)
                 ogs_socknode_add(&list6, AF_INET6, addr, NULL);
             ogs_freeaddrinfo(addr);
         }
 
         if (dev) {
             rv = ogs_socknode_probe(
-                ogs_app()->parameter.no_ipv4 ?  NULL : &list,
-                ogs_app()->parameter.no_ipv6 ?  NULL : &list6,
+                ogs_global_conf()->parameter.no_ipv4 ?  NULL : &list,
+                ogs_global_conf()->parameter.no_ipv6 ?  NULL : &list6,
                 dev, port, NULL);
             ogs_assert(rv == OGS_OK);
         }
@@ -814,7 +815,7 @@ int ogs_sbi_context_parse_server_config(
                     interface, scheme, node->addr, is_option ? &option : NULL);
             ogs_assert(server);
 
-            if (addr && ogs_app()->parameter.no_ipv4 == 0)
+            if (addr && ogs_global_conf()->parameter.no_ipv4 == 0)
                 ogs_sbi_server_set_advertise(server, AF_INET, addr);
 
             if (verify_client == true)
@@ -863,7 +864,7 @@ int ogs_sbi_context_parse_server_config(
                     interface, scheme, node6->addr, is_option ? &option : NULL);
             ogs_assert(server);
 
-            if (addr && ogs_app()->parameter.no_ipv6 == 0)
+            if (addr && ogs_global_conf()->parameter.no_ipv6 == 0)
                 ogs_sbi_server_set_advertise(server, AF_INET6, addr);
 
             if (verify_client == true)

@@ -45,7 +45,7 @@ static bool maximum_number_of_enbs_is_reached(void)
         }
     }
 
-    return number_of_enbs_online >= ogs_app()->max.peer;
+    return number_of_enbs_online >= ogs_global_conf()->max.peer;
 }
 
 static bool enb_plmn_id_is_foreign(mme_enb_t *enb)

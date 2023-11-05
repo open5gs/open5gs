@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -19,7 +19,34 @@
 
 #include "ogs-app.h"
 
-int ogs_app_config_parse_sockopt(
+static ogs_global_conf_t self;
+
+static int initialized = 0;
+
+int ogs_global_conf_init(void)
+{
+    ogs_assert(initialized == 0);
+
+    memset(&self, 0, sizeof(ogs_global_conf_t));
+
+    initialized = 1;
+
+    return OGS_OK;
+}
+
+void ogs_global_conf_final(void)
+{
+    ogs_assert(initialized == 1);
+
+    initialized = 0;
+}
+
+ogs_global_conf_t *ogs_global_conf(void)
+{
+    return &self;
+}
+
+int ogs_global_conf_parse_sockopt(
         ogs_yaml_iter_t *parent, ogs_sockopt_t *option)
 {
     ogs_yaml_iter_t sockopt_iter;

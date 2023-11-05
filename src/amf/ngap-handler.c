@@ -33,7 +33,7 @@ static bool maximum_number_of_gnbs_is_reached(void)
         }
     }
 
-    return number_of_gnbs_online >= ogs_app()->max.peer;
+    return number_of_gnbs_online >= ogs_global_conf()->max.peer;
 }
 
 static bool gnb_plmn_id_is_foreign(amf_gnb_t *gnb)

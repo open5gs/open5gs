@@ -31,6 +31,8 @@ int ogs_app_context_init(void)
 
     memset(&self, 0, sizeof(ogs_app_context_t));
 
+    ogs_global_conf_init();
+
     initialized = 1;
 
     return OGS_OK;
@@ -51,6 +53,8 @@ void ogs_app_context_final(void)
         ogs_timer_mgr_destroy(self.timer_mgr);
     if (self.queue)
         ogs_queue_destroy(self.queue);
+
+    ogs_global_conf_final();
 
     initialized = 0;
 }
@@ -169,8 +173,8 @@ static int app_context_prepare(void)
 
 static int app_context_validation(void)
 {
-    if (self.parameter.no_ipv4 == 1 &&
-        self.parameter.no_ipv6 == 1) {
+    if (ogs_global_conf()->parameter.no_ipv4 == 1 &&
+        ogs_global_conf()->parameter.no_ipv6 == 1) {
         ogs_error("Both `no_ipv4` and `no_ipv6` set to `true` in `%s`",
                 self.file);
         return OGS_ERROR;

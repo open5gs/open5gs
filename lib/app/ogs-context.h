@@ -47,55 +47,8 @@ typedef struct ogs_app_context_s {
     ogs_pollset_t *pollset;
 
     struct {
-        /* Element */
-        int no_mme;
-        int no_hss;
-        int no_sgw;
-        int no_sgwc;
-        int no_sgwu;
-        int no_pgw;
-        int no_pcrf;
-
-        int no_amf;
-        int no_smf;
-        int no_upf;
-        int no_ausf;
-        int no_udm;
-        int no_pcf;
-        int no_nssf;
-        int no_bsf;
-        int no_udr;
-        int no_sepp;
-        int no_scp;
-        int no_nrf;
-
-        /* Network */
-        int no_ipv4;
-        int no_ipv6;
-        int prefer_ipv4;
-        int multicast;
-
-        int use_openair;
-        int no_ipv4v6_local_addr_in_packet_filter;
-
-        int no_pfcp_rr_select;
-    } parameter;
-
-    struct {
-        int no_delay;
-        int l_onoff;
-        int l_linger;
-    } sockopt;
-
-    struct {
         int udp_port;
     } usrsctp;
-
-    struct {
-        uint64_t ue;
-        uint64_t peer;
-        uint64_t gtp_peer;
-    } max;
 
     struct {
         ogs_pkbuf_config_t defconfig;
@@ -179,6 +132,7 @@ typedef struct ogs_app_context_s {
 
 int ogs_app_context_init(void);
 void ogs_app_context_final(void);
+
 ogs_app_context_t *ogs_app(void);
 
 int ogs_app_context_parse_config(const char *local);

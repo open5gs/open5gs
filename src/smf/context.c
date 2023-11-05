@@ -82,7 +82,7 @@ void smf_context_init(void)
     ogs_log_install_domain(&__gsm_log_domain, "gsm", ogs_core()->log.level);
 
     ogs_pool_init(&smf_gtp_node_pool, ogs_app()->pool.nf);
-    ogs_pool_init(&smf_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&smf_ue_pool, ogs_global_conf()->max.ue);
     ogs_pool_init(&smf_bearer_pool, ogs_app()->pool.bearer);
     ogs_pool_init(&smf_pf_pool,
             ogs_app()->pool.bearer * OGS_MAX_NUM_OF_FLOW_IN_BEARER);
@@ -1006,7 +1006,7 @@ static smf_ue_t *smf_ue_add(void)
     ogs_pool_alloc(&smf_ue_pool, &smf_ue);
     if (!smf_ue) {
         ogs_error("Maximum number of smf_ue[%lld] reached",
-                    (long long)ogs_app()->max.ue);
+                    (long long)ogs_global_conf()->max.ue);
         return NULL;
     }
     memset(smf_ue, 0, sizeof *smf_ue);
@@ -1149,7 +1149,7 @@ static ogs_pfcp_node_t *selected_upf_node(
             compare_ue_info(node, sess) == true) return node;
     }
 
-    if (ogs_app()->parameter.no_pfcp_rr_select == 0) {
+    if (ogs_global_conf()->parameter.no_pfcp_rr_select == 0) {
         /* continue search from current position */
         next = ogs_list_next(current);
         for (node = next; node; node = ogs_list_next(node)) {

@@ -39,7 +39,7 @@ void nrf_context_init(void)
     ogs_log_install_domain(&__nrf_log_domain, "nrf", ogs_core()->log.level);
 
 #define MAX_NUM_OF_NRF_ASSOC 8
-    max_num_of_nrf_assoc = ogs_app()->max.ue * MAX_NUM_OF_NRF_ASSOC;
+    max_num_of_nrf_assoc = ogs_global_conf()->max.ue * MAX_NUM_OF_NRF_ASSOC;
     ogs_pool_init(&nrf_assoc_pool, max_num_of_nrf_assoc);
 
     context_initialized = 1;

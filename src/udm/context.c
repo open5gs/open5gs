@@ -37,7 +37,7 @@ void udm_context_init(void)
 
     ogs_log_install_domain(&__udm_log_domain, "udm", ogs_core()->log.level);
 
-    ogs_pool_init(&udm_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&udm_ue_pool, ogs_global_conf()->max.ue);
     ogs_pool_init(&udm_sess_pool, ogs_app()->pool.sess);
 
     ogs_list_init(&self.udm_ue_list);

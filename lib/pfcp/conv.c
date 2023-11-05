@@ -28,7 +28,7 @@ int ogs_pfcp_sockaddr_to_node_id(ogs_pfcp_node_id_t *node_id, int *len)
     ogs_sockaddr_t *advertise6 = ogs_pfcp_self()->pfcp_advertise6;
     ogs_sockaddr_t *addr = ogs_pfcp_self()->pfcp_addr;
     ogs_sockaddr_t *addr6 = ogs_pfcp_self()->pfcp_addr6;
-    int prefer_ipv4 = ogs_app()->parameter.prefer_ipv4;
+    int prefer_ipv4 = ogs_global_conf()->parameter.prefer_ipv4;
 
     ogs_assert(node_id);
 

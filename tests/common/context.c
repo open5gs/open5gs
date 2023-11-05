@@ -37,7 +37,7 @@ void test_context_init(void)
     /* Initialize AMF context */
     memset(&self, 0, sizeof(test_context_t));
 
-    ogs_pool_init(&test_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&test_ue_pool, ogs_global_conf()->max.ue);
     ogs_pool_init(&test_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&test_bearer_pool, ogs_app()->pool.bearer);
 
@@ -268,7 +268,7 @@ int test_context_parse_config(void)
                                     } else if (!strcmp(server_key, "dev")) {
                                         dev = ogs_yaml_iter_value(&server_iter);
                                     } else if (!strcmp(server_key, "option")) {
-                                        rv = ogs_app_config_parse_sockopt(
+                                        rv = ogs_global_conf_parse_sockopt(
                                                 &server_iter, &option);
                                         if (rv != OGS_OK) {
                                             ogs_error("ogs_app_config_parse_"
@@ -289,11 +289,13 @@ int test_context_parse_config(void)
                                 }
 
                                 if (addr) {
-                                    if (ogs_app()->parameter.no_ipv4 == 0)
+                                    if (ogs_global_conf()->parameter.
+                                            no_ipv4 == 0)
                                         ogs_socknode_add(
                                             &self.ngap_list, AF_INET, addr,
                                             is_option ? &option : NULL);
-                                    if (ogs_app()->parameter.no_ipv6 == 0)
+                                    if (ogs_global_conf()->parameter.
+                                            no_ipv6 == 0)
                                         ogs_socknode_add(
                                             &self.ngap_list6, AF_INET6, addr,
                                             is_option ? &option : NULL);
@@ -302,9 +304,11 @@ int test_context_parse_config(void)
 
                                 if (dev) {
                                     rv = ogs_socknode_probe(
-                                            ogs_app()->parameter.no_ipv4 ?
+                                            ogs_global_conf()->parameter.
+                                            no_ipv4 ?
                                                 NULL : &self.ngap_list,
-                                            ogs_app()->parameter.no_ipv6 ?
+                                            ogs_global_conf()->parameter.
+                                            no_ipv6 ?
                                                 NULL : &self.ngap_list6,
                                             dev, port,
                                             is_option ? &option : NULL);
@@ -744,7 +748,7 @@ int test_context_parse_config(void)
                                     } else if (!strcmp(server_key, "dev")) {
                                         dev = ogs_yaml_iter_value(&server_iter);
                                     } else if (!strcmp(server_key, "option")) {
-                                        rv = ogs_app_config_parse_sockopt(
+                                        rv = ogs_global_conf_parse_sockopt(
                                                 &server_iter, &option);
                                         if (rv != OGS_OK) {
                                             ogs_error("ogs_app_config_parse_"
@@ -765,11 +769,13 @@ int test_context_parse_config(void)
                                 }
 
                                 if (addr) {
-                                    if (ogs_app()->parameter.no_ipv4 == 0)
+                                    if (ogs_global_conf()->parameter.
+                                            no_ipv4 == 0)
                                         ogs_socknode_add(
                                             &self.s1ap_list, AF_INET, addr,
                                             is_option ? &option : NULL);
-                                    if (ogs_app()->parameter.no_ipv6 == 0)
+                                    if (ogs_global_conf()->parameter.
+                                            no_ipv6 == 0)
                                         ogs_socknode_add(
                                             &self.s1ap_list6, AF_INET6, addr,
                                             is_option ? &option : NULL);
@@ -778,9 +784,11 @@ int test_context_parse_config(void)
 
                                 if (dev) {
                                     rv = ogs_socknode_probe(
-                                            ogs_app()->parameter.no_ipv4 ?
+                                            ogs_global_conf()->parameter.
+                                            no_ipv4 ?
                                                 NULL : &self.s1ap_list,
-                                            ogs_app()->parameter.no_ipv6 ?
+                                            ogs_global_conf()->parameter.
+                                            no_ipv6 ?
                                                 NULL : &self.s1ap_list6,
                                             dev, port,
                                             is_option ? &option : NULL);
