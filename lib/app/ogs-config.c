@@ -310,12 +310,6 @@ int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent)
                 } else
                     ogs_warn("unknown key `%s`", pool_key);
             }
-        } else if (!strcmp(global_key, OGS_SLICE_STRING)) {
-            rv = ogs_app_parse_slice_conf(&global_iter);
-            if (rv != OGS_OK) {
-                ogs_error("ogs_slice_conf_parse_config() failed");
-                return rv;
-            }
         }
     }
 
@@ -636,6 +630,12 @@ int ogs_app_parse_local_conf(const char *local)
                             /* handle config in mme */
                         } else
                             ogs_warn("unknown key `%s`", time_key);
+                    }
+                } else if (!strcmp(local_key, OGS_SLICE_STRING)) {
+                    rv = ogs_app_parse_slice_conf(&local_iter);
+                    if (rv != OGS_OK) {
+                        ogs_error("ogs_slice_conf_parse_config() failed");
+                        return rv;
                     }
                 }
             }
@@ -1264,10 +1264,10 @@ ogs_app_slice_conf_t *ogs_app_slice_conf_add(uint8_t sst, ogs_uint24_t sd)
 
     ogs_list_init(&slice_conf->sess_list);
 
-    ogs_list_add(&global_conf.slice_list, slice_conf);
+    ogs_list_add(&local_conf.slice_list, slice_conf);
 
     ogs_info("SLICE config added [%d]",
-            ogs_list_count(&global_conf.slice_list));
+            ogs_list_count(&local_conf.slice_list));
     return slice_conf;
 }
 ogs_app_slice_conf_t *ogs_app_slice_conf_find_by_s_nssai(
@@ -1277,7 +1277,7 @@ ogs_app_slice_conf_t *ogs_app_slice_conf_find_by_s_nssai(
 
     ogs_assert(sst);
 
-    ogs_list_for_each(&global_conf.slice_list, slice_conf) {
+    ogs_list_for_each(&local_conf.slice_list, slice_conf) {
         if (slice_conf->data.s_nssai.sst == sst &&
                 slice_conf->data.s_nssai.sd.v == sd.v)
             break;
@@ -1289,20 +1289,20 @@ void ogs_app_slice_conf_remove(ogs_app_slice_conf_t *slice_conf)
 {
     ogs_assert(slice_conf);
 
-    ogs_list_remove(&global_conf.slice_list, slice_conf);
+    ogs_list_remove(&local_conf.slice_list, slice_conf);
 
     ogs_app_sess_conf_remove_all(slice_conf);
 
     ogs_pool_free(&slice_conf_pool, slice_conf);
 
     ogs_info("SLICE config removed [%d]",
-            ogs_list_count(&global_conf.slice_list));
+            ogs_list_count(&local_conf.slice_list));
 }
 void ogs_app_slice_conf_remove_all(void)
 {
     ogs_app_slice_conf_t *slice_conf = NULL, *next_conf = NULL;;
 
-    ogs_list_for_each_safe(&global_conf.slice_list, next_conf, slice_conf)
+    ogs_list_for_each_safe(&local_conf.slice_list, next_conf, slice_conf)
         ogs_app_slice_conf_remove(slice_conf);
 }
 

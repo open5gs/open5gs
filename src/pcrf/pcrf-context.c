@@ -255,6 +255,7 @@ int pcrf_context_parse_config(void)
                                 ogs_warn("unknown key `%s`", fd_key);
                         }
                     }
+                } else if (!strcmp(pcrf_key, "slice")) {
                 } else
                     ogs_warn("unknown key `%s`", pcrf_key);
             }

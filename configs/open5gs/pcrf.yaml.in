@@ -4,86 +4,8 @@ logger:
 #    level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
-  max:
+    max:
       ue: 1024  # The number of UE can be increased depending on memory size.
 #      peer: 64
-
-  slice:
-#    - sst: 1
-#      sd: 000001
-#      default_indicator: true
-#      session:
-#        - name: internet
-#          type: 3
-#          ambr:
-#            downlink:
-#              value: 1
-#              unit: 3
-#            uplink:
-#              value: 1
-#              unit: 3
-#          qos:
-#            index: 9
-#            arp:
-#              priority_level: 8
-#              pre_emption_vulnerability: 1
-#              pre_emption_capability: 1
-#        - name: ims
-#          type: 3
-#          ambr:
-#            downlink:
-#              value: 1
-#              unit: 3
-#            uplink:
-#              value: 1
-#              unit: 3
-#          qos:
-#            index: 5
-#            arp:
-#              priority_level: 1
-#              pre_emption_vulnerability: 1
-#              pre_emption_capability: 1
-#          pcc_rule:
-#            - qos:
-#                index: 1
-#                arp:
-#                  priority_level: 1
-#                  pre_emption_vulnerability: 1
-#                  pre_emption_capability: 1
-#                mbr:
-#                  downlink:
-#                    value: 82
-#                    unit: 1
-#                  uplink:
-#                    value: 82
-#                    unit: 1
-#                gbr:
-#                  downlink:
-#                    value: 82
-#                    unit: 1
-#                  uplink:
-#                    value: 82
-#                    unit: 1
-#            - qos:
-#                index: 2
-#                arp:
-#                  priority_level: 4
-#                  pre_emption_vulnerability: 2
-#                  pre_emption_capability: 2
-#                mbr:
-#                  downlink:
-#                    value: 802
-#                    unit: 1
-#                  uplink:
-#                    value: 802
-#                    unit: 1
-#                gbr:
-#                  downlink:
-#                    value: 802
-#                    unit: 1
-#                  uplink:
-#                    value: 802
-#                    unit: 1
-
 pcrf:
     freeDiameter: @sysconfdir@/freeDiameter/pcrf.conf

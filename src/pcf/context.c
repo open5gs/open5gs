@@ -129,6 +129,7 @@ int pcf_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(pcf_key, "metrics")) {
                     /* handle config in metrics library */
+                } else if (!strcmp(pcf_key, "slice")) {
                 } else
                     ogs_warn("unknown key `%s`", pcf_key);
             }
