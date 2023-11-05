@@ -75,8 +75,8 @@ static int nrf_context_prepare(void)
 {
     /* NF Instance Heartbeat
      * Default value is 10 seconds if it is not configured in nrf.yaml */
-    if (!ogs_app()->time.nf_instance.heartbeat_interval)
-        ogs_app()->time.nf_instance.heartbeat_interval = 10;
+    if (!ogs_local_conf()->time.nf_instance.heartbeat_interval)
+        ogs_local_conf()->time.nf_instance.heartbeat_interval = 10;
 
     return OGS_OK;
 }
@@ -119,7 +119,7 @@ int nrf_context_parse_config(void)
 
                         if (!strcmp(sbi_key, "heartbeat")) {
                             const char *v = ogs_yaml_iter_value(&sbi_iter);
-                            if (v) ogs_app()->time.nf_instance.
+                            if (v) ogs_local_conf()->time.nf_instance.
                                     heartbeat_interval = atoi(v);
                         }
                     }

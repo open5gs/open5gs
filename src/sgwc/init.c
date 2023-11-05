@@ -32,7 +32,7 @@ int sgwc_initialize(void)
     int rv;
 
 #define APP_NAME "sgwc"
-    rv = ogs_app_context_parse_config(APP_NAME);
+    rv = ogs_app_parse_local_conf(APP_NAME);
     if (rv != OGS_OK) return rv;
 
     ogs_gtp_context_init(ogs_app()->pool.nf * OGS_MAX_NUM_OF_GTPU_RESOURCE);

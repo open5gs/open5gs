@@ -68,7 +68,7 @@ void test_app_run(int argc, const char *const argv[],
 
     run(argc, argv, name, init);
 
-    rv = ogs_app_context_parse_config("test");
+    rv = ogs_app_parse_local_conf("test");
     ogs_assert(rv == OGS_OK);
 
     test_context_init();

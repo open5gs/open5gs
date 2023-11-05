@@ -389,7 +389,7 @@ void smf_5gc_n4_handle_session_modification_response(
                     smf_5gc_pfcp_send_all_pdr_modification_request(
                         sess, stream,
                         OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_REMOVE,
-                        ogs_app()->time.handover.duration));
+                        ogs_local_conf()->time.handover.duration));
             }
 
             smf_sbi_send_sm_context_updated_data_ho_state(

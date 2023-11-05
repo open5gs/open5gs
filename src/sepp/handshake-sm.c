@@ -101,7 +101,7 @@ void sepp_handshake_state_will_establish(ogs_fsm_t *s, sepp_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         if (sepp_node->t_establish_interval) {
             ogs_timer_start(sepp_node->t_establish_interval,
-                ogs_app()->time.message.sbi.reconnect_interval);
+                ogs_local_conf()->time.message.sbi.reconnect_interval);
 
             ogs_expect(true ==
                     sepp_n32c_handshake_send_security_capability_request(
@@ -257,7 +257,7 @@ void sepp_handshake_state_will_establish(ogs_fsm_t *s, sepp_event_t *e)
 
             ogs_assert(sepp_node->t_establish_interval);
             ogs_timer_start(sepp_node->t_establish_interval,
-                ogs_app()->time.message.sbi.reconnect_interval);
+                ogs_local_conf()->time.message.sbi.reconnect_interval);
 
             ogs_expect(true ==
                 sepp_n32c_handshake_send_security_capability_request(
@@ -434,7 +434,7 @@ void sepp_handshake_state_terminated(ogs_fsm_t *s, sepp_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         if (sepp_node->t_establish_interval) {
             ogs_timer_start(sepp_node->t_establish_interval,
-                ogs_app()->time.message.sbi.reconnect_interval);
+                ogs_local_conf()->time.message.sbi.reconnect_interval);
         }
         break;
 
@@ -589,7 +589,8 @@ void sepp_handshake_state_exception(ogs_fsm_t *s, sepp_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         if (sepp_node->t_establish_interval) {
             ogs_timer_start(sepp_node->t_establish_interval,
-                ogs_app()->time.message.sbi.reconnect_interval_in_exception);
+                ogs_local_conf()->time.message.sbi.
+                reconnect_interval_in_exception);
         }
         break;
 

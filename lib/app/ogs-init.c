@@ -41,6 +41,7 @@ int ogs_app_initialize(
     ogs_app_setup_log();
 
     ogs_app_context_init();
+    ogs_app_config_init();
     ogs_app()->version = version;
 
     /**************************************************************************
@@ -87,7 +88,7 @@ int ogs_app_initialize(
     /**************************************************************************
      * Stage 3 : Initialize Default Memory Pool
      */
-    ogs_pkbuf_default_create(&ogs_app()->pool.defconfig);
+    ogs_pkbuf_default_create(&ogs_global_conf()->pkbuf_config);
 
     /**************************************************************************
      * Stage 4 : Setup LOG Module
@@ -154,6 +155,7 @@ int ogs_app_initialize(
 
 void ogs_app_terminate(void)
 {
+    ogs_app_config_final();
     ogs_app_context_final();
 
     ogs_pkbuf_default_destroy();
@@ -239,59 +241,10 @@ static int read_config(void)
     return OGS_OK;
 }
 
-static void recalculate_pool_size(void)
-{
-    ogs_app()->pool.packet =
-        ogs_global_conf()->max.ue * OGS_MAX_NUM_OF_PACKET_BUFFER;
-
-#define MAX_NUM_OF_TUNNEL       3   /* Num of Tunnel per Bearer */
-    ogs_app()->pool.sess = ogs_global_conf()->max.ue * OGS_MAX_NUM_OF_SESS;
-    ogs_app()->pool.bearer = ogs_app()->pool.sess * OGS_MAX_NUM_OF_BEARER;
-    ogs_app()->pool.tunnel = ogs_app()->pool.bearer * MAX_NUM_OF_TUNNEL;
-
-#define POOL_NUM_PER_UE 16
-    ogs_app()->pool.timer = ogs_global_conf()->max.ue * POOL_NUM_PER_UE;
-    ogs_app()->pool.message = ogs_global_conf()->max.ue * POOL_NUM_PER_UE;
-    ogs_app()->pool.event = ogs_global_conf()->max.ue * POOL_NUM_PER_UE;
-    ogs_app()->pool.socket = ogs_global_conf()->max.ue * POOL_NUM_PER_UE;
-    ogs_app()->pool.xact = ogs_global_conf()->max.ue * POOL_NUM_PER_UE;
-    ogs_app()->pool.stream = ogs_global_conf()->max.ue * POOL_NUM_PER_UE;
-
-    ogs_app()->pool.nf = ogs_global_conf()->max.peer;
-#define NF_SERVICE_PER_NF_INSTANCE 16
-    ogs_app()->pool.nf_service =
-        ogs_app()->pool.nf * NF_SERVICE_PER_NF_INSTANCE;
-    ogs_app()->pool.subscription =
-        ogs_app()->pool.nf * NF_SERVICE_PER_NF_INSTANCE;
-
-    ogs_app()->pool.gtp_node = ogs_app()->pool.nf;
-    if (ogs_global_conf()->max.gtp_peer)
-        ogs_app()->pool.gtp_node = ogs_global_conf()->max.gtp_peer;
-
-    /* Num of TAI-LAI Mapping Table */
-    ogs_app()->pool.csmap = ogs_app()->pool.nf;
-
-#define MAX_NUM_OF_IMPU         8
-    ogs_app()->pool.impi = ogs_global_conf()->max.ue;
-    ogs_app()->pool.impu = ogs_app()->pool.impi * MAX_NUM_OF_IMPU;
-}
-
 static int context_prepare(void)
 {
 #define USRSCTP_LOCAL_UDP_PORT      9899
     ogs_app()->usrsctp.udp_port = USRSCTP_LOCAL_UDP_PORT;
-
-    ogs_global_conf()->sockopt.no_delay = true;
-
-#define MAX_NUM_OF_UE               1024    /* Num of UEs */
-#define MAX_NUM_OF_PEER             64      /* Num of Peer */
-
-    ogs_global_conf()->max.ue = MAX_NUM_OF_UE;
-    ogs_global_conf()->max.peer = MAX_NUM_OF_PEER;
-
-    ogs_pkbuf_default_init(&ogs_app()->pool.defconfig);
-
-    recalculate_pool_size();
 
     return OGS_OK;
 }
@@ -336,192 +289,10 @@ static int parse_config(void)
                 }
             }
         } else if (!strcmp(root_key, "global")) {
-            ogs_yaml_iter_t global_iter;
-            ogs_yaml_iter_recurse(&root_iter, &global_iter);
-            while (ogs_yaml_iter_next(&global_iter)) {
-                const char *global_key = ogs_yaml_iter_key(&global_iter);
-                ogs_assert(global_key);
-                if (!strcmp(global_key, "parameter")) {
-                    ogs_yaml_iter_t parameter_iter;
-                    ogs_yaml_iter_recurse(&global_iter, &parameter_iter);
-                    while (ogs_yaml_iter_next(&parameter_iter)) {
-                        const char *parameter_key =
-                            ogs_yaml_iter_key(&parameter_iter);
-                        ogs_assert(parameter_key);
-                        if (!strcmp(parameter_key, "no_hss")) {
-                            ogs_global_conf()->parameter.no_hss =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_mme")) {
-                            ogs_global_conf()->parameter.no_mme =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_sgwu")) {
-                            ogs_global_conf()->parameter.no_sgwu =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_sgwc")) {
-                            ogs_global_conf()->parameter.no_sgwc =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_sgw")) {
-                            ogs_global_conf()->parameter.no_sgw =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_pgw")) {
-                            ogs_global_conf()->parameter.no_pgw =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_pcrf")) {
-                            ogs_global_conf()->parameter.no_pcrf =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_nrf")) {
-                            ogs_global_conf()->parameter.no_nrf =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_scp")) {
-                            ogs_global_conf()->parameter.no_scp =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_sepp")) {
-                            ogs_global_conf()->parameter.no_sepp =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_amf")) {
-                            ogs_global_conf()->parameter.no_amf =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_smf")) {
-                            ogs_global_conf()->parameter.no_smf =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_upf")) {
-                            ogs_global_conf()->parameter.no_upf =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_ausf")) {
-                            ogs_global_conf()->parameter.no_ausf =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_udm")) {
-                            ogs_global_conf()->parameter.no_udm =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_pcf")) {
-                            ogs_global_conf()->parameter.no_pcf =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_nssf")) {
-                            ogs_global_conf()->parameter.no_nssf =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_bsf")) {
-                            ogs_global_conf()->parameter.no_bsf =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_udr")) {
-                            ogs_global_conf()->parameter.no_udr =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_ipv4")) {
-                            ogs_global_conf()->parameter.no_ipv4 =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "no_ipv6")) {
-                            ogs_global_conf()->parameter.no_ipv6 =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "prefer_ipv4")) {
-                            ogs_global_conf()->parameter.prefer_ipv4 =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "multicast")) {
-                            ogs_global_conf()->parameter.multicast =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key, "use_openair")) {
-                            ogs_global_conf()->parameter.use_openair =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key,
-                                    "no_ipv4v6_local_addr_in_packet_filter")) {
-                            ogs_global_conf()->parameter.
-                                no_ipv4v6_local_addr_in_packet_filter =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else if (!strcmp(parameter_key,
-                                    "no_pfcp_rr_select")) {
-                            ogs_global_conf()->parameter.no_pfcp_rr_select =
-                                ogs_yaml_iter_bool(&parameter_iter);
-                        } else
-                            ogs_warn("unknown key `%s`", parameter_key);
-                    }
-                } else if (!strcmp(global_key, "sockopt")) {
-                    ogs_yaml_iter_t sockopt_iter;
-                    ogs_yaml_iter_recurse(&global_iter, &sockopt_iter);
-                    while (ogs_yaml_iter_next(&sockopt_iter)) {
-                        const char *sockopt_key =
-                            ogs_yaml_iter_key(&sockopt_iter);
-                        ogs_assert(sockopt_key);
-                        if (!strcmp(sockopt_key, "no_delay")) {
-                            ogs_global_conf()->sockopt.no_delay =
-                                ogs_yaml_iter_bool(&sockopt_iter);
-                        } else if (!strcmp(sockopt_key, "linger")) {
-                            const char *v = ogs_yaml_iter_value(&sockopt_iter);
-                            if (v)
-                                ogs_global_conf()->sockopt.l_linger = atoi(v);
-                            ogs_global_conf()->sockopt.l_onoff = true;
-                        } else
-                            ogs_warn("unknown key `%s`", sockopt_key);
-                    }
-                } else if (!strcmp(global_key, "max")) {
-                    ogs_yaml_iter_t max_iter;
-                    ogs_yaml_iter_recurse(&global_iter, &max_iter);
-                    while (ogs_yaml_iter_next(&max_iter)) {
-                        const char *max_key = ogs_yaml_iter_key(&max_iter);
-                        ogs_assert(max_key);
-                        if (!strcmp(max_key, "ue")) {
-                            const char *v = ogs_yaml_iter_value(&max_iter);
-                            if (v) ogs_global_conf()->max.ue = atoi(v);
-                        } else if (!strcmp(max_key, "peer") ||
-                                    !strcmp(max_key, "enb")) {
-                            const char *v = ogs_yaml_iter_value(&max_iter);
-                            if (v) ogs_global_conf()->max.peer = atoi(v);
-                        } else if (!strcmp(max_key, "gtp_peer") ||
-                                    !strcmp(max_key, "enb")) {
-                            const char *v = ogs_yaml_iter_value(&max_iter);
-                            if (v) ogs_global_conf()->max.gtp_peer = atoi(v);
-                        } else
-                            ogs_warn("unknown key `%s`", max_key);
-                    }
-
-                    recalculate_pool_size();
-                } else if (!strcmp(global_key, "pool")) {
-                    ogs_yaml_iter_t pool_iter;
-                    ogs_yaml_iter_recurse(&global_iter, &pool_iter);
-                    while (ogs_yaml_iter_next(&pool_iter)) {
-                        const char *pool_key = ogs_yaml_iter_key(&pool_iter);
-                        ogs_assert(pool_key);
-                        if (!strcmp(pool_key, "128")) {
-                            const char *v = ogs_yaml_iter_value(&pool_iter);
-                            if (v)
-                                ogs_app()->pool.defconfig.cluster_128_pool =
-                                    atoi(v);
-                        } else if (!strcmp(pool_key, "256")) {
-                            const char *v = ogs_yaml_iter_value(&pool_iter);
-                            if (v)
-                                ogs_app()->pool.defconfig.cluster_256_pool =
-                                    atoi(v);
-                        } else if (!strcmp(pool_key, "512")) {
-                            const char *v = ogs_yaml_iter_value(&pool_iter);
-                            if (v)
-                                ogs_app()->pool.defconfig.cluster_512_pool =
-                                    atoi(v);
-                        } else if (!strcmp(pool_key, "1024")) {
-                            const char *v = ogs_yaml_iter_value(&pool_iter);
-                            if (v)
-                                ogs_app()->pool.defconfig.cluster_1024_pool =
-                                    atoi(v);
-                        } else if (!strcmp(pool_key, "2048")) {
-                            const char *v = ogs_yaml_iter_value(&pool_iter);
-                            if (v)
-                                ogs_app()->pool.defconfig.cluster_2048_pool =
-                                    atoi(v);
-                        } else if (!strcmp(pool_key, "8192")) {
-                            const char *v = ogs_yaml_iter_value(&pool_iter);
-                            if (v)
-                                ogs_app()->pool.defconfig.cluster_8192_pool =
-                                    atoi(v);
-                        } else if (!strcmp(pool_key, "32768")) {
-                            const char *v = ogs_yaml_iter_value(&pool_iter);
-                            if (v)
-                                ogs_app()->pool.defconfig.cluster_32768_pool =
-                                    atoi(v);
-                        } else if (!strcmp(pool_key, "big")) {
-                            const char *v = ogs_yaml_iter_value(&pool_iter);
-                            if (v)
-                                ogs_app()->pool.defconfig.cluster_big_pool =
-                                    atoi(v);
-                        } else
-                            ogs_warn("unknown key `%s`", pool_key);
-                    }
-                }
+            rv = ogs_app_parse_global_conf(&root_iter);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_global_conf_parse_config() failed");
+                return rv;
             }
         }
     }

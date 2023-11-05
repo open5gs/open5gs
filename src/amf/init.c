@@ -30,7 +30,7 @@ int amf_initialize(void)
     int rv;
 
 #define APP_NAME "amf"
-    rv = ogs_app_context_parse_config(APP_NAME);
+    rv = ogs_app_parse_local_conf(APP_NAME);
     if (rv != OGS_OK) return rv;
 
     amf_metrics_init();

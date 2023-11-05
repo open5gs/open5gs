@@ -193,7 +193,8 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
             ogs_timer_start(nf_instance->t_no_heartbeat,
                     ogs_time_from_sec(
                         nf_instance->time.heartbeat_interval +
-                        ogs_app()->time.nf_instance.no_heartbeat_margin));
+                        ogs_local_conf()->time.nf_instance.
+                        no_heartbeat_margin));
         }
 
         ogs_assert(true ==
@@ -231,7 +232,7 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
                         ogs_timer_start(nf_instance->t_no_heartbeat,
                             ogs_time_from_sec(
                                 nf_instance->time.heartbeat_interval +
-                                ogs_app()->time.nf_instance.
+                                ogs_local_conf()->time.nf_instance.
                                     no_heartbeat_margin));
                     }
 

@@ -93,12 +93,13 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
      * Table 6.1.6.2.2-1: Definition of type NFProfile
      * If not provided, the PLMN of the NRF are assumed for the NF.
      */
-    if (ogs_app()->num_of_serving_plmn_id && NFProfile->plmn_list == NULL) {
+    if (ogs_local_conf()->num_of_serving_plmn_id &&
+            NFProfile->plmn_list == NULL) {
         /* NRF has PLMN and NF does NOT have PLMN,
          * so, copy NRF PLMN to NF PLMN */
-        memcpy(nf_instance->plmn_id, ogs_app()->serving_plmn_id,
+        memcpy(nf_instance->plmn_id, ogs_local_conf()->serving_plmn_id,
                 sizeof(nf_instance->plmn_id));
-        nf_instance->num_of_plmn_id = ogs_app()->num_of_serving_plmn_id;
+        nf_instance->num_of_plmn_id = ogs_local_conf()->num_of_serving_plmn_id;
     }
 
     if (OGS_FSM_CHECK(&nf_instance->sm, nrf_nf_state_will_register)) {
@@ -112,7 +113,7 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
     /* NRF uses pre-configured heartbeat if NFs did not send it */
     if (NFProfile->is_heart_beat_timer == false)
         nf_instance->time.heartbeat_interval =
-            ogs_app()->time.nf_instance.heartbeat_interval;
+            ogs_local_conf()->time.nf_instance.heartbeat_interval;
 
     /*
      * TS29.510
@@ -142,15 +143,17 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
         NFProfileChanges.is_nf_profile_changes_ind = true;
         NFProfileChanges.nf_profile_changes_ind = true;
 
-        if (ogs_app()->num_of_serving_plmn_id && NFProfile->plmn_list == NULL) {
+        if (ogs_local_conf()->num_of_serving_plmn_id &&
+                NFProfile->plmn_list == NULL) {
             OpenAPI_list_t *PlmnIdList = NULL;
             int i;
 
             PlmnIdList = OpenAPI_list_create();
             ogs_assert(PlmnIdList);
 
-            for (i = 0; i < ogs_app()->num_of_serving_plmn_id; i++) {
-                PlmnId = ogs_sbi_build_plmn_id(&ogs_app()->serving_plmn_id[i]);
+            for (i = 0; i < ogs_local_conf()->num_of_serving_plmn_id; i++) {
+                PlmnId = ogs_sbi_build_plmn_id(
+                        &ogs_local_conf()->serving_plmn_id[i]);
                 ogs_assert(PlmnId);
                 OpenAPI_list_add(PlmnIdList, PlmnId);
             }
@@ -421,7 +424,7 @@ bool nrf_nnrf_handle_nf_status_subscribe(
      * The NRF validity is initially set in configuration.
      */
     subscription_data->time.validity_duration =
-            ogs_app()->time.subscription.validity_duration;
+            ogs_local_conf()->time.subscription.validity_duration;
 
     if (subscription_data->time.validity_duration) {
         SubscriptionData->validity_time = ogs_sbi_localtime_string(
@@ -906,7 +909,7 @@ bool nrf_nnrf_handle_nf_discover(
 
         SearchResult->is_validity_period = true;
         SearchResult->validity_period =
-            ogs_app()->time.nf_instance.validity_duration;
+            ogs_local_conf()->time.nf_instance.validity_duration;
         ogs_assert(SearchResult->validity_period);
 
         sendmsg.SearchResult = SearchResult;

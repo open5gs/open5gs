@@ -147,11 +147,11 @@ static int test_context_validation(void)
             OGS_PLMN_ID_LEN);
     test_self()->nr_cgi.cell_id = 0x40001;
 
-    if (ogs_plmn_id_mcc(&ogs_app()->serving_plmn_id) == 0) {
+    if (ogs_plmn_id_mcc(&ogs_local_conf()->serving_plmn_id) == 0) {
         ogs_error("No PLMN-ID(MCC)");
         return OGS_ERROR;
     }
-    if (ogs_plmn_id_mnc(&ogs_app()->serving_plmn_id) == 0) {
+    if (ogs_plmn_id_mnc(&ogs_local_conf()->serving_plmn_id) == 0) {
         ogs_error("No PLMN-ID(MNC)");
         return OGS_ERROR;
     }
@@ -268,11 +268,11 @@ int test_context_parse_config(void)
                                     } else if (!strcmp(server_key, "dev")) {
                                         dev = ogs_yaml_iter_value(&server_iter);
                                     } else if (!strcmp(server_key, "option")) {
-                                        rv = ogs_global_conf_parse_sockopt(
+                                        rv = ogs_app_parse_sockopt_config(
                                                 &server_iter, &option);
                                         if (rv != OGS_OK) {
-                                            ogs_error("ogs_app_config_parse_"
-                                                    "sockopt() failed");
+                                            ogs_error("ogs_app_parse_sockopt_"
+                                                    "config() failed");
                                             return rv;
                                         }
                                         is_option = true;
@@ -748,11 +748,11 @@ int test_context_parse_config(void)
                                     } else if (!strcmp(server_key, "dev")) {
                                         dev = ogs_yaml_iter_value(&server_iter);
                                     } else if (!strcmp(server_key, "option")) {
-                                        rv = ogs_global_conf_parse_sockopt(
+                                        rv = ogs_app_parse_sockopt_config(
                                                 &server_iter, &option);
                                         if (rv != OGS_OK) {
-                                            ogs_error("ogs_app_config_parse_"
-                                                    "sockopt() failed");
+                                            ogs_error("ogs_app_parse_sockopt_"
+                                                    "config() failed");
                                             return rv;
                                         }
                                         is_option = true;
@@ -1128,10 +1128,10 @@ test_ue_t *test_ue_add_by_suci(
     memcpy(&test_ue->nr_tai, &test_self()->nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&test_ue->nr_cgi.plmn_id, &test_ue->nr_tai.plmn_id, OGS_PLMN_ID_LEN);
 
-    ogs_assert(ogs_plmn_id_mcc(&ogs_app()->serving_plmn_id));
-    ogs_assert(ogs_plmn_id_mnc(&ogs_app()->serving_plmn_id));
+    ogs_assert(ogs_plmn_id_mcc(&ogs_local_conf()->serving_plmn_id));
+    ogs_assert(ogs_plmn_id_mnc(&ogs_local_conf()->serving_plmn_id));
     ogs_nas_from_plmn_id(&mobile_identity_suci->nas_plmn_id,
-            &ogs_app()->serving_plmn_id);
+            &ogs_local_conf()->serving_plmn_id);
 
     for (i = 0; i < test_self()->num_of_plmn_support; i++) {
         for (j = 0; j < test_self()->plmn_support[i].num_of_s_nssai; j++) {

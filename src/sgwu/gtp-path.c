@@ -130,8 +130,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
              */
             if (ogs_time_ntp32_now() >
                    (ogs_pfcp_self()->local_recovery +
-                    ogs_time_sec(
-                        ogs_app()->time.message.pfcp.association_interval))) {
+                    ogs_time_sec(ogs_local_conf()->time.message.pfcp.
+                        association_interval))) {
                 ogs_error("[%s] Send Error Indication [TEID:0x%x] to [%s]",
                         OGS_ADDR(&sock->local_addr, buf1),
                         header_desc.teid,
@@ -207,8 +207,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
              */
             if (ogs_time_ntp32_now() >
                    (ogs_pfcp_self()->local_recovery +
-                    ogs_time_sec(
-                        ogs_app()->time.message.pfcp.association_interval))) {
+                    ogs_time_sec(ogs_local_conf()->time.message.pfcp.
+                        association_interval))) {
                 ogs_error("[%s] Send Error Indication [TEID:0x%x] to [%s]",
                         OGS_ADDR(&sock->local_addr, buf1),
                         header_desc.teid,

@@ -120,8 +120,8 @@ void sepp_n32c_handshake_send_security_capability_response(
     PlmnIdList = OpenAPI_list_create();
     ogs_assert(PlmnIdList);
 
-    for (i = 0; i < ogs_app()->num_of_serving_plmn_id; i++) {
-        PlmnId = ogs_sbi_build_plmn_id(&ogs_app()->serving_plmn_id[i]);
+    for (i = 0; i < ogs_local_conf()->num_of_serving_plmn_id; i++) {
+        PlmnId = ogs_sbi_build_plmn_id(&ogs_local_conf()->serving_plmn_id[i]);
         ogs_assert(PlmnId);
         OpenAPI_list_add(PlmnIdList, PlmnId);
     }

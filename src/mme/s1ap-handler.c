@@ -3693,7 +3693,7 @@ void s1ap_handle_handover_notification(
             S1AP_Cause_PR_radioNetwork,
             S1AP_CauseRadioNetwork_successful_handover,
             S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE,
-            ogs_app()->time.handover.duration);
+            ogs_local_conf()->time.handover.duration);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 

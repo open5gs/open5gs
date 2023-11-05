@@ -53,9 +53,9 @@ void ogs_nnrf_nfm_handle_nf_register(
             OpenAPI_plmn_id_t *PlmnId = node->data;
             if (PlmnId) {
                 ogs_sbi_parse_plmn_id(
-                    &ogs_app()->serving_plmn_id[
-                        ogs_app()->num_of_serving_plmn_id], PlmnId);
-                ogs_app()->num_of_serving_plmn_id++;
+                    &ogs_local_conf()->serving_plmn_id[
+                        ogs_local_conf()->num_of_serving_plmn_id], PlmnId);
+                ogs_local_conf()->num_of_serving_plmn_id++;
             }
         }
     }

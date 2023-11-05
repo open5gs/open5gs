@@ -30,7 +30,7 @@ int scp_initialize(void)
     int rv;
 
 #define APP_NAME "scp"
-    rv = ogs_app_context_parse_config(APP_NAME);
+    rv = ogs_app_parse_local_conf(APP_NAME);
     if (rv != OGS_OK) return rv;
 
     ogs_sbi_context_init(OpenAPI_nf_type_SCP);

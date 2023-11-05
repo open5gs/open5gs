@@ -82,8 +82,8 @@ ogs_sbi_request_t *sepp_n32c_handshake_build_security_capability_request(
         goto end;
     }
 
-    for (i = 0; i < ogs_app()->num_of_serving_plmn_id; i++) {
-        PlmnId = ogs_sbi_build_plmn_id(&ogs_app()->serving_plmn_id[i]);
+    for (i = 0; i < ogs_local_conf()->num_of_serving_plmn_id; i++) {
+        PlmnId = ogs_sbi_build_plmn_id(&ogs_local_conf()->serving_plmn_id[i]);
         ogs_assert(PlmnId);
         OpenAPI_list_add(PlmnIdList, PlmnId);
     }

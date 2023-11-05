@@ -186,11 +186,11 @@ int ogs_metrics_context_parse_config(const char *local)
                                     } else if (!strcmp(server_key, "dev")) {
                                         dev = ogs_yaml_iter_value(&server_iter);
                                     } else if (!strcmp(server_key, "option")) {
-                                        rv = ogs_global_conf_parse_sockopt(
+                                        rv = ogs_app_parse_sockopt_config(
                                                 &server_iter, &option);
                                         if (rv != OGS_OK) {
-                                            ogs_error("ogs_app_config_parse_"
-                                                    "sockopt() failed");
+                                            ogs_error("ogs_app_parse_sockopt_"
+                                                    "config() failed");
                                             return rv;
                                         }
                                         is_option = true;

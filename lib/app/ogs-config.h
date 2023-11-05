@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -76,13 +76,69 @@ typedef struct ogs_global_conf_s {
         int l_linger;
     } sockopt;
 
-} ogs_global_conf_t;
+    ogs_pkbuf_config_t pkbuf_config;
 
-int ogs_global_conf_init(void);
-void ogs_global_conf_final(void);
-ogs_global_conf_t *ogs_global_conf(void);
+} ogs_app_global_conf_t;
 
-int ogs_global_conf_parse_sockopt(
+typedef struct ogs_local_conf_s {
+    struct {
+        struct {
+            int heartbeat_interval;
+            int no_heartbeat_margin;
+            int validity_duration;
+        } nf_instance;
+        struct {
+            int validity_duration;
+        } subscription;
+
+        struct {
+            ogs_time_t duration;
+            struct {
+                ogs_time_t client_wait_duration;
+                ogs_time_t connection_deadline;
+                ogs_time_t reconnect_interval;
+                ogs_time_t reconnect_interval_in_exception;
+            } sbi;
+
+            struct {
+                ogs_time_t t3_response_duration;
+                int n3_response_rcount;
+                ogs_time_t t3_holding_duration;
+                int n3_holding_rcount;
+            } gtp;
+
+            struct {
+                ogs_time_t t1_response_duration;
+                int n1_response_rcount;
+                ogs_time_t t1_holding_duration;
+                int n1_holding_rcount;
+                ogs_time_t association_interval;
+                ogs_time_t no_heartbeat_duration;
+            } pfcp;
+        } message;
+
+        struct {
+            ogs_time_t duration;
+            ogs_time_t complete_delay;
+        } handover;
+
+    } time;
+
+    ogs_plmn_id_t serving_plmn_id[OGS_MAX_NUM_OF_PLMN];
+    int num_of_serving_plmn_id;
+
+} ogs_app_local_conf_t;
+
+int ogs_app_config_init(void);
+void ogs_app_config_final(void);
+
+ogs_app_global_conf_t *ogs_global_conf(void);
+ogs_app_local_conf_t *ogs_local_conf(void);
+
+int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent);
+int ogs_app_parse_local_conf(const char *local);
+
+int ogs_app_parse_sockopt_config(
         ogs_yaml_iter_t *parent, ogs_sockopt_t *option);
 
 #ifdef __cplusplus

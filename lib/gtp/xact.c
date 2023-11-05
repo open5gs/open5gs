@@ -94,13 +94,14 @@ ogs_gtp_xact_t *ogs_gtp1_xact_local_create(ogs_gtp_node_t *gnode,
         xact->tm_response = ogs_timer_add(
                 ogs_app()->timer_mgr, response_timeout, xact);
         ogs_assert(xact->tm_response);
-        xact->response_rcount = ogs_app()->time.message.gtp.n3_response_rcount;
+        xact->response_rcount =
+            ogs_local_conf()->time.message.gtp.n3_response_rcount;
     }
 
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
-    xact->holding_rcount = ogs_app()->time.message.gtp.n3_holding_rcount;
+    xact->holding_rcount = ogs_local_conf()->time.message.gtp.n3_holding_rcount;
 
     ogs_list_add(&xact->gnode->local_list, xact);
 
@@ -151,12 +152,13 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout, xact);
     ogs_assert(xact->tm_response);
-    xact->response_rcount = ogs_app()->time.message.gtp.n3_response_rcount,
+    xact->response_rcount =
+        ogs_local_conf()->time.message.gtp.n3_response_rcount,
 
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
-    xact->holding_rcount = ogs_app()->time.message.gtp.n3_holding_rcount,
+    xact->holding_rcount = ogs_local_conf()->time.message.gtp.n3_holding_rcount,
 
     ogs_list_add(&xact->gnode->local_list, xact);
 
@@ -196,12 +198,13 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout, xact);
     ogs_assert(xact->tm_response);
-    xact->response_rcount = ogs_app()->time.message.gtp.n3_response_rcount,
+    xact->response_rcount =
+        ogs_local_conf()->time.message.gtp.n3_response_rcount,
 
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
-    xact->holding_rcount = ogs_app()->time.message.gtp.n3_holding_rcount,
+    xact->holding_rcount = ogs_local_conf()->time.message.gtp.n3_holding_rcount,
 
     ogs_list_add(&xact->gnode->remote_list, xact);
 
@@ -474,7 +477,7 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
                 if (pkbuf) {
                     if (xact->tm_holding)
                         ogs_timer_start(xact->tm_holding,
-                                ogs_app()->time.message.
+                                ogs_local_conf()->time.message.
                                     gtp.t3_holding_duration);
 
                     ogs_warn("[%d] %s Request Duplicated. Retransmit!"
@@ -509,7 +512,7 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
 
             if (xact->tm_holding)
                 ogs_timer_start(xact->tm_holding,
-                        ogs_app()->time.message.gtp.t3_holding_duration);
+                        ogs_local_conf()->time.message.gtp.t3_holding_duration);
 
             break;
 
@@ -539,7 +542,7 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
                 if (pkbuf) {
                     if (xact->tm_holding)
                         ogs_timer_start(xact->tm_holding,
-                                ogs_app()->time.message.
+                                ogs_local_conf()->time.message.
                                     gtp.t3_holding_duration);
 
                     ogs_warn("[%d] %s Request Duplicated. Retransmit!"
@@ -573,7 +576,7 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
             }
             if (xact->tm_holding)
                 ogs_timer_start(xact->tm_holding,
-                        ogs_app()->time.message.gtp.t3_holding_duration);
+                        ogs_local_conf()->time.message.gtp.t3_holding_duration);
 
             break;
 
@@ -646,7 +649,8 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
 
             if (xact->tm_response)
                 ogs_timer_start(xact->tm_response,
-                        ogs_app()->time.message.gtp.t3_response_duration);
+                        ogs_local_conf()->time.message.gtp.
+                        t3_response_duration);
 
             break;
 
@@ -688,7 +692,8 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
             }
             if (xact->tm_response)
                 ogs_timer_start(xact->tm_response,
-                        ogs_app()->time.message.gtp.t3_response_duration);
+                        ogs_local_conf()->time.message.gtp.
+                        t3_response_duration);
 
             break;
 
@@ -745,7 +750,7 @@ static void response_timeout(void *data)
 
         if (xact->tm_response)
             ogs_timer_start(xact->tm_response,
-                    ogs_app()->time.message.gtp.t3_response_duration);
+                    ogs_local_conf()->time.message.gtp.t3_response_duration);
 
         pkbuf = xact->seq[xact->step-1].pkbuf;
         ogs_assert(pkbuf);
@@ -786,7 +791,7 @@ static void holding_timeout(void *data)
     if (--xact->holding_rcount > 0) {
         if (xact->tm_holding)
             ogs_timer_start(xact->tm_holding,
-                    ogs_app()->time.message.gtp.t3_holding_duration);
+                    ogs_local_conf()->time.message.gtp.t3_holding_duration);
     } else {
         ogs_debug("[%d] %s Delete Transaction "
                 "for step %d type %d peer [%s]:%d",

@@ -757,9 +757,9 @@ int ogs_sbi_context_parse_server_config(
             } else if (!strcmp(server_key, "verify_client_cacert")) {
                 verify_client_cacert = ogs_yaml_iter_value(&server_iter);
             } else if (!strcmp(server_key, "option")) {
-                rv = ogs_global_conf_parse_sockopt(&server_iter, &option);
+                rv = ogs_app_parse_sockopt_config(&server_iter, &option);
                 if (rv != OGS_OK) {
-                    ogs_error("ogs_global_conf_parse_sockopt() failed");
+                    ogs_error("ogs_app_parse_sockopt_config() failed");
                     return rv;
                 }
                 is_option = true;
@@ -1085,7 +1085,7 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void)
     OGS_OBJECT_REF(nf_instance);
 
     nf_instance->time.heartbeat_interval =
-            ogs_app()->time.nf_instance.heartbeat_interval;
+            ogs_local_conf()->time.nf_instance.heartbeat_interval;
 
     nf_instance->priority = OGS_SBI_DEFAULT_PRIORITY;
     nf_instance->capacity = OGS_SBI_DEFAULT_CAPACITY;
@@ -1725,12 +1725,12 @@ void ogs_sbi_nf_instance_build_default(ogs_sbi_nf_instance_t *nf_instance)
     }
 
     nf_instance->time.heartbeat_interval =
-            ogs_app()->time.nf_instance.heartbeat_interval;
+            ogs_local_conf()->time.nf_instance.heartbeat_interval;
 
-    if (ogs_app()->num_of_serving_plmn_id) {
-        memcpy(nf_instance->plmn_id, ogs_app()->serving_plmn_id,
+    if (ogs_local_conf()->num_of_serving_plmn_id) {
+        memcpy(nf_instance->plmn_id, ogs_local_conf()->serving_plmn_id,
                 sizeof(nf_instance->plmn_id));
-        nf_instance->num_of_plmn_id = ogs_app()->num_of_serving_plmn_id;
+        nf_instance->num_of_plmn_id = ogs_local_conf()->num_of_serving_plmn_id;
     }
 }
 
@@ -2023,14 +2023,15 @@ bool ogs_sbi_discovery_param_serving_plmn_list_is_matched(
      *
      * Does not compare if serving PLMN-ID is not set or NF-Instance is not set.
      */
-    if (ogs_app()->num_of_serving_plmn_id == 0 ||
+    if (ogs_local_conf()->num_of_serving_plmn_id == 0 ||
             nf_instance->num_of_plmn_id == 0)
         return true;
 
     for (i = 0; i < nf_instance->num_of_plmn_id; i++) {
-        for (j = 0; j < ogs_app()->num_of_serving_plmn_id; j++) {
-            if (memcmp(&nf_instance->plmn_id[i], &ogs_app()->serving_plmn_id[j],
-                       OGS_PLMN_ID_LEN) == 0) {
+        for (j = 0; j < ogs_local_conf()->num_of_serving_plmn_id; j++) {
+            if (memcmp(&nf_instance->plmn_id[i],
+                        &ogs_local_conf()->serving_plmn_id[j],
+                        OGS_PLMN_ID_LEN) == 0) {
                 return true;
             }
         }
@@ -2306,7 +2307,7 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
     }
 
     ogs_timer_start(xact->t_response,
-            ogs_app()->time.message.sbi.client_wait_duration);
+            ogs_local_conf()->time.message.sbi.client_wait_duration);
 
     if (build) {
         xact->request = (*build)(context, data);
@@ -2549,15 +2550,15 @@ bool ogs_sbi_supi_in_vplmn(char *supi)
 
     ogs_assert(supi);
 
-    if (ogs_app()->num_of_serving_plmn_id == 0) {
+    if (ogs_local_conf()->num_of_serving_plmn_id == 0) {
         return false;
     }
 
     ogs_extract_digit_from_string(imsi_bcd, supi);
 
-    for (i = 0; i < ogs_app()->num_of_serving_plmn_id; i++) {
+    for (i = 0; i < ogs_local_conf()->num_of_serving_plmn_id; i++) {
         char buf[OGS_PLMNIDSTRLEN];
-        ogs_plmn_id_to_string(&ogs_app()->serving_plmn_id[i], buf);
+        ogs_plmn_id_to_string(&ogs_local_conf()->serving_plmn_id[i], buf);
 
         if (strncmp(imsi_bcd, buf, strlen(buf)) == 0) {
             home_network = true;
@@ -2578,7 +2579,7 @@ bool ogs_sbi_plmn_id_in_vplmn(ogs_plmn_id_t *plmn_id)
 
     ogs_assert(plmn_id);
 
-    if (ogs_app()->num_of_serving_plmn_id == 0) {
+    if (ogs_local_conf()->num_of_serving_plmn_id == 0) {
         return false;
     }
 
@@ -2592,8 +2593,8 @@ bool ogs_sbi_plmn_id_in_vplmn(ogs_plmn_id_t *plmn_id)
         return false;
     }
 
-    for (i = 0; i < ogs_app()->num_of_serving_plmn_id; i++) {
-        if (memcmp(&ogs_app()->serving_plmn_id[i],
+    for (i = 0; i < ogs_local_conf()->num_of_serving_plmn_id; i++) {
+        if (memcmp(&ogs_local_conf()->serving_plmn_id[i],
                     plmn_id, OGS_PLMN_ID_LEN) == 0) {
             home_network = true;
             break;
@@ -2613,7 +2614,7 @@ bool ogs_sbi_fqdn_in_vplmn(char *fqdn)
 
     ogs_assert(fqdn);
 
-    if (ogs_app()->num_of_serving_plmn_id == 0) {
+    if (ogs_local_conf()->num_of_serving_plmn_id == 0) {
         return false;
     }
 
@@ -2621,11 +2622,11 @@ bool ogs_sbi_fqdn_in_vplmn(char *fqdn)
         return false;
     }
 
-    for (i = 0; i < ogs_app()->num_of_serving_plmn_id; i++) {
+    for (i = 0; i < ogs_local_conf()->num_of_serving_plmn_id; i++) {
         if (ogs_plmn_id_mcc_from_fqdn(fqdn) ==
-            ogs_plmn_id_mcc(&ogs_app()->serving_plmn_id[i]) &&
+            ogs_plmn_id_mcc(&ogs_local_conf()->serving_plmn_id[i]) &&
             ogs_plmn_id_mnc_from_fqdn(fqdn) ==
-            ogs_plmn_id_mnc(&ogs_app()->serving_plmn_id[i])) {
+            ogs_plmn_id_mnc(&ogs_local_conf()->serving_plmn_id[i])) {
             home_network = true;
             break;
         }

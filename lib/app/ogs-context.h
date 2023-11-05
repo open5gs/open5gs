@@ -51,8 +51,6 @@ typedef struct ogs_app_context_s {
     } usrsctp;
 
     struct {
-        ogs_pkbuf_config_t defconfig;
-
         uint64_t packet;
 
         uint64_t sess;
@@ -78,55 +76,9 @@ typedef struct ogs_app_context_s {
         uint64_t impu;
     } pool;
 
-    struct {
-        struct {
-            int heartbeat_interval;
-            int no_heartbeat_margin;
-            int validity_duration;
-        } nf_instance;
-        struct {
-            int validity_duration;
-        } subscription;
-
-        struct {
-            ogs_time_t duration;
-            struct {
-                ogs_time_t client_wait_duration;
-                ogs_time_t connection_deadline;
-                ogs_time_t reconnect_interval;
-                ogs_time_t reconnect_interval_in_exception;
-            } sbi;
-
-            struct {
-                ogs_time_t t3_response_duration;
-                int n3_response_rcount;
-                ogs_time_t t3_holding_duration;
-                int n3_holding_rcount;
-            } gtp;
-
-            struct {
-                ogs_time_t t1_response_duration;
-                int n1_response_rcount;
-                ogs_time_t t1_holding_duration;
-                int n1_holding_rcount;
-                ogs_time_t association_interval;
-                ogs_time_t no_heartbeat_duration;
-            } pfcp;
-        } message;
-
-        struct {
-            ogs_time_t duration;
-            ogs_time_t complete_delay;
-        } handover;
-
-    } time;
-
     struct metrics {
         uint64_t max_specs;
     } metrics;
-
-    ogs_plmn_id_t serving_plmn_id[OGS_MAX_NUM_OF_PLMN];
-    int num_of_serving_plmn_id;
 
 } ogs_app_context_t;
 
@@ -134,8 +86,6 @@ int ogs_app_context_init(void);
 void ogs_app_context_final(void);
 
 ogs_app_context_t *ogs_app(void);
-
-int ogs_app_context_parse_config(const char *local);
 
 #ifdef __cplusplus
 }

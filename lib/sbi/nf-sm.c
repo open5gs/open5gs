@@ -131,7 +131,7 @@ void ogs_sbi_nf_state_will_register(ogs_fsm_t *s, ogs_event_t *e)
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
         ogs_timer_start(nf_instance->t_registration_interval,
-            ogs_app()->time.message.sbi.reconnect_interval);
+            ogs_local_conf()->time.message.sbi.reconnect_interval);
 
         ogs_expect(true == ogs_nnrf_nfm_send_nf_register(nf_instance));
         break;
@@ -183,7 +183,7 @@ void ogs_sbi_nf_state_will_register(ogs_fsm_t *s, ogs_event_t *e)
                     NF_INSTANCE_ID(ogs_sbi_self()->nf_instance));
 
             ogs_timer_start(nf_instance->t_registration_interval,
-                ogs_app()->time.message.sbi.reconnect_interval);
+                ogs_local_conf()->time.message.sbi.reconnect_interval);
 
             ogs_expect(true == ogs_nnrf_nfm_send_nf_register(nf_instance));
             break;
@@ -228,7 +228,8 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
                 ogs_timer_start(nf_instance->t_no_heartbeat,
                     ogs_time_from_sec(
                         nf_instance->time.heartbeat_interval +
-                        ogs_app()->time.nf_instance.no_heartbeat_margin));
+                        ogs_local_conf()->time.nf_instance.
+                        no_heartbeat_margin));
             }
 
             ogs_list_for_each(
@@ -270,7 +271,7 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
                         ogs_timer_start(nf_instance->t_no_heartbeat,
                             ogs_time_from_sec(
                                 nf_instance->time.heartbeat_interval +
-                                ogs_app()->time.nf_instance.
+                                ogs_local_conf()->time.nf_instance.
                                     no_heartbeat_margin));
                 } else {
                     ogs_warn("[%s] HTTP response error [%d]",
@@ -387,7 +388,7 @@ void ogs_sbi_nf_state_exception(ogs_fsm_t *s, ogs_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         if (NF_INSTANCE_TYPE_IS_NRF(nf_instance)) {
             ogs_timer_start(nf_instance->t_registration_interval,
-                ogs_app()->time.message.sbi.
+                ogs_local_conf()->time.message.sbi.
                     reconnect_interval_in_exception);
         }
         break;

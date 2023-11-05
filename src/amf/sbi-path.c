@@ -117,10 +117,10 @@ int amf_ue_sbi_discover_and_send(
         ogs_sbi_discovery_option_add_target_plmn_list(
                 discovery_option, &amf_ue->home_plmn_id);
 
-        ogs_assert(ogs_app()->num_of_serving_plmn_id);
-        for (i = 0; i < ogs_app()->num_of_serving_plmn_id; i++) {
+        ogs_assert(ogs_local_conf()->num_of_serving_plmn_id);
+        for (i = 0; i < ogs_local_conf()->num_of_serving_plmn_id; i++) {
             ogs_sbi_discovery_option_add_requester_plmn_list(
-                    discovery_option, &ogs_app()->serving_plmn_id[i]);
+                    discovery_option, &ogs_local_conf()->serving_plmn_id[i]);
         }
     }
 
