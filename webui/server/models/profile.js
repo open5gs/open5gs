@@ -46,12 +46,12 @@ const Profile = new Schema({
         uplink: { value: Number, unit: Number }
       },
       ue: {
-        addr: String,
-        addr6: String
+        ipv4: String,
+        ipv6: String
       },
       smf: {
-        addr: String,
-        addr6: String
+        ipv4: String,
+        ipv6: String
       },
       pcc_rule: [{
         flow: [{

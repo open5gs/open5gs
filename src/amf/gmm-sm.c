@@ -1128,7 +1128,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
 static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
         gmm_common_state_e state)
 {
-    int r, rv, xact_count = 0;
+    int r, xact_count = 0;
     ogs_nas_5gmm_cause_t gmm_cause;
 
     amf_ue_t *amf_ue = NULL;
@@ -1336,16 +1336,24 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             CLEAR_AMF_UE_TIMER(amf_ue->t3570);
 
             ogs_info("Identity response");
-            rv = gmm_handle_identity_response(amf_ue,
+            gmm_cause = gmm_handle_identity_response(amf_ue,
                     &nas_message->gmm.identity_response);
-            if (rv != OGS_OK) {
-                ogs_error("gmm_handle_identity_response() failed");
+            if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
+                ogs_error("gmm_handle_identity_response() "
+                            "failed [%d] in type [%d]",
+                            gmm_cause, amf_ue->nas.message_type);
+                r = nas_5gs_send_gmm_reject(amf_ue, gmm_cause);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
                 break;
             }
 
             if (!AMF_UE_HAVE_SUCI(amf_ue)) {
                 ogs_error("No SUCI");
+                r = nas_5gs_send_gmm_reject(amf_ue, gmm_cause);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
                 break;
             }

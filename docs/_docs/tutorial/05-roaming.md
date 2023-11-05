@@ -890,7 +890,7 @@ $ diff -u sepp.yaml.old sepp.yaml
  #    peer: 64
 
  sepp:
-+    defconfig:
++    default:
 +      tls:
 +        server:
 +          private_key: /home/acetcom/Documents/git/my/open5gs/build/configs/open5gs/tls/sepp1.key

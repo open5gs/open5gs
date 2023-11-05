@@ -75,7 +75,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
 
     memset(&AscReqData, 0, sizeof(AscReqData));
 
-    server = ogs_list_first(&ogs_sbi_self()->server_list);
+    server = ogs_sbi_server_first();
     ogs_assert(server);
 
     memset(&header, 0, sizeof(header));
@@ -678,7 +678,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
 
     memset(&AscReqData, 0, sizeof(AscReqData));
 
-    server = ogs_list_first(&ogs_sbi_self()->server_list);
+    server = ogs_sbi_server_first();
     ogs_assert(server);
 
     memset(&header, 0, sizeof(header));

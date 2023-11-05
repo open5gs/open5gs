@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -64,11 +64,6 @@ const char *ogs_event_get_name(ogs_event_t *e)
         return OGS_EVENT_NAME_SBI_CLIENT;
     case OGS_EVENT_SBI_TIMER:
         return OGS_EVENT_NAME_SBI_TIMER;
-
-    case OGS_EVENT_DBI_POLL_TIMER:
-        return "OGS_EVENT_DBI_POLL_TIMER";
-    case OGS_EVENT_DBI_MESSAGE:
-        return "OGS_EVENT_DBI_MESSAGE";
 
     default:
         break;

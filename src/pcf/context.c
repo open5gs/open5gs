@@ -115,7 +115,13 @@ int pcf_context_parse_config(void)
             while (ogs_yaml_iter_next(&pcf_iter)) {
                 const char *pcf_key = ogs_yaml_iter_key(&pcf_iter);
                 ogs_assert(pcf_key);
-                if (!strcmp(pcf_key, "sbi")) {
+                if (!strcmp(pcf_key, "default")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(pcf_key, "sbi")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(pcf_key, "nrf")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(pcf_key, "scp")) {
                     /* handle config in sbi library */
                 } else if (!strcmp(pcf_key, "service_name")) {
                     /* handle config in sbi library */

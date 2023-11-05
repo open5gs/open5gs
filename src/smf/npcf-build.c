@@ -71,7 +71,7 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         goto end;
     }
 
-    server = ogs_list_first(&ogs_sbi_self()->server_list);
+    server = ogs_sbi_server_first();
     if (!server) {
         ogs_error("No server");
         goto end;
@@ -323,7 +323,7 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
     }
 
     SmPolicyDeleteData.serving_network =
-        ogs_sbi_build_plmn_id_nid(&sess->plmn_id);
+        ogs_sbi_build_plmn_id_nid(&sess->serving_plmn_id);
     if (!SmPolicyDeleteData.serving_network) {
         ogs_error("SmPolicyDeleteData.serving_network");
         goto end;

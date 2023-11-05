@@ -228,7 +228,7 @@ uint8_t smf_s5c_handle_create_session_request(
     }
 
     /* Serving Network */
-    ogs_nas_to_plmn_id(&sess->plmn_id, req->serving_network.data);
+    ogs_nas_to_plmn_id(&sess->serving_plmn_id, req->serving_network.data);
 
     /* Select PGW based on UE Location Information */
     smf_sess_select_upf(sess);

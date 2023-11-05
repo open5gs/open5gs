@@ -38,11 +38,11 @@ libapp = library('ogsapp',
     version : libogslib_version,
     c_args : '-DOGS_APP_COMPILATION',
     include_directories : [libapp_inc, libinc],
-    dependencies : [libcore_dep, yaml_dep],
+    dependencies : [libproto_dep, yaml_dep],
     install : true)
 
 libapp_dep = declare_dependency(
     link_with : libapp,
     include_directories : [libapp_inc, libinc],
-    dependencies : [libcore_dep, yaml_dep],
+    dependencies : [libproto_dep, yaml_dep],
 )

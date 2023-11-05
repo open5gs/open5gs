@@ -172,11 +172,11 @@ static int smf_context_validation(void)
         return OGS_ERROR;
     }
     if (ogs_list_first(&ogs_gtp_self()->gtpu_list) == NULL) {
-        ogs_error("No smf.gtpu in '%s'", ogs_app()->file);
+        ogs_error("No smf.gtpu.address in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
     if (ogs_list_first(&ogs_pfcp_self()->subnet_list) == NULL) {
-        ogs_error("No smf.subnet: in '%s'", ogs_app()->file);
+        ogs_error("No smf.session.subnet: in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
@@ -422,7 +422,8 @@ int smf_context_parse_config(void)
                                         if (!strcmp(conn_key, "identity")) {
                                             identity =
                                                 ogs_yaml_iter_value(&conn_iter);
-                                        } else if (!strcmp(conn_key, "addr")) {
+                                        } else if (!strcmp(conn_key,
+                                                    "address")) {
                                             addr =
                                                 ogs_yaml_iter_value(&conn_iter);
                                         } else if (!strcmp(conn_key, "port")) {
@@ -936,9 +937,17 @@ int smf_context_parse_config(void)
                     }
                 } else if (!strcmp(smf_key, "pfcp")) {
                     /* handle config in pfcp library */
-                } else if (!strcmp(smf_key, "subnet")) {
+                } else if (!strcmp(smf_key, "upf")) {
                     /* handle config in pfcp library */
+                } else if (!strcmp(smf_key, "session")) {
+                    /* handle config in pfcp library */
+                } else if (!strcmp(smf_key, "default")) {
+                    /* handle config in sbi library */
                 } else if (!strcmp(smf_key, "sbi")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(smf_key, "nrf")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(smf_key, "scp")) {
                     /* handle config in sbi library */
                 } else if (!strcmp(smf_key, "service_name")) {
                     /* handle config in sbi library */
@@ -1497,7 +1506,7 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
     if (sess) {
         ogs_warn("OLD Session Will Release [SUPI:%s,PDU Session identity:%d]",
                 SmContextCreateData->supi, SmContextCreateData->pdu_session_id);
-        smf_metrics_inst_by_slice_add(&sess->plmn_id, &sess->s_nssai,
+        smf_metrics_inst_by_slice_add(&sess->serving_plmn_id, &sess->s_nssai,
                 SMF_METR_GAUGE_SM_SESSIONNBR, -1);
         smf_sess_remove(sess);
     }
@@ -1719,6 +1728,8 @@ void smf_sess_remove(smf_sess_t *sess)
 
     if (sess->session.name)
         ogs_free(sess->session.name);
+    if (sess->full_dnn)
+        ogs_free(sess->full_dnn);
 
     if (sess->session.ipv4_framed_routes) {
         for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
@@ -2003,7 +2014,7 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     qos_flow->sess = sess;
 
     ogs_list_add(&sess->bearer_list, qos_flow);
-    smf_metrics_inst_by_5qi_add(&sess->plmn_id, &sess->s_nssai,
+    smf_metrics_inst_by_5qi_add(&sess->serving_plmn_id, &sess->s_nssai,
             sess->session.qos.index, SMF_METR_GAUGE_SM_QOSFLOWNBR, 1);
     smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_BEARERS_ACTIVE);
 

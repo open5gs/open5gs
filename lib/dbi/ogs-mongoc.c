@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -213,37 +213,6 @@ int ogs_dbi_collection_watch_init(void)
         return OGS_ERROR;
     } else {
         ogs_info("Change Streams are Enabled.");
-    }
-
-    return OGS_OK;
-# else
-    return OGS_ERROR;
-#endif
-}
-
-int ogs_dbi_poll_change_stream(void)
-{
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
-    int rv;
-    
-    const bson_t *document;
-    const bson_t *err_document;
-    bson_error_t error;
-
-    while (mongoc_change_stream_next(ogs_mongoc()->stream, &document)) {
-        rv = ogs_dbi_process_change_stream(document);
-        if (rv != OGS_OK) return rv;
-    }
-
-    if (mongoc_change_stream_error_document(ogs_mongoc()->stream, &error, 
-            &err_document)) {
-        if (!bson_empty (err_document)) {
-            ogs_debug("Server Error: %s\n",
-            bson_as_relaxed_extended_json(err_document, NULL));
-        } else {
-            ogs_debug("Client Error: %s\n", error.message);
-        }
-        return OGS_ERROR;
     }
 
     return OGS_OK;

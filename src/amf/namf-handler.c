@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -228,7 +228,9 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                 ogs_sbi_header_t header;
                 ogs_sbi_client_t *client = NULL;
                 OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
-                ogs_sockaddr_t *addr = NULL;
+                char *fqdn = NULL;
+                uint16_t fqdn_port = 0;
+                ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
                 if (!N1N2MessageTransferReqData->n1n2_failure_txf_notif_uri) {
                     ogs_error("[%s:%d] No n1-n2-failure-notification-uri",
@@ -236,7 +238,8 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                     return OGS_ERROR;
                 }
 
-                rc = ogs_sbi_getaddr_from_uri(&scheme, &addr,
+                rc = ogs_sbi_getaddr_from_uri(
+                        &scheme, &fqdn, &fqdn_port, &addr, &addr6,
                         N1N2MessageTransferReqData->n1n2_failure_txf_notif_uri);
                 if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
                     ogs_error("[%s:%d] Invalid URI [%s]",
@@ -246,20 +249,27 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                     return OGS_ERROR;;
                 }
 
-                client = ogs_sbi_client_find(scheme, addr);
+                client = ogs_sbi_client_find(
+                        scheme, fqdn, fqdn_port, addr, addr6);
                 if (!client) {
                     ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
-                    client = ogs_sbi_client_add(scheme, addr);
+                    client = ogs_sbi_client_add(
+                            scheme, fqdn, fqdn_port, addr, addr6);
                     if (!client) {
-                        char buf[OGS_ADDRSTRLEN];
-                        ogs_error("%s: ogs_sbi_client_add() failed [%s]:%d",
-                                OGS_FUNC, OGS_ADDR(addr, buf), OGS_PORT(addr));
+                        ogs_error("%s: ogs_sbi_client_add() failed", OGS_FUNC);
+
+                        ogs_free(fqdn);
                         ogs_freeaddrinfo(addr);
+                        ogs_freeaddrinfo(addr6);
+
                         return OGS_ERROR;
                     }
                 }
                 OGS_SBI_SETUP_CLIENT(&sess->paging, client);
+
+                ogs_free(fqdn);
                 ogs_freeaddrinfo(addr);
+                ogs_freeaddrinfo(addr6);
 
                 status = OGS_SBI_HTTP_STATUS_ACCEPTED;
                 N1N2MessageTransferRspData.cause =

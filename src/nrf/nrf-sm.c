@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -41,9 +41,11 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
     int rv;
     ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_request_t *request = NULL;
-    ogs_sbi_message_t message;
+
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_subscription_data_t *subscription_data = NULL;
+
+    ogs_sbi_message_t message;
 
     ogs_assert(e);
 
@@ -137,6 +139,11 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                             ogs_sbi_nf_instance_set_id(nf_instance,
                                     message.h.resource.component[1]);
 
+                            /*
+                             * If nrf_nf_fsm_init() is executed,
+                             * nrf_nf_fsm_final() is executed later
+                             * in nrf_context_final().
+                             */
                             nrf_nf_fsm_init(nf_instance);
                             break;
                         DEFAULT

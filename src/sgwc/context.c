@@ -146,6 +146,8 @@ int sgwc_context_parse_config(void)
                     /* handle config in gtp library */
                 } else if (!strcmp(sgwc_key, "pfcp")) {
                     /* handle config in pfcp library */
+                } else if (!strcmp(sgwc_key, "sgwu")) {
+                    /* handle config in pfcp library */
                 } else
                     ogs_warn("unknown key `%s`", sgwc_key);
             }

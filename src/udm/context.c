@@ -103,7 +103,13 @@ int udm_context_parse_config(void)
             while (ogs_yaml_iter_next(&udm_iter)) {
                 const char *udm_key = ogs_yaml_iter_key(&udm_iter);
                 ogs_assert(udm_key);
-                if (!strcmp(udm_key, "sbi")) {
+                if (!strcmp(udm_key, "default")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(udm_key, "sbi")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(udm_key, "nrf")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(udm_key, "scp")) {
                     /* handle config in sbi library */
                 } else if (!strcmp(udm_key, "service_name")) {
                     /* handle config in sbi library */

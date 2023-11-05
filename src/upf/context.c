@@ -115,11 +115,11 @@ static int upf_context_prepare(void)
 static int upf_context_validation(void)
 {
     if (ogs_list_first(&ogs_gtp_self()->gtpu_list) == NULL) {
-        ogs_error("No upf.gtpu in '%s'", ogs_app()->file);
+        ogs_error("No upf.gtpu.address in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
     if (ogs_list_first(&ogs_pfcp_self()->subnet_list) == NULL) {
-        ogs_error("No upf.subnet: in '%s'", ogs_app()->file);
+        ogs_error("No upf.session.subnet: in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
     return OGS_OK;
@@ -151,7 +151,9 @@ int upf_context_parse_config(void)
                     /* handle config in gtp library */
                 } else if (!strcmp(upf_key, "pfcp")) {
                     /* handle config in pfcp library */
-                } else if (!strcmp(upf_key, "subnet")) {
+                } else if (!strcmp(upf_key, "smf")) {
+                    /* handle config in pfcp library */
+                } else if (!strcmp(upf_key, "session")) {
                     /* handle config in pfcp library */
                 } else if (!strcmp(upf_key, "metrics")) {
                     /* handle config in metrics library */

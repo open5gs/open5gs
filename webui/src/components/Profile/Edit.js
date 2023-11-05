@@ -256,12 +256,12 @@ const schema = {
                   "type": "object",
                   "title": "",
                   "properties": {
-                    "addr": {
+                    "ipv4": {
                       "type": "string",
                       "title": "UE IPv4 Address",
                       "format" : "ipv4"
                     },
-                    "addr6": {
+                    "ipv6": {
                       "type": "string",
                       "title": "UE IPv6 Address",
                       "format" : "ipv6"
@@ -272,12 +272,12 @@ const schema = {
                   "type": "object",
                   "title": "",
                   "properties": {
-                    "addr": {
+                    "ipv4": {
                       "type": "string",
                       "title": "SMF IPv4 Address",
                       "format" : "ipv4"
                     },
-                    "addr6": {
+                    "ipv6": {
                       "type": "string",
                       "title": "SMF IPv6 Address",
                       "format" : "ipv6"
@@ -556,19 +556,19 @@ const uiSchema = {
           },
           "ue" : {
             classNames: "col-xs-12",
-            "addr" : {
+            "ipv4" : {
               classNames: "col-xs-6"
             },
-            "addr6" : {
+            "ipv6" : {
               classNames: "col-xs-6"
             },
           },
           "smf" : {
             classNames: "col-xs-12",
-            "addr" : {
+            "ipv4" : {
               classNames: "col-xs-6"
             },
-            "addr6" : {
+            "ipv6" : {
               classNames: "col-xs-6"
             },
           },

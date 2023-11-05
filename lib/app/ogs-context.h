@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,12 +28,6 @@
 extern "C" {
 #endif
 
-typedef enum {
-    OGS_SBI_TLS_ENABLED_AUTO = 0,
-    OGS_SBI_TLS_ENABLED_YES,
-    OGS_SBI_TLS_ENABLED_NO,
-} ogs_sbi_tls_enabled_mode_e;
-
 typedef struct ogs_app_context_s {
     const char *version;
 
@@ -41,7 +35,6 @@ typedef struct ogs_app_context_s {
     void *document;
 
     const char *db_uri;
-    int use_mongodb_change_stream;
 
     struct {
         const char *file;
@@ -72,6 +65,7 @@ typedef struct ogs_app_context_s {
         int no_nssf;
         int no_bsf;
         int no_udr;
+        int no_sepp;
         int no_scp;
         int no_nrf;
 
@@ -146,8 +140,8 @@ typedef struct ogs_app_context_s {
             struct {
                 ogs_time_t client_wait_duration;
                 ogs_time_t connection_deadline;
-                ogs_time_t nf_register_interval;
-                ogs_time_t nf_register_interval_in_exception;
+                ogs_time_t reconnect_interval;
+                ogs_time_t reconnect_interval_in_exception;
             } sbi;
 
             struct {
@@ -178,15 +172,8 @@ typedef struct ogs_app_context_s {
         uint64_t max_specs;
     } metrics;
 
-    struct {
-        struct {
-            bool no_tls;
-            bool no_verify;
-            const char *cacert;
-            const char *cert;
-            const char *key;
-        } server, client;
-    } sbi;
+    ogs_plmn_id_t serving_plmn_id[OGS_MAX_NUM_OF_PLMN];
+    int num_of_serving_plmn_id;
 
 } ogs_app_context_t;
 
@@ -194,7 +181,7 @@ int ogs_app_context_init(void);
 void ogs_app_context_final(void);
 ogs_app_context_t *ogs_app(void);
 
-int ogs_app_context_parse_config(void);
+int ogs_app_context_parse_config(const char *local);
 
 #ifdef __cplusplus
 }

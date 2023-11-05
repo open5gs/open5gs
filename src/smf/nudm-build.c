@@ -97,7 +97,7 @@ ogs_sbi_request_t *smf_nudm_uecm_build_registration(
 
     SmfRegistration.dnn = sess->session.name;
 
-    SmfRegistration.plmn_id = ogs_sbi_build_plmn_id(&sess->plmn_id);
+    SmfRegistration.plmn_id = ogs_sbi_build_plmn_id(&sess->serving_plmn_id);
     if (!SmfRegistration.plmn_id) {
         ogs_error("No memory : SmfRegistration.plmn_id");
         goto end;

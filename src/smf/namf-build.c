@@ -127,7 +127,7 @@ ogs_sbi_request_t *smf_namf_comm_build_n1_n2_message_transfer(
     }
 
     if (param->n1n2_failure_txf_notif_uri == true) {
-        server = ogs_list_first(&ogs_sbi_self()->server_list);
+        server = ogs_sbi_server_first();
         ogs_assert(server);
 
         memset(&header, 0, sizeof(header));

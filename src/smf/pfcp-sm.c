@@ -107,7 +107,7 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
             node = e->pfcp_node;
             ogs_assert(node);
 
-            ogs_warn("Retry to association with peer [%s]:%d failed",
+            ogs_warn("Retry association with peer [%s]:%d failed",
                         OGS_ADDR(addr, buf), OGS_PORT(addr));
 
             ogs_assert(node->t_association);
@@ -494,7 +494,7 @@ static void reselect_upf(ogs_pfcp_node_t *node)
     }
 
     if (iter == NULL) {
-        ogs_error("No UPF avaiable");
+        ogs_error("No UPF available");
         return;
     }
 

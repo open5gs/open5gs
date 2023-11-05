@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -29,8 +29,6 @@
 #include "dbi/subscription.h"
 #include "dbi/session.h"
 #include "dbi/ims.h"
-#include "dbi/path.h"
-#include "dbi/timer.h"
 
 #undef OGS_DBI_INSIDE
 

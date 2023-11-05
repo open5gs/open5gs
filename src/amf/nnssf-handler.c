@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,7 +28,9 @@ int amf_nnssf_nsselection_handle_get(
     int r;
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     ogs_sbi_client_t *client = NULL, *scp_client = NULL;
-    ogs_sockaddr_t *addr = NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
 
     OpenAPI_authorized_network_slice_info_t *AuthorizedNetworkSliceInfo = NULL;
@@ -115,7 +117,9 @@ int amf_nnssf_nsselection_handle_get(
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     } else {
-        rc = ogs_sbi_getaddr_from_uri(&scheme, &addr, NsiInformation->nrf_id);
+        rc = ogs_sbi_getaddr_from_uri(
+                &scheme, &fqdn, &fqdn_port, &addr, &addr6,
+                NsiInformation->nrf_id);
         if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
             ogs_error("[%s:%d] Invalid URI [%s]",
                     amf_ue->supi, sess->psi, NsiInformation->nrf_id);
@@ -129,24 +133,26 @@ int amf_nnssf_nsselection_handle_get(
             return OGS_ERROR;
         }
 
-        client = ogs_sbi_client_find(scheme, addr);
+        client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
         if (!client) {
             ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
-            client = ogs_sbi_client_add(scheme, addr);
+            client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
             if (!client) {
-                char buf[OGS_ADDRSTRLEN];
-                ogs_error("%s: ogs_sbi_client_add() failed [%s]:%d",
-                        OGS_FUNC, OGS_ADDR(addr, buf), OGS_PORT(addr));
+                ogs_error("%s: ogs_sbi_client_add() failed", OGS_FUNC);
 
                 ogs_sbi_discovery_option_free(discovery_option);
+                ogs_free(fqdn);
                 ogs_freeaddrinfo(addr);
+                ogs_freeaddrinfo(addr6);
 
                 return OGS_ERROR;
             }
         }
-
         OGS_SBI_SETUP_CLIENT(&sess->nssf.nrf, client);
+
+        ogs_free(fqdn);
         ogs_freeaddrinfo(addr);
+        ogs_freeaddrinfo(addr6);
 
         r = amf_sess_sbi_discover_by_nsi(
                 sess, OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, discovery_option);

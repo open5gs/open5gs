@@ -37,6 +37,12 @@ typedef struct ogs_sbi_server_s {
     ogs_socknode_t  node;
     ogs_sockaddr_t  *advertise;
 
+    char *interface;
+    OpenAPI_uri_scheme_e scheme;
+    char *private_key, *cert;
+    bool verify_client;
+    char *verify_client_cacert;
+
     SSL_CTX *ssl_ctx;
 
     int (*cb)(ogs_sbi_request_t *request, void *data);
@@ -65,7 +71,9 @@ void ogs_sbi_server_init(int num_of_session_pool, int num_of_stream_pool);
 void ogs_sbi_server_final(void);
 
 ogs_sbi_server_t *ogs_sbi_server_add(
-        ogs_sockaddr_t *addr, ogs_sockopt_t *option);
+        const char *interface,
+        OpenAPI_uri_scheme_e scheme, ogs_sockaddr_t *addr,
+        ogs_sockopt_t *option);
 void ogs_sbi_server_remove(ogs_sbi_server_t *server);
 void ogs_sbi_server_remove_all(void);
 
@@ -87,6 +95,13 @@ bool ogs_sbi_server_send_problem(
         ogs_sbi_stream_t *stream, OpenAPI_problem_details_t *problem);
 
 ogs_sbi_server_t *ogs_sbi_server_from_stream(ogs_sbi_stream_t *stream);
+char *ogs_sbi_server_id_context(ogs_sbi_server_t *server);
+
+ogs_sbi_server_t *ogs_sbi_server_first(void);
+ogs_sbi_server_t *ogs_sbi_server_next(ogs_sbi_server_t *current);
+ogs_sbi_server_t *ogs_sbi_server_first_by_interface(const char *interface);
+ogs_sbi_server_t *ogs_sbi_server_next_by_interface(
+        ogs_sbi_server_t *current, const char *interface);
 
 #ifdef __cplusplus
 }

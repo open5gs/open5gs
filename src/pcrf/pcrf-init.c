@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -25,6 +25,10 @@ static int initialized = 0;
 int pcrf_initialize(void)
 {
     int rv;
+
+#define APP_NAME "pcrf"
+    rv = ogs_app_context_parse_config(APP_NAME);
+    if (rv != OGS_OK) return rv;
 
     pcrf_context_init();
 

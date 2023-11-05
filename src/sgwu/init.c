@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -30,6 +30,10 @@ int sgwu_initialize(void)
 {
     int rv;
 
+#define APP_NAME "sgwu"
+    rv = ogs_app_context_parse_config(APP_NAME);
+    if (rv != OGS_OK) return rv;
+
     ogs_gtp_context_init(OGS_MAX_NUM_OF_GTPU_RESOURCE);
     ogs_pfcp_context_init();
 
@@ -40,10 +44,10 @@ int sgwu_initialize(void)
     rv = ogs_pfcp_xact_init();
     if (rv != OGS_OK) return rv;
 
-    rv = ogs_gtp_context_parse_config("sgwu", "sgwc");
+    rv = ogs_gtp_context_parse_config(APP_NAME, "sgwc");
     if (rv != OGS_OK) return rv;
 
-    rv = ogs_pfcp_context_parse_config("sgwu", "sgwc");
+    rv = ogs_pfcp_context_parse_config(APP_NAME, "sgwc");
     if (rv != OGS_OK) return rv;
 
     rv = sgwu_context_parse_config();

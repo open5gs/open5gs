@@ -867,7 +867,7 @@ static void upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)
             /* IPv6 Multicast */
             ogs_list_for_each(&upf_self()->sess_list, sess) {
                 if (sess->ipv6) {
-                    /* PDN IPv6 is avaiable */
+                    /* PDN IPv6 is available */
                     ogs_pfcp_pdr_t *pdr = NULL;
 
                     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {

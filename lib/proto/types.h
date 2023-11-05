@@ -108,6 +108,63 @@ extern "C" {
 
 #define OGS_MAX_QOS_FLOW_ID             63
 
+#define OGS_IMSI_STRING "imsi"
+#define OGS_MSISDN_STRING "msisdn"
+#define OGS_IMEISV_STRING "imeisv"
+
+#define OGS_ACCESS_RESTRICTION_DATA_STRING "access_restriction_data"
+#define OGS_SUBSCRIBER_STATUS_STRING "subscriber_status"
+#define OGS_OPERATOR_DETERMINED_BARRING_STRING "operator_determined_barring"
+#define OGS_NETWORK_ACCESS_MODE_STRING "network_access_mode"
+#define OGS_SUBSCRIBED_RAU_TAU_TIMER_STRING "subscribed_rau_tau_timer"
+
+#define OGS_SECURITY_STRING "security"
+#define OGS_K_STRING "k"
+#define OGS_OPC_STRING "opc"
+#define OGS_OP_STRING "op"
+#define OGS_AMF_STRING "amf"
+#define OGS_RAND_STRING "rand"
+#define OGS_SQN_STRING "sqn"
+
+#define OGS_MME_HOST_STRING "mme_host"
+#define OGS_MME_REALM_STRING "mme_realm"
+#define OGS_MME_TIMESTAMP_STRING "mme_timestamp"
+#define OGS_PURGE_FLAG_STRING "purge_flag"
+
+#define OGS_AMBR_STRING "ambr"
+#define OGS_DOWNLINK_STRING "downlink"
+#define OGS_UPLINK_STRING "uplink"
+#define OGS_VALUE_STRING "value"
+#define OGS_UNIT_STRING "unit"
+
+#define OGS_SLICE_STRING "slice"
+#define OGS_SST_STRING "sst"
+#define OGS_SD_STRING "sd"
+#define OGS_DEFAULT_INDICATOR_STRING "default_indicator"
+#define OGS_SESSION_STRING "session"
+#define OGS_NAME_STRING "name"
+#define OGS_TYPE_STRING "type"
+#define OGS_QOS_STRING "qos"
+#define OGS_INDEX_STRING "index"
+#define OGS_ARP_STRING "arp"
+#define OGS_PRIORITY_LEVEL_STRING "priority_level"
+#define OGS_PRE_EMPTION_CAPABILITY_STRING "pre_emption_capability"
+#define OGS_PRE_EMPTION_VULNERABILITY_STRING "pre_emption_vulnerability"
+
+#define OGS_PCC_RULE_STRING "pcc_rule"
+#define OGS_MBR_STRING "mbr"
+#define OGS_GBR_STRING "gbr"
+#define OGS_FLOW_STRING "flow"
+#define OGS_DIRECTION_STRING "direction"
+#define OGS_DESCRIPTION_STRING "description"
+
+#define OGS_SMF_STRING "smf"
+#define OGS_IPV4_STRING "ipv4"
+#define OGS_IPV6_STRING "ipv6"
+#define OGS_UE_STRING "ue"
+#define OGS_IPV4_FRAMED_ROUTES_STRING "ipv4_framed_routes"
+#define OGS_IPV6_FRAMED_ROUTES_STRING "ipv6_framed_routes"
+
 /************************************
  * PLMN_ID Structure                */
 #define OGS_MAX_NUM_OF_PLMN         6
@@ -129,12 +186,19 @@ uint16_t ogs_plmn_id_mnc_len(ogs_plmn_id_t *plmn_id);
 void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id,
         uint16_t mcc, uint16_t mnc, uint16_t mnc_len);
 
-char *ogs_serving_network_name_from_plmn_id(ogs_plmn_id_t *plmn_id);
 char *ogs_plmn_id_mcc_string(ogs_plmn_id_t *plmn_id);
 char *ogs_plmn_id_mnc_string(ogs_plmn_id_t *plmn_id);
 
 #define OGS_PLMNIDSTRLEN    (sizeof(ogs_plmn_id_t)*2+1)
 char *ogs_plmn_id_to_string(ogs_plmn_id_t *plmn_id, char *buf);
+
+char *ogs_serving_network_name_from_plmn_id(ogs_plmn_id_t *plmn_id);
+char *ogs_home_network_domain_from_plmn_id(ogs_plmn_id_t *plmn_id);
+char *ogs_nrf_fqdn_from_plmn_id(ogs_plmn_id_t *plmn_id);
+char *ogs_nssf_fqdn_from_plmn_id(ogs_plmn_id_t *plmn_id);
+char *ogs_home_network_domain_from_fqdn(char *fqdn);
+uint16_t ogs_plmn_id_mnc_from_fqdn(char *fqdn);
+uint16_t ogs_plmn_id_mcc_from_fqdn(char *fqdn);
 
 /*************************
  * NAS PLMN_ID Structure */

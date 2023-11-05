@@ -522,7 +522,8 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         /* Set 3GPP-SGSN-MCC-MNC */
         ret = fd_msg_avp_new(ogs_diam_gx_3gpp_sgsn_mcc_mnc, 0, &avp);
         ogs_assert(ret == 0);
-        val.os.data = (uint8_t *)ogs_plmn_id_to_string(&sess->plmn_id, buf);
+        val.os.data = (uint8_t *)ogs_plmn_id_to_string(
+                &sess->serving_plmn_id, buf);
         val.os.len = strlen(buf);
         ret = fd_msg_avp_setvalue(avp, &val);
         ogs_assert(ret == 0);

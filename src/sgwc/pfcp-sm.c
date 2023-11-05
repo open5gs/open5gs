@@ -103,7 +103,7 @@ void sgwc_pfcp_state_will_associate(ogs_fsm_t *s, sgwc_event_t *e)
             node = e->pfcp_node;
             ogs_assert(node);
 
-            ogs_warn("Retry to association with peer [%s]:%d failed",
+            ogs_warn("Retry association with peer [%s]:%d failed",
                         OGS_ADDR(addr, buf), OGS_PORT(addr));
 
             ogs_assert(node->t_association);

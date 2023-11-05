@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -29,10 +29,14 @@ int bsf_initialize(void)
 {
     int rv;
 
+#define APP_NAME "bsf"
+    rv = ogs_app_context_parse_config(APP_NAME);
+    if (rv != OGS_OK) return rv;
+
     ogs_sbi_context_init(OpenAPI_nf_type_BSF);
     bsf_context_init();
 
-    rv = ogs_sbi_context_parse_config("bsf", "nrf", "scp");
+    rv = ogs_sbi_context_parse_config(APP_NAME, "nrf", "scp");
     if (rv != OGS_OK) return rv;
 
     rv = bsf_context_parse_config();

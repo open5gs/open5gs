@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -27,13 +27,13 @@
 extern "C" {
 #endif
 
-void hss_state_initial(ogs_fsm_t *s, ogs_event_t *e);
-void hss_state_final(ogs_fsm_t *s, ogs_event_t *e);
-void hss_state_operational(ogs_fsm_t *s, ogs_event_t *e);
-void hss_state_exception(ogs_fsm_t *s, ogs_event_t *e);
+void hss_state_initial(ogs_fsm_t *s, hss_event_t *e);
+void hss_state_final(ogs_fsm_t *s, hss_event_t *e);
+void hss_state_operational(ogs_fsm_t *s, hss_event_t *e);
+void hss_state_exception(ogs_fsm_t *s, hss_event_t *e);
 
 #define hss_sm_debug(__pe) \
-    ogs_debug("%s(): %s", __func__, ogs_event_get_name(__pe))
+    ogs_debug("%s(): %s", __func__, hss_event_get_name(__pe))
 
 #ifdef __cplusplus
 }

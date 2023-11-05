@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -35,7 +35,9 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
 
     ogs_sbi_client_t *client = NULL;
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
-    ogs_sockaddr_t *addr = NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
     ogs_assert(pcf_ue);
     ogs_assert(stream);
@@ -74,7 +76,7 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
         return false;
     }
 
-    rc = ogs_sbi_getaddr_from_uri(&scheme, &addr,
+    rc = ogs_sbi_getaddr_from_uri(&scheme, &fqdn, &fqdn_port, &addr, &addr6,
             PolicyAssociationRequest->notification_uri);
     if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
         ogs_error("[%s] Invalid URI [%s]",
@@ -91,20 +93,25 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
             PolicyAssociationRequest->notification_uri);
     ogs_assert(pcf_ue->notification_uri);
 
-    client = ogs_sbi_client_find(scheme, addr);
+    client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
     if (!client) {
         ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
-        client = ogs_sbi_client_add(scheme, addr);
+        client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
         if (!client) {
-            char buf[OGS_ADDRSTRLEN];
-            ogs_error("%s: ogs_sbi_client_add() failed [%s]:%d",
-                    OGS_FUNC, OGS_ADDR(addr, buf), OGS_PORT(addr));
+            ogs_error("%s: ogs_sbi_client_add() failed", OGS_FUNC);
+
+            ogs_free(fqdn);
             ogs_freeaddrinfo(addr);
+            ogs_freeaddrinfo(addr6);
+
             return false;
         }
     }
     OGS_SBI_SETUP_CLIENT(&pcf_ue->namf, client);
+
+    ogs_free(fqdn);
     ogs_freeaddrinfo(addr);
+    ogs_freeaddrinfo(addr6);
 
     supported_features =
         ogs_uint64_from_string(PolicyAssociationRequest->supp_feat);
@@ -178,7 +185,9 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
 
     ogs_sbi_client_t *client = NULL;
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
-    ogs_sockaddr_t *addr = NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
     ogs_assert(sess);
     pcf_ue = sess->pcf_ue;
@@ -252,7 +261,7 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
-    rc = ogs_sbi_getaddr_from_uri(&scheme, &addr,
+    rc = ogs_sbi_getaddr_from_uri(&scheme, &fqdn, &fqdn_port, &addr, &addr6,
             SmPolicyContextData->notification_uri);
     if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
         strerror = ogs_msprintf("[%s:%d] Invalid URI [%s]",
@@ -281,21 +290,23 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
     sess->notification_uri = ogs_strdup(SmPolicyContextData->notification_uri);
     ogs_assert(sess->notification_uri);
 
-    client = ogs_sbi_client_find(scheme, addr);
+    client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
     if (!client) {
         ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
-        client = ogs_sbi_client_add(scheme, addr);
+        client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
         if (!client) {
-            char buf[OGS_ADDRSTRLEN];
-            strerror = ogs_msprintf("%s: ogs_sbi_client_add() failed [%s]:%d",
-                    OGS_FUNC, OGS_ADDR(addr, buf), OGS_PORT(addr));
+            strerror = ogs_msprintf("%s: ogs_sbi_client_add() failed",
+                    OGS_FUNC);
             status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
             ogs_freeaddrinfo(addr);
             goto cleanup;
         }
     }
     OGS_SBI_SETUP_CLIENT(&sess->nsmf, client);
+
+    ogs_free(fqdn);
     ogs_freeaddrinfo(addr);
+    ogs_freeaddrinfo(addr6);
 
     if (SmPolicyContextData->ipv4_address)
         ogs_assert(true ==
@@ -433,7 +444,9 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
 
     ogs_sbi_client_t *client = NULL;
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
-    ogs_sockaddr_t *addr = NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
     OpenAPI_app_session_context_t *AppSessionContext = NULL;
     OpenAPI_app_session_context_req_data_t *AscReqData = NULL;
@@ -521,7 +534,8 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
-    rc = ogs_sbi_getaddr_from_uri(&scheme, &addr, AscReqData->notif_uri);
+    rc = ogs_sbi_getaddr_from_uri(&scheme, &fqdn, &fqdn_port, &addr, &addr6,
+            AscReqData->notif_uri);
     if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
         strerror = ogs_msprintf("[%s:%d] Invalid URI [%s]",
                 pcf_ue->supi, sess->psi, AscReqData->notif_uri);
@@ -612,21 +626,23 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     app_session->notif_uri = ogs_strdup(AscReqData->notif_uri);
     ogs_assert(app_session->notif_uri);
 
-    client = ogs_sbi_client_find(scheme, addr);
+    client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
     if (!client) {
         ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
-        client = ogs_sbi_client_add(scheme, addr);
+        client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
         if (!client) {
-            char buf[OGS_ADDRSTRLEN];
-            strerror = ogs_msprintf("%s: ogs_sbi_client_add() failed [%s]:%d",
-                    OGS_FUNC, OGS_ADDR(addr, buf), OGS_PORT(addr));
+            strerror = ogs_msprintf("%s: ogs_sbi_client_add() failed",
+                    OGS_FUNC);
             status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
             ogs_freeaddrinfo(addr);
             goto cleanup;
         }
     }
     OGS_SBI_SETUP_CLIENT(&app_session->naf, client);
+
+    ogs_free(fqdn);
     ogs_freeaddrinfo(addr);
+    ogs_freeaddrinfo(addr6);
 
     rv = ogs_dbi_session_data(
             pcf_ue->supi, &sess->s_nssai, sess->dnn, &session_data);

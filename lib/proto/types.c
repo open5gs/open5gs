@@ -34,21 +34,26 @@ uint32_t ogs_plmn_id_hexdump(void *plmn_id)
 
 uint16_t ogs_plmn_id_mcc(ogs_plmn_id_t *plmn_id)
 {
+    ogs_assert(plmn_id);
     return plmn_id->mcc1 * 100 + plmn_id->mcc2 * 10 + plmn_id->mcc3;
 }
 uint16_t ogs_plmn_id_mnc(ogs_plmn_id_t *plmn_id)
 {
+    ogs_assert(plmn_id);
     return plmn_id->mnc1 == 0xf ? plmn_id->mnc2 * 10 + plmn_id->mnc3 :
         plmn_id->mnc1 * 100 + plmn_id->mnc2 * 10 + plmn_id->mnc3;
 }
 uint16_t ogs_plmn_id_mnc_len(ogs_plmn_id_t *plmn_id)
 {
+    ogs_assert(plmn_id);
     return plmn_id->mnc1 == 0xf ? 2 : 3;
 }
 
 void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id, 
         uint16_t mcc, uint16_t mnc, uint16_t mnc_len)
 {
+    ogs_assert(plmn_id);
+
     plmn_id->mcc1 = PLMN_ID_DIGIT1(mcc);
     plmn_id->mcc2 = PLMN_ID_DIGIT2(mcc);
     plmn_id->mcc3 = PLMN_ID_DIGIT3(mcc);
@@ -67,6 +72,9 @@ void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id,
 void *ogs_nas_from_plmn_id(
         ogs_nas_plmn_id_t *ogs_nas_plmn_id, ogs_plmn_id_t *plmn_id)
 {
+    ogs_assert(ogs_nas_plmn_id);
+    ogs_assert(plmn_id);
+
     memcpy(ogs_nas_plmn_id, plmn_id, OGS_PLMN_ID_LEN);
     if (plmn_id->mnc1 != 0xf) {
         ogs_nas_plmn_id->mnc1 = plmn_id->mnc1;
@@ -78,6 +86,9 @@ void *ogs_nas_from_plmn_id(
 void *ogs_nas_to_plmn_id(
         ogs_plmn_id_t *plmn_id, ogs_nas_plmn_id_t *ogs_nas_plmn_id)
 {
+    ogs_assert(plmn_id);
+    ogs_assert(ogs_nas_plmn_id);
+
     memcpy(plmn_id, ogs_nas_plmn_id, OGS_PLMN_ID_LEN);
     if (plmn_id->mnc1 != 0xf) {
         plmn_id->mnc1 = ogs_nas_plmn_id->mnc1;
@@ -85,13 +96,6 @@ void *ogs_nas_to_plmn_id(
         plmn_id->mnc3 = ogs_nas_plmn_id->mnc3;
     }
     return plmn_id;
-}
-
-char *ogs_serving_network_name_from_plmn_id(ogs_plmn_id_t *plmn_id)
-{
-    ogs_assert(plmn_id);
-    return ogs_msprintf("5G:mnc%03d.mcc%03d.3gppnetwork.org",
-            ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
 }
 
 char *ogs_plmn_id_mcc_string(ogs_plmn_id_t *plmn_id)
@@ -122,6 +126,110 @@ char *ogs_plmn_id_to_string(ogs_plmn_id_t *plmn_id, char *buf)
                 ogs_plmn_id_mcc(plmn_id), ogs_plmn_id_mnc(plmn_id));
 
     return buf;
+}
+
+#define FQDN_3GPPNETWORK_ORG ".3gppnetwork.org"
+#define FQDN_5GC_MNC "5gc.mnc"
+#define FQDN_MCC ".mcc"
+
+char *ogs_serving_network_name_from_plmn_id(ogs_plmn_id_t *plmn_id)
+{
+    ogs_assert(plmn_id);
+    return ogs_msprintf("5G:mnc%03d.mcc%03d" FQDN_3GPPNETWORK_ORG,
+            ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
+}
+
+char *ogs_home_network_domain_from_plmn_id(ogs_plmn_id_t *plmn_id)
+{
+    ogs_assert(plmn_id);
+    return ogs_msprintf("5gc.mnc%03d.mcc%03d" FQDN_3GPPNETWORK_ORG,
+            ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
+}
+
+char *ogs_nrf_fqdn_from_plmn_id(ogs_plmn_id_t *plmn_id)
+{
+    return ogs_msprintf("nrf.5gc.mnc%03d.mcc%03d" FQDN_3GPPNETWORK_ORG,
+            ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
+}
+
+char *ogs_nssf_fqdn_from_plmn_id(ogs_plmn_id_t *plmn_id)
+{
+    return ogs_msprintf("nssf.5gc.mnc%03d.mcc%03d" FQDN_3GPPNETWORK_ORG,
+            ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
+}
+
+char *ogs_home_network_domain_from_fqdn(char *fqdn)
+{
+    char *p = NULL;
+
+    ogs_assert(fqdn);
+
+    if (strlen(fqdn) <
+        strlen(FQDN_5GC_MNC "XXX" FQDN_MCC "XXX" FQDN_3GPPNETWORK_ORG)) {
+        return NULL;
+    }
+
+    p = fqdn + strlen(fqdn);
+    if (strncmp(p - strlen(FQDN_3GPPNETWORK_ORG),
+                FQDN_3GPPNETWORK_ORG, strlen(FQDN_3GPPNETWORK_ORG)) != 0) {
+        return NULL;
+    }
+
+    p -= (strlen(FQDN_3GPPNETWORK_ORG) + 3);
+    if (strncmp(p - strlen(FQDN_MCC),
+                FQDN_MCC, strlen(FQDN_MCC)) != 0) {
+        return NULL;
+    }
+
+    p -= (strlen(FQDN_MCC) + 3);
+    if (strncmp(p - strlen(FQDN_5GC_MNC),
+                FQDN_5GC_MNC, strlen(FQDN_5GC_MNC)) != 0) {
+        return NULL;
+    }
+
+    return p - strlen(FQDN_5GC_MNC);
+}
+
+uint16_t ogs_plmn_id_mcc_from_fqdn(char *fqdn)
+{
+    char mcc[4];
+    char *p = NULL;
+
+    ogs_assert(fqdn);
+
+    p = ogs_home_network_domain_from_fqdn(fqdn);
+    if (p == NULL) {
+        ogs_error("Invalid FQDN [%d:%s]", (int)strlen(fqdn), fqdn);
+        return 0;
+    }
+
+    p += strlen(FQDN_5GC_MNC) + 3 + strlen(FQDN_MCC);
+
+    memcpy(mcc, p, 3);
+    mcc[3] = 0;
+
+    return atoi(mcc);
+}
+
+uint16_t ogs_plmn_id_mnc_from_fqdn(char *fqdn)
+{
+    char mnc[4];
+    char *p = NULL;
+
+    ogs_assert(fqdn);
+
+    p = ogs_home_network_domain_from_fqdn(fqdn);
+    if (p == NULL) {
+        ogs_error("Invalid FQDN [%d:%s]", (int)strlen(fqdn), fqdn);
+        return 0;
+    }
+
+    p += strlen(FQDN_5GC_MNC);
+
+    memcpy(mnc, p, 3);
+    mnc[3] = 0;
+
+    return atoi(mnc);
 }
 
 uint32_t ogs_amf_id_hexdump(ogs_amf_id_t *amf_id)

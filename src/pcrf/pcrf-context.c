@@ -224,7 +224,8 @@ int pcrf_context_parse_config(void)
                                         if (!strcmp(conn_key, "identity")) {
                                             identity = ogs_yaml_iter_value(
                                                     &conn_iter);
-                                        } else if (!strcmp(conn_key, "addr")) {
+                                        } else if (!strcmp(conn_key,
+                                                    "address")) {
                                             addr = ogs_yaml_iter_value(
                                                     &conn_iter);
                                         } else if (!strcmp(conn_key, "port")) {

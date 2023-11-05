@@ -178,6 +178,18 @@ Description: SCP (Network Repository Function)
  .
  This package provides the SCP (Service Communication Proxy)
 
+Package: open5gs-sepp
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         open5gs-common (= ${binary:Version})
+Description: SEPP (Security Edge Protection Proxy)
+ Open5GS is a C-language implementation of 5G Core and EPC
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
+ .
+ This package provides the SEPP (Security Edge Protection Proxy)
+
 Package: open5gs-ausf
 Architecture: any
 Multi-Arch: same

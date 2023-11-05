@@ -339,7 +339,7 @@ typedef struct ogs_nas_eps_network_feature_support_s {
 ED7(uint8_t control_plane_ciot_eps_optimization:1;,
     uint8_t emm_registered_without_pdn_connectivity:1;,
     uint8_t support_of_extended_service_request_for_packet_services:1;,
-    uint8_t cs_lcs_no_information_about_support_of_location_service_via_cs_domain_is_avaiable:2;,
+    uint8_t cs_lcs_no_information_about_support_of_location_service_via_cs_domain_is_available:2;,
     uint8_t location_service_via_epc:1;,
     uint8_t emergency_bearer_services_in_s1_mode:1;,
     uint8_t ims_voice_over_ps_session_in_s1_mode:1;)
