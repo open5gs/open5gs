@@ -39,8 +39,10 @@ int pcrf_initialize(void)
             ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
-    rv = ogs_dbi_init(ogs_app()->db_uri);
-    if (rv != OGS_OK) return rv;
+    if (ogs_app()->db_uri) {
+        rv = ogs_dbi_init(ogs_app()->db_uri);
+        if (rv != OGS_OK) return rv;
+    }
 
     rv = pcrf_fd_init();
     if (rv != OGS_OK) return OGS_ERROR;
@@ -56,7 +58,10 @@ void pcrf_terminate(void)
 
     pcrf_fd_final();
 
-    ogs_dbi_final();
+    if (ogs_app()->db_uri) {
+        ogs_dbi_final();
+    }
+
     pcrf_context_final();
 
     return;

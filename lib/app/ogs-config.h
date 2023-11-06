@@ -127,7 +127,7 @@ typedef struct ogs_local_conf_s {
     ogs_plmn_id_t serving_plmn_id[OGS_MAX_NUM_OF_PLMN];
     int num_of_serving_plmn_id;
 
-    ogs_list_t slice_list;
+    ogs_list_t policy_list;
 
 } ogs_app_local_conf_t;
 

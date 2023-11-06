@@ -748,13 +748,24 @@ static int policy_conf_validation(void)
     ogs_app_policy_conf_t *policy_conf = NULL;
     bool default_indicator = false;
 
-    ogs_list_for_each(&local_conf.slice_list, policy_conf) {
+    ogs_list_for_each(&local_conf.policy_list, policy_conf) {
         if (policy_conf->data.default_indicator == true)
             default_indicator = true;
+
+        if (ogs_list_count(&policy_conf->sess_list) == 0) {
+            ogs_error("At least 1 Session is required");
+            return OGS_ERROR;
+        }
     }
 
     if (default_indicator == false) {
         ogs_error("At least 1 Default S-NSSAI is required");
+        return OGS_ERROR;
+    }
+
+    if (ogs_list_count(&local_conf.policy_list) == 0 &&
+        ogs_app()->db_uri == NULL) {
+        ogs_error("Both db_uri and policy configuration are not set");
         return OGS_ERROR;
     }
 
@@ -983,14 +994,14 @@ static int parse_qos_conf(ogs_yaml_iter_t *parent, ogs_qos_t *qos)
 int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent)
 {
     int rv, i, j, k;
-    ogs_yaml_iter_t slice_array, slice_iter;
+    ogs_yaml_iter_t policy_array, policy_iter;
 
     ogs_assert(parent);
 
     rv = policy_conf_prepare();
     if (rv != OGS_OK) return rv;
 
-    ogs_yaml_iter_recurse(parent, &slice_array);
+    ogs_yaml_iter_recurse(parent, &policy_array);
     do {
         uint8_t sst;
         ogs_uint24_t sd;
@@ -1003,22 +1014,22 @@ int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent)
         sd.v = OGS_S_NSSAI_NO_SD_VALUE;
         memset(session_data_array, 0, sizeof(session_data_array));
 
-        if (ogs_yaml_iter_type(&slice_array) == YAML_MAPPING_NODE) {
-            memcpy(&slice_iter, &slice_array, sizeof(ogs_yaml_iter_t));
-        } else if (ogs_yaml_iter_type(&slice_array) == YAML_SEQUENCE_NODE) {
-            if (!ogs_yaml_iter_next(&slice_array))
+        if (ogs_yaml_iter_type(&policy_array) == YAML_MAPPING_NODE) {
+            memcpy(&policy_iter, &policy_array, sizeof(ogs_yaml_iter_t));
+        } else if (ogs_yaml_iter_type(&policy_array) == YAML_SEQUENCE_NODE) {
+            if (!ogs_yaml_iter_next(&policy_array))
                 break;
-            ogs_yaml_iter_recurse(&slice_array, &slice_iter);
-        } else if (ogs_yaml_iter_type(&slice_array) == YAML_SCALAR_NODE) {
+            ogs_yaml_iter_recurse(&policy_array, &policy_iter);
+        } else if (ogs_yaml_iter_type(&policy_array) == YAML_SCALAR_NODE) {
             break;
         } else
             ogs_assert_if_reached();
 
-        while (ogs_yaml_iter_next(&slice_iter)) {
-            const char *slice_key = ogs_yaml_iter_key(&slice_iter);
-            ogs_assert(slice_key);
-            if (!strcmp(slice_key, OGS_SST_STRING)) {
-                const char *v = ogs_yaml_iter_value(&slice_iter);
+        while (ogs_yaml_iter_next(&policy_iter)) {
+            const char *policy_key = ogs_yaml_iter_key(&policy_iter);
+            ogs_assert(policy_key);
+            if (!strcmp(policy_key, OGS_SST_STRING)) {
+                const char *v = ogs_yaml_iter_value(&policy_iter);
                 if (v) {
                     sst = atoi(v);
                     if (sst == 1 || sst == 2 || sst == 3 || sst == 4) {
@@ -1027,14 +1038,14 @@ int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent)
                         return OGS_ERROR;
                     }
                 }
-            } else if (!strcmp(slice_key, OGS_SD_STRING)) {
-                const char *v = ogs_yaml_iter_value(&slice_iter);
+            } else if (!strcmp(policy_key, OGS_SD_STRING)) {
+                const char *v = ogs_yaml_iter_value(&policy_iter);
                 if (v) sd = ogs_s_nssai_sd_from_string(v);
-            } else if (!strcmp(slice_key, OGS_DEFAULT_INDICATOR_STRING)) {
-                default_indicator = ogs_yaml_iter_bool(&slice_iter);
-            } else if (!strcmp(slice_key, OGS_SESSION_STRING)) {
+            } else if (!strcmp(policy_key, OGS_DEFAULT_INDICATOR_STRING)) {
+                default_indicator = ogs_yaml_iter_bool(&policy_iter);
+            } else if (!strcmp(policy_key, OGS_SESSION_STRING)) {
                 ogs_yaml_iter_t session_array, session_iter;
-                ogs_yaml_iter_recurse(&slice_iter, &session_array);
+                ogs_yaml_iter_recurse(&policy_iter, &session_array);
                 do {
                     ogs_session_data_t *session_data =
                         &session_data_array[num_of_session_data];
@@ -1073,7 +1084,8 @@ int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent)
                                     OGS_PDU_SESSION_TYPE_UNSTRUCTURED ||
                                     session_type ==
                                     OGS_PDU_SESSION_TYPE_ETHERNET)
-                                    session_data->session.session_type = session_type;
+                                    session_data->session.session_type =
+                                        session_type;
                                 else {
                                     ogs_error("Unknown Session Type [%d]",
                                             session_type);
@@ -1252,7 +1264,7 @@ int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent)
                 } while (ogs_yaml_iter_type(&session_array) ==
                         YAML_SEQUENCE_NODE);
             } else
-                ogs_warn("unknown key `%s`", slice_key);
+                ogs_warn("unknown key `%s`", policy_key);
         }
 
         if (sst) {
@@ -1263,11 +1275,6 @@ int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent)
                 return OGS_ERROR;
             }
             policy_conf->data.default_indicator = default_indicator;
-
-            if (num_of_session_data == 0) {
-                ogs_error("At least 1 Session is required");
-                return OGS_ERROR;
-            }
 
             for (i = 0; i < num_of_session_data; i++) {
                 ogs_session_data_t *session_data = NULL;
@@ -1335,7 +1342,7 @@ int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent)
             return OGS_ERROR;
         }
 
-    } while (ogs_yaml_iter_type(&slice_array) == YAML_SEQUENCE_NODE);
+    } while (ogs_yaml_iter_type(&policy_array) == YAML_SEQUENCE_NODE);
 
     rv = policy_conf_validation();
     if (rv != OGS_OK) return rv;
@@ -1362,10 +1369,10 @@ ogs_app_policy_conf_t *ogs_app_policy_conf_add(uint8_t sst, ogs_uint24_t sd)
 
     ogs_list_init(&policy_conf->sess_list);
 
-    ogs_list_add(&local_conf.slice_list, policy_conf);
+    ogs_list_add(&local_conf.policy_list, policy_conf);
 
-    ogs_info("SLICE config added [%d]",
-            ogs_list_count(&local_conf.slice_list));
+    ogs_info("POLICY config added [%d]",
+            ogs_list_count(&local_conf.policy_list));
     return policy_conf;
 }
 ogs_app_policy_conf_t *ogs_app_policy_conf_find_by_s_nssai(
@@ -1375,7 +1382,7 @@ ogs_app_policy_conf_t *ogs_app_policy_conf_find_by_s_nssai(
 
     ogs_assert(sst);
 
-    ogs_list_for_each(&local_conf.slice_list, policy_conf) {
+    ogs_list_for_each(&local_conf.policy_list, policy_conf) {
         if (policy_conf->data.s_nssai.sst == sst &&
                 policy_conf->data.s_nssai.sd.v == sd.v)
             break;
@@ -1387,20 +1394,20 @@ void ogs_app_policy_conf_remove(ogs_app_policy_conf_t *policy_conf)
 {
     ogs_assert(policy_conf);
 
-    ogs_list_remove(&local_conf.slice_list, policy_conf);
+    ogs_list_remove(&local_conf.policy_list, policy_conf);
 
     ogs_app_sess_conf_remove_all(policy_conf);
 
     ogs_pool_free(&policy_conf_pool, policy_conf);
 
-    ogs_info("SLICE config removed [%d]",
-            ogs_list_count(&local_conf.slice_list));
+    ogs_info("POLICY config removed [%d]",
+            ogs_list_count(&local_conf.policy_list));
 }
 void ogs_app_policy_conf_remove_all(void)
 {
     ogs_app_policy_conf_t *policy_conf = NULL, *next_conf = NULL;;
 
-    ogs_list_for_each_safe(&local_conf.slice_list, next_conf, policy_conf)
+    ogs_list_for_each_safe(&local_conf.policy_list, next_conf, policy_conf)
         ogs_app_policy_conf_remove(policy_conf);
 }
 
@@ -1415,7 +1422,7 @@ ogs_app_sess_conf_t *ogs_app_sess_conf_add(
     ogs_pool_alloc(&sess_conf_pool, &sess_conf);
     if (!sess_conf) {
         ogs_error("Maximum number of sess_conf[%d] reached",
-                OGS_MAX_NUM_OF_SLICE);
+                OGS_MAX_NUM_OF_SLICE*OGS_MAX_NUM_OF_SESS);
         return NULL;
     }
     memset(sess_conf, 0, sizeof *sess_conf);
@@ -1453,7 +1460,6 @@ ogs_app_sess_conf_t *ogs_app_sess_conf_find_by_dnn(
 }
 void ogs_app_sess_conf_remove(ogs_app_sess_conf_t *sess_conf)
 {
-    int j, k;
     ogs_app_policy_conf_t *policy_conf = NULL;
 
     ogs_assert(sess_conf);
@@ -1462,11 +1468,7 @@ void ogs_app_sess_conf_remove(ogs_app_sess_conf_t *sess_conf)
 
     ogs_list_remove(&policy_conf->sess_list, sess_conf);
 
-    for (j = 0; j < sess_conf->data.num_of_pcc_rule; j++) {
-        for (k = 0; k < sess_conf->data.  pcc_rule[j].num_of_flow; k++)
-            ogs_free(sess_conf->data.pcc_rule[j].flow[k].description);
-    }
-    ogs_free(sess_conf->data.session.name);
+    ogs_session_data_free(&sess_conf->data);
 
     ogs_pool_free(&sess_conf_pool, sess_conf);
 
