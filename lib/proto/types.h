@@ -138,6 +138,7 @@ extern "C" {
 #define OGS_UNIT_STRING "unit"
 
 #define OGS_SLICE_STRING "slice"
+#define OGS_POLICY_STRING "policy"
 #define OGS_SST_STRING "sst"
 #define OGS_SD_STRING "sd"
 #define OGS_DEFAULT_INDICATOR_STRING "default_indicator"

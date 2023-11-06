@@ -131,20 +131,20 @@ typedef struct ogs_local_conf_s {
 
 } ogs_app_local_conf_t;
 
-typedef struct ogs_app_slice_conf_s {
+typedef struct ogs_app_policy_conf_s {
     ogs_lnode_t lnode;
 
     ogs_slice_data_t data;
 
     ogs_list_t sess_list;
-} ogs_app_slice_conf_t;
+} ogs_app_policy_conf_t;
 
 typedef struct ogs_app_sess_conf_s {
     ogs_lnode_t lnode;
 
     ogs_session_data_t data;
 
-    ogs_app_slice_conf_t *slice_conf;
+    ogs_app_policy_conf_t *policy_conf;
 } ogs_app_sess_conf_t;
 
 int ogs_app_config_init(void);
@@ -159,21 +159,21 @@ int ogs_app_parse_local_conf(const char *local);
 int ogs_app_parse_sockopt_config(
         ogs_yaml_iter_t *parent, ogs_sockopt_t *option);
 
-int ogs_app_parse_slice_conf(ogs_yaml_iter_t *parent);
+int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent);
 
-ogs_app_slice_conf_t *ogs_app_slice_conf_add(uint8_t sst, ogs_uint24_t sd);
-ogs_app_slice_conf_t *ogs_app_slice_conf_find_by_s_nssai(
+ogs_app_policy_conf_t *ogs_app_policy_conf_add(uint8_t sst, ogs_uint24_t sd);
+ogs_app_policy_conf_t *ogs_app_policy_conf_find_by_s_nssai(
         uint8_t sst, ogs_uint24_t sd);
-void ogs_app_slice_conf_remove(ogs_app_slice_conf_t *slice_conf);
-void ogs_app_slice_conf_remove_all(void);
+void ogs_app_policy_conf_remove(ogs_app_policy_conf_t *policy_conf);
+void ogs_app_policy_conf_remove_all(void);
 
 ogs_app_sess_conf_t *ogs_app_sess_conf_add(
-        ogs_app_slice_conf_t *slice_conf, char *name);
+        ogs_app_policy_conf_t *policy_conf, char *name);
 ogs_app_sess_conf_t *ogs_app_sess_conf_find_by_dnn(
-        ogs_app_slice_conf_t *slice_conf, char *name);
+        ogs_app_policy_conf_t *policy_conf, char *name);
 void ogs_app_sess_conf_remove(ogs_app_sess_conf_t *sess_conf);
 void ogs_app_sess_conf_remove_all(
-        ogs_app_slice_conf_t *slice_conf);
+        ogs_app_policy_conf_t *policy_conf);
 
 #ifdef __cplusplus
 }
