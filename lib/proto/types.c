@@ -725,6 +725,47 @@ int ogs_ipv6prefix_from_string(uint8_t *addr6, uint8_t *prefixlen, char *string)
     return OGS_OK;
 }
 
+int ogs_check_br_conf(ogs_bitrate_t *br)
+{
+    ogs_assert(br);
+
+    if (br->downlink == 0) {
+        ogs_error("No Downlink");
+        return OGS_ERROR;
+    }
+    if (br->uplink == 0) {
+        ogs_error("No Uplink");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
+int ogs_check_qos_conf(ogs_qos_t *qos)
+{
+    ogs_assert(qos);
+
+    if (!qos->index) {
+        ogs_error("No QCI");
+        return OGS_ERROR;
+    }
+
+    if (!qos->arp.priority_level) {
+        ogs_error("No Priority Level");
+        return OGS_ERROR;
+    }
+    if (!qos->arp.pre_emption_capability) {
+        ogs_error("No Pre-emption Capability");
+        return OGS_ERROR;
+    }
+    if (!qos->arp.pre_emption_vulnerability) {
+        ogs_error("No Pre-emption Vulnerability ");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
 int ogs_sockaddr_to_user_plane_ip_resource_info(
     ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
     ogs_user_plane_ip_resource_info_t *info)

@@ -769,20 +769,45 @@ static int policy_conf_validation(void)
         return OGS_ERROR;
     }
 
-    return OGS_OK;
-}
+    ogs_list_for_each(&local_conf.policy_list, policy_conf) {
+        ogs_app_sess_conf_t *sess_conf = NULL;
+        int j, k;
+        ogs_list_for_each(&policy_conf->sess_list, sess_conf) {
+            ogs_info("NAME[%s]", sess_conf->data.session.name);
+            ogs_info("QCI[%d]", sess_conf->data.session.qos.index);
+            ogs_info("ARP[%d:%d:%d]",
+                    sess_conf->data.session.qos.arp.priority_level,
+                    sess_conf->data.session.qos.arp.pre_emption_capability,
+                    sess_conf->data.session.qos.arp.pre_emption_vulnerability);
+            ogs_info("AMBR[Downlink:%lld:Uplink:%lld]",
+                    (long long)sess_conf->data.session.ambr.downlink,
+                    (long long)sess_conf->data.session.ambr.uplink);
+            for (j = 0; j < sess_conf->data.num_of_pcc_rule; j++) {
+                ogs_info("PCC_RULE[%d]", j+1);
+                ogs_info("  QCI[%d]", sess_conf->data.pcc_rule[j].qos.index);
+                ogs_info("  ARP[%d:%d:%d]",
+                        sess_conf->data.pcc_rule[j].qos.arp.priority_level,
+                        sess_conf->data.pcc_rule[j].qos.arp.
+                        pre_emption_capability,
+                        sess_conf->data.pcc_rule[j].qos.arp.
+                        pre_emption_vulnerability);
+                ogs_info("  MBR[Downlink:%lld:Uplink:%lld]",
+                        (long long)sess_conf->data.pcc_rule[j].qos.mbr.downlink,
+                        (long long)sess_conf->data.pcc_rule[j].qos.mbr.uplink);
+                ogs_info("  GBR[Downlink:%lld:Uplink:%lld]",
+                        (long long)sess_conf->data.pcc_rule[j].qos.gbr.downlink,
+                        (long long)sess_conf->data.pcc_rule[j].qos.gbr.uplink);
+                ogs_info("  NUM_OF_FLOW [%d]",
+                    sess_conf->data.pcc_rule[j].num_of_flow);
 
-static int check_br_conf(ogs_bitrate_t *br)
-{
-    ogs_assert(br);
-
-    if (br->downlink == 0) {
-        ogs_error("No Downlink");
-        return OGS_ERROR;
-    }
-    if (br->uplink == 0) {
-        ogs_error("No Uplink");
-        return OGS_ERROR;
+                for (k = 0; k < sess_conf->data.pcc_rule[j].num_of_flow; k++) {
+                    ogs_info("    DIRECTION[%d]",
+                            sess_conf->data.pcc_rule[j].flow[k].direction);
+                    ogs_info("    DESCRIPTION[%s]",
+                            sess_conf->data.pcc_rule[j].flow[k].description);
+                }
+            }
+        }
     }
 
     return OGS_OK;
@@ -860,31 +885,6 @@ static int parse_br_conf(ogs_yaml_iter_t *parent, ogs_bitrate_t *br)
                 br->uplink *= 1000;
         } else
             ogs_warn("unknown key `%s`", br_key);
-    }
-
-    return OGS_OK;
-}
-
-static int check_qos_conf(ogs_qos_t *qos)
-{
-    ogs_assert(qos);
-
-    if (!qos->index) {
-        ogs_error("No QCI");
-        return OGS_ERROR;
-    }
-
-    if (!qos->arp.priority_level) {
-        ogs_error("No Priority Level");
-        return OGS_ERROR;
-    }
-    if (!qos->arp.pre_emption_capability) {
-        ogs_error("No Pre-emption Capability");
-        return OGS_ERROR;
-    }
-    if (!qos->arp.pre_emption_vulnerability) {
-        ogs_error("No Pre-emption Vulnerability ");
-        return OGS_ERROR;
     }
 
     return OGS_OK;
@@ -993,7 +993,7 @@ static int parse_qos_conf(ogs_yaml_iter_t *parent, ogs_qos_t *qos)
 
 int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent)
 {
-    int rv, i, j, k;
+    int rv, i, j;
     ogs_yaml_iter_t policy_array, policy_iter;
 
     ogs_assert(parent);
@@ -1284,12 +1284,12 @@ int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent)
                 ogs_assert(session_data->session.name);
                 ogs_assert(session_data->session.session_type);
 
-                rv = check_br_conf(&session_data->session.ambr);
+                rv = ogs_check_br_conf(&session_data->session.ambr);
                 if (rv != OGS_OK) {
                     ogs_error("check_br_conf(AMBR) failed");
                     return OGS_ERROR;
                 }
-                rv = check_qos_conf(&session_data->session.qos);
+                rv = ogs_check_qos_conf(&session_data->session.qos);
                 if (rv != OGS_OK) {
                     ogs_error("check_qos_conf(SESS) failed");
                     return OGS_ERROR;
@@ -1315,26 +1315,15 @@ int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent)
                 sess_conf->data.num_of_pcc_rule =
                     session_data->num_of_pcc_rule;
                 for (j = 0; j < sess_conf->data.num_of_pcc_rule; j++) {
-                    ogs_assert(OGS_OK ==
-                            check_qos_conf(&session_data->pcc_rule[j].qos));
-
-                    memcpy(&sess_conf->data.pcc_rule[j].qos,
-                            &session_data->pcc_rule[j].qos,
-                            sizeof(sess_conf->data.pcc_rule[j].qos));
-
-                    sess_conf->data.pcc_rule[j].num_of_flow =
-                        session_data->pcc_rule[j].num_of_flow;
-
-                    for (k = 0; k < sess_conf->data.
-                            pcc_rule[j].num_of_flow; k++) {
-                        sess_conf->data.pcc_rule[j].flow[k].direction =
-                            session_data->pcc_rule[j].flow[k].direction;;
-                        sess_conf->data.pcc_rule[j].flow[k].description =
-                            ogs_strdup(session_data->pcc_rule[j].
-                                flow[k].description);
-                        ogs_assert(sess_conf->data.pcc_rule[j].
-                                flow[k].description);
+                    rv = ogs_check_qos_conf(&session_data->pcc_rule[j].qos);
+                    if (rv != OGS_OK) {
+                        ogs_error("ogs_check_qos_conf() failed");
+                        ogs_app_sess_conf_remove(sess_conf);
+                        return OGS_ERROR;
                     }
+
+                    OGS_STORE_PCC_RULE(&sess_conf->data.pcc_rule[j],
+                            &session_data->pcc_rule[j]);
                 }
             }
         } else {

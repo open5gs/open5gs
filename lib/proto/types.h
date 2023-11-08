@@ -396,6 +396,8 @@ typedef struct ogs_bitrate_s {
     uint64_t uplink;          /* bits per seconds */
 } ogs_bitrate_t;
 
+int ogs_check_br_conf(ogs_bitrate_t *br);
+
 /**********************************
  * QoS Structure                 */
 typedef struct ogs_qos_s {
@@ -437,6 +439,8 @@ typedef struct ogs_qos_s {
     ogs_bitrate_t   mbr;  /* Maxmimum Bit Rate (MBR) */
     ogs_bitrate_t   gbr;  /* Guaranteed Bit Rate (GBR) */
 } ogs_qos_t;
+
+int ogs_check_qos_conf(ogs_qos_t *qos);
 
 /**********************************
  * Flow  Structure               */
@@ -797,6 +801,8 @@ typedef struct ogs_session_data_s {
     int num_of_pcc_rule;
 } ogs_session_data_t;
 
+int ogs_session_data_copy(
+        ogs_session_data_t *target, ogs_session_data_t *source);
 void ogs_session_data_free(ogs_session_data_t *session_data);
 
 typedef struct ogs_media_sub_component_s {
