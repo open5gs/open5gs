@@ -717,6 +717,7 @@ uint64_t ogs_sbi_bitrate_from_string(char *str)
     char *unit = NULL;
     uint64_t bitrate = 0;
     ogs_assert(str);
+    uint64_t mul = 1;
 
     unit = strrchr(str, ' ');
     bitrate = atoll(str);
@@ -728,15 +729,25 @@ uint64_t ogs_sbi_bitrate_from_string(char *str)
 
     SWITCH(unit+1)
     CASE("Kbps")
-        return bitrate * 1000;
+        mul = 1000ul;
+        break;
     CASE("Mbps")
-        return bitrate * 1000 * 1000;
+        mul = 1000ul * 1000ul;
+        break;
     CASE("Gbps")
-        return bitrate * 1000 * 1000 * 1000;
+        mul = 1000ul * 1000ul * 1000ul;
+        break;
     CASE("Tbps")
-        return bitrate * 1000 * 1000 * 1000 * 1000;
+        mul = 1000ul * 1000ul * 1000ul * 1000ul;
+        break;
     DEFAULT
     END
+
+    if (bitrate >= (INT64_MAX / mul))
+        bitrate = INT64_MAX;
+    else
+        bitrate *= mul;
+
     return bitrate;
 }
 
