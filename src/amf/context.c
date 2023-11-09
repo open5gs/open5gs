@@ -1601,6 +1601,8 @@ void amf_ue_remove(amf_ue_t *amf_ue)
 
     amf_ue_fsm_fini(amf_ue);
 
+    amf_metrics_reg_time_stop(amf_ue);
+
     /* Clear Paging Info */
     AMF_UE_CLEAR_PAGING_INFO(amf_ue);
 

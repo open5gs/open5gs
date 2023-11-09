@@ -65,6 +65,21 @@ typedef enum amf_metric_type_by_cause_s {
 void amf_metrics_inst_by_cause_add(
     uint8_t cause, amf_metric_type_by_cause_t t, int val);
 
+/* BY REG_TYPE */
+typedef enum amf_metric_type_by_reg_type_s {
+    AMF_METR_GAUGE_RM_REG_TIME_MEAN = 0,
+    AMF_METR_GAUGE_RM_REG_TIME_MAX,
+    _AMF_METR_BY_REG_TYPE_MAX,
+} amf_metric_type_by_reg_type_t;
+
+void amf_metrics_inst_by_reg_type_set(
+    int reg_type, amf_metric_type_by_reg_type_t t, int val);
+
+void amf_metrics_reg_time_start(amf_ue_t *amf_ue);
+int amf_metrics_reg_time_stop(amf_ue_t *amf_ue);
+void amf_metrics_reg_time_add(int reg_req_ms, uint8_t reg_type);
+void amf_metrics_reg_time_expose(void);
+
 void amf_metrics_init(void);
 void amf_metrics_final(void);
 

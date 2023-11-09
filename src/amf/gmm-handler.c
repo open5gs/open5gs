@@ -176,6 +176,7 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
         break;
     }
 
+    amf_metrics_reg_time_start(amf_ue);
 
     /* Set 5GS Registration Type */
     memcpy(&amf_ue->nas.registration, registration_type,
@@ -929,6 +930,8 @@ int gmm_handle_identity_response(amf_ue_t *amf_ue,
         ogs_error("Not supported Identity type[%d]",
                 mobile_identity_header->type);
     }
+
+    amf_metrics_reg_time_start(amf_ue);
 
     return OGS_OK;
 }

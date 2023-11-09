@@ -27,11 +27,23 @@
 #include "nnssf-handler.h"
 #include "nas-security.h"
 
+static ogs_timer_t *t_metrics_granularity_period = NULL;
+#define METRICS_GRANULARITY_PERIOD_TIME 30
+
 void amf_state_initial(ogs_fsm_t *s, amf_event_t *e)
 {
     amf_sm_debug(e);
 
     ogs_assert(s);
+
+    /* Starting metrics_granularity_period timer */
+    t_metrics_granularity_period = ogs_timer_add(
+            ogs_app()->timer_mgr,
+            amf_timer_metrics_granularity_period_expire,
+            t_metrics_granularity_period);
+    ogs_assert(t_metrics_granularity_period);
+    /* The closest we can do is to schedule the timer to fire in 1 us. */
+    ogs_timer_start(t_metrics_granularity_period, 1);
 
     OGS_FSM_TRAN(s, &amf_state_operational);
 }
@@ -41,6 +53,8 @@ void amf_state_final(ogs_fsm_t *s, amf_event_t *e)
     amf_sm_debug(e);
 
     ogs_assert(s);
+
+    ogs_timer_delete(t_metrics_granularity_period);
 }
 
 void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
@@ -976,15 +990,25 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         break;
 
     case AMF_EVENT_5GMM_TIMER:
-        amf_ue = amf_ue_cycle(e->amf_ue);
-        if (!amf_ue) {
-            ogs_error("UE(amf_ue) Context has already been removed");
+        switch (e->h.timer_id) {
+        case AMF_TIMER_METRICS_GRANULARITY_PERIOD:
+            ogs_timer_start(t_metrics_granularity_period,
+                    ogs_time_from_sec(METRICS_GRANULARITY_PERIOD_TIME));
+
+            amf_metrics_reg_time_expose();
             break;
+        default:
+
+            amf_ue = amf_ue_cycle(e->amf_ue);
+            if (!amf_ue) {
+                ogs_error("UE(amf_ue) Context has already been removed");
+                break;
+            }
+
+            ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
+
+            ogs_fsm_dispatch(&amf_ue->sm, e);
         }
-
-        ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
-
-        ogs_fsm_dispatch(&amf_ue->sm, e);
         break;
 
     default:
