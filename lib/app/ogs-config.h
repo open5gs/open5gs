@@ -160,6 +160,8 @@ int ogs_app_parse_sockopt_config(
         ogs_yaml_iter_t *parent, ogs_sockopt_t *option);
 
 int ogs_app_parse_slice_conf(ogs_yaml_iter_t *parent);
+int ogs_app_parse_session_data(
+        ogs_yaml_iter_t *iterator, ogs_session_data_t *session_data);
 
 ogs_app_slice_conf_t *ogs_app_slice_conf_add(ogs_s_nssai_t *s_nssai);
 ogs_app_slice_conf_t *ogs_app_slice_conf_find_by_s_nssai(
