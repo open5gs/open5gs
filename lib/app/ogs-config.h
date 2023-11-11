@@ -170,7 +170,8 @@ void ogs_app_slice_conf_remove(ogs_app_slice_conf_t *slice_conf);
 void ogs_app_slice_conf_remove_all(void);
 
 ogs_app_session_conf_t *ogs_app_session_conf_add(
-        ogs_app_slice_conf_t *slice_conf, char *name);
+        ogs_app_slice_conf_t *slice_conf, char *name,
+        ogs_session_data_t *session_data);
 ogs_app_session_conf_t *ogs_app_session_conf_find_by_dnn(
         ogs_app_slice_conf_t *slice_conf, char *name);
 void ogs_app_session_conf_remove(ogs_app_session_conf_t *session_conf);

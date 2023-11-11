@@ -90,6 +90,108 @@ static int pcrf_context_validation(void)
     return OGS_OK;
 }
 
+static int session_conf_prepare(void)
+{
+    ogs_app_slice_conf_t *slice_conf = NULL;
+    ogs_s_nssai_t s_nssai;
+
+    s_nssai.sst = 1;
+    s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+
+    /* Added Dummy SLICE for EPC */
+    slice_conf = ogs_app_slice_conf_add(&s_nssai);
+    if (!slice_conf) {
+        ogs_error("ogs_app_slice_conf_add() failed");
+        return OGS_ERROR;
+    }
+    slice_conf->data.default_indicator = true;
+
+    return OGS_OK;
+}
+
+static int session_conf_validation(void)
+{
+    ogs_app_slice_conf_t *slice_conf = NULL;
+    bool default_indicator = false;
+
+    ogs_list_for_each(&ogs_local_conf()->slice_list, slice_conf) {
+        if (slice_conf->data.default_indicator == true)
+            default_indicator = true;
+
+        if (ogs_list_count(&slice_conf->sess_list) == 0) {
+            ogs_error("At least 1 Session is required");
+            return OGS_ERROR;
+        }
+    }
+
+    if (default_indicator == false) {
+        ogs_error("At least 1 Default S-NSSAI is required");
+        return OGS_ERROR;
+    }
+
+    if (ogs_list_count(&ogs_local_conf()->slice_list) == 0 &&
+        ogs_app()->db_uri == NULL) {
+        ogs_error("Both db_uri and policy configuration are not set");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
+static int parse_session_conf(ogs_yaml_iter_t *parent)
+{
+    int rv;
+    ogs_app_slice_conf_t *slice_conf = NULL;
+    ogs_app_session_conf_t *session_conf = NULL;
+
+    ogs_yaml_iter_t session_array, session_iter;
+
+    ogs_assert(parent);
+
+    rv = session_conf_prepare();
+    if (rv != OGS_OK) return rv;
+
+    slice_conf = ogs_list_first(&ogs_local_conf()->slice_list);
+    ogs_assert(slice_conf);
+
+    ogs_yaml_iter_recurse(parent, &session_array);
+    do {
+        ogs_session_data_t session_data;
+
+        memset(&session_data, 0, sizeof(session_data));
+
+        if (ogs_yaml_iter_type(&session_array) == YAML_MAPPING_NODE) {
+            memcpy(&session_iter, &session_array, sizeof(ogs_yaml_iter_t));
+        } else if (ogs_yaml_iter_type(&session_array) == YAML_SEQUENCE_NODE) {
+            if (!ogs_yaml_iter_next(&session_array))
+                break;
+            ogs_yaml_iter_recurse(&session_array, &session_iter);
+        } else if (ogs_yaml_iter_type(&session_array) == YAML_SCALAR_NODE) {
+            break;
+        } else
+            ogs_assert_if_reached();
+
+        rv = ogs_app_parse_session_data(&session_iter, &session_data);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_app_parse_session_data() failed");
+            return OGS_ERROR;
+        }
+
+        session_conf = ogs_app_session_conf_add(
+                slice_conf, session_data.session.name, &session_data);
+        if (!session_conf) {
+            ogs_error("ogs_app_session_conf_add() failed");
+            return OGS_ERROR;
+        }
+
+    } while (ogs_yaml_iter_type(&session_array) == YAML_SEQUENCE_NODE);
+
+    rv = session_conf_validation();
+    if (rv != OGS_OK) return rv;
+
+    return OGS_OK;
+}
+
 int pcrf_context_parse_config(void)
 {
     int rv;
@@ -255,8 +357,12 @@ int pcrf_context_parse_config(void)
                                 ogs_warn("unknown key `%s`", fd_key);
                         }
                     }
-                } else if (!strcmp(pcrf_key, OGS_SLICE_STRING)) {
-                    /* handle config in app library */
+                } else if (!strcmp(pcrf_key, OGS_SESSION_STRING)) {
+                    rv = parse_session_conf(&pcrf_iter);
+                    if (rv != OGS_OK) {
+                        ogs_error("parse_session_conf() failed");
+                        return rv;
+                    }
                 } else
                     ogs_warn("unknown key `%s`", pcrf_key);
             }

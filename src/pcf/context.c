@@ -93,6 +93,166 @@ static int pcf_context_validation(void)
     return OGS_OK;
 }
 
+static int slice_conf_prepare(void)
+{
+    return OGS_OK;
+}
+
+static int slice_conf_validation(void)
+{
+    ogs_app_slice_conf_t *slice_conf = NULL;
+    bool default_indicator = false;
+
+    ogs_list_for_each(&ogs_local_conf()->slice_list, slice_conf) {
+        if (slice_conf->data.default_indicator == true)
+            default_indicator = true;
+
+        if (ogs_list_count(&slice_conf->sess_list) == 0) {
+            ogs_error("At least 1 Session is required");
+            return OGS_ERROR;
+        }
+    }
+
+    if (default_indicator == false) {
+        ogs_error("At least 1 Default S-NSSAI is required");
+        return OGS_ERROR;
+    }
+
+    if (ogs_list_count(&ogs_local_conf()->slice_list) == 0 &&
+        ogs_app()->db_uri == NULL) {
+        ogs_error("Both db_uri and policy configuration are not set");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
+static int parse_slice_conf(ogs_yaml_iter_t *parent)
+{
+    int rv, i;
+    ogs_yaml_iter_t slice_array, slice_iter;
+
+    ogs_assert(parent);
+
+    rv = slice_conf_prepare();
+    if (rv != OGS_OK) return rv;
+
+    ogs_yaml_iter_recurse(parent, &slice_array);
+    do {
+        ogs_s_nssai_t s_nssai;
+        bool default_indicator = false;
+
+        ogs_session_data_t session_data_array[OGS_MAX_NUM_OF_SESS];
+        int num_of_session_data = 0;
+
+        s_nssai.sst = 0;
+        s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+        memset(session_data_array, 0, sizeof(session_data_array));
+
+        if (ogs_yaml_iter_type(&slice_array) == YAML_MAPPING_NODE) {
+            memcpy(&slice_iter, &slice_array, sizeof(ogs_yaml_iter_t));
+        } else if (ogs_yaml_iter_type(&slice_array) == YAML_SEQUENCE_NODE) {
+            if (!ogs_yaml_iter_next(&slice_array))
+                break;
+            ogs_yaml_iter_recurse(&slice_array, &slice_iter);
+        } else if (ogs_yaml_iter_type(&slice_array) == YAML_SCALAR_NODE) {
+            break;
+        } else
+            ogs_assert_if_reached();
+
+        while (ogs_yaml_iter_next(&slice_iter)) {
+            const char *policy_key = ogs_yaml_iter_key(&slice_iter);
+            ogs_assert(policy_key);
+            if (!strcmp(policy_key, OGS_SST_STRING)) {
+                const char *v = ogs_yaml_iter_value(&slice_iter);
+                if (v) {
+                    s_nssai.sst = atoi(v);
+                    if (s_nssai.sst == 1 || s_nssai.sst == 2 ||
+                            s_nssai.sst == 3 || s_nssai.sst == 4) {
+                    } else {
+                        ogs_error("Unknown SST [%d]", s_nssai.sst);
+                        return OGS_ERROR;
+                    }
+                }
+            } else if (!strcmp(policy_key, OGS_SD_STRING)) {
+                const char *v = ogs_yaml_iter_value(&slice_iter);
+                if (v) s_nssai.sd = ogs_s_nssai_sd_from_string(v);
+            } else if (!strcmp(policy_key, OGS_DEFAULT_INDICATOR_STRING)) {
+                default_indicator = ogs_yaml_iter_bool(&slice_iter);
+            } else if (!strcmp(policy_key, OGS_SESSION_STRING)) {
+                ogs_yaml_iter_t session_array, session_iter;
+                ogs_yaml_iter_recurse(&slice_iter, &session_array);
+                do {
+                    ogs_session_data_t *session_data =
+                        &session_data_array[num_of_session_data];
+
+                    if (ogs_yaml_iter_type(&session_array) ==
+                            YAML_MAPPING_NODE) {
+                        memcpy(&session_iter, &session_array,
+                                sizeof(ogs_yaml_iter_t));
+                    } else if (ogs_yaml_iter_type(&session_array) ==
+                            YAML_SEQUENCE_NODE) {
+                        if (!ogs_yaml_iter_next(&session_array))
+                            break;
+                        ogs_yaml_iter_recurse(&session_array, &session_iter);
+                    } else if (ogs_yaml_iter_type(&session_array) ==
+                            YAML_SCALAR_NODE) {
+                        break;
+                    } else
+                        ogs_assert_if_reached();
+
+                    rv = ogs_app_parse_session_data(
+                            &session_iter, session_data);
+                    if (rv != OGS_OK) {
+                        ogs_error("ogs_app_parse_session_data() failed");
+                        return OGS_ERROR;
+                    }
+
+                    num_of_session_data++;
+
+                } while (ogs_yaml_iter_type(&session_array) ==
+                        YAML_SEQUENCE_NODE);
+            } else
+                ogs_warn("unknown key `%s`", policy_key);
+        }
+
+        if (s_nssai.sst) {
+            ogs_app_slice_conf_t *slice_conf =
+                ogs_app_slice_conf_add(&s_nssai);
+            if (!slice_conf) {
+                ogs_error("ogs_app_slice_conf_add() failed");
+                return OGS_ERROR;
+            }
+            slice_conf->data.default_indicator = default_indicator;
+
+            for (i = 0; i < num_of_session_data; i++) {
+                ogs_session_data_t *session_data = NULL;
+                ogs_app_session_conf_t *session_conf = NULL;
+
+                session_data = &session_data_array[i];
+                ogs_assert(session_data->session.name);
+                ogs_assert(session_data->session.session_type);
+
+                session_conf = ogs_app_session_conf_add(
+                        slice_conf, session_data->session.name, session_data);
+                if (!session_conf) {
+                    ogs_error("ogs_app_session_conf_add() failed");
+                    return OGS_ERROR;
+                }
+            }
+        } else {
+            ogs_error("No SST");
+            return OGS_ERROR;
+        }
+
+    } while (ogs_yaml_iter_type(&slice_array) == YAML_SEQUENCE_NODE);
+
+    rv = slice_conf_validation();
+    if (rv != OGS_OK) return rv;
+
+    return OGS_OK;
+}
+
 int pcf_context_parse_config(void)
 {
     int rv;
@@ -130,7 +290,11 @@ int pcf_context_parse_config(void)
                 } else if (!strcmp(pcf_key, "metrics")) {
                     /* handle config in metrics library */
                 } else if (!strcmp(pcf_key, OGS_SLICE_STRING)) {
-                    /* handle config in app library */
+                    rv = parse_slice_conf(&pcf_iter);
+                    if (rv != OGS_OK) {
+                        ogs_error("parse_slice_conf() failed");
+                        return rv;
+                    }
                 } else
                     ogs_warn("unknown key `%s`", pcf_key);
             }
