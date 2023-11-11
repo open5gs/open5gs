@@ -159,7 +159,7 @@ int ogs_app_parse_local_conf(const char *local);
 int ogs_app_parse_sockopt_config(
         ogs_yaml_iter_t *parent, ogs_sockopt_t *option);
 
-int ogs_app_parse_slice_conf(ogs_yaml_iter_t *parent);
+int ogs_app_check_slice_conf(void);
 int ogs_app_parse_session_data(
         ogs_yaml_iter_t *iterator, ogs_session_data_t *session_data);
 

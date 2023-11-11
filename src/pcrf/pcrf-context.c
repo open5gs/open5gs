@@ -111,27 +111,11 @@ static int session_conf_prepare(void)
 
 static int session_conf_validation(void)
 {
-    ogs_app_slice_conf_t *slice_conf = NULL;
-    bool default_indicator = false;
+    int rv;
 
-    ogs_list_for_each(&ogs_local_conf()->slice_list, slice_conf) {
-        if (slice_conf->data.default_indicator == true)
-            default_indicator = true;
-
-        if (ogs_list_count(&slice_conf->sess_list) == 0) {
-            ogs_error("At least 1 Session is required");
-            return OGS_ERROR;
-        }
-    }
-
-    if (default_indicator == false) {
-        ogs_error("At least 1 Default S-NSSAI is required");
-        return OGS_ERROR;
-    }
-
-    if (ogs_list_count(&ogs_local_conf()->slice_list) == 0 &&
-        ogs_app()->db_uri == NULL) {
-        ogs_error("Both db_uri and policy configuration are not set");
+    rv = ogs_app_check_slice_conf();
+    if (rv != OGS_OK) {
+        ogs_error("ogs_app_check_slice_conf() failed");
         return OGS_ERROR;
     }
 
