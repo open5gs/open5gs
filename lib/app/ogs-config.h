@@ -161,9 +161,9 @@ int ogs_app_parse_sockopt_config(
 
 int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent);
 
-ogs_app_policy_conf_t *ogs_app_policy_conf_add(uint8_t sst, ogs_uint24_t sd);
+ogs_app_policy_conf_t *ogs_app_policy_conf_add(ogs_s_nssai_t *s_nssai);
 ogs_app_policy_conf_t *ogs_app_policy_conf_find_by_s_nssai(
-        uint8_t sst, ogs_uint24_t sd);
+        ogs_s_nssai_t *s_nssai);
 void ogs_app_policy_conf_remove(ogs_app_policy_conf_t *policy_conf);
 void ogs_app_policy_conf_remove_all(void);
 

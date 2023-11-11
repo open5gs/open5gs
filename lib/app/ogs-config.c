@@ -1003,15 +1003,14 @@ int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent)
 
     ogs_yaml_iter_recurse(parent, &policy_array);
     do {
-        uint8_t sst;
-        ogs_uint24_t sd;
+        ogs_s_nssai_t s_nssai;
         bool default_indicator = false;
 
         ogs_session_data_t session_data_array[OGS_MAX_NUM_OF_SESS];
         int num_of_session_data = 0;
 
-        sst = 0;
-        sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+        s_nssai.sst = 0;
+        s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
         memset(session_data_array, 0, sizeof(session_data_array));
 
         if (ogs_yaml_iter_type(&policy_array) == YAML_MAPPING_NODE) {
@@ -1031,16 +1030,17 @@ int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent)
             if (!strcmp(policy_key, OGS_SST_STRING)) {
                 const char *v = ogs_yaml_iter_value(&policy_iter);
                 if (v) {
-                    sst = atoi(v);
-                    if (sst == 1 || sst == 2 || sst == 3 || sst == 4) {
+                    s_nssai.sst = atoi(v);
+                    if (s_nssai.sst == 1 || s_nssai.sst == 2 ||
+                            s_nssai.sst == 3 || s_nssai.sst == 4) {
                     } else {
-                        ogs_error("Unknown SST [%d]", sst);
+                        ogs_error("Unknown SST [%d]", s_nssai.sst);
                         return OGS_ERROR;
                     }
                 }
             } else if (!strcmp(policy_key, OGS_SD_STRING)) {
                 const char *v = ogs_yaml_iter_value(&policy_iter);
-                if (v) sd = ogs_s_nssai_sd_from_string(v);
+                if (v) s_nssai.sd = ogs_s_nssai_sd_from_string(v);
             } else if (!strcmp(policy_key, OGS_DEFAULT_INDICATOR_STRING)) {
                 default_indicator = ogs_yaml_iter_bool(&policy_iter);
             } else if (!strcmp(policy_key, OGS_SESSION_STRING)) {
@@ -1267,9 +1267,9 @@ int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent)
                 ogs_warn("unknown key `%s`", policy_key);
         }
 
-        if (sst) {
+        if (s_nssai.sst) {
             ogs_app_policy_conf_t *policy_conf =
-                ogs_app_policy_conf_add(sst, sd);
+                ogs_app_policy_conf_add(&s_nssai);
             if (!policy_conf) {
                 ogs_error("ogs_app_policy_conf_add() failed");
                 return OGS_ERROR;
@@ -1339,11 +1339,12 @@ int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent)
     return OGS_OK;
 }
 
-ogs_app_policy_conf_t *ogs_app_policy_conf_add(uint8_t sst, ogs_uint24_t sd)
+ogs_app_policy_conf_t *ogs_app_policy_conf_add(ogs_s_nssai_t *s_nssai)
 {
     ogs_app_policy_conf_t *policy_conf = NULL;
 
-    ogs_assert(sst);
+    ogs_assert(s_nssai);
+    ogs_assert(s_nssai->sst);
 
     ogs_pool_alloc(&policy_conf_pool, &policy_conf);
     if (!policy_conf) {
@@ -1353,8 +1354,8 @@ ogs_app_policy_conf_t *ogs_app_policy_conf_add(uint8_t sst, ogs_uint24_t sd)
     }
     memset(policy_conf, 0, sizeof *policy_conf);
 
-    policy_conf->data.s_nssai.sst = sst;
-    policy_conf->data.s_nssai.sd.v = sd.v;
+    policy_conf->data.s_nssai.sst = s_nssai->sst;
+    policy_conf->data.s_nssai.sd.v = s_nssai->sd.v;
 
     ogs_list_init(&policy_conf->sess_list);
 
@@ -1365,15 +1366,16 @@ ogs_app_policy_conf_t *ogs_app_policy_conf_add(uint8_t sst, ogs_uint24_t sd)
     return policy_conf;
 }
 ogs_app_policy_conf_t *ogs_app_policy_conf_find_by_s_nssai(
-        uint8_t sst, ogs_uint24_t sd)
+        ogs_s_nssai_t *s_nssai)
 {
     ogs_app_policy_conf_t *policy_conf = NULL;
 
-    ogs_assert(sst);
+    ogs_assert(s_nssai);
+    ogs_assert(s_nssai->sst);
 
     ogs_list_for_each(&local_conf.policy_list, policy_conf) {
-        if (policy_conf->data.s_nssai.sst == sst &&
-                policy_conf->data.s_nssai.sd.v == sd.v)
+        if (policy_conf->data.s_nssai.sst == s_nssai->sst &&
+                policy_conf->data.s_nssai.sd.v == s_nssai->sd.v)
             break;
     }
 
