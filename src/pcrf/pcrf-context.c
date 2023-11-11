@@ -255,7 +255,7 @@ int pcrf_context_parse_config(void)
                                 ogs_warn("unknown key `%s`", fd_key);
                         }
                     }
-                } else if (!strcmp(pcrf_key, OGS_POLICY_STRING)) {
+                } else if (!strcmp(pcrf_key, OGS_SLICE_STRING)) {
                     /* handle config in app library */
                 } else
                     ogs_warn("unknown key `%s`", pcrf_key);
