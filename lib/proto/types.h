@@ -481,8 +481,8 @@ typedef struct ogs_pcc_rule_s {
 #define OGS_STORE_PCC_RULE(__dST, __sRC) \
     do { \
         int __iNDEX; \
-        ogs_assert((__sRC)); \
-        ogs_assert((__dST)); \
+        ogs_assert((__sRC) != NULL); \
+        ogs_assert((__dST) != NULL); \
         OGS_PCC_RULE_FREE(__dST); \
         (__dST)->type = (__sRC)->type; \
         if ((__sRC)->name) { \
@@ -509,7 +509,7 @@ typedef struct ogs_pcc_rule_s {
 #define OGS_PCC_RULE_FREE(__pCCrULE) \
     do { \
         int __pCCrULE_iNDEX; \
-        ogs_assert((__pCCrULE)); \
+        ogs_assert((__pCCrULE) != NULL); \
         if ((__pCCrULE)->id) \
             ogs_free((__pCCrULE)->id); \
         if ((__pCCrULE)->name) \
@@ -520,7 +520,6 @@ typedef struct ogs_pcc_rule_s {
         } \
         (__pCCrULE)->num_of_flow = 0; \
     } while(0)
-
 
 /**********************************
  * PDN Structure                 */
@@ -800,9 +799,39 @@ typedef struct ogs_session_data_s {
     int num_of_pcc_rule;
 } ogs_session_data_t;
 
-int ogs_session_data_copy(
-        ogs_session_data_t *target, ogs_session_data_t *source);
-void ogs_session_data_free(ogs_session_data_t *session_data);
+#define OGS_STORE_SESSION_DATA(__dST, __sRC) \
+    do { \
+        int rv, j; \
+        ogs_assert((__dST) != NULL); \
+        ogs_assert((__sRC) != NULL); \
+        OGS_SESSION_DATA_FREE(__dST); \
+        if ((__sRC)->session.name) { \
+            (__dST)->session.name = ogs_strdup((__sRC)->session.name); \
+            ogs_assert((__dST)->session.name); \
+        } \
+        (__dST)->session.session_type = (__sRC)->session.session_type; \
+        memcpy(&(__dST)->session.ambr, &(__sRC)->session.ambr, \
+                sizeof((__dST)->session.ambr)); \
+        memcpy(&(__dST)->session.qos, &(__sRC)->session.qos, \
+                sizeof((__dST)->session.qos)); \
+        (__dST)->num_of_pcc_rule = (__sRC)->num_of_pcc_rule; \
+        for (j = 0; j < (__dST)->num_of_pcc_rule; j++) { \
+            rv = ogs_check_qos_conf(&(__sRC)->pcc_rule[j].qos); \
+            ogs_assert(rv == OGS_OK); \
+            OGS_STORE_PCC_RULE(&(__dST)->pcc_rule[j], &(__sRC)->pcc_rule[j]); \
+        } \
+    } while(0)
+
+#define OGS_SESSION_DATA_FREE(__sESSdATA) \
+    do { \
+        int i; \
+        ogs_assert((__sESSdATA) != NULL); \
+        if ((__sESSdATA)->session.name) \
+            ogs_free((__sESSdATA)->session.name); \
+        for (i = 0; i < (__sESSdATA)->num_of_pcc_rule; i++) \
+            OGS_PCC_RULE_FREE(&(__sESSdATA)->pcc_rule[i]); \
+        memset((__sESSdATA), 0, sizeof(ogs_session_data_t)); \
+    } while(0)
 
 typedef struct ogs_media_sub_component_s {
     uint32_t            flow_number;

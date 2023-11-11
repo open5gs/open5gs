@@ -882,7 +882,7 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     OpenAPI_list_free(QosDecisionList);
 
     ogs_ims_data_free(&ims_data);
-    ogs_session_data_free(&session_data);
+    OGS_SESSION_DATA_FREE(&session_data);
 
     return true;
 
@@ -917,7 +917,7 @@ cleanup:
     OpenAPI_list_free(QosDecisionList);
 
     ogs_ims_data_free(&ims_data);
-    ogs_session_data_free(&session_data);
+    OGS_SESSION_DATA_FREE(&session_data);
 
     return false;
 }
@@ -1292,7 +1292,7 @@ bool pcf_npcf_policyauthorization_handle_update(
     OpenAPI_list_free(QosDecisionList);
 
     ogs_ims_data_free(&ims_data);
-    ogs_session_data_free(&session_data);
+    OGS_SESSION_DATA_FREE(&session_data);
 
     return true;
 
@@ -1327,7 +1327,7 @@ cleanup:
     OpenAPI_list_free(QosDecisionList);
 
     ogs_ims_data_free(&ims_data);
-    ogs_session_data_free(&session_data);
+    OGS_SESSION_DATA_FREE(&session_data);
 
     return false;
 }

@@ -170,13 +170,15 @@ void ogs_app_slice_conf_remove(ogs_app_slice_conf_t *slice_conf);
 void ogs_app_slice_conf_remove_all(void);
 
 ogs_app_session_conf_t *ogs_app_session_conf_add(
-        ogs_app_slice_conf_t *slice_conf, char *name,
-        ogs_session_data_t *session_data);
+        ogs_app_slice_conf_t *slice_conf, ogs_session_data_t *session_data);
 ogs_app_session_conf_t *ogs_app_session_conf_find_by_dnn(
         ogs_app_slice_conf_t *slice_conf, char *name);
 void ogs_app_session_conf_remove(ogs_app_session_conf_t *session_conf);
 void ogs_app_session_conf_remove_all(
         ogs_app_slice_conf_t *slice_conf);
+
+int ogs_app_config_session_data(
+        ogs_s_nssai_t *s_nssai, char *dnn, ogs_session_data_t *session_data);
 
 #ifdef __cplusplus
 }

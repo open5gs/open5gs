@@ -915,6 +915,8 @@ static int session_data_prepare(ogs_session_data_t *session_data)
 {
     ogs_assert(session_data);
 
+    memset(session_data, 0, sizeof(*session_data));
+
     return OGS_OK;
 }
 
@@ -1232,14 +1234,12 @@ int ogs_app_check_slice_conf(void)
 }
 
 ogs_app_session_conf_t *ogs_app_session_conf_add(
-        ogs_app_slice_conf_t *slice_conf, char *name,
-        ogs_session_data_t *session_data)
+        ogs_app_slice_conf_t *slice_conf, ogs_session_data_t *session_data)
 {
-    int rv, j;
+    int rv;
     ogs_app_session_conf_t *session_conf = NULL;
 
     ogs_assert(slice_conf);
-    ogs_assert(name);
     ogs_assert(session_data);
 
     rv = ogs_check_br_conf(&session_data->session.ambr);
@@ -1261,34 +1261,7 @@ ogs_app_session_conf_t *ogs_app_session_conf_add(
     }
     memset(session_conf, 0, sizeof *session_conf);
 
-    session_conf->data.session.name = ogs_strdup(name);
-    if (!session_conf->data.session.name) {
-        ogs_error("Not enough memroy for %s", name);
-        ogs_pool_free(&session_conf_pool, session_conf);
-        return NULL;
-    }
-
-    session_conf->data.session.session_type =
-        session_data->session.session_type;
-
-    memcpy(&session_conf->data.session.ambr, &session_data->session.ambr,
-            sizeof(session_conf->data.session.ambr));
-    memcpy(&session_conf->data.session.qos, &session_data->session.qos,
-            sizeof(session_conf->data.session.qos));
-
-    session_conf->data.num_of_pcc_rule = session_data->num_of_pcc_rule;
-
-    for (j = 0; j < session_conf->data.num_of_pcc_rule; j++) {
-        rv = ogs_check_qos_conf(&session_data->pcc_rule[j].qos);
-        if (rv != OGS_OK) {
-            ogs_error("ogs_check_qos_conf() failed");
-            ogs_pool_free(&session_conf_pool, session_conf);
-            return NULL;
-        }
-
-        OGS_STORE_PCC_RULE(&session_conf->data.pcc_rule[j],
-                &session_data->pcc_rule[j]);
-    }
+    OGS_STORE_SESSION_DATA(&session_conf->data, session_data);
 
     ogs_list_add(&slice_conf->sess_list, session_conf);
 
@@ -1325,7 +1298,7 @@ void ogs_app_session_conf_remove(ogs_app_session_conf_t *session_conf)
 
     ogs_list_remove(&slice_conf->sess_list, session_conf);
 
-    ogs_session_data_free(&session_conf->data);
+    OGS_SESSION_DATA_FREE(&session_conf->data);
 
     ogs_pool_free(&session_conf_pool, session_conf);
 
@@ -1339,4 +1312,38 @@ void ogs_app_session_conf_remove_all(
 
     ogs_list_for_each_safe(&slice_conf->sess_list, next_conf, session_conf)
         ogs_app_session_conf_remove(session_conf);
+}
+
+int ogs_app_config_session_data(
+        ogs_s_nssai_t *s_nssai, char *dnn, ogs_session_data_t *session_data)
+{
+    ogs_app_slice_conf_t *slice_conf = NULL;
+    ogs_app_session_conf_t *session_conf = NULL;
+
+    ogs_assert(dnn);
+    ogs_assert(session_data);
+
+    if (s_nssai) {
+        slice_conf = ogs_app_slice_conf_find_by_s_nssai(s_nssai);
+        if (!slice_conf) {
+            ogs_error("No SLICE [SST:%d, SD:0x%x]",
+                    s_nssai->sst, s_nssai->sd.v);
+            return OGS_ERROR;
+        }
+    } else {
+        slice_conf = ogs_list_first(&ogs_local_conf()->slice_list);
+        if (!slice_conf) {
+            ogs_error("No default Slice for EPC");
+            return OGS_ERROR;
+        }
+    }
+    session_conf = ogs_app_session_conf_find_by_dnn(slice_conf, dnn);
+    if (!session_conf) {
+        ogs_error("No SESSION [%s]", dnn);
+        return OGS_ERROR;
+    }
+
+    OGS_STORE_SESSION_DATA(session_data, &session_conf->data);
+
+    return OGS_OK;
 }

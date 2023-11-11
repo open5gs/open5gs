@@ -387,7 +387,7 @@ bool pcf_nbsf_management_handle_register(
     pcf_metrics_inst_by_slice_add(&sess->pcf_ue->guami.plmn_id,
             &sess->s_nssai, PCF_METR_CTR_PA_POLICYSMASSOSUCC, 1);
 
-    ogs_session_data_free(&session_data);
+    OGS_SESSION_DATA_FREE(&session_data);
 
     return true;
 
@@ -399,7 +399,7 @@ cleanup:
         ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
     ogs_free(strerror);
 
-    ogs_session_data_free(&session_data);
+    OGS_SESSION_DATA_FREE(&session_data);
 
     return false;
 }

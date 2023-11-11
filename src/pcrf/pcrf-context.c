@@ -142,8 +142,6 @@ static int parse_session_conf(ogs_yaml_iter_t *parent)
     do {
         ogs_session_data_t session_data;
 
-        memset(&session_data, 0, sizeof(session_data));
-
         if (ogs_yaml_iter_type(&session_array) == YAML_MAPPING_NODE) {
             memcpy(&session_iter, &session_array, sizeof(ogs_yaml_iter_t));
         } else if (ogs_yaml_iter_type(&session_array) == YAML_SEQUENCE_NODE) {
@@ -161,8 +159,7 @@ static int parse_session_conf(ogs_yaml_iter_t *parent)
             return OGS_ERROR;
         }
 
-        session_conf = ogs_app_session_conf_add(
-                slice_conf, session_data.session.name, &session_data);
+        session_conf = ogs_app_session_conf_add(slice_conf, &session_data);
         if (!session_conf) {
             ogs_error("ogs_app_session_conf_add() failed");
             return OGS_ERROR;
@@ -370,6 +367,9 @@ int pcrf_db_qos_data(
     ogs_assert(session_data);
 
     ogs_thread_mutex_lock(&self.db_lock);
+
+    rv = ogs_app_config_session_data(NULL, apn, session_data);
+
     supi = ogs_msprintf("%s-%s", OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
     ogs_assert(supi);
 

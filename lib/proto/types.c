@@ -862,19 +862,6 @@ void ogs_subscription_data_free(ogs_subscription_data_t *subscription_data)
     subscription_data->num_of_msisdn = 0;
 }
 
-void ogs_session_data_free(ogs_session_data_t *session_data)
-{
-    int i;
-
-    ogs_assert(session_data);
-
-    if (session_data->session.name)
-        ogs_free(session_data->session.name);
-
-    for (i = 0; i < session_data->num_of_pcc_rule; i++)
-        OGS_PCC_RULE_FREE(&session_data->pcc_rule[i]);
-}
-
 void ogs_ims_data_free(ogs_ims_data_t *ims_data)
 {
     int i, j, k;

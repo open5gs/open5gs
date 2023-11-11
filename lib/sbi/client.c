@@ -134,7 +134,7 @@ ogs_sbi_client_t *ogs_sbi_client_add(
     OGS_OBJECT_REF(client);
 
     if (fqdn)
-        ogs_assert(client->fqdn = ogs_strdup(fqdn));
+        ogs_assert((client->fqdn = ogs_strdup(fqdn)));
     client->fqdn_port = fqdn_port;
     if (addr)
         ogs_assert(OGS_OK == ogs_copyaddrinfo(&client->addr, addr));

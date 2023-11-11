@@ -131,7 +131,6 @@ static int parse_slice_conf(ogs_yaml_iter_t *parent)
 
         s_nssai.sst = 0;
         s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
-        memset(session_data_array, 0, sizeof(session_data_array));
 
         if (ogs_yaml_iter_type(&slice_array) == YAML_MAPPING_NODE) {
             memcpy(&slice_iter, &slice_array, sizeof(ogs_yaml_iter_t));
@@ -218,7 +217,7 @@ static int parse_slice_conf(ogs_yaml_iter_t *parent)
                 ogs_assert(session_data->session.session_type);
 
                 session_conf = ogs_app_session_conf_add(
-                        slice_conf, session_data->session.name, session_data);
+                        slice_conf, session_data);
                 if (!session_conf) {
                     ogs_error("ogs_app_session_conf_add() failed");
                     return OGS_ERROR;
