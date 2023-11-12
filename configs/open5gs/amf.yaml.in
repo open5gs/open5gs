@@ -1,238 +1,238 @@
 logger:
-    file: @localstatedir@/log/open5gs/amf.log
-#    level: info   # fatal|error|warn|info(default)|debug|trace
+  file: @localstatedir@/log/open5gs/amf.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
-    max:
-      ue: 1024  # The number of UE can be increased depending on memory size.
-#      peer: 64
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
 
 amf:
-    sbi:
-      server:
-        - address: 127.0.0.5
-          port: 7777
-      client:
-#        nrf:
-#          - uri: http://127.0.0.10:7777
-        scp:
-          - uri: http://127.0.0.200:7777
-    ngap:
-      server:
-        - address: 127.0.0.5
-    metrics:
-      server:
-        - address: 127.0.0.5
-          port: 9090
-    guami:
-      - plmn_id:
-          mcc: 999
-          mnc: 70
-        amf_id:
-          region: 2
-          set: 1
-    tai:
-      - plmn_id:
-          mcc: 999
-          mnc: 70
-        tac: 1
-    plmn_support:
-      - plmn_id:
-          mcc: 999
-          mnc: 70
-        s_nssai:
-          - sst: 1
-    security:
-      integrity_order : [ NIA2, NIA1, NIA0 ]
-      ciphering_order : [ NEA0, NEA1, NEA2 ]
-    network_name:
-      full: Open5GS
-      short: Next
-    amf_name: open5gs-amf0
-    time:
-#      t3502:
-#        value: 720   # 12 minutes * 60 = 720 seconds
-      t3512:
-        value: 540    # 9 minutes * 60 = 540 seconds
+  sbi:
+    server:
+      - address: 127.0.0.5
+        port: 7777
+    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+      scp:
+        - uri: http://127.0.0.200:7777
+  ngap:
+    server:
+      - address: 127.0.0.5
+  metrics:
+    server:
+      - address: 127.0.0.5
+        port: 9090
+  guami:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+      amf_id:
+        region: 2
+        set: 1
+  tai:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+      tac: 1
+  plmn_support:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+      s_nssai:
+        - sst: 1
+  security:
+    integrity_order : [ NIA2, NIA1, NIA0 ]
+    ciphering_order : [ NEA0, NEA1, NEA2 ]
+  network_name:
+    full: Open5GS
+    short: Next
+  amf_name: open5gs-amf0
+  time:
+#    t3502:
+#      value: 720   # 12 minutes * 60 = 720 seconds
+    t3512:
+      value: 540    # 9 minutes * 60 = 540 seconds
 
 ################################################################################
 # SBI Server
 ################################################################################
 #  o Override SBI address to be advertised to NRF
-#    sbi:
-#      server:
-#        - dev:eth0
-#          advertise: open5gs-amf.svc.local
+#  sbi:
+#    server:
+#      - dev:eth0
+#        advertise: open5gs-amf.svc.local
 #
-#    sbi:
-#      server:
-#        - address: localhost
-#          advertise:
-#            - 127.0.0.99
-#            - ::1
+#  sbi:
+#    server:
+#      - address: localhost
+#        advertise:
+#          - 127.0.0.99
+#          - ::1
 #
 ################################################################################
 # SBI Client
 ################################################################################
 #  o Direct communication with NRF interaction
-#    sbi:
-#      client:
-#        nrf:
-#          - uri: http://127.0.0.10:7777
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
 #
 #  o Indirect communication with delegated discovery
-#    sbi:
-#      client:
-#        scp:
-#          - uri: http://127.0.0.200:7777
+#  sbi:
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
 #
 #  o Indirect communication without delegated discovery
-#    sbi:
-#      client:
-#        nrf:
-#          - uri: http://127.0.0.10:7777
-#        scp:
-#          - uri: http://127.0.0.200:7777
-#    discovery:
-#      delegated: no
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#  discovery:
+#    delegated: no
 #
 ################################################################################
 # HTTPS scheme with TLS
 ################################################################################
 #  o Set as default if not individually set
-#    default:
-#      tls:
-#        server:
-#          scheme: https
-#          private_key: @sysconfdir@/open5gs/tls/amf.key
-#          cert: @sysconfdir@/open5gs/tls/amf.crt
-#        client:
-#          scheme: https
-#          cacert: @sysconfdir@/open5gs/tls/ca.crt
-#    sbi:
+#  default:
+#    tls:
 #      server:
-#        - address: amf.localdomain
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/amf.key
+#        cert: @sysconfdir@/open5gs/tls/amf.crt
 #      client:
-#        nrf:
-#          - uri: https://nrf.localdomain
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: amf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
 #
 #  o Add client TLS verification
-#    default:
-#      tls:
-#        server:
-#          scheme: https
-#          private_key: @sysconfdir@/open5gs/tls/amf.key
-#          cert: @sysconfdir@/open5gs/tls/amf.crt
-#          verify_client: true
-#          verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
-#        client:
-#          scheme: https
-#          cacert: @sysconfdir@/open5gs/tls/ca.crt
-#          client_private_key: @sysconfdir@/open5gs/tls/amf.key
-#          client_cert: @sysconfdir@/open5gs/tls/amf.crt
-#    sbi:
+#  default:
+#    tls:
 #      server:
-#        - address: amf.localdomain
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/amf.key
+#        cert: @sysconfdir@/open5gs/tls/amf.crt
+#        verify_client: true
+#        verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
 #      client:
-#        nrf:
-#          - uri: https://nrf.localdomain
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_private_key: @sysconfdir@/open5gs/tls/amf.key
+#        client_cert: @sysconfdir@/open5gs/tls/amf.crt
+#  sbi:
+#    server:
+#      - address: amf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
 #
 ################################################################################
 # NGAP Server
 ################################################################################
 #  o Listen on address available in `eth0` interface
-#    ngap:
-#      server:
-#        - dev: eth0
+#  ngap:
+#    server:
+#      - dev: eth0
 #
 ################################################################################
 # 3GPP Specification
 ################################################################################
 #  o GUAMI
-#    guami:
-#      - plmn_id:
-#          mcc: 999
-#          mnc: 70
-#        amf_id:
-#          region: 2
-#          set: 1
-#          pointer: 4
-#      - plmn_id:
-#          mcc: 001
-#          mnc: 01
-#        amf_id:
-#          region: 5
-#          set: 2
+#  guami:
+#    - plmn_id:
+#        mcc: 999
+#        mnc: 70
+#      amf_id:
+#        region: 2
+#        set: 1
+#        pointer: 4
+#    - plmn_id:
+#        mcc: 001
+#        mnc: 01
+#      amf_id:
+#        region: 5
+#        set: 2
 #
 #  o TAI
-#    tai:
-#      - plmn_id:
-#          mcc: 001
-#          mnc: 01
-#        tac: [1, 3, 5]
-#    tai:
-#      - plmn_id:
-#          mcc: 002
-#          mnc: 02
-#        tac: [6-10, 15-18]
-#    tai:
-#      - plmn_id:
-#          mcc: 003
-#          mnc: 03
-#        tac: 20
-#      - plmn_id:
-#          mcc: 004
-#          mnc: 04
-#        tac: 21
-#    tai:
-#      - plmn_id:
-#          mcc: 005
-#          mnc: 05
-#        tac: [22, 28]
-#      - plmn_id:
-#          mcc: 006
-#          mnc: 06
-#        tac: [30-32, 34, 36-38, 40-42, 44, 46, 48]
-#      - plmn_id:
-#          mcc: 007
-#          mnc: 07
-#        tac: 50
-#      - plmn_id:
-#          mcc: 008
-#          mnc: 08
-#        tac: 60
-#      - plmn_id:
-#          mcc: 009
-#          mnc: 09
-#        tac: [70, 80]
+#  tai:
+#    - plmn_id:
+#        mcc: 001
+#        mnc: 01
+#      tac: [1, 3, 5]
+#  tai:
+#    - plmn_id:
+#        mcc: 002
+#        mnc: 02
+#      tac: [6-10, 15-18]
+#  tai:
+#    - plmn_id:
+#        mcc: 003
+#        mnc: 03
+#      tac: 20
+#    - plmn_id:
+#        mcc: 004
+#        mnc: 04
+#      tac: 21
+#  tai:
+#    - plmn_id:
+#        mcc: 005
+#        mnc: 05
+#      tac: [22, 28]
+#    - plmn_id:
+#        mcc: 006
+#        mnc: 06
+#      tac: [30-32, 34, 36-38, 40-42, 44, 46, 48]
+#    - plmn_id:
+#        mcc: 007
+#        mnc: 07
+#      tac: 50
+#    - plmn_id:
+#        mcc: 008
+#        mnc: 08
+#      tac: 60
+#    - plmn_id:
+#        mcc: 009
+#        mnc: 09
+#      tac: [70, 80]
 #
 #  o PLMN Support
-#    plmn_support:
-#      - plmn_id:
-#          mcc: 999
-#          mnc: 70
-#        s_nssai:
-#          - sst: 1
-#            sd: 010000
-#      - plmn_id:
-#          mcc: 999
-#          mnc: 70
-#        s_nssai:
-#          - sst: 1
+#  plmn_support:
+#    - plmn_id:
+#        mcc: 999
+#        mnc: 70
+#      s_nssai:
+#        - sst: 1
+#          sd: 010000
+#    - plmn_id:
+#        mcc: 999
+#        mnc: 70
+#      s_nssai:
+#        - sst: 1
 #
 #  o Access Control
-#    access_control:
-#      - default_reject_cause: 13
-#      - plmn_id:
-#          reject_cause: 15
-#          mcc: 001
-#          mnc: 01
-#      - plmn_id:
-#          mcc: 002
-#          mnc: 02
-#      - plmn_id:
-#          mcc: 999
-#          mnc: 70
+#  access_control:
+#    - default_reject_cause: 13
+#    - plmn_id:
+#        reject_cause: 15
+#        mcc: 001
+#        mnc: 01
+#    - plmn_id:
+#        mcc: 002
+#        mnc: 02
+#    - plmn_id:
+#        mcc: 999
+#        mnc: 70
 #
 #  o Relative Capacity
-#    relative_capacity: 100
+#  relative_capacity: 100

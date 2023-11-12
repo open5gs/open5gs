@@ -359,8 +359,9 @@ int pcrf_context_parse_config(void)
 int pcrf_db_qos_data(
         char *imsi_bcd, char *apn, ogs_session_data_t *session_data)
 {
-    int rv, i;
+    int rv1, rv2, i;
     char *supi = NULL;
+    ogs_session_data_t zero_data;
 
     ogs_assert(imsi_bcd);
     ogs_assert(apn);
@@ -368,13 +369,24 @@ int pcrf_db_qos_data(
 
     ogs_thread_mutex_lock(&self.db_lock);
 
-    rv = ogs_app_config_session_data(NULL, apn, session_data);
+    memset(&zero_data, 0, sizeof(zero_data));
+
+    /* session_data should be initialized to zero */
+    ogs_assert(memcmp(session_data, &zero_data, sizeof(zero_data)) == 0);
+
+    if (ogs_list_count(&ogs_local_conf()->slice_list))
+        rv1 = ogs_app_config_session_data(NULL, apn, session_data);
+    else
+        rv1 = OGS_OK;
 
     supi = ogs_msprintf("%s-%s", OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
     ogs_assert(supi);
 
     /* For EPC, we'll use [S_NSSAI = NULL] */
-    rv = ogs_dbi_session_data(supi, NULL, apn, session_data);
+    if (ogs_app()->db_uri)
+        rv2 = ogs_dbi_session_data(supi, NULL, apn, session_data);
+    else
+        rv2 = OGS_OK;
 
     /* For EPC, we need to inialize Flow-Status in Pcc-Rule */
     for (i = 0; i < session_data->num_of_pcc_rule; i++) {
@@ -385,7 +397,10 @@ int pcrf_db_qos_data(
     ogs_free(supi);
     ogs_thread_mutex_unlock(&self.db_lock);
 
-    return rv;
+    if (rv1 != OGS_OK && rv2 != OGS_OK)
+        return OGS_ERROR;
+
+    return OGS_OK;
 }
 
 void pcrf_sess_set_ipv4(const void *key, uint8_t *sid)

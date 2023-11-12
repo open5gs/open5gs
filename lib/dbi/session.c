@@ -40,16 +40,9 @@ int ogs_dbi_session_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
     char *supi_type = NULL;
     char *supi_id = NULL;
 
-    ogs_session_data_t zero_data;
-
     ogs_assert(supi);
     ogs_assert(dnn);
     ogs_assert(session_data);
-
-    memset(&zero_data, 0, sizeof(zero_data));
-
-    /* session_data should be initialized to zero */
-    ogs_assert(memcmp(session_data, &zero_data, sizeof(zero_data)) == 0);
 
     supi_type = ogs_id_get_type(supi);
     ogs_assert(supi_type);
@@ -166,6 +159,8 @@ done:
         if (!strcmp(child4_key, OGS_NAME_STRING) &&
             BSON_ITER_HOLDS_UTF8(&child4_iter)) {
             utf8 = bson_iter_utf8(&child4_iter, &length);
+            if (session->name)
+                ogs_free(session->name);
             session->name = ogs_strndup(utf8, length);
             ogs_assert(session->name);
         } else if (!strcmp(child4_key, OGS_TYPE_STRING) &&
@@ -252,7 +247,11 @@ done:
             }
         } else if (!strcmp(child4_key, OGS_PCC_RULE_STRING) &&
             BSON_ITER_HOLDS_ARRAY(&child4_iter)) {
-            int pcc_rule_index = 0;
+            int i, pcc_rule_index = 0;
+
+            /* Free all PCC Rule present in the session */
+            for (i = 0; i < session_data->num_of_pcc_rule; i++)
+                OGS_PCC_RULE_FREE(&session_data->pcc_rule[i]);
 
             bson_iter_recurse(&child4_iter, &child5_iter);
             while (bson_iter_next(&child5_iter)) {
@@ -478,18 +477,12 @@ done:
                 }
 
                 /* EPC: Charing-Rule-Name */
-                if (pcc_rule->name) {
-                    ogs_error("PCC Rule Name has already been defined");
-                    ogs_free(pcc_rule->name);
-                }
+                ogs_assert(!pcc_rule->name);
                 pcc_rule->name = ogs_msprintf("%s-g%d", dnn, pcc_rule_index+1);
                 ogs_assert(pcc_rule->name);
 
                 /* 5GC: PCC-Rule-Id */
-                if (pcc_rule->id) {
-                    ogs_error("PCC Rule Id has already been defined");
-                    ogs_free(pcc_rule->id);
-                }
+                ogs_assert(!pcc_rule->id);
                 pcc_rule->id = ogs_msprintf("%s-n%d", dnn, pcc_rule_index+1);
                 ogs_assert(pcc_rule->id);
 

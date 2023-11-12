@@ -1333,7 +1333,7 @@ int ogs_app_config_session_data(
     } else {
         slice_conf = ogs_list_first(&ogs_local_conf()->slice_list);
         if (!slice_conf) {
-            ogs_error("No default Slice for EPC");
+            ogs_error("No default SLICE for EPC");
             return OGS_ERROR;
         }
     }

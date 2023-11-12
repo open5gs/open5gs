@@ -518,7 +518,7 @@ typedef struct ogs_pcc_rule_s {
             __pCCrULE_iNDEX < (__pCCrULE)->num_of_flow; __pCCrULE_iNDEX++) { \
             OGS_FLOW_FREE(&((__pCCrULE)->flow[__pCCrULE_iNDEX])); \
         } \
-        (__pCCrULE)->num_of_flow = 0; \
+        memset((__pCCrULE), 0, sizeof(ogs_pcc_rule_t)); \
     } while(0)
 
 /**********************************

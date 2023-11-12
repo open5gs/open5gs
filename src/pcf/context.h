@@ -176,6 +176,9 @@ pcf_app_t *pcf_app_find(uint32_t index);
 pcf_app_t *pcf_app_find_by_app_session_id(char *app_session_id);
 int pcf_instance_get_load(void);
 
+int pcf_db_qos_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
+        ogs_session_data_t *session_data);
+
 #ifdef __cplusplus
 }
 #endif

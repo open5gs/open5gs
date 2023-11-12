@@ -1,14 +1,14 @@
 db_uri: mongodb://localhost/open5gs
 logger:
-    file: @localstatedir@/log/open5gs/pcrf.log
-#    level: info   # fatal|error|warn|info(default)|debug|trace
+  file: @localstatedir@/log/open5gs/pcrf.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
-    max:
-      ue: 1024  # The number of UE can be increased depending on memory size.
-#      peer: 64
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
 pcrf:
-    freeDiameter: @sysconfdir@/freeDiameter/pcrf.conf
+  freeDiameter: @sysconfdir@/freeDiameter/pcrf.conf
 
 ################################################################################
 # Locally configured policy
@@ -16,76 +16,76 @@ pcrf:
 #
 #  o You don't have to use MongoDB if you use the policy configuratoin as below.
 #
-#    session:
-#      - name: internet
-#        type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
-#        ambr:
-#          downlink:
-#            value: 1
-#            unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#          uplink:
-#            value: 1
-#            unit: 3
-#        qos:
-#          index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
-#          arp:
-#            priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#            pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
-#            pre_emption_capability: 1  # 1: Disabled, 2:Enabled
-#      - name: ims
-#        type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
-#        ambr:
-#          downlink:
-#            value: 1
-#            unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#          uplink:
-#            value: 1
-#            unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#        qos:
-#          index: 5  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
-#          arp:
-#            priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#            pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
-#            pre_emption_capability: 1  # 1: Disabled, 2:Enabled
-#        pcc_rule:
-#          - qos:
-#              index: 1  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
-#              arp:
-#                priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                pre_emption_vulnerability: 1   # 1: Disabled, 2:Enabled
-#                pre_emption_capability: 1   # 1: Disabled, 2:Enabled
-#              mbr:
-#                downlink:
-#                  value: 82
-#                  unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#                uplink:
-#                  value: 82
-#                  unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#              gbr:
-#                downlink:
-#                  value: 82
-#                  unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#                uplink:
-#                  value: 82
-#                  unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#          - qos:
-#              index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
-#              arp:
-#                priority_level: 4  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                pre_emption_vulnerability: 2   # 1: Disabled, 2:Enabled
-#                pre_emption_capability: 2   # 1: Disabled, 2:Enabled
-#              mbr:
-#                downlink:
-#                  value: 802
-#                  unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#                uplink:
-#                  value: 802
-#                  unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#              gbr:
-#                downlink:
-#                  value: 802
-#                  unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#                uplink:
-#                  value: 802
-#                  unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#  session:
+#    - name: internet
+#      type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+#      ambr:
+#        downlink:
+#          value: 1
+#          unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#        uplink:
+#          value: 1
+#          unit: 3
+#      qos:
+#        index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#        arp:
+#          priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#          pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
+#          pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+#    - name: ims
+#      type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+#      ambr:
+#        downlink:
+#          value: 1
+#          unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#        uplink:
+#          value: 1
+#          unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#      qos:
+#        index: 5  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#        arp:
+#          priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#          pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
+#          pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+#      pcc_rule:
+#        - qos:
+#            index: 1  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#            arp:
+#              priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#              pre_emption_vulnerability: 1   # 1: Disabled, 2:Enabled
+#              pre_emption_capability: 1   # 1: Disabled, 2:Enabled
+#            mbr:
+#              downlink:
+#                value: 82
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#              uplink:
+#                value: 82
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#            gbr:
+#              downlink:
+#                value: 82
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#              uplink:
+#                value: 82
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#        - qos:
+#            index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#            arp:
+#              priority_level: 4  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#              pre_emption_vulnerability: 2   # 1: Disabled, 2:Enabled
+#              pre_emption_capability: 2   # 1: Disabled, 2:Enabled
+#            mbr:
+#              downlink:
+#                value: 802
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#              uplink:
+#                value: 802
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#            gbr:
+#              downlink:
+#                value: 802
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#              uplink:
+#                value: 802
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
 #

@@ -756,3 +756,35 @@ int pcf_instance_get_load(void)
             ogs_pool_avail(&pcf_ue_pool)) * 100) /
             ogs_pool_size(&pcf_ue_pool));
 }
+
+int pcf_db_qos_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
+        ogs_session_data_t *session_data)
+{
+    int rv1, rv2;
+    ogs_session_data_t zero_data;
+
+    ogs_assert(supi);
+    ogs_assert(s_nssai);
+    ogs_assert(dnn);
+    ogs_assert(session_data);
+
+    memset(&zero_data, 0, sizeof(zero_data));
+
+    /* session_data should be initialized to zero */
+    ogs_assert(memcmp(session_data, &zero_data, sizeof(zero_data)) == 0);
+
+    if (ogs_list_count(&ogs_local_conf()->slice_list))
+        rv1 = ogs_app_config_session_data(s_nssai, dnn, session_data);
+    else
+        rv1 = OGS_OK;
+
+    if (ogs_app()->db_uri)
+        rv2 = ogs_dbi_session_data(supi, s_nssai, dnn, session_data);
+    else
+        rv2 = OGS_OK;
+
+    if (rv1 != OGS_OK && rv2 != OGS_OK)
+        return OGS_ERROR;
+
+    return OGS_OK;
+}

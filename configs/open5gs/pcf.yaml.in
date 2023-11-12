@@ -1,27 +1,27 @@
 db_uri: mongodb://localhost/open5gs
 logger:
-    file: @localstatedir@/log/open5gs/pcf.log
-#    level: info   # fatal|error|warn|info(default)|debug|trace
+  file: @localstatedir@/log/open5gs/pcf.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
-    max:
-      ue: 1024  # The number of UE can be increased depending on memory size.
-#      peer: 64
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
 
 pcf:
-    sbi:
-      server:
-        - address: 127.0.0.13
-          port: 7777
-      client:
-#        nrf:
-#          - uri: http://127.0.0.10:7777
-        scp:
-          - uri: http://127.0.0.200:7777
-    metrics:
-      server:
-        - address: 127.0.0.13
-          port: 9090
+  sbi:
+    server:
+      - address: 127.0.0.13
+        port: 7777
+    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+      scp:
+        - uri: http://127.0.0.200:7777
+  metrics:
+    server:
+      - address: 127.0.0.13
+        port: 9090
 
 ################################################################################
 # Locally configured policy
@@ -32,161 +32,161 @@ pcf:
 #
 #  o You don't have to use MongoDB if you use the policy configuratoin as below.
 #
-#    slice:
-#      - sst: 1  # 1,2,3,4
-#        sd: 000001
-#        default_indicator: true
-#        session:
-#          - name: internet
-#            type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
-#            ambr:
-#              downlink:
-#                value: 1
-#                unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#              uplink:
-#                value: 1
-#                unit: 3
-#            qos:
-#              index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
-#              arp:
-#                priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
-#                pre_emption_capability: 1  # 1: Disabled, 2:Enabled
-#          - name: ims
-#            type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
-#            ambr:
-#              downlink:
-#                value: 1
-#                unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#              uplink:
-#                value: 1
-#                unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#            qos:
-#              index: 5  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
-#              arp:
-#                priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
-#                pre_emption_capability: 1  # 1: Disabled, 2:Enabled
-#            pcc_rule:
-#              - qos:
-#                  index: 1  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
-#                  arp:
-#                    priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                    pre_emption_vulnerability: 1   # 1: Disabled, 2:Enabled
-#                    pre_emption_capability: 1   # 1: Disabled, 2:Enabled
-#                  mbr:
-#                    downlink:
-#                      value: 82
-#                      unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#                    uplink:
-#                      value: 82
-#                      unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#                  gbr:
-#                    downlink:
-#                      value: 82
-#                      unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#                    uplink:
-#                      value: 82
-#                      unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#              - qos:
-#                  index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
-#                  arp:
-#                    priority_level: 4  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                    pre_emption_vulnerability: 2   # 1: Disabled, 2:Enabled
-#                    pre_emption_capability: 2   # 1: Disabled, 2:Enabled
-#                  mbr:
-#                    downlink:
-#                      value: 802
-#                      unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#                    uplink:
-#                      value: 802
-#                      unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#                  gbr:
-#                    downlink:
-#                      value: 802
-#                      unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#                    uplink:
-#                      value: 802
-#                      unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#  slice:
+#    - sst: 1  # 1,2,3,4
+#      sd: 000001
+#      default_indicator: true
+#      session:
+#        - name: internet
+#          type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+#          ambr:
+#            downlink:
+#              value: 1
+#              unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#            uplink:
+#              value: 1
+#              unit: 3
+#          qos:
+#            index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#            arp:
+#              priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#              pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
+#              pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+#        - name: ims
+#          type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+#          ambr:
+#            downlink:
+#              value: 1
+#              unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#            uplink:
+#              value: 1
+#              unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#          qos:
+#            index: 5  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#            arp:
+#              priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#              pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
+#              pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+#          pcc_rule:
+#            - qos:
+#                index: 1  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                arp:
+#                  priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#                  pre_emption_vulnerability: 1   # 1: Disabled, 2:Enabled
+#                  pre_emption_capability: 1   # 1: Disabled, 2:Enabled
+#                mbr:
+#                  downlink:
+#                    value: 82
+#                    unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                  uplink:
+#                    value: 82
+#                    unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                gbr:
+#                  downlink:
+#                    value: 82
+#                    unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                  uplink:
+#                    value: 82
+#                    unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#            - qos:
+#                index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                arp:
+#                  priority_level: 4  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#                  pre_emption_vulnerability: 2   # 1: Disabled, 2:Enabled
+#                  pre_emption_capability: 2   # 1: Disabled, 2:Enabled
+#                mbr:
+#                  downlink:
+#                    value: 802
+#                    unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                  uplink:
+#                    value: 802
+#                    unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                gbr:
+#                  downlink:
+#                    value: 802
+#                    unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                  uplink:
+#                    value: 802
+#                    unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
 #
 ################################################################################
 # SBI Server
 ################################################################################
 #  o Override SBI address to be advertised to NRF
-#    sbi:
-#      server:
-#        - dev: eth0
-#          advertise: open5gs-pcf.svc.local
+#  sbi:
+#    server:
+#      - dev: eth0
+#        advertise: open5gs-pcf.svc.local
 #
-#    sbi:
-#      server:
-#        - address: localhost
-#          advertise:
-#            - 127.0.0.99
-#            - ::1
+#  sbi:
+#    server:
+#      - address: localhost
+#        advertise:
+#          - 127.0.0.99
+#          - ::1
 #
 ################################################################################
 # SBI Client
 ################################################################################
 #  o Direct communication with NRF interaction
-#    sbi:
-#      client:
-#        nrf:
-#          - uri: http://127.0.0.10:7777
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
 #
 #  o Indirect communication with delegated discovery
-#    sbi:
-#      client:
-#        scp:
-#          - uri: http://127.0.0.200:7777
+#  sbi:
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
 #
 #  o Indirect communication without delegated discovery
-#    sbi:
-#      client:
-#        nrf:
-#          - uri: http://127.0.0.10:7777
-#        scp:
-#          - uri: http://127.0.0.200:7777
-#    discovery:
-#      delegated: no
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#  discovery:
+#    delegated: no
 #
 ################################################################################
 # HTTPS scheme with TLS
 ################################################################################
 #  o Set as default if not individually set
-#    default:
-#      tls:
-#        server:
-#          scheme: https
-#          private_key: @sysconfdir@/open5gs/tls/pcf.key
-#          cert: @sysconfdir@/open5gs/tls/pcf.crt
-#        client:
-#          scheme: https
-#          cacert: @sysconfdir@/open5gs/tls/ca.crt
-#    sbi:
+#  default:
+#    tls:
 #      server:
-#        - address: pcf.localdomain
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/pcf.key
+#        cert: @sysconfdir@/open5gs/tls/pcf.crt
 #      client:
-#        nrf:
-#          - uri: https://nrf.localdomain
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: pcf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
 #
 #  o Add client TLS verification
-#    default:
-#      tls:
-#        server:
-#          scheme: https
-#          private_key: @sysconfdir@/open5gs/tls/pcf.key
-#          cert: @sysconfdir@/open5gs/tls/pcf.crt
-#          verify_client: true
-#          verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
-#        client:
-#          scheme: https
-#          cacert: @sysconfdir@/open5gs/tls/ca.crt
-#          client_private_key: @sysconfdir@/open5gs/tls/pcf.key
-#          client_cert: @sysconfdir@/open5gs/tls/pcf.crt
-#    sbi:
+#  default:
+#    tls:
 #      server:
-#        - address: pcf.localdomain
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/pcf.key
+#        cert: @sysconfdir@/open5gs/tls/pcf.crt
+#        verify_client: true
+#        verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
 #      client:
-#        nrf:
-#          - uri: https://nrf.localdomain
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_private_key: @sysconfdir@/open5gs/tls/pcf.key
+#        client_cert: @sysconfdir@/open5gs/tls/pcf.crt
+#  sbi:
+#    server:
+#      - address: pcf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
