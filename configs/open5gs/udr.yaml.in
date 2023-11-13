@@ -1,102 +1,102 @@
 db_uri: mongodb://localhost/open5gs
 logger:
-    file: @localstatedir@/log/open5gs/udr.log
-#    level: info   # fatal|error|warn|info(default)|debug|trace
+  file: @localstatedir@/log/open5gs/udr.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
-    max:
-      ue: 1024  # The number of UE can be increased depending on memory size.
-#      peer: 64
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
 
 udr:
-    sbi:
-      server:
-        - address: 127.0.0.20
-          port: 7777
-      client:
-#        nrf:
-#          - uri: http://127.0.0.10:7777
-        scp:
-          - uri: http://127.0.0.200:7777
+  sbi:
+    server:
+      - address: 127.0.0.20
+        port: 7777
+    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+      scp:
+        - uri: http://127.0.0.200:7777
 
 ################################################################################
 # SBI Server
 ################################################################################
 #  o Override SBI address to be advertised to NRF
-#    sbi:
-#      server:
-#        - dev: eth0
-#          advertise: open5gs-udr.svc.local
+#  sbi:
+#    server:
+#      - dev: eth0
+#        advertise: open5gs-udr.svc.local
 #
-#    sbi:
-#      server:
-#        - address: localhost
-#          advertise:
-#            - 127.0.0.99
-#            - ::1
+#  sbi:
+#    server:
+#      - address: localhost
+#        advertise:
+#          - 127.0.0.99
+#          - ::1
 #
 ################################################################################
 # SBI Client
 ################################################################################
 #  o Direct communication with NRF interaction
-#    sbi:
-#      client:
-#        nrf:
-#          - uri: http://127.0.0.10:7777
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
 #
 #  o Indirect communication with delegated discovery
-#    sbi:
-#      client:
-#        scp:
-#          - uri: http://127.0.0.200:7777
+#  sbi:
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
 #
 #  o Indirect communication without delegated discovery
-#    sbi:
-#      client:
-#        nrf:
-#          - uri: http://127.0.0.10:7777
-#        scp:
-#          - uri: http://127.0.0.200:7777
-#    discovery:
-#      delegated: no
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#  discovery:
+#    delegated: no
 #
 ################################################################################
 # HTTPS scheme with TLS
 ################################################################################
 #  o Set as default if not individually set
-#    default:
-#      tls:
-#        server:
-#          scheme: https
-#          private_key: @sysconfdir@/open5gs/tls/udr.key
-#          cert: @sysconfdir@/open5gs/tls/udr.crt
-#        client:
-#          scheme: https
-#          cacert: @sysconfdir@/open5gs/tls/ca.crt
-#    sbi:
+#  default:
+#    tls:
 #      server:
-#        - address: udr.localdomain
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/udr.key
+#        cert: @sysconfdir@/open5gs/tls/udr.crt
 #      client:
-#        nrf:
-#          - uri: https://nrf.localdomain
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: udr.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
 #
 #  o Add client TLS verification
-#    default:
-#      tls:
-#        server:
-#          scheme: https
-#          private_key: @sysconfdir@/open5gs/tls/udr.key
-#          cert: @sysconfdir@/open5gs/tls/udr.crt
-#          verify_client: true
-#          verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
-#        client:
-#          scheme: https
-#          cacert: @sysconfdir@/open5gs/tls/ca.crt
-#          client_private_key: @sysconfdir@/open5gs/tls/udr.key
-#          client_cert: @sysconfdir@/open5gs/tls/udr.crt
-#    sbi:
+#  default:
+#    tls:
 #      server:
-#        - address: udr.localdomain
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/udr.key
+#        cert: @sysconfdir@/open5gs/tls/udr.crt
+#        verify_client: true
+#        verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
 #      client:
-#        nrf:
-#          - uri: https://nrf.localdomain
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_private_key: @sysconfdir@/open5gs/tls/udr.key
+#        client_cert: @sysconfdir@/open5gs/tls/udr.crt
+#  sbi:
+#    server:
+#      - address: udr.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain

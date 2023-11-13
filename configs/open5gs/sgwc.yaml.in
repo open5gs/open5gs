@@ -1,69 +1,69 @@
 logger:
-    file: @localstatedir@/log/open5gs/sgwc.log
-#    level: info   # fatal|error|warn|info(default)|debug|trace
+  file: @localstatedir@/log/open5gs/sgwc.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
-    max:
-      ue: 1024  # The number of UE can be increased depending on memory size.
-#      peer: 64
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
 
 sgwc:
-    gtpc:
-      server:
-        - address: 127.0.0.3
-    pfcp:
-      server:
-        - address: 127.0.0.3
-      client:
-        sgwu:
-          - address: 127.0.0.6
+  gtpc:
+    server:
+      - address: 127.0.0.3
+  pfcp:
+    server:
+      - address: 127.0.0.3
+    client:
+      sgwu:
+        - address: 127.0.0.6
 
 ################################################################################
 # GTP-C Server
 ################################################################################
 #  o Listen on IPv4 and IPv6
-#    gtpc:
-#      server:
-#        - address: 127.0.0.3
-#        - address: fd69:f21d:873c:fa::2
+#  gtpc:
+#    server:
+#      - address: 127.0.0.3
+#      - address: fd69:f21d:873c:fa::2
 #
 ################################################################################
 # PFCP Server
 ################################################################################
 #  o Override PFCP address to be advertised to SGW-U in PFCP association
-#    pfcp:
-#      server:
-#        - dev: eth0
-#          advertise: open5gs-sgwc.svc.local
+#  pfcp:
+#    server:
+#      - dev: eth0
+#        advertise: open5gs-sgwc.svc.local
 #
 ################################################################################
 # PFCP Client
 ################################################################################
 #  o SGWU selection by eNodeB TAC
 #   (either single TAC or multiple TACs, DECIMAL representation)
-#    pfcp:
-#      client:
-#        sgwu:
-#          - address: 127.0.0.6
-#            tac: 1
-#          - address: 127.0.0.12
-#            tac: [3,5,8]
+#  pfcp:
+#    client:
+#      sgwu:
+#        - address: 127.0.0.6
+#          tac: 1
+#        - address: 127.0.0.12
+#          tac: [3,5,8]
 #
 #  o SGWU selection by UE's APN (either single APN or multiple APNs)
-#    pfcp:
-#      client:
-#        sgwu:
-#          - address: 127.0.0.6
-#            apn: ims
-#          - address: 127.0.0.12
-#            apn: [internet, web]
+#  pfcp:
+#    client:
+#      sgwu:
+#        - address: 127.0.0.6
+#          apn: ims
+#        - address: 127.0.0.12
+#          apn: [internet, web]
 #
 #  o SGWU selection by CellID(e_cell_id: 28bit)
 #   (either single e_cell_id or multiple e_cell_id, HEX representation)
-#    pfcp:
-#      client:
-#        sgwu:
-#          - address: 127.0.0.6
-#            e_cell_id: 463
-#          - address: 127.0.0.12
-#            e_cell_id: [123456789, 9413]
+#  pfcp:
+#    client:
+#      sgwu:
+#        - address: 127.0.0.6
+#          e_cell_id: 463
+#        - address: 127.0.0.12
+#          e_cell_id: [123456789, 9413]

@@ -1,53 +1,53 @@
 logger:
-    file: @localstatedir@/log/open5gs/smf.log
-#    level: info   # fatal|error|warn|info(default)|debug|trace
+  file: @localstatedir@/log/open5gs/smf.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
-    max:
-      ue: 1024  # The number of UE can be increased depending on memory size.
-#      peer: 64
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
 
 smf:
-    sbi:
-      server:
-        - address: 127.0.0.4
-          port: 7777
-      client:
-#        nrf:
-#          - uri: http://127.0.0.10:7777
-        scp:
-          - uri: http://127.0.0.200:7777
-    pfcp:
-      server:
-        - address: 127.0.0.4
-      client:
-        upf:
-          - address: 127.0.0.7
-    gtpc:
-      server:
-        - address: 127.0.0.4
-    gtpu:
-      server:
-        - address: 127.0.0.4
-    metrics:
-      server:
-        - address: 127.0.0.4
-          port: 9090
-    session:
-      - subnet: 10.45.0.1/16
-      - subnet: 2001:db8:cafe::1/48
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-      - 2001:4860:4860::8888
-      - 2001:4860:4860::8844
-    mtu: 1400
-#    p-cscf:
-#      - 127.0.0.1
-#      - ::1
-#    ctf:
-#      enabled: auto   # auto(default)|yes|no
-    freeDiameter: @sysconfdir@/freeDiameter/smf.conf
+  sbi:
+    server:
+      - address: 127.0.0.4
+        port: 7777
+    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+      scp:
+        - uri: http://127.0.0.200:7777
+  pfcp:
+    server:
+      - address: 127.0.0.4
+    client:
+      upf:
+        - address: 127.0.0.7
+  gtpc:
+    server:
+      - address: 127.0.0.4
+  gtpu:
+    server:
+      - address: 127.0.0.4
+  metrics:
+    server:
+      - address: 127.0.0.4
+        port: 9090
+  session:
+    - subnet: 10.45.0.1/16
+    - subnet: 2001:db8:cafe::1/48
+  dns:
+    - 8.8.8.8
+    - 8.8.4.4
+    - 2001:4860:4860::8888
+    - 2001:4860:4860::8844
+  mtu: 1400
+#  p-cscf:
+#    - 127.0.0.1
+#    - ::1
+#  ctf:
+#    enabled: auto   # auto(default)|yes|no
+  freeDiameter: @sysconfdir@/freeDiameter/smf.conf
 
 ################################################################################
 # SMF Info
@@ -60,298 +60,297 @@ smf:
 #  Note that if there is no SmfInfo, any AMF can select this SMF.
 #
 #  o S-NSSAI[SST:1] and DNN[internet] - At least 1 DNN is required in S-NSSAI
-#    info:
-#      - s_nssai:
-#          - sst: 1
-#            dnn:
-#              - internet
+#  info:
+#    - s_nssai:
+#        - sst: 1
+#          dnn:
+#            - internet
 #
 #  o S-NSSAI[SST:1 SD:009000] and DNN[internet or ims]
-#    info:
-#      - s_nssai:
-#          - sst: 1
-#            sd: 009000
-#            dnn:
-#              - internet
-#              - ims
+#  info:
+#    - s_nssai:
+#        - sst: 1
+#          sd: 009000
+#          dnn:
+#            - internet
+#            - ims
 #
 #  o S-NSSAI[SST:1] and DNN[internet] and TAI[PLMN-ID:99970 TAC:1]
-#    info:
-#      - s_nssai:
-#          - sst: 1
-#            dnn:
-#              - internet
-#        tai:
-#          - plmn_id:
-#              mcc: 999
-#              mnc: 70
-#            tac: 1
+#  info:
+#    - s_nssai:
+#        - sst: 1
+#          dnn:
+#            - internet
+#      tai:
+#        - plmn_id:
+#            mcc: 999
+#            mnc: 70
+#          tac: 1
 #
 #  o If any of conditions below are met:
 #   - S-NSSAI[SST:1] and DNN[internet] and TAI[PLMN-ID:99970 TAC:1-9]
 #   - S-NSSAI[SST:2 SD:000080] and DNN[internet or ims]
 #   - S-NSSAI[SST:4] and DNN[internet] and TAI[PLMN-ID:99970 TAC:10-20,30-40]
-#
-#    info:
-#      - s_nssai:
-#          - sst: 1
-#            dnn:
-#              - internet
-#        tai:
-#          - plmn_id:
-#              mcc: 999
-#              mnc: 70
-#            tac:
-#              - 1-9
-#      - s_nssai:
-#          - sst: 2
-#            sd: 000080
-#            dnn:
-#              - internet
-#              - ims
-#      - s_nssai:
-#          - sst: 4
-#            dnn:
-#              - internet
-#        tai:
-#          - plmn_id:
-#              mcc: 999
-#              mnc: 70
-#            tac:
-#              - 10-20
-#              - 30-40
+#  info:
+#    - s_nssai:
+#        - sst: 1
+#          dnn:
+#            - internet
+#      tai:
+#        - plmn_id:
+#            mcc: 999
+#            mnc: 70
+#          tac:
+#            - 1-9
+#    - s_nssai:
+#        - sst: 2
+#          sd: 000080
+#          dnn:
+#            - internet
+#            - ims
+#    - s_nssai:
+#        - sst: 4
+#          dnn:
+#            - internet
+#      tai:
+#        - plmn_id:
+#            mcc: 999
+#            mnc: 70
+#          tac:
+#            - 10-20
+#            - 30-40
 #
 #  o Complex Example
-#    info:
-#      - s_nssai:
-#          - sst: 1
-#            dnn:
-#              - internet
-#          - sst: 1
-#            sd: 000080
-#            dnn:
-#              - internet
-#              - ims
-#          - sst: 1
-#            sd: 009000
-#            dnn:
-#              [internet, ims]
-#          - sst: 2
-#            dnn:
-#              - internet
-#          - sst: 3
-#            sd: 123456
-#            dnn:
-#              - internet
-#        tai:
-#          - plmn_id:
-#              mcc: 999
-#              mnc: 70
-#            tac: [1, 2, 3]
-#          - plmn_id:
-#              mcc: 999
-#              mnc: 70
-#            tac: 4
-#          - plmn_id:
-#              mcc: 999
-#              mnc: 70
-#            tac:
-#              - 5
-#              - 6
-#          - plmn_id:
-#              mcc: 999
-#              mnc: 70
-#            tac:
-#              - 100-200
-#              - 300-400
-#          - plmn_id:
-#              mcc: 999
-#              mnc: 70
-#            tac:
-#              - 500-600
-#              - 700-800
-#              - 900-1000
-#      - s_nssai:
-#          - sst: 4
-#            dnn:
-#              - internet
-#        tai:
-#          - plmn_id:
-#              mcc: 999
-#              mnc: 70
-#            tac: 99
+#  info:
+#    - s_nssai:
+#        - sst: 1
+#          dnn:
+#            - internet
+#        - sst: 1
+#          sd: 000080
+#          dnn:
+#            - internet
+#            - ims
+#        - sst: 1
+#          sd: 009000
+#          dnn:
+#            [internet, ims]
+#        - sst: 2
+#          dnn:
+#            - internet
+#        - sst: 3
+#          sd: 123456
+#          dnn:
+#            - internet
+#      tai:
+#        - plmn_id:
+#            mcc: 999
+#            mnc: 70
+#          tac: [1, 2, 3]
+#        - plmn_id:
+#            mcc: 999
+#            mnc: 70
+#          tac: 4
+#        - plmn_id:
+#            mcc: 999
+#            mnc: 70
+#          tac:
+#            - 5
+#            - 6
+#        - plmn_id:
+#            mcc: 999
+#            mnc: 70
+#          tac:
+#            - 100-200
+#            - 300-400
+#        - plmn_id:
+#            mcc: 999
+#            mnc: 70
+#          tac:
+#            - 500-600
+#            - 700-800
+#            - 900-1000
+#    - s_nssai:
+#        - sst: 4
+#          dnn:
+#            - internet
+#      tai:
+#        - plmn_id:
+#            mcc: 999
+#            mnc: 70
+#          tac: 99
 #
 ################################################################################
 # SBI Server
 ################################################################################
 #  o Override SBI address to be advertised to NRF
-#    sbi:
-#      server:
-#        - dev: eth0
-#          advertise: open5gs-smf.svc.local
+#  sbi:
+#    server:
+#      - dev: eth0
+#        advertise: open5gs-smf.svc.local
 #
-#    sbi:
-#      server:
-#        - address: localhost
-#          advertise:
-#            - 127.0.0.99
-#            - ::1
+#  sbi:
+#    server:
+#      - address: localhost
+#        advertise:
+#          - 127.0.0.99
+#          - ::1
 #
 ################################################################################
 # SBI Client
 ################################################################################
 #  o Direct communication with NRF interaction
-#    sbi:
-#      client:
-#        nrf:
-#          - uri: http://127.0.0.10:7777
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
 #
 #  o Indirect communication with delegated discovery
-#    sbi:
-#      client:
-#        scp:
-#          - uri: http://127.0.0.200:7777
+#  sbi:
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
 #
 #  o Indirect communication without delegated discovery
-#    sbi:
-#      client:
-#        nrf:
-#          - uri: http://127.0.0.10:7777
-#        scp:
-#          - uri: http://127.0.0.200:7777
-#    discovery:
-#      delegated: no
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#  discovery:
+#    delegated: no
 #
 ################################################################################
 # HTTPS scheme with TLS
 ################################################################################
 #  o Set as default if not individually set
-#    default:
-#      tls:
-#        server:
-#          scheme: https
-#          private_key: @sysconfdir@/open5gs/tls/smf.key
-#          cert: @sysconfdir@/open5gs/tls/smf.crt
-#        client:
-#          scheme: https
-#          cacert: @sysconfdir@/open5gs/tls/ca.crt
-#    sbi:
+#  default:
+#    tls:
 #      server:
-#        - address: smf.localdomain
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/smf.key
+#        cert: @sysconfdir@/open5gs/tls/smf.crt
 #      client:
-#        nrf:
-#          - uri: https://nrf.localdomain
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: smf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
 #
 #  o Add client TLS verification
-#    default:
-#      tls:
-#        server:
-#          scheme: https
-#          private_key: @sysconfdir@/open5gs/tls/smf.key
-#          cert: @sysconfdir@/open5gs/tls/smf.crt
-#          verify_client: true
-#          verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
-#        client:
-#          scheme: https
-#          cacert: @sysconfdir@/open5gs/tls/ca.crt
-#          client_private_key: @sysconfdir@/open5gs/tls/smf.key
-#          client_cert: @sysconfdir@/open5gs/tls/smf.crt
-#    sbi:
+#  default:
+#    tls:
 #      server:
-#        - address: smf.localdomain
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/smf.key
+#        cert: @sysconfdir@/open5gs/tls/smf.crt
+#        verify_client: true
+#        verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
 #      client:
-#        nrf:
-#          - uri: https://nrf.localdomain
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_private_key: @sysconfdir@/open5gs/tls/smf.key
+#        client_cert: @sysconfdir@/open5gs/tls/smf.crt
+#  sbi:
+#    server:
+#      - address: smf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
 #
 ################################################################################
 # PFCP Server
 ################################################################################
 #  o Override PFCP address to be advertised to UPF in PFCP association
-#    pfcp:
-#      server:
-#        - dev: eth0
-#          advertise: open5gs-smf.svc.local
+#  pfcp:
+#    server:
+#      - dev: eth0
+#        advertise: open5gs-smf.svc.local
 #
 ################################################################################
 # PFCP Client
 ################################################################################
 #  o UPF selection by eNodeB TAC
 #   (either single TAC or multiple TACs, DECIMAL representation)
-#    pfcp:
-#      client:
-#        upf:
-#          - address: 127.0.0.7
-#            tac: 1
-#          - address: 127.0.0.12
-#            tac: [3,5,8]
+#  pfcp:
+#    client:
+#      upf:
+#        - address: 127.0.0.7
+#          tac: 1
+#        - address: 127.0.0.12
+#          tac: [3,5,8]
 #
 #  o UPF selection by UE's DNN/APN (either single DNN/APN or multiple DNNs/APNs)
-#    pfcp:
-#      client:
-#        upf:
-#          - address: 127.0.0.7
-#            dnn: ims
-#          - address: 127.0.0.12
-#            dnn: [internet, web]
+#  pfcp:
+#    client:
+#      upf:
+#        - address: 127.0.0.7
+#          dnn: ims
+#        - address: 127.0.0.12
+#          dnn: [internet, web]
 #
 #  o UPF selection by CellID(e_cell_id: 28bit, nr_cell_id: 36bit)
 #    (either single enb_id or multiple enb_ids, HEX representation)
-#    pfcp:
-#      client:
-#        upf:
-#          - address: 127.0.0.7
-#            e_cell_id: 463
-#          - address: 127.0.0.12
-#            nr_cell_id: [123456789, 9413]
+#  pfcp:
+#    client:
+#      upf:
+#        - address: 127.0.0.7
+#          e_cell_id: 463
+#        - address: 127.0.0.12
+#          nr_cell_id: [123456789, 9413]
 #
 ################################################################################
 # GTP-C Server
 ################################################################################
 #  o Listen on IPv4 and IPv6
-#    gtpc:
-#      server:
-#        - address: 127.0.0.4
-#        - address: fd69:f21d:873c:fa::3
+#  gtpc:
+#    server:
+#      - address: 127.0.0.4
+#      - address: fd69:f21d:873c:fa::3
 #
 ################################################################################
 # GTP-U Server
 ################################################################################
 #  o Listen on IPv4 and IPv6
-#    gtpu:
-#      server:
-#        - address: 127.0.0.4
-#        - address: ::1
+#  gtpu:
+#    server:
+#      - address: 127.0.0.4
+#      - address: ::1
 #
 ################################################################################
 # 3GPP Specification
 ################################################################################
 #  o Specific DNN/APN(e.g 'ims') uses 10.46.0.1/16, 2001:db8:babe::1/48
 #   (If the UE has unknown DNN/APN(not internet/ims), SMF/UPF will crash.)
-#    session:
-#      - subnet: 10.45.0.1/16
-#        dnn: internet
-#      - subnet: 2001:db8:cafe::1/48
-#        dnn: internet
-#      - subnet: 10.46.0.1/16
-#        dnn: ims
-#      - subnet: 2001:db8:babe::1/48
-#        dnn: ims
+#  session:
+#    - subnet: 10.45.0.1/16
+#      dnn: internet
+#    - subnet: 2001:db8:cafe::1/48
+#      dnn: internet
+#    - subnet: 10.46.0.1/16
+#      dnn: ims
+#    - subnet: 2001:db8:babe::1/48
+#      dnn: ims
 #
 #  o Pool Range
-#    session:
-#      - subnet: 10.45.0.1/16
-#        range:
-#          - 10.45.0.100-10.45.0.200
-#          - 10.45.1.100-
-#          - -10.45.0.200
-#      - subnet: 2001:db8:cafe::1/48
-#        range:
-#          - 2001:db8:cafe:a0::0-2001:db8:cafe:b0::0
-#          - 2001:db8:cafe:c0::0-2001:db8:cafe:d0::0
+#  session:
+#    - subnet: 10.45.0.1/16
+#      range:
+#        - 10.45.0.100-10.45.0.200
+#        - 10.45.1.100-
+#        - -10.45.0.200
+#    - subnet: 2001:db8:cafe::1/48
+#      range:
+#        - 2001:db8:cafe:a0::0-2001:db8:cafe:b0::0
+#        - 2001:db8:cafe:c0::0-2001:db8:cafe:d0::0
 #
 #  o Security Indication(5G Core only)
-#    security_indication:
-#      integrity_protection_indication: required|preferred|not-needed
-#      confidentiality_protection_indication: required|preferred|not-needed
-#      maximum_integrity_protected_data_rate_uplink: bitrate64kbs|maximum-UE-rate
-#      maximum_integrity_protected_data_rate_downlink: bitrate64kbs|maximum-UE-rate
+#  security_indication:
+#    integrity_protection_indication: required|preferred|not-needed
+#    confidentiality_protection_indication: required|preferred|not-needed
+#    maximum_integrity_protected_data_rate_uplink: bitrate64kbs|maximum-UE-rate
+#    maximum_integrity_protected_data_rate_downlink: bitrate64kbs|maximum-UE-rate

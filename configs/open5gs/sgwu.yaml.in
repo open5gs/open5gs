@@ -1,51 +1,51 @@
 logger:
-    file: @localstatedir@/log/open5gs/sgwu.log
-#    level: info   # fatal|error|warn|info(default)|debug|trace
+  file: @localstatedir@/log/open5gs/sgwu.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
-    max:
-      ue: 1024  # The number of UE can be increased depending on memory size.
-#      peer: 64
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
 
 sgwu:
-    pfcp:
-      server:
-        - address: 127.0.0.6
-      client:
-#        sgwc:    # SGW-U PFCP Client try to associate SGW-C PFCP Server
-#          - address: 127.0.0.3
-    gtpu:
-      server:
-        - address: 127.0.0.6
+  pfcp:
+    server:
+      - address: 127.0.0.6
+    client:
+#      sgwc:    # SGW-U PFCP Client try to associate SGW-C PFCP Server
+#        - address: 127.0.0.3
+  gtpu:
+    server:
+      - address: 127.0.0.6
 
 ################################################################################
 # PFCP Server
 ################################################################################
 #  o Override PFCP address to be advertised to SGW-C in PFCP association
-#    pfcp:
-#      server:
-#        - dev: eth0
-#          advertise: open5gs-sgwu.svc.local
+#  pfcp:
+#    server:
+#      - dev: eth0
+#        advertise: open5gs-sgwu.svc.local
 #
 ################################################################################
 # GTP-U Server
 ################################################################################
 #  o Override SGW-U GTP-U address to be advertised inside S1AP messages 
-#    gtpu:
-#      server:
-#        - dev: ens3
-#          advertise: sgw1.epc.mnc001.mcc001.3gppnetwork.org
+#  gtpu:
+#    server:
+#      - dev: ens3
+#        advertise: sgw1.epc.mnc001.mcc001.3gppnetwork.org
 #
 #  o User Plane IP Resource information
-#    gtpu:
-#      server:
-#        - address: 127.0.0.6
-#          teid_range_indication: 4
-#          teid_range: 10
-#          network_instance: internet
-#          source_interface: 0
-#        - address: 127.0.10.4
-#          teid_range_indication: 4
-#          teid_range: 5
-#          network_instance: ims
-#          source_interface: 1
+#  gtpu:
+#    server:
+#      - address: 127.0.0.6
+#        teid_range_indication: 4
+#        teid_range: 10
+#        network_instance: internet
+#        source_interface: 0
+#      - address: 127.0.10.4
+#        teid_range_indication: 4
+#        teid_range: 5
+#        network_instance: ims
+#        source_interface: 1

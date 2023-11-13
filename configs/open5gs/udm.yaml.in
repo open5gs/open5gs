@@ -1,161 +1,161 @@
 logger:
-    file: @localstatedir@/log/open5gs/udm.log
-#    level: info   # fatal|error|warn|info(default)|debug|trace
+  file: @localstatedir@/log/open5gs/udm.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
-    max:
-      ue: 1024  # The number of UE can be increased depending on memory size.
-#      peer: 64
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
 
 udm:
-    hnet:
-      - id: 1
-        scheme: 1
-        key: @sysconfdir@/open5gs/hnet/curve25519-1.key
-      - id: 2
-        scheme: 2
-        key: @sysconfdir@/open5gs/hnet/secp256r1-2.key
-      - id: 3
-        scheme: 1
-        key: @sysconfdir@/open5gs/hnet/curve25519-3.key
-      - id: 4
-        scheme: 2
-        key: @sysconfdir@/open5gs/hnet/secp256r1-4.key
-      - id: 5
-        scheme: 1
-        key: @sysconfdir@/open5gs/hnet/curve25519-5.key
-      - id: 6
-        scheme: 2
-        key: @sysconfdir@/open5gs/hnet/secp256r1-6.key
-    sbi:
-      server:
-        - address: 127.0.0.12
-          port: 7777
-      client:
-#        nrf:
-#          - uri: http://127.0.0.10:7777
-        scp:
-          - uri: http://127.0.0.200:7777
+  hnet:
+    - id: 1
+      scheme: 1
+      key: @sysconfdir@/open5gs/hnet/curve25519-1.key
+    - id: 2
+      scheme: 2
+      key: @sysconfdir@/open5gs/hnet/secp256r1-2.key
+    - id: 3
+      scheme: 1
+      key: @sysconfdir@/open5gs/hnet/curve25519-3.key
+    - id: 4
+      scheme: 2
+      key: @sysconfdir@/open5gs/hnet/secp256r1-4.key
+    - id: 5
+      scheme: 1
+      key: @sysconfdir@/open5gs/hnet/curve25519-5.key
+    - id: 6
+      scheme: 2
+      key: @sysconfdir@/open5gs/hnet/secp256r1-6.key
+  sbi:
+    server:
+      - address: 127.0.0.12
+        port: 7777
+    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+      scp:
+        - uri: http://127.0.0.200:7777
 
 #
 ################################################################################
 # Home Network Public Key
 ################################################################################
 #  o Generate the private key as below.
-#    $ openssl genpkey -algorithm X25519 -out /etc/open5gs/hnet/curve25519-1.key
-#    $ openssl ecparam -name prime256v1 -genkey -conv_form compressed -out /etc/open5gs/hnet/secp256r1-2.key
+#  $ openssl genpkey -algorithm X25519 -out /etc/open5gs/hnet/curve25519-1.key
+#  $ openssl ecparam -name prime256v1 -genkey -conv_form compressed -out /etc/open5gs/hnet/secp256r1-2.key
 #
 #  o The private and public keys can be viewed with the command.
 #    The public key is used when creating the SIM.
-#    $ openssl pkey -in /etc/open5gs/hnet/curve25519-1.key -text
-#    $ openssl ec -in /etc/open5gs/hnet/secp256r1-2.key -conv_form compressed -text
+#  $ openssl pkey -in /etc/open5gs/hnet/curve25519-1.key -text
+#  $ openssl ec -in /etc/open5gs/hnet/secp256r1-2.key -conv_form compressed -text
 #
 #  o Home network public key identifier(PKI) value : 1
 #    Protection scheme identifier : ECIES scheme profile A
-#    hnet:
-#      - id: 1
-#        scheme: 1
-#        key: /etc/open5gs/hnet/curve25519-1.key
+#  hnet:
+#    - id: 1
+#      scheme: 1
+#      key: /etc/open5gs/hnet/curve25519-1.key
 #
 #  o Home network public key identifier(PKI) value : 2
 #    Protection scheme identifier : ECIES scheme profile B
-#    hnet:
-#      - id: 2
-#        scheme: 2
-#        key: /etc/open5gs/hnet/secp256r1-2.key
+#  hnet:
+#    - id: 2
+#      scheme: 2
+#      key: /etc/open5gs/hnet/secp256r1-2.key
 #
 #  o Home network public key identifier(PKI) value : 3
 #    Protection scheme identifier : ECIES scheme profile A
-#    hnet:
-#      - id: 3
-#        scheme: 1
-#        key: /etc/open5gs/hnet/curve25519-1.key
+#  hnet:
+#    - id: 3
+#      scheme: 1
+#      key: /etc/open5gs/hnet/curve25519-1.key
 #
 #  o Home network public key identifier(PKI) value : 4
 #    Protection scheme identifier : ECIES scheme profile B
-#    hnet:
-#      - id: 4
-#        scheme: 2
-#        key: /etc/open5gs/hnet/secp256r1-2.key
+#  hnet:
+#    - id: 4
+#      scheme: 2
+#      key: /etc/open5gs/hnet/secp256r1-2.key
 #
 ################################################################################
 # SBI Server
 ################################################################################
 #  o Override SBI address to be advertised to NRF
-#    sbi:
-#      server:
-#        - dev: eth0
-#          advertise: open5gs-udm.svc.local
+#  sbi:
+#    server:
+#      - dev: eth0
+#        advertise: open5gs-udm.svc.local
 #
-#    sbi:
-#      server:
-#        - address: localhost
-#          advertise:
-#            - 127.0.0.99
-#            - ::1
+#  sbi:
+#    server:
+#      - address: localhost
+#        advertise:
+#          - 127.0.0.99
+#          - ::1
 #
 ################################################################################
 # SBI Client
 ################################################################################
 #  o Direct communication with NRF interaction
-#    sbi:
-#      client:
-#        nrf:
-#          - uri: http://127.0.0.10:7777
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
 #
 #  o Indirect communication with delegated discovery
-#    sbi:
-#      client:
-#        scp:
-#          - uri: http://127.0.0.200:7777
+#  sbi:
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
 #
 #  o Indirect communication without delegated discovery
-#    sbi:
-#      client:
-#        nrf:
-#          - uri: http://127.0.0.10:7777
-#        scp:
-#          - uri: http://127.0.0.200:7777
-#    discovery:
-#      delegated: no
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#  discovery:
+#    delegated: no
 #
 ################################################################################
 # HTTPS scheme with TLS
 ################################################################################
 #  o Set as default if not individually set
-#    default:
-#      tls:
-#        server:
-#          scheme: https
-#          private_key: @sysconfdir@/open5gs/tls/udm.key
-#          cert: @sysconfdir@/open5gs/tls/udm.crt
-#        client:
-#          scheme: https
-#          cacert: @sysconfdir@/open5gs/tls/ca.crt
-#    sbi:
+#  default:
+#    tls:
 #      server:
-#        - address: udm.localdomain
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/udm.key
+#        cert: @sysconfdir@/open5gs/tls/udm.crt
 #      client:
-#        nrf:
-#          - uri: https://nrf.localdomain
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: udm.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
 #
 #  o Add client TLS verification
-#    default:
-#      tls:
-#        server:
-#          scheme: https
-#          private_key: @sysconfdir@/open5gs/tls/udm.key
-#          cert: @sysconfdir@/open5gs/tls/udm.crt
-#          verify_client: true
-#          verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
-#        client:
-#          scheme: https
-#          cacert: @sysconfdir@/open5gs/tls/ca.crt
-#          client_private_key: @sysconfdir@/open5gs/tls/udm.key
-#          client_cert: @sysconfdir@/open5gs/tls/udm.crt
-#    sbi:
+#  default:
+#    tls:
 #      server:
-#        - address: udm.localdomain
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/udm.key
+#        cert: @sysconfdir@/open5gs/tls/udm.crt
+#        verify_client: true
+#        verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
 #      client:
-#        nrf:
-#          - uri: https://nrf.localdomain
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_private_key: @sysconfdir@/open5gs/tls/udm.key
+#        client_cert: @sysconfdir@/open5gs/tls/udm.crt
+#  sbi:
+#    server:
+#      - address: udm.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain

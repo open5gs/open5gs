@@ -1,69 +1,69 @@
 logger:
-    file: @localstatedir@/log/open5gs/nrf.log
-#    level: info   # fatal|error|warn|info(default)|debug|trace
+  file: @localstatedir@/log/open5gs/nrf.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
-    max:
-      ue: 1024  # The number of UE can be increased depending on memory size.
-#      peer: 64
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
 
 nrf:
-    serving:  # 5G roaming requires PLMN in NRF
-      - plmn_id:
-          mcc: 999
-          mnc: 70
-    sbi:
-      server:
-        - address: 127.0.0.10
-          port: 7777
+  serving:  # 5G roaming requires PLMN in NRF
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+  sbi:
+    server:
+      - address: 127.0.0.10
+        port: 7777
 
 ################################################################################
 # SBI Server
 ################################################################################
 #  o Override SBI address to be advertised to NRF
-#    sbi:
-#      server:
-#        - dev: eth0
-#          advertise: open5gs-nrf.svc.local
+#  sbi:
+#    server:
+#      - dev: eth0
+#        advertise: open5gs-nrf.svc.local
 #
-#    sbi:
-#      server:
-#        - address: localhost
-#          advertise:
-#            - 127.0.0.99
-#            - ::1
+#  sbi:
+#    server:
+#      - address: localhost
+#        advertise:
+#          - 127.0.0.99
+#          - ::1
 #
 ################################################################################
 # HTTPS scheme with TLS
 ################################################################################
 #  o Set as default if not individually set
-#    default:
-#      tls:
-#        server:
-#          scheme: https
-#          private_key: @sysconfdir@/open5gs/tls/nrf.key
-#          cert: @sysconfdir@/open5gs/tls/nrf.crt
-#        client:
-#          scheme: https
-#          cacert: @sysconfdir@/open5gs/tls/ca.crt
-#    sbi:
+#  default:
+#    tls:
 #      server:
-#        - address: nrf.localdomain
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/nrf.key
+#        cert: @sysconfdir@/open5gs/tls/nrf.crt
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: nrf.localdomain
 #
 #  o Add client TLS verification
-#    default:
-#      tls:
-#        server:
-#          scheme: https
-#          private_key: @sysconfdir@/open5gs/tls/nrf.key
-#          cert: @sysconfdir@/open5gs/tls/nrf.crt
-#          verify_client: true
-#          verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
-#        client:
-#          scheme: https
-#          cacert: @sysconfdir@/open5gs/tls/ca.crt
-#          client_private_key: @sysconfdir@/open5gs/tls/nrf.key
-#          client_cert: @sysconfdir@/open5gs/tls/nrf.crt
-#    sbi:
+#  default:
+#    tls:
 #      server:
-#        - address: nrf.localdomain
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/nrf.key
+#        cert: @sysconfdir@/open5gs/tls/nrf.crt
+#        verify_client: true
+#        verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_private_key: @sysconfdir@/open5gs/tls/nrf.key
+#        client_cert: @sysconfdir@/open5gs/tls/nrf.crt
+#  sbi:
+#    server:
+#      - address: nrf.localdomain
