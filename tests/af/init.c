@@ -27,6 +27,7 @@ static int initialized = 0;
 
 int af_initialize(void)
 {
+    bool no_scp, no_nrf;
     int rv;
 
 #define APP_NAME "af"
@@ -36,8 +37,17 @@ int af_initialize(void)
     ogs_sbi_context_init(OpenAPI_nf_type_AF);
     af_context_init();
 
+    no_scp = ogs_global_conf()->parameter.no_scp;
+    no_nrf = ogs_global_conf()->parameter.no_nrf;
+
+    ogs_global_conf()->parameter.no_scp = false;
+    ogs_global_conf()->parameter.no_nrf = false;
+
     rv = ogs_sbi_context_parse_config(APP_NAME, "nrf", "scp");
     if (rv != OGS_OK) return rv;
+
+    ogs_global_conf()->parameter.no_scp = no_scp;
+    ogs_global_conf()->parameter.no_nrf = no_nrf;
 
     rv = af_context_parse_config();
     if (rv != OGS_OK) return rv;
