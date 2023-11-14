@@ -34,7 +34,6 @@ pcf:
 #
 #  slice:
 #    - sst: 1  # 1,2,3,4
-#      sd: 000001
 #      default_indicator: true
 #      session:
 #        - name: internet
