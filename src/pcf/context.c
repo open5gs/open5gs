@@ -763,7 +763,7 @@ int pcf_instance_get_load(void)
 int pcf_db_qos_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
         ogs_session_data_t *session_data)
 {
-    int rv1, rv2;
+    int rv;
     ogs_session_data_t zero_data;
 
     ogs_assert(supi);
@@ -776,18 +776,23 @@ int pcf_db_qos_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
     /* session_data should be initialized to zero */
     ogs_assert(memcmp(session_data, &zero_data, sizeof(zero_data)) == 0);
 
-    if (ogs_list_count(&ogs_local_conf()->slice_list))
-        rv1 = ogs_app_config_session_data(s_nssai, dnn, session_data);
-    else
-        rv1 = OGS_OK;
+    if (ogs_list_count(&ogs_local_conf()->slice_list)) {
+        rv = ogs_app_config_session_data(s_nssai, dnn, session_data);
+        if (rv != OGS_OK)
+            ogs_error("ogs_app_config_session_data() failed - "
+                    "SST[%d]SD[0x%x]DNN[%s]",
+                    s_nssai->sst, s_nssai->sd.v, dnn);
+    } else if (ogs_app()->db_uri) {
+        rv = ogs_dbi_session_data(supi, s_nssai, dnn, session_data);
+        if (rv != OGS_OK)
+            ogs_error("ogs_dbi_session_data() failed - "
+                    "SUPI[%s]SST[%d]SD[0x%x]DNN[%s]",
+                    supi, s_nssai->sst, s_nssai->sd.v, dnn);
+    } else {
+        ogs_fatal("Cannot get data for SUPI[%s]SST[%d]SD[0x%x]DNN[%s]",
+                    supi, s_nssai->sst, s_nssai->sd.v, dnn);
+        ogs_assert_if_reached();
+    }
 
-    if (ogs_app()->db_uri)
-        rv2 = ogs_dbi_session_data(supi, s_nssai, dnn, session_data);
-    else
-        rv2 = OGS_OK;
-
-    if (rv1 != OGS_OK && rv2 != OGS_OK)
-        return OGS_ERROR;
-
-    return OGS_OK;
+    return rv;
 }
