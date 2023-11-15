@@ -218,6 +218,9 @@ static int parse_slice_conf(ogs_yaml_iter_t *parent)
 
                 session_conf = ogs_app_session_conf_add(
                         slice_conf, session_data);
+
+                OGS_SESSION_DATA_FREE(session_data);
+
                 if (!session_conf) {
                     ogs_error("ogs_app_session_conf_add() failed");
                     return OGS_ERROR;

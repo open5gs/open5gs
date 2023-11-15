@@ -277,6 +277,7 @@ bool pcf_nbsf_management_handle_register(
         ogs_pcc_rule_t *pcc_rule = &session_data.pcc_rule[i];
 
         ogs_assert(pcc_rule);
+        ogs_assert(pcc_rule->id);
 
         if (!pcc_rule->num_of_flow) {
             /* No Flow */

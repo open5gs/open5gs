@@ -946,6 +946,8 @@ static int session_data_validation(ogs_session_data_t *session_data)
             (long long)session_data->session.ambr.uplink);
     for (j = 0; j < session_data->num_of_pcc_rule; j++) {
         ogs_info("PCC_RULE[%d]", j+1);
+        ogs_info("  ID[%s]", session_data->pcc_rule[j].id);
+        ogs_info("  NAME[%s]", session_data->pcc_rule[j].name);
         ogs_info("  QCI[%d]", session_data->pcc_rule[j].qos.index);
         ogs_info("  ARP[%d:%d:%d]",
                 session_data->pcc_rule[j].qos.arp.priority_level,
@@ -988,8 +990,11 @@ int ogs_app_parse_session_data(
         const char *session_key = ogs_yaml_iter_key(iterator);
         ogs_assert(session_key);
         if (!strcmp(session_key, OGS_NAME_STRING)) {
-            session_data->session.name =
-                (char *)ogs_yaml_iter_value(iterator);
+            const char *v = (char *)ogs_yaml_iter_value(iterator);
+            if (v) {
+                session_data->session.name = ogs_strdup(v);
+                ogs_assert(session_data->session.name);
+            }
         } else if (!strcmp(session_key, OGS_TYPE_STRING)) {
             const char *v = ogs_yaml_iter_value(iterator);
             if (v) {
@@ -1018,6 +1023,7 @@ int ogs_app_parse_session_data(
                 return rv;
             }
         } else if (!strcmp(session_key, OGS_PCC_RULE_STRING)) {
+            int pcc_rule_index = 0;
             ogs_yaml_iter_t pcc_rule_array, pcc_rule_iter;
             ogs_yaml_iter_recurse(iterator, &pcc_rule_array);
             do {
@@ -1098,8 +1104,12 @@ int ogs_app_parse_session_data(
                                     }
                                 } else if (!strcmp(flow_key,
                                     OGS_DESCRIPTION_STRING)) {
-                                    flow->description =
+                                    const char *v =
                                         (char *)ogs_yaml_iter_value(&flow_iter);
+                                    if (v) {
+                                        flow->description = ogs_strdup(v);
+                                        ogs_assert(flow->description);
+                                    }
                                 }
                             }
 
@@ -1116,9 +1126,25 @@ int ogs_app_parse_session_data(
                 if (pcc_rule->qos.index &&
                     pcc_rule->qos.arp.priority_level &&
                     pcc_rule->qos.arp.pre_emption_capability &&
-                    pcc_rule->qos.arp.pre_emption_vulnerability)
+                    pcc_rule->qos.arp.pre_emption_vulnerability) {
+
+                    /* EPC: Charing-Rule-Name */
+                    ogs_assert(!pcc_rule->name);
+                    pcc_rule->name = ogs_msprintf("%s-g%d",
+                            session_data->session.name, pcc_rule_index+1);
+                    ogs_assert(pcc_rule->name);
+
+                    /* 5GC: PCC-Rule-Id */
+                    ogs_assert(!pcc_rule->id);
+                    pcc_rule->id = ogs_msprintf("%s-n%d",
+                            session_data->session.name, pcc_rule_index+1);
+                    ogs_assert(pcc_rule->id);
+
+                    pcc_rule->precedence = pcc_rule_index+1;
+                    pcc_rule_index++;
+
                     session_data->num_of_pcc_rule++;
-                else
+                } else
                     ogs_warn("Mandatory is MISSING - "
                             "QCI[%d], ARP[%d:%d:%d]",
                         pcc_rule->qos.index,

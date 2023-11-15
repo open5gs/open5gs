@@ -68,6 +68,15 @@ pcrf:
 #              uplink:
 #                value: 82
 #                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#          flow:
+#            - direction: 2
+#              description: "permit out icmp from any to assigned"
+#            - direction: 1
+#              description: "permit out icmp from any to assigned"
+#            - direction: 2
+#              description: "permit out udp from 10.200.136.98/32 23455 to assigned 1-65535"
+#            - direction: 1
+#              description: "permit out udp from 10.200.136.98/32 1-65535 to assigned 50021"
 #        - qos:
 #            index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
 #            arp:
