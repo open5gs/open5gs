@@ -21,11 +21,10 @@ Let's start the explanation assuming that the connection test of the UE to this 
 
 #### Build & Install
 
-We'll start with the `roaming-tier3` branch from now on.
+Git clone, compile and install:
 ```
 $ git clone https://github.com/open5gs/open5gs
 $ cd open5gs
-$ git checkout roaming-tier3
 $ meson build --prefix=`pwd`/install
 $ ninja -C build install
 ```
@@ -952,4 +951,4 @@ $ diff -u sepp.yaml.old sepp.yaml
          - address: 127.0.0.250
 ```
 
-For more information, please refer to the [LINK](https://github.com/open5gs/open5gs/blob/roaming-tier3/configs/open5gs/sepp1.yaml.in).
+For more information, please refer to the [LINK](https://github.com/open5gs/open5gs/blob/main/configs/open5gs/sepp1.yaml.in).
