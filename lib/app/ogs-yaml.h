@@ -34,12 +34,16 @@ extern "C" {
     if (ogs_yaml_iter_type(ARRAY) == YAML_MAPPING_NODE) { \
         memcpy((ITERATOR), (ARRAY), sizeof(ogs_yaml_iter_t)); \
     } else if (ogs_yaml_iter_type(ARRAY) == YAML_SEQUENCE_NODE) { \
-        if (!ogs_yaml_iter_next(ARRAY)) break; \
         ogs_yaml_iter_recurse((ARRAY), (ITERATOR)); \
     } else if (ogs_yaml_iter_type(ARRAY) == YAML_SCALAR_NODE) { \
         break; \
     } else \
         ogs_assert_if_reached();
+
+#define OGS_YAML_ARRAY_NEXT(ARRAY, ITERATOR) \
+    if (ogs_yaml_iter_type(ARRAY) == YAML_SEQUENCE_NODE && \
+        !ogs_yaml_iter_next(ARRAY)) break; \
+    OGS_YAML_ARRAY_RECURSE(ARRAY, ITERATOR);
 
 typedef struct {
     yaml_document_t *document;

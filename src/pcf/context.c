@@ -273,7 +273,7 @@ static int parse_policy_conf(ogs_yaml_iter_t *parent)
     do {
         const char *mnc = NULL, *mcc = NULL;
 
-        OGS_YAML_ARRAY_RECURSE(&policy_array, &policy_iter);
+        OGS_YAML_ARRAY_NEXT(&policy_array, &policy_iter);
         while (ogs_yaml_iter_next(&policy_iter)) {
             const char *policy_key = ogs_yaml_iter_key(&policy_iter);
             ogs_assert(policy_key);
@@ -293,6 +293,34 @@ static int parse_policy_conf(ogs_yaml_iter_t *parent)
 
                 if (mcc && mnc) {
                     ogs_fatal("%s, %s", mcc, mnc);
+                } else {
+                    ogs_error("Invalid [MCC:%s, MNC:%s]",
+                            mcc, mnc);
+                }
+            } else
+                ogs_warn("unknown key `%s`", policy_key);
+        }
+
+        OGS_YAML_ARRAY_RECURSE(&policy_array, &policy_iter);
+        while (ogs_yaml_iter_next(&policy_iter)) {
+            const char *policy_key = ogs_yaml_iter_key(&policy_iter);
+            ogs_assert(policy_key);
+            if (!strcmp(policy_key, "plmn_id")) {
+                ogs_yaml_iter_t plmn_id_iter;
+
+                ogs_yaml_iter_recurse(&policy_iter, &plmn_id_iter);
+                while (ogs_yaml_iter_next(&plmn_id_iter)) {
+                    const char *id_key = ogs_yaml_iter_key(&plmn_id_iter);
+                    ogs_assert(id_key);
+                    if (!strcmp(id_key, "mcc")) {
+                        mcc = ogs_yaml_iter_value(&plmn_id_iter);
+                    } else if (!strcmp(id_key, "mnc")) {
+                        mnc = ogs_yaml_iter_value(&plmn_id_iter);
+                    }
+                }
+
+                if (mcc && mnc) {
+                    ogs_error("%s, %s", mcc, mnc);
                 } else {
                     ogs_error("Invalid [MCC:%s, MNC:%s]",
                             mcc, mnc);
