@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -100,49 +100,31 @@ static int slice_conf_prepare(void)
 
 static int slice_conf_validation(void)
 {
-    int rv;
-
-    rv = ogs_app_check_slice_conf();
-    if (rv != OGS_OK) {
-        ogs_error("ogs_app_check_slice_conf() failed");
-        return OGS_ERROR;
-    }
-
     return OGS_OK;
 }
 
-static int parse_slice_conf(ogs_yaml_iter_t *parent)
+static int parse_slice_conf(
+        ogs_yaml_iter_t *parent, ogs_app_policy_conf_t *policy_conf)
 {
-    int rv, i;
+    int rv;
     ogs_yaml_iter_t slice_array, slice_iter;
 
     ogs_assert(parent);
+    ogs_assert(policy_conf);
 
     rv = slice_conf_prepare();
     if (rv != OGS_OK) return rv;
 
     ogs_yaml_iter_recurse(parent, &slice_array);
     do {
+        ogs_app_slice_conf_t *slice_conf = NULL;
         ogs_s_nssai_t s_nssai;
         bool default_indicator = false;
-
-        ogs_session_data_t session_data_array[OGS_MAX_NUM_OF_SESS];
-        int num_of_session_data = 0;
 
         s_nssai.sst = 0;
         s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
 
-        if (ogs_yaml_iter_type(&slice_array) == YAML_MAPPING_NODE) {
-            memcpy(&slice_iter, &slice_array, sizeof(ogs_yaml_iter_t));
-        } else if (ogs_yaml_iter_type(&slice_array) == YAML_SEQUENCE_NODE) {
-            if (!ogs_yaml_iter_next(&slice_array))
-                break;
-            ogs_yaml_iter_recurse(&slice_array, &slice_iter);
-        } else if (ogs_yaml_iter_type(&slice_array) == YAML_SCALAR_NODE) {
-            break;
-        } else
-            ogs_assert_if_reached();
-
+        OGS_YAML_ARRAY_NEXT(&slice_array, &slice_iter);
         while (ogs_yaml_iter_next(&slice_iter)) {
             const char *slice_key = ogs_yaml_iter_key(&slice_iter);
             ogs_assert(slice_key);
@@ -162,73 +144,33 @@ static int parse_slice_conf(ogs_yaml_iter_t *parent)
                 if (v) s_nssai.sd = ogs_s_nssai_sd_from_string(v);
             } else if (!strcmp(slice_key, OGS_DEFAULT_INDICATOR_STRING)) {
                 default_indicator = ogs_yaml_iter_bool(&slice_iter);
-            } else if (!strcmp(slice_key, OGS_SESSION_STRING)) {
-                ogs_yaml_iter_t session_array, session_iter;
-                ogs_yaml_iter_recurse(&slice_iter, &session_array);
-                do {
-                    ogs_session_data_t *session_data =
-                        &session_data_array[num_of_session_data];
-
-                    if (ogs_yaml_iter_type(&session_array) ==
-                            YAML_MAPPING_NODE) {
-                        memcpy(&session_iter, &session_array,
-                                sizeof(ogs_yaml_iter_t));
-                    } else if (ogs_yaml_iter_type(&session_array) ==
-                            YAML_SEQUENCE_NODE) {
-                        if (!ogs_yaml_iter_next(&session_array))
-                            break;
-                        ogs_yaml_iter_recurse(&session_array, &session_iter);
-                    } else if (ogs_yaml_iter_type(&session_array) ==
-                            YAML_SCALAR_NODE) {
-                        break;
-                    } else
-                        ogs_assert_if_reached();
-
-                    rv = ogs_app_parse_session_data(
-                            &session_iter, session_data);
-                    if (rv != OGS_OK) {
-                        ogs_error("ogs_app_parse_session_data() failed");
-                        return OGS_ERROR;
-                    }
-
-                    num_of_session_data++;
-
-                } while (ogs_yaml_iter_type(&session_array) ==
-                        YAML_SEQUENCE_NODE);
-            } else
-                ogs_warn("unknown key `%s`", slice_key);
+            }
         }
 
         if (s_nssai.sst) {
-            ogs_app_slice_conf_t *slice_conf =
-                ogs_app_slice_conf_add(&s_nssai);
+            slice_conf = ogs_app_slice_conf_add(policy_conf, &s_nssai);
             if (!slice_conf) {
-                ogs_error("ogs_app_slice_conf_add() failed");
+                ogs_error("ogs_app_slice_conf_add() failed [SST:%d,SD:0x%x]",
+                        s_nssai.sst, s_nssai.sd.v);
                 return OGS_ERROR;
             }
             slice_conf->data.default_indicator = default_indicator;
-
-            for (i = 0; i < num_of_session_data; i++) {
-                ogs_session_data_t *session_data = NULL;
-                ogs_app_session_conf_t *session_conf = NULL;
-
-                session_data = &session_data_array[i];
-                ogs_assert(session_data->session.name);
-                ogs_assert(session_data->session.session_type);
-
-                session_conf = ogs_app_session_conf_add(
-                        slice_conf, session_data);
-
-                OGS_SESSION_DATA_FREE(session_data);
-
-                if (!session_conf) {
-                    ogs_error("ogs_app_session_conf_add() failed");
-                    return OGS_ERROR;
-                }
-            }
         } else {
             ogs_error("No SST");
             return OGS_ERROR;
+        }
+
+        OGS_YAML_ARRAY_RECURSE(&slice_array, &slice_iter);
+        while (ogs_yaml_iter_next(&slice_iter)) {
+            const char *slice_key = ogs_yaml_iter_key(&slice_iter);
+            ogs_assert(slice_key);
+            if (!strcmp(slice_key, OGS_SESSION_STRING)) {
+                rv = ogs_app_parse_session_conf(&slice_iter, slice_conf);
+                if (rv != OGS_OK) {
+                    ogs_error("parse_session_conf() failed");
+                    return rv;
+                }
+            }
         }
 
     } while (ogs_yaml_iter_type(&slice_array) == YAML_SEQUENCE_NODE);
@@ -246,7 +188,6 @@ static int policy_conf_prepare(void)
 
 static int policy_conf_validation(void)
 {
-#if 0
     int rv;
 
     rv = ogs_app_check_policy_conf();
@@ -254,7 +195,6 @@ static int policy_conf_validation(void)
         ogs_error("ogs_app_check_policy_conf() failed");
         return OGS_ERROR;
     }
-#endif
 
     return OGS_OK;
 }
@@ -272,6 +212,7 @@ static int parse_policy_conf(ogs_yaml_iter_t *parent)
     ogs_yaml_iter_recurse(parent, &policy_array);
     do {
         const char *mnc = NULL, *mcc = NULL;
+        ogs_app_policy_conf_t *policy_conf = NULL;
 
         OGS_YAML_ARRAY_NEXT(&policy_array, &policy_iter);
         while (ogs_yaml_iter_next(&policy_iter)) {
@@ -291,43 +232,36 @@ static int parse_policy_conf(ogs_yaml_iter_t *parent)
                     }
                 }
 
-                if (mcc && mnc) {
-                    ogs_fatal("%s, %s", mcc, mnc);
-                } else {
-                    ogs_error("Invalid [MCC:%s, MNC:%s]",
-                            mcc, mnc);
-                }
-            } else
-                ogs_warn("unknown key `%s`", policy_key);
+            }
+        }
+
+        if (mcc && mnc) {
+            ogs_plmn_id_t plmn_id;
+            ogs_plmn_id_build(&plmn_id, atoi(mcc), atoi(mnc), strlen(mnc));
+            policy_conf = ogs_app_policy_conf_add(&plmn_id);
+            if (!policy_conf) {
+                ogs_error("ogs_app_policy_conf_add() failed "
+                        "[MCC:%s,MNC:%s]", mcc, mnc);
+                return OGS_ERROR;
+            }
+        } else {
+            ogs_error("No PLMN-ID [MCC:%s, MNC:%s]", mcc, mnc);
+            return OGS_ERROR;
         }
 
         OGS_YAML_ARRAY_RECURSE(&policy_array, &policy_iter);
         while (ogs_yaml_iter_next(&policy_iter)) {
             const char *policy_key = ogs_yaml_iter_key(&policy_iter);
             ogs_assert(policy_key);
-            if (!strcmp(policy_key, "plmn_id")) {
-                ogs_yaml_iter_t plmn_id_iter;
-
-                ogs_yaml_iter_recurse(&policy_iter, &plmn_id_iter);
-                while (ogs_yaml_iter_next(&plmn_id_iter)) {
-                    const char *id_key = ogs_yaml_iter_key(&plmn_id_iter);
-                    ogs_assert(id_key);
-                    if (!strcmp(id_key, "mcc")) {
-                        mcc = ogs_yaml_iter_value(&plmn_id_iter);
-                    } else if (!strcmp(id_key, "mnc")) {
-                        mnc = ogs_yaml_iter_value(&plmn_id_iter);
-                    }
+            if (!strcmp(policy_key, OGS_SLICE_STRING)) {
+                rv = parse_slice_conf(&policy_iter, policy_conf);
+                if (rv != OGS_OK) {
+                    ogs_error("parse_slice_conf() failed");
+                    return rv;
                 }
-
-                if (mcc && mnc) {
-                    ogs_error("%s, %s", mcc, mnc);
-                } else {
-                    ogs_error("Invalid [MCC:%s, MNC:%s]",
-                            mcc, mnc);
-                }
-            } else
-                ogs_warn("unknown key `%s`", policy_key);
+            }
         }
+
     } while (ogs_yaml_iter_type(&policy_array) == YAML_SEQUENCE_NODE);
 
     rv = policy_conf_validation();
@@ -376,12 +310,6 @@ int pcf_context_parse_config(void)
                     rv = parse_policy_conf(&pcf_iter);
                     if (rv != OGS_OK) {
                         ogs_error("parse_policy_conf() failed");
-                        return rv;
-                    }
-                } else if (!strcmp(pcf_key, OGS_SLICE_STRING)) {
-                    rv = parse_slice_conf(&pcf_iter);
-                    if (rv != OGS_OK) {
-                        ogs_error("parse_slice_conf() failed");
                         return rv;
                     }
                 } else
@@ -869,6 +797,9 @@ int pcf_db_qos_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
     int rv;
     ogs_session_data_t zero_data;
 
+    ogs_app_policy_conf_t *policy_conf = NULL;
+    ogs_app_slice_conf_t *slice_conf = NULL;
+
     ogs_assert(supi);
     ogs_assert(s_nssai);
     ogs_assert(dnn);
@@ -879,22 +810,22 @@ int pcf_db_qos_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
     /* session_data should be initialized to zero */
     ogs_assert(memcmp(session_data, &zero_data, sizeof(zero_data)) == 0);
 
-    if (ogs_list_count(&ogs_local_conf()->slice_list)) {
-        rv = ogs_app_config_session_data(s_nssai, dnn, session_data);
+    policy_conf = ogs_list_first(&ogs_local_conf()->policy_list);
+    if (policy_conf)
+        slice_conf = ogs_list_first(&policy_conf->slice_list);
+
+    if (slice_conf) {
+        rv = ogs_app_config_session_data(NULL, s_nssai, dnn, session_data);
         if (rv != OGS_OK)
             ogs_error("ogs_app_config_session_data() failed - "
                     "SST[%d]SD[0x%x]DNN[%s]",
                     s_nssai->sst, s_nssai->sd.v, dnn);
-    } else if (ogs_app()->db_uri) {
+    } else {
         rv = ogs_dbi_session_data(supi, s_nssai, dnn, session_data);
         if (rv != OGS_OK)
             ogs_error("ogs_dbi_session_data() failed - "
                     "SUPI[%s]SST[%d]SD[0x%x]DNN[%s]",
                     supi, s_nssai->sst, s_nssai->sd.v, dnn);
-    } else {
-        ogs_fatal("Cannot get data for SUPI[%s]SST[%d]SD[0x%x]DNN[%s]",
-                    supi, s_nssai->sst, s_nssai->sd.v, dnn);
-        ogs_assert_if_reached();
     }
 
     return rv;

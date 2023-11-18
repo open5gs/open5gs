@@ -14,7 +14,7 @@ pcrf:
 # Locally configured policy
 ################################################################################
 #
-#  o You don't have to use MongoDB if you use the policy configuratoin as below.
+#  o You don't have to use MongoDB if you use the policy configuration as below.
 #
 #  session:
 #    - name: internet

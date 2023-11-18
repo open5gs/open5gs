@@ -128,7 +128,6 @@ typedef struct ogs_local_conf_s {
     int num_of_serving_plmn_id;
 
     ogs_list_t policy_list;
-    ogs_list_t slice_list;
 
 } ogs_app_local_conf_t;
 
@@ -146,6 +145,7 @@ typedef struct ogs_app_slice_conf_s {
     ogs_slice_data_t data;
 
     ogs_list_t sess_list;
+    ogs_app_policy_conf_t *policy_conf;
 } ogs_app_slice_conf_t;
 
 typedef struct ogs_app_session_conf_s {
@@ -168,9 +168,9 @@ int ogs_app_parse_local_conf(const char *local);
 int ogs_app_parse_sockopt_config(
         ogs_yaml_iter_t *parent, ogs_sockopt_t *option);
 
-int ogs_app_check_slice_conf(void);
-int ogs_app_parse_session_data(
-        ogs_yaml_iter_t *iterator, ogs_session_data_t *session_data);
+int ogs_app_check_policy_conf(void);
+int ogs_app_parse_session_conf(
+        ogs_yaml_iter_t *parent, ogs_app_slice_conf_t *slice_conf);
 
 ogs_app_policy_conf_t *ogs_app_policy_conf_add(ogs_plmn_id_t *plmn_id);
 ogs_app_policy_conf_t *ogs_app_policy_conf_find_by_plmn_id(
@@ -178,14 +178,15 @@ ogs_app_policy_conf_t *ogs_app_policy_conf_find_by_plmn_id(
 void ogs_app_policy_conf_remove(ogs_app_policy_conf_t *policy_conf);
 void ogs_app_policy_conf_remove_all(void);
 
-ogs_app_slice_conf_t *ogs_app_slice_conf_add(ogs_s_nssai_t *s_nssai);
+ogs_app_slice_conf_t *ogs_app_slice_conf_add(
+        ogs_app_policy_conf_t *policy_conf, ogs_s_nssai_t *s_nssai);
 ogs_app_slice_conf_t *ogs_app_slice_conf_find_by_s_nssai(
-        ogs_s_nssai_t *s_nssai);
+        ogs_app_policy_conf_t *policy_conf, ogs_s_nssai_t *s_nssai);
 void ogs_app_slice_conf_remove(ogs_app_slice_conf_t *slice_conf);
-void ogs_app_slice_conf_remove_all(void);
+void ogs_app_slice_conf_remove_all(ogs_app_policy_conf_t *policy_conf);
 
 ogs_app_session_conf_t *ogs_app_session_conf_add(
-        ogs_app_slice_conf_t *slice_conf, ogs_session_data_t *session_data);
+        ogs_app_slice_conf_t *slice_conf, char *name);
 ogs_app_session_conf_t *ogs_app_session_conf_find_by_dnn(
         ogs_app_slice_conf_t *slice_conf, char *name);
 void ogs_app_session_conf_remove(ogs_app_session_conf_t *session_conf);
@@ -193,7 +194,8 @@ void ogs_app_session_conf_remove_all(
         ogs_app_slice_conf_t *slice_conf);
 
 int ogs_app_config_session_data(
-        ogs_s_nssai_t *s_nssai, char *dnn, ogs_session_data_t *session_data);
+        ogs_plmn_id_t *plmn_id, ogs_s_nssai_t *s_nssai, char *dnn,
+        ogs_session_data_t *session_data);
 
 #ifdef __cplusplus
 }
