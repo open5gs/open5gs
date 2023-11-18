@@ -32,7 +32,7 @@ pcf:
 #
 #  o You don't have to use MongoDB if you use the policy configuratoin as below.
 #
-#  home:
+#  policy:
 #    - plmn_id:
 #        mcc: 999
 #        mnc: 70

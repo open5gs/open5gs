@@ -127,9 +127,18 @@ typedef struct ogs_local_conf_s {
     ogs_plmn_id_t serving_plmn_id[OGS_MAX_NUM_OF_PLMN];
     int num_of_serving_plmn_id;
 
+    ogs_list_t policy_list;
     ogs_list_t slice_list;
 
 } ogs_app_local_conf_t;
+
+typedef struct ogs_app_policy_conf_s {
+    ogs_lnode_t lnode;
+
+    ogs_plmn_id_t plmn_id;
+
+    ogs_list_t slice_list;
+} ogs_app_policy_conf_t;
 
 typedef struct ogs_app_slice_conf_s {
     ogs_lnode_t lnode;
@@ -162,6 +171,12 @@ int ogs_app_parse_sockopt_config(
 int ogs_app_check_slice_conf(void);
 int ogs_app_parse_session_data(
         ogs_yaml_iter_t *iterator, ogs_session_data_t *session_data);
+
+ogs_app_policy_conf_t *ogs_app_policy_conf_add(ogs_plmn_id_t *plmn_id);
+ogs_app_policy_conf_t *ogs_app_policy_conf_find_by_plmn_id(
+        ogs_plmn_id_t *plmn_id);
+void ogs_app_policy_conf_remove(ogs_app_policy_conf_t *policy_conf);
+void ogs_app_policy_conf_remove_all(void);
 
 ogs_app_slice_conf_t *ogs_app_slice_conf_add(ogs_s_nssai_t *s_nssai);
 ogs_app_slice_conf_t *ogs_app_slice_conf_find_by_s_nssai(

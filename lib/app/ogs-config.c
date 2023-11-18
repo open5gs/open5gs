@@ -22,6 +22,7 @@
 static ogs_app_global_conf_t global_conf;
 static ogs_app_local_conf_t local_conf;
 
+static OGS_POOL(policy_conf_pool, ogs_app_policy_conf_t);
 static OGS_POOL(slice_conf_pool, ogs_app_slice_conf_t);
 static OGS_POOL(session_conf_pool, ogs_app_session_conf_t);
 
@@ -34,6 +35,7 @@ int ogs_app_config_init(void)
     memset(&global_conf, 0, sizeof(ogs_app_global_conf_t));
     memset(&local_conf, 0, sizeof(ogs_app_local_conf_t));
 
+    ogs_pool_init(&policy_conf_pool, OGS_MAX_NUM_OF_PLMN);
     ogs_pool_init(&slice_conf_pool, OGS_MAX_NUM_OF_SLICE);
     ogs_pool_init(&session_conf_pool,
             OGS_MAX_NUM_OF_SLICE*OGS_MAX_NUM_OF_SESS);
@@ -49,6 +51,7 @@ void ogs_app_config_final(void)
 
     ogs_app_slice_conf_remove_all();
 
+    ogs_pool_final(&policy_conf_pool);
     ogs_pool_final(&slice_conf_pool);
     ogs_pool_final(&session_conf_pool);
 
@@ -1164,6 +1167,68 @@ int ogs_app_parse_session_data(
     if (rv != OGS_OK) return rv;
 
     return OGS_OK;
+}
+
+ogs_app_policy_conf_t *ogs_app_policy_conf_add(ogs_plmn_id_t *plmn_id)
+{
+    ogs_app_policy_conf_t *policy_conf = NULL;
+
+    ogs_assert(plmn_id);
+
+    ogs_pool_alloc(&policy_conf_pool, &policy_conf);
+    if (!policy_conf) {
+        ogs_error("Maximum number of policy_conf[%d] reached",
+                OGS_MAX_NUM_OF_PLMN);
+        return NULL;
+    }
+    memset(policy_conf, 0, sizeof *policy_conf);
+
+    memcpy(&policy_conf->plmn_id, plmn_id, sizeof(ogs_plmn_id_t));
+
+    ogs_list_init(&policy_conf->slice_list);
+
+    ogs_list_add(&local_conf.policy_list, policy_conf);
+
+    ogs_info("POLICY config added [%d]",
+            ogs_list_count(&local_conf.policy_list));
+    return policy_conf;
+}
+
+ogs_app_policy_conf_t *ogs_app_policy_conf_find_by_plmn_id(
+        ogs_plmn_id_t *plmn_id)
+{
+    ogs_app_policy_conf_t *policy_conf = NULL;
+
+    ogs_assert(plmn_id);
+
+    ogs_list_for_each(&local_conf.policy_list, policy_conf) {
+        if (memcmp(&policy_conf->plmn_id, plmn_id, sizeof(ogs_plmn_id_t)) == 0)
+            break;
+    }
+
+    return policy_conf;
+}
+void ogs_app_policy_conf_remove(ogs_app_policy_conf_t *policy_conf)
+{
+    ogs_assert(policy_conf);
+
+    ogs_list_remove(&local_conf.policy_list, policy_conf);
+
+#if 0
+    ogs_app_slice_conf_remove_all(policy_conf);
+#endif
+
+    ogs_pool_free(&policy_conf_pool, policy_conf);
+
+    ogs_info("POLICY config removed [%d]",
+            ogs_list_count(&local_conf.policy_list));
+}
+void ogs_app_policy_conf_remove_all(void)
+{
+    ogs_app_policy_conf_t *policy_conf = NULL, *next_conf = NULL;;
+
+    ogs_list_for_each_safe(&local_conf.policy_list, next_conf, policy_conf)
+        ogs_app_policy_conf_remove(policy_conf);
 }
 
 ogs_app_slice_conf_t *ogs_app_slice_conf_add(ogs_s_nssai_t *s_nssai)

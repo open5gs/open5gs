@@ -137,6 +137,7 @@ extern "C" {
 #define OGS_VALUE_STRING "value"
 #define OGS_UNIT_STRING "unit"
 
+#define OGS_POLICY_STRING "policy"
 #define OGS_SLICE_STRING "slice"
 #define OGS_SST_STRING "sst"
 #define OGS_SD_STRING "sd"

@@ -275,6 +275,14 @@ int pcf_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(pcf_key, "metrics")) {
                     /* handle config in metrics library */
+                } else if (!strcmp(pcf_key, OGS_POLICY_STRING)) {
+#if 0
+                    rv = parse_policy_conf(&pcf_iter);
+                    if (rv != OGS_OK) {
+                        ogs_error("parse_policy_conf() failed");
+                        return rv;
+                    }
+#endif
                 } else if (!strcmp(pcf_key, OGS_SLICE_STRING)) {
                     rv = parse_slice_conf(&pcf_iter);
                     if (rv != OGS_OK) {
