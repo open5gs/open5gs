@@ -144,9 +144,9 @@ static int parse_slice_conf(ogs_yaml_iter_t *parent)
             ogs_assert_if_reached();
 
         while (ogs_yaml_iter_next(&slice_iter)) {
-            const char *policy_key = ogs_yaml_iter_key(&slice_iter);
-            ogs_assert(policy_key);
-            if (!strcmp(policy_key, OGS_SST_STRING)) {
+            const char *slice_key = ogs_yaml_iter_key(&slice_iter);
+            ogs_assert(slice_key);
+            if (!strcmp(slice_key, OGS_SST_STRING)) {
                 const char *v = ogs_yaml_iter_value(&slice_iter);
                 if (v) {
                     s_nssai.sst = atoi(v);
@@ -157,12 +157,12 @@ static int parse_slice_conf(ogs_yaml_iter_t *parent)
                         return OGS_ERROR;
                     }
                 }
-            } else if (!strcmp(policy_key, OGS_SD_STRING)) {
+            } else if (!strcmp(slice_key, OGS_SD_STRING)) {
                 const char *v = ogs_yaml_iter_value(&slice_iter);
                 if (v) s_nssai.sd = ogs_s_nssai_sd_from_string(v);
-            } else if (!strcmp(policy_key, OGS_DEFAULT_INDICATOR_STRING)) {
+            } else if (!strcmp(slice_key, OGS_DEFAULT_INDICATOR_STRING)) {
                 default_indicator = ogs_yaml_iter_bool(&slice_iter);
-            } else if (!strcmp(policy_key, OGS_SESSION_STRING)) {
+            } else if (!strcmp(slice_key, OGS_SESSION_STRING)) {
                 ogs_yaml_iter_t session_array, session_iter;
                 ogs_yaml_iter_recurse(&slice_iter, &session_array);
                 do {
@@ -196,7 +196,7 @@ static int parse_slice_conf(ogs_yaml_iter_t *parent)
                 } while (ogs_yaml_iter_type(&session_array) ==
                         YAML_SEQUENCE_NODE);
             } else
-                ogs_warn("unknown key `%s`", policy_key);
+                ogs_warn("unknown key `%s`", slice_key);
         }
 
         if (s_nssai.sst) {
