@@ -239,6 +239,75 @@ static int parse_slice_conf(ogs_yaml_iter_t *parent)
     return OGS_OK;
 }
 
+static int policy_conf_prepare(void)
+{
+    return OGS_OK;
+}
+
+static int policy_conf_validation(void)
+{
+#if 0
+    int rv;
+
+    rv = ogs_app_check_policy_conf();
+    if (rv != OGS_OK) {
+        ogs_error("ogs_app_check_policy_conf() failed");
+        return OGS_ERROR;
+    }
+#endif
+
+    return OGS_OK;
+}
+
+static int parse_policy_conf(ogs_yaml_iter_t *parent)
+{
+    int rv;
+    ogs_yaml_iter_t policy_array, policy_iter;
+
+    ogs_assert(parent);
+
+    rv = policy_conf_prepare();
+    if (rv != OGS_OK) return rv;
+
+    ogs_yaml_iter_recurse(parent, &policy_array);
+    do {
+        const char *mnc = NULL, *mcc = NULL;
+
+        OGS_YAML_ARRAY_RECURSE(&policy_array, &policy_iter);
+        while (ogs_yaml_iter_next(&policy_iter)) {
+            const char *policy_key = ogs_yaml_iter_key(&policy_iter);
+            ogs_assert(policy_key);
+            if (!strcmp(policy_key, "plmn_id")) {
+                ogs_yaml_iter_t plmn_id_iter;
+
+                ogs_yaml_iter_recurse(&policy_iter, &plmn_id_iter);
+                while (ogs_yaml_iter_next(&plmn_id_iter)) {
+                    const char *id_key = ogs_yaml_iter_key(&plmn_id_iter);
+                    ogs_assert(id_key);
+                    if (!strcmp(id_key, "mcc")) {
+                        mcc = ogs_yaml_iter_value(&plmn_id_iter);
+                    } else if (!strcmp(id_key, "mnc")) {
+                        mnc = ogs_yaml_iter_value(&plmn_id_iter);
+                    }
+                }
+
+                if (mcc && mnc) {
+                    ogs_fatal("%s, %s", mcc, mnc);
+                } else {
+                    ogs_error("Invalid [MCC:%s, MNC:%s]",
+                            mcc, mnc);
+                }
+            } else
+                ogs_warn("unknown key `%s`", policy_key);
+        }
+    } while (ogs_yaml_iter_type(&policy_array) == YAML_SEQUENCE_NODE);
+
+    rv = policy_conf_validation();
+    if (rv != OGS_OK) return rv;
+
+    return OGS_OK;
+}
+
 int pcf_context_parse_config(void)
 {
     int rv;
@@ -276,13 +345,11 @@ int pcf_context_parse_config(void)
                 } else if (!strcmp(pcf_key, "metrics")) {
                     /* handle config in metrics library */
                 } else if (!strcmp(pcf_key, OGS_POLICY_STRING)) {
-#if 0
                     rv = parse_policy_conf(&pcf_iter);
                     if (rv != OGS_OK) {
                         ogs_error("parse_policy_conf() failed");
                         return rv;
                     }
-#endif
                 } else if (!strcmp(pcf_key, OGS_SLICE_STRING)) {
                     rv = parse_slice_conf(&pcf_iter);
                     if (rv != OGS_OK) {
