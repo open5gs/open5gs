@@ -114,6 +114,38 @@ int smf_sbi_discover_and_send(
         ogs_sbi_plmn_id_in_vplmn(&sess->home_plmn_id) == true) {
         int i;
 
+        /* TODO: PCF and UDM Selection
+         *
+         * FROM: Ultra Cloud Core 5G Session Management Function,
+         * Release 2023.04 - Configuration and Administration Guide
+         * https://www.cisco.com/c/en/us/td/docs/wireless/ucc/smf/2023-04/config-and-admin/b_ucc-5g-smf-config-and-admin-guide_2023-04/m_roaming-support.html#Cisco_Reference.dita_ed2a198e-b60d-4d77-b09c-932d82169c11https://www.cisco.com/c/en/us/td/docs/wireless/ucc/smf/2023-04/config-and-admin/b_ucc-5g-smf-config-and-admin-guide_2023-04/m_roaming-support.html#Cisco_Reference.dita_ed2a198e-b60d-4d77-b09c-932d82169c11
+         *
+         * During roaming, the AMF selects both vPCF and hPCF and sends
+         * the vPCF ID and hPCF ID to the SMF and vPCF respectively
+         * during policy association. The SMF selects the PCF
+         * using the received vPCF ID.
+         *
+         * During AMF relocation, target AMF selects a new vPCF and hPCF.
+         * The SMF receives a redirection indication with PCF ID
+         * from the existing PCF for the PDU session. The SMF terminates
+         * the current SM Policy Control association and reselects
+         * a PCF based on the received PCF ID.
+         *
+         * The SMF then establishes an SM Policy Control association
+         * with the reselected PCF.
+         *
+         * For selection of PCF and UDM based on local configuration,
+         * the locally configured addresses map to the VPLMN and HPLMN
+         * respectively since the PCF is in VPLMN and the UDM is in HPLMN
+         * for roaming with LBO case.
+         *
+         * For NRF-based discovery of PCF and UDM, the query criteria includes
+         * VPLMN for PCF discovery and HPLMN for UDM discovery. The AMF sends
+         * the UDM group ID to enable the SMF to select UDM.
+         *
+         * The S-NSSAI used by SMF to select PCF should be the VPLMN S-NSSAI
+         * received from AMF.
+         */
         if (!discovery_option) {
             discovery_option = ogs_sbi_discovery_option_new();
             ogs_assert(discovery_option);
