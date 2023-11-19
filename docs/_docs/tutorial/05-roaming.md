@@ -292,6 +292,64 @@ index e78b018f1..3032a06c6 100644
        - subnet: 2001:db8:cafe::1/48
 ```
 
+Due to the absence of UDR in the visiting network, V-PCF uses locally configured policies. When the UE is located in the home PLMN (999/70), MongoDB is used. On the other hand, when the UE is located in the visiting PLMN (001/01, 315/010), locally configured policies are used. This is because there is no session management policy data for the UE in the visiting network, so locally configured information based on the roaming agreement is used.
+
+- Update pcf.yaml
+```diff
+$ diff --git a/configs/open5gs/pcf.yaml.in b/configs/open5gs/pcf.yaml.in
+index 2df2e9a36..9eea1f1de 100644
+--- a/configs/open5gs/pcf.yaml.in
++++ b/configs/open5gs/pcf.yaml.in
+@@ -22,6 +22,51 @@ pcf:
+     server:
+       - address: 127.0.0.13
+         port: 9090
++  policy:
++    - plmn_id:
++        mcc: 001
++        mnc: 01
++      slice:
++        - sst: 1  # 1,2,3,4
++          default_indicator: true
++          session:
++            - name: internet
++              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
++              ambr:
++                downlink:
++                  value: 1
++                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                uplink:
++                  value: 1
++                  unit: 3
++              qos:
++                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                arp:
++                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
++                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
++    - plmn_id:
++        mcc: 315
++        mnc: 010
++      slice:
++        - sst: 1  # 1,2,3,4
++          default_indicator: true
++          session:
++            - name: internet
++              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
++              ambr:
++                downlink:
++                  value: 1
++                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                uplink:
++                  value: 1
++                  unit: 3
++              qos:
++                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                arp:
++                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
++                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+```
 
 For now we will set up SEPP without using TLS.
 
@@ -553,6 +611,64 @@ index e78b018f1..3032a06c6 100644
        - subnet: 2001:db8:cafe::1/48
 ```
 
+Due to the absence of UDR in the visiting network, V-PCF uses locally configured policies. When the UE is located in the home PLMN (001/01), MongoDB is used. On the other hand, when the UE is located in the visiting PLMN (999/70, 315/010), locally configured policies are used. This is because there is no session management policy data for the UE in the visiting network, so locally configured information based on the roaming agreement is used.
+
+- Update pcf.yaml
+```diff
+$ diff --git a/configs/open5gs/pcf.yaml.in b/configs/open5gs/pcf.yaml.in
+index 2df2e9a36..9eea1f1de 100644
+--- a/configs/open5gs/pcf.yaml.in
++++ b/configs/open5gs/pcf.yaml.in
+@@ -22,6 +22,51 @@ pcf:
+     server:
+       - address: 127.0.0.13
+         port: 9090
++  policy:
++    - plmn_id:
++        mcc: 999
++        mnc: 70
++      slice:
++        - sst: 1  # 1,2,3,4
++          default_indicator: true
++          session:
++            - name: internet
++              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
++              ambr:
++                downlink:
++                  value: 1
++                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                uplink:
++                  value: 1
++                  unit: 3
++              qos:
++                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                arp:
++                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
++                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
++    - plmn_id:
++        mcc: 315
++        mnc: 010
++      slice:
++        - sst: 1  # 1,2,3,4
++          default_indicator: true
++          session:
++            - name: internet
++              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
++              ambr:
++                downlink:
++                  value: 1
++                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                uplink:
++                  value: 1
++                  unit: 3
++              qos:
++                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                arp:
++                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
++                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+```
 
 For now we will set up SEPP without using TLS.
 
@@ -814,6 +930,64 @@ index e78b018f1..3032a06c6 100644
        - subnet: 2001:db8:cafe::1/48
 ```
 
+Due to the absence of UDR in the visiting network, V-PCF uses locally configured policies. When the UE is located in the home PLMN (315/010), MongoDB is used. On the other hand, when the UE is located in the visiting PLMN (999/70, 001/01), locally configured policies are used. This is because there is no session management policy data for the UE in the visiting network, so locally configured information based on the roaming agreement is used.
+
+- Update pcf.yaml
+```diff
+$ diff --git a/configs/open5gs/pcf.yaml.in b/configs/open5gs/pcf.yaml.in
+index 2df2e9a36..9eea1f1de 100644
+--- a/configs/open5gs/pcf.yaml.in
++++ b/configs/open5gs/pcf.yaml.in
+@@ -22,6 +22,51 @@ pcf:
+     server:
+       - address: 127.0.0.13
+         port: 9090
++  policy:
++    - plmn_id:
++        mcc: 999
++        mnc: 70
++      slice:
++        - sst: 1  # 1,2,3,4
++          default_indicator: true
++          session:
++            - name: internet
++              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
++              ambr:
++                downlink:
++                  value: 1
++                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                uplink:
++                  value: 1
++                  unit: 3
++              qos:
++                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                arp:
++                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
++                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
++    - plmn_id:
++        mcc: 001
++        mnc: 01
++      slice:
++        - sst: 1  # 1,2,3,4
++          default_indicator: true
++          session:
++            - name: internet
++              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
++              ambr:
++                downlink:
++                  value: 1
++                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                uplink:
++                  value: 1
++                  unit: 3
++              qos:
++                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                arp:
++                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
++                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+```
 
 For now we will set up SEPP without using TLS.
 
