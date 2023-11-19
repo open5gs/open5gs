@@ -793,14 +793,14 @@ int pcf_instance_get_load(void)
             ogs_pool_size(&pcf_ue_pool));
 }
 
-int pcf_db_qos_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
+int pcf_db_qos_data(char *supi,
+        ogs_plmn_id_t *plmn_id, ogs_s_nssai_t *s_nssai, char *dnn,
         ogs_session_data_t *session_data)
 {
     int rv;
     ogs_session_data_t zero_data;
 
     ogs_app_policy_conf_t *policy_conf = NULL;
-    ogs_app_slice_conf_t *slice_conf = NULL;
 
     ogs_assert(supi);
     ogs_assert(s_nssai);
@@ -813,20 +813,24 @@ int pcf_db_qos_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
     ogs_assert(memcmp(session_data, &zero_data, sizeof(zero_data)) == 0);
 
     policy_conf = ogs_list_first(&ogs_local_conf()->policy_list);
-    if (policy_conf)
-        slice_conf = ogs_list_first(&policy_conf->slice_list);
-
-    if (slice_conf) {
-        rv = ogs_app_config_session_data(NULL, s_nssai, dnn, session_data);
-        if (rv != OGS_OK)
-            ogs_error("ogs_app_config_session_data() failed - "
-                    "SST[%d]SD[0x%x]DNN[%s]",
-                    s_nssai->sst, s_nssai->sd.v, dnn);
+    if (policy_conf) {
+        if (plmn_id) {
+            rv = ogs_app_config_session_data(
+                    plmn_id, s_nssai, dnn, session_data);
+            if (rv != OGS_OK)
+                ogs_error("ogs_app_config_session_data() failed - "
+                        "MCC[%d] MNC[%d] SST[%d] SD[0x%x] DNN[%s]",
+                        ogs_plmn_id_mcc(plmn_id), ogs_plmn_id_mnc(plmn_id),
+                        s_nssai->sst, s_nssai->sd.v, dnn);
+        } else {
+            ogs_error("No PLMN ID");
+            rv = OGS_ERROR;
+        }
     } else {
         rv = ogs_dbi_session_data(supi, s_nssai, dnn, session_data);
         if (rv != OGS_OK)
             ogs_error("ogs_dbi_session_data() failed - "
-                    "SUPI[%s]SST[%d]SD[0x%x]DNN[%s]",
+                    "SUPI[%s] SST[%d] SD[0x%x] DNN[%s]",
                     supi, s_nssai->sst, s_nssai->sd.v, dnn);
     }
 

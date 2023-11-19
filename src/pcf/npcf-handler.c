@@ -266,12 +266,20 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
 
     servingNetwork = SmPolicyContextData->serving_network;
     if (servingNetwork) {
-        if (!servingNetwork->mnc || !servingNetwork->mcc) {
-            strerror = ogs_msprintf("[%s:%d] No serving_network",
+        if (!servingNetwork->mcc) {
+            strerror = ogs_msprintf("[%s:%d] No servingNetwork->mcc",
                     pcf_ue->supi, sess->psi);
             status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
             goto cleanup;
         }
+        if (!servingNetwork->mnc) {
+            strerror = ogs_msprintf("[%s:%d] No servingNetwork->mnc",
+                    pcf_ue->supi, sess->psi);
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            goto cleanup;
+        }
+    } else {
+        ogs_warn("No servingNetwork");
     }
 
     rc = ogs_sbi_getaddr_from_uri(&scheme, &fqdn, &fqdn_port, &addr, &addr6,
@@ -737,7 +745,9 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     ogs_freeaddrinfo(addr6);
 
     rv = pcf_db_qos_data(
-            pcf_ue->supi, &sess->s_nssai, sess->dnn, &session_data);
+            pcf_ue->supi,
+            sess->home.presence == true ? &sess->home.plmn_id : NULL,
+            &sess->s_nssai, sess->dnn, &session_data);
     if (rv != OGS_OK) {
         strerror = ogs_msprintf("[%s:%d] Cannot find SUPI in DB",
                 pcf_ue->supi, sess->psi);
@@ -1157,7 +1167,9 @@ bool pcf_npcf_policyauthorization_handle_update(
     }
 
     rv = pcf_db_qos_data(
-            pcf_ue->supi, &sess->s_nssai, sess->dnn, &session_data);
+            pcf_ue->supi,
+            sess->home.presence == true ? &sess->home.plmn_id : NULL,
+            &sess->s_nssai, sess->dnn, &session_data);
     if (rv != OGS_OK) {
         strerror = ogs_msprintf("[%s:%d] Cannot find SUPI in DB",
                 pcf_ue->supi, sess->psi);
