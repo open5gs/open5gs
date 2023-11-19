@@ -812,20 +812,19 @@ int pcf_db_qos_data(char *supi,
     /* session_data should be initialized to zero */
     ogs_assert(memcmp(session_data, &zero_data, sizeof(zero_data)) == 0);
 
-    policy_conf = ogs_list_first(&ogs_local_conf()->policy_list);
+    if (plmn_id)
+        policy_conf = ogs_app_policy_conf_find_by_plmn_id(plmn_id);
+    else
+        ogs_warn("No PLMN_ID");
+
     if (policy_conf) {
-        if (plmn_id) {
-            rv = ogs_app_config_session_data(
-                    plmn_id, s_nssai, dnn, session_data);
-            if (rv != OGS_OK)
-                ogs_error("ogs_app_config_session_data() failed - "
-                        "MCC[%d] MNC[%d] SST[%d] SD[0x%x] DNN[%s]",
-                        ogs_plmn_id_mcc(plmn_id), ogs_plmn_id_mnc(plmn_id),
-                        s_nssai->sst, s_nssai->sd.v, dnn);
-        } else {
-            ogs_error("No PLMN ID");
-            rv = OGS_ERROR;
-        }
+        rv = ogs_app_config_session_data(
+                plmn_id, s_nssai, dnn, session_data);
+        if (rv != OGS_OK)
+            ogs_error("ogs_app_config_session_data() failed - "
+                    "MCC[%d] MNC[%d] SST[%d] SD[0x%x] DNN[%s]",
+                    ogs_plmn_id_mcc(plmn_id), ogs_plmn_id_mnc(plmn_id),
+                    s_nssai->sst, s_nssai->sd.v, dnn);
     } else {
         rv = ogs_dbi_session_data(supi, s_nssai, dnn, session_data);
         if (rv != OGS_OK)
