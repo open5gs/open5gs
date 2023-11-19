@@ -51,7 +51,7 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
         goto end;
     }
 
-    server = ogs_list_first(&ogs_sbi_self()->server_list);
+    server = ogs_sbi_server_first();
     if (!server) {
         ogs_error("No server");
         goto end;
@@ -192,7 +192,7 @@ ogs_sbi_request_t *amf_nudm_sdm_build_subscription(amf_ue_t *amf_ue, void *data)
     SDMSubscription.nf_instance_id =
         NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
 
-    server = ogs_list_first(&ogs_sbi_self()->server_list);
+    server = ogs_sbi_server_first();
     if (!server) {
         ogs_error("No server");
         goto end;

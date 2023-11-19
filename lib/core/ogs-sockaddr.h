@@ -62,10 +62,25 @@ struct ogs_sockaddr_s {
         struct sockaddr sa;
     };
 
-    /* User Area
-     *   - Could add your attribute.
+    /*
+     * First we created a 'hostname' variable.
+     * If there is a name in the configuration file,
+     * it is set in the 'hostname' of ogs_sockaddr_t.
+     * Then, it immediately call getaddrinfo() to fill addr in ogs_sockaddr_t.
+     *
+     * When it was always possible to convert DNS to addr, that was no problem.
+     * However, in some environments, such as Roaming, there are situations
+     * where it is difficult to always change the DNS to addr.
+     *
+     * So, 'fqdn' was created for the purpose of first use in ogs_sbi_client_t.
+     * 'fqdn' always do not change with addr.
+     * This value is used as it is in the actual client connection.
+     *
+     * Note that 'hostname' is still in use for server or other client
+     * except for ogs_sbi_client_t.
      */
     char *hostname;
+    char *fqdn;
 
     ogs_sockaddr_t *next;
 };

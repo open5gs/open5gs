@@ -33,7 +33,7 @@ static bool maximum_number_of_gnbs_is_reached(void)
         }
     }
 
-    return number_of_gnbs_online >= ogs_app()->max.peer;
+    return number_of_gnbs_online >= ogs_global_conf()->max.peer;
 }
 
 static bool gnb_plmn_id_is_foreign(amf_gnb_t *gnb)
@@ -4066,7 +4066,7 @@ void ngap_handle_handover_notification(
             NGAP_Cause_PR_radioNetwork,
             NGAP_CauseRadioNetwork_successful_handover,
             NGAP_UE_CTX_REL_NG_HANDOVER_COMPLETE,
-            ogs_app()->time.handover.duration);
+            ogs_local_conf()->time.handover.duration);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 

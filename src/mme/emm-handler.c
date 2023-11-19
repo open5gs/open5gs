@@ -32,7 +32,7 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __emm_log_domain
 
-static uint8_t emm_cause_from_access_control(ogs_plmn_id_t *plmn_id);
+static uint8_t emm_cause_from_access_control(mme_ue_t *mme_ue);
 
 int emm_handle_attach_request(mme_ue_t *mme_ue,
         ogs_nas_eps_attach_request_t *attach_request, ogs_pkbuf_t *pkbuf)
@@ -137,26 +137,6 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
     mme_ue->ue_location_timestamp = ogs_time_now();
 
-    /* Check PLMN-ID access control */
-    emm_cause = emm_cause_from_access_control(&mme_ue->tai.plmn_id);
-    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in TAI) access control");
-        r = nas_eps_send_attach_reject(mme_ue,
-                emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return OGS_ERROR;
-    }
-    emm_cause = emm_cause_from_access_control(&mme_ue->e_cgi.plmn_id);
-    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in CGI) access control");
-        r = nas_eps_send_attach_reject(mme_ue,
-                emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return OGS_ERROR;
-    }
-
     /* Check TAI */
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
     if (served_tai_index < 0) {
@@ -226,6 +206,17 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
         }
         memcpy(&mme_ue->nas_mobile_identity_imsi, 
             &eps_mobile_identity->imsi, eps_mobile_identity->length);
+
+        emm_cause = emm_cause_from_access_control(mme_ue);
+        if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
+            ogs_error("Rejected by PLMN-ID access control");
+            r = nas_eps_send_attach_reject(mme_ue,
+                    emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return OGS_ERROR;
+        }
+
         ogs_nas_eps_imsi_to_bcd(
             &eps_mobile_identity->imsi, eps_mobile_identity->length,
             imsi_bcd);
@@ -375,6 +366,8 @@ int emm_handle_attach_complete(
 int emm_handle_identity_response(
         mme_ue_t *mme_ue, ogs_nas_eps_identity_response_t *identity_response)
 {
+    int r;
+    uint8_t emm_cause;
     ogs_nas_mobile_identity_t *mobile_identity = NULL;
     enb_ue_t *enb_ue = NULL;
 
@@ -393,16 +386,37 @@ int emm_handle_identity_response(
             ogs_error("mobile_identity length (%d != %d)",
                     (int)sizeof(ogs_nas_mobile_identity_imsi_t),
                     mobile_identity->length);
+            r = nas_eps_send_attach_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+                    OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             return OGS_ERROR;
         }
         memcpy(&mme_ue->nas_mobile_identity_imsi, 
             &mobile_identity->imsi, mobile_identity->length);
+
+        emm_cause = emm_cause_from_access_control(mme_ue);
+        if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
+            ogs_error("Rejected by PLMN-ID access control");
+            r = nas_eps_send_attach_reject(mme_ue,
+                    emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return OGS_ERROR;
+        }
+
         ogs_nas_eps_imsi_to_bcd(
             &mobile_identity->imsi, mobile_identity->length, imsi_bcd);
         mme_ue_set_imsi(mme_ue, imsi_bcd);
 
         if (mme_ue->imsi_len != OGS_MAX_IMSI_LEN) {
             ogs_error("Invalid IMSI LEN[%d]", mme_ue->imsi_len);
+            r = nas_eps_send_attach_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+                    OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             return OGS_ERROR;
         }
 
@@ -535,7 +549,6 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
 {
     int r;
     int served_tai_index = 0;
-    uint8_t emm_cause;
 
     ogs_nas_eps_mobile_identity_guti_t *eps_mobile_identity_guti = NULL;
     ogs_nas_eps_guti_t nas_guti;
@@ -601,24 +614,6 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
     memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
     mme_ue->ue_location_timestamp = ogs_time_now();
-
-    /* Check PLMN-ID access control */
-    emm_cause = emm_cause_from_access_control(&mme_ue->tai.plmn_id);
-    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in TAI) access control");
-        r = nas_eps_send_tau_reject(mme_ue, emm_cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return OGS_ERROR;
-    }
-    emm_cause = emm_cause_from_access_control(&mme_ue->e_cgi.plmn_id);
-    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in CGI) access control");
-        r = nas_eps_send_tau_reject(mme_ue, emm_cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return OGS_ERROR;
-    }
 
     /* Check TAI */
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
@@ -694,7 +689,6 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
 {
     int r;
     int served_tai_index = 0;
-    uint8_t emm_cause;
 
     ogs_nas_service_type_t *service_type =
         &extended_service_request->service_type;
@@ -740,24 +734,6 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
     memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
     mme_ue->ue_location_timestamp = ogs_time_now();
-
-    /* Check PLMN-ID access control */
-    emm_cause = emm_cause_from_access_control(&mme_ue->tai.plmn_id);
-    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in TAI) access control");
-        r = nas_eps_send_tau_reject(mme_ue, emm_cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return OGS_ERROR;
-    }
-    emm_cause = emm_cause_from_access_control(&mme_ue->e_cgi.plmn_id);
-    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in CGI) access control");
-        r = nas_eps_send_tau_reject(mme_ue, emm_cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return OGS_ERROR;
-    }
 
     /* Check TAI */
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
@@ -838,19 +814,35 @@ int emm_handle_security_mode_complete(mme_ue_t *mme_ue,
     return OGS_OK;
 }
 
-static uint8_t emm_cause_from_access_control(ogs_plmn_id_t *plmn_id)
+static uint8_t emm_cause_from_access_control(mme_ue_t *mme_ue)
 {
+    ogs_nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
     int i;
 
-    ogs_assert(plmn_id);
+    ogs_assert(mme_ue);
+    nas_mobile_identity_imsi = &mme_ue->nas_mobile_identity_imsi;
 
     /* No Access Control */
     if (mme_self()->num_of_access_control == 0)
         return OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
 
     for (i = 0; i < mme_self()->num_of_access_control; i++) {
-        if (memcmp(&mme_self()->access_control[i].plmn_id,
-                        plmn_id, OGS_PLMN_ID_LEN) == 0) {
+        if ((nas_mobile_identity_imsi->digit1 ==
+                mme_self()->access_control[i].plmn_id.mcc1 &&
+             nas_mobile_identity_imsi->digit2 ==
+                mme_self()->access_control[i].plmn_id.mcc2 &&
+             nas_mobile_identity_imsi->digit3 ==
+                mme_self()->access_control[i].plmn_id.mcc3) &&
+           ((nas_mobile_identity_imsi->digit4 ==
+                mme_self()->access_control[i].plmn_id.mnc2 &&
+             nas_mobile_identity_imsi->digit5 ==
+                 mme_self()->access_control[i].plmn_id.mnc3) ||
+            (nas_mobile_identity_imsi->digit4 ==
+                 mme_self()->access_control[i].plmn_id.mnc1 &&
+             nas_mobile_identity_imsi->digit5 ==
+                 mme_self()->access_control[i].plmn_id.mnc2 &&
+             nas_mobile_identity_imsi->digit6 ==
+                 mme_self()->access_control[i].plmn_id.mnc3))) {
             if (mme_self()->access_control[i].reject_cause)
                 return mme_self()->access_control[i].reject_cause;
             else

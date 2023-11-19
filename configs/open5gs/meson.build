@@ -30,6 +30,8 @@ open5gs_conf = '''
     pcrf.yaml
     nrf.yaml
     scp.yaml
+    sepp1.yaml
+    sepp2.yaml
     ausf.yaml
     udm.yaml
     udr.yaml

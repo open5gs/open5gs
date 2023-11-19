@@ -277,6 +277,7 @@ $ sudo pkill -9 open5gs-hssd
 $ sudo pkill -9 open5gs-pcrfd
 $ sudo pkill -9 open5gs-nrfd
 $ sudo pkill -9 open5gs-scpd
+$ sudo pkill -9 open5gs-seppd
 $ sudo pkill -9 open5gs-ausfd
 $ sudo pkill -9 open5gs-udmd
 $ sudo pkill -9 open5gs-pcfd
@@ -310,32 +311,28 @@ To add a slice with SST of 1 and SD of 000080, you need to update the configurat
 ### amf.yaml
 
 $ diff --git a/configs/open5gs/amf.yaml.in b/configs/open5gs/amf.yaml.in
-index 7e939e81..dfe4456d 100644
+index a70143f08..e0dba560c 100644
 --- a/configs/open5gs/amf.yaml.in
 +++ b/configs/open5gs/amf.yaml.in
-@@ -315,6 +315,12 @@ amf:
-           mnc: 70
-         s_nssai:
-           - sst: 1
-+      - plmn_id:
-+          mcc: 999
-+          mnc: 70
-+        s_nssai:
-+          - sst: 1
-+            sd: 000080
-     security:
-         integrity_order : [ NIA2, NIA1, NIA0 ]
-         ciphering_order : [ NEA0, NEA1, NEA2 ]
+@@ -1,6 +1,6 @@
+ logger:
+     file: @localstatedir@/log/open5gs/amf.log
+-#    level: info   # fatal|error|warn|info(default)|debug|trace
++    level: debug
+
+ max:
+     ue: 1024  # The number of UE can be increased depending on memory size.
+
 
 ### FIRST smf.yaml
 
 $ diff --git a/configs/open5gs/smf.yaml.in b/configs/open5gs/smf.yaml.in
-index d45aa60f..701ee533 100644
+index 758ca9cb9..6800eeeec 100644
 --- a/configs/open5gs/smf.yaml.in
 +++ b/configs/open5gs/smf.yaml.in
-@@ -442,6 +442,11 @@ logger:
- #
-
+@@ -7,6 +7,11 @@ max:
+ #    peer: 64
+ 
  smf:
 +    info:
 +      - s_nssai:
@@ -343,18 +340,19 @@ index d45aa60f..701ee533 100644
 +            dnn:
 +              - internet
      sbi:
-       - addr: 127.0.0.4
-         port: 7777
+       server:
+         - address: 127.0.0.4
+
 
 ### SECOND smf.yaml
 
 $ diff --git a/configs/open5gs/smf.yaml.in b/configs/open5gs/smf.yaml.in
-index d45aa60f..949da220 100644
+index 758ca9cb9..c3879fc70 100644
 --- a/configs/open5gs/smf.yaml.in
 +++ b/configs/open5gs/smf.yaml.in
-@@ -442,6 +442,12 @@ logger:
- #
-
+@@ -7,6 +7,12 @@ max:
+ #    peer: 64
+ 
  smf:
 +    info:
 +      - s_nssai:
@@ -363,27 +361,33 @@ index d45aa60f..949da220 100644
 +            dnn:
 +              - internet
      sbi:
-       - addr: 127.0.0.4
-         port: 7777
+       server:
+         - address: 127.0.0.4
+
 
 ### nssf.yaml
+
 $ diff --git a/configs/open5gs/nssf.yaml.in b/configs/open5gs/nssf.yaml.in
-index ecd4f7e2..04d9c4ba 100644
+index d01645b2c..48ed3f8ee 100644
 --- a/configs/open5gs/nssf.yaml.in
 +++ b/configs/open5gs/nssf.yaml.in
-@@ -201,6 +201,12 @@ nssf:
-         port: 7777
-         s_nssai:
-           sst: 1
-+      - addr: 127.0.0.10
-+        port: 7777
-+        s_nssai:
-+          sst: 1
-+          sd: 000080
+@@ -20,6 +20,11 @@ nssf:
+           - uri: http://127.0.0.10:7777
+             s_nssai:
+               sst: 1
++          - uri: http://127.0.0.10:7777
++            s_nssai:
++              sst: 1
++              sd: 000080
 +
 
- #
- # scp:
+ ################################################################################
+ # SBI Server
+ ################################################################################
+
+ ################################################################################
+ # Network Slice Instance(NSI)
+ ################################################################################
 ```
 
 Then add a slice to MongoDB's subscriber info.
@@ -412,6 +416,7 @@ And the process below is only used in 5G, so there is no need to run it.
 ```bash
 $ open5gs-nrfd
 $ open5gs-scpd
+$ open5gs-seppd
 $ open5gs-amfd
 $ open5gs-ausfd
 $ open5gs-udmd
@@ -434,41 +439,33 @@ However, among these, SMF and UPF are used by both 4G EPC and 5G Core. And SMF h
 To prevent SMF from attempting to access the 5G NRF, you need to modify the SMF configuration file as below.
 
 ```diff
-$ diff -u ./install/etc/open5gs/smf.yaml.old ./install/etc/open5gs/smf.yaml
---- ./install/etc/open5gs/smf.yaml.old 2020-10-08 14:43:20.599734045 -0400
-+++ ./install/etc/open5gs/smf.yaml 2020-10-08 14:44:21.864952687 -0400
-@@ -168,9 +168,9 @@
- #      - ::1
- #
+$ diff --git a/configs/open5gs/smf.yaml.in b/configs/open5gs/smf.yaml.in
+index 758ca9cb9..a9004ba9a 100644
+--- a/configs/open5gs/smf.yaml.in
++++ b/configs/open5gs/smf.yaml.in
+@@ -7,15 +7,15 @@ max:
+ #    peer: 64
+ 
  smf:
 -    sbi:
--      - addr: 127.0.0.4
--        port: 7777
+-      server:
+-        - address: 127.0.0.4
+-          port: 7777
+-      client:
 +#    sbi:
-+#      - addr: 127.0.0.4
-+#        port: 7777
-     gtpc:
-       - addr: 127.0.0.4
-       - addr: ::1
-@@ -214,12 +214,12 @@
- #        - 127.0.0.10
- #        - fe80::1%lo
- #
--nrf:
--    sbi:
--      - addr:
--          - 127.0.0.10
--          - ::1
--        port: 7777
-+#nrf:
-+#    sbi:
-+#      - addr:
-+#          - 127.0.0.10
-+#          - ::1
-+#        port: 7777
-
- #
- # upf:
++#      server:
++#        - address: 127.0.0.4
++#          port: 7777
++#      client:
+ #        nrf:
+ #          - uri: http://127.0.0.10:7777
+-        scp:
+-          - uri: http://127.0.0.200:7777
++#        scp:
++#          - uri: http://127.0.0.200:7777
+     pfcp:
+       server:
+         - address: 127.0.0.4
 ```
 
 If you set as above and run SMF, you do not need to run NRF. Seven daemons operate in 4G only state.
@@ -503,33 +500,32 @@ $ sudo iptables -t nat -A POSTROUTING -s 10.46.0.0/16 ! -o ogstun -j MASQUERADE
 Now, you need to modify the configuration file of Open5GS to adjust the UE IP Pool. UE IP Pool can be allocated by SMF or UPF, but in this tutorial, we will modify both configuration files.
 
 ```diff
-$ diff -u smf.yaml smf.yaml.new
---- smf.yaml    2020-09-17 09:31:16.547882093 -0400
-+++ smf.yaml.new    2020-09-17 09:32:18.267726844 -0400
-@@ -458,7 +458,7 @@ smf:
-         addr: 127.0.0.4
-         port: 9090
-     subnet:
--      - addr: 10.45.0.1/16
-+      - addr: 10.46.0.1/16
-       - addr: 2001:db8:cafe::1/48
+$ diff --git a/configs/open5gs/smf.yaml.in b/configs/open5gs/smf.yaml.in
+index 758ca9cb9..5c9b97cd0 100644
+--- a/configs/open5gs/smf.yaml.in
++++ b/configs/open5gs/smf.yaml.in
+@@ -33,7 +33,7 @@ smf:
+         - address: 127.0.0.4
+           port: 9090
+     session:
+-      - subnet: 10.45.0.1/16
++      - subnet: 10.46.0.1/16
+       - subnet: 2001:db8:cafe::1/48
      dns:
        - 8.8.8.8
-```
-
-```diff
-$ diff -u upf.yaml upf.yaml.new
---- upf.yaml    2020-09-17 09:31:16.547882093 -0400
-+++ upf.yaml.new    2020-09-17 09:32:25.199619989 -0400
-@@ -170,7 +170,7 @@ upf:
-     gtpu:
-       - addr: 127.0.0.7
-     subnet:
--      - addr: 10.45.0.1/16
-+      - addr: 10.46.0.1/16
-       - addr: 2001:db8:cafe::1/48
-
- #
+$ diff --git a/configs/open5gs/upf.yaml.in b/configs/open5gs/upf.yaml.in
+index e78b018f1..23cb273f8 100644
+--- a/configs/open5gs/upf.yaml.in
++++ b/configs/open5gs/upf.yaml.in
+@@ -17,7 +17,7 @@ upf:
+       server:
+         - address: 127.0.0.7
+     session:
+-      - subnet: 10.45.0.1/16
++      - subnet: 10.46.0.1/16
+       - subnet: 2001:db8:cafe::1/48
+     metrics:
+       server:
 ```
 
 Restart SMF/UPF
@@ -620,6 +616,7 @@ $ sudo pkill -9 open5gs-hssd
 $ sudo pkill -9 open5gs-pcrfd
 $ sudo pkill -9 open5gs-nrfd
 $ sudo pkill -9 open5gs-scpd
+$ sudo pkill -9 open5gs-seppd
 $ sudo pkill -9 open5gs-ausfd
 $ sudo pkill -9 open5gs-udmd
 $ sudo pkill -9 open5gs-pcfd
@@ -846,45 +843,59 @@ By default, MME selects the SMF as the first SMF node. To use a different DNN/AP
 See the following example.
 
 ```
-### For reference, see `smf.yaml`
+### For reference, see `mme.yaml`
 #
-# smf:
-#
-#  <GTP-C Client>
-#
-#  o By default, the SMF uses the first SMF node.
-#    - To use a different DNN/APN for each SMF, specify gtpc.dnn
-#      as the DNN/APN name.
-#    - If the HSS uses WebUI to set the SMF IP for each UE,
-#      you can use a specific SMF node for each UE.
-#
-#  o Two SMF are defined. 127.0.0.4:2123 is used.
-#    [fe80::3%lo]:2123 is ignored.
+################################################################################
+# GTP-C Client
+################################################################################
+#  o SGW selection by eNodeB TAC
+#   (either single TAC or multiple TACs, DECIMAL representation)
 #    gtpc:
-#      - addr: 127.0.0.4
-#      - addr: fe80::3%lo
+#      client:
+#        sgwc:
+#          - address: 127.0.0.3
+#            tac: 26000
+#          - address: 127.0.2.2
+#            tac: [25000, 27000, 28000]
 #
-#  o One SMF is defined. if prefer_ipv4 is not true,
-#    [fe80::3%lo] is selected.
+#  o SGW selection by e_cell_id(28bit)
+#   (either single or multiple e_cell_id, HEX representation)
 #    gtpc:
-#      - addr:
-#        - 127.0.0.4
-#        - fe80::3%lo
+#      client:
+#        sgwc:
+#          - address: 127.0.0.3
+#            e_cell_id: abcde01
+#          - address: 127.0.2.2
+#            e_cell_id: [12345, a9413, 98765]
 #
-#  o Two SMF are defined with a different DNN/APN.
-#    - Note that if SMF IP for UE is configured in HSS,
-#      the following configurion for this UE is ignored.
+#  o SMF selection by APN
 #    gtpc:
-#      - addr: 127.0.0.4
-#        dnn: internet
-#      - addr: 127.0.0.5
-#        dnn: volte
+#      client:
+#        smf:
+#          - address: 127.0.0.4
+#            apn: internet
+#          - address: 127.0.0.5
+#            apn: volte
 #
-#  o If DNN/APN is omitted, the default DNN/APN uses the first SMF node.
+#  o SMF selection by eNodeB TAC
+#   (either single TAC or multiple TACs, DECIMAL representation)
 #    gtpc:
-#      - addr: 127.0.0.4
-#      - addr: 127.0.0.5
-#        dnn: volte
+#      client:
+#        smf:
+#          - address: 127.0.0.4
+#            tac: 26000
+#          - address: 127.0.2.4
+#            tac: [25000, 27000, 28000]
+#
+#  o SMF selection by e_cell_id(28bit)
+#   (either single or multiple e_cell_id, HEX representation)
+#    gtpc:
+#      client:
+#        smf:
+#          - address: 127.0.0.4
+#            e_cell_id: abcde01
+#          - address: 127.0.2.4
+#            e_cell_id: [12345, a9413, 98765]
 ```
 
 The IP address of the UE can also use a different UE pool depending on the DNN/APN.
@@ -896,16 +907,16 @@ The IP address of the UE can also use a different UE pool depending on the DNN/A
 #  o IPv4 Pool
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #
-#    subnet:
-#      addr: 10.45.0.1/16
+#    session:
+#      subnet: 10.45.0.1/16
 #
 #  o IPv4/IPv6 Pool
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #    $ sudo ip addr add 2001:db8:cafe::1/48 dev ogstun
 #
-#    subnet:
-#      - addr: 10.45.0.1/16
-#      - addr: 2001:db8:cafe::1/48
+#    session:
+#      - subnet: 10.45.0.1/16
+#      - subnet: 2001:db8:cafe::1/48
 #
 #
 #  o Specific DNN/APN(e.g 'volte') uses 10.46.0.1/16, 2001:db8:babe::1/48
@@ -915,37 +926,37 @@ The IP address of the UE can also use a different UE pool depending on the DNN/A
 #    $ sudo ip addr add 2001:db8:cafe::1/48 dev ogstun
 #    $ sudo ip addr add 2001:db8:babe::1/48 dev ogstun
 #
-#    subnet:
-#      - addr: 10.45.0.1/16
-#      - addr: 2001:db8:cafe::1/48
-#      - addr: 10.46.0.1/16
+#    session:
+#      - subnet: 10.45.0.1/16
+#      - subnet: 2001:db8:cafe::1/48
+#      - subnet: 10.46.0.1/16
 #        dnn: volte
-#      - addr: 2001:db8:babe::1/48
+#      - subnet: 2001:db8:babe::1/48
 #        dnn: volte
 #
 #  o Pool Range Sample
-#    subnet:
-#      - addr: 10.45.0.1/24
+#    session:
+#      - subnet: 10.45.0.1/24
 #        range: 10.45.0.100-10.45.0.200
 #
-#    subnet:
-#      - addr: 10.45.0.1/24
+#    session:
+#      - subnet: 10.45.0.1/24
 #        range:
 #          - 10.45.0.5-10.45.0.50
 #          - 10.45.0.100-
 #
-#    subnet:
-#      - addr: 10.45.0.1/24
+#    session:
+#      - subnet: 10.45.0.1/24
 #        range:
 #          - -10.45.0.200
 #          - 10.45.0.210-10.45.0.220
 #
-#    subnet:
-#      - addr: 10.45.0.1/16
+#    session:
+#      - subnet: 10.45.0.1/16
 #        range:
 #          - 10.45.0.100-10.45.0.200
 #          - 10.45.1.100-10.45.1.200
-#      - addr: 2001:db8:cafe::1/48
+#      - subnet: 2001:db8:cafe::1/48
 #        range:
 #          - 2001:db8:cafe:a0::0-2001:db8:cafe:b0::0
 #          - 2001:db8:cafe:c0::0-2001:db8:cafe:d0::0
@@ -1081,7 +1092,10 @@ Currently, the number of UE is limited to `128*128`.
 * HSS : 127.0.0.8
 * PCRF : 127.0.0.9
 * NRF : 127.0.0.10
-* SCP : 127.0.1.10
+* SCP : 127.0.0.200
+* SEPP : 127.0.0.250
+* SEPP-n32 : 127.0.0.251
+* SEPP-n32f : 127.0.0.252
 * AUSF : 127.0.0.11
 * UDM : 127.0.0.12
 * PCF : 127.0.0.13

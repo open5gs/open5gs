@@ -246,6 +246,9 @@ struct amf_ue_s {
     char            *supi; /* TS33.501 : SUPI */
     ogs_nas_5gs_mobile_identity_suci_t nas_mobile_identity_suci;
 
+    /* Home PLMN ID */
+    ogs_plmn_id_t   home_plmn_id;
+
     char            *pei;
     uint8_t         masked_imeisv[OGS_MAX_IMEISV_LEN];
     int             masked_imeisv_len;

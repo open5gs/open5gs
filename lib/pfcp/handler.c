@@ -84,7 +84,7 @@ bool ogs_pfcp_handle_heartbeat_response(
     node->remote_recovery = rsp->recovery_time_stamp.u32;
 
     ogs_timer_start(node->t_no_heartbeat,
-            ogs_app()->time.message.pfcp.no_heartbeat_duration);
+            ogs_local_conf()->time.message.pfcp.no_heartbeat_duration);
 
     return true;
 }

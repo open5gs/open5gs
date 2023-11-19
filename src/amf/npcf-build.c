@@ -51,7 +51,7 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
     memset(&ueLocation, 0, sizeof(ueLocation));
     memset(&UeAmbr, 0, sizeof(UeAmbr));
 
-    server = ogs_list_first(&ogs_sbi_self()->server_list);
+    server = ogs_sbi_server_first();
     if (!server) {
         ogs_error("No server");
         goto end;

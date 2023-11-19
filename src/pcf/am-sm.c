@@ -65,7 +65,7 @@ void pcf_am_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
         SWITCH(message->h.method)
         CASE(OGS_SBI_HTTP_METHOD_POST)
-            handled = pcf_npcf_am_policy_contrtol_handle_create(
+            handled = pcf_npcf_am_policy_control_handle_create(
                     pcf_ue, stream, message);
             if (!handled) {
                 ogs_error("[%s] Cannot handle SBI message", pcf_ue->supi);

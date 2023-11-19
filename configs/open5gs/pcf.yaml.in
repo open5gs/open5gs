@@ -1,427 +1,227 @@
 db_uri: mongodb://localhost/open5gs
-
-#
-#  o Set OGS_LOG_INFO to all domain level
-#   - If `level` is omitted, the default level is OGS_LOG_INFO)
-#   - If `domain` is omitted, the all domain level is set from 'level'
-#    (Default values are used, so no configuration is required)
-#
-#  o Set OGS_LOG_ERROR to all domain level
-#   - `level` can be set with none, fatal, error, warn, info, debug, trace
-#  logger:
-#    level: error
-#
-#  o Set OGS_LOG_DEBUG to mme/emm domain level
-#  logger:
-#    level: debug
-#    domain: mme,emm
-#
-#  o Set OGS_LOG_TRACE to all domain level
-#  logger:
-#    level: trace
-#    domain: core,sbi,ausf,event,tlv,mem,sock
-#
 logger:
-    file: @localstatedir@/log/open5gs/pcf.log
+  file: @localstatedir@/log/open5gs/pcf.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
 
-#
-#  o TLS enable/disable
-#  sbi:
-#    server|client:
-#      no_tls: false|true
-#    - false: (Default) Use TLS
-#    - true:  TLS disabled
-#
-#  o Verification enable/disable
-#  sbi:
-#    server|client:
-#      no_verify: false|true
-#    - false: (Default) Verify the PEER
-#    - true:  Skip the verification step
-#
-#  o Server-side does not use TLS
-#  sbi:
-#    server:
-#      no_tls: true
-#
-#  o Client-side skips the verification step
-#  sbi:
-#    client:
-#      no_verify: true
-#      key: /etc/open5gs/tls/amf.key
-#      cert: /etc/open5gs/tls/amf.crt
-#
-#  o Use the specified certificate while verifying the client
-#  sbi:
-#    server
-#      cacert: /etc/open5gs/tls/ca.crt
-#
-#  o Use the specified certificate while verifying the server
-#  sbi:
-#    client
-#      cacert: /etc/open5gs/tls/ca.crt
-#
-sbi:
+global:
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
+
+pcf:
+  sbi:
     server:
-      no_tls: true
-      cacert: @sysconfdir@/open5gs/tls/ca.crt
-      key: @sysconfdir@/open5gs/tls/pcf.key
-      cert: @sysconfdir@/open5gs/tls/pcf.crt
+      - address: 127.0.0.13
+        port: 7777
     client:
-      no_tls: true
-      cacert: @sysconfdir@/open5gs/tls/ca.crt
-      key: @sysconfdir@/open5gs/tls/pcf.key
-      cert: @sysconfdir@/open5gs/tls/pcf.crt
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+      scp:
+        - uri: http://127.0.0.200:7777
+  metrics:
+    server:
+      - address: 127.0.0.13
+        port: 9090
 
+################################################################################
+# Locally configured policy
+# - The PCF in the VPLMN uses locally configured policies
+#   according to the roaming agreement with the HPLMN operator
+#   as input for PCC Rule generation.
+################################################################################
 #
-#  <SBI Server>
+#  o You don't have to use MongoDB if you use the policy configuration as below.
 #
-#  o SBI Server(http://<all address available>:80)
+#  policy:
+#    - plmn_id:
+#        mcc: 999
+#        mnc: 70
+#      slice:
+#        - sst: 1  # 1,2,3,4
+#          default_indicator: true
+#          session:
+#            - name: internet
+#              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+#              ambr:
+#                downlink:
+#                  value: 1
+#                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                uplink:
+#                  value: 1
+#                  unit: 3
+#              qos:
+#                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                arp:
+#                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
+#                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+#            - name: ims
+#              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+#              ambr:
+#                downlink:
+#                  value: 1
+#                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                uplink:
+#                  value: 1
+#                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#              qos:
+#                index: 5  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                arp:
+#                  priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
+#                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+#              pcc_rule:
+#                - qos:
+#                    index: 1  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                    arp:
+#                      priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#                      pre_emption_vulnerability: 1   # 1: Disabled, 2:Enabled
+#                      pre_emption_capability: 1   # 1: Disabled, 2:Enabled
+#                    mbr:
+#                      downlink:
+#                        value: 82
+#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                      uplink:
+#                        value: 82
+#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                    gbr:
+#                      downlink:
+#                        value: 82
+#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                      uplink:
+#                        value: 82
+#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                  flow:
+#                    - direction: 2
+#                      description: "permit out icmp from any to assigned"
+#                    - direction: 1
+#                      description: "permit out icmp from any to assigned"
+#                    - direction: 2
+#                      description: "permit out udp from 10.200.136.98/32 23455 to assigned 1-65535"
+#                    - direction: 1
+#                      description: "permit out udp from 10.200.136.98/32 1-65535 to assigned 50021"
+#                - qos:
+#                    index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                    arp:
+#                      priority_level: 4  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#                      pre_emption_vulnerability: 2   # 1: Disabled, 2:Enabled
+#                      pre_emption_capability: 2   # 1: Disabled, 2:Enabled
+#                    mbr:
+#                      downlink:
+#                        value: 802
+#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                      uplink:
+#                        value: 802
+#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                    gbr:
+#                      downlink:
+#                        value: 802
+#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                      uplink:
+#                        value: 802
+#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#    - plmn_id:
+#        mcc: 001
+#        mnc: 01
+#      slice:
+#        - sst: 1  # 1,2,3,4
+#          sd: 000001
+#          default_indicator: true
+#          session:
+#            - name: internet
+#              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+#              ambr:
+#                downlink:
+#                  value: 1
+#                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                uplink:
+#                  value: 1
+#                  unit: 3
+#              qos:
+#                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                arp:
+#                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
+#                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+#
+################################################################################
+# SBI Server
+################################################################################
+#  o Override SBI address to be advertised to NRF
 #  sbi:
 #    server:
-#      no_tls: true
-#  pcf:
-#    sbi:
-#
-#  o SBI Server(http://<any address>:7777)
-#  sbi:
-#    server:
-#      no_tls: true
-#  pcf:
-#    sbi:
-#      - addr:
-#          - 0.0.0.0
-#          - ::0
-#        port: 7777
-#
-#  o SBI Server(https://<all address available>:443)
-#  sbi:
-#    server:
-#      key: /etc/open5gs/tls/pcf.key
-#      cert: /etc/open5gs/tls/pcf.crt
-#  pcf:
-#    sbi:
-#
-#  o SBI Server(https://127.0.0.13:443, https://[::1]:443) without verification
-#  sbi:
-#    server:
-#      no_verify: true
-#      key: /etc/open5gs/tls/pcf.key
-#      cert: /etc/open5gs/tls/pcf.crt
-#  pcf:
-#    sbi:
-#      - addr: 127.0.0.13
-#      - addr: ::1
-#
-#  o SBI Server(https://pcf.open5gs.org:443)
-#    Use the specified certificate while verifying the client
-#
-#  sbi:
-#    server:
-#      cacert: /etc/open5gs/tls/ca.crt
-#      key: /etc/open5gs/tls/pcf.key
-#      cert: /etc/open5gs/tls/pcf.crt
-#  pcf:
-#    sbi:
-#      - name: pcf.open5gs.org
-#
-#  o SBI Server(http://127.0.0.13:7777)
-#  sbi:
-#    server:
-#      no_tls: true
-#  pcf:
-#    sbi:
-#      - addr: 127.0.0.13
-#        port: 7777
-#
-#  o SBI Server(http://<eth0 IP address>:80)
-#  sbi:
-#    server:
-#      no_tls: true
-#  pcf:
-#    sbi:
-#      - dev: eth0
-#
-#  o Provide custom SBI address to be advertised to NRF
-#  sbi:
-#    server:
-#      no_tls: true
-#  pcf:
-#    sbi:
 #      - dev: eth0
 #        advertise: open5gs-pcf.svc.local
 #
-#  o Another example of advertising on NRF
 #  sbi:
 #    server:
-#      no_tls: true
-#  pcf:
-#    sbi:
-#      - addr: localhost
+#      - address: localhost
 #        advertise:
 #          - 127.0.0.99
 #          - ::1
 #
-#  o SBI Option (Default)
-#    - tcp_nodelay : true
-#    - so_linger.l_onoff : false
-#
+################################################################################
+# SBI Client
+################################################################################
+#  o Direct communication with NRF interaction
 #  sbi:
-#    server:
-#      no_tls: true
-#  pcf:
-#    sbi:
-#      addr: 127.0.0.13
-#      option:
-#        tcp_nodelay: false
-#        so_linger:
-#          l_onoff: true
-#          l_linger: 10
-#
-#  <NF Service>
-#
-#  o NF Service Name(Default : all NF services available)
-#  pcf:
-#    service_name:
-#
-#  o NF Service Name(Only some NF services are available)
-#  pcf:
-#    service_name:
-#      - npcf-am-policy-control
-#      - npcf-smpolicycontrol
-#      - npcf-policyauthorization
-#
-#  == NOTE ==
-#  Placing npcf-smpolicycontrol and pcf-policyauthorization
-#  in different NFs is not supported. Both npcf-smpolicycontrol
-#  and pcf-policyauthorization should be placed in the same NF.
-#
-#  <NF Discovery Query Parameter>
-#
-#  o (Default) If you do not set Query Parameter as shown below,
-#
-#    sbi:
-#      - addr: 127.0.0.13
-#        port: 7777
-#
-#    - 'service-names' is included.
-#
-#    sbi:
-#      - addr: 127.0.0.13
-#        port: 7777
-#    discovery:
-#      option:
-#        no_service_names: false
-#
-#  o To remove 'service-names' from URI query parameters in NS Discovery
-#         no_service_names: true
-#
-#    * For Indirect Communication with Delegated Discovery,
-#      'service-names' is always included in the URI query parameter.
-#    * That is, 'no_service_names' has no effect.
-#
-#  <For Indirect Communication with Delegated Discovery>
-#
-#  o (Default) If you do not set Delegated Discovery as shown below,
-#
-#  sbi:
-#    server:
-#      no_tls: true
-#  pcf:
-#    sbi:
-#      - addr: 127.0.0.13
-#        port: 7777
-#
-#    - Use SCP if SCP avaiable. Otherwise NRF is used.
-#      => App fails if both NRF and SCP are unavailable.
-#
-#  sbi:
-#    server:
-#      no_tls: true
-#  pcf:
-#    sbi:
-#      - addr: 127.0.0.13
-#        port: 7777
-#    discovery:
-#      delegated: auto
-#
-#  o To use SCP always => App fails if no SCP available.
-#      delegated: yes
-#
-#  o Don't use SCP server => App fails if no NRF available.
-#      delegated: no
-#
-#
-#  <Metrics Server>
-#
-#  o Metrics Server(http://<any address>:9090)
-#  pcf:
-#    metrics:
-#    - addr: 0.0.0.0
-#      port: 9090
-#
-pcf:
-    sbi:
-      - addr: 127.0.0.13
-        port: 7777
-    metrics:
-      - addr: 127.0.0.13
-        port: 9090
-
-#
-# scp:
-#
-#  <SBI Client>>
-#
-#  o SBI Client(http://127.0.1.10:7777)
-#    sbi:
-#      addr: 127.0.1.10
-#      port: 7777
-#
-#  o SBI Client(https://127.0.1.10:443, http://scp.open5gs.org:80)
-#    sbi:
-#      - addr: 127.0.1.10
-#        tls:
-#          key: /etc/open5gs/tls/pcf.key
-#          cert: /etc/open5gs/tls/pcf.crt
-#      - name: scp.open5gs.org
-#
-#  o SBI Client(https://scp.open5gs.org:443)
-#    Use the specified certificate to verify peer
-#
-#    sbi:
-#      - name: scp.open5gs.org
-#        tls:
-#          cacert: /etc/open5gs/tls/ca.crt
-#
-#  o SBI Client(http://[fd69:f21d:873c:fb::1]:80)
-#    If prefer_ipv4 is true, http://127.0.1.10:80 is selected.
-#
-#    sbi:
-#      addr:
-#        - 127.0.1.10
-#        - fd69:f21d:873c:fb::1
-#
-#  o SBI Option (Default)
-#    - tcp_nodelay : true
-#    - so_linger.l_onoff : false
-#
-#    sbi:
-#      addr: 127.0.1.10
-#      option:
-#        tcp_nodelay: false
-#        so_linger:
-#          l_onoff: true
-#          l_linger: 10
-#
-#
-scp:
-    sbi:
-      - addr: 127.0.1.10
-        port: 7777
-
-#
-# nrf:
-#
-#  <SBI Client>>
-#
-#  o SBI Client(http://127.0.0.10:7777)
-#    sbi:
-#      addr: 127.0.0.10
-#      port: 7777
-#
-#  o SBI Client(https://127.0.0.10:443, https://[::1]:443)
-#  tls:
 #    client:
-#      key: /etc/open5gs/tls/pcf.key
-#      cert: /etc/open5gs/tls/pcf.crt
-#  nrf:
-#    sbi:
-#      - addr: 127.0.0.10
-#      - addr: ::1
+#      nrf:
+#        - uri: http://127.0.0.10:7777
 #
-#  o SBI Client(https://nrf.open5gs.org:443)
-#    Use the specified certificate to verify server
-#
-#  tls:
+#  o Indirect communication with delegated discovery
+#  sbi:
 #    client:
-#      cacert: /etc/open5gs/tls/ca.crt
-#  nrf:
-#    sbi:
-#      - name: nrf.open5gs.org
+#      scp:
+#        - uri: http://127.0.0.200:7777
 #
-#  o SBI Client(http://[fd69:f21d:873c:fa::1]:80)
-#    If prefer_ipv4 is true, http://127.0.0.10:80 is selected.
+#  o Indirect communication without delegated discovery
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#  discovery:
+#    delegated: no
 #
-#    sbi:
-#      addr:
-#        - 127.0.0.10
-#        - fd69:f21d:873c:fa::1
+################################################################################
+# HTTPS scheme with TLS
+################################################################################
+#  o Set as default if not individually set
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/pcf.key
+#        cert: @sysconfdir@/open5gs/tls/pcf.crt
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: pcf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
 #
-#  o SBI Option (Default)
-#    - tcp_nodelay : true
-#    - so_linger.l_onoff : false
-#
-#    sbi:
-#      addr: 127.0.0.10
-#      option:
-#        tcp_nodelay: false
-#        so_linger:
-#          l_onoff: true
-#          l_linger: 10
-#
-#nrf:
-#    sbi:
-#      - addr:
-#          - 127.0.0.10
-#          - ::1
-#        port: 7777
-
-#
-#  o Disable use of IPv4 addresses (only IPv6)
-#  parameter:
-#    no_ipv4: true
-#
-#  o Disable use of IPv6 addresses (only IPv4)
-#  parameter:
-#    no_ipv6: true
-#
-#  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
-#  parameter:
-#    prefer_ipv4: true
-#
-parameter:
-
-#
-#  o Maximum Number of UE
-#  max:
-#    ue: 1024
-#
-#  o Maximum Number of Peer(S1AP/NGAP, DIAMETER, GTP, PFCP or SBI)
-#  max:
-#    peer: 64
-#
-max:
-
-#
-#  o NF Instance Heartbeat (Default : 0)
-#    NFs will not send heart-beat timer in NFProfile
-#    NRF will send heart-beat timer in NFProfile
-#    (Default values are used, so no configuration is required)
-#
-#  o NF Instance Heartbeat (20 seconds)
-#    NFs will send heart-beat timer (20 seconds) in NFProfile
-#    NRF can change heart-beat timer in NFProfile
-#
-#  time:
-#    nf_instance:
-#      heartbeat: 20
-#
-#  o Message Wait Duration (Default : 10,000 ms = 10 seconds)
-#    (Default values are used, so no configuration is required)
-#
-#  o Message Wait Duration (3000 ms)
-#  time:
-#    message:
-#        duration: 3000
-time:
+#  o Add client TLS verification
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/pcf.key
+#        cert: @sysconfdir@/open5gs/tls/pcf.crt
+#        verify_client: true
+#        verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_private_key: @sysconfdir@/open5gs/tls/pcf.key
+#        client_cert: @sysconfdir@/open5gs/tls/pcf.crt
+#  sbi:
+#    server:
+#      - address: pcf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain

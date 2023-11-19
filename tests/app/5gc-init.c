@@ -21,6 +21,7 @@
 
 static ogs_thread_t *nrf_thread = NULL;
 static ogs_thread_t *scp_thread = NULL;
+static ogs_thread_t *sepp_thread = NULL;
 static ogs_thread_t *upf_thread = NULL;
 static ogs_thread_t *smf_thread = NULL;
 static ogs_thread_t *amf_thread = NULL;
@@ -51,30 +52,32 @@ int app_initialize(const char *const argv[])
         argv_out[i] = NULL;
     }
 
-    if (ogs_app()->parameter.no_nrf == 0)
+    if (ogs_global_conf()->parameter.no_nrf == 0)
         nrf_thread = test_child_create("nrf", argv_out);
-    if (ogs_app()->parameter.no_scp == 0)
+    if (ogs_global_conf()->parameter.no_scp == 0)
         scp_thread = test_child_create("scp", argv_out);
+    if (ogs_global_conf()->parameter.no_sepp == 0)
+        sepp_thread = test_child_create("sepp", argv_out);
 
-    if (ogs_app()->parameter.no_upf == 0)
+    if (ogs_global_conf()->parameter.no_upf == 0)
         upf_thread = test_child_create("upf", argv_out);
-    if (ogs_app()->parameter.no_smf == 0)
+    if (ogs_global_conf()->parameter.no_smf == 0)
         smf_thread = test_child_create("smf", argv_out);
 
-    if (ogs_app()->parameter.no_amf == 0)
+    if (ogs_global_conf()->parameter.no_amf == 0)
         amf_thread = test_child_create("amf", argv_out);
 
-    if (ogs_app()->parameter.no_ausf == 0)
+    if (ogs_global_conf()->parameter.no_ausf == 0)
         ausf_thread = test_child_create("ausf", argv_out);
-    if (ogs_app()->parameter.no_udm == 0)
+    if (ogs_global_conf()->parameter.no_udm == 0)
         udm_thread = test_child_create("udm", argv_out);
-    if (ogs_app()->parameter.no_pcf == 0)
+    if (ogs_global_conf()->parameter.no_pcf == 0)
         pcf_thread = test_child_create("pcf", argv_out);
-    if (ogs_app()->parameter.no_nssf == 0)
+    if (ogs_global_conf()->parameter.no_nssf == 0)
         nssf_thread = test_child_create("nssf", argv_out);
-    if (ogs_app()->parameter.no_bsf == 0)
+    if (ogs_global_conf()->parameter.no_bsf == 0)
         bsf_thread = test_child_create("bsf", argv_out);
-    if (ogs_app()->parameter.no_udr == 0)
+    if (ogs_global_conf()->parameter.no_udr == 0)
         udr_thread = test_child_create("udr", argv_out);
 
     /*
@@ -101,6 +104,7 @@ void app_terminate(void)
     if (udm_thread) ogs_thread_destroy(udm_thread);
     if (ausf_thread) ogs_thread_destroy(ausf_thread);
 
+    if (sepp_thread) ogs_thread_destroy(sepp_thread);
     if (scp_thread) ogs_thread_destroy(scp_thread);
     if (nrf_thread) ogs_thread_destroy(nrf_thread);
 }

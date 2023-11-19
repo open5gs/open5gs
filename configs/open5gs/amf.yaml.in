@@ -1,714 +1,238 @@
-#
-#  o Set OGS_LOG_INFO to all domain level
-#   - If `level` is omitted, the default level is OGS_LOG_INFO)
-#   - If `domain` is omitted, the all domain level is set from 'level'
-#    (Default values are used, so no configuration is required)
-#
-#  o Set OGS_LOG_ERROR to all domain level
-#   - `level` can be set with none, fatal, error, warn, info, debug, trace
-#  logger:
-#    level: error
-#
-#  o Set OGS_LOG_DEBUG to mme/emm domain level
-#  logger:
-#    level: debug
-#    domain: mme,emm
-#
-#  o Set OGS_LOG_TRACE to all domain level
-#  logger:
-#    level: trace
-#    domain: core,sbi,ausf,event,tlv,mem,sock
-#
 logger:
-    file: @localstatedir@/log/open5gs/amf.log
+  file: @localstatedir@/log/open5gs/amf.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
 
-#
-#  o TLS enable/disable
-#  sbi:
-#    server|client:
-#      no_tls: false|true
-#    - false: (Default) Use TLS
-#    - true:  TLS disabled
-#
-#  o Verification enable/disable
-#  sbi:
-#    server|client:
-#      no_verify: false|true
-#    - false: (Default) Verify the PEER
-#    - true:  Skip the verification step
-#
-#  o Server-side does not use TLS
-#  sbi:
-#    server:
-#      no_tls: true
-#
-#  o Client-side skips the verification step
-#  sbi:
-#    client:
-#      no_verify: true
-#      key: /etc/open5gs/tls/amf.key
-#      cert: /etc/open5gs/tls/amf.crt
-#
-#  o Use the specified certificate while verifying the client
-#  sbi:
-#    server
-#      cacert: /etc/open5gs/tls/ca.crt
-#
-#  o Use the specified certificate while verifying the server
-#  sbi:
-#    client
-#      cacert: /etc/open5gs/tls/ca.crt
-#
-sbi:
+global:
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
+
+amf:
+  sbi:
     server:
-      no_tls: true
-      cacert: @sysconfdir@/open5gs/tls/ca.crt
-      key: @sysconfdir@/open5gs/tls/amf.key
-      cert: @sysconfdir@/open5gs/tls/amf.crt
+      - address: 127.0.0.5
+        port: 7777
     client:
-      no_tls: true
-      cacert: @sysconfdir@/open5gs/tls/ca.crt
-      key: @sysconfdir@/open5gs/tls/amf.key
-      cert: @sysconfdir@/open5gs/tls/amf.crt
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+      scp:
+        - uri: http://127.0.0.200:7777
+  ngap:
+    server:
+      - address: 127.0.0.5
+  metrics:
+    server:
+      - address: 127.0.0.5
+        port: 9090
+  guami:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+      amf_id:
+        region: 2
+        set: 1
+  tai:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+      tac: 1
+  plmn_support:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+      s_nssai:
+        - sst: 1
+  security:
+    integrity_order : [ NIA2, NIA1, NIA0 ]
+    ciphering_order : [ NEA0, NEA1, NEA2 ]
+  network_name:
+    full: Open5GS
+    short: Next
+  amf_name: open5gs-amf0
+  time:
+#    t3502:
+#      value: 720   # 12 minutes * 60 = 720 seconds
+    t3512:
+      value: 540    # 9 minutes * 60 = 540 seconds
 
-#
-#  <SBI Server>
-#
-#  o SBI Server(http://<all address available>:80)
+################################################################################
+# SBI Server
+################################################################################
+#  o Override SBI address to be advertised to NRF
 #  sbi:
 #    server:
-#      no_tls: true
-#  amf:
-#    sbi:
-#
-#  o SBI Server(http://<any address>:7777)
-#  sbi:
-#    server:
-#      no_tls: true
-#  amf:
-#    sbi:
-#      - addr:
-#          - 0.0.0.0
-#          - ::0
-#        port: 7777
-#
-#  o SBI Server(https://<all address available>:443)
-#  sbi:
-#    server:
-#      key: /etc/open5gs/tls/amf.key
-#      cert: /etc/open5gs/tls/amf.crt
-#  amf:
-#    sbi:
-#
-#  o SBI Server(https://127.0.0.5:443, https://[::1]:443) without verification
-#  sbi:
-#    server:
-#      no_verify: true
-#      key: /etc/open5gs/tls/amf.key
-#      cert: /etc/open5gs/tls/amf.crt
-#  amf:
-#    sbi:
-#      - addr: 127.0.0.5
-#      - addr: ::1
-#
-#  o SBI Server(https://amf.open5gs.org:443)
-#    Use the specified certificate while verifying the client
-#
-#  sbi:
-#    server:
-#      cacert: /etc/open5gs/tls/ca.crt
-#      key: /etc/open5gs/tls/amf.key
-#      cert: /etc/open5gs/tls/amf.crt
-#  amf:
-#    sbi:
-#      - name: amf.open5gs.org
-#
-#  o SBI Server(http://127.0.0.5:7777)
-#  sbi:
-#    server:
-#      no_tls: true
-#  amf:
-#    sbi:
-#      - addr: 127.0.0.5
-#        port: 7777
-#
-#  o SBI Server(http://<eth0 IP address>:80)
-#  sbi:
-#    server:
-#      no_tls: true
-#  amf:
-#    sbi:
-#      - dev: eth0
-#
-#  o Provide custom SBI address to be advertised to NRF
-#  sbi:
-#    server:
-#      no_tls: true
-#  amf:
-#    sbi:
-#      - dev: eth0
+#      - dev:eth0
 #        advertise: open5gs-amf.svc.local
 #
-#  o Another example of advertising on NRF
 #  sbi:
 #    server:
-#      no_tls: true
-#  amf:
-#    sbi:
-#      - addr: localhost
+#      - address: localhost
 #        advertise:
 #          - 127.0.0.99
 #          - ::1
 #
-#  o SBI Option (Default)
-#    - tcp_nodelay : true
-#    - so_linger.l_onoff : false
+################################################################################
+# SBI Client
+################################################################################
+#  o Direct communication with NRF interaction
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
 #
+#  o Indirect communication with delegated discovery
+#  sbi:
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#
+#  o Indirect communication without delegated discovery
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#  discovery:
+#    delegated: no
+#
+################################################################################
+# HTTPS scheme with TLS
+################################################################################
+#  o Set as default if not individually set
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/amf.key
+#        cert: @sysconfdir@/open5gs/tls/amf.crt
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
 #  sbi:
 #    server:
-#      no_tls: true
-#  amf:
-#    sbi:
-#      addr: 127.0.0.5
-#      option:
-#        tcp_nodelay: false
-#        so_linger:
-#          l_onoff: true
-#          l_linger: 10
+#      - address: amf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
 #
-#  <NF Service>
-#
-#  o NF Service Name(Default : all NF services available)
-#  amf:
-#    service_name:
-#
-#  o NF Service Name(Only some NF services are available)
-#  amf:
-#    service_name:
-#      - namf-comm
-#
-#  <NF Discovery Query Parameter>
-#
-#  o (Default) If you do not set Query Parameter as shown below,
-#
+#  o Add client TLS verification
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/amf.key
+#        cert: @sysconfdir@/open5gs/tls/amf.crt
+#        verify_client: true
+#        verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_private_key: @sysconfdir@/open5gs/tls/amf.key
+#        client_cert: @sysconfdir@/open5gs/tls/amf.crt
 #  sbi:
 #    server:
-#      no_tls: true
-#  amf:
-#    sbi:
-#      - addr: 127.0.0.5
-#        port: 7777
+#      - address: amf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
 #
-#    - 'service-names' is included.
-#
-#  o Service-Names are not included
-#  sbi:
+################################################################################
+# NGAP Server
+################################################################################
+#  o Listen on address available in `eth0` interface
+#  ngap:
 #    server:
-#      no_tls: true
-#  amf:
-#    sbi:
-#      - addr: 127.0.0.5
-#        port: 7777
-#    discovery:
-#      option:
-#        no_service_names: false
-#
-#  o To remove 'service-names' from URI query parameters in NS Discovery
-#         no_service_names: true
-#
-#    * For Indirect Communication with Delegated Discovery,
-#      'service-names' is always included in the URI query parameter.
-#    * That is, 'no_service_names' has no effect.
-#
-#  <For Indirect Communication with Delegated Discovery>
-#
-#  o (Default) If you do not set Delegated Discovery as shown below,
-#
-#  sbi:
-#    server:
-#      no_tls: true
-#  amf:
-#    sbi:
-#      - addr: 127.0.0.5
-#        port: 7777
-#
-#    - Use SCP if SCP avaiable. Otherwise NRF is used.
-#      => App fails if both NRF and SCP are unavailable.
-#
-#  sbi:
-#    server:
-#      no_tls: true
-#  amf:
-#    sbi:
-#      - addr: 127.0.0.5
-#        port: 7777
-#    discovery:
-#      delegated: auto
-#
-#  o To use SCP always => App fails if no SCP available.
-#      delegated: yes
-#
-#  o Don't use SCP server => App fails if no NRF available.
-#      delegated: no
-#
-#  <NGAP Server>>
-#
-#  o NGAP Server(all address available)
-#  amf:
-#    ngap:
-#
-#  o NGAP Server(0.0.0.0:38412)
-#  amf:
-#    ngap:
-#      addr: 0.0.0.0
-#
-#  o NGAP Server(127.0.0.5:38412, [::1]:38412)
-#  amf:
-#    ngap:
-#      - addr: 127.0.0.5
-#      - addr: ::1
-#
-#  o NGAP Server(different port)
-#  amf:
-#    ngap:
-#      - addr: 127.0.0.5
-#        port: 38413
-#
-#  o NGAP Server(address available in `eth0` interface)
-#  amf:
-#    ngap:
-#      dev: eth0
-#
-#  o NGAP Option (Default)
-#    - sctp_nodelay : true
-#    - so_linger.l_onoff : false
-#
-#  amf:
-#    ngap:
-#      addr: 127.0.0.5
-#      option:
-#        stcp_nodelay: false
-#        so_linger:
-#          l_onoff: true
-#          l_linger: 10
-#
-#  o NGAP SCTP Option (Default)
-#    - spp_hbinterval : 5000 (5secs)
-#    - spp_sackdelay : 200 (200ms)
-#    - srto_initial : 3000 (3secs)
-#    - srto_min : 1000 (1sec)
-#    - srto_max : 5000 (5secs)
-#    - sinit_num_ostreams : 30
-#    - sinit_max_instreams : 65535
-#    - sinit_max_attempts : 4
-#    - sinit_max_init_timeo : 8000(8secs)
-#
-#  amf:
-#    ngap:
-#      addr: 127.0.0.5
-#      option:
-#        sctp:
-#          spp_hbinterval : 5000
-#          spp_sackdelay : 200
-#          srto_initial : 3000
-#          srto_min : 1000
-#          srto_max : 5000
-#          sinit_num_ostreams : 30
-#          sinit_max_instreams : 65535
-#          sinit_max_attempts : 4
-#          sinit_max_init_timeo : 8000
-#
-#  <Metrics Server>
-#
-#  o Metrics Server(http://<any address>:9090)
-#  amf:
-#    metrics:
-#      - addr: 0.0.0.0
-#        port: 9090
-#
-#  <GUAMI>
-#
-#  o Multiple GUAMI
-#  amf:
-#    guami:
-#      - plmn_id:
-#          mcc: 999
-#          mnc: 70
-#        amf_id:
-#          region: 2
-#          set: 1
-#          pointer: 4
-#      - plmn_id:
-#          mcc: 001
-#          mnc: 01
-#        amf_id:
-#          region: 5
-#          set: 2
-#
-#  <TAI>
-#
-#  o Multiple TAI
-#
-#  When multiple TAIs are configured as shown below,
-#  the Served TAI is determined by comparing UserLocationInformation
-#  of UplinkNASTransport sent from gNB.
-#
-#  For example, if the gNB sends TAC with 30 to the AMF,
-#  the fourth TAI (TAC: 20, 28, 29-32, 36-38, 40-42, 50, 60, 70, 70)
-#  is determined as the Served TAI. The result is transmitted to the gNB
-#  as a Tracking Area identity List in Registration Accept.
-#
-#  amf:
-#    tai:
-#      - plmn_id:
-#          mcc: 001
-#          mnc: 01
-#        tac: [1, 3, 5]
-#    tai:
-#      - plmn_id:
-#          mcc: 002
-#          mnc: 02
-#        tac: [6-10, 15-18]
-#    tai:
-#      - plmn_id:
-#          mcc: 003
-#          mnc: 03
-#        tac: 20
-#      - plmn_id:
-#          mcc: 004
-#          mnc: 04
-#        tac: 21
-#    tai:
-#      - plmn_id:
-#          mcc: 005
-#          mnc: 05
-#        tac: [22, 28]
-#      - plmn_id:
-#          mcc: 006
-#          mnc: 06
-#        tac: [30-32, 34, 36-38, 40-42, 44, 46, 48]
-#      - plmn_id:
-#          mcc: 007
-#          mnc: 07
-#        tac: 50
-#      - plmn_id:
-#          mcc: 008
-#          mnc: 08
-#        tac: 60
-#      - plmn_id:
-#          mcc: 009
-#          mnc: 09
-#        tac: [70, 80]
-#
-#  <PLMN Support>
-#
-#  o Multiple PLMN Support
-#  amf:
-#    plmn_support:
-#      - plmn_id:
-#          mcc: 999
-#          mnc: 70
-#        s_nssai:
-#          - sst: 1
-#            sd: 010000
-#      - plmn_id:
-#          mcc: 999
-#          mnc: 70
-#        s_nssai:
-#          - sst: 1
-#
-#
-#  <Access Control>
-#
-#  If access_control is not specified, then all networks are allowed
-#  If access_control is defined,
-#  no other networks are allowed  other than matching plmn_id.
-#
-#  default_reject_cause may be used to overwrite the default error cause #11
-#  for non matching plmn_id
-#
-#  for matching plmn_id with reject_cause defined,
-#  the AMF rejects access with the reject_cause error cause
-#
-#  for matching plmn_id without reject_cause defined,
-#  the AMF accepts the PLMN traffic
-#
-#  o The example below only accepts 002/02 and 999/70 PLMNs.
-#    001/01 is rejected with cause 15,
-#    and the rest of the PLMNs are rejected with default cause 13.
-#
-#  amf:
-#    access_control:
-#      - default_reject_cause: 13
-#      - plmn_id:
-#          reject_cause: 15
-#          mcc: 001
-#          mnc: 01
-#      - plmn_id:
-#          mcc: 002
-#          mnc: 02
-#      - plmn_id:
-#          mcc: 999
-#          mnc: 70
-#
-#
-#  <Network Name>
-#
-#  amf:
-#    network_name:
-#        full: Open5GS
-#        short: Next
-#
-#  <AMF Name>
-#
-#  amf:
-#    amf_name: amf1.open5gs.amf.5gc.mnc70.mcc999.3gppnetwork.org
-#
-#  <Relative Capacity> - Default(255)
-#
-#  amf:
-#    relative_capacity: 100
-#
-amf:
-    sbi:
-      - addr: 127.0.0.5
-        port: 7777
-    ngap:
-      - addr: 127.0.0.5
-    metrics:
-      - addr: 127.0.0.5
-        port: 9090
-    guami:
-      - plmn_id:
-          mcc: 999
-          mnc: 70
-        amf_id:
-          region: 2
-          set: 1
-    tai:
-      - plmn_id:
-          mcc: 999
-          mnc: 70
-        tac: 1
-    plmn_support:
-      - plmn_id:
-          mcc: 999
-          mnc: 70
-        s_nssai:
-          - sst: 1
-    security:
-        integrity_order : [ NIA2, NIA1, NIA0 ]
-        ciphering_order : [ NEA0, NEA1, NEA2 ]
-    network_name:
-        full: Open5GS
-    amf_name: open5gs-amf0
-
-#
-#  <SBI Client>>
-#
-#  o SBI Client(http://127.0.1.10:7777)
-#  sbi:
-#    client:
-#      no_tls: true
-#  scp:
-#    sbi:
-#      addr: 127.0.1.10
-#      port: 7777
-#
-#  o SBI Client(https://127.0.1.10:443, https://[::1]:443) without verification
-#  sbi:
-#    client:
-#      no_verify: true
-#      key: /etc/open5gs/tls/amf.key
-#      cert: /etc/open5gs/tls/amf.crt
-#  scp:
-#    sbi:
-#      - addr: 127.0.1.10
-#      - addr: ::1
-#
-#  o SBI Client(https://scp.open5gs.org:443)
-#    Use the specified certificate while verifying the server
-#
-#  sbi:
-#    client:
-#      cacert: /etc/open5gs/tls/ca.crt
-#      key: /etc/open5gs/tls/amf.key
-#      cert: /etc/open5gs/tls/amf.crt
-#  scp:
-#    sbi:
-#      - name: scp.open5gs.org
-#
-#  o SBI Client(http://[fd69:f21d:873c:fb::1]:80)
-#    If prefer_ipv4 is true, http://127.0.1.10:80 is selected.
-#
-#  sbi:
-#    client:
-#      no_tls: true
-#  scp:
-#    sbi:
-#      addr:
-#        - 127.0.1.10
-#        - fd69:f21d:873c:fb::1
-#
-#  o SBI Option (Default)
-#    - tcp_nodelay : true
-#    - so_linger.l_onoff : false
-#
-#  sbi:
-#    client:
-#      no_tls: true
-#  scp:
-#    sbi:
-#      addr: 127.0.1.10
-#      option:
-#        tcp_nodelay: false
-#        so_linger:
-#          l_onoff: true
-#          l_linger: 10
-#
-#
-scp:
-    sbi:
-      - addr: 127.0.1.10
-        port: 7777
-
-#
-#  <SBI Client>>
-#
-#  o SBI Client(http://127.0.0.10:7777)
-#  sbi:
-#    client:
-#      no_tls: true
-#  nrf:
-#    sbi:
-#      addr: 127.0.0.10
-#      port: 7777
-#
-#  o SBI Client(https://127.0.0.10:443, https://[::1]:443) without verification
-#  sbi:
-#    client:
-#      no_verify: true
-#      key: /etc/open5gs/tls/amf.key
-#      cert: /etc/open5gs/tls/amf.crt
-#  nrf:
-#    sbi:
-#      - addr: 127.0.0.10
-#      - addr: ::1
-#
-#  o SBI Client(https://nrf.open5gs.org:443)
-#    Use the specified certificate while verifying the server
-#
-#  sbi:
-#    client:
-#      cacert: /etc/open5gs/tls/ca.crt
-#      key: /etc/open5gs/tls/amf.key
-#      cert: /etc/open5gs/tls/amf.crt
-#  nrf:
-#    sbi:
-#      - name: nrf.open5gs.org
-#
-#  o SBI Client(http://[fd69:f21d:873c:fa::1]:80)
-#    If prefer_ipv4 is true, http://127.0.0.10:80 is selected.
-#
-#    sbi:
-#      addr:
-#        - 127.0.0.10
-#        - fd69:f21d:873c:fa::1
-#
-#  o SBI Option (Default)
-#    - tcp_nodelay : true
-#    - so_linger.l_onoff : false
-#
-#  sbi:
-#    client:
-#      no_tls: true
-#  nrf:
-#    sbi:
-#      addr: 127.0.0.10
-#      option:
-#        tcp_nodelay: false
-#        so_linger:
-#          l_onoff: true
-#          l_linger: 10
-#
-#nrf:
-#    sbi:
-#      - addr:
-#          - 127.0.0.10
-#          - ::1
-#        port: 7777
-
-#
-#  o Disable use of IPv4 addresses (only IPv6)
-#  parameter:
-#    no_ipv4: true
-#
-#  o Disable use of IPv6 addresses (only IPv4)
-#  parameter:
-#    no_ipv6: true
-#
-#  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
-#  parameter:
-#    prefer_ipv4: true
-#
-parameter:
-
-#
-#  o Maximum Number of UE
-#  max:
-#    ue: 1024
-#
-#  o Maximum Number of Peer(S1AP/NGAP, DIAMETER, GTP, PFCP or SBI)
-#  max:
-#    peer: 64
-#
-max:
-
-#
-# usrsctp:
-#    udp_port : 9899
-#
-usrsctp:
-
-#
-#  o NF Instance Heartbeat (Default : 0)
-#    NFs will not send heart-beat timer in NFProfile
-#    NRF will send heart-beat timer in NFProfile
-#    (Default values are used, so no configuration is required)
-#
-#  o NF Instance Heartbeat (20 seconds)
-#    NFs will send heart-beat timer (20 seconds) in NFProfile
-#    NRF can change heart-beat timer in NFProfile
-#
-#  time:
-#    nf_instance:
-#      heartbeat: 20
-#
-#  o Message Wait Duration (Default : 10,000 ms = 10 seconds)
-#    (Default values are used, so no configuration is required)
-#
-#  o Message Wait Duration (3000 ms)
-#  time:
-#    message:
-#        duration: 3000
-#
-#  o Handover Wait Duration (Default : 300 ms)
-#    Time to wait for AMF to send UEContextReleaseCommand
-#    to the source gNB after receiving HandoverNotify
-#    (Default values are used, so no configuration is required)
-#
-#  o Handover Wait Duration (500ms)
-#  time:
-#    handover:
-#        duration: 500
-#
-#  o Timers of 5GS mobility/session management
-#  time:
-#    t3502:
-#      value: 720  # 12 minutes * 60 = 720 seconds
-#    t3512:
-#      value: 3240 # 54 minutes * 60 = 3240 seconds
-#
-time:
-  t3512:
-    value: 540     # 9 mintues * 60 = 540 seconds
+#      - dev: eth0
+#
+################################################################################
+# 3GPP Specification
+################################################################################
+#  o GUAMI
+#  guami:
+#    - plmn_id:
+#        mcc: 999
+#        mnc: 70
+#      amf_id:
+#        region: 2
+#        set: 1
+#        pointer: 4
+#    - plmn_id:
+#        mcc: 001
+#        mnc: 01
+#      amf_id:
+#        region: 5
+#        set: 2
+#
+#  o TAI
+#  tai:
+#    - plmn_id:
+#        mcc: 001
+#        mnc: 01
+#      tac: [1, 3, 5]
+#  tai:
+#    - plmn_id:
+#        mcc: 002
+#        mnc: 02
+#      tac: [6-10, 15-18]
+#  tai:
+#    - plmn_id:
+#        mcc: 003
+#        mnc: 03
+#      tac: 20
+#    - plmn_id:
+#        mcc: 004
+#        mnc: 04
+#      tac: 21
+#  tai:
+#    - plmn_id:
+#        mcc: 005
+#        mnc: 05
+#      tac: [22, 28]
+#    - plmn_id:
+#        mcc: 006
+#        mnc: 06
+#      tac: [30-32, 34, 36-38, 40-42, 44, 46, 48]
+#    - plmn_id:
+#        mcc: 007
+#        mnc: 07
+#      tac: 50
+#    - plmn_id:
+#        mcc: 008
+#        mnc: 08
+#      tac: 60
+#    - plmn_id:
+#        mcc: 009
+#        mnc: 09
+#      tac: [70, 80]
+#
+#  o PLMN Support
+#  plmn_support:
+#    - plmn_id:
+#        mcc: 999
+#        mnc: 70
+#      s_nssai:
+#        - sst: 1
+#          sd: 010000
+#    - plmn_id:
+#        mcc: 999
+#        mnc: 70
+#      s_nssai:
+#        - sst: 1
+#
+#  o Access Control
+#  access_control:
+#    - default_reject_cause: 13
+#    - plmn_id:
+#        reject_cause: 15
+#        mcc: 001
+#        mnc: 01
+#    - plmn_id:
+#        mcc: 002
+#        mnc: 02
+#    - plmn_id:
+#        mcc: 999
+#        mnc: 70
+#
+#  o Relative Capacity
+#  relative_capacity: 100

@@ -108,6 +108,64 @@ extern "C" {
 
 #define OGS_MAX_QOS_FLOW_ID             63
 
+#define OGS_IMSI_STRING "imsi"
+#define OGS_MSISDN_STRING "msisdn"
+#define OGS_IMEISV_STRING "imeisv"
+
+#define OGS_ACCESS_RESTRICTION_DATA_STRING "access_restriction_data"
+#define OGS_SUBSCRIBER_STATUS_STRING "subscriber_status"
+#define OGS_OPERATOR_DETERMINED_BARRING_STRING "operator_determined_barring"
+#define OGS_NETWORK_ACCESS_MODE_STRING "network_access_mode"
+#define OGS_SUBSCRIBED_RAU_TAU_TIMER_STRING "subscribed_rau_tau_timer"
+
+#define OGS_SECURITY_STRING "security"
+#define OGS_K_STRING "k"
+#define OGS_OPC_STRING "opc"
+#define OGS_OP_STRING "op"
+#define OGS_AMF_STRING "amf"
+#define OGS_RAND_STRING "rand"
+#define OGS_SQN_STRING "sqn"
+
+#define OGS_MME_HOST_STRING "mme_host"
+#define OGS_MME_REALM_STRING "mme_realm"
+#define OGS_MME_TIMESTAMP_STRING "mme_timestamp"
+#define OGS_PURGE_FLAG_STRING "purge_flag"
+
+#define OGS_AMBR_STRING "ambr"
+#define OGS_DOWNLINK_STRING "downlink"
+#define OGS_UPLINK_STRING "uplink"
+#define OGS_VALUE_STRING "value"
+#define OGS_UNIT_STRING "unit"
+
+#define OGS_POLICY_STRING "policy"
+#define OGS_SLICE_STRING "slice"
+#define OGS_SST_STRING "sst"
+#define OGS_SD_STRING "sd"
+#define OGS_DEFAULT_INDICATOR_STRING "default_indicator"
+#define OGS_SESSION_STRING "session"
+#define OGS_NAME_STRING "name"
+#define OGS_TYPE_STRING "type"
+#define OGS_QOS_STRING "qos"
+#define OGS_INDEX_STRING "index"
+#define OGS_ARP_STRING "arp"
+#define OGS_PRIORITY_LEVEL_STRING "priority_level"
+#define OGS_PRE_EMPTION_CAPABILITY_STRING "pre_emption_capability"
+#define OGS_PRE_EMPTION_VULNERABILITY_STRING "pre_emption_vulnerability"
+
+#define OGS_PCC_RULE_STRING "pcc_rule"
+#define OGS_MBR_STRING "mbr"
+#define OGS_GBR_STRING "gbr"
+#define OGS_FLOW_STRING "flow"
+#define OGS_DIRECTION_STRING "direction"
+#define OGS_DESCRIPTION_STRING "description"
+
+#define OGS_SMF_STRING "smf"
+#define OGS_IPV4_STRING "ipv4"
+#define OGS_IPV6_STRING "ipv6"
+#define OGS_UE_STRING "ue"
+#define OGS_IPV4_FRAMED_ROUTES_STRING "ipv4_framed_routes"
+#define OGS_IPV6_FRAMED_ROUTES_STRING "ipv6_framed_routes"
+
 /************************************
  * PLMN_ID Structure                */
 #define OGS_MAX_NUM_OF_PLMN         6
@@ -129,12 +187,19 @@ uint16_t ogs_plmn_id_mnc_len(ogs_plmn_id_t *plmn_id);
 void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id,
         uint16_t mcc, uint16_t mnc, uint16_t mnc_len);
 
-char *ogs_serving_network_name_from_plmn_id(ogs_plmn_id_t *plmn_id);
 char *ogs_plmn_id_mcc_string(ogs_plmn_id_t *plmn_id);
 char *ogs_plmn_id_mnc_string(ogs_plmn_id_t *plmn_id);
 
 #define OGS_PLMNIDSTRLEN    (sizeof(ogs_plmn_id_t)*2+1)
 char *ogs_plmn_id_to_string(ogs_plmn_id_t *plmn_id, char *buf);
+
+char *ogs_serving_network_name_from_plmn_id(ogs_plmn_id_t *plmn_id);
+char *ogs_home_network_domain_from_plmn_id(ogs_plmn_id_t *plmn_id);
+char *ogs_nrf_fqdn_from_plmn_id(ogs_plmn_id_t *plmn_id);
+char *ogs_nssf_fqdn_from_plmn_id(ogs_plmn_id_t *plmn_id);
+char *ogs_home_network_domain_from_fqdn(char *fqdn);
+uint16_t ogs_plmn_id_mnc_from_fqdn(char *fqdn);
+uint16_t ogs_plmn_id_mcc_from_fqdn(char *fqdn);
 
 /*************************
  * NAS PLMN_ID Structure */
@@ -331,6 +396,8 @@ typedef struct ogs_bitrate_s {
     uint64_t uplink;          /* bits per seconds */
 } ogs_bitrate_t;
 
+int ogs_check_br_conf(ogs_bitrate_t *br);
+
 /**********************************
  * QoS Structure                 */
 typedef struct ogs_qos_s {
@@ -373,6 +440,8 @@ typedef struct ogs_qos_s {
     ogs_bitrate_t   gbr;  /* Guaranteed Bit Rate (GBR) */
 } ogs_qos_t;
 
+int ogs_check_qos_conf(ogs_qos_t *qos);
+
 /**********************************
  * Flow  Structure               */
 #define OGS_FLOW_DOWNLINK_ONLY    1
@@ -413,8 +482,8 @@ typedef struct ogs_pcc_rule_s {
 #define OGS_STORE_PCC_RULE(__dST, __sRC) \
     do { \
         int __iNDEX; \
-        ogs_assert((__sRC)); \
-        ogs_assert((__dST)); \
+        ogs_assert((__sRC) != NULL); \
+        ogs_assert((__dST) != NULL); \
         OGS_PCC_RULE_FREE(__dST); \
         (__dST)->type = (__sRC)->type; \
         if ((__sRC)->name) { \
@@ -441,7 +510,7 @@ typedef struct ogs_pcc_rule_s {
 #define OGS_PCC_RULE_FREE(__pCCrULE) \
     do { \
         int __pCCrULE_iNDEX; \
-        ogs_assert((__pCCrULE)); \
+        ogs_assert((__pCCrULE) != NULL); \
         if ((__pCCrULE)->id) \
             ogs_free((__pCCrULE)->id); \
         if ((__pCCrULE)->name) \
@@ -450,9 +519,8 @@ typedef struct ogs_pcc_rule_s {
             __pCCrULE_iNDEX < (__pCCrULE)->num_of_flow; __pCCrULE_iNDEX++) { \
             OGS_FLOW_FREE(&((__pCCrULE)->flow[__pCCrULE_iNDEX])); \
         } \
-        (__pCCrULE)->num_of_flow = 0; \
+        memset((__pCCrULE), 0, sizeof(ogs_pcc_rule_t)); \
     } while(0)
-
 
 /**********************************
  * PDN Structure                 */
@@ -732,7 +800,39 @@ typedef struct ogs_session_data_s {
     int num_of_pcc_rule;
 } ogs_session_data_t;
 
-void ogs_session_data_free(ogs_session_data_t *session_data);
+#define OGS_STORE_SESSION_DATA(__dST, __sRC) \
+    do { \
+        int rv, j; \
+        ogs_assert((__dST) != NULL); \
+        ogs_assert((__sRC) != NULL); \
+        OGS_SESSION_DATA_FREE(__dST); \
+        if ((__sRC)->session.name) { \
+            (__dST)->session.name = ogs_strdup((__sRC)->session.name); \
+            ogs_assert((__dST)->session.name); \
+        } \
+        (__dST)->session.session_type = (__sRC)->session.session_type; \
+        memcpy(&(__dST)->session.ambr, &(__sRC)->session.ambr, \
+                sizeof((__dST)->session.ambr)); \
+        memcpy(&(__dST)->session.qos, &(__sRC)->session.qos, \
+                sizeof((__dST)->session.qos)); \
+        (__dST)->num_of_pcc_rule = (__sRC)->num_of_pcc_rule; \
+        for (j = 0; j < (__dST)->num_of_pcc_rule; j++) { \
+            rv = ogs_check_qos_conf(&(__sRC)->pcc_rule[j].qos); \
+            ogs_assert(rv == OGS_OK); \
+            OGS_STORE_PCC_RULE(&(__dST)->pcc_rule[j], &(__sRC)->pcc_rule[j]); \
+        } \
+    } while(0)
+
+#define OGS_SESSION_DATA_FREE(__sESSdATA) \
+    do { \
+        int i; \
+        ogs_assert((__sESSdATA) != NULL); \
+        if ((__sESSdATA)->session.name) \
+            ogs_free((__sESSdATA)->session.name); \
+        for (i = 0; i < (__sESSdATA)->num_of_pcc_rule; i++) \
+            OGS_PCC_RULE_FREE(&(__sESSdATA)->pcc_rule[i]); \
+        memset((__sESSdATA), 0, sizeof(ogs_session_data_t)); \
+    } while(0)
 
 typedef struct ogs_media_sub_component_s {
     uint32_t            flow_number;

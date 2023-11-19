@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -272,44 +272,45 @@ cleanup:
     return supi;
 }
 
-char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h)
+char *ogs_uridup(
+        OpenAPI_uri_scheme_e scheme,
+        char *fqdn, ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, uint16_t port,
+        ogs_sbi_header_t *h)
 {
     char buf[OGS_ADDRSTRLEN];
     char uri[OGS_HUGE_LEN];
     char *p, *last;
     int i;
-    char *hostname = NULL;
 
-    ogs_assert(addr);
+    ogs_assert(scheme);
+    ogs_assert(fqdn || addr || addr6);
 
     p = uri;
     last = uri + OGS_HUGE_LEN;
 
     /* HTTP scheme is selected based on TLS information */
-    if (https == true)
+    if (scheme == OpenAPI_uri_scheme_https)
         p = ogs_slprintf(p, last, "https://");
-    else
+    else if (scheme == OpenAPI_uri_scheme_http)
         p = ogs_slprintf(p, last, "http://");
+    else {
+        ogs_fatal("Invalid scheme [%d]", scheme);
+        ogs_assert_if_reached();
+    }
 
     /* Hostname/IP address */
-    hostname = ogs_gethostname(addr);
-    if (hostname) {
-        p = ogs_slprintf(p, last, "%s", hostname);
-    } else {
-        if (addr->ogs_sa_family == AF_INET6)
-            p = ogs_slprintf(p, last, "[%s]", OGS_ADDR(addr, buf));
-        else
-            p = ogs_slprintf(p, last, "%s", OGS_ADDR(addr, buf));
-    }
+    if (fqdn)
+        p = ogs_slprintf(p, last, "%s", fqdn);
+    else if (addr6) {
+        p = ogs_slprintf(p, last, "[%s]", OGS_ADDR(addr6, buf));
+    } else if (addr) {
+        p = ogs_slprintf(p, last, "%s", OGS_ADDR(addr, buf));
+    } else
+        ogs_assert_if_reached();
 
     /* Port number */
-    if ((https == true && OGS_PORT(addr) == OGS_SBI_HTTPS_PORT)) {
-        /* No Port in URI */
-    } else if (OGS_PORT(addr) == OGS_SBI_HTTP_PORT) {
-        /* No Port in URI */
-    } else {
-        p = ogs_slprintf(p, last, ":%d", OGS_PORT(addr));
-    }
+    if (port)
+        p = ogs_slprintf(p, last, ":%d", port);
 
     /* API */
     if (h) {
@@ -335,22 +336,92 @@ char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h)
     ogs_assert(server);
 
     advertise = server->advertise;
-
     if (!advertise)
         advertise = server->node.addr;
     ogs_assert(advertise);
 
-    return ogs_uridup(ogs_app()->sbi.server.no_tls == false, advertise, h);
+    return ogs_sbi_sockaddr_uri(server->scheme, advertise, h);
+}
+
+uint16_t ogs_sbi_uri_port_from_scheme_and_addr(
+        OpenAPI_uri_scheme_e scheme, ogs_sockaddr_t *addr)
+{
+    uint16_t port = 0;
+
+    ogs_assert(scheme);
+    ogs_assert(addr);
+
+    if (scheme == OpenAPI_uri_scheme_https &&
+        OGS_PORT(addr) == OGS_SBI_HTTPS_PORT) {
+        /* No Port in URI */
+    } else if (scheme == OpenAPI_uri_scheme_http &&
+        OGS_PORT(addr) == OGS_SBI_HTTP_PORT) {
+        /* No Port in URI */
+    } else {
+        port = OGS_PORT(addr);
+    }
+
+    return port;
+}
+
+char *ogs_sbi_sockaddr_uri(
+        OpenAPI_uri_scheme_e scheme,
+        ogs_sockaddr_t *sa_list, ogs_sbi_header_t *h)
+{
+    int rv;
+    char *hostname = NULL;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+    uint16_t port = 0;
+    char *uri = NULL;
+
+    ogs_assert(scheme);
+    ogs_assert(sa_list);
+
+    hostname = ogs_gethostname(sa_list);
+
+    rv = ogs_copyaddrinfo(&addr, sa_list);
+    ogs_assert(rv == OGS_OK);
+    rv = ogs_copyaddrinfo(&addr6, addr);
+    ogs_assert(rv == OGS_OK);
+
+    rv = ogs_filteraddrinfo(&addr, AF_INET);
+    ogs_assert(rv == OGS_OK);
+    rv = ogs_filteraddrinfo(&addr6, AF_INET6);
+    ogs_assert(rv == OGS_OK);
+
+    if (addr6)
+        port = ogs_sbi_uri_port_from_scheme_and_addr(scheme, addr6);
+    else if (addr)
+        port = ogs_sbi_uri_port_from_scheme_and_addr(scheme, addr);
+
+    uri = ogs_uridup(scheme, hostname, addr, addr6, port, h);
+
+    ogs_freeaddrinfo(addr);
+    ogs_freeaddrinfo(addr6);
+
+    return uri;
 }
 
 char *ogs_sbi_client_uri(ogs_sbi_client_t *client, ogs_sbi_header_t *h)
 {
+    uint16_t port = 0;
+
     ogs_assert(client);
 
+    if (client->fqdn) {
+        port = client->fqdn_port;
+    } else {
+        if (client->addr6) {
+            port = ogs_sbi_uri_port_from_scheme_and_addr(
+                    client->scheme, client->addr6);
+        } else if (client->addr) {
+            port = ogs_sbi_uri_port_from_scheme_and_addr(
+                    client->scheme, client->addr);
+        }
+    }
+
     return ogs_uridup(
-            ogs_app()->sbi.client.no_tls == false &&
-            client->scheme == OpenAPI_uri_scheme_https,
-            client->node.addr, h);
+            client->scheme, client->fqdn, client->addr, client->addr6, port, h);
 }
 
 char *ogs_sbi_client_apiroot(ogs_sbi_client_t *client)
@@ -446,13 +517,21 @@ char *ogs_sbi_parse_uri(char *uri, const char *delim, char **saveptr)
 }
 
 bool ogs_sbi_getaddr_from_uri(
-        OpenAPI_uri_scheme_e *scheme, ogs_sockaddr_t **addr, char *uri)
+        OpenAPI_uri_scheme_e *scheme,
+        char **fqdn, uint16_t *fqdn_port,
+        ogs_sockaddr_t **addr, ogs_sockaddr_t **addr6,
+        char *uri)
 {
     int rv;
+    ogs_sockaddr_t tmp;
     struct yuarel yuarel;
     char *p = NULL;
-    int port;
+    int port = 0;
 
+    ogs_assert(fqdn);
+    ogs_assert(fqdn_port);
+    ogs_assert(addr);
+    ogs_assert(addr6);
     ogs_assert(uri);
 
     p = ogs_strdup(uri);
@@ -471,10 +550,8 @@ bool ogs_sbi_getaddr_from_uri(
     }
 
     if (strcmp(yuarel.scheme, "https") == 0) {
-        port = OGS_SBI_HTTPS_PORT;
         *scheme = OpenAPI_uri_scheme_https;
     } else if (strcmp(yuarel.scheme, "http") == 0) {
-        port = OGS_SBI_HTTP_PORT;
         *scheme = OpenAPI_uri_scheme_http;
     } else {
         ogs_error("Invalid http.scheme [%s:%s]", yuarel.scheme, uri);
@@ -490,11 +567,30 @@ bool ogs_sbi_getaddr_from_uri(
 
     if (yuarel.port) port = yuarel.port;
 
-    rv = ogs_getaddrinfo(addr, AF_UNSPEC, yuarel.host, port, 0);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_getaddrinfo() failed [%s]", uri);
-        ogs_free(p);
-        return false;
+    if (ogs_inet_pton(AF_INET, yuarel.host, &tmp) == OGS_OK ||
+        ogs_inet_pton(AF_INET6, yuarel.host, &tmp) == OGS_OK) {
+
+        rv = ogs_getaddrinfo(addr, AF_UNSPEC, yuarel.host, port, 0);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_getaddrinfo() failed [%s]", uri);
+            ogs_free(p);
+            return false;
+        }
+
+        rv = ogs_copyaddrinfo(addr6, *addr);
+        ogs_assert(rv == OGS_OK);
+
+        rv = ogs_filteraddrinfo(addr, AF_INET);
+        ogs_assert(rv == OGS_OK);
+        rv = ogs_filteraddrinfo(addr6, AF_INET6);
+        ogs_assert(rv == OGS_OK);
+
+    } else {
+
+        *fqdn = ogs_strdup(yuarel.host);
+        ogs_assert(*fqdn);
+        *fqdn_port = port;
+
     }
 
     ogs_free(p);
@@ -551,6 +647,50 @@ bool ogs_sbi_getpath_from_uri(char **path, char *uri)
 
     ogs_free(p);
     return true;
+}
+
+char *ogs_sbi_client_resolve(
+        OpenAPI_uri_scheme_e scheme,
+        char *fqdn, uint16_t fqdn_port,
+        const char **resolve, int num_of_resolve)
+{
+    int i;
+    uint16_t port;
+    char *result = NULL;
+
+    ogs_assert(scheme);
+    ogs_assert(fqdn);
+    ogs_assert(resolve);
+    ogs_assert(resolve[0]);
+    ogs_assert(num_of_resolve);
+
+    port = fqdn_port;
+    if (!port) {
+        if (scheme == OpenAPI_uri_scheme_https)
+            port = OGS_SBI_HTTPS_PORT;
+        else if (scheme == OpenAPI_uri_scheme_http)
+            port = OGS_SBI_HTTP_PORT;
+        else
+            ogs_assert_if_reached();
+    }
+
+    result = ogs_msprintf("%s:%d:%s", fqdn, port, resolve[0]);
+    if (!result) {
+        ogs_error("ogs_msprintf() failed");
+        return NULL;
+    }
+
+    for (i = 1; i < num_of_resolve; i++) {
+        ogs_assert(resolve[i]);
+        result = ogs_mstrcatf(result, ",%s", resolve[i]);
+        if (!result) {
+            ogs_error("ogs_mstrcatf() failed");
+            ogs_free(result);
+            return NULL;
+        }
+    }
+
+    return result;
 }
 
 char *ogs_sbi_bitrate_to_string(uint64_t bitrate, int unit)
@@ -832,7 +972,7 @@ char *ogs_sbi_s_nssai_to_json(ogs_s_nssai_t *s_nssai)
     }
     if (sNSSAI.sd) ogs_free(sNSSAI.sd);
 
-    v = cJSON_Print(item);
+    v = cJSON_PrintUnformatted(item);
     ogs_expect(v);
     cJSON_Delete(item);
 
@@ -980,6 +1120,71 @@ void ogs_sbi_free_plmn_id(OpenAPI_plmn_id_t *PlmnId)
         ogs_free(PlmnId->mnc);
 
     ogs_free(PlmnId);
+}
+
+OpenAPI_list_t *ogs_sbi_build_plmn_list(
+        ogs_plmn_id_t *plmn_list, int num_of_plmn_list)
+{
+    OpenAPI_list_t *PlmnList = NULL;
+    OpenAPI_plmn_id_t *PlmnId = NULL;
+    int i;
+
+    ogs_assert(plmn_list);
+    ogs_assert(num_of_plmn_list);
+
+    PlmnList = OpenAPI_list_create();
+    ogs_assert(PlmnList);
+
+    for (i = 0; i < num_of_plmn_list; i++) {
+        PlmnId = ogs_sbi_build_plmn_id(plmn_list + i);
+        ogs_assert(PlmnId);
+
+        OpenAPI_list_add(PlmnList, PlmnId);
+    }
+
+    return PlmnList;
+}
+
+int ogs_sbi_parse_plmn_list(
+        ogs_plmn_id_t *plmn_list, OpenAPI_list_t *PlmnList)
+{
+    OpenAPI_plmn_id_t *PlmnId = NULL;
+    OpenAPI_lnode_t *node = NULL;
+    int num_of_plmn_list = 0;
+
+    ogs_assert(plmn_list);
+    ogs_assert(PlmnList);
+
+    num_of_plmn_list = 0;
+    OpenAPI_list_for_each(PlmnList, node) {
+        PlmnId = node->data;
+        if (PlmnId) {
+            ogs_assert(PlmnId->mcc);
+            ogs_assert(PlmnId->mnc);
+
+            ogs_plmn_id_build(plmn_list + num_of_plmn_list,
+                    atoi(PlmnId->mcc), atoi(PlmnId->mnc), strlen(PlmnId->mnc));
+
+            num_of_plmn_list++;
+        }
+    }
+
+    return num_of_plmn_list;
+}
+
+void ogs_sbi_free_plmn_list(OpenAPI_list_t *PlmnList)
+{
+    OpenAPI_plmn_id_t *PlmnId = NULL;
+    OpenAPI_lnode_t *node = NULL;
+
+    ogs_assert(PlmnList);
+
+    OpenAPI_list_for_each(PlmnList, node) {
+        PlmnId = node->data;
+        if (PlmnId)
+            ogs_sbi_free_plmn_id(PlmnId);
+    }
+    OpenAPI_list_free(PlmnList);
 }
 
 OpenAPI_plmn_id_nid_t *ogs_sbi_build_plmn_id_nid(ogs_plmn_id_t *plmn_id)

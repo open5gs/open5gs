@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -296,7 +296,8 @@ int hss_context_parse_config(void)
                                         if (!strcmp(conn_key, "identity")) {
                                             identity = ogs_yaml_iter_value(
                                                     &conn_iter);
-                                        } else if (!strcmp(conn_key, "addr")) {
+                                        } else if (!strcmp(conn_key,
+                                                    "address")) {
                                             addr = ogs_yaml_iter_value(
                                                     &conn_iter);
                                         } else if (!strcmp(conn_key, "port")) {
@@ -329,6 +330,13 @@ int hss_context_parse_config(void)
                 } else if (!strcmp(hss_key, "sms_over_ims")) {
                             self.sms_over_ims =
                                 ogs_yaml_iter_value(&hss_iter);
+                } else if (!strcmp(hss_key, "use_mongodb_change_stream")) {
+#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
+                    self.use_mongodb_change_stream =
+                        ogs_yaml_iter_bool(&hss_iter);
+#else
+                    self.use_mongodb_change_stream = false;
+#endif
                 } else
                     ogs_warn("unknown key `%s`", hss_key);
             }
@@ -1175,17 +1183,72 @@ char *hss_cx_download_user_data(
     return user_data;
 }
 
+static int poll_change_stream(void);
+static int process_change_stream(const bson_t *document);
+
 int hss_db_poll_change_stream(void)
 {
     int rv;
 
     ogs_thread_mutex_lock(&self.db_lock);
 
-    rv = ogs_dbi_poll_change_stream();
+    rv = poll_change_stream();
 
     ogs_thread_mutex_unlock(&self.db_lock);
 
     return rv;
+}
+
+static int poll_change_stream(void)
+{
+#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
+    int rv;
+
+    const bson_t *document;
+    const bson_t *err_document;
+    bson_error_t error;
+
+    while (mongoc_change_stream_next(ogs_mongoc()->stream, &document)) {
+        rv = process_change_stream(document);
+        if (rv != OGS_OK) return rv;
+    }
+
+    if (mongoc_change_stream_error_document(ogs_mongoc()->stream, &error,
+            &err_document)) {
+        if (!bson_empty (err_document)) {
+            ogs_debug("Server Error: %s\n",
+            bson_as_relaxed_extended_json(err_document, NULL));
+        } else {
+            ogs_debug("Client Error: %s\n", error.message);
+        }
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+# else
+    return OGS_ERROR;
+#endif
+}
+
+static int process_change_stream(const bson_t *document)
+{
+    int rv;
+
+    hss_event_t *e = NULL;
+
+    e = hss_event_new(HSS_EVENT_DBI_MESSAGE);
+    ogs_assert(e);
+    e->dbi.document = bson_copy(document);
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        bson_destroy(e->dbi.document);
+        hss_event_free(e);
+    } else {
+        ogs_pollset_notify(ogs_app()->pollset);
+    }
+
+    return OGS_OK;
 }
 
 int hss_handle_change_event(const bson_t *document)
@@ -1244,25 +1307,25 @@ int hss_handle_change_event(const bson_t *document)
                             BSON_ITER_HOLDS_BOOL(&child2_iter)) {
                         send_clr_flag = (char *)bson_iter_bool(&child2_iter);
                     } else if (!strncmp(child2_key,
-                            "access_restriction_data",
-                            strlen("access_restriction_data"))) {
+                                OGS_ACCESS_RESTRICTION_DATA_STRING,
+                                strlen(OGS_ACCESS_RESTRICTION_DATA_STRING))) {
                         send_idr_flag = true;
                         subdatamask = (subdatamask | OGS_DIAM_S6A_SUBDATA_ARD);
                     } else if (!strncmp(child2_key,
-                            "subscriber_status",
-                            strlen("subscriber_status"))) {
+                                OGS_SUBSCRIBER_STATUS_STRING,
+                                strlen(OGS_SUBSCRIBER_STATUS_STRING))) {
                         send_idr_flag = true;
                         subdatamask = (subdatamask |
                             OGS_DIAM_S6A_SUBDATA_SUB_STATUS);
                     } else if (!strncmp(child2_key,
-                            "operator_determined_barring",
-                            strlen("operator_determined_barring"))) {
+                                OGS_OPERATOR_DETERMINED_BARRING_STRING,
+                            strlen(OGS_OPERATOR_DETERMINED_BARRING_STRING))) {
                         send_idr_flag = true;
                         subdatamask = (subdatamask |
                             OGS_DIAM_S6A_SUBDATA_OP_DET_BARRING);
                     } else if (!strncmp(child2_key,
-                            "network_access_mode",
-                            strlen("network_access_mode"))) {
+                                OGS_NETWORK_ACCESS_MODE_STRING,
+                                strlen(OGS_NETWORK_ACCESS_MODE_STRING))) {
                         send_idr_flag = true;
                         subdatamask = (subdatamask | OGS_DIAM_S6A_SUBDATA_NAM);
                     } else if (!strncmp(child2_key, "ambr", strlen("ambr"))) {
@@ -1270,8 +1333,8 @@ int hss_handle_change_event(const bson_t *document)
                         subdatamask = (subdatamask |
                             OGS_DIAM_S6A_SUBDATA_UEAMBR);
                     } else if (!strncmp(child2_key,
-                            "subscribed_rau_tau_timer",
-                            strlen("subscribed_rau_tau_timer"))) {
+                                OGS_SUBSCRIBED_RAU_TAU_TIMER_STRING,
+                                strlen(OGS_SUBSCRIBED_RAU_TAU_TIMER_STRING))) {
                         send_idr_flag = true;
                         subdatamask = (subdatamask |
                             OGS_DIAM_S6A_SUBDATA_RAU_TAU_TIMER);

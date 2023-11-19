@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,17 +17,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef OGS_DBI_TIMER_H
-#define OGS_DBI_TIMER_H
+#include "ogs-app.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+int app_initialize(const char *const argv[])
+{
+    int rv;
 
-void ogs_timer_dbi_poll_change_stream(void *data);
+    rv = sepp_initialize();
+    if (rv != OGS_OK) {
+        ogs_error("Failed to intialize SEPP");
+        return rv;
+    }
+    ogs_info("SEPP initialize...done");
 
-#ifdef __cplusplus
+    return OGS_OK;
 }
-#endif
 
-#endif /* OGS_DBI_TIMER_H */
+void app_terminate(void)
+{
+    sepp_terminate();
+    ogs_info("SEPP terminate...done");
+}

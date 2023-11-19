@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -26,6 +26,10 @@ int pcrf_initialize(void)
 {
     int rv;
 
+#define APP_NAME "pcrf"
+    rv = ogs_app_parse_local_conf(APP_NAME);
+    if (rv != OGS_OK) return rv;
+
     pcrf_context_init();
 
     rv = pcrf_context_parse_config();
@@ -35,8 +39,10 @@ int pcrf_initialize(void)
             ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
-    rv = ogs_dbi_init(ogs_app()->db_uri);
-    if (rv != OGS_OK) return rv;
+    if (ogs_app()->db_uri) {
+        rv = ogs_dbi_init(ogs_app()->db_uri);
+        if (rv != OGS_OK) return rv;
+    }
 
     rv = pcrf_fd_init();
     if (rv != OGS_OK) return OGS_ERROR;
@@ -52,7 +58,10 @@ void pcrf_terminate(void)
 
     pcrf_fd_final();
 
-    ogs_dbi_final();
+    if (ogs_app()->db_uri) {
+        ogs_dbi_final();
+    }
+
     pcrf_context_final();
 
     return;

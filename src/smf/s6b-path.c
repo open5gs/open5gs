@@ -223,8 +223,8 @@ void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact)
     /* Set the User-Name AVP */
     user_name = ogs_msprintf("%s@nai.epc.mnc%03d.mcc%03d.3gppnetwork.org",
                     smf_ue->imsi_bcd,
-                    ogs_plmn_id_mnc(&sess->plmn_id),
-                    ogs_plmn_id_mcc(&sess->plmn_id));
+                    ogs_plmn_id_mnc(&sess->serving_plmn_id),
+                    ogs_plmn_id_mcc(&sess->serving_plmn_id));
     ogs_assert(user_name);
 
     ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
@@ -286,8 +286,8 @@ void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact)
     /* Set the Visited-Network-Identifier AVP */
     visited_network_identifier =
                 ogs_msprintf("mnc%03d.mcc%03d.3gppnetwork.org",
-                    ogs_plmn_id_mnc(&sess->plmn_id),
-                    ogs_plmn_id_mcc(&sess->plmn_id));
+                    ogs_plmn_id_mnc(&sess->serving_plmn_id),
+                    ogs_plmn_id_mcc(&sess->serving_plmn_id));
     ogs_assert(visited_network_identifier);
 
     ret = fd_msg_avp_new(ogs_diam_visited_network_identifier, 0, &avp);
@@ -576,8 +576,8 @@ void smf_s6b_send_str(smf_sess_t *sess, ogs_gtp_xact_t *xact, uint32_t cause)
     /* Set the User-Name AVP */
     user_name = ogs_msprintf("%s@nai.epc.mnc%03d.mcc%03d.3gppnetwork.org",
                     smf_ue->imsi_bcd,
-                    ogs_plmn_id_mnc(&sess->plmn_id),
-                    ogs_plmn_id_mcc(&sess->plmn_id));
+                    ogs_plmn_id_mnc(&sess->serving_plmn_id),
+                    ogs_plmn_id_mcc(&sess->serving_plmn_id));
     ogs_assert(user_name);
 
     ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);

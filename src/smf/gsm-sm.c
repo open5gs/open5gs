@@ -1220,7 +1220,7 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
-        /* Since `pfcp_xact->epc` is not avaiable,
+        /* Since `pfcp_xact->epc` is not available,
          * we'll use `sess->epc` */
         if (sess->epc) {
             /* EPC */

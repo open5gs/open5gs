@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -30,6 +30,10 @@ static int initialized = 0;
 int hss_initialize(void)
 {
     int rv;
+
+#define APP_NAME "hss"
+    rv = ogs_app_parse_local_conf(APP_NAME);
+    if (rv != OGS_OK) return rv;
 
     hss_context_init();
 
@@ -94,7 +98,7 @@ static void hss_main(void *data)
         ogs_timer_mgr_expire(ogs_app()->timer_mgr);
 
         for ( ;; ) {
-            ogs_event_t *e = NULL;
+            hss_event_t *e = NULL;
 
             rv = ogs_queue_trypop(ogs_app()->queue, (void**)&e);
             ogs_assert(rv != OGS_ERROR);
@@ -107,7 +111,7 @@ static void hss_main(void *data)
 
             ogs_assert(e);
             ogs_fsm_dispatch(&hss_sm, e);
-            ogs_event_free(e);
+            hss_event_free(e);
         }
     }
 done:

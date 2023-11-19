@@ -31,9 +31,6 @@ typedef struct ogs_sbi_nf_instance_s ogs_sbi_nf_instance_t;
 
 typedef struct scp_event_s {
     ogs_event_t h;
-
-    ogs_sbi_nf_instance_t *nf_instance;
-    scp_sess_t *sess;
 } scp_event_t;
 
 OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(scp_event_t));

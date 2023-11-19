@@ -7,7 +7,7 @@
     create 640 open5gs open5gs
 
     postrotate
-        for i in nrfd scpd pcrfd hssd ausfd udmd udrd upfd sgwcd sgwud smfd mmed amfd; do
+        for i in nrfd scpd seppd pcrfd hssd ausfd udmd udrd upfd sgwcd sgwud smfd mmed amfd; do
             systemctl reload open5gs-$i
         done
     endscript

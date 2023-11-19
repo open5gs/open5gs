@@ -150,13 +150,13 @@ uint8_t smf_gn_handle_create_pdp_context_request(
 
     switch (uli.geo_loc_type) {
     case OGS_GTP1_GEO_LOC_TYPE_CGI:
-        ogs_nas_to_plmn_id(&sess->plmn_id, &uli.cgi.nas_plmn_id);
+        ogs_nas_to_plmn_id(&sess->serving_plmn_id, &uli.cgi.nas_plmn_id);
         break;
     case OGS_GTP1_GEO_LOC_TYPE_SAI:
-        ogs_nas_to_plmn_id(&sess->plmn_id, &uli.sai.nas_plmn_id);
+        ogs_nas_to_plmn_id(&sess->serving_plmn_id, &uli.sai.nas_plmn_id);
         break;
     case  OGS_GTP1_GEO_LOC_TYPE_RAI:
-        ogs_nas_to_plmn_id(&sess->plmn_id, &uli.rai.nas_plmn_id);
+        ogs_nas_to_plmn_id(&sess->serving_plmn_id, &uli.rai.nas_plmn_id);
         break;
     /* default: should not happen */
     }

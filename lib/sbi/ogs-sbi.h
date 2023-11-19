@@ -80,6 +80,8 @@
 #include "model/deregistration_data.h"
 #include "model/sdm_subscription.h"
 #include "model/modification_notification.h"
+#include "model/sec_negotiate_req_data.h"
+#include "model/sec_negotiate_rsp_data.h"
 #include "model/patch_item.h"
 #include "model/ue_authentication_ctx.h"
 

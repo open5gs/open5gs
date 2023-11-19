@@ -59,10 +59,10 @@ libsctp = library('ogssctp',
     version : libogslib_version,
     c_args : '-DOGS_SCTP_COMPILATION',
     include_directories : [libsctp_inc, libinc],
-    dependencies : [libcore_dep, libapp_dep, sctp_dep],
+    dependencies : [libapp_dep, sctp_dep],
     install : true)
 
 libsctp_dep = declare_dependency(
     link_with : libsctp,
     include_directories : [libsctp_inc, libinc],
-    dependencies : [libcore_dep, libapp_dep, sctp_dep])
+    dependencies : [libapp_dep, sctp_dep])

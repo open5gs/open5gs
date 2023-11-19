@@ -51,7 +51,7 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
 
     NotificationData->event = event;
 
-    server = ogs_list_first(&ogs_sbi_self()->server_list);
+    server = ogs_sbi_server_first();
     if (!server) {
         ogs_error("No server");
         goto end;

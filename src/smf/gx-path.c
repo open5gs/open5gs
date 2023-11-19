@@ -522,7 +522,8 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         /* Set 3GPP-SGSN-MCC-MNC */
         ret = fd_msg_avp_new(ogs_diam_gx_3gpp_sgsn_mcc_mnc, 0, &avp);
         ogs_assert(ret == 0);
-        val.os.data = (uint8_t *)ogs_plmn_id_to_string(&sess->plmn_id, buf);
+        val.os.data = (uint8_t *)ogs_plmn_id_to_string(
+                &sess->serving_plmn_id, buf);
         val.os.len = strlen(buf);
         ret = fd_msg_avp_setvalue(avp, &val);
         ogs_assert(ret == 0);
@@ -1042,14 +1043,14 @@ out:
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_error("ogs_queue_push() failed:%d", (int)rv);
-            ogs_session_data_free(&gx_message->session_data);
+            OGS_SESSION_DATA_FREE(&gx_message->session_data);
             ogs_free(gx_message);
             ogs_event_free(e);
         } else {
             ogs_pollset_notify(ogs_app()->pollset);
         }
     } else {
-        ogs_session_data_free(&gx_message->session_data);
+        OGS_SESSION_DATA_FREE(&gx_message->session_data);
         ogs_free(gx_message);
     }
 
@@ -1285,7 +1286,7 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        ogs_session_data_free(&gx_message->session_data);
+        OGS_SESSION_DATA_FREE(&gx_message->session_data);
         ogs_free(gx_message);
         ogs_event_free(e);
     } else {
@@ -1340,7 +1341,7 @@ out:
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_session_data_free(&gx_message->session_data);
+    OGS_SESSION_DATA_FREE(&gx_message->session_data);
     ogs_free(gx_message);
 
     return 0;

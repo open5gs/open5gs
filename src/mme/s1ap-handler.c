@@ -45,7 +45,7 @@ static bool maximum_number_of_enbs_is_reached(void)
         }
     }
 
-    return number_of_enbs_online >= ogs_app()->max.peer;
+    return number_of_enbs_online >= ogs_global_conf()->max.peer;
 }
 
 static bool enb_plmn_id_is_foreign(mme_enb_t *enb)
@@ -3693,7 +3693,7 @@ void s1ap_handle_handover_notification(
             S1AP_Cause_PR_radioNetwork,
             S1AP_CauseRadioNetwork_successful_handover,
             S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE,
-            ogs_app()->time.handover.duration);
+            ogs_local_conf()->time.handover.duration);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 
