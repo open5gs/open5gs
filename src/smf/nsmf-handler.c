@@ -294,16 +294,10 @@ bool smf_nsmf_handle_create_sm_context(
     if (SmContextCreateData->dnn) {
         char *home_network_domain =
             ogs_home_network_domain_from_fqdn(SmContextCreateData->dnn);
-        uint16_t mcc = 0, mnc = 0;
-
-        if (sess->session.name) ogs_free(sess->session.name);
-
-        if (sess->full_dnn)
-            ogs_free(sess->full_dnn);
-        sess->full_dnn = NULL;
 
         if (home_network_domain) {
             char dnn_network_identifer[OGS_MAX_DNN_LEN+1];
+            uint16_t mcc = 0, mnc = 0;
 
             ogs_assert(home_network_domain > SmContextCreateData->dnn);
 
@@ -311,9 +305,13 @@ bool smf_nsmf_handle_create_sm_context(
                 ogs_min(OGS_MAX_DNN_LEN,
                     home_network_domain - SmContextCreateData->dnn));
 
+            if (sess->session.name)
+                ogs_free(sess->session.name);
             sess->session.name = ogs_strdup(dnn_network_identifer);
             ogs_assert(sess->session.name);
 
+            if (sess->full_dnn)
+                ogs_free(sess->full_dnn);
             sess->full_dnn = ogs_strdup(SmContextCreateData->dnn);
             ogs_assert(sess->full_dnn);
 
@@ -343,8 +341,14 @@ bool smf_nsmf_handle_create_sm_context(
                     ogs_plmn_id_build(&sess->home_plmn_id, mcc, mnc, mnc_len);
             }
         } else {
+            if (sess->session.name)
+                ogs_free(sess->session.name);
             sess->session.name = ogs_strdup(SmContextCreateData->dnn);
             ogs_assert(sess->session.name);
+
+            if (sess->full_dnn)
+                ogs_free(sess->full_dnn);
+            sess->full_dnn = NULL;
         }
     }
 

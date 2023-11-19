@@ -284,11 +284,9 @@ typedef struct smf_sess_s {
 
     OpenAPI_up_cnx_state_e up_cnx_state;
 
-    /* Serving PLMN ID */
-    ogs_plmn_id_t   serving_plmn_id;
-
-    /* Home PLMN ID */
-    ogs_plmn_id_t   home_plmn_id;;
+    /* Serving PLMN ID & Home PLMN ID */
+    ogs_plmn_id_t serving_plmn_id;
+    ogs_plmn_id_t home_plmn_id;
 
     /* LTE Location */
     ogs_eps_tai_t   e_tai;

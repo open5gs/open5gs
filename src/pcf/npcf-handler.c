@@ -190,6 +190,8 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
     uint16_t fqdn_port = 0;
     ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
+    char *home_network_domain = NULL;
+
     ogs_assert(sess);
     pcf_ue = sess->pcf_ue;
     ogs_assert(stream);
@@ -236,21 +238,6 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
-    if (!SmPolicyContextData->serving_network) {
-        strerror = ogs_msprintf("[%s:%d] No serving_network",
-                pcf_ue->supi, sess->psi);
-        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-        goto cleanup;
-    }
-
-    servingNetwork = SmPolicyContextData->serving_network;
-    if (!servingNetwork || !servingNetwork->mnc || !servingNetwork->mcc) {
-        strerror = ogs_msprintf("[%s:%d] No serving_network",
-                pcf_ue->supi, sess->psi);
-        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-        goto cleanup;
-    }
-
     if (!SmPolicyContextData->ipv4_address &&
         !SmPolicyContextData->ipv6_address_prefix) {
         strerror = ogs_msprintf(
@@ -277,6 +264,16 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
+    servingNetwork = SmPolicyContextData->serving_network;
+    if (servingNetwork) {
+        if (!servingNetwork->mnc || !servingNetwork->mcc) {
+            strerror = ogs_msprintf("[%s:%d] No serving_network",
+                    pcf_ue->supi, sess->psi);
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            goto cleanup;
+        }
+    }
+
     rc = ogs_sbi_getaddr_from_uri(&scheme, &fqdn, &fqdn_port, &addr, &addr6,
             SmPolicyContextData->notification_uri);
     if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
@@ -297,8 +294,13 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
     sess->pdu_session_type = SmPolicyContextData->pdu_session_type;
 
     /* Serving PLMN & Home PLMN */
-    ogs_sbi_parse_plmn_id_nid(&sess->serving_plmn_id, servingNetwork);
-    memcpy(&sess->home_plmn_id, &sess->serving_plmn_id, OGS_PLMN_ID_LEN);
+    if (servingNetwork) {
+        sess->serving.presence = true;
+        ogs_sbi_parse_plmn_id_nid(&sess->serving.plmn_id, servingNetwork);
+
+        sess->home.presence = true;
+        memcpy(&sess->home.plmn_id, &sess->serving.plmn_id, OGS_PLMN_ID_LEN);
+    }
 
     /*
      * TS29.512
@@ -314,62 +316,65 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
      * The DNN of the PDU session, a full DNN with both the Network Identifier
      * and Operator Identifier, or a DNN with the Network Identifier only
      */
-    if (SmPolicyContextData->dnn) {
-        char *home_network_domain =
-            ogs_home_network_domain_from_fqdn(SmPolicyContextData->dnn);
+    home_network_domain = ogs_home_network_domain_from_fqdn(
+            SmPolicyContextData->dnn);
+
+    if (home_network_domain) {
+        char dnn_network_identifer[OGS_MAX_DNN_LEN+1];
         uint16_t mcc = 0, mnc = 0;
+
+        ogs_assert(home_network_domain > SmPolicyContextData->dnn);
+
+        ogs_cpystrn(dnn_network_identifer, SmPolicyContextData->dnn,
+            ogs_min(OGS_MAX_DNN_LEN,
+                home_network_domain - SmPolicyContextData->dnn));
 
         if (sess->dnn)
             ogs_free(sess->dnn);
+        sess->dnn = ogs_strdup(dnn_network_identifer);
+        ogs_assert(sess->dnn);
+
+        if (sess->full_dnn)
+            ogs_free(sess->full_dnn);
+        sess->full_dnn = ogs_strdup(SmPolicyContextData->dnn);
+        ogs_assert(sess->full_dnn);
+
+        mcc = ogs_plmn_id_mcc_from_fqdn(sess->full_dnn);
+        mnc = ogs_plmn_id_mnc_from_fqdn(sess->full_dnn);
+
+        /*
+         * To generate the Home PLMN ID of the SMF-UE,
+         * the length of the MNC is obtained
+         * by comparing the MNC part of the SUPI and full-DNN.
+         */
+        if (mcc && mnc &&
+            strncmp(pcf_ue->supi, "imsi-", strlen("imsi-")) == 0) {
+            int mnc_len = 0;
+            char buf[OGS_PLMNIDSTRLEN];
+
+            ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%02d", mcc, mnc);
+            if (strncmp(pcf_ue->supi + 5, buf, strlen(buf)) == 0)
+                mnc_len = 2;
+
+            ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%03d", mcc, mnc);
+            if (strncmp(pcf_ue->supi + 5, buf, strlen(buf)) == 0)
+                mnc_len = 3;
+
+            /* Change Home PLMN for VPLMN */
+            if (mnc_len == 2 || mnc_len == 3) {
+                if (sess->home.presence == true)
+                    ogs_plmn_id_build(&sess->home.plmn_id, mcc, mnc, mnc_len);
+            }
+        }
+    } else {
+        if (sess->dnn)
+            ogs_free(sess->dnn);
+        sess->dnn = ogs_strdup(SmPolicyContextData->dnn);
+        ogs_assert(sess->dnn);
 
         if (sess->full_dnn)
             ogs_free(sess->full_dnn);
         sess->full_dnn = NULL;
-
-        if (home_network_domain) {
-            char dnn_network_identifer[OGS_MAX_DNN_LEN+1];
-
-            ogs_assert(home_network_domain > SmPolicyContextData->dnn);
-
-            ogs_cpystrn(dnn_network_identifer, SmPolicyContextData->dnn,
-                ogs_min(OGS_MAX_DNN_LEN,
-                    home_network_domain - SmPolicyContextData->dnn));
-
-            sess->dnn = ogs_strdup(dnn_network_identifer);
-            ogs_assert(sess->dnn);
-
-            sess->full_dnn = ogs_strdup(SmPolicyContextData->dnn);
-            ogs_assert(sess->full_dnn);
-
-            mcc = ogs_plmn_id_mcc_from_fqdn(sess->full_dnn);
-            mnc = ogs_plmn_id_mnc_from_fqdn(sess->full_dnn);
-
-            /*
-             * To generate the Home PLMN ID of the SMF-UE,
-             * the length of the MNC is obtained
-             * by comparing the MNC part of the SUPI and full-DNN.
-             */
-            if (mcc && mnc &&
-                strncmp(pcf_ue->supi, "imsi-", strlen("imsi-")) == 0) {
-                int mnc_len = 0;
-                char buf[OGS_PLMNIDSTRLEN];
-
-                ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%02d", mcc, mnc);
-                if (strncmp(pcf_ue->supi + 5, buf, strlen(buf)) == 0)
-                    mnc_len = 2;
-
-                ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%03d", mcc, mnc);
-                if (strncmp(pcf_ue->supi + 5, buf, strlen(buf)) == 0)
-                    mnc_len = 3;
-
-                /* Change Home PLMN for VPLMN */
-                if (mnc_len == 2 || mnc_len == 3)
-                    ogs_plmn_id_build(&sess->home_plmn_id, mcc, mnc, mnc_len);
-            }
-        } else {
-            sess->dnn = ogs_strdup(SmPolicyContextData->dnn);
-            ogs_assert(sess->dnn);
-        }
     }
 
     if (sess->notification_uri)

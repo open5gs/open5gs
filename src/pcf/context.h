@@ -91,11 +91,11 @@ struct pcf_sess_s {
     char *dnn;
     char *full_dnn;
 
-    /* Serving PLMN ID */
-    ogs_plmn_id_t   serving_plmn_id;
-
-    /* Home PLMN ID */
-    ogs_plmn_id_t   home_plmn_id;
+    /* Serving PLMN ID & Home PLMN ID */
+    struct {
+        bool presence;
+        ogs_plmn_id_t plmn_id;
+    } serving, home;
 
     char *notification_uri;
     struct {
