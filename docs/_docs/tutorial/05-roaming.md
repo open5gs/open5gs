@@ -111,7 +111,7 @@ nrf:
 EOF'
 ```
 
-- Update scp.yaml
+- Update h-scp.yaml
 
 ```bash
 $ sh -c 'cat << EOF > ./install/etc/open5gs/h-scp.yaml
@@ -294,6 +294,7 @@ $ diff -u ./install/etc/open5gs/amf.yaml.old ./install/etc/open5gs/amf.yaml
 Due to the absence of UDR in the visiting network, V-PCF uses locally configured policies. When the UE is located in the home PLMN (001/01), MongoDB is used. On the other hand, when the UE is located in the visiting PLMN (999/70, 315/010), locally configured policies are used. This is because there is no session management policy data for the UE in the visiting network, so locally configured information based on the roaming agreement is used.
 
 - Update pcf.yaml
+
 ```diff
 $ diff -u ./install/etc/open5gs/pcf.yaml.old ./install/etc/open5gs/pcf.yaml
 --- ./install/etc/open5gs/pcf.yaml.old	2023-11-19 18:05:35.389115760 +0900
@@ -581,6 +582,7 @@ index e78b018f1..3032a06c6 100644
 Due to the absence of UDR in the visiting network, V-PCF uses locally configured policies. When the UE is located in the home PLMN (999/70), MongoDB is used. On the other hand, when the UE is located in the visiting PLMN (001/01, 315/010), locally configured policies are used. This is because there is no session management policy data for the UE in the visiting network, so locally configured information based on the roaming agreement is used.
 
 - Update pcf.yaml
+
 ```diff
 $ diff --git a/configs/open5gs/pcf.yaml.in b/configs/open5gs/pcf.yaml.in
 index 2df2e9a36..9eea1f1de 100644
@@ -900,6 +902,7 @@ index e78b018f1..3032a06c6 100644
 Due to the absence of UDR in the visiting network, V-PCF uses locally configured policies. When the UE is located in the home PLMN (001/01), MongoDB is used. On the other hand, when the UE is located in the visiting PLMN (999/70, 315/010), locally configured policies are used. This is because there is no session management policy data for the UE in the visiting network, so locally configured information based on the roaming agreement is used.
 
 - Update pcf.yaml
+
 ```diff
 $ diff --git a/configs/open5gs/pcf.yaml.in b/configs/open5gs/pcf.yaml.in
 index 2df2e9a36..9eea1f1de 100644
@@ -1219,6 +1222,7 @@ index e78b018f1..3032a06c6 100644
 Due to the absence of UDR in the visiting network, V-PCF uses locally configured policies. When the UE is located in the home PLMN (315/010), MongoDB is used. On the other hand, when the UE is located in the visiting PLMN (999/70, 001/01), locally configured policies are used. This is because there is no session management policy data for the UE in the visiting network, so locally configured information based on the roaming agreement is used.
 
 - Update pcf.yaml
+
 ```diff
 $ diff --git a/configs/open5gs/pcf.yaml.in b/configs/open5gs/pcf.yaml.in
 index 2df2e9a36..9eea1f1de 100644
