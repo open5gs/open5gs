@@ -68,6 +68,28 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     }
 
     /*
+     * Use ogs_sbi_supi_in_vplmn() instead of ogs_sbi_plmn_id_in_vplmn().
+     * This is because some vendors might not use the full DNN in LBO and
+     * Open5GS cannot derive the home PLMN ID without the full DNN.
+     *
+     * TS29.502
+     * 6.1 Nsmf_PDUSession Service API
+     * Table 6.1.6.2.2-1: Definition of type SmContextCreateData
+     *
+     * NAME: dnn
+     * Data type: Dnn
+     * P: C
+     * Cardinality: 0..1
+     *
+     * This IE shall be present, except during an EPS to 5GS Idle mode mobility
+     * or handover using the N26 interface.
+     *
+     * When present, it shall contain the requested DNN; the DNN shall
+     * be the full DNN (i.e. with both the Network Identifier and
+     * Operator Identifier) for a HR PDU session, and it should be
+     * the full DNN in LBO and non-roaming scenarios. If the Operator Identifier
+     * is absent, the serving core network operator shall be assumed.
+     *
      * TS29.512
      * 5 Npcf_SMPolicyControl Service API
      * 5.6 Data Model
@@ -81,7 +103,7 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
      * The DNN of the PDU session, a full DNN with both the Network Identifier
      * and Operator Identifier, or a DNN with the Network Identifier only
      */
-    if (ogs_sbi_plmn_id_in_vplmn(&sess->home_plmn_id) == true) {
+    if (ogs_sbi_supi_in_vplmn(smf_ue->supi) == true) {
         char *home_network_domain = NULL;
 
         home_network_domain =
