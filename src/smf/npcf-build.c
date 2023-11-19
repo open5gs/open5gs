@@ -37,6 +37,7 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
 
     ogs_assert(sess);
     ogs_assert(sess->sm_context_ref);
+    ogs_assert(sess->session.name);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
@@ -65,10 +66,37 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         ogs_error("No pdu_session_type");
         goto end;
     }
-    SmPolicyContextData.dnn = sess->session.name;
-    if (!SmPolicyContextData.dnn) {
-        ogs_error("No dnn");
-        goto end;
+
+    /*
+     * TS29.512
+     * 5 Npcf_SMPolicyControl Service API
+     * 5.6 Data Model
+     * 5.6.2 Structured data types
+     * Table 5.6.2.3-1: Definition of type SmPolicyContextData
+     *
+     * NAME: dnn
+     * Data type: Dnn
+     * P: M
+     * Cardinality: 1
+     * The DNN of the PDU session, a full DNN with both the Network Identifier
+     * and Operator Identifier, or a DNN with the Network Identifier only
+     */
+    if (ogs_sbi_plmn_id_in_vplmn(&sess->home_plmn_id) == true) {
+        char *home_network_domain = NULL;
+
+        home_network_domain =
+            ogs_home_network_domain_from_plmn_id(&sess->home_plmn_id);
+        ogs_assert(home_network_domain);
+
+        SmPolicyContextData.dnn =
+            ogs_msprintf("%s.%s", sess->session.name, home_network_domain);
+        ogs_assert(SmPolicyContextData.dnn);
+
+        ogs_free(home_network_domain);
+
+    } else {
+        SmPolicyContextData.dnn = ogs_strdup(sess->session.name);
+        ogs_assert(SmPolicyContextData.dnn);
     }
 
     server = ogs_sbi_server_first();
@@ -86,6 +114,13 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     SmPolicyContextData.notification_uri = ogs_sbi_server_uri(server, &header);
     if (!SmPolicyContextData.notification_uri) {
         ogs_error("No notification_uri");
+        goto end;
+    }
+
+    SmPolicyContextData.serving_network =
+        ogs_sbi_build_plmn_id_nid(&sess->serving_plmn_id);
+    if (!SmPolicyContextData.serving_network) {
+        ogs_error("No serving_network");
         goto end;
     }
 
@@ -200,6 +235,11 @@ end:
         ogs_free(SmPolicyContextData.notification_uri);
     if (SmPolicyContextData.gpsi)
         ogs_free(SmPolicyContextData.gpsi);
+
+    if (SmPolicyContextData.dnn)
+        ogs_free(SmPolicyContextData.dnn);
+    if (SmPolicyContextData.serving_network)
+        ogs_sbi_free_plmn_id_nid(SmPolicyContextData.serving_network);
 
     if (sNssai.sd)
         ogs_free(sNssai.sd);

@@ -222,9 +222,8 @@ bool smf_nsmf_handle_create_sm_context(
         }
     }
 
+    /* Serving PLMN & Home PLMN */
     ogs_sbi_parse_plmn_id_nid(&sess->serving_plmn_id, servingNetwork);
-
-    /* Copy Serving PLMN to Home PLMN */
     memcpy(&sess->home_plmn_id, &sess->serving_plmn_id, OGS_PLMN_ID_LEN);
 
     sess->sbi_rat_type = SmContextCreateData->rat_type;

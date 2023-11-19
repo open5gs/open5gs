@@ -86,7 +86,16 @@ struct pcf_sess_s {
     uint8_t psi; /* PDU Session Identity */
 
     uint8_t pdu_session_type;
+
+    /* DNN */
     char *dnn;
+    char *full_dnn;
+
+    /* Serving PLMN ID */
+    ogs_plmn_id_t   serving_plmn_id;
+
+    /* Home PLMN ID */
+    ogs_plmn_id_t   home_plmn_id;
 
     char *notification_uri;
     struct {

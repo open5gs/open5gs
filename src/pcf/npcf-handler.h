@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
+bool pcf_npcf_am_policy_control_handle_create(pcf_ue_t *pcf_ue,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,

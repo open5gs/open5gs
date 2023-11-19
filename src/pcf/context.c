@@ -500,6 +500,8 @@ void pcf_sess_remove(pcf_sess_t *sess)
 
     if (sess->dnn)
         ogs_free(sess->dnn);
+    if (sess->full_dnn)
+        ogs_free(sess->full_dnn);
 
     if (sess->notification_uri)
         ogs_free(sess->notification_uri);
