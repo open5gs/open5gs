@@ -59,7 +59,7 @@ $ diff -u hosts.old hosts.new
 ```
 
 
-#### Running V-PLMN 5G Core and H-PLMN 5G Core in the Single Host
+#### Run the V-PLMN 5G Core and H-PLMN 5G Core on a single host
 
 5G Core requires root privileges as it uses reserved ports such as http(80) or https(443).
 
@@ -92,7 +92,7 @@ NRF shall follow TS23.003(28.3.2.3.2 Format of NRF FQDN) for routing.
 ```bash
 $ sh -c 'cat << EOF > ./install/etc/open5gs/h-nrf.yaml
 logger:
-  file: /home/acetcom/Documents/git/open5gs/install/var/log/open5gs/nrf.log
+  file: /home/acetcom/Documents/git/open5gs/install/var/log/open5gs/h-nrf.log
 #  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
@@ -116,7 +116,7 @@ EOF'
 ```bash
 $ sh -c 'cat << EOF > ./install/etc/open5gs/h-scp.yaml
 logger:
-  file: /home/acetcom/Documents/git/open5gs/install/var/log/open5gs/scp.log
+  file: /home/acetcom/Documents/git/open5gs/install/var/log/open5gs/h-scp.log
 #  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
@@ -202,9 +202,26 @@ $ diff -u ./install/etc/open5gs/udr.yaml.old ./install/etc/open5gs/udr.yaml
  # SBI Server
 ```
 
+- Update sepp1.yaml
+
+```diff
+$ diff -u ./install/etc/open5gs/sepp1.yaml.old ./install/etc/open5gs/sepp1.yaml
+--- ./install/etc/open5gs/sepp1.yaml.old	2023-11-19 19:11:02.293113538 +0900
++++ ./install/etc/open5gs/sepp1.yaml	2023-11-19 19:11:22.429113526 +0900
+@@ -23,7 +23,7 @@
+ #      nrf:
+ #        - uri: http://127.0.0.10:7777
+       scp:
+-        - uri: http://127.0.0.200:7777
++        - uri: http://127.0.1.200:7777
+   n32:
+     server:
+       - sender: sepp1.localdomain
+```
+
 ### Visited PLMN
 
-AMF and UPF must use external IP addresses such as 10.10.2.x for communication between VM1 and VM3.
+The Visited Network should be configured using the PLMN ID 001/01, so the NRF and AMF settings should be changed accordingly.
 
 - Update nrf.yaml
 
@@ -228,10 +245,16 @@ $diff -u ./install/etc/open5gs/nrf.yaml.old ./install/etc/open5gs/nrf.yaml
 - Update amf.yaml
 
 ```diff
-diff -u ./install/etc/open5gs/amf.yaml.old ./install/etc/open5gs/amf.yaml
+$ diff -u ./install/etc/open5gs/amf.yaml.old ./install/etc/open5gs/amf.yaml
 --- ./install/etc/open5gs/amf.yaml.old	2023-11-19 17:50:42.997116266 +0900
-+++ ./install/etc/open5gs/amf.yaml	2023-11-19 18:02:08.333115878 +0900
-@@ -24,22 +24,29 @@
++++ ./install/etc/open5gs/amf.yaml	2023-11-19 19:08:59.145113607 +0900
+@@ -19,27 +19,34 @@
+         - uri: http://127.0.0.200:7777
+   ngap:
+     server:
+-      - address: 127.0.0.5
++      - address: 127.0.2.5
+   metrics:
      server:
        - address: 127.0.0.5
          port: 9090
@@ -266,7 +289,6 @@ diff -u ./install/etc/open5gs/amf.yaml.old ./install/etc/open5gs/amf.yaml
        s_nssai:
          - sst: 1
    security:
-
 ```
 
 Due to the absence of UDR in the visiting network, V-PCF uses locally configured policies. When the UE is located in the home PLMN (001/01), MongoDB is used. On the other hand, when the UE is located in the visiting PLMN (999/70, 315/010), locally configured policies are used. This is because there is no session management policy data for the UE in the visiting network, so locally configured information based on the roaming agreement is used.
@@ -275,8 +297,13 @@ Due to the absence of UDR in the visiting network, V-PCF uses locally configured
 ```diff
 $ diff -u ./install/etc/open5gs/pcf.yaml.old ./install/etc/open5gs/pcf.yaml
 --- ./install/etc/open5gs/pcf.yaml.old	2023-11-19 18:05:35.389115760 +0900
-+++ ./install/etc/open5gs/pcf.yaml	2023-11-19 18:06:12.617115739 +0900
-@@ -22,6 +22,29 @@
++++ ./install/etc/open5gs/pcf.yaml	2023-11-19 19:02:27.221113829 +0900
+@@ -1,4 +1,3 @@
+-db_uri: mongodb://localhost/open5gs
+ logger:
+   file: /home/acetcom/Documents/git/open5gs/install/var/log/open5gs/pcf.log
+ #  level: info   # fatal|error|warn|info(default)|debug|trace
+@@ -22,6 +21,29 @@
      server:
        - address: 127.0.0.13
          port: 9090
@@ -306,6 +333,39 @@ $ diff -u ./install/etc/open5gs/pcf.yaml.old ./install/etc/open5gs/pcf.yaml
 
  ################################################################################
  # Locally configured policy
+```
+
+### Run the V-PLMN 5G Core and H-PLMN 5G Core on a single host
+
+#### Home Network
+
+5G Core requires root privileges as it uses reserved ports such as http(80) or https(443).
+
+```
+$ sudo ./install/bin/open5gs-nrfd -c ./install/etc/open5gs/h-nrf.yaml
+$ ./install/bin/open5gs-scpd -c ./install/etc/open5gs/h-scp.yaml
+$ sudo ./install/bin/open5gs-ausfd
+$ sudo ./install/bin/open5gs-udmd
+$ ./install/bin/open5gs-udrd
+$ ./install/bin/open5gs-seppd -c ./install/etc/open5gs/sepp1.yaml
+```
+
+#### Visted Network
+```
+$ ./install/bin/open5gs-nrfd
+$ ./install/bin/open5gs-scpd
+$ ./install/bin/open5gs-amfd
+$ ./install/bin/open5gs-smfd
+$ ./install/bin/open5gs-upfd
+$ ./install/bin/open5gs-pcfd
+$ ./install/bin/open5gs-bsfd
+$ ./install/bin/open5gs-nssfd
+$ ./install/bin/open5gs-seppd -c ./install/etc/open5gs/sepp2.yaml
+```
+
+### Performs a test of UE access while roaming subscribed to H-PLMN.
+```
+$ ./build/tests/registration/registration -c ./build/configs/examples/gnb-001-01-ue-999-70.yaml simple-test
 ```
 
 ## 3. Roaming Deployment
