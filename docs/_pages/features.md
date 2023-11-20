@@ -20,6 +20,7 @@ Open5GS is a C-language Open Source implementation of 5GC and EPC, i.e. the core
 - Support ePDG Interface(SWx, S6b, S2b)
 - VoLTE(Voice over LTE) with HSS-Cx interface
 - VoNR(Voice over NR)
+- 5G Roaming
 
 #### Known Limitations
 ---
@@ -29,5 +30,4 @@ Open5GS is a C-language Open Source implementation of 5GC and EPC, i.e. the core
 - No OCS/OFCS
 - No eMBMS
 - No SRVCC
-- No Roaming
 - No Emergency Call

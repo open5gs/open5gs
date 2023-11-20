@@ -226,7 +226,7 @@ The Visited Network should be configured using the PLMN ID 001/01, so the NRF an
 - Update nrf.yaml
 
 ```diff
-$diff -u ./install/etc/open5gs/nrf.yaml.old ./install/etc/open5gs/nrf.yaml
+$ diff -u ./install/etc/open5gs/nrf.yaml.old ./install/etc/open5gs/nrf.yaml
 --- ./install/etc/open5gs/nrf.yaml.old	2023-11-19 18:02:34.105115863 +0900
 +++ ./install/etc/open5gs/nrf.yaml	2023-11-19 18:02:59.981115848 +0900
 @@ -10,8 +10,8 @@
