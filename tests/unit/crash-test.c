@@ -604,6 +604,55 @@ static void test6_func(abts_case *tc, void *data)
     ogs_pkbuf_free(s1apbuf);
 }
 
+static void test7_func(abts_case *tc, void *data)
+{
+    const char *payload =
+        "0026406300000a00 7a400f2004d222a6 4500bf48f328170b b75b007a40020000"
+        "007a40020000007a 4004f5023d4d007a 50020000007a4003 00015a007a400b20"
+        "00008fc5f89e4556 4a667a0b400c2001 cc00acc4e7380083 bd93007a40030001"
+        "83007a40020000";
+
+    ogs_s1ap_message_t message;
+    ogs_pkbuf_t *enb_pkbuf;
+    int result;
+    char hexbuf[OGS_HUGE_LEN];
+
+    enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(enb_pkbuf);
+    ogs_pkbuf_put_data(enb_pkbuf,
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 103);
+
+    result = ogs_s1ap_decode(&message, enb_pkbuf);
+    ABTS_INT_EQUAL(tc, -1, result);
+
+    ogs_s1ap_free(&message);
+    ogs_pkbuf_free(enb_pkbuf);
+}
+
+static void test8_func(abts_case *tc, void *data)
+{
+    const char *payload =
+        "0025405a00000a00 79400b2000001f64 1125bd6050210079 4002000000794006"
+        "0004680e99090079 4002000000794002 00000079400f2004 248c28ab0035cd56"
+        "ea3daf3f75007940 02000000794003ff 01f60079400200ea 007940020000";
+
+    ogs_s1ap_message_t message;
+    ogs_pkbuf_t *enb_pkbuf;
+    int result;
+    char hexbuf[OGS_HUGE_LEN];
+
+    enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(enb_pkbuf);
+    ogs_pkbuf_put_data(enb_pkbuf,
+            ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 94);
+
+    result = ogs_s1ap_decode(&message, enb_pkbuf);
+    ABTS_INT_EQUAL(tc, -1, result);
+
+    ogs_s1ap_free(&message);
+    ogs_pkbuf_free(enb_pkbuf);
+}
+
 abts_suite *test_crash(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -614,6 +663,8 @@ abts_suite *test_crash(abts_suite *suite)
     abts_run_test(suite, test4_func, NULL);
     abts_run_test(suite, test5_func, NULL);
     abts_run_test(suite, test6_func, NULL);
+    abts_run_test(suite, test7_func, NULL);
+    abts_run_test(suite, test8_func, NULL);
 
     return suite;
 }
