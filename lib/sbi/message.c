@@ -3044,6 +3044,9 @@ char *ogs_sbi_discovery_option_build_snssais(
         snssaiItem = OpenAPI_snssai_convertToJSON(&sNSSAI);
         ogs_assert(snssaiItem);
         cJSON_AddItemToArray(item, snssaiItem);
+
+        if (sNSSAI.sd)
+            ogs_free(sNSSAI.sd);
     }
 
     v = cJSON_PrintUnformatted(item);
