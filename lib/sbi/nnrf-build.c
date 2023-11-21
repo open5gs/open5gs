@@ -290,6 +290,14 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         }
     }
 
+    /* NFServiceList should either cointain at least 1 item, or not be
+     * present at all */
+    if (NFServiceList->count == 0) {
+        OpenAPI_list_free(NFServiceList);
+        NFProfile->nf_service_list = NULL;
+        NFProfile->nf_services = NULL;
+    }
+
     InfoList = OpenAPI_list_create();
     ogs_assert(InfoList);
 
