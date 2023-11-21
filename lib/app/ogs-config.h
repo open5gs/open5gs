@@ -62,6 +62,7 @@ typedef struct ogs_global_conf_s {
         int no_ipv4v6_local_addr_in_packet_filter;
 
         int no_pfcp_rr_select;
+        int no_time_zone_information;
     } parameter;
 
     struct {

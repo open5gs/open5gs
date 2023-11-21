@@ -551,50 +551,52 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
                 &amf_self()->short_name, sizeof(ogs_nas_network_name_t));
         }
 
-        ogs_gettimeofday(&tv);
-        ogs_gmtime(tv.tv_sec, &gmt);
-        ogs_localtime(tv.tv_sec, &local);
+        if (!ogs_global_conf()->parameter.no_time_zone_information) {
+            ogs_gettimeofday(&tv);
+            ogs_gmtime(tv.tv_sec, &gmt);
+            ogs_localtime(tv.tv_sec, &local);
 
-        ogs_info("    UTC [%04d-%02d-%02dT%02d:%02d:%02d] "
-                "Timezone[%d]/DST[%d]",
-            gmt.tm_year+1900, gmt.tm_mon+1, gmt.tm_mday,
-            gmt.tm_hour, gmt.tm_min, gmt.tm_sec,
-            (int)gmt.tm_gmtoff, gmt.tm_isdst);
-        ogs_info("    LOCAL [%04d-%02d-%02dT%02d:%02d:%02d] "
-                "Timezone[%d]/DST[%d]",
-            local.tm_year+1900, local.tm_mon+1, local.tm_mday,
-            local.tm_hour, local.tm_min, local.tm_sec,
-            (int)local.tm_gmtoff, local.tm_isdst);
+            ogs_info("    UTC [%04d-%02d-%02dT%02d:%02d:%02d] "
+                    "Timezone[%d]/DST[%d]",
+                gmt.tm_year+1900, gmt.tm_mon+1, gmt.tm_mday,
+                gmt.tm_hour, gmt.tm_min, gmt.tm_sec,
+                (int)gmt.tm_gmtoff, gmt.tm_isdst);
+            ogs_info("    LOCAL [%04d-%02d-%02dT%02d:%02d:%02d] "
+                    "Timezone[%d]/DST[%d]",
+                local.tm_year+1900, local.tm_mon+1, local.tm_mday,
+                local.tm_hour, local.tm_min, local.tm_sec,
+                (int)local.tm_gmtoff, local.tm_isdst);
 
-        configuration_update_command->presencemask |=
-            OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_LOCAL_TIME_ZONE_PRESENT;
-        if (local.tm_gmtoff >= 0) {
-            *local_time_zone = OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
-        } else {
-            *local_time_zone = OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
-            *local_time_zone |= 0x08;
+            configuration_update_command->presencemask |=
+                OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_LOCAL_TIME_ZONE_PRESENT;
+            if (local.tm_gmtoff >= 0) {
+                *local_time_zone = OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
+            } else {
+                *local_time_zone = OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
+                *local_time_zone |= 0x08;
+            }
+            ogs_debug("    Timezone:0x%x", *local_time_zone);
+
+            configuration_update_command->presencemask |=
+                OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
+            universal_time_and_local_time_zone->year =
+                        OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
+            universal_time_and_local_time_zone->mon =
+                        OGS_NAS_TIME_TO_BCD(gmt.tm_mon+1);
+            universal_time_and_local_time_zone->mday =
+                        OGS_NAS_TIME_TO_BCD(gmt.tm_mday);
+            universal_time_and_local_time_zone->hour =
+                        OGS_NAS_TIME_TO_BCD(gmt.tm_hour);
+            universal_time_and_local_time_zone->min =
+                        OGS_NAS_TIME_TO_BCD(gmt.tm_min);
+            universal_time_and_local_time_zone->sec =
+                        OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
+            universal_time_and_local_time_zone->timezone = *local_time_zone;
+
+            configuration_update_command->presencemask |=
+                OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
+            network_daylight_saving_time->length = 1;
         }
-        ogs_debug("    Timezone:0x%x", *local_time_zone);
-
-        configuration_update_command->presencemask |=
-            OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
-        universal_time_and_local_time_zone->year =
-                    OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
-        universal_time_and_local_time_zone->mon =
-                    OGS_NAS_TIME_TO_BCD(gmt.tm_mon+1);
-        universal_time_and_local_time_zone->mday =
-                    OGS_NAS_TIME_TO_BCD(gmt.tm_mday);
-        universal_time_and_local_time_zone->hour =
-                    OGS_NAS_TIME_TO_BCD(gmt.tm_hour);
-        universal_time_and_local_time_zone->min =
-                    OGS_NAS_TIME_TO_BCD(gmt.tm_min);
-        universal_time_and_local_time_zone->sec =
-                    OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
-        universal_time_and_local_time_zone->timezone = *local_time_zone;
-
-        configuration_update_command->presencemask |=
-            OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
-        network_daylight_saving_time->length = 1;
     }
 
     if (param->guti) {
