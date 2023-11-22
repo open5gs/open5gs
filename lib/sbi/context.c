@@ -1686,9 +1686,9 @@ bool ogs_sbi_discovery_option_is_matched(
                     &discovery_option->snssais[0],
                     discovery_option->dnn) == false)
                 return false;
-            if (discovery_option->num_of_tai &&
+            if (discovery_option->tai_presence &&
                 ogs_sbi_check_smf_info_tai(&nf_info->smf,
-                    &discovery_option->tai[0]) == false)
+                    &discovery_option->tai) == false)
                 return false;
             break;
         default:

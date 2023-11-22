@@ -1262,7 +1262,7 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 ogs_sbi_discovery_option_add_snssais(
                         discovery_option, &sess->s_nssai);
                 ogs_sbi_discovery_option_set_dnn(discovery_option, sess->dnn);
-                ogs_sbi_discovery_option_add_tai(
+                ogs_sbi_discovery_option_set_tai(
                         discovery_option, &amf_ue->nr_tai);
 
                 nf_instance = sess->sbi.

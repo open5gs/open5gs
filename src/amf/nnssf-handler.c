@@ -93,7 +93,7 @@ int amf_nnssf_nsselection_handle_get(
 
     ogs_sbi_discovery_option_add_snssais(discovery_option, &sess->s_nssai);
     ogs_sbi_discovery_option_set_dnn(discovery_option, sess->dnn);
-    ogs_sbi_discovery_option_add_tai(discovery_option, &amf_ue->nr_tai);
+    ogs_sbi_discovery_option_set_tai(discovery_option, &amf_ue->nr_tai);
 
     if (sess->nssf.nrf.id)
         ogs_free(sess->nssf.nrf.id);

@@ -766,12 +766,11 @@ bool nrf_nnrf_handle_nf_discover(
         if (discovery_option->dnn) {
             ogs_debug("dnn[%s]", discovery_option->dnn);
         }
-        if (discovery_option->num_of_tai) {
-            for (i = 0; i < discovery_option->num_of_tai; i++)
-                ogs_debug("[%d] tai[PLMN_ID:%06x,TAC:%d]", i,
-                            ogs_plmn_id_hexdump(
-                                &discovery_option->tai[0].plmn_id),
-                            discovery_option->tai[0].tac.v);
+        if (discovery_option->tai_presence) {
+            ogs_debug("tai[PLMN_ID:%06x,TAC:%d]",
+                        ogs_plmn_id_hexdump(
+                            &discovery_option->tai.plmn_id),
+                        discovery_option->tai.tac.v);
         }
         if (discovery_option->requester_features) {
             ogs_debug("requester-features[0x%llx]",
