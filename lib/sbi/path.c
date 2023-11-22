@@ -338,7 +338,7 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
                         OGS_SBI_CUSTOM_DISCOVERY_DNN, discovery_option->dnn);
             }
 
-            if (discovery_option && discovery_option->num_of_tai) {
+            if (discovery_option && discovery_option->tai_presence) {
                 bool rc = false;
                 char *v = ogs_sbi_discovery_option_build_tai(discovery_option);
                 ogs_expect(v);
@@ -358,11 +358,10 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
                 }
 
                 if (rc == false)
-                    ogs_error("build failed: tai(%d)[PLMN_ID:%06x,TAC:%d]",
-                                discovery_option->num_of_tai,
+                    ogs_error("build failed: tai[PLMN_ID:%06x,TAC:%d]",
                                 ogs_plmn_id_hexdump(
-                                    &discovery_option->tai[0].plmn_id),
-                                discovery_option->tai[0].tac.v);
+                                    &discovery_option->tai.plmn_id),
+                                discovery_option->tai.tac.v);
             }
 
             if (discovery_option &&

@@ -428,8 +428,8 @@ typedef struct ogs_sbi_discovery_option_s {
     int num_of_snssais;
     ogs_s_nssai_t snssais[OGS_MAX_NUM_OF_SLICE];
     char *dnn;
-    int num_of_tai;
-    ogs_5gs_tai_t tai[OGS_MAX_NUM_OF_TAI];
+    bool tai_presence;
+    ogs_5gs_tai_t tai;
 
     int num_of_target_plmn_list;
     ogs_plmn_id_t target_plmn_list[OGS_MAX_NUM_OF_PLMN];
@@ -641,7 +641,7 @@ char *ogs_sbi_discovery_option_build_snssais(
 void ogs_sbi_discovery_option_parse_snssais(
         ogs_sbi_discovery_option_t *discovery_option, char *snssais);
 
-void ogs_sbi_discovery_option_add_tai(
+void ogs_sbi_discovery_option_set_tai(
         ogs_sbi_discovery_option_t *discovery_option, ogs_5gs_tai_t *tai);
 char *ogs_sbi_discovery_option_build_tai(
         ogs_sbi_discovery_option_t *discovery_option);

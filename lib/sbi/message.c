@@ -445,17 +445,16 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
             ogs_sbi_header_set(request->http.params,
                     OGS_SBI_PARAM_DNN, discovery_option->dnn);
         }
-        if (discovery_option->num_of_tai) {
+        if (discovery_option->tai_presence) {
             char *v = ogs_sbi_discovery_option_build_tai(discovery_option);
             if (v) {
                 ogs_sbi_header_set(request->http.params, OGS_SBI_PARAM_TAI, v);
                 ogs_free(v);
             } else {
-                ogs_error("build failed: tai(%d)[PLMN_ID:%06x,TAC:%d]",
-                            discovery_option->num_of_tai,
+                ogs_error("build failed: tai[PLMN_ID:%06x,TAC:%d]",
                             ogs_plmn_id_hexdump(
-                                &discovery_option->tai[0].plmn_id),
-                            discovery_option->tai[0].tac.v);
+                                &discovery_option->tai.plmn_id),
+                            discovery_option->tai.tac.v);
             }
         }
 
@@ -3105,62 +3104,49 @@ void ogs_sbi_discovery_option_parse_snssais(
     ogs_free(v);
 }
 
-void ogs_sbi_discovery_option_add_tai(
+void ogs_sbi_discovery_option_set_tai(
         ogs_sbi_discovery_option_t *discovery_option, ogs_5gs_tai_t *tai)
 {
     ogs_assert(discovery_option);
     ogs_assert(tai);
 
-    ogs_assert(discovery_option->num_of_tai < OGS_MAX_NUM_OF_TAI);
+    ogs_assert(discovery_option->tai_presence == false);
 
-    memcpy(&discovery_option->tai[discovery_option->num_of_tai],
-            tai, sizeof(ogs_5gs_tai_t));
-    discovery_option->num_of_tai++;
+    memcpy(&discovery_option->tai, tai, sizeof(ogs_5gs_tai_t));
+    discovery_option->tai_presence = true;
 }
 char *ogs_sbi_discovery_option_build_tai(
         ogs_sbi_discovery_option_t *discovery_option)
 {
-    cJSON *item = NULL;
+    OpenAPI_tai_t Tai;
+    cJSON *taiItem = NULL;
     char *v = NULL;
-    int i;
 
     ogs_assert(discovery_option);
+    ogs_assert(discovery_option->tai_presence);
 
-    item = cJSON_CreateArray();
-    if (!item) {
-        ogs_error("cJSON_CreateArray() failed");
-        return NULL;
-    }
+    memset(&Tai, 0, sizeof(Tai));
 
-    for (i = 0; i < discovery_option->num_of_tai; i++) {
-        OpenAPI_tai_t Tai;
-        cJSON *taiItem = NULL;
+    Tai.plmn_id = ogs_sbi_build_plmn_id(&discovery_option->tai.plmn_id);
+    ogs_assert(Tai.plmn_id);
+    Tai.tac = ogs_uint24_to_0string(discovery_option->tai.tac);
+    ogs_assert(Tai.tac);
 
-        memset(&Tai, 0, sizeof(Tai));
+    taiItem = OpenAPI_tai_convertToJSON(&Tai);
+    ogs_assert(taiItem);
 
-        Tai.plmn_id = ogs_sbi_build_plmn_id(&discovery_option->tai[i].plmn_id);
-        ogs_assert(Tai.plmn_id);
-        Tai.tac = ogs_uint24_to_0string(discovery_option->tai[i].tac);
-        ogs_assert(Tai.tac);
+    ogs_sbi_free_plmn_id(Tai.plmn_id);
+    ogs_free(Tai.tac);
 
-        taiItem = OpenAPI_tai_convertToJSON(&Tai);
-        ogs_assert(taiItem);
-        cJSON_AddItemToArray(item, taiItem);
-
-        ogs_sbi_free_plmn_id(Tai.plmn_id);
-        ogs_free(Tai.tac);
-    }
-
-    v = cJSON_PrintUnformatted(item);
+    v = cJSON_PrintUnformatted(taiItem);
     ogs_expect(v);
-    cJSON_Delete(item);
+    cJSON_Delete(taiItem);
 
     return v;
 }
 void ogs_sbi_discovery_option_parse_tai(
         ogs_sbi_discovery_option_t *discovery_option, char *tai)
 {
-    cJSON *item = NULL;
     cJSON *taiItem = NULL;
     char *v = NULL;
 
@@ -3173,39 +3159,37 @@ void ogs_sbi_discovery_option_parse_tai(
         return;
     }
 
-    item = cJSON_Parse(v);
-    if (!item) {
+    taiItem = cJSON_Parse(v);
+    if (!taiItem) {
         ogs_error("Cannot parse tai[%s]", tai);
         ogs_free(v);
         return;
     }
 
-    cJSON_ArrayForEach(taiItem, item) {
-        if (cJSON_IsObject(taiItem)) {
-            OpenAPI_tai_t *Tai = OpenAPI_tai_parseFromJSON(taiItem);
+    if (cJSON_IsObject(taiItem)) {
+        OpenAPI_tai_t *Tai = OpenAPI_tai_parseFromJSON(taiItem);
 
-            if (Tai) {
-                ogs_5gs_tai_t tai;
+        if (Tai) {
+            ogs_5gs_tai_t tai;
 
-                memset(&tai, 0, sizeof(tai));
+            memset(&tai, 0, sizeof(tai));
 
-                if (Tai->plmn_id)
-                    ogs_sbi_parse_plmn_id(&tai.plmn_id, Tai->plmn_id);
-                if (Tai->tac)
-                    tai.tac = ogs_uint24_from_string(Tai->tac);
+            if (Tai->plmn_id)
+                ogs_sbi_parse_plmn_id(&tai.plmn_id, Tai->plmn_id);
+            if (Tai->tac)
+                tai.tac = ogs_uint24_from_string(Tai->tac);
 
-                ogs_sbi_discovery_option_add_tai(discovery_option, &tai);
+            ogs_sbi_discovery_option_set_tai(discovery_option, &tai);
 
-                OpenAPI_tai_free(Tai);
-            } else {
-                ogs_error("OpenAPI_snssai_parseFromJSON() failed : tai[%s]",
-                        tai);
-            }
+            OpenAPI_tai_free(Tai);
         } else {
-            ogs_error("Invalid cJSON Type in snssias[%s]", tai);
+            ogs_error("OpenAPI_snssai_parseFromJSON() failed : tai[%s]",
+                    tai);
         }
+    } else {
+        ogs_error("Invalid cJSON Type in snssias[%s]", tai);
     }
-    cJSON_Delete(item);
+    cJSON_Delete(taiItem);
 
     ogs_free(v);
 }
