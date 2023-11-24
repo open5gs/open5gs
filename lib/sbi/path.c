@@ -92,6 +92,7 @@ static int client_discover_cb(
     ogs_sbi_xact_t *xact = NULL;
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
     OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
     OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
 
@@ -117,6 +118,8 @@ static int client_discover_cb(
     ogs_assert(target_nf_type);
     requester_nf_type = xact->requester_nf_type;
     ogs_assert(requester_nf_type);
+
+    discovery_option = xact->discovery_option;
 
     if (status != OGS_OK) {
         ogs_log_message(
@@ -147,6 +150,61 @@ static int client_discover_cb(
 
             ogs_sbi_nf_instance_set_id(nf_instance, producer_id);
             ogs_sbi_nf_instance_set_type(nf_instance, target_nf_type);
+
+            switch (target_nf_type) {
+            case OpenAPI_nf_type_SMF:
+                if (discovery_option &&
+                    discovery_option->num_of_snssais && discovery_option->dnn &&
+                    discovery_option->tai_presence == true) {
+    /*
+     * If we assume that SMF is executed first and then AMF is executed,
+     * AMF will not have SMF information, so it needs to discover SMF
+     * through NFDiscovery instead of the subscription notification.
+     *
+     * Let's assume that in smfInfo, TAC is set to 1 and 2, and two SMFs are
+     * executed. In this case, TAI will be added to the discovery option and
+     * will be performed during the NFDiscovery process.
+     *
+     * If the first SMF is discovered with TAC 1 in conjunction with SCP,
+     * AMF will remember this SMF through Producer-Id. However, if the second
+     * SMF with TAC 2 is discovered, the previously discovered SMF with TAC 1
+     * will be selected.
+     *
+     * Therefore, to avoid such a situation, we reflect the contents of
+     * the discovery option in NFProfile. For SMF, we record the s_nssai, dnn,
+     * and tai information in the ogs_sbi_smf_info_t structure, which is created
+     * as ogs_sbi_nf_info_t. Then, when we try to find the second SMF
+     * with TAC 2, we compare these values in the amf_sbi_select_nf() function,
+     * allowing us to discover a new SMF.
+     */
+                    ogs_sbi_nf_info_t *nf_info = NULL;
+                    ogs_sbi_smf_info_t *smf_info = NULL;
+
+                    nf_info = ogs_sbi_nf_info_add(
+                            &nf_instance->nf_info_list, OpenAPI_nf_type_SMF);
+                    ogs_assert(nf_info);
+
+                    smf_info = &nf_info->smf;
+                    ogs_assert(smf_info);
+
+                    smf_info->slice[0].dnn[0] =
+                        ogs_strdup(discovery_option->dnn);
+                    ogs_assert(smf_info->slice[0].dnn[0]);
+                    smf_info->slice[0].num_of_dnn++;
+
+                    memcpy(&smf_info->slice[0].s_nssai,
+                            &discovery_option->snssais[0],
+                            sizeof(ogs_s_nssai_t));
+                    smf_info->num_of_slice++;
+
+                    memcpy(&smf_info->nr_tai[0],
+                            &discovery_option->tai, sizeof(ogs_5gs_tai_t));
+                    smf_info->num_of_nr_tai++;
+                }
+                break;
+            default:
+                break;
+            }
 
             ogs_sbi_nf_fsm_init(nf_instance);
 
