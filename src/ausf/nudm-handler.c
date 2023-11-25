@@ -202,8 +202,10 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
     LinksValueScheme = OpenAPI_map_create(
             (char *)links_member_name(UeAuthenticationCtx.auth_type),
             &LinksValueSchemeValue);
+    ogs_assert(LinksValueScheme);
 
     UeAuthenticationCtx._links = OpenAPI_list_create();
+    ogs_assert(UeAuthenticationCtx._links);
     OpenAPI_list_add(UeAuthenticationCtx._links, LinksValueScheme);
 
     memset(&sendmsg, 0, sizeof(sendmsg));

@@ -1393,6 +1393,11 @@ static int parse_json(ogs_sbi_message_t *message,
                 }
 
                 patch_item = OpenAPI_patch_item_parseFromJSON(patchJSON);
+                if (!patch_item) {
+                    rv = OGS_ERROR;
+                    ogs_error("No PatchItem");
+                    goto cleanup;
+                }
                 OpenAPI_list_add(message->PatchItemList, patch_item);
             }
         }
@@ -1698,6 +1703,11 @@ static int parse_json(ogs_sbi_message_t *message,
                             }
 
                             smsub_item = OpenAPI_session_management_subscription_data_parseFromJSON(smsubJSON);
+                            if (!smsub_item) {
+                                rv = OGS_ERROR;
+                                ogs_error("No smsub_item");
+                                goto cleanup;
+                            }
                             OpenAPI_list_add(message->SessionManagementSubscriptionDataList, smsub_item);
                         }
                     }
@@ -1860,6 +1870,11 @@ static int parse_json(ogs_sbi_message_t *message,
                                         }
 
                                         smsub_item = OpenAPI_session_management_subscription_data_parseFromJSON(smsubJSON);
+                                        if (!smsub_item) {
+                                            rv = OGS_ERROR;
+                                            ogs_error("No smsub_item");
+                                            goto cleanup;
+                                        }
                                         OpenAPI_list_add(message->SessionManagementSubscriptionDataList, smsub_item);
                                     }
                                 }
@@ -3287,7 +3302,10 @@ int ogs_sbi_discovery_option_parse_plmn_list(
             }
 
             PlmnId = OpenAPI_plmn_id_parseFromJSON(PlmnIdJSON);
-            ogs_assert(PlmnId);
+            if (!PlmnId) {
+                ogs_error("No PlmnId");
+                goto cleanup;
+            }
 
             OpenAPI_list_add(PlmnList, PlmnId);
         }

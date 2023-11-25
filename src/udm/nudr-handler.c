@@ -696,6 +696,11 @@ bool udm_nudr_dr_handle_subscription_provisioned(
             OpenAPI_session_management_subscription_data_t *item = NULL;
 
             item = OpenAPI_session_management_subscription_data_copy(item, node->data);
+            if (!item) {
+                ogs_error("OpenAPI_session_management_subscription_data_copy() "
+                        "failed");
+                continue;
+            }
             OpenAPI_list_add(sendmsg.SessionManagementSubscriptionDataList, item);
         }
 

@@ -726,6 +726,10 @@ static int update_rat_res_add_one(cJSON *restriction,
     }
 
     restr = (void *) OpenAPI_rat_type_FromString(cJSON_GetStringValue(restriction));
+    if (!restr) {
+        ogs_error("No restr");
+        return OGS_ERROR;
+    }
 
     if (index == restrictions->count) {
         OpenAPI_list_add(restrictions, restr);

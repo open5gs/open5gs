@@ -893,6 +893,11 @@ bool nrf_nnrf_handle_nf_discover(
                     discovery_option->requester_features,
                     OGS_SBI_NNRF_DISC_SERVICE_MAP) ? true : false);
 
+        if (!NFProfile) {
+            ogs_error("No NFProfile");
+            continue;
+        }
+
         OpenAPI_list_add(SearchResult->nf_instances, NFProfile);
 
         i++;
