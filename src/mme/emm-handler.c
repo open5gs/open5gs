@@ -316,36 +316,38 @@ int emm_handle_attach_complete(
             &mme_self()->short_name, sizeof(ogs_nas_network_name_t));
     }
 
-    emm_information->presencemask |=
-        OGS_NAS_EPS_EMM_INFORMATION_LOCAL_TIME_ZONE_PRESENT;
+    if (!ogs_global_conf()->parameter.no_time_zone_information) {
+        emm_information->presencemask |=
+            OGS_NAS_EPS_EMM_INFORMATION_LOCAL_TIME_ZONE_PRESENT;
 
-    if (local.tm_gmtoff >= 0) {
-        *local_time_zone = OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
-    } else {
-        *local_time_zone = OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
-        *local_time_zone |= 0x08;
+        if (local.tm_gmtoff >= 0) {
+            *local_time_zone = OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
+        } else {
+            *local_time_zone = OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
+            *local_time_zone |= 0x08;
+        }
+        ogs_debug("    Timezone:0x%x", *local_time_zone);
+
+        emm_information->presencemask |=
+            OGS_NAS_EPS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
+        universal_time_and_local_time_zone->year =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
+        universal_time_and_local_time_zone->mon =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_mon+1);
+        universal_time_and_local_time_zone->mday =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_mday);
+        universal_time_and_local_time_zone->hour =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_hour);
+        universal_time_and_local_time_zone->min =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_min);
+        universal_time_and_local_time_zone->sec =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
+        universal_time_and_local_time_zone->timezone = *local_time_zone;
+
+        emm_information->presencemask |=
+            OGS_NAS_EPS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
+        network_daylight_saving_time->length = 1;
     }
-    ogs_debug("    Timezone:0x%x", *local_time_zone);
-
-    emm_information->presencemask |=
-        OGS_NAS_EPS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
-    universal_time_and_local_time_zone->year = 
-                OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
-    universal_time_and_local_time_zone->mon =
-                OGS_NAS_TIME_TO_BCD(gmt.tm_mon+1);
-    universal_time_and_local_time_zone->mday = 
-                OGS_NAS_TIME_TO_BCD(gmt.tm_mday);
-    universal_time_and_local_time_zone->hour = 
-                OGS_NAS_TIME_TO_BCD(gmt.tm_hour);
-    universal_time_and_local_time_zone->min =
-                OGS_NAS_TIME_TO_BCD(gmt.tm_min);
-    universal_time_and_local_time_zone->sec =
-                OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
-    universal_time_and_local_time_zone->timezone = *local_time_zone;
-
-    emm_information->presencemask |=
-        OGS_NAS_EPS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
-    network_daylight_saving_time->length = 1;
 
     emmbuf = nas_eps_security_encode(mme_ue, &message);
     if (!emmbuf) {
