@@ -594,6 +594,9 @@ void ngap_handle_uplink_nas_transport(
     NGAP_UserLocationInformation_t *UserLocationInformation = NULL;
     NGAP_UserLocationInformationNR_t *UserLocationInformationNR = NULL;
 
+    ogs_5gs_tai_t nr_tai;
+    int served_tai_index = 0;
+
     ogs_assert(gnb);
     ogs_assert(gnb->sctp.sock);
 
@@ -706,6 +709,22 @@ void ngap_handle_uplink_nas_transport(
     UserLocationInformationNR =
         UserLocationInformation->choice.userLocationInformationNR;
     ogs_assert(UserLocationInformationNR);
+    ogs_ngap_ASN_to_5gs_tai(&UserLocationInformationNR->tAI, &nr_tai);
+
+    served_tai_index = amf_find_served_tai(&nr_tai);
+    if (served_tai_index < 0) {
+        ogs_error("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
+            ogs_plmn_id_hexdump(&nr_tai.plmn_id), nr_tai.tac.v);
+        r = ngap_send_error_indication(
+                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                NGAP_Cause_PR_protocol,
+                NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
+
     ogs_ngap_ASN_to_nr_cgi(
             &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
     ogs_ngap_ASN_to_5gs_tai(
@@ -2662,6 +2681,9 @@ void ngap_handle_path_switch_request(
 
     amf_nsmf_pdusession_sm_context_param_t param;
 
+    ogs_5gs_tai_t nr_tai;
+    int served_tai_index = 0;
+
     ogs_assert(gnb);
     ogs_assert(gnb->sctp.sock);
 
@@ -2818,6 +2840,22 @@ void ngap_handle_path_switch_request(
     UserLocationInformationNR =
             UserLocationInformation->choice.userLocationInformationNR;
     ogs_assert(UserLocationInformationNR);
+    ogs_ngap_ASN_to_5gs_tai(&UserLocationInformationNR->tAI, &nr_tai);
+
+    served_tai_index = amf_find_served_tai(&nr_tai);
+    if (served_tai_index < 0) {
+        ogs_error("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
+            ogs_plmn_id_hexdump(&nr_tai.plmn_id), nr_tai.tac.v);
+        r = ngap_send_error_indication(
+                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                NGAP_Cause_PR_protocol,
+                NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
+
     ogs_ngap_ASN_to_nr_cgi(
             &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
     ogs_ngap_ASN_to_5gs_tai(
