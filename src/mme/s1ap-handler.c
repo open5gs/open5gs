@@ -607,6 +607,9 @@ void s1ap_handle_uplink_nas_transport(
 
     enb_ue_t *enb_ue = NULL;
 
+    ogs_eps_tai_t tai;
+    int served_tai_index = 0;
+
     ogs_assert(enb);
     ogs_assert(enb->sctp.sock);
 
@@ -714,6 +717,29 @@ void s1ap_handle_uplink_nas_transport(
         return;
     }
 
+    pLMNidentity = &TAI->pLMNidentity;
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
+    tAC = &TAI->tAC;
+    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
+
+    memcpy(&tai.plmn_id, pLMNidentity->buf, sizeof(tai.plmn_id));
+    memcpy(&tai.tac, tAC->buf, sizeof(tai.tac));
+    tai.tac = be16toh(tai.tac);
+
+    /* Check TAI */
+    served_tai_index = mme_find_served_tai(&tai);
+    if (served_tai_index < 0) {
+        ogs_error("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
+            ogs_plmn_id_hexdump(&tai.plmn_id), tai.tac);
+        r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol,
+                S1AP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
+
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
     ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     cell_ID = &EUTRAN_CGI->cell_ID;
@@ -723,11 +749,6 @@ void s1ap_handle_uplink_nas_transport(
     memcpy(&enb_ue->saved.e_cgi.cell_id, cell_ID->buf,
             sizeof(enb_ue->saved.e_cgi.cell_id));
     enb_ue->saved.e_cgi.cell_id = (be32toh(enb_ue->saved.e_cgi.cell_id) >> 4);
-
-    pLMNidentity = &TAI->pLMNidentity;
-    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
-    tAC = &TAI->tAC;
-    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
 
     memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.tai.plmn_id));
@@ -2306,6 +2327,9 @@ void s1ap_handle_path_switch_request(
     mme_ue_t *mme_ue = NULL;
     ogs_pkbuf_t *s1apbuf = NULL;
 
+    ogs_eps_tai_t tai;
+    int served_tai_index = 0;
+
     sgw_relocation_e relocation;
 
     ogs_assert(enb);
@@ -2426,6 +2450,24 @@ void s1ap_handle_path_switch_request(
     ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     tAC = &TAI->tAC;
     ogs_assert(tAC && tAC->size == sizeof(uint16_t));
+
+    memcpy(&tai.plmn_id, pLMNidentity->buf, sizeof(tai.plmn_id));
+    memcpy(&tai.tac, tAC->buf, sizeof(tai.tac));
+    tai.tac = be16toh(tai.tac);
+
+    /* Check TAI */
+    served_tai_index = mme_find_served_tai(&tai);
+    if (served_tai_index < 0) {
+        ogs_error("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
+            ogs_plmn_id_hexdump(&tai.plmn_id), tai.tac);
+        r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol,
+                S1AP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
 
     if (!E_RABToBeSwitchedDLList) {
         ogs_error("No E_RABToBeSwitchedDLList");
