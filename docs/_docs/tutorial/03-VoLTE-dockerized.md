@@ -76,7 +76,7 @@ SGWU_ADVERTISE_IP --> Change this to value of DOCKER_HOST_IP set above only if e
 
 If eNB is NOT running in the same docker network/host as the host running the dockerized Core + IMS then follow the below additional steps
 
-Under `mme` section in docker compose file (`docker-compose.yaml`, `nsa-deploy.yaml`), uncomment the following part
+Under `mme` section in docker-compose file (`docker-compose.yaml`, `nsa-deploy.yaml`), uncomment the following part
 
 ```
 ...
@@ -85,7 +85,7 @@ Under `mme` section in docker compose file (`docker-compose.yaml`, `nsa-deploy.y
 ...
 ```
 
-Under `sgwu` section in docker compose file (`docker-compose.yaml`, `nsa-deploy.yaml`), uncomment the following part
+Under `sgwu` section in docker-compose file (`docker-compose.yaml`, `nsa-deploy.yaml`), uncomment the following part
 
 ```
 ...
@@ -99,7 +99,7 @@ Under `sgwu` section in docker compose file (`docker-compose.yaml`, `nsa-deploy.
 ```
 cd docker_open5gs
 source .env
-docker compose build --no-cache
+docker-compose -f deploy-all.yaml build --no-cache
 ```
 
 #### 5. (Optional) Run srsENB in a separate container
@@ -111,15 +111,15 @@ srsENB separately.
 ```
 cd docker_open5gs
 source .env
-docker compose -f srsenb.yaml build --no-cache
-docker compose -f srsenb.yaml up
+docker-compose -f srsenb.yaml build --no-cache
+docker-compose -f srsenb.yaml up
 ```
 
 #### 6. Configuration and register two UE
 
 If there is a need to change the Core Network component configuration files
 found under their respective folder, make sure to re-compile images using
-`docker compose build` again.
+`docker-compose build` again.
 {: .notice--warning}
 
 Open (http://<DOCKER_HOST_IP>:3000) in a web browser, where <DOCKER_HOST_IP> is
