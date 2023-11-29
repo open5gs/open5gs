@@ -100,6 +100,7 @@ Under `sgwu` section in docker-compose file (`docker-compose.yaml`, `nsa-deploy.
 cd docker_open5gs
 source .env
 docker-compose -f deploy-all.yaml build --no-cache
+docker-compose -f deploy-all.yaml up
 ```
 
 #### 5. (Optional) Run srsENB in a separate container
