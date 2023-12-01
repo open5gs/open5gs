@@ -934,6 +934,8 @@ void ngap_handle_initial_context_setup_response(
     ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
             ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
 
+    ran_ue->initial_context_setup_response_received = true;
+
     amf_ue = ran_ue->amf_ue;
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
@@ -3228,6 +3230,8 @@ void ngap_handle_handover_required(
     target_ue->ue_context_requested = source_ue->ue_context_requested;
     target_ue->initial_context_setup_request_sent =
             source_ue->initial_context_setup_request_sent;
+    target_ue->initial_context_setup_response_received =
+            source_ue->initial_context_setup_response_received;
 
     target_ue->psimask.activated = source_ue->psimask.activated;
 

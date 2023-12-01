@@ -173,6 +173,11 @@ struct ran_ue_s {
     /* UE context */
     bool            ue_context_requested;
     bool            initial_context_setup_request_sent;
+
+#define CONTEXT_SETUP_ESTABLISHED(__aMF) \
+    CM_CONNECTED(__aMF) && \
+    ((__aMF)->ran_ue->initial_context_setup_response_received == true)
+    bool            initial_context_setup_response_received;
     bool            ue_ambr_sent;
 
     /* Handover Info */
