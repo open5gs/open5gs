@@ -367,10 +367,18 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             ogs_assert(r != OGS_ERROR);
 
         } else if (CM_CONNECTED(amf_ue)) {
-            r = nas_send_pdu_session_modification_command(sess, n1buf, n2buf);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-
+            if (CONTEXT_SETUP_ESTABLISHED(amf_ue)) {
+                r = nas_send_pdu_session_modification_command(
+                        sess, n1buf, n2buf);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            } else {
+                /* Store 5GSM Message */
+                ogs_warn("[Session MODIFY] Context setup is not established");
+                AMF_SESS_STORE_5GSM_MESSAGE(sess,
+                        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND,
+                        n1buf, n2buf);
+            }
         } else {
             ogs_fatal("[%s] Invalid AMF-UE state", amf_ue->supi);
             ogs_assert_if_reached();
@@ -435,9 +443,17 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             }
 
         } else if (CM_CONNECTED(amf_ue)) {
-            r = nas_send_pdu_session_release_command(sess, n1buf, n2buf);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
+            if (CONTEXT_SETUP_ESTABLISHED(amf_ue)) {
+                r = nas_send_pdu_session_release_command(sess, n1buf, n2buf);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            } else {
+                /* Store 5GSM Message */
+                ogs_warn("[Session RELEASE] Context setup is not established");
+                AMF_SESS_STORE_5GSM_MESSAGE(sess,
+                        OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND,
+                        n1buf, n2buf);
+            }
         } else {
             ogs_fatal("[%s] Invalid AMF-UE state", amf_ue->supi);
             ogs_assert_if_reached();
