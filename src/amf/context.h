@@ -63,7 +63,7 @@ typedef struct amf_context_s {
     struct {
         ogs_plmn_id_t plmn_id;
         int num_of_s_nssai;
-        ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
+        ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE_SUPPORT];
     } plmn_support[OGS_MAX_NUM_OF_PLMN];
 
     /* Access Control */
@@ -147,7 +147,7 @@ typedef struct amf_gnb_s {
         struct {
             ogs_plmn_id_t plmn_id;
             int num_of_s_nssai;
-            ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
+            ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE_SUPPORT];
         } bplmn_list[OGS_MAX_NUM_OF_BPLMN];
     } supported_ta_list[OGS_MAX_NUM_OF_SUPPORTED_TA];
 
