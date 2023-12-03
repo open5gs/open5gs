@@ -812,8 +812,6 @@ int mme_context_parse_config(void)
                                                 do {
                                                     const char *v = NULL;
 
-                                                    ogs_assert(num_of_tac <
-                                                            OGS_MAX_NUM_OF_TAI);
                                                     if (ogs_yaml_iter_type(
                                                             &tac_iter) ==
                                                         YAML_SEQUENCE_NODE) {
@@ -822,6 +820,8 @@ int mme_context_parse_config(void)
                                                             break;
                                                     }
 
+                                                    ogs_assert(num_of_tac <
+                                                            OGS_MAX_NUM_OF_TAI);
                                                     v = ogs_yaml_iter_value(
                                                             &tac_iter);
                                                     if (v) {
@@ -846,9 +846,6 @@ int mme_context_parse_config(void)
                                                 do {
                                                     const char *v = NULL;
 
-                                                    ogs_assert(
-                                                            num_of_e_cell_id <
-                                                        OGS_MAX_NUM_OF_CELL_ID);
                                                     if (ogs_yaml_iter_type(
                                                             &e_cell_id_iter) ==
                                                         YAML_SEQUENCE_NODE) {
@@ -856,6 +853,9 @@ int mme_context_parse_config(void)
                                                             &e_cell_id_iter))
                                                             break;
                                                     }
+                                                    ogs_assert(
+                                                            num_of_e_cell_id <
+                                                        OGS_MAX_NUM_OF_CELL_ID);
                                                     v = ogs_yaml_iter_value(
                                                             &e_cell_id_iter);
                                                     if (v) {
@@ -1012,8 +1012,6 @@ int mme_context_parse_config(void)
                                                 do {
                                                     const char *v = NULL;
 
-                                                    ogs_assert(num_of_apn <
-                                                            OGS_MAX_NUM_OF_APN);
                                                     if (ogs_yaml_iter_type(
                                                                 &apn_iter) ==
                                                         YAML_SEQUENCE_NODE) {
@@ -1022,6 +1020,8 @@ int mme_context_parse_config(void)
                                                             break;
                                                     }
 
+                                                    ogs_assert(num_of_apn <
+                                                            OGS_MAX_NUM_OF_APN);
                                                     v = ogs_yaml_iter_value(
                                                             &apn_iter);
                                                     if (v) {
@@ -1043,8 +1043,6 @@ int mme_context_parse_config(void)
                                                 do {
                                                     const char *v = NULL;
 
-                                                    ogs_assert(num_of_tac <
-                                                            OGS_MAX_NUM_OF_TAI);
                                                     if (ogs_yaml_iter_type(
                                                                 &tac_iter) ==
                                                         YAML_SEQUENCE_NODE) {
@@ -1053,6 +1051,8 @@ int mme_context_parse_config(void)
                                                             break;
                                                     }
 
+                                                    ogs_assert(num_of_tac <
+                                                            OGS_MAX_NUM_OF_TAI);
                                                     v = ogs_yaml_iter_value(
                                                             &tac_iter);
                                                     if (v) {
@@ -1075,9 +1075,6 @@ int mme_context_parse_config(void)
                                                 do {
                                                     const char *v = NULL;
 
-                                                    ogs_assert(
-                                                            num_of_e_cell_id <
-                                                        OGS_MAX_NUM_OF_CELL_ID);
                                                     if (ogs_yaml_iter_type(
                                                             &e_cell_id_iter) ==
                                                         YAML_SEQUENCE_NODE) {
@@ -1085,6 +1082,9 @@ int mme_context_parse_config(void)
                                                             &e_cell_id_iter))
                                                             break;
                                                     }
+                                                    ogs_assert(
+                                                            num_of_e_cell_id <
+                                                        OGS_MAX_NUM_OF_CELL_ID);
                                                     v = ogs_yaml_iter_value(
                                                             &e_cell_id_iter);
                                                     if (v) {
@@ -1388,11 +1388,6 @@ int mme_context_parse_config(void)
                     ogs_yaml_iter_recurse(&mme_iter, &gummei_array);
                     do {
                         served_gummei_t *gummei = NULL;
-                        ogs_assert(self.num_of_served_gummei <
-                                OGS_MAX_NUM_OF_SERVED_GUMMEI);
-                        gummei = &self.served_gummei[
-                            self.num_of_served_gummei];
-                        ogs_assert(gummei);
 
                         if (ogs_yaml_iter_type(&gummei_array) ==
                                 YAML_MAPPING_NODE) {
@@ -1410,6 +1405,12 @@ int mme_context_parse_config(void)
                         } else
                             ogs_assert_if_reached();
 
+                        ogs_assert(self.num_of_served_gummei <
+                                OGS_MAX_NUM_OF_SERVED_GUMMEI);
+                        gummei = &self.served_gummei[
+                            self.num_of_served_gummei];
+                        ogs_assert(gummei);
+
                         while (ogs_yaml_iter_next(&gummei_iter)) {
                             const char *gummei_key =
                                 ogs_yaml_iter_key(&gummei_iter);
@@ -1421,11 +1422,6 @@ int mme_context_parse_config(void)
                                 do {
                                     ogs_plmn_id_t *plmn_id = NULL;
                                     const char *mcc = NULL, *mnc = NULL;
-                                    ogs_assert(gummei->num_of_plmn_id <
-                                            OGS_MAX_NUM_OF_PLMN_PER_MME);
-                                    plmn_id = &gummei->plmn_id[
-                                        gummei->num_of_plmn_id];
-                                    ogs_assert(plmn_id);
 
                                     if (ogs_yaml_iter_type(&plmn_id_array) ==
                                             YAML_MAPPING_NODE) {
@@ -1444,6 +1440,12 @@ int mme_context_parse_config(void)
                                         break;
                                     } else
                                         ogs_assert_if_reached();
+
+                                    ogs_assert(gummei->num_of_plmn_id <
+                                            OGS_MAX_NUM_OF_PLMN_PER_MME);
+                                    plmn_id = &gummei->plmn_id[
+                                        gummei->num_of_plmn_id];
+                                    ogs_assert(plmn_id);
 
                                     while (ogs_yaml_iter_next(&plmn_id_iter)) {
                                         const char *plmn_id_key =
@@ -1478,17 +1480,17 @@ int mme_context_parse_config(void)
                                     uint16_t *mme_gid = NULL;
                                     const char *v = NULL;
 
-                                    ogs_assert(gummei->num_of_mme_gid <
-                                            GRP_PER_MME);
-                                    mme_gid = &gummei->mme_gid[
-                                        gummei->num_of_mme_gid];
-                                    ogs_assert(mme_gid);
-
                                     if (ogs_yaml_iter_type(&mme_gid_iter) ==
                                             YAML_SEQUENCE_NODE) {
                                         if (!ogs_yaml_iter_next(&mme_gid_iter))
                                             break;
                                     }
+
+                                    ogs_assert(gummei->num_of_mme_gid <
+                                            GRP_PER_MME);
+                                    mme_gid = &gummei->mme_gid[
+                                        gummei->num_of_mme_gid];
+                                    ogs_assert(mme_gid);
 
                                     v = ogs_yaml_iter_value(&mme_gid_iter);
                                     if (v) {
@@ -1736,9 +1738,6 @@ int mme_context_parse_config(void)
                     ogs_yaml_iter_t access_control_array, access_control_iter;
                     ogs_yaml_iter_recurse(&mme_iter, &access_control_array);
                     do {
-                        ogs_assert(self.num_of_access_control <
-                                OGS_MAX_NUM_OF_PLMN_PER_MME);
-
                         if (ogs_yaml_iter_type(&access_control_array) ==
                                 YAML_MAPPING_NODE) {
                             memcpy(&access_control_iter, &access_control_array,
@@ -1754,6 +1753,9 @@ int mme_context_parse_config(void)
                             break;
                         } else
                             ogs_assert_if_reached();
+
+                        ogs_assert(self.num_of_access_control <
+                                OGS_MAX_NUM_OF_PLMN_PER_MME);
 
                         while (ogs_yaml_iter_next(&access_control_iter)) {
                             const char *mnc = NULL, *mcc = NULL;
