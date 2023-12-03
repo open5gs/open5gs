@@ -263,7 +263,7 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                             bplmn_list[j].num_of_s_nssai = 0;
                     k < BroadcastPLMNItem->tAISliceSupportList.list.count &&
                     gnb->supported_ta_list[i].bplmn_list[j].num_of_s_nssai <
-                        OGS_MAX_NUM_OF_SLICE_SUPORT;
+                        OGS_MAX_NUM_OF_SLICE_SUPPORT;
                             k++) {
                 NGAP_SliceSupportItem_t *SliceSupportItem = NULL;
                 NGAP_S_NSSAI_t *s_NSSAI = NULL;
@@ -4256,7 +4256,7 @@ void ngap_handle_ran_configuration_update(
                                 bplmn_list[j].num_of_s_nssai = 0;
                         k < BroadcastPLMNItem->tAISliceSupportList.list.count &&
                         gnb->supported_ta_list[i].bplmn_list[j].num_of_s_nssai <
-                            OGS_MAX_NUM_OF_SLICE_SUPORT;
+                            OGS_MAX_NUM_OF_SLICE_SUPPORT;
                                 k++) {
                     NGAP_SliceSupportItem_t *SliceSupportItem = NULL;
                     NGAP_S_NSSAI_t *s_NSSAI = NULL;
