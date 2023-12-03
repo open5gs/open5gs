@@ -56,7 +56,7 @@ typedef struct amf_context_s {
         ogs_5gs_tai0_list_t list0;
         ogs_5gs_tai1_list_t list1;
         ogs_5gs_tai2_list_t list2;
-    } served_tai[OGS_MAX_NUM_OF_SERVED_TAI];
+    } served_tai[OGS_MAX_NUM_OF_SUPPORTED_TA];
 
     /* PLMN Support */
     int num_of_plmn_support;
@@ -149,7 +149,7 @@ typedef struct amf_gnb_s {
             int num_of_s_nssai;
             ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
         } bplmn_list[OGS_MAX_NUM_OF_BPLMN];
-    } supported_ta_list[OGS_MAX_NUM_OF_TAI];
+    } supported_ta_list[OGS_MAX_NUM_OF_SUPPORTED_TA];
 
     OpenAPI_rat_type_e rat_type;
 

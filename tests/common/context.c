@@ -328,7 +328,7 @@ int test_context_parse_config(void)
                     ogs_5gs_tai2_list_t *list2 = NULL;
 
                     ogs_assert(self.num_of_nr_served_tai <=
-                            OGS_MAX_NUM_OF_SERVED_TAI);
+                            OGS_MAX_NUM_OF_SUPPORTED_TA);
                     list0 =
                         &self.nr_served_tai[self.num_of_nr_served_tai].list0;
                     list1 =
@@ -808,7 +808,7 @@ int test_context_parse_config(void)
                     ogs_eps_tai2_list_t *list2 = NULL;
 
                     ogs_assert(self.num_of_e_served_tai <=
-                            OGS_MAX_NUM_OF_SERVED_TAI);
+                            OGS_MAX_NUM_OF_SUPPORTED_TA);
                     list0 = &self.e_served_tai[self.num_of_e_served_tai].list0;
                     list1 = &self.e_served_tai[self.num_of_e_served_tai].list1;
                     list2 = &self.e_served_tai[self.num_of_e_served_tai].list2;

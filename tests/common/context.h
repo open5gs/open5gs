@@ -78,7 +78,7 @@ typedef struct test_context_s {
         ogs_eps_tai0_list_t list0;
         ogs_eps_tai1_list_t list1;
         ogs_eps_tai2_list_t list2;
-    } e_served_tai[OGS_MAX_NUM_OF_SERVED_TAI];
+    } e_served_tai[OGS_MAX_NUM_OF_SUPPORTED_TA];
 
     ogs_eps_tai_t e_tai;
 
@@ -88,7 +88,7 @@ typedef struct test_context_s {
         ogs_5gs_tai0_list_t list0;
         ogs_5gs_tai1_list_t list1;
         ogs_5gs_tai2_list_t list2;
-    } nr_served_tai[OGS_MAX_NUM_OF_SERVED_TAI];
+    } nr_served_tai[OGS_MAX_NUM_OF_SUPPORTED_TA];
 
     ogs_5gs_tai_t nr_tai;
     ogs_nr_cgi_t nr_cgi;

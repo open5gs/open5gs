@@ -96,7 +96,7 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     served_tai_index = amf_find_served_tai(&amf_ue->nr_tai);
     ogs_debug("[%s]    SERVED_TAI_INDEX[%d]", amf_ue->supi, served_tai_index);
     ogs_assert(served_tai_index >= 0 &&
-            served_tai_index < OGS_MAX_NUM_OF_SERVED_TAI);
+            served_tai_index < OGS_MAX_NUM_OF_SUPPORTED_TA);
 
     ogs_assert(OGS_OK ==
         ogs_nas_5gs_tai_list_build(&registration_accept->tai_list,

@@ -69,7 +69,7 @@ static bool served_tai_is_found(mme_enb_t *enb)
     for (i = 0; i < enb->num_of_supported_ta_list; i++) {
         served_tai_index = mme_find_served_tai(&enb->supported_ta_list[i]);
         if (served_tai_index >= 0 &&
-                served_tai_index < OGS_MAX_NUM_OF_SERVED_TAI) {
+                served_tai_index < OGS_MAX_NUM_OF_SUPPORTED_TA) {
             ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
             return true;
         }
@@ -159,8 +159,10 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
         ogs_debug("    PagingDRX[%ld]", *PagingDRX);
 
     /* Parse Supported TA */
-    enb->num_of_supported_ta_list = 0;
-    for (i = 0; i < SupportedTAs->list.count; i++) {
+    for (i = 0, enb->num_of_supported_ta_list = 0;
+            i < SupportedTAs->list.count &&
+            enb->num_of_supported_ta_list < OGS_MAX_NUM_OF_SUPPORTED_TA;
+            i++) {
         S1AP_SupportedTAs_Item_t *SupportedTAs_Item = NULL;
         S1AP_TAC_t *tAC = NULL;
 
@@ -289,8 +291,10 @@ void s1ap_handle_enb_configuration_update(
         S1AP_Cause_PR group = S1AP_Cause_PR_NOTHING;
         long cause = 0;
 
-        enb->num_of_supported_ta_list = 0;
-        for (i = 0; i < SupportedTAs->list.count; i++) {
+        for (i = 0, enb->num_of_supported_ta_list = 0;
+                i < SupportedTAs->list.count &&
+                enb->num_of_supported_ta_list < OGS_MAX_NUM_OF_SUPPORTED_TA;
+                i++) {
             S1AP_SupportedTAs_Item_t *SupportedTAs_Item = NULL;
             S1AP_TAC_t *tAC = NULL;
 

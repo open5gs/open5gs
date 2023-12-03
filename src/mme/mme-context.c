@@ -1389,7 +1389,7 @@ int mme_context_parse_config(void)
                     do {
                         served_gummei_t *gummei = NULL;
                         ogs_assert(self.num_of_served_gummei <=
-                                MAX_NUM_OF_SERVED_GUMMEI);
+                                OGS_MAX_NUM_OF_SERVED_GUMMEI);
                         gummei = &self.served_gummei[
                             self.num_of_served_gummei];
                         ogs_assert(gummei);
@@ -1556,7 +1556,7 @@ int mme_context_parse_config(void)
                     ogs_eps_tai2_list_t *list2 = NULL;
 
                     ogs_assert(self.num_of_served_tai <=
-                            OGS_MAX_NUM_OF_SERVED_TAI);
+                            OGS_MAX_NUM_OF_SUPPORTED_TA);
                     list0 = &self.served_tai[self.num_of_served_tai].list0;
                     list1 = &self.served_tai[self.num_of_served_tai].list1;
                     list2 = &self.served_tai[self.num_of_served_tai].list2;
