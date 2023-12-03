@@ -83,7 +83,7 @@ ogs_pkbuf_t *s1ap_build_setup_rsp(void)
                 strlen(mme_self()->mme_name), MMEname);
     }
 
-    for (i = 0; i < mme_self()->max_num_of_served_gummei; i++) {
+    for (i = 0; i < mme_self()->num_of_served_gummei; i++) {
         S1AP_ServedGUMMEIsItem_t *ServedGUMMEIsItem = NULL;
         ServedGUMMEIsItem = (S1AP_ServedGUMMEIsItem_t *)
             CALLOC(1, sizeof(S1AP_ServedGUMMEIsItem_t));

@@ -367,8 +367,6 @@ int amf_context_parse_config(void)
                         const char *mcc = NULL, *mnc = NULL;
                         const char *region = NULL, *set = NULL;
                         const char *pointer = NULL;
-                        ogs_assert(self.num_of_served_guami <
-                                OGS_MAX_NUM_OF_SERVED_GUAMI);
 
                         if (ogs_yaml_iter_type(&guami_array) ==
                                 YAML_MAPPING_NODE) {
@@ -385,6 +383,9 @@ int amf_context_parse_config(void)
                             break;
                         } else
                             ogs_assert_if_reached();
+
+                        ogs_assert(self.num_of_served_guami <
+                                OGS_MAX_NUM_OF_SERVED_GUAMI);
 
                         while (ogs_yaml_iter_next(&guami_iter)) {
                             const char *guami_key =
@@ -465,7 +466,7 @@ int amf_context_parse_config(void)
                     ogs_5gs_tai2_list_t *list2 = NULL;
 
                     ogs_assert(self.num_of_served_tai <
-                            OGS_MAX_NUM_OF_SERVED_TAI);
+                            OGS_MAX_NUM_OF_SUPPORTED_TA);
                     list0 = &self.served_tai[self.num_of_served_tai].list0;
                     list1 = &self.served_tai[self.num_of_served_tai].list1;
                     list2 = &self.served_tai[self.num_of_served_tai].list2;
@@ -646,8 +647,6 @@ int amf_context_parse_config(void)
                     ogs_yaml_iter_recurse(&amf_iter, &plmn_support_array);
                     do {
                         const char *mnc = NULL, *mcc = NULL;
-                        ogs_assert(self.num_of_plmn_support <
-                                OGS_MAX_NUM_OF_PLMN);
 
                         if (ogs_yaml_iter_type(&plmn_support_array) ==
                                 YAML_MAPPING_NODE) {
@@ -664,6 +663,9 @@ int amf_context_parse_config(void)
                             break;
                         } else
                             ogs_assert_if_reached();
+
+                        ogs_assert(self.num_of_plmn_support <
+                                OGS_MAX_NUM_OF_PLMN);
 
                         while (ogs_yaml_iter_next(&plmn_support_iter)) {
                             const char *plmn_support_key =
@@ -701,17 +703,6 @@ int amf_context_parse_config(void)
                                 do {
                                     ogs_s_nssai_t *s_nssai = NULL;
                                     const char *sst = NULL, *sd = NULL;
-                                    ogs_assert(
-                                        self.plmn_support[
-                                            self.num_of_plmn_support].
-                                                num_of_s_nssai <
-                                            OGS_MAX_NUM_OF_SLICE);
-                                    s_nssai = &self.plmn_support[
-                                            self.num_of_plmn_support].s_nssai[
-                                                self.plmn_support[
-                                                    self.num_of_plmn_support].
-                                                        num_of_s_nssai];
-                                    ogs_assert(s_nssai);
 
                                     if (ogs_yaml_iter_type(&s_nssai_array) ==
                                             YAML_MAPPING_NODE) {
@@ -730,6 +721,18 @@ int amf_context_parse_config(void)
                                         break;
                                     } else
                                         ogs_assert_if_reached();
+
+                                    ogs_assert(
+                                        self.plmn_support[
+                                            self.num_of_plmn_support].
+                                                num_of_s_nssai <
+                                            OGS_MAX_NUM_OF_SLICE_SUPPORT);
+                                    s_nssai = &self.plmn_support[
+                                            self.num_of_plmn_support].s_nssai[
+                                                self.plmn_support[
+                                                    self.num_of_plmn_support].
+                                                        num_of_s_nssai];
+                                    ogs_assert(s_nssai);
 
                                     while (ogs_yaml_iter_next(&s_nssai_iter)) {
                                         const char *s_nssai_key =
@@ -785,8 +788,6 @@ int amf_context_parse_config(void)
                     ogs_yaml_iter_t access_control_array, access_control_iter;
                     ogs_yaml_iter_recurse(&amf_iter, &access_control_array);
                     do {
-                        ogs_assert(self.num_of_access_control <
-                                OGS_MAX_NUM_OF_ACCESS_CONTROL);
 
                         if (ogs_yaml_iter_type(&access_control_array) ==
                                 YAML_MAPPING_NODE) {
@@ -803,6 +804,9 @@ int amf_context_parse_config(void)
                             break;
                         } else
                             ogs_assert_if_reached();
+
+                        ogs_assert(self.num_of_access_control <
+                                OGS_MAX_NUM_OF_PLMN);
 
                         while (ogs_yaml_iter_next(&access_control_iter)) {
                             const char *mnc = NULL, *mcc = NULL;

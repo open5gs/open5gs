@@ -40,8 +40,6 @@ extern "C" {
 #define GRP_PER_MME                 256    /* According to spec it is 65535 */
 #define CODE_PER_MME                256    /* According to spec it is 256 */
 
-#define MAX_NUM_OF_SERVED_GUMMEI    8
-
 extern int __mme_log_domain;
 extern int __emm_log_domain;
 extern int __esm_log_domain;
@@ -68,7 +66,7 @@ typedef uint32_t mme_p_tmsi_t;
 
 typedef struct served_gummei_s {
     int             num_of_plmn_id;
-    ogs_plmn_id_t   plmn_id[OGS_MAX_NUM_OF_PLMN];
+    ogs_plmn_id_t   plmn_id[OGS_MAX_NUM_OF_PLMN_PER_MME];
 
     int             num_of_mme_gid;
     uint16_t        mme_gid[GRP_PER_MME];
@@ -101,8 +99,8 @@ typedef struct mme_context_s {
     ogs_list_t      csmap_list;     /* TAI-LAI Map List */
 
     /* Served GUMME */
-    int             max_num_of_served_gummei;
-    served_gummei_t served_gummei[MAX_NUM_OF_SERVED_GUMMEI];
+    int             num_of_served_gummei;
+    served_gummei_t served_gummei[OGS_MAX_NUM_OF_SERVED_GUMMEI];
 
     /* Served TAI */
     int             num_of_served_tai;
@@ -110,7 +108,7 @@ typedef struct mme_context_s {
         ogs_eps_tai0_list_t list0;
         ogs_eps_tai1_list_t list1;
         ogs_eps_tai2_list_t list2;
-    } served_tai[OGS_MAX_NUM_OF_SERVED_TAI];
+    } served_tai[OGS_MAX_NUM_OF_SUPPORTED_TA];
 
     /* Access Control */
     int             default_reject_cause;
@@ -118,7 +116,7 @@ typedef struct mme_context_s {
     struct {
         int reject_cause;
         ogs_plmn_id_t plmn_id;
-    } access_control[OGS_MAX_NUM_OF_ACCESS_CONTROL];
+    } access_control[OGS_MAX_NUM_OF_PLMN_PER_MME];
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
@@ -288,7 +286,7 @@ typedef struct mme_enb_s {
     uint16_t        ostream_id;         /* enb_ostream_id generator */
 
     int             num_of_supported_ta_list;
-    ogs_eps_tai_t   supported_ta_list[OGS_MAX_NUM_OF_TAI*OGS_MAX_NUM_OF_BPLMN];
+    ogs_eps_tai_t   supported_ta_list[OGS_MAX_NUM_OF_SUPPORTED_TA];
 
     ogs_pkbuf_t     *s1_reset_ack; /* Reset message */
 

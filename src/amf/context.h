@@ -56,14 +56,14 @@ typedef struct amf_context_s {
         ogs_5gs_tai0_list_t list0;
         ogs_5gs_tai1_list_t list1;
         ogs_5gs_tai2_list_t list2;
-    } served_tai[OGS_MAX_NUM_OF_SERVED_TAI];
+    } served_tai[OGS_MAX_NUM_OF_SUPPORTED_TA];
 
     /* PLMN Support */
     int num_of_plmn_support;
     struct {
         ogs_plmn_id_t plmn_id;
         int num_of_s_nssai;
-        ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
+        ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE_SUPPORT];
     } plmn_support[OGS_MAX_NUM_OF_PLMN];
 
     /* Access Control */
@@ -72,7 +72,7 @@ typedef struct amf_context_s {
     struct {
         int reject_cause;
         ogs_plmn_id_t plmn_id;
-    } access_control[OGS_MAX_NUM_OF_ACCESS_CONTROL];
+    } access_control[OGS_MAX_NUM_OF_PLMN];
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
@@ -147,9 +147,9 @@ typedef struct amf_gnb_s {
         struct {
             ogs_plmn_id_t plmn_id;
             int num_of_s_nssai;
-            ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
+            ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE_SUPPORT];
         } bplmn_list[OGS_MAX_NUM_OF_BPLMN];
-    } supported_ta_list[OGS_MAX_NUM_OF_TAI];
+    } supported_ta_list[OGS_MAX_NUM_OF_SUPPORTED_TA];
 
     OpenAPI_rat_type_e rat_type;
 
