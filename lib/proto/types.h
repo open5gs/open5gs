@@ -83,13 +83,18 @@ extern "C" {
 #define OGS_MAX_EPCO_LEN                65535
 #define OGS_MAX_FQDN_LEN                256
 
-#define OGS_MAX_NUM_OF_SERVED_GUMMEI    8 /* maxnoofRATs : 8 */
-#define OGS_MAX_NUM_OF_SERVED_GUAMI     256 /* maxnoofServedGUAMIs : 256 */
-#define OGS_MAX_NUM_OF_SUPPORTED_TA     256 /* maxnoofTACs : 256 */
-#define OGS_MAX_NUM_OF_ACCESS_CONTROL   8
 #define OGS_MAX_NUM_OF_ALGORITHM        8
 
-#define OGS_MAX_NUM_OF_BPLMN            6
+#define OGS_MAX_NUM_OF_SERVED_GUMMEI    8   /* maxnoofRATs: 8 */
+#define OGS_MAX_NUM_OF_SERVED_GUAMI     256 /* maxnoofServedGUAMIs: 256 */
+#define OGS_MAX_NUM_OF_SUPPORTED_TA     256 /* maxnoofTACs: 256 */
+
+#define OGS_MAX_NUM_OF_PLMN_PER_MME     32  /* maxnoofPLMNs(MME): 32 */
+#define OGS_MAX_NUM_OF_PLMN             12  /* maxnoofPLMNs(AMF): 12 */
+#define OGS_MAX_NUM_OF_BPLMN            OGS_MAX_NUM_OF_PLMN
+
+#define OGS_MAX_NUM_OF_TAI              16
+#define OGS_MAX_NUM_OF_SLICE            8
 
 #define OGS_NEXT_ID(__id, __min, __max) \
     ((__id) = ((__id) == (__max) ? (__min) : ((__id) + 1)))
@@ -169,7 +174,6 @@ extern "C" {
 
 /************************************
  * PLMN_ID Structure                */
-#define OGS_MAX_NUM_OF_PLMN         6
 typedef struct ogs_plmn_id_s {
 ED2(uint8_t mcc2:4;,
     uint8_t mcc1:4;)
@@ -261,7 +265,6 @@ char *ogs_id_get_value(char *str);
 
 /************************************
  * TAI Structure                    */
-#define OGS_MAX_NUM_OF_TAI              16
 typedef struct ogs_eps_tai_s {
     ogs_plmn_id_t plmn_id;
     uint16_t tac;
@@ -284,7 +287,6 @@ typedef struct ogs_nr_cgi_s {
 
 /************************************
  * S-NSSAI Structure                */
-#define OGS_MAX_NUM_OF_SLICE        8
 #define OGS_S_NSSAI_NO_SD_VALUE     0xffffff
 typedef struct ogs_s_nssai_s {
     uint8_t sst;

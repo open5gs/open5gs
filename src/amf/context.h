@@ -72,7 +72,7 @@ typedef struct amf_context_s {
     struct {
         int reject_cause;
         ogs_plmn_id_t plmn_id;
-    } access_control[OGS_MAX_NUM_OF_ACCESS_CONTROL];
+    } access_control[OGS_MAX_NUM_OF_PLMN];
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0

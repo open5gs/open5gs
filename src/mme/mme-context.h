@@ -66,7 +66,7 @@ typedef uint32_t mme_p_tmsi_t;
 
 typedef struct served_gummei_s {
     int             num_of_plmn_id;
-    ogs_plmn_id_t   plmn_id[OGS_MAX_NUM_OF_PLMN];
+    ogs_plmn_id_t   plmn_id[OGS_MAX_NUM_OF_PLMN_PER_MME];
 
     int             num_of_mme_gid;
     uint16_t        mme_gid[GRP_PER_MME];
@@ -116,7 +116,7 @@ typedef struct mme_context_s {
     struct {
         int reject_cause;
         ogs_plmn_id_t plmn_id;
-    } access_control[OGS_MAX_NUM_OF_ACCESS_CONTROL];
+    } access_control[OGS_MAX_NUM_OF_PLMN_PER_MME];
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0

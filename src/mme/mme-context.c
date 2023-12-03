@@ -1388,7 +1388,7 @@ int mme_context_parse_config(void)
                     ogs_yaml_iter_recurse(&mme_iter, &gummei_array);
                     do {
                         served_gummei_t *gummei = NULL;
-                        ogs_assert(self.num_of_served_gummei <=
+                        ogs_assert(self.num_of_served_gummei <
                                 OGS_MAX_NUM_OF_SERVED_GUMMEI);
                         gummei = &self.served_gummei[
                             self.num_of_served_gummei];
@@ -1422,7 +1422,7 @@ int mme_context_parse_config(void)
                                     ogs_plmn_id_t *plmn_id = NULL;
                                     const char *mcc = NULL, *mnc = NULL;
                                     ogs_assert(gummei->num_of_plmn_id <
-                                            OGS_MAX_NUM_OF_PLMN);
+                                            OGS_MAX_NUM_OF_PLMN_PER_MME);
                                     plmn_id = &gummei->plmn_id[
                                         gummei->num_of_plmn_id];
                                     ogs_assert(plmn_id);
@@ -1555,7 +1555,7 @@ int mme_context_parse_config(void)
                     ogs_eps_tai1_list_t *list1 = NULL;
                     ogs_eps_tai2_list_t *list2 = NULL;
 
-                    ogs_assert(self.num_of_served_tai <=
+                    ogs_assert(self.num_of_served_tai <
                             OGS_MAX_NUM_OF_SUPPORTED_TA);
                     list0 = &self.served_tai[self.num_of_served_tai].list0;
                     list1 = &self.served_tai[self.num_of_served_tai].list1;
@@ -1736,8 +1736,8 @@ int mme_context_parse_config(void)
                     ogs_yaml_iter_t access_control_array, access_control_iter;
                     ogs_yaml_iter_recurse(&mme_iter, &access_control_array);
                     do {
-                        ogs_assert(self.num_of_access_control <=
-                                OGS_MAX_NUM_OF_ACCESS_CONTROL);
+                        ogs_assert(self.num_of_access_control <
+                                OGS_MAX_NUM_OF_PLMN_PER_MME);
 
                         if (ogs_yaml_iter_type(&access_control_array) ==
                                 YAML_MAPPING_NODE) {
