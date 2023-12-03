@@ -101,7 +101,7 @@ typedef struct mme_context_s {
     ogs_list_t      csmap_list;     /* TAI-LAI Map List */
 
     /* Served GUMME */
-    int             max_num_of_served_gummei;
+    int             num_of_served_gummei;
     served_gummei_t served_gummei[MAX_NUM_OF_SERVED_GUMMEI];
 
     /* Served TAI */

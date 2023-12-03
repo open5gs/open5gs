@@ -367,7 +367,7 @@ int amf_context_parse_config(void)
                         const char *mcc = NULL, *mnc = NULL;
                         const char *region = NULL, *set = NULL;
                         const char *pointer = NULL;
-                        ogs_assert(self.num_of_served_guami <
+                        ogs_assert(self.num_of_served_guami <=
                                 OGS_MAX_NUM_OF_SERVED_GUAMI);
 
                         if (ogs_yaml_iter_type(&guami_array) ==
@@ -464,7 +464,7 @@ int amf_context_parse_config(void)
                     ogs_5gs_tai1_list_t *list1 = NULL;
                     ogs_5gs_tai2_list_t *list2 = NULL;
 
-                    ogs_assert(self.num_of_served_tai <
+                    ogs_assert(self.num_of_served_tai <=
                             OGS_MAX_NUM_OF_SERVED_TAI);
                     list0 = &self.served_tai[self.num_of_served_tai].list0;
                     list1 = &self.served_tai[self.num_of_served_tai].list1;
@@ -646,7 +646,7 @@ int amf_context_parse_config(void)
                     ogs_yaml_iter_recurse(&amf_iter, &plmn_support_array);
                     do {
                         const char *mnc = NULL, *mcc = NULL;
-                        ogs_assert(self.num_of_plmn_support <
+                        ogs_assert(self.num_of_plmn_support <=
                                 OGS_MAX_NUM_OF_PLMN);
 
                         if (ogs_yaml_iter_type(&plmn_support_array) ==
@@ -785,7 +785,7 @@ int amf_context_parse_config(void)
                     ogs_yaml_iter_t access_control_array, access_control_iter;
                     ogs_yaml_iter_recurse(&amf_iter, &access_control_array);
                     do {
-                        ogs_assert(self.num_of_access_control <
+                        ogs_assert(self.num_of_access_control <=
                                 OGS_MAX_NUM_OF_ACCESS_CONTROL);
 
                         if (ogs_yaml_iter_type(&access_control_array) ==

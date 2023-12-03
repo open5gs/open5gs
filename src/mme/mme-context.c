@@ -233,7 +233,7 @@ static int mme_context_validation(void)
         return OGS_ERROR;
     }
 
-    if (self.max_num_of_served_gummei == 0) {
+    if (self.num_of_served_gummei == 0) {
         ogs_error("No mme.gummei in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
@@ -1388,10 +1388,10 @@ int mme_context_parse_config(void)
                     ogs_yaml_iter_recurse(&mme_iter, &gummei_array);
                     do {
                         served_gummei_t *gummei = NULL;
-                        ogs_assert(self.max_num_of_served_gummei <
+                        ogs_assert(self.num_of_served_gummei <=
                                 MAX_NUM_OF_SERVED_GUMMEI);
                         gummei = &self.served_gummei[
-                            self.max_num_of_served_gummei];
+                            self.num_of_served_gummei];
                         ogs_assert(gummei);
 
                         if (ogs_yaml_iter_type(&gummei_array) ==
@@ -1535,7 +1535,7 @@ int mme_context_parse_config(void)
 
                         if (gummei->num_of_plmn_id &&
                             gummei->num_of_mme_gid && gummei->num_of_mme_code) {
-                            self.max_num_of_served_gummei++;
+                            self.num_of_served_gummei++;
                         } else {
                             ogs_warn("Ignore gummei : "
                                     "plmn_id(%d), mme_gid(%d), mme_code(%d)",
@@ -1555,7 +1555,7 @@ int mme_context_parse_config(void)
                     ogs_eps_tai1_list_t *list1 = NULL;
                     ogs_eps_tai2_list_t *list2 = NULL;
 
-                    ogs_assert(self.num_of_served_tai <
+                    ogs_assert(self.num_of_served_tai <=
                             OGS_MAX_NUM_OF_SERVED_TAI);
                     list0 = &self.served_tai[self.num_of_served_tai].list0;
                     list1 = &self.served_tai[self.num_of_served_tai].list1;
@@ -1736,7 +1736,7 @@ int mme_context_parse_config(void)
                     ogs_yaml_iter_t access_control_array, access_control_iter;
                     ogs_yaml_iter_recurse(&mme_iter, &access_control_array);
                     do {
-                        ogs_assert(self.num_of_access_control <
+                        ogs_assert(self.num_of_access_control <=
                                 OGS_MAX_NUM_OF_ACCESS_CONTROL);
 
                         if (ogs_yaml_iter_type(&access_control_array) ==
@@ -3116,7 +3116,7 @@ void mme_ue_new_guti(mme_ue_t *mme_ue)
     served_gummei_t *served_gummei = NULL;
 
     ogs_assert(mme_ue);
-    ogs_assert(mme_self()->max_num_of_served_gummei > 0);
+    ogs_assert(mme_self()->num_of_served_gummei > 0);
 
     served_gummei = &mme_self()->served_gummei[0];
 
