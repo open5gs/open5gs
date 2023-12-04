@@ -596,6 +596,9 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
             configuration_update_command->presencemask |=
                 OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
             network_daylight_saving_time->length = 1;
+            if (local.tm_isdst > 0) {
+                network_daylight_saving_time->value = 1;
+            }
         }
     }
 
