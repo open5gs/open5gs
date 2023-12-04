@@ -1,3 +1,33 @@
+open5gs (2.7.0) unstable; urgency=medium
+
+  * 5G Roaming with SEPP
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 04 Dec 2023 21:10:30 +0900
+
+open5gs (2.7.0~lunar) lunar; urgency=medium
+
+  * 5G Roaming with SEPP
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 04 Dec 2023 21:08:42 +0900
+
+open5gs (2.7.0~jammy) jammy; urgency=medium
+
+  * 5G Roaming with SEPP
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 04 Dec 2023 21:06:57 +0900
+
+open5gs (2.7.0~focal) focal; urgency=medium
+
+  * 5G Roaming with SEPP
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 04 Dec 2023 21:05:10 +0900
+
+open5gs (2.7.0~bionic) bionic; urgency=medium
+
+  * 5G Roaming with SEPP
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 04 Dec 2023 21:02:40 +0900
+
 open5gs (2.6.6) unstable; urgency=medium
 
   * Ubuntu 23.04(lunar) Release
