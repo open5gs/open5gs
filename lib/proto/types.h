@@ -90,11 +90,17 @@ extern "C" {
 #define OGS_MAX_NUM_OF_SUPPORTED_TA     256 /* maxnoofTACs: 256 */
 
 /*
+ * <December 3, 2023>
  * If I set it to 1024, the AMF crashes in the 'meson test -v registration'.
  * So for now, I will use 512. Once I figure out the cause of this problem,
  * I will try 1024.
+ *
+ * <December 4, 2023>
+ * After increasing the delay in test/app/5gc-init.c from 300ms to 500ms,
+ * the problem has been resolved. It seems that as the context memory increases,
+ * it takes time for the AMF execution to be completed."
  */
-#define OGS_MAX_NUM_OF_SLICE_SUPPORT    512 /* maxnoofSliceItems: 1024 */
+#define OGS_MAX_NUM_OF_SLICE_SUPPORT    1024 /* maxnoofSliceItems: 1024 */
 
 #define OGS_MAX_NUM_OF_PLMN_PER_MME     32  /* maxnoofPLMNs(MME): 32 */
 #define OGS_MAX_NUM_OF_PLMN             12  /* maxnoofPLMNs(AMF): 12 */
