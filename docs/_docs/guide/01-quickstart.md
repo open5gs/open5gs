@@ -224,7 +224,7 @@ Okay - you have installed the software, now what to do with it? Well, there are 
 Out of the box, the default configurations see all of the Open5GS components fully configured for use on a single computer. They are set to communicate with each other using the local loopback address space (`127.0.0.X`). The default addresses for each of the bind interfaces for these components and functions are as follows:
 
 ```
-MongoDB   = 127.0.0.1 (subscriber data) - http://localhost:3000
+MongoDB   = 127.0.0.1 (subscriber data) - http://localhost:9999
 
 MME-s1ap  = 127.0.0.2 :36412 for S1-MME
 MME-gtpc  = 127.0.0.2 :2123 for S11
