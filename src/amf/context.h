@@ -448,6 +448,15 @@ struct amf_ue_s {
         bool sbi_done;
     } explict_de_registered;
 
+    /* CM_IDLE
+     * namf-callback DeregNotify
+     * Paging
+     * Service request
+     * Service accept
+     * De-Registration Request
+     */
+    OpenAPI_deregistration_reason_e do_deregister;
+
     ogs_list_t      sess_list;
 };
 

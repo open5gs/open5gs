@@ -21,6 +21,8 @@
 #include "ngap-build.h"
 #include "gmm-build.h"
 #include "nas-path.h"
+#include "nudm-build.h"
+#include "sbi-path.h"
 
 int nas_5gs_send_to_gnb(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
 {
@@ -308,6 +310,36 @@ int nas_5gs_send_service_accept(amf_ue_t *amf_ue)
         }
     }
 
+    if (amf_ue->do_deregister != OpenAPI_deregistration_reason_NULL) {
+        /* Network-initiated explicit Deregistration, UE paged.
+        * If the UE is in CM-CONNECTED state,
+        * the AMF may explicitly deregister the UE by sending a
+        * Deregistration Request message
+        */
+        rv = nas_5gs_send_de_registration_request(
+                amf_ue,
+                amf_ue->do_deregister,
+                OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+        ogs_expect(rv == OGS_OK);
+        ogs_assert(rv != OGS_ERROR);
+        amf_ue->do_deregister = OpenAPI_deregistration_reason_NULL;
+
+        if (UDM_SDM_SUBSCRIBED(amf_ue)) {
+            rv = amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                    amf_nudm_sdm_build_subscription_delete, amf_ue,
+                    AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED, NULL);
+            ogs_expect(rv == OGS_OK);
+            ogs_assert(rv != OGS_ERROR);
+        } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
+            rv = amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
+                    amf_npcf_am_policy_control_build_delete, amf_ue,
+                    AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED, NULL);
+            ogs_expect(rv == OGS_OK);
+            ogs_assert(rv != OGS_ERROR);
+        }
+    }
     return rv;
 }
 
