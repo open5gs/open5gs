@@ -347,6 +347,9 @@ int emm_handle_attach_complete(
         emm_information->presencemask |=
             OGS_NAS_EPS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
         network_daylight_saving_time->length = 1;
+        if (local.tm_isdst > 0) {
+            network_daylight_saving_time->value = 1;
+        }
     }
 
     emmbuf = nas_eps_security_encode(mme_ue, &message);
