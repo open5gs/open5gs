@@ -68,6 +68,7 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [VPP-UPF with DPDK](https://github.com/s5uishida/open5gs_5gc_ueransim_vpp_upf_dpdk_sample_config)
   - [UERANSIM with eUPF(eBPF/XDP UPF)](https://github.com/s5uishida/open5gs_5gc_ueransim_eupf_sample_config)
   - [srsRAN with eUPF(eBPF/XDP UPF)](https://github.com/s5uishida/open5gs_epc_srsran_eupf_sample_config)
+  - [Measurement of UPF Performance](https://github.com/s5uishida/simple_measurement_of_upf_performance)
  
 - @gradiant helm charts
   - [Open5GS EPC and SRS LTE in kubernetes](https://gradiant.github.io/openverso-charts/open5gs-srslte.html)
