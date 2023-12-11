@@ -279,7 +279,18 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
         }
         break;
     case OGS_DIAM_S6A_CT_MME_UPDATE_PROCEDURE:
+    case OGS_DIAM_S6A_CT_SGSN_UPDATE_PROCEDURE:
         mme_ue->detach_type = MME_DETACH_TYPE_HSS_IMPLICIT;
+
+        /* 3GPP TS 23.401 D.3.5.5 8), 3GPP TS 23.060 6.9.1.2.2 8):
+         * "When the timer described in step 2 is running, the MM and PDP/EPS
+         * Bearer Contexts and any affected S-GW resources are removed when the
+         * timer expires and the SGSN received a Cancel Location".
+         */
+        if (mme_ue->gn.t_gn_holding->running) {
+            ogs_debug("Gn Holding Timer is running, delay removing UE resources");
+            break;
+        }
 
         /*
          * There is no need to send NAS or S1AP message to the UE.

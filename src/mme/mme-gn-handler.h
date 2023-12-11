@@ -32,6 +32,12 @@ void mme_gn_handle_echo_request(
 void mme_gn_handle_echo_response(
         ogs_gtp_xact_t *xact, ogs_gtp1_echo_response_t *req);
 
+void mme_gn_handle_sgsn_context_request(
+        ogs_gtp_xact_t *xact, ogs_gtp1_sgsn_context_request_t *req);
+
+void mme_gn_handle_sgsn_context_acknowledge(
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue, ogs_gtp1_sgsn_context_acknowledge_t *req);
+
 void mme_gn_handle_ran_information_relay(
         ogs_gtp_xact_t *xact, ogs_gtp1_ran_information_relay_t *req);
 
@@ -39,4 +45,4 @@ void mme_gn_handle_ran_information_relay(
 }
 #endif
 
-#endif /* MME_S11_HANDLER_H */
+#endif /* MME_GN_HANDLER_H */

@@ -425,6 +425,11 @@ struct mme_ue_s {
     struct {
         ogs_pool_id_t   *mme_gn_teid_node; /* A node of MME-Gn-TEID */
         uint32_t        mme_gn_teid;   /* MME-Gn-TEID is derived from NODE */
+        uint32_t        sgsn_gn_teid;
+        ogs_ip_t        sgsn_gn_ip;
+        ogs_ip_t        sgsn_gn_ip_alt;
+        /* Unnamed timer in 3GPP TS 23.401 D.3.5 step 2), see also 3GPP TS 23.060 6.9.1.2.2 */
+        ogs_timer_t     *t_gn_holding;
     } gn;
 
     struct {

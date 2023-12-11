@@ -606,6 +606,8 @@ void mme_s11_handle_delete_session_response(
 
     if (action == OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST) {
         source_ue = sgw_ue_cycle(target_ue->source_ue);
+        if (!source_ue) /* InterRAT to 2G/3G (SGSN) case: */
+             source_ue = target_ue;
         ogs_assert(source_ue);
     } else {
         source_ue = target_ue;
