@@ -55,6 +55,9 @@ int mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
 int mme_gtp_send_bearer_resource_command(
         mme_bearer_t *bearer, ogs_nas_eps_message_t *nas_message);
 
+int mme_gtp1_send_sgsn_context_response(
+        mme_ue_t *mme_ue, uint8_t cause, ogs_gtp_xact_t *xact);
+
 int mme_gtp1_send_ran_information_relay(
         mme_sgsn_t *sgsn, const uint8_t *buf, size_t len,
         const ogs_nas_rai_t *rai, uint16_t cell_id);

@@ -300,4 +300,112 @@ int16_t ogs_gtp1_parse_qos_profile(
 int16_t ogs_gtp1_build_qos_profile(ogs_tlv_octet_t *octet,
     const ogs_gtp1_qos_profile_decoded_t *decoded, void *data, int data_len);
 
+/* 7.7.7 Authentication Triplet. FIXME: Not used in MME Gn scenario? */
+# if 0
+struct ogs_gtp1_auth_triplet_s {
+    uint8_t rand[16];
+    uint8_t sres[4];
+    uint8_t kc[8];
+} __attribute__ ((packed)) ogs_gtp1_auth_triplet_t;
+#endif
+
+/* 7.7.35 Authentication Quintuplet */
+typedef struct ogs_gtp1_auth_quintuplet_s {
+    uint8_t rand[OGS_RAND_LEN];
+    uint8_t xres_len;
+    uint8_t xres[OGS_MAX_RES_LEN];
+    uint8_t ck[128/8];
+    uint8_t ik[128/8];
+    uint8_t autn_len;
+    uint8_t autn[OGS_AUTN_LEN];
+} ogs_gtp1_auth_quintuplet_t;
+
+/* TS 24.008 10.5.5.6 DRX parameter (value part only) */
+typedef struct ogs_gtp1_drx_param_val_s {
+    uint8_t split_pg_cycle_code; /* 0 = equivalent to no DRX */
+    ED3(uint8_t cn_drx_cycle_len_coeff:4;,
+    uint8_t split_on_ccch:1;,
+    uint8_t non_drx_timer:3;)
+} __attribute__ ((packed)) ogs_gtp1_drx_param_val_t;
+
+
+
+/* 7.7.28 MM Context (Figure 41) */
+/* Table 47: Security Mode Values */
+#define OGS_GTP1_SEC_MODE_GSM_KEY_AND_TRIPLETS 1
+#define OGS_GTP1_SEC_MODE_GSM_KEY_AND_QUINTUPLETS 3
+#define OGS_GTP1_SEC_MODE_UMTS_KEY_AND_QUINTUPLETS 2
+#define OGS_GTP1_SEC_MODE_USED_CIPHER_VALUE_UMTS_KEY_AND_QUINTUPLETS 0
+/* Table 47B: Used GPRS integrity protection algorithm Values */
+#define OGS_GTP1_USED_GPRS_IP_NO_IP 0
+#define OGS_GTP1_USED_GPRS_IP_GIA4 4
+#define OGS_GTP1_USED_GPRS_IP_GIA5 5
+typedef struct ogs_gtp1_mm_context_decoded_s {
+    uint8_t gupii:1;
+    uint8_t ugipai:1;
+    uint8_t used_gprs_protection_algo:3; /* OGS_GTP1_USED_GPRS_IP */
+    uint8_t ksi:3;
+    uint8_t sec_mode:2; /* OGS_GTP1_SEC_MODE_* */
+    uint8_t num_vectors:3;
+    uint8_t used_cipher:3; /* 0..7 -> GEA/... */
+    uint8_t ck[OGS_SHA256_DIGEST_SIZE/2];
+    uint8_t ik[OGS_SHA256_DIGEST_SIZE/2];
+    ogs_gtp1_auth_quintuplet_t auth_quintuplets[5];
+    ogs_gtp1_drx_param_val_t drx_param;
+    uint8_t ms_network_capability_len;
+    uint8_t ms_network_capability[6]; /* ogs_nas_ms_network_capability_t */
+    uint8_t imeisv_len;
+    uint8_t imeisv[10]; /* ogs_nas_mobile_identity_imeisv_t */
+    uint8_t nrsrna;
+} ogs_gtp1_mm_context_decoded_t;
+
+int ogs_gtp1_build_mm_context(ogs_gtp1_tlv_mm_context_t *octet,
+    const ogs_gtp1_mm_context_decoded_t *decoded, uint8_t *data, int data_len);
+
+/* Extended End User Address. Not explicitly defined in a table: */
+#define OGS_GTP1_PDPCTX_EXT_EUA_NO 0
+#define OGS_GTP1_PDPCTX_EXT_EUA_YES 1
+
+/* 7.7.29 Table 48 Reordering Required Values */
+#define OGS_GTP1_PDPCTX_REORDERING_REQUIRED_NO 0
+#define OGS_GTP1_PDPCTX_REORDERING_REQUIRED_YES 1
+
+/* 7.7.29 Table 49 VPLMN Address Allowed Values */
+#define OGS_GTP1_PDPCTX_VLPMN_ADDR_ALLOWED_NO 0
+#define OGS_GTP1_PDPCTX_VLPMN_ADDR_ALLOWED_YES 1
+
+/* 7.7.29 Table 49A Activity Status Indicator Value */
+#define OGS_GTP1_PDPCTX_ACTIVITY_STATUS_IND_YES 0
+#define OGS_GTP1_PDPCTX_ACTIVITY_STATUS_IND_NO 1
+
+/* 7.7.29 PDP Context */
+typedef struct ogs_gtp1_pdp_context_decoded_s {
+    uint8_t ea:1; /* OGS_GTP1_PDPCTX_EXT_EUA_* */
+    uint8_t vaa:1; /* OGS_GTP1_PDPCTX_VLPMN_ADDR_ALLOWED_* */
+    uint8_t asi:1; /* OGS_GTP1_PDPCTX_ACTIVITY_STATUS_IND_* */
+    uint8_t order:1; /* OGS_GTP1_PDPCTX_REORDERING_REQUIRED_* */
+    uint8_t nsapi:4;
+    uint8_t sapi:4;
+    ogs_gtp1_qos_profile_decoded_t qos_sub;
+    ogs_gtp1_qos_profile_decoded_t qos_req;
+    ogs_gtp1_qos_profile_decoded_t qos_neg;
+    uint16_t snd;
+    uint16_t snu;
+    uint8_t send_npdu_nr;
+    uint8_t receive_npdu_nr;
+    uint32_t ul_teic;
+    uint32_t ul_teid;
+    uint8_t pdp_ctx_id;
+    uint8_t pdp_type_org;
+    uint8_t pdp_type_num[2];
+    ogs_ip_t pdp_address[2];
+    ogs_ip_t ggsn_address_c;
+    ogs_ip_t ggsn_address_u;
+    char apn[OGS_MAX_APN_LEN+1];
+    uint16_t trans_id:12;
+} ogs_gtp1_pdp_context_decoded_t;
+
+int ogs_gtp1_build_pdp_context(ogs_gtp1_tlv_pdp_context_t *octet,
+    const ogs_gtp1_pdp_context_decoded_t *decoded, uint8_t *data, int data_len);
+
 #endif /* OGS_GTP1_TYPES_H */

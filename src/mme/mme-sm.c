@@ -671,6 +671,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         case OGS_GTP1_ECHO_RESPONSE_TYPE:
             mme_gn_handle_echo_response(xact, &gtp1_message.echo_response);
             break;
+        case OGS_GTP1_SGSN_CONTEXT_REQUEST_TYPE:
+            mme_gn_handle_sgsn_context_request(xact, &gtp1_message.sgsn_context_request);
+            break;
+        case OGS_GTP1_SGSN_CONTEXT_ACKNOWLEDGE_TYPE:
+            mme_gn_handle_sgsn_context_acknowledge(xact, mme_ue, &gtp1_message.sgsn_context_acknowledge);
+            break;
         case OGS_GTP1_RAN_INFORMATION_RELAY_TYPE:
             mme_gn_handle_ran_information_relay(xact, &gtp1_message.ran_information_relay);
             break;
@@ -679,6 +685,37 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             break;
         }
         ogs_pkbuf_free(pkbuf);
+        break;
+
+    case MME_EVENT_GN_TIMER:
+        mme_ue = e->mme_ue;
+        ogs_assert(mme_ue);
+        sgw_ue = mme_ue->sgw_ue;
+        ogs_assert(sgw_ue);
+
+        switch (e->timer_id) {
+        case MME_TIMER_GN_HOLDING:
+            /* 3GPP TS 23.401 Annex D.3.5 "Routing Area Update":
+            * Step 13. "When the timer started in step 2) (see mme_gn_handle_sgsn_context_request()) expires the old MME
+            * releases any RAN and Serving GW resources. If the PLMN has configured Secondary RAT usage data reporting,
+            * the MME first releases RAN resource before releasing Serving GW resources."
+            */
+            GTP_COUNTER_CLEAR(mme_ue,
+                    GTP_COUNTER_DELETE_SESSION_BY_PATH_SWITCH);
+            ogs_list_for_each(&mme_ue->sess_list, sess) {
+                GTP_COUNTER_INCREMENT(
+                    mme_ue, GTP_COUNTER_DELETE_SESSION_BY_PATH_SWITCH);
+                ogs_assert(OGS_OK ==
+                    mme_gtp_send_delete_session_request(
+                        sgw_ue, sess,
+                        OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST));
+            }
+            break;
+
+        default:
+            ogs_error("Unknown timer[%s:%d]",
+                    mme_timer_get_name(e->timer_id), e->timer_id);
+        }
         break;
 
     case MME_EVENT_SGSAP_LO_SCTP_COMM_UP:

@@ -3305,6 +3305,14 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     }
     mme_ue->t_implicit_detach.pkbuf = NULL;
 
+    mme_ue->gn.t_gn_holding = ogs_timer_add(
+            ogs_app()->timer_mgr, mme_timer_gn_holding_timer_expire, mme_ue);
+    if (! mme_ue->gn.t_gn_holding) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_free(&mme_ue_pool, mme_ue);
+        return NULL;
+    }
+
     mme_ebi_pool_init(mme_ue);
 
     ogs_list_init(&mme_ue->sess_list);
@@ -3406,6 +3414,7 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     ogs_timer_delete(mme_ue->t3470.timer);
     ogs_timer_delete(mme_ue->t_mobile_reachable.timer);
     ogs_timer_delete(mme_ue->t_implicit_detach.timer);
+    ogs_timer_delete(mme_ue->gn.t_gn_holding);
 
     enb_ue_unlink(mme_ue);
 

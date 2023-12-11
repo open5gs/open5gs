@@ -34,6 +34,9 @@
 #define FC_FOR_KENB_DERIVATION                  0x11
 #define FC_FOR_NH_ENB_DERIVATION                0x12
 #define FC_FOR_EPS_ALGORITHM_KEY_DERIVATION     0x15
+#define FC_FOR_CK_IK_DERIVATION_HANDOVER        0x16
+#define FC_FOR_NAS_TOKEN_DERIVATION             0x17
+#define FC_FOR_CK_IK_DERIVATION_IDLE_MOBILITY   0x1B
 
 typedef struct kdf_param_s {
     const uint8_t *buf;
@@ -377,6 +380,56 @@ void ogs_kdf_nas_eps(uint8_t algorithm_type_distinguishers,
     ogs_kdf_common(kasme, OGS_SHA256_DIGEST_SIZE,
             FC_FOR_EPS_ALGORITHM_KEY_DERIVATION, param, output);
     memcpy(knas, output+16, 16);
+}
+
+/* TS33.401 Annex A.8: KASME to CK', IK' derivation at handover */
+void ogs_kdf_ck_ik_handover(
+    uint32_t dl_count, const uint8_t *kasme, uint8_t *ck, uint8_t *ik)
+{
+    kdf_param_t param;
+    uint8_t output[OGS_SHA256_DIGEST_SIZE];
+
+    memset(param, 0, sizeof(param));
+    param[0].buf = (uint8_t *)&dl_count;
+    param[0].len = 4;
+
+    ogs_kdf_common(kasme, OGS_SHA256_DIGEST_SIZE,
+            FC_FOR_CK_IK_DERIVATION_HANDOVER, param, output);
+    memcpy(ck, output, 16);
+    memcpy(ik, output+16, 16);
+}
+
+/* TS33.401 Annex A.9: NAS token derivation for inter-RAT mobility */
+void ogs_kdf_nas_token(
+    uint32_t ul_count, const uint8_t *kasme, uint8_t *nas_token)
+{
+    kdf_param_t param;
+    uint8_t output[OGS_SHA256_DIGEST_SIZE];
+
+    memset(param, 0, sizeof(param));
+    param[0].buf = (uint8_t *)&ul_count;
+    param[0].len = 4;
+
+    ogs_kdf_common(kasme, OGS_SHA256_DIGEST_SIZE,
+            FC_FOR_NAS_TOKEN_DERIVATION, param, output);
+    memcpy(nas_token, output, 2);
+}
+
+/* TS33.401 Annex A.13: KASME to CK', IK' derivation at idle mobility */
+void ogs_kdf_ck_ik_idle_mobility(
+    uint32_t ul_count, const uint8_t *kasme, uint8_t *ck, uint8_t *ik)
+{
+    kdf_param_t param;
+    uint8_t output[OGS_SHA256_DIGEST_SIZE];
+
+    memset(param, 0, sizeof(param));
+    param[0].buf = (uint8_t *)&ul_count;
+    param[0].len = 4;
+
+    ogs_kdf_common(kasme, OGS_SHA256_DIGEST_SIZE,
+            FC_FOR_CK_IK_DERIVATION_IDLE_MOBILITY, param, output);
+    memcpy(ck, output, 16);
+    memcpy(ik, output+16, 16);
 }
 
 /*
