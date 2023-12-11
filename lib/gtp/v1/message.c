@@ -22,7 +22,7 @@
 /*******************************************************************************
  * This file had been created by gtp1-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2023-08-26 16:35:02.182792 by acetcom
+ * Created on: 2023-12-11 17:18:23.055278 by pespin
  * from 29060-h40.docx
  ******************************************************************************/
 
@@ -129,7 +129,7 @@ ogs_tlv_desc_t ogs_gtp1_tlv_desc_p_tmsi_signature =
 
 ogs_tlv_desc_t ogs_gtp1_tlv_desc_ms_validated =
 {
-    OGS_TV_FIXED_STR,
+    OGS_TV_UINT8,
     "MS Validated",
     OGS_GTP1_MS_VALIDATED_TYPE,
     1,
