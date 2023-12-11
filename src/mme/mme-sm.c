@@ -662,6 +662,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         case OGS_GTP1_ECHO_RESPONSE_TYPE:
             mme_gn_handle_echo_response(xact, &gtp1_message.echo_response);
             break;
+        case OGS_GTP1_SGSN_CONTEXT_REQUEST_TYPE:
+            mme_gn_handle_sgsn_context_request(xact, &gtp1_message.sgsn_context_request);
+            break;
+        case OGS_GTP1_SGSN_CONTEXT_ACKNOWLEDGE_TYPE:
+            mme_gn_handle_sgsn_context_acknowledge(xact, &gtp1_message.sgsn_context_acknowledge);
+            break;
         case OGS_GTP1_RAN_INFORMATION_RELAY_TYPE:
             mme_gn_handle_ran_information_relay(xact, &gtp1_message.ran_information_relay);
             break;
