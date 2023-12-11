@@ -22,7 +22,7 @@
 /*******************************************************************************
  * This file had been created by gtp1-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2023-12-11 17:18:23.055278 by pespin
+ * Created on: 2023-12-11 17:21:37.071241 by pespin
  * from 29060-h40.docx
  ******************************************************************************/
 
@@ -118,7 +118,7 @@ ogs_tlv_desc_t ogs_gtp1_tlv_desc_map_cause =
 
 ogs_tlv_desc_t ogs_gtp1_tlv_desc_p_tmsi_signature =
 {
-    OGS_TV_FIXED_STR,
+    OGS_TV_UINT24,
     "P-TMSI Signature",
     OGS_GTP1_P_TMSI_SIGNATURE_TYPE,
     3,
