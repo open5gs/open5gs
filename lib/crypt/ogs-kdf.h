@@ -101,6 +101,18 @@ void ogs_kdf_nh_enb(const uint8_t *kasme, const uint8_t *sync_input, uint8_t *ke
 void ogs_kdf_nas_eps(uint8_t algorithm_type_distinguishers,
     uint8_t algorithm_identity, const uint8_t *kasme, uint8_t *knas);
 
+/* TS33.401 Annex A.8: KASME to CK', IK' derivation at handover */
+void ogs_kdf_ck_ik_handover(
+    uint32_t dl_count, const uint8_t *kasme, uint8_t *ck, uint8_t *ik);
+
+/* TS33.401 Annex A.9: NAS token derivation for inter-RAT mobility */
+void ogs_kdf_nas_token(
+    uint32_t ul_count, const uint8_t *kasme, uint8_t *nas_token);
+
+/* TS33.401 Annex A.13: KASME to CK', IK' derivation at idle mobility */
+void ogs_kdf_ck_ik_idle_mobility(
+    uint32_t ul_count, const uint8_t *kasme, uint8_t *ck, uint8_t *ik);
+
 /*
  * TS33.401 Annex I Hash Functions
  * Use the KDF given in TS33.220

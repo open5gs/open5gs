@@ -758,6 +758,36 @@ int mme_gtp_send_bearer_resource_command(
     return rv;
 }
 
+int mme_gtp1_send_sgsn_context_response(
+        mme_ue_t *mme_ue, uint8_t cause, ogs_gtp_xact_t *xact)
+{
+    int rv;
+    ogs_gtp1_header_t h;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    memset(&h, 0, sizeof(ogs_gtp1_header_t));
+    h.type = OGS_GTP1_SGSN_CONTEXT_RESPONSE_TYPE;
+    h.teid = mme_ue ? mme_ue->gn.sgsn_gn_teid : 0;
+
+    pkbuf = mme_gn_build_sgsn_context_response(mme_ue, cause);
+    if (!pkbuf) {
+        ogs_error("mme_gn_build_sgsn_context_response() failed");
+        return OGS_ERROR;
+    }
+    /* FIXME: Reuse S11 TEID as local Gn interface for now */
+    xact->local_teid = mme_ue ? mme_ue->mme_s11_teid : 0;
+
+    rv = ogs_gtp1_xact_update_tx(xact, &h, pkbuf);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp1_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
 
 int mme_gtp1_send_ran_information_relay(
         mme_sgsn_t *sgsn, const uint8_t *buf, size_t len,

@@ -421,6 +421,11 @@ struct mme_ue_s {
     char            a_msisdn_bcd[OGS_MAX_MSISDN_BCD_LEN+1];
 
     mme_p_tmsi_t    p_tmsi;
+    struct {
+        uint32_t        sgsn_gn_teid;
+        ogs_ip_t        sgsn_gn_ip;
+        ogs_ip_t        sgsn_gn_ip_alt;
+    } gn;
 
     struct {
         mme_m_tmsi_t *m_tmsi;
