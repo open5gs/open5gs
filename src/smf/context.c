@@ -3007,8 +3007,17 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
         case OGS_PCO_ID_P_CSCF_RE_SELECTION_SUPPORT:
             /* TODO */
             break;
+        case OGS_PCO_ID_3GPP_PS_DATA_OFF_SUPPORT_INDICATION:
+            /* TODO */
+            break;
+        case OGS_PCO_ID_QOS_RULES_WITH_THE_LENGTH_OF_TWO_OCTETS:
+            /* TODO */
+            break;
+        case OGS_PCO_ID_QOS_FLOW_DESC_WITH_THE_LENGTH_OF_TWO_OCTETS:
+            /* TODO */
+            break;
         default:
-            ogs_warn("Unknown PCO ID:(0x%x)", ue.ids[i].id);
+            ogs_warn("Unknown PCO ID:(0x%04x)", ue.ids[i].id);
         }
     }
 
