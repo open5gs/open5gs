@@ -74,6 +74,8 @@ extern "C" {
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN 1
 
+#define SEND_UE_CONTEXT_RELEASE_COMMAND_IN_INTEGRITY_UNPROTECTED 0
+
 #undef OGS_TEST_INSIDE
 
 #ifdef __cplusplus

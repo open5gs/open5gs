@@ -107,7 +107,7 @@ typedef struct amf_context_s {
 
     ogs_hash_t      *gnb_addr_hash; /* hash table for GNB Address */
     ogs_hash_t      *gnb_id_hash;   /* hash table for GNB-ID */
-    ogs_hash_t      *guti_ue_hash;          /* hash table (GUTI : AMF_UE) */
+    ogs_hash_t      *guti_ue_hash;  /* hash table (GUTI : AMF_UE) */
     ogs_hash_t      *suci_hash;     /* hash table (SUCI) */
     ogs_hash_t      *supi_hash;     /* hash table (SUPI) */
 

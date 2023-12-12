@@ -362,6 +362,7 @@ static void test2_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+#if SEND_UE_CONTEXT_RELEASE_COMMAND_IN_INTEGRITY_UNPROTECTED
     /* Receive OLD UE Context Release Command */
     enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
 
@@ -376,6 +377,7 @@ static void test2_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
+#endif
 
     /* Receive Authentication Request */
     recvbuf = testenb_s1ap_read(s1ap);
@@ -642,6 +644,7 @@ static void test3_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+#if SEND_UE_CONTEXT_RELEASE_COMMAND_IN_INTEGRITY_UNPROTECTED
     /* Receive OLD UE Context Release Command */
     enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
 
@@ -656,6 +659,7 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
+#endif
 
     /* Receive Authentication Request */
     recvbuf = testenb_s1ap_read(s1ap);

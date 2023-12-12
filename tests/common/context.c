@@ -327,7 +327,7 @@ int test_context_parse_config(void)
                     ogs_5gs_tai1_list_t *list1 = NULL;
                     ogs_5gs_tai2_list_t *list2 = NULL;
 
-                    ogs_assert(self.num_of_nr_served_tai <=
+                    ogs_assert(self.num_of_nr_served_tai <
                             OGS_MAX_NUM_OF_SUPPORTED_TA);
                     list0 =
                         &self.nr_served_tai[self.num_of_nr_served_tai].list0;
@@ -512,7 +512,7 @@ int test_context_parse_config(void)
                     ogs_yaml_iter_recurse(&amf_iter, &plmn_support_array);
                     do {
                         const char *mnc = NULL, *mcc = NULL;
-                        ogs_assert(self.num_of_plmn_support <=
+                        ogs_assert(self.num_of_plmn_support <
                                 OGS_MAX_NUM_OF_PLMN);
 
                         if (ogs_yaml_iter_type(&plmn_support_array) ==
@@ -570,7 +570,7 @@ int test_context_parse_config(void)
                                     ogs_assert(
                                         self.plmn_support[
                                             self.num_of_plmn_support].
-                                                num_of_s_nssai <=
+                                                num_of_s_nssai <
                                             OGS_MAX_NUM_OF_SLICE_SUPPORT);
                                     s_nssai = &self.plmn_support[
                                             self.num_of_plmn_support].s_nssai[
@@ -807,7 +807,7 @@ int test_context_parse_config(void)
                     ogs_eps_tai1_list_t *list1 = NULL;
                     ogs_eps_tai2_list_t *list2 = NULL;
 
-                    ogs_assert(self.num_of_e_served_tai <=
+                    ogs_assert(self.num_of_e_served_tai <
                             OGS_MAX_NUM_OF_SUPPORTED_TA);
                     list0 = &self.e_served_tai[self.num_of_e_served_tai].list0;
                     list1 = &self.e_served_tai[self.num_of_e_served_tai].list1;
