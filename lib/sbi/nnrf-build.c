@@ -633,6 +633,7 @@ static OpenAPI_nf_service_t *build_nf_service(
             }
             IpEndPoint->is_port = nf_service->addr[i].is_port;
             IpEndPoint->port = nf_service->addr[i].port;
+            IpEndPoint->transport = OpenAPI_transport_protocol_TCP;
             OpenAPI_list_add(IpEndPointList, IpEndPoint);
         }
     }
