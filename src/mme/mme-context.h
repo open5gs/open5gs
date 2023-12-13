@@ -531,11 +531,50 @@ struct mme_ue_s {
      (((__mME)->enb_ue == NULL) || (enb_ue_cycle((__mME)->enb_ue) == NULL)))
     enb_ue_t        *enb_ue;    /* S1 UE context */
 
+#define HOLDING_S1_CONTEXT(__mME) \
+    do { \
+        enb_ue_deassociate((__mME)->enb_ue); \
+        \
+        (__mME)->enb_ue_holding = enb_ue_cycle((__mME)->enb_ue); \
+        if ((__mME)->enb_ue_holding) { \
+            ogs_warn("[%s] Holding S1 Context", (__mME)->imsi_bcd); \
+            ogs_warn("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]", \
+                    (__mME)->imsi_bcd, (__mME)->enb_ue_holding->enb_ue_s1ap_id, \
+                    (__mME)->enb_ue_holding->mme_ue_s1ap_id); \
+            \
+            (__mME)->enb_ue_holding->ue_ctx_rel_action = \
+                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE; \
+            ogs_timer_start((__mME)->enb_ue_holding->t_s1_holding, \
+                    mme_timer_cfg(MME_TIMER_S1_HOLDING)->duration); \
+        } else \
+            ogs_error("[%s] S1 Context has already been removed", \
+                    (__mME)->imsi_bcd); \
+    } while(0)
+#define CLEAR_S1_CONTEXT(__mME) \
+    do { \
+        if (enb_ue_cycle((__mME)->enb_ue_holding)) { \
+            int r; \
+            ogs_warn("[%s] Clear S1 Context", (__mME)->imsi_bcd); \
+            ogs_warn("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]", \
+                    (__mME)->imsi_bcd, (__mME)->enb_ue_holding->enb_ue_s1ap_id, \
+                    (__mME)->enb_ue_holding->mme_ue_s1ap_id); \
+            \
+            r = s1ap_send_ue_context_release_command( \
+                    (__mME)->enb_ue_holding, \
+                    S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release, \
+                    S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0); \
+            ogs_expect(r == OGS_OK); \
+            ogs_assert(r != OGS_ERROR); \
+        } \
+        (__mME)->enb_ue_holding = NULL; \
+    } while(0)
+    enb_ue_t        *enb_ue_holding;
+
     struct {
 #define MME_CLEAR_PAGING_INFO(__mME) \
     do { \
         ogs_assert(__mME); \
-        ogs_debug("[%s] Clear Paging Info", mme_ue->imsi_bcd); \
+        ogs_debug("[%s] Clear Paging Info", (__mME)->imsi_bcd); \
         (__mME)->paging.type = 0; \
     } while(0)
 

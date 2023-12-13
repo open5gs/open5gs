@@ -65,7 +65,7 @@ typedef struct test_context_s {
     ogs_list_t      gtpc_list;      /* SMF GTPC Client List */
 
     /* 5G PLMN Support */
-    uint8_t num_of_plmn_support;
+    int num_of_plmn_support;
     struct {
         ogs_plmn_id_t plmn_id;
         int num_of_s_nssai;
@@ -73,7 +73,7 @@ typedef struct test_context_s {
     } plmn_support[OGS_MAX_NUM_OF_PLMN];
 
     /* Served EPC TAI */
-    uint8_t num_of_e_served_tai;
+    int num_of_e_served_tai;
     struct {
         ogs_eps_tai0_list_t list0;
         ogs_eps_tai1_list_t list1;
@@ -83,7 +83,7 @@ typedef struct test_context_s {
     ogs_eps_tai_t e_tai;
 
     /* Served 5GC TAI */
-    uint8_t num_of_nr_served_tai;
+    int num_of_nr_served_tai;
     struct {
         ogs_5gs_tai0_list_t list0;
         ogs_5gs_tai1_list_t list1;

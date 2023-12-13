@@ -3671,8 +3671,8 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
             ogs_warn("[%s] OLD UE Context Release", mme_ue->imsi_bcd);
             if (ECM_CONNECTED(old_mme_ue)) {
                 /* Implcit S1 release */
-                ogs_info("[%s] Implicit S1 release", mme_ue->imsi_bcd);
-                ogs_info("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                ogs_warn("[%s] Implicit S1 release", mme_ue->imsi_bcd);
+                ogs_warn("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
                         old_mme_ue->imsi_bcd,
                         old_mme_ue->enb_ue->enb_ue_s1ap_id,
                         old_mme_ue->enb_ue->mme_ue_s1ap_id);

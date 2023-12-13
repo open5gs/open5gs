@@ -1204,6 +1204,13 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
 
             if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(amf_ue)) {
 
+                /*
+                 * If the OLD RAN_UE is being maintained in AMF-UE Context,
+                 * it deletes the NG Context after exchanging
+                 * the UEContextReleaseCommand/Complete with the gNB
+                 */
+                CLEAR_NG_CONTEXT(amf_ue);
+
                 gmm_cause = gmm_handle_registration_update(
                         amf_ue, &nas_message->gmm.registration_request);
                 if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
@@ -1325,6 +1332,13 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 break;
             }
 
+            /*
+             * If the OLD RAN_UE is being maintained in AMF-UE Context,
+             * it deletes the NG Context after exchanging
+             * the UEContextReleaseCommand/Complete with the gNB
+             */
+            CLEAR_NG_CONTEXT(amf_ue);
+
             gmm_cause = gmm_handle_service_update(
                     amf_ue, &nas_message->gmm.service_request);
             if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
@@ -1390,6 +1404,19 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
 
         case OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE:
             ogs_info("[%s] Deregistration request", amf_ue->supi);
+
+            if (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue)) {
+                ogs_error("No Security Context");
+                OGS_FSM_TRAN(s, gmm_state_exception);
+                break;
+            }
+
+            /*
+             * If the OLD RAN_UE is being maintained in AMF-UE Context,
+             * it deletes the NG Context after exchanging
+             * the UEContextReleaseCommand/Complete with the gNB
+             */
+            CLEAR_NG_CONTEXT(amf_ue);
 
             gmm_handle_deregistration_request(
                     amf_ue, &nas_message->gmm.deregistration_request_from_ue);
@@ -1830,6 +1857,13 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                 ogs_error("[%s] No Security Context", amf_ue->supi);
                 break;
             }
+
+            /*
+             * If the OLD RAN_UE is being maintained in AMF-UE Context,
+             * it deletes the NG Context after exchanging
+             * the UEContextReleaseCommand/Complete with the gNB
+             */
+            CLEAR_NG_CONTEXT(amf_ue);
 
             CLEAR_AMF_UE_TIMER(amf_ue->t3560);
 
@@ -2428,6 +2462,13 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
             }
 
             if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(amf_ue)) {
+
+                /*
+                 * If the OLD RAN_UE is being maintained in AMF-UE Context,
+                 * it deletes the NG Context after exchanging
+                 * the UEContextReleaseCommand/Complete with the gNB
+                 */
+                CLEAR_NG_CONTEXT(amf_ue);
 
                 gmm_cause = gmm_handle_registration_update(
                         amf_ue, &nas_message->gmm.registration_request);

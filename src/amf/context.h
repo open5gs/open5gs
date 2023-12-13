@@ -107,7 +107,7 @@ typedef struct amf_context_s {
 
     ogs_hash_t      *gnb_addr_hash; /* hash table for GNB Address */
     ogs_hash_t      *gnb_id_hash;   /* hash table for GNB-ID */
-    ogs_hash_t      *guti_ue_hash;          /* hash table (GUTI : AMF_UE) */
+    ogs_hash_t      *guti_ue_hash;  /* hash table (GUTI : AMF_UE) */
     ogs_hash_t      *suci_hash;     /* hash table (SUCI) */
     ogs_hash_t      *supi_hash;     /* hash table (SUPI) */
 
@@ -381,6 +381,45 @@ struct amf_ue_s {
      (((__aMF)->ran_ue == NULL) || (ran_ue_cycle((__aMF)->ran_ue) == NULL)))
     /* NG UE context */
     ran_ue_t        *ran_ue;
+
+#define HOLDING_NG_CONTEXT(__aMF) \
+    do { \
+        ran_ue_deassociate((__aMF)->ran_ue); \
+        \
+        (__aMF)->ran_ue_holding = ran_ue_cycle((__aMF)->ran_ue); \
+        if ((__aMF)->ran_ue_holding) { \
+            ogs_warn("[%s] Holding NG Context", (__aMF)->suci); \
+            ogs_warn("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]", \
+                    (__aMF)->suci, (__aMF)->ran_ue_holding->ran_ue_ngap_id, \
+                    (long long)(__aMF)->ran_ue_holding->amf_ue_ngap_id); \
+            \
+            (__aMF)->ran_ue_holding->ue_ctx_rel_action = \
+                NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE; \
+            ogs_timer_start((__aMF)->ran_ue_holding->t_ng_holding, \
+                    amf_timer_cfg(AMF_TIMER_NG_HOLDING)->duration); \
+        } else \
+            ogs_error("[%s] NG Context has already been removed", \
+                    (__aMF)->suci); \
+    } while(0)
+#define CLEAR_NG_CONTEXT(__aMF) \
+    do { \
+        if (ran_ue_cycle((__aMF)->ran_ue_holding)) { \
+            int r; \
+            ogs_warn("[%s] Clear NG Context", (__aMF)->suci); \
+            ogs_warn("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]", \
+                    (__aMF)->suci, (__aMF)->ran_ue_holding->ran_ue_ngap_id, \
+                    (long long)(__aMF)->ran_ue_holding->amf_ue_ngap_id); \
+            \
+            r = ngap_send_ran_ue_context_release_command( \
+                    (__aMF)->ran_ue_holding, \
+                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
+                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
+            ogs_expect(r == OGS_OK); \
+            ogs_assert(r != OGS_ERROR); \
+        } \
+        (__aMF)->ran_ue_holding = NULL; \
+    } while(0)
+    ran_ue_t        *ran_ue_holding;
 
 #define CLEAR_AMF_UE_ALL_TIMERS(__aMF) \
     do { \
