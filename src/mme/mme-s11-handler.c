@@ -366,6 +366,8 @@ void mme_s11_handle_create_session_response(
     if (rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.presence) {
         pgw_s5c_teid = rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.data;
         sess->pgw_s5c_teid = be32toh(pgw_s5c_teid->teid);
+        ogs_assert(OGS_OK ==
+                ogs_gtp2_f_teid_to_ip(pgw_s5c_teid, &sess->pgw_s5c_ip));
     }
 
     /* PDN Addresss Allocation */
