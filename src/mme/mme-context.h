@@ -734,6 +734,7 @@ typedef struct mme_sess_s {
     uint8_t         pti;        /* Procedure Trasaction Identity */
 
     uint32_t        pgw_s5c_teid;
+    ogs_ip_t        pgw_s5c_ip;
 
     /* PDN Connectivity Request */
     ogs_nas_request_type_t request_type;
