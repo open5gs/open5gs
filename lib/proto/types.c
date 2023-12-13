@@ -394,7 +394,7 @@ ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex)
     return ogs_uint24_from_string((char *)hex);
 }
 
-int ogs_fqdn_build(char *dst, char *src, int length)
+int ogs_fqdn_build(char *dst, const char *src, int length)
 {
     int i = 0, j = 0;
 
@@ -411,7 +411,7 @@ int ogs_fqdn_build(char *dst, char *src, int length)
     return length+1;
 }
 
-int ogs_fqdn_parse(char *dst, char *src, int length)
+int ogs_fqdn_parse(char *dst, const char *src, int length)
 {
     int i = 0, j = 0;
     uint8_t len = 0;
