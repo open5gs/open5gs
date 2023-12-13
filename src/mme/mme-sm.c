@@ -291,15 +291,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 /* If NAS(mme_ue_t) has already been associated with
                  * older S1(enb_ue_t) context */
                 if (ECM_CONNECTED(mme_ue)) {
-                    /* De-associate S1 with NAS/EMM */
-                    enb_ue_deassociate(mme_ue->enb_ue);
-
     /*
      * Issue #2786
      *
-     * In cases where the UE sends an Integrity Un-Protected Attach Request,
-     * Tracking Area Update Request or Service Request, there is an issue of
-     * sending a UEContextReleaseCommand for the OLD ENB Context.
+     * In cases where the UE sends an Integrity Un-Protected Attach
+     * Request or Service Request, there is an issue of sending
+     * a UEContextReleaseCommand for the OLD ENB Context.
      *
      * For example, if the UE switchs off and power-on after
      * the first connection, the EPC sends a UEContextReleaseCommand.
@@ -308,34 +305,10 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
      * the eNB does not send a UEContextReleaseComplete,
      * so the deletion of the ENB Context does not function properly.
      *
-     * To solve this problem, the EPCe has been modified to implicitly
+     * To solve this problem, the EPC has been modified to implicitly
      * delete the ENB Context instead of sending a UEContextReleaseCommand.
      */
-                    if (h.integrity_protected &&
-                        SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-
-                    /* Previous S1(enb_ue_t) context the holding timer(30secs)
-                     * is started.
-                     * Newly associated S1(enb_ue_t) context holding timer
-                     * is stopped. */
-                        ogs_info("Start S1 Holding Timer");
-                        ogs_info("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-                                mme_ue->enb_ue->enb_ue_s1ap_id,
-                                mme_ue->enb_ue->mme_ue_s1ap_id);
-
-                        r = s1ap_send_ue_context_release_command(mme_ue->enb_ue,
-                                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
-                        ogs_expect(r == OGS_OK);
-                        ogs_assert(r != OGS_ERROR);
-
-                    } else {
-                        ogs_warn("Implicit S1 release");
-                        ogs_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-                                mme_ue->enb_ue->enb_ue_s1ap_id,
-                                mme_ue->enb_ue->mme_ue_s1ap_id);
-                        enb_ue_remove(mme_ue->enb_ue);
-                    }
+                    HOLDING_S1_CONTEXT(mme_ue);
                 }
             }
 

@@ -486,24 +486,24 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                 /* If NAS(amf_ue_t) has already been associated with
                  * older NG(ran_ue_t) context */
                 if (CM_CONNECTED(amf_ue)) {
-                    /* Previous NG(ran_ue_t) context the holding timer(30secs)
-                     * is started.
-                     * Newly associated NG(ran_ue_t) context holding timer
-                     * is stopped. */
-                    ogs_debug("[%s] Start NG Holding Timer", amf_ue->suci);
-                    ogs_debug("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-                            amf_ue->suci, amf_ue->ran_ue->ran_ue_ngap_id,
-                            (long long)amf_ue->ran_ue->amf_ue_ngap_id);
-
-                    /* De-associate NG with NAS/EMM */
-                    ran_ue_deassociate(amf_ue->ran_ue);
-
-                    r = ngap_send_ran_ue_context_release_command(
-                            amf_ue->ran_ue,
-                            NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                            NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
+    /*
+     * Issue #2786
+     *
+     * In cases where the UE sends an Integrity Un-Protected Registration
+     * Request or Service Request, there is an issue of sending
+     * a UEContextReleaseCommand for the OLD RAN Context.
+     *
+     * For example, if the UE switchs off and power-on after
+     * the first connection, the 5G Core sends a UEContextReleaseCommand.
+     *
+     * However, since there is no RAN context for this on the gNB,
+     * the gNB does not send a UEContextReleaseComplete,
+     * so the deletion of the RAN Context does not function properly.
+     *
+     * To solve this problem, the 5G Core has been modified to implicitly
+     * delete the RAN Context instead of sending a UEContextReleaseCommand.
+     */
+                    HOLDING_NG_CONTEXT(amf_ue);
                 }
                 amf_ue_associate_ran_ue(amf_ue, ran_ue);
 

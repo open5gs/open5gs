@@ -932,9 +932,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 /* If NAS(amf_ue_t) has already been associated with
                  * older NG(ran_ue_t) context */
                 if (CM_CONNECTED(amf_ue)) {
-
-                    /* De-associate NG with NAS/GMM */
-                    ran_ue_deassociate(amf_ue->ran_ue);
     /*
      * Issue #2786
      *
@@ -952,32 +949,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
      * To solve this problem, the 5G Core has been modified to implicitly
      * delete the RAN Context instead of sending a UEContextReleaseCommand.
      */
-                    if (h.integrity_protected &&
-                        SECURITY_CONTEXT_IS_VALID(amf_ue)) {
-                    /* Previous NG(ran_ue_t) context the holding timer (30secs)
-                     * is started.
-                     * Newly associated NG(ran_ue_t) context holding timer
-                     * is stopped. */
-                        ogs_info("[%s] Start NG Holding Timer", amf_ue->suci);
-                        ogs_info("[%s]    RAN_UE_NGAP_ID[%d] "
-                                "AMF_UE_NGAP_ID[%lld]",
-                                amf_ue->suci, amf_ue->ran_ue->ran_ue_ngap_id,
-                                (long long)amf_ue->ran_ue->amf_ue_ngap_id);
-
-                        r = ngap_send_ran_ue_context_release_command(
-                                amf_ue->ran_ue,
-                                NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                                NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
-                        ogs_expect(r == OGS_OK);
-                        ogs_assert(r != OGS_ERROR);
-                    } else {
-                        ogs_warn("[%s] Implicit NG release", amf_ue->suci);
-                        ogs_warn("[%s]    RAN_UE_NGAP_ID[%d] "
-                                "AMF_UE_NGAP_ID[%lld]",
-                                amf_ue->suci, amf_ue->ran_ue->ran_ue_ngap_id,
-                                (long long)amf_ue->ran_ue->amf_ue_ngap_id);
-                        ran_ue_remove(amf_ue->ran_ue);
-                    }
+                    HOLDING_NG_CONTEXT(amf_ue);
                 }
             }
             amf_ue_associate_ran_ue(amf_ue, ran_ue);
