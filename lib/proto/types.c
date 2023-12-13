@@ -49,7 +49,7 @@ uint16_t ogs_plmn_id_mnc_len(ogs_plmn_id_t *plmn_id)
     return plmn_id->mnc1 == 0xf ? 2 : 3;
 }
 
-void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id, 
+void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id,
         uint16_t mcc, uint16_t mnc, uint16_t mnc_len)
 {
     ogs_assert(plmn_id);
@@ -428,7 +428,7 @@ int ogs_fqdn_parse(char *dst, char *src, int length)
 
         i += len;
         j += len;
-        
+
         if (i+1 < length)
             dst[j++] = '.';
         else
@@ -438,7 +438,7 @@ int ogs_fqdn_parse(char *dst, char *src, int length)
     return j;
 }
 
-/* 8.13 Protocol Configuration Options (PCO) 
+/* 8.13 Protocol Configuration Options (PCO)
  * 10.5.6.3 Protocol configuration options in 3GPP TS 24.008 */
 int ogs_pco_parse(ogs_pco_t *pco, unsigned char *data, int data_len)
 {
@@ -474,7 +474,7 @@ int ogs_pco_parse(ogs_pco_t *pco, unsigned char *data, int data_len)
     }
     pco->num_of_id = i;
     ogs_assert(size == data_len);
-    
+
     return size;
 }
 int ogs_pco_build(unsigned char *data, int data_len, ogs_pco_t *pco)
