@@ -118,7 +118,7 @@ int ogs_pfcp_sendto(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf)
             char buf[OGS_ADDRSTRLEN];
             int err = ogs_socket_errno;
             ogs_log_message(OGS_LOG_ERROR, err,
-                    "ogs_gtp_sendto(%u, %p, %u, 0, %s:%u) failed",
+                    "ogs_sendto(%u, %p, %u, 0, %s:%u) failed",
                     sock->fd, pkbuf->data, pkbuf->len,
                     OGS_ADDR(addr, buf), OGS_PORT(addr));
         }
