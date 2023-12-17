@@ -83,3 +83,44 @@ scp:
 #    client:
 #      nrf:
 #        - uri: http://127.0.0.10:7777
+#
+################################################################################
+# HTTPS scheme with TLS
+################################################################################
+#  o Set as default if not individually set
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/scp.key
+#        cert: @sysconfdir@/open5gs/tls/scp.crt
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: scp.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
+#
+#  o Add client TLS verification
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/scp.key
+#        cert: @sysconfdir@/open5gs/tls/scp.crt
+#        verify_client: true
+#        verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_private_key: @sysconfdir@/open5gs/tls/scp.key
+#        client_cert: @sysconfdir@/open5gs/tls/scp.crt
+#  sbi:
+#    server:
+#      - address: scp.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
