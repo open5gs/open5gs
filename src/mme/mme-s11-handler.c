@@ -374,6 +374,9 @@ void mme_s11_handle_create_session_response(
     if (rsp->pdn_address_allocation.presence) {
         memcpy(&session->paa, rsp->pdn_address_allocation.data,
                 rsp->pdn_address_allocation.len);
+        session->session_type = session->paa.session_type;
+        ogs_assert(OGS_OK ==
+                ogs_gtp2_paa_to_ip(&session->paa, &session->ue_ip));
     }
 
     /* ePCO */
