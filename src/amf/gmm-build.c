@@ -318,7 +318,6 @@ ogs_pkbuf_t *gmm_build_de_registration_request(
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_DEREGISTRATION_REQUEST_TO_UE;
 
-    dereg_req->de_registration_type.switch_off = 1;
     dereg_req->de_registration_type.re_registration_required =
         dereg_reason == OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED;
     dereg_req->de_registration_type.access_type = OGS_ACCESS_TYPE_3GPP;
