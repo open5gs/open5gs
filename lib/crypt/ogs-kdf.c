@@ -36,12 +36,12 @@
 #define FC_FOR_EPS_ALGORITHM_KEY_DERIVATION     0x15
 
 typedef struct kdf_param_s {
-    uint8_t *buf;
+    const uint8_t *buf;
     uint16_t len;
 } kdf_param_t[MAX_NUM_OF_KDF_PARAM];
 
 /* KDF function : TS.33220 cluase B.2.0 */
-static void ogs_kdf_common(uint8_t *key, uint32_t key_size,
+static void ogs_kdf_common(const uint8_t *key, uint32_t key_size,
         uint8_t fc, kdf_param_t param, uint8_t *output)
 {
     int i = 0, pos;
@@ -164,7 +164,7 @@ void ogs_kdf_hxres_star(uint8_t *rand, uint8_t *xres_star, uint8_t *hxres_star)
 }
 
 /* TS33.501 Annex A.6 : Kseaf derivation function */
-void ogs_kdf_kseaf(char *serving_network_name, uint8_t *kausf, uint8_t *kseaf)
+void ogs_kdf_kseaf(char *serving_network_name, const uint8_t *kausf, uint8_t *kseaf)
 {
     kdf_param_t param;
 
@@ -181,10 +181,11 @@ void ogs_kdf_kseaf(char *serving_network_name, uint8_t *kausf, uint8_t *kseaf)
 }
 
 /* TS33.501 Annex A.7 : Kamf derivation function */
-void ogs_kdf_kamf(char *supi, uint8_t *abba, uint8_t abba_len,
-        uint8_t *kseaf, uint8_t *kamf)
+void ogs_kdf_kamf(const char *supi, const uint8_t *abba, uint8_t abba_len,
+        const uint8_t *kseaf, uint8_t *kamf)
 {
     kdf_param_t param;
+    char *val;
 
     ogs_assert(supi);
     ogs_assert(abba);
@@ -192,22 +193,23 @@ void ogs_kdf_kamf(char *supi, uint8_t *abba, uint8_t abba_len,
     ogs_assert(kseaf);
     ogs_assert(kamf);
 
+    val = ogs_id_get_value(supi);
     memset(param, 0, sizeof(param));
-    param[0].buf = (uint8_t *)ogs_id_get_value(supi);
+    param[0].buf = (const uint8_t*) val;
     ogs_assert(param[0].buf);
-    param[0].len = strlen((char *)param[0].buf);
+    param[0].len = strlen(val);
     param[1].buf = abba;
     param[1].len = abba_len;
 
     ogs_kdf_common(kseaf, OGS_SHA256_DIGEST_SIZE,
             FC_FOR_KAMF_DERIVATION, param, kamf);
 
-    ogs_free(param[0].buf);
+    ogs_free(val);
 }
 
 /* TS33.501 Annex A.8 : Algorithm key derivation functions */
 void ogs_kdf_nas_5gs(uint8_t algorithm_type_distinguishers,
-    uint8_t algorithm_identity, uint8_t *kamf, uint8_t *knas)
+    uint8_t algorithm_identity, const uint8_t *kamf, uint8_t *knas)
 {
     kdf_param_t param;
     uint8_t output[OGS_SHA256_DIGEST_SIZE];
@@ -227,7 +229,7 @@ void ogs_kdf_nas_5gs(uint8_t algorithm_type_distinguishers,
 }
 
 /* TS33.501 Annex A.9 KgNB and Kn3iwf derivation function */
-void ogs_kdf_kgnb_and_kn3iwf(uint8_t *kamf, uint32_t ul_count,
+void ogs_kdf_kgnb_and_kn3iwf(const uint8_t *kamf, uint32_t ul_count,
         uint8_t access_type_distinguisher, uint8_t *kgnb)
 {
     kdf_param_t param;
@@ -247,7 +249,7 @@ void ogs_kdf_kgnb_and_kn3iwf(uint8_t *kamf, uint32_t ul_count,
 }
 
 /* TS33.501 Annex A.10 NH derivation function */
-void ogs_kdf_nh_gnb(uint8_t *kamf, uint8_t *sync_input, uint8_t *kgnb)
+void ogs_kdf_nh_gnb(const uint8_t *kamf, uint8_t *sync_input, uint8_t *kgnb)
 {
     kdf_param_t param;
 
@@ -268,7 +270,7 @@ void ogs_kdf_nh_gnb(uint8_t *kamf, uint8_t *sync_input, uint8_t *kgnb)
  * ANSI-X9.63-KDF
  */
 void ogs_kdf_ansi_x963(
-        uint8_t *z, size_t z_len, uint8_t *info, size_t info_len,
+        const uint8_t *z, size_t z_len, const uint8_t *info, size_t info_len,
         uint8_t *ek, uint8_t *icb, uint8_t *mk)
 {
     uint8_t input[ECC_BYTES+4+ECC_BYTES+1];
@@ -333,7 +335,7 @@ void ogs_auc_kasme(const uint8_t *ck, const uint8_t *ik,
 }
 
 /* TS33.401 Annex A.3 KeNB derivation function */
-void ogs_kdf_kenb(uint8_t *kasme, uint32_t ul_count, uint8_t *kenb)
+void ogs_kdf_kenb(const uint8_t *kasme, uint32_t ul_count, uint8_t *kenb)
 {
     kdf_param_t param;
 
@@ -347,7 +349,7 @@ void ogs_kdf_kenb(uint8_t *kasme, uint32_t ul_count, uint8_t *kenb)
 }
 
 /* TS33.401 Annex A.4 NH derivation function */
-void ogs_kdf_nh_enb(uint8_t *kasme, uint8_t *sync_input, uint8_t *kenb)
+void ogs_kdf_nh_enb(const uint8_t *kasme, const uint8_t *sync_input, uint8_t *kenb)
 {
     kdf_param_t param;
 
@@ -361,7 +363,7 @@ void ogs_kdf_nh_enb(uint8_t *kasme, uint8_t *sync_input, uint8_t *kenb)
 
 /* TS33.401 Annex A.7 Algorithm key derivation functions */
 void ogs_kdf_nas_eps(uint8_t algorithm_type_distinguishers,
-    uint8_t algorithm_identity, uint8_t *kasme, uint8_t *knas)
+    uint8_t algorithm_identity, const uint8_t *kasme, uint8_t *knas)
 {
     kdf_param_t param;
     uint8_t output[OGS_SHA256_DIGEST_SIZE];
@@ -381,7 +383,7 @@ void ogs_kdf_nas_eps(uint8_t algorithm_type_distinguishers,
  * TS33.401 Annex I Hash Functions
  * Use the KDF given in TS33.220
  */
-void ogs_kdf_hash_mme(uint8_t *message, uint8_t message_len, uint8_t *hash_mme)
+void ogs_kdf_hash_mme(const uint8_t *message, uint8_t message_len, uint8_t *hash_mme)
 {
     uint8_t key[32];
     uint8_t output[OGS_SHA256_DIGEST_SIZE];
