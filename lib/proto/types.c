@@ -305,7 +305,7 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
     return amf_id;
 }
 
-char *ogs_id_get_type(char *str)
+char *ogs_id_get_type(const char *str)
 {
     char *token, *p, *tmp;
     char *type = NULL;
@@ -335,7 +335,7 @@ cleanup:
     return type;
 }
 
-char *ogs_id_get_value(char *str)
+char *ogs_id_get_value(const char *str)
 {
     char *token, *p, *tmp;
     char *ueid = NULL;
