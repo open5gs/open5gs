@@ -197,7 +197,7 @@ static int read_config(void)
             break;
         case YAML_SCANNER_ERROR:
             if (parser.context)
-                ogs_error("Scanner error - %s at line %zu, column %zu"
+                ogs_error("Scanner error - %s at line %zu, column %zu "
                         "%s at line %zu, column %zu", parser.context,
                         parser.context_mark.line+1,
                         parser.context_mark.column+1,
@@ -210,7 +210,7 @@ static int read_config(void)
             break;
         case YAML_PARSER_ERROR:
             if (parser.context)
-                ogs_error("Parser error - %s at line %zu, column %zu"
+                ogs_error("Parser error - %s at line %zu, column %zu "
                         "%s at line %zu, column %zu", parser.context,
                         parser.context_mark.line+1,
                         parser.context_mark.column+1,
