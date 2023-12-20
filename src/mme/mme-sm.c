@@ -528,14 +528,14 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
          */
         if (gtp_message.h.teid_presence && gtp_message.h.teid != 0) {
             /* Cause is not "Context not found" */
-            mme_ue = mme_ue_find_by_teid(gtp_message.h.teid);
+            mme_ue = mme_ue_find_by_s11_local_teid(gtp_message.h.teid);
         } else if (xact->local_teid) { /* rx no TEID or TEID=0 */
             /* 3GPP TS 29.274 5.5.2: we receive TEID=0 under some
              * conditions, such as cause "Session context not found". In those
              * cases, we still want to identify the local session which
              * originated the message, so try harder by using the TEID we
              * locally stored in xact when sending the original request: */
-            mme_ue = mme_ue_find_by_teid(xact->local_teid);
+            mme_ue = mme_ue_find_by_s11_local_teid(xact->local_teid);
         }
 
         switch (gtp_message.h.type) {
@@ -653,6 +653,15 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         if (rv != OGS_OK) {
             ogs_pkbuf_free(pkbuf);
             break;
+        }
+
+        if (gtp1_message.h.teid != 0) {
+            /* Cause is not "Context not found" */
+            mme_ue = mme_ue_find_by_gn_local_teid(gtp1_message.h.teid);
+        } else if (xact->local_teid) { /* rx no TEID or TEID=0 */
+            /* Try harder by using the TEID we locally stored in xact when
+             *sending the original request: */
+            mme_ue = mme_ue_find_by_gn_local_teid(xact->local_teid);
         }
 
         switch (gtp1_message.h.type) {

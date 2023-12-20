@@ -192,6 +192,7 @@ typedef struct mme_context_s {
     ogs_hash_t *guti_ue_hash;   /* hash table (GUTI : MME_UE) */
 
     ogs_hash_t *mme_s11_teid_hash;  /* hash table (MME-S11-TEID : MME_UE) */
+    ogs_hash_t *mme_gn_teid_hash;  /* hash table (MME-GN-TEID : MME_UE) */
 
     struct {
         struct {
@@ -421,6 +422,10 @@ struct mme_ue_s {
     char            a_msisdn_bcd[OGS_MAX_MSISDN_BCD_LEN+1];
 
     mme_p_tmsi_t    p_tmsi;
+    struct {
+        ogs_pool_id_t   *mme_gn_teid_node; /* A node of MME-Gn-TEID */
+        uint32_t        mme_gn_teid;   /* MME-Gn-TEID is derived from NODE */
+    } gn;
 
     struct {
         mme_m_tmsi_t *m_tmsi;
@@ -943,7 +948,8 @@ void mme_ue_fsm_fini(mme_ue_t *mme_ue);
 mme_ue_t *mme_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 mme_ue_t *mme_ue_find_by_imsi_bcd(char *imsi_bcd);
 mme_ue_t *mme_ue_find_by_guti(ogs_nas_eps_guti_t *nas_guti);
-mme_ue_t *mme_ue_find_by_teid(uint32_t teid);
+mme_ue_t *mme_ue_find_by_s11_local_teid(uint32_t teid);
+mme_ue_t *mme_ue_find_by_gn_local_teid(uint32_t teid);
 
 mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message);
 int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd);
