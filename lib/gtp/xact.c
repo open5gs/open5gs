@@ -838,7 +838,13 @@ int ogs_gtp1_xact_receive(
         list = &gnode->local_list;
         break;
     case GTP_XACT_FINAL_STAGE:
-        list = &gnode->local_list; // FIXME: is this correct?
+        /* For types which are replies to replies, the xact is never locally
+         * created during transmit, but actually during rx of the initial req, hence
+         * it is never placed in the local_list, but in the remote_list. */
+        if (type == OGS_GTP1_SGSN_CONTEXT_ACKNOWLEDGE_TYPE)
+            list = &gnode->remote_list;
+        else
+            list = &gnode->local_list;
         break;
     default:
         ogs_error("[%d] Unexpected type %u from GTPv1 peer [%s]:%d",
@@ -998,6 +1004,9 @@ static ogs_gtp_xact_stage_t ogs_gtp1_xact_get_stage(uint8_t type, uint32_t xid)
     case OGS_GTP1_RAN_INFORMATION_RELAY_TYPE:
         stage = GTP_XACT_INITIAL_STAGE;
         break;
+    case OGS_GTP1_SGSN_CONTEXT_RESPONSE_TYPE:
+        stage = GTP_XACT_INTERMEDIATE_STAGE;
+        break;
     case OGS_GTP1_ECHO_RESPONSE_TYPE:
     case OGS_GTP1_NODE_ALIVE_RESPONSE_TYPE:
     case OGS_GTP1_REDIRECTION_RESPONSE_TYPE:
@@ -1011,7 +1020,7 @@ static ogs_gtp_xact_stage_t ogs_gtp1_xact_get_stage(uint8_t type, uint32_t xid)
     case OGS_GTP1_FAILURE_REPORT_RESPONSE_TYPE:
     case OGS_GTP1_NOTE_MS_GPRS_PRESENT_RESPONSE_TYPE:
     case OGS_GTP1_IDENTIFICATION_RESPONSE_TYPE:
-    case OGS_GTP1_SGSN_CONTEXT_RESPONSE_TYPE:
+    case OGS_GTP1_SGSN_CONTEXT_ACKNOWLEDGE_TYPE:
     case OGS_GTP1_FORWARD_RELOCATION_RESPONSE_TYPE:
     case OGS_GTP1_RELOCATION_CANCEL_RESPONSE_TYPE:
     case OGS_GTP1_UE_REGISTRATION_QUERY_RESPONSE_TYPE:
