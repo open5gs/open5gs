@@ -47,6 +47,7 @@ static OGS_POOL(mme_csmap_pool, mme_csmap_t);
 static OGS_POOL(mme_enb_pool, mme_enb_t);
 static OGS_POOL(mme_ue_pool, mme_ue_t);
 static OGS_POOL(mme_s11_teid_pool, ogs_pool_id_t);
+static OGS_POOL(mme_gn_teid_pool, ogs_pool_id_t);
 static OGS_POOL(enb_ue_pool, enb_ue_t);
 static OGS_POOL(sgw_ue_pool, sgw_ue_t);
 static OGS_POOL(mme_sess_pool, mme_sess_t);
@@ -110,6 +111,8 @@ void mme_context_init(void)
     ogs_pool_init(&mme_ue_pool, ogs_global_conf()->max.ue);
     ogs_pool_init(&mme_s11_teid_pool, ogs_global_conf()->max.ue);
     ogs_pool_random_id_generate(&mme_s11_teid_pool);
+    ogs_pool_init(&mme_gn_teid_pool, ogs_global_conf()->max.ue);
+    ogs_pool_random_id_generate(&mme_gn_teid_pool);
 
     ogs_pool_init(&enb_ue_pool, ogs_global_conf()->max.ue);
     ogs_pool_init(&sgw_ue_pool, ogs_global_conf()->max.ue);
@@ -128,6 +131,8 @@ void mme_context_init(void)
     ogs_assert(self.guti_ue_hash);
     self.mme_s11_teid_hash = ogs_hash_make();
     ogs_assert(self.mme_s11_teid_hash);
+    self.mme_gn_teid_hash = ogs_hash_make();
+    ogs_assert(self.mme_gn_teid_hash);
 
     ogs_list_init(&self.mme_ue_list);
 
@@ -158,12 +163,15 @@ void mme_context_final(void)
     ogs_hash_destroy(self.guti_ue_hash);
     ogs_assert(self.mme_s11_teid_hash);
     ogs_hash_destroy(self.mme_s11_teid_hash);
+    ogs_assert(self.mme_gn_teid_hash);
+    ogs_hash_destroy(self.mme_gn_teid_hash);
 
     ogs_pool_final(&m_tmsi_pool);
     ogs_pool_final(&mme_bearer_pool);
     ogs_pool_final(&mme_sess_pool);
     ogs_pool_final(&mme_ue_pool);
     ogs_pool_final(&mme_s11_teid_pool);
+    ogs_pool_final(&mme_gn_teid_pool);
     ogs_pool_final(&enb_ue_pool);
     ogs_pool_final(&sgw_ue_pool);
 
@@ -3301,14 +3309,19 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
 
     ogs_list_init(&mme_ue->sess_list);
 
-    /* Set MME-S11_TEID */
+    /* Set MME-S11-TEID */
     ogs_pool_alloc(&mme_s11_teid_pool, &mme_ue->mme_s11_teid_node);
     ogs_assert(mme_ue->mme_s11_teid_node);
-
     mme_ue->mme_s11_teid = *(mme_ue->mme_s11_teid_node);
-
     ogs_hash_set(self.mme_s11_teid_hash,
             &mme_ue->mme_s11_teid, sizeof(mme_ue->mme_s11_teid), mme_ue);
+
+    /* Set MME-Gn-TEID */
+    ogs_pool_alloc(&mme_gn_teid_pool, &mme_ue->gn.mme_gn_teid_node);
+    ogs_assert(mme_ue->gn.mme_gn_teid_node);
+    mme_ue->gn.mme_gn_teid = *(mme_ue->gn.mme_gn_teid_node);
+    ogs_hash_set(self.mme_gn_teid_hash,
+            &mme_ue->gn.mme_gn_teid, sizeof(mme_ue->gn.mme_gn_teid), mme_ue);
 
     /*
      * When used for the first time, if last node is set,
@@ -3353,6 +3366,8 @@ void mme_ue_remove(mme_ue_t *mme_ue)
 
     ogs_hash_set(self.mme_s11_teid_hash,
             &mme_ue->mme_s11_teid, sizeof(mme_ue->mme_s11_teid), NULL);
+    ogs_hash_set(self.mme_gn_teid_hash,
+            &mme_ue->gn.mme_gn_teid, sizeof(mme_ue->gn.mme_gn_teid), NULL);
 
     ogs_assert(mme_ue->sgw_ue);
     sgw_ue_remove(mme_ue->sgw_ue);
@@ -3400,6 +3415,7 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     mme_ebi_pool_final(mme_ue);
 
     ogs_pool_free(&mme_s11_teid_pool, mme_ue->mme_s11_teid_node);
+    ogs_pool_free(&mme_gn_teid_pool, mme_ue->gn.mme_gn_teid_node);
     ogs_pool_free(&mme_ue_pool, mme_ue);
 
     ogs_info("[Removed] Number of MME-UEs is now %d",
@@ -3473,9 +3489,14 @@ mme_ue_t *mme_ue_find_by_guti(ogs_nas_eps_guti_t *guti)
             self.guti_ue_hash, guti, sizeof(ogs_nas_eps_guti_t));
 }
 
-mme_ue_t *mme_ue_find_by_teid(uint32_t teid)
+mme_ue_t *mme_ue_find_by_s11_local_teid(uint32_t teid)
 {
     return ogs_hash_get(self.mme_s11_teid_hash, &teid, sizeof(teid));
+}
+
+mme_ue_t *mme_ue_find_by_gn_local_teid(uint32_t teid)
+{
+    return ogs_hash_get(self.mme_gn_teid_hash, &teid, sizeof(teid));
 }
 
 mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
