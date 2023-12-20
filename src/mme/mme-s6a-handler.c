@@ -33,7 +33,7 @@
 static uint8_t emm_cause_from_diameter(
                 const uint32_t *dia_err, const uint32_t *dia_exp_err);
 
-static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue, 
+static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue,
     ogs_slice_data_t *slice_data);
 
 uint8_t mme_s6a_handle_aia(
@@ -299,7 +299,7 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
     }
 }
 
-static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue, 
+static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue,
     ogs_slice_data_t *slice_data)
 {
     int i;
