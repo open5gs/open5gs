@@ -717,11 +717,11 @@ int ogs_pfcp_xact_receive(
         }
     }
 
-    ogs_debug("[%d] Cannot find new type %u from PFCP peer [%s]:%d",
-            xid, type, OGS_ADDR(&node->addr, buf), OGS_PORT(&node->addr));
-
-    if (!new)
+    if (!new) {
+        ogs_debug("[%d] Cannot find new type %u from PFCP peer [%s]:%d",
+                  xid, type, OGS_ADDR(&node->addr, buf), OGS_PORT(&node->addr));
         new = ogs_pfcp_xact_remote_create(node, sqn);
+    }
     ogs_assert(new);
 
     ogs_debug("[%d] %s Receive peer [%s]:%d",

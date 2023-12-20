@@ -859,11 +859,11 @@ int ogs_gtp1_xact_receive(
         }
     }
 
-    ogs_debug("[%d] Cannot find xact type %u from GTPv1 peer [%s]:%d",
-            xid, type, OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
-
-    if (!new)
+    if (!new) {
+        ogs_debug("[%d] Cannot find xact type %u from GTPv1 peer [%s]:%d",
+                  xid, type, OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
         new = ogs_gtp_xact_remote_create(gnode, 1, sqn);
+    }
     ogs_assert(new);
 
     ogs_debug("[%d] %s Receive peer [%s]:%d",
@@ -947,12 +947,11 @@ int ogs_gtp_xact_receive(
         }
     }
 
-    ogs_debug("[%d] Cannot find xact type %u from GTPv2 peer [%s]:%d",
-            xid, type,
-            OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
-
-    if (!new)
+    if (!new) {
+        ogs_debug("[%d] Cannot find xact type %u from GTPv2 peer [%s]:%d",
+                  xid, type, OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
         new = ogs_gtp_xact_remote_create(gnode, 2, sqn);
+    }
     ogs_assert(new);
 
     ogs_debug("[%d] %s Receive peer [%s]:%d",
