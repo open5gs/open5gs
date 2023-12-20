@@ -213,6 +213,9 @@ void ogs_sbi_client_remove(ogs_sbi_client_t *client)
     if (client->cert)
         ogs_free(client->cert);
 
+    if (client->source_interface)
+        ogs_free(client->source_interface);
+
     if (client->fqdn)
         ogs_free(client->fqdn);
     if (client->resolve)
@@ -452,6 +455,11 @@ static connection_t *connection_add(
     }
 
     curl_easy_setopt(conn->easy, CURLOPT_BUFFERSIZE, OGS_MAX_SDU_LEN);
+
+    if (client->source_interface) {
+        curl_easy_setopt(conn->easy, CURLOPT_INTERFACE, 
+            client->source_interface);
+    }
 
     if (client->scheme == OpenAPI_uri_scheme_https) {
         if (client->insecure_skip_verify) {
