@@ -339,6 +339,9 @@ int ogs_sbi_context_parse_config(
                                     }
                                 }
                             }
+                        } else if (!strcmp(default_key, "source_interface")) {
+                            self.source_interface = 
+                                ogs_yaml_iter_value(&default_iter);
                         }
                     }
                 }

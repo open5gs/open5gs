@@ -119,6 +119,9 @@ ogs_sbi_client_t *ogs_sbi_client_add(
 
     client->scheme = scheme;
 
+    if (ogs_sbi_self()->source_interface)
+        client->source_interface = ogs_strdup(ogs_sbi_self()->source_interface);
+
     client->insecure_skip_verify =
         ogs_sbi_self()->tls.client.insecure_skip_verify;
     if (ogs_sbi_self()->tls.client.cacert)
