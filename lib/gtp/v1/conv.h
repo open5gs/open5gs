@@ -35,9 +35,6 @@ int ogs_gtp1_sockaddr_to_gsn_addr(const ogs_sockaddr_t *addr,
 int ogs_gtp1_gsn_addr_to_ip(const ogs_gtp1_gsn_addr_t *gsnaddr, uint16_t gsnaddr_len,
         ogs_ip_t *ip);
 
-int ogs_gtp1_pdu_session_type_to_eua_ietf_type(uint8_t session_type);
-int ogs_gtp1_eua_ietf_type_to_pdu_session_type(uint8_t eua_ietf_type);
-
 int ogs_gtp1_eua_to_ip(const ogs_eua_t *eua, uint16_t eua_len, ogs_ip_t *ip,
         uint8_t *pdu_session_type);
 
