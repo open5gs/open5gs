@@ -155,7 +155,7 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
     /* Store UE specific information */
     if (attach_request->presencemask &
         OGS_NAS_EPS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT) {
-        ogs_nas_eps_tai_t *last_visited_registered_tai = 
+        ogs_nas_eps_tai_t *last_visited_registered_tai =
             &attach_request->last_visited_registered_tai;
 
         ogs_nas_to_plmn_id(&mme_ue->last_visited_plmn_id,
@@ -164,13 +164,13 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
                 ogs_plmn_id_hexdump(&mme_ue->last_visited_plmn_id));
     }
 
-    memcpy(&mme_ue->ue_network_capability, 
+    memcpy(&mme_ue->ue_network_capability,
             &attach_request->ue_network_capability,
             sizeof(attach_request->ue_network_capability));
 
     if (attach_request->presencemask &
             OGS_NAS_EPS_ATTACH_REQUEST_MS_NETWORK_CAPABILITY_PRESENT) {
-        memcpy(&mme_ue->ms_network_capability, 
+        memcpy(&mme_ue->ms_network_capability,
                 &attach_request->ms_network_capability,
                 sizeof(attach_request->ms_network_capability));
     }
@@ -204,7 +204,7 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
                     eps_mobile_identity->length);
             return OGS_ERROR;
         }
-        memcpy(&mme_ue->nas_mobile_identity_imsi, 
+        memcpy(&mme_ue->nas_mobile_identity_imsi,
             &eps_mobile_identity->imsi, eps_mobile_identity->length);
 
         emm_cause = emm_cause_from_access_control(mme_ue);
@@ -237,7 +237,7 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
                 nas_guti.mme_gid,
                 nas_guti.mme_code,
                 nas_guti.m_tmsi,
-                MME_UE_HAVE_IMSI(mme_ue) 
+                MME_UE_HAVE_IMSI(mme_ue)
                     ? mme_ue->imsi_bcd : "Unknown IMSI");
         break;
     default:
@@ -263,7 +263,7 @@ int emm_handle_attach_complete(
     ogs_nas_time_zone_t *local_time_zone = &emm_information->local_time_zone;
     ogs_nas_time_zone_and_time_t *universal_time_and_local_time_zone =
         &emm_information->universal_time_and_local_time_zone;
-    ogs_nas_daylight_saving_time_t *network_daylight_saving_time = 
+    ogs_nas_daylight_saving_time_t *network_daylight_saving_time =
         &emm_information->network_daylight_saving_time;
 
     struct timeval tv;
@@ -295,7 +295,7 @@ int emm_handle_attach_complete(
     }
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
@@ -398,7 +398,7 @@ int emm_handle_identity_response(
             ogs_assert(r != OGS_ERROR);
             return OGS_ERROR;
         }
-        memcpy(&mme_ue->nas_mobile_identity_imsi, 
+        memcpy(&mme_ue->nas_mobile_identity_imsi,
             &mobile_identity->imsi, mobile_identity->length);
 
         emm_cause = emm_cause_from_access_control(mme_ue);
@@ -470,11 +470,11 @@ int emm_handle_detach_request(
 
     switch (detach_request->detach_type.value) {
     /* 0 0 1 : EPS detach */
-    case OGS_NAS_DETACH_TYPE_FROM_UE_EPS_DETACH: 
+    case OGS_NAS_DETACH_TYPE_FROM_UE_EPS_DETACH:
         ogs_debug("    EPS Detach");
         break;
     /* 0 1 0 : IMSI detach */
-    case OGS_NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH: 
+    case OGS_NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH:
         ogs_debug("    IMSI Detach");
         break;
     case 6: /* 1 1 0 : reserved */
@@ -483,7 +483,7 @@ int emm_handle_detach_request(
             detach_request->detach_type.value);
         break;
     /* 0 1 1 : combined EPS/IMSI detach */
-    case OGS_NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH: 
+    case OGS_NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH:
         ogs_debug("    Combined EPS/IMSI Detach");
     default: /* all other values */
         break;
@@ -637,30 +637,30 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
     /* Store UE specific information */
     if (tau_request->presencemask &
         OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT) {
-        ogs_nas_eps_tai_t *last_visited_registered_tai = 
+        ogs_nas_eps_tai_t *last_visited_registered_tai =
             &tau_request->last_visited_registered_tai;
 
         ogs_nas_to_plmn_id(&mme_ue->last_visited_plmn_id,
                 &last_visited_registered_tai->nas_plmn_id);
         ogs_debug("    Visited_PLMN_ID:%06x",
                 ogs_plmn_id_hexdump(&mme_ue->last_visited_plmn_id));
-    } 
+    }
 
     if (tau_request->presencemask &
             OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_NETWORK_CAPABILITY_PRESENT) {
-        memcpy(&mme_ue->ue_network_capability, 
+        memcpy(&mme_ue->ue_network_capability,
                 &tau_request->ue_network_capability,
                 sizeof(tau_request->ue_network_capability));
     }
 
     if (tau_request->presencemask &
             OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_CAPABILITY_PRESENT) {
-        memcpy(&mme_ue->ms_network_capability, 
+        memcpy(&mme_ue->ms_network_capability,
                 &tau_request->ms_network_capability,
                 sizeof(tau_request->ms_network_capability));
     }
 
-    /* TODO: 
+    /* TODO:
      *   1) Consider if MME is changed or not.
      *   2) Consider if SGW is changed or not.
      */
@@ -677,12 +677,12 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
                 nas_guti.mme_gid,
                 nas_guti.mme_code,
                 nas_guti.m_tmsi,
-                MME_UE_HAVE_IMSI(mme_ue) 
+                MME_UE_HAVE_IMSI(mme_ue)
                     ? mme_ue->imsi_bcd : "Unknown");
         break;
     default:
         ogs_error("Not implemented[%d]", eps_mobile_identity->imsi.type);
-        
+
         return OGS_OK;
     }
 
@@ -713,7 +713,7 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
     mme_ue->nas_eps.ksi = service_type->nas_key_set_identifier;
     ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
             mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
-    
+
     /*
      * ATTACH_REQUEST
      * TAU_REQUEST
