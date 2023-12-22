@@ -30,7 +30,7 @@ ogs_pkbuf_t *emm_build_attach_accept(
     ogs_nas_eps_message_t message;
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_nas_eps_attach_accept_t *attach_accept = &message.emm.attach_accept;
-    ogs_nas_eps_attach_result_t *eps_attach_result = 
+    ogs_nas_eps_attach_result_t *eps_attach_result =
         &attach_accept->eps_attach_result;
     ogs_nas_gprs_timer_t *t3412_value = &attach_accept->t3412_value;
     ogs_nas_gprs_timer_t *t3402_value = &attach_accept->t3402_value;
@@ -48,7 +48,7 @@ ogs_pkbuf_t *emm_build_attach_accept(
     ogs_assert(esmbuf);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
@@ -68,7 +68,7 @@ ogs_pkbuf_t *emm_build_attach_accept(
      *
      *   HSS IMSI[x] Network-Access-Mode[2]  > serve EPS_ONLY_ATTACH[1]
      *
-     *   HSS IMSI[x] Network-Access-Mode[0] && request EPS_ONLY_ATTACH[1] 
+     *   HSS IMSI[x] Network-Access-Mode[0] && request EPS_ONLY_ATTACH[1]
      *       > serve EPS_ONLY_ATTACH[1]
      *
      *   HSS IMSI[x] Network-Access-Mode[0] &&
@@ -197,7 +197,7 @@ ogs_pkbuf_t *emm_build_attach_accept(
             OGS_NAS_EPS_ATTACH_ACCEPT_T3423_VALUE_PRESENT;
     }
 
-    attach_accept->presencemask |= 
+    attach_accept->presencemask |=
         OGS_NAS_EPS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
     if (ogs_global_conf()->parameter.use_openair == false) {
         eps_network_feature_support->length = 2;
@@ -264,7 +264,7 @@ ogs_pkbuf_t *emm_build_attach_reject(
 ogs_pkbuf_t *emm_build_identity_request(mme_ue_t *mme_ue)
 {
     ogs_nas_eps_message_t message;
-    ogs_nas_eps_identity_request_t *identity_request = 
+    ogs_nas_eps_identity_request_t *identity_request =
         &message.emm.identity_request;
 
     ogs_assert(mme_ue);
@@ -283,7 +283,7 @@ ogs_pkbuf_t *emm_build_identity_request(mme_ue_t *mme_ue)
 ogs_pkbuf_t *emm_build_authentication_request(mme_ue_t *mme_ue)
 {
     ogs_nas_eps_message_t message;
-    ogs_nas_eps_authentication_request_t *authentication_request = 
+    ogs_nas_eps_authentication_request_t *authentication_request =
         &message.emm.authentication_request;
 
     ogs_assert(mme_ue);
@@ -299,7 +299,7 @@ ogs_pkbuf_t *emm_build_authentication_request(mme_ue_t *mme_ue)
             mme_ue->rand, OGS_RAND_LEN);
     memcpy(authentication_request->authentication_parameter_autn.autn,
             mme_ue->autn, OGS_AUTN_LEN);
-    authentication_request->authentication_parameter_autn.length = 
+    authentication_request->authentication_parameter_autn.length =
             OGS_AUTN_LEN;
 
     return ogs_nas_eps_plain_encode(&message);
@@ -320,13 +320,13 @@ ogs_pkbuf_t *emm_build_authentication_reject(void)
 ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
 {
     ogs_nas_eps_message_t message;
-    ogs_nas_eps_security_mode_command_t *security_mode_command = 
+    ogs_nas_eps_security_mode_command_t *security_mode_command =
         &message.emm.security_mode_command;
     ogs_nas_security_algorithms_t *selected_nas_security_algorithms =
         &security_mode_command->selected_nas_security_algorithms;
     ogs_nas_key_set_identifier_t *nas_key_set_identifier =
         &security_mode_command->nas_key_set_identifier;
-    ogs_nas_ue_security_capability_t *replayed_ue_security_capabilities = 
+    ogs_nas_ue_security_capability_t *replayed_ue_security_capabilities =
         &security_mode_command->replayed_ue_security_capabilities;
     ogs_nas_imeisv_request_t *imeisv_request =
         &security_mode_command->imeisv_request;
@@ -338,7 +338,7 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT;
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
@@ -359,10 +359,10 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
     replayed_ue_security_capabilities->eea = mme_ue->ue_network_capability.eea;
     replayed_ue_security_capabilities->eia = mme_ue->ue_network_capability.eia;
     replayed_ue_security_capabilities->uea = mme_ue->ue_network_capability.uea;
-    replayed_ue_security_capabilities->uia = 
+    replayed_ue_security_capabilities->uia =
         mme_ue->ue_network_capability.uia & 0x7f;
-    replayed_ue_security_capabilities->gea = 
-        (mme_ue->ms_network_capability.gea1 << 6) | 
+    replayed_ue_security_capabilities->gea =
+        (mme_ue->ms_network_capability.gea1 << 6) |
         mme_ue->ms_network_capability.extended_gea;
 
     replayed_ue_security_capabilities->length =
@@ -453,7 +453,7 @@ ogs_pkbuf_t *emm_build_detach_request(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
         OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
@@ -473,7 +473,7 @@ ogs_pkbuf_t *emm_build_detach_accept(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
         OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
@@ -486,7 +486,7 @@ ogs_pkbuf_t *emm_build_detach_accept(mme_ue_t *mme_ue)
 ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
 {
     ogs_nas_eps_message_t message;
-    ogs_nas_eps_tracking_area_update_accept_t *tau_accept = 
+    ogs_nas_eps_tracking_area_update_accept_t *tau_accept =
         &message.emm.tracking_area_update_accept;
     ogs_nas_eps_mobile_identity_t *nas_guti = &tau_accept->guti;
     ogs_nas_gprs_timer_t *t3412_value = &tau_accept->t3412_value;
@@ -499,7 +499,7 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
         OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
@@ -628,7 +628,7 @@ ogs_pkbuf_t *emm_build_tau_reject(
         ogs_nas_emm_cause_t emm_cause, mme_ue_t *mme_ue)
 {
     ogs_nas_eps_message_t message;
-    ogs_nas_eps_tracking_area_update_reject_t *tau_reject = 
+    ogs_nas_eps_tracking_area_update_reject_t *tau_reject =
         &message.emm.tracking_area_update_reject;
 
     ogs_assert(mme_ue);
@@ -664,7 +664,7 @@ ogs_pkbuf_t *emm_build_service_reject(
 ogs_pkbuf_t *emm_build_cs_service_notification(mme_ue_t *mme_ue)
 {
     ogs_nas_eps_message_t message;
-    ogs_nas_eps_cs_service_notification_t *cs_service_notification = 
+    ogs_nas_eps_cs_service_notification_t *cs_service_notification =
         &message.emm.cs_service_notification;
     ogs_nas_paging_identity_t *paging_identity =
         &cs_service_notification->paging_identity;
@@ -672,7 +672,7 @@ ogs_pkbuf_t *emm_build_cs_service_notification(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
         OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
@@ -683,7 +683,7 @@ ogs_pkbuf_t *emm_build_cs_service_notification(mme_ue_t *mme_ue)
     paging_identity->identity = OGS_NAS_PAGING_IDENTITY_TMSI;
     ogs_debug("    Paging Identity[%d]", paging_identity->identity);
 
-    /* FIXME : What optional filed should be included in this message? */  
+    /* FIXME : What optional filed should be included in this message? */
 
     return nas_eps_security_encode(mme_ue, &message);
 }
@@ -692,7 +692,7 @@ ogs_pkbuf_t *emm_build_downlink_nas_transport(
         mme_ue_t *mme_ue, uint8_t *buffer, uint8_t length)
 {
     ogs_nas_eps_message_t message;
-    ogs_nas_eps_downlink_nas_transport_t *downlink_nas_transport = 
+    ogs_nas_eps_downlink_nas_transport_t *downlink_nas_transport =
         &message.emm.downlink_nas_transport;
     ogs_nas_eps_message_container_t *nas_message_container =
         &downlink_nas_transport->nas_message_container;
@@ -700,7 +700,7 @@ ogs_pkbuf_t *emm_build_downlink_nas_transport(
     ogs_assert(mme_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
         OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 

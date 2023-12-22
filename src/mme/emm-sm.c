@@ -868,7 +868,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                 MME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
                 ENB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
 
-                r = s1ap_send_error_indication(enb_ue->enb, 
+                r = s1ap_send_error_indication(enb_ue->enb,
                         &MME_UE_S1AP_ID, &ENB_UE_S1AP_ID,
                         S1AP_Cause_PR_transport,
                         S1AP_CauseTransport_transport_resource_unavailable);
@@ -906,7 +906,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
 
     ogs_assert(s);
     ogs_assert(e);
-    
+
     mme_sm_debug(e);
 
     mme_ue = e->mme_ue;
@@ -961,7 +961,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             ogs_nas_eps_authentication_failure_t *authentication_failure =
                 &message->emm.authentication_failure;
             ogs_nas_authentication_failure_parameter_t
-                *authentication_failure_parameter = 
+                *authentication_failure_parameter =
                     &authentication_failure->
                         authentication_failure_parameter;
 
