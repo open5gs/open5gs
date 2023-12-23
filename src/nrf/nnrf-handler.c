@@ -927,7 +927,8 @@ bool nrf_nnrf_handle_nf_discover(
 
         goto cleanup;
 
-    } else if (discovery_option->num_of_target_plmn_list &&
+    } else if (discovery_option &&
+            discovery_option->num_of_target_plmn_list &&
             discovery_option->num_of_requester_plmn_list) {
 
         /* No Discovery, Try to find different PLMN */
@@ -940,6 +941,9 @@ bool nrf_nnrf_handle_nf_discover(
         nrf_assoc_t *assoc = NULL;
 
         ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
+            if (NF_INSTANCE_ID_IS_SELF(nf_instance->id))
+                continue;
+
             if (nf_instance->nf_type != OpenAPI_nf_type_NRF)
                 continue;
 
