@@ -44,6 +44,7 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [5G Core SBI mTLS Using External Certificate PKI](https://futuredon.medium.com/5g-core-sbi-mtls-using-external-certificate-pki-4ffc02ac7728)
   - [5G Frame Routing](https://futuredon.medium.com/5g-frame-routing-6e34d8587123)
   - [5G SCTP LoadBalancer Using LoxiLB](https://futuredon.medium.com/5g-sctp-loadbalancer-using-loxilb-b525198a9103)([Video Link](https://youtu.be/k3ICc7MXcC8))
+  - [5G Roaming With Mutual TLS](https://futuredon.medium.com/5g-roaming-with-mutual-tls-1468d109129c)
 
 - @nickvsnetworking
   - [My first 5G Core : Open5GS and UERANSIM](http://nickvsnetworking.com/my-first-5g-core-open5gs-and-ueransim/)

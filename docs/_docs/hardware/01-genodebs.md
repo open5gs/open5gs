@@ -48,6 +48,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Gemtek WLTGFC-101 (S/W version 2.1.1746.1116)
  * Huawei BTS3900 (S/W version V100R011C10SPC230)
  * Huawei BBU5900 with RRU5304W Band 7 FDD 2600Mhz 40W Version V100R016C10
+ * Klas VoyagerCell Duo 4GAP1000/4GAP1000X
  * Nokia FW2PC BC28 Flexi Zone G2 Outdoor Micro FDD LTE 700 MHz High Power
  * Nokia FWH1 B38 Flexi Zone Outdoor Micro TD LTE 2600 MHz
  * Nokia FRGY Flexi BTS BBU with Nokia FRCG RRU Band 5 850Mhz FDD 40W. Version 16.1A to 19.0
