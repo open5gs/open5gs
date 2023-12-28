@@ -36,6 +36,7 @@ int hss_initialize(void)
     if (rv != OGS_OK) return rv;
 
     hss_context_init();
+    hss_event_init();
 
     rv = hss_context_parse_config();
     if (rv != OGS_OK) return rv;
