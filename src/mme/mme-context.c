@@ -3164,7 +3164,7 @@ void mme_ue_confirm_guti(mme_ue_t *mme_ue)
         ogs_assert(mme_m_tmsi_free(mme_ue->current.m_tmsi) == OGS_OK);
     }
 
-    /* Copying from Current to Next Guti */
+    /* Copying from Next to Current Guti */
     mme_ue->current.m_tmsi = mme_ue->next.m_tmsi;
     memcpy(&mme_ue->current.guti,
             &mme_ue->next.guti, sizeof(ogs_nas_eps_guti_t));
