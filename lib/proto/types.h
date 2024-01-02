@@ -196,25 +196,25 @@ ED2(uint8_t mnc3:4;,
     uint8_t mnc2:4;)
 } __attribute__ ((packed)) ogs_plmn_id_t;
 
-uint32_t ogs_plmn_id_hexdump(void *plmn_id);
+uint32_t ogs_plmn_id_hexdump(const void *plmn_id);
 
-uint16_t ogs_plmn_id_mcc(ogs_plmn_id_t *plmn_id);
-uint16_t ogs_plmn_id_mnc(ogs_plmn_id_t *plmn_id);
-uint16_t ogs_plmn_id_mnc_len(ogs_plmn_id_t *plmn_id);
+uint16_t ogs_plmn_id_mcc(const ogs_plmn_id_t *plmn_id);
+uint16_t ogs_plmn_id_mnc(const ogs_plmn_id_t *plmn_id);
+uint16_t ogs_plmn_id_mnc_len(const ogs_plmn_id_t *plmn_id);
 
 void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id,
         uint16_t mcc, uint16_t mnc, uint16_t mnc_len);
 
-char *ogs_plmn_id_mcc_string(ogs_plmn_id_t *plmn_id);
-char *ogs_plmn_id_mnc_string(ogs_plmn_id_t *plmn_id);
+char *ogs_plmn_id_mcc_string(const ogs_plmn_id_t *plmn_id);
+char *ogs_plmn_id_mnc_string(const ogs_plmn_id_t *plmn_id);
 
 #define OGS_PLMNIDSTRLEN    (sizeof(ogs_plmn_id_t)*2+1)
-char *ogs_plmn_id_to_string(ogs_plmn_id_t *plmn_id, char *buf);
+char *ogs_plmn_id_to_string(const ogs_plmn_id_t *plmn_id, char *buf);
 
-char *ogs_serving_network_name_from_plmn_id(ogs_plmn_id_t *plmn_id);
-char *ogs_home_network_domain_from_plmn_id(ogs_plmn_id_t *plmn_id);
-char *ogs_nrf_fqdn_from_plmn_id(ogs_plmn_id_t *plmn_id);
-char *ogs_nssf_fqdn_from_plmn_id(ogs_plmn_id_t *plmn_id);
+char *ogs_serving_network_name_from_plmn_id(const ogs_plmn_id_t *plmn_id);
+char *ogs_home_network_domain_from_plmn_id(const ogs_plmn_id_t *plmn_id);
+char *ogs_nrf_fqdn_from_plmn_id(const ogs_plmn_id_t *plmn_id);
+char *ogs_nssf_fqdn_from_plmn_id(const ogs_plmn_id_t *plmn_id);
 char *ogs_home_network_domain_from_fqdn(char *fqdn);
 uint16_t ogs_plmn_id_mnc_from_fqdn(char *fqdn);
 uint16_t ogs_plmn_id_mcc_from_fqdn(char *fqdn);
@@ -231,9 +231,9 @@ ED2(uint8_t mnc2:4;,
 } __attribute__ ((packed)) ogs_nas_plmn_id_t;
 
 void *ogs_nas_from_plmn_id(
-        ogs_nas_plmn_id_t *ogs_nas_plmn_id, ogs_plmn_id_t *plmn_id);
+        ogs_nas_plmn_id_t *ogs_nas_plmn_id, const ogs_plmn_id_t *plmn_id);
 void *ogs_nas_to_plmn_id(
-        ogs_plmn_id_t *plmn_id, ogs_nas_plmn_id_t *ogs_nas_plmn_id);
+        ogs_plmn_id_t *plmn_id, const ogs_nas_plmn_id_t *ogs_nas_plmn_id);
 
 /************************************
  * AMF_ID Structure                 */
@@ -249,14 +249,14 @@ typedef struct ogs_guami_s {
     ogs_amf_id_t amf_id;
 } ogs_guami_t;
 
-uint32_t ogs_amf_id_hexdump(ogs_amf_id_t *amf_id);
+uint32_t ogs_amf_id_hexdump(const ogs_amf_id_t *amf_id);
 
 ogs_amf_id_t *ogs_amf_id_from_string(ogs_amf_id_t *amf_id, const char *hex);
-char *ogs_amf_id_to_string(ogs_amf_id_t *amf_id);
+char *ogs_amf_id_to_string(const ogs_amf_id_t *amf_id);
 
-uint8_t ogs_amf_region_id(ogs_amf_id_t *amf_id);
-uint16_t ogs_amf_set_id(ogs_amf_id_t *amf_id);
-uint8_t ogs_amf_pointer(ogs_amf_id_t *amf_id);
+uint8_t ogs_amf_region_id(const ogs_amf_id_t *amf_id);
+uint16_t ogs_amf_set_id(const ogs_amf_id_t *amf_id);
+uint8_t ogs_amf_pointer(const ogs_amf_id_t *amf_id);
 
 ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
         uint8_t region, uint16_t set, uint8_t pointer);
@@ -306,7 +306,7 @@ typedef struct ogs_s_nssai_s {
     ogs_uint24_t sd;
 } __attribute__ ((packed)) ogs_s_nssai_t;
 
-char *ogs_s_nssai_sd_to_string(ogs_uint24_t sd);
+char *ogs_s_nssai_sd_to_string(const ogs_uint24_t sd);
 ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex);
 
 /**************************************************
@@ -332,12 +332,12 @@ int ogs_sockaddr_to_ip(
         ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, ogs_ip_t *ip);
 
 char *ogs_ipv4_to_string(uint32_t addr);
-char *ogs_ipv6addr_to_string(uint8_t *addr6);
-char *ogs_ipv6prefix_to_string(uint8_t *addr6, uint8_t prefixlen);
-int ogs_ipv4_from_string(uint32_t *addr, char *string);
-int ogs_ipv6addr_from_string(uint8_t *addr6, char *string);
+char *ogs_ipv6addr_to_string(const uint8_t *addr6);
+char *ogs_ipv6prefix_to_string(const uint8_t *addr6, uint8_t prefixlen);
+int ogs_ipv4_from_string(uint32_t *addr, const char *string);
+int ogs_ipv6addr_from_string(uint8_t *addr6, const char *string);
 int ogs_ipv6prefix_from_string(
-        uint8_t *addr6, uint8_t *prefixlen, char *string);
+        uint8_t *addr6, uint8_t *prefixlen, const char *string);
 
 /**************************************************
  * GTPv1-C: TS 29.060 7.7.27 End User Address (EUA) */
