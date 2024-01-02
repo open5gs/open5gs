@@ -36,7 +36,7 @@ int ogs_ascii_to_hex(char *in, int in_len, void *out, int out_len)
 
     while(i < in_len && j < out_len) {
         if (!isspace(in[i])) {
-            hex = isdigit(in[i]) ? in[i] - '0' : 
+            hex = isdigit(in[i]) ? in[i] - '0' :
                 islower(in[i]) ? in[i] - 'a' + 10 : in[i] - 'A' + 10;
             if ((k & 0x1) == 0) {
                 out_p[j] = (hex << 4);
@@ -73,8 +73,8 @@ void *ogs_uint64_to_buffer(uint64_t num, int size, void *buffer)
 {
     int i;
     uint8_t *buffer_p = buffer;
-    for (i = 0; i < size; i++) 
-        buffer_p[i] = (num >> ((size-1-i) * 8)) & 0xff; 
+    for (i = 0; i < size; i++)
+        buffer_p[i] = (num >> ((size-1-i) * 8)) & 0xff;
 
     return buffer;
 }
