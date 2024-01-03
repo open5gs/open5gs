@@ -70,6 +70,7 @@ void hss_terminate(void)
 
     ogs_dbi_final();
     hss_context_final();
+    hss_event_final();
 
     return;
 }
