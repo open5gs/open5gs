@@ -36,6 +36,7 @@ int hss_initialize(void)
     if (rv != OGS_OK) return rv;
 
     hss_context_init();
+    hss_event_init();
 
     rv = hss_context_parse_config();
     if (rv != OGS_OK) return rv;
@@ -69,6 +70,7 @@ void hss_terminate(void)
 
     ogs_dbi_final();
     hss_context_final();
+    hss_event_final();
 
     return;
 }
