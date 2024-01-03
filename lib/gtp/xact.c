@@ -655,9 +655,12 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
             break;
 
         case GTP_XACT_INTERMEDIATE_STAGE:
-            ogs_expect(0);
-            ogs_gtp_xact_delete(xact);
-            return OGS_ERROR;
+            if (xact->step != 2) {
+                ogs_error("invalid step[%d]", xact->step);
+                ogs_gtp_xact_delete(xact);
+                return OGS_ERROR;
+            }
+            return OGS_OK;
 
         case GTP_XACT_FINAL_STAGE:
             if (xact->step != 2 && xact->step != 3) {
