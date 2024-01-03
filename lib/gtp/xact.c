@@ -268,7 +268,7 @@ int ogs_gtp1_xact_update_tx(ogs_gtp_xact_t *xact,
             return OGS_ERROR;
 
         case GTP_XACT_FINAL_STAGE:
-            if (xact->step != 2) {
+            if (xact->step != 2 && xact->step != 3) {
                 ogs_error("invalid step[%d]", xact->step);
                 ogs_pkbuf_free(pkbuf);
                 return OGS_ERROR;
