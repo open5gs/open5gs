@@ -323,7 +323,7 @@ int s1ap_send_enb_configuration_update_ack(mme_enb_t *enb)
 
     s1ap_buffer = s1ap_build_enb_configuration_update_ack();
     if (!s1ap_buffer) {
-        ogs_error("s1ap_build_setup_rsp() failed");
+        ogs_error("s1ap_build_enb_configuration_update_ack() failed");
         return OGS_ERROR;
     }
 
@@ -349,7 +349,7 @@ int s1ap_send_enb_configuration_update_failure(
     s1ap_buffer = s1ap_build_enb_configuration_update_failure(
             group, cause, S1AP_TimeToWait_v10s);
     if (!s1ap_buffer) {
-        ogs_error("s1ap_build_setup_failure() failed");
+        ogs_error("s1ap_build_enb_configuration_update_failure() failed");
         return OGS_ERROR;
     }
 
