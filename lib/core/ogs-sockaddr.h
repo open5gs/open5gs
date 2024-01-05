@@ -48,7 +48,7 @@ struct ogs_sockaddr_s {
     /* Reserved Area
      *   - Should not add any atrribute in this area.
      *
-     *   e.g) 
+     *   e.g)
      *   struct sockaddr addr;
      *   ...
      *   sockaddr_len((ogs_sockaddr_t *)&addr);
@@ -92,11 +92,11 @@ typedef struct ogs_ipsubnet_s {
     uint32_t mask[4];
 } ogs_ipsubnet_t;
 
-int ogs_getaddrinfo(ogs_sockaddr_t **sa_list, 
+int ogs_getaddrinfo(ogs_sockaddr_t **sa_list,
         int family, const char *hostname, uint16_t port, int flags);
 int ogs_freeaddrinfo(ogs_sockaddr_t *sa_list);
 
-int ogs_addaddrinfo(ogs_sockaddr_t **sa_list, 
+int ogs_addaddrinfo(ogs_sockaddr_t **sa_list,
         int family, const char *hostname, uint16_t port, int flags);
 int ogs_copyaddrinfo(
         ogs_sockaddr_t **dst, const ogs_sockaddr_t *src);
@@ -106,7 +106,7 @@ int ogs_sortaddrinfo(ogs_sockaddr_t **sa_list, int family);
 ogs_sockaddr_t *ogs_link_local_addr(const char *dev, const ogs_sockaddr_t *sa);
 ogs_sockaddr_t *ogs_link_local_addr_by_dev(const char *dev);
 ogs_sockaddr_t *ogs_link_local_addr_by_sa(const ogs_sockaddr_t *sa);
-int ogs_filter_ip_version(ogs_sockaddr_t **addr, 
+int ogs_filter_ip_version(ogs_sockaddr_t **addr,
         int no_ipv4, int no_ipv6, int prefer_ipv4);
 
 #define OGS_ADDRSTRLEN INET6_ADDRSTRLEN
