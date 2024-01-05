@@ -419,9 +419,9 @@ socklen_t ogs_sockaddr_len(const void *sa)
     }
 }
 
-bool ogs_sockaddr_is_equal(void *p, void *q)
+bool ogs_sockaddr_is_equal(const void *p, const void *q)
 {
-    ogs_sockaddr_t *a, *b;
+    const ogs_sockaddr_t *a, *b;
 
     a = p;
     ogs_assert(a);

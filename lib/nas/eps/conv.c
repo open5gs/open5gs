@@ -20,7 +20,7 @@
 #include "ogs-nas-eps.h"
 
 void ogs_nas_eps_imsi_to_bcd(
-    ogs_nas_mobile_identity_imsi_t *imsi, uint8_t imsi_len, char *bcd)
+    const ogs_nas_mobile_identity_imsi_t *imsi, uint8_t imsi_len, char *bcd)
 {
     int bcd_len;
 
@@ -54,7 +54,7 @@ void ogs_nas_eps_imsi_to_bcd(
 }
 
 void ogs_nas_imsi_to_buffer(
-    ogs_nas_mobile_identity_imsi_t *imsi, uint8_t imsi_len,
+    const ogs_nas_mobile_identity_imsi_t *imsi, uint8_t imsi_len,
     uint8_t *buf, uint8_t *buf_len)
 {
     buf[0] = ((('0' + imsi->digit2) << 4) & 0xf0) |
