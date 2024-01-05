@@ -153,31 +153,3 @@ int ogs_gtp2_ip_to_f_teid(ogs_ip_t *ip, ogs_gtp2_f_teid_t *f_teid, int *len)
 
     return OGS_OK;
 }
-
-int ogs_gtp2_paa_to_ip(ogs_paa_t *paa, ogs_ip_t *ip)
-{
-    ogs_assert(paa);
-    ogs_assert(ip);
-
-    memset(ip, 0, sizeof *ip);
-
-    if (paa->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        ip->ipv4 = 1;
-        ip->addr = paa->both.addr;
-        ip->ipv6 = 1;
-        memcpy(ip->addr6, paa->both.addr6, OGS_IPV6_LEN);
-    } else if (paa->session_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        ip->ipv4 = 1;
-        ip->ipv6 = 0;
-        ip->addr = paa->addr;
-    } else if (paa->session_type == OGS_PDU_SESSION_TYPE_IPV6) {
-        ip->ipv4 = 0;
-        ip->ipv6 = 1;
-        memcpy(ip->addr6, paa->addr6, OGS_IPV6_LEN);
-    } else {
-        ogs_error("No IPv4 or IPv6");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
