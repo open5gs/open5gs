@@ -102,6 +102,8 @@ void testgsm_recv(test_sess_t *sess, ogs_pkbuf_t *pkbuf)
         break;
     case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND:
         break;
+    case OGS_NAS_5GS_PDU_SESSION_RELEASE_REJECT:
+        break;
     default:
         ogs_error("Unknown message[%d]", message.gsm.h.message_type);
         break;

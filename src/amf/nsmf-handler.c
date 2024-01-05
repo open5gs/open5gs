@@ -228,6 +228,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                     nas_5gs_send_gmm_reject(amf_ue,
                             OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
 
+                    AMF_SESS_CLEAR(sess);
+
                     return OGS_ERROR;
                 }
 
