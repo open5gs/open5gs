@@ -478,11 +478,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             SWITCH(sbi_message.h.resource.component[2])
             CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                rv = amf_nsmf_pdusession_handle_update_sm_context(
+                amf_nsmf_pdusession_handle_update_sm_context(
                         sess, state, &sbi_message);
-                if (rv != OGS_OK) {
-                    AMF_SESS_CLEAR(sess);
-                }
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_RELEASE)

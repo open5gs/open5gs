@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+
  *
  * This file is part of Open5GS.
  *
@@ -1200,9 +1201,11 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 {
     int status;
 
+    smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_pfcp_xact_t *pfcp_xact = NULL;
     ogs_pfcp_message_t *pfcp_message = NULL;
@@ -1356,6 +1359,41 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
             ogs_error("cannot handle PFCP message type[%d]",
                     pfcp_message->h.type);
         }
+        break;
+    case OGS_EVENT_SBI_CLIENT:
+        sbi_message = e->h.sbi.message;
+        ogs_assert(sbi_message);
+
+        sess = e->sess;
+        ogs_assert(sess);
+        smf_ue = sess->smf_ue;
+        ogs_assert(smf_ue);
+
+        SWITCH(sbi_message->h.service.name)
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
+            ogs_pkbuf_t *n1smbuf = NULL;
+
+            stream = e->h.sbi.data;
+            ogs_assert(stream);
+
+            ogs_error("[%s:%d] state [%d] res_status [%d]",
+                smf_ue->supi, sess->psi,
+                e->h.sbi.state, sbi_message->res_status);
+
+            n1smbuf = gsm_build_pdu_session_release_reject(sess,
+                OGS_5GSM_CAUSE_MESSAGE_NOT_COMPATIBLE_WITH_THE_PROTOCOL_STATE);
+            ogs_assert(n1smbuf);
+
+            smf_sbi_send_sm_context_update_error_n1_n2_message(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    n1smbuf, OpenAPI_n2_sm_info_type_NULL, NULL);
+            break;
+        DEFAULT
+            ogs_error("[%s:%d] Invalid API name [%s]",
+                    smf_ue->supi, sess->psi, sbi_message->h.service.name);
+            ogs_assert_if_reached();
+        END
+        break;
     }
 }
 
@@ -1574,6 +1612,24 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
             END
             break;
 
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
+            ogs_pkbuf_t *n1smbuf = NULL;
+
+            stream = e->h.sbi.data;
+            ogs_assert(stream);
+
+            ogs_error("[%s:%d] state [%d] res_status [%d]",
+                smf_ue->supi, sess->psi,
+                e->h.sbi.state, sbi_message->res_status);
+
+            n1smbuf = gsm_build_pdu_session_release_reject(sess,
+                OGS_5GSM_CAUSE_MESSAGE_NOT_COMPATIBLE_WITH_THE_PROTOCOL_STATE);
+            ogs_assert(n1smbuf);
+
+            smf_sbi_send_sm_context_update_error_n1_n2_message(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    n1smbuf, OpenAPI_n2_sm_info_type_NULL, NULL);
+            break;
         DEFAULT
             ogs_error("[%s:%d] Invalid API name [%s]",
                     smf_ue->supi, sess->psi, sbi_message->h.service.name);
