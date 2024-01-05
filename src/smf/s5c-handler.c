@@ -247,7 +247,7 @@ uint8_t smf_s5c_handle_create_session_request(
 
     /* Initially Set Session Type from UE */
     sess->session.session_type = sess->ue_session_type;
-    rv = ogs_gtp2_paa_to_ip(paa, &sess->session.ue_ip);
+    rv = ogs_paa_to_ip(paa, &sess->session.ue_ip);
     ogs_assert(rv == OGS_OK);
 
     /* Set UE IP Address */
