@@ -69,3 +69,20 @@ int ogs_paa_to_ip(const ogs_paa_t *paa, ogs_ip_t *ip)
     return OGS_OK;
 }
 
+int ogs_ip_to_paa(const ogs_ip_t *ip, ogs_paa_t *paa)
+{
+    if (ip->ipv4 && ip->ipv6) {
+        paa->session_type = OGS_PDU_SESSION_TYPE_IPV4V6;
+        paa->both.addr = ip->addr;
+        memcpy(paa->both.addr6, ip->addr6, OGS_IPV6_LEN);
+    } else if (ip->ipv6) {
+        paa->session_type = OGS_PDU_SESSION_TYPE_IPV6;
+        memcpy(paa->addr6, ip->addr6, OGS_IPV6_LEN);
+    } else if (ip->ipv4) {
+        paa->session_type = OGS_PDU_SESSION_TYPE_IPV4;
+        paa->addr = ip->addr;
+    } else {
+        return OGS_ERROR;
+    }
+    return OGS_OK;
+}
