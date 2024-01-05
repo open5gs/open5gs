@@ -4082,10 +4082,11 @@ mme_sess_t *mme_sess_find_by_apn(mme_ue_t *mme_ue, char *apn)
 
     sess = mme_sess_first(mme_ue);
     while (sess) {
-        ogs_assert(sess->session->name);
-        if (sess->session && ogs_strcasecmp(sess->session->name, apn) == 0)
-            return sess;
-
+        if (sess->session) {
+            ogs_assert(sess->session->name);
+            if (ogs_strcasecmp(sess->session->name, apn) == 0)
+                return sess;
+        }
         sess = mme_sess_next(sess);
     }
 
