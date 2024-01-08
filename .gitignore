@@ -7,3 +7,8 @@ subprojects/prometheus-client-c
 subprojects/usrsctp
 
 webui/.next
+
+# clangd
+/.cache
+/compile_commands.json # A symlink to builddir/compile_commands.json
+/builddir
