@@ -608,6 +608,8 @@ static void handle_sepp_info(
     ogs_assert(nf_instance);
     ogs_assert(SeppInfo);
 
+    http.port = 0;
+    https.port = 0;
     http.presence = false;
     https.presence = false;
 
