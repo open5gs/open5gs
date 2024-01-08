@@ -121,6 +121,10 @@ add_project_arguments(
     cc.get_supported_arguments(possible_cc_flags),
     language : 'c')
 
+if get_option('static')
+    add_global_link_arguments('-static', language: ['c', 'cpp'])
+endif
+
 subdir('configs')
 subdir('lib')
 subdir('src')
