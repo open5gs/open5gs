@@ -632,7 +632,8 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
 
-    uint8_t src_if, dst_if;
+    uint8_t src_if = OGS_PFCP_INTERFACE_UNKNOWN;
+    uint8_t dst_if = OGS_PFCP_INTERFACE_UNKNOWN;
 
     ogs_assert(bearer);
     sess = bearer->sess;

@@ -246,11 +246,8 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
             if (val)
                 discovery_option->requester_features =
                     ogs_uint64_from_string(val);
-        } else if (!strcasecmp(key, OGS_SBI_SCHEME)) {
-            /* ':scheme' will be automatically filled in later */
-        } else if (!strcasecmp(key, OGS_SBI_AUTHORITY)) {
-            /* ':authority' will be automatically filled in later */
         } else {
+            /* ':scheme' and ':authority' will be automatically filled in later */
         }
     }
 
