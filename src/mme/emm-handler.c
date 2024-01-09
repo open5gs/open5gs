@@ -185,7 +185,7 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
             OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
         ogs_warn("Encrypt[0x%x] can be skipped with EEA0, "
             "but Integrity[0x%x] cannot be bypassed with EIA0",
-            mme_selected_enc_algorithm(mme_ue), 
+            mme_selected_enc_algorithm(mme_ue),
             mme_selected_int_algorithm(mme_ue));
         r = nas_eps_send_attach_reject(mme_ue,
                 OGS_NAS_EMM_CAUSE_UE_SECURITY_CAPABILITIES_MISMATCH,
