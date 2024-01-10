@@ -77,6 +77,12 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
     }
     Amf3GppAccessRegistration.pei = amf_ue->pei;
 
+    if (amf_ue->nas.registration.value ==
+                OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL) {
+        Amf3GppAccessRegistration.is_initial_registration_ind = true;
+        Amf3GppAccessRegistration.initial_registration_ind = 1;
+    }
+
     message.Amf3GppAccessRegistration = &Amf3GppAccessRegistration;
 
     message.http.custom.callback =
