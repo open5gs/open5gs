@@ -1932,7 +1932,7 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
     uint32_t result_code = 0;
     bool has_subscriber_data;
-    
+
     struct msg *ans, *qry;
 
     mme_event_t *e = NULL;
@@ -2022,7 +2022,7 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
 
         uint32_t ida_cell_id = mme_ue->e_cgi.cell_id;
         uint16_t ida_tac = mme_ue->tai.tac;
-        
+
         struct avp *avp_mme_location_information;
         struct avp *avp_e_utran_cell_global_identity;
         struct avp *avp_tracking_area_identity;
@@ -2088,18 +2088,58 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
         ogs_assert(ret == 0);
 
         ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-        ogs_assert(ret == 0);        
-    } else {
-        if (!has_subscriber_data) {
-            ogs_error("Insert Subscriber Data "
-                    "with unsupported IDR Flags "
-                    "or no Subscriber-Data for IMSI[%s]", imsi_bcd);
-            /* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
-            ret = fd_msg_rescode_set(
-                    ans, (char*)"DIAMETER_UNABLE_TO_COMPLY", NULL, NULL, 1);
-            ogs_assert(ret == 0);
-            goto outnoexp;
-        }
+        ogs_assert(ret == 0);
+    }
+    if (idr_message->idr_flags & OGS_DIAM_S6A_IDR_FLAGS_EPS_USER_STATE) {
+#define OGS_DIAM_S6A_USER_STATE_DETACHED                           0
+#define OGS_DIAM_S6A_USER_STATE_ATTACHED_NOT_REACHABLE_FOR_PAGING  1
+#define OGS_DIAM_S6A_USER_STATE_ATTACHED_REACHABLE_FOR_PAGING      2
+#define OGS_DIAM_S6A_USER_STATE_CONNECTED_NOT_REACHABLE_FOR_PAGING 3
+#define OGS_DIAM_S6A_USER_STATE_CONNECTED_REACHABLE_FOR_PAGING     4
+#define OGS_DIAM_S6A_USER_STATE_RESERVED                           5
+        struct avp *avp_eps_user_state = NULL;
+        struct avp *avp_mme_user_state = NULL;
+        struct avp *avp_user_state = NULL;
+        uint32_t user_state = 0;
+
+        /* check user state */
+        if (!ECM_CONNECTED(mme_ue))
+            user_state = OGS_DIAM_S6A_USER_STATE_DETACHED;
+        else if (mme_ue->paging.failed)
+            user_state = OGS_DIAM_S6A_USER_STATE_CONNECTED_NOT_REACHABLE_FOR_PAGING;
+        else
+            user_state = OGS_DIAM_S6A_USER_STATE_CONNECTED_REACHABLE_FOR_PAGING;
+
+        /* Set the EPS-User-State AVP */
+        ret = fd_msg_avp_new(ogs_diam_s6a_eps_user_state, 0, &avp_eps_user_state);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_new(ogs_diam_s6a_mme_user_state, 0, &avp_mme_user_state);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_new(ogs_diam_s6a_user_state, 0, &avp_user_state);
+        ogs_assert(ret == 0);
+        memset(&val, 0, sizeof(val));
+        val.i32 = user_state;
+        ret = fd_msg_avp_setvalue(avp_user_state, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avp_mme_user_state, MSG_BRW_LAST_CHILD, avp_user_state);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avp_eps_user_state, MSG_BRW_LAST_CHILD, avp_mme_user_state);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp_eps_user_state);
+        ogs_assert(ret == 0);
+    }
+    if (!has_subscriber_data &&
+        !(idr_message->idr_flags & OGS_DIAM_S6A_IDR_FLAGS_EPS_LOCATION_INFO) &&
+        !(idr_message->idr_flags & OGS_DIAM_S6A_IDR_FLAGS_EPS_USER_STATE))
+    {
+        ogs_error("Insert Subscriber Data "
+                "with unsupported IDR Flags "
+                "or no Subscriber-Data for IMSI[%s]", imsi_bcd);
+        /* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
+        ret = fd_msg_rescode_set(
+                ans, (char*)"DIAMETER_UNABLE_TO_COMPLY", NULL, NULL, 1);
+        ogs_assert(ret == 0);
+        goto outnoexp;
     }
 
     /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */

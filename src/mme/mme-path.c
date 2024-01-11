@@ -296,4 +296,7 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
 cleanup:
     CLEAR_SERVICE_INDICATOR(mme_ue);
     MME_CLEAR_PAGING_INFO(mme_ue);
+    /* the above will clear the failure flag, restore it if we failed */
+    if (failed)
+        mme_ue->paging.failed = true;
 }
