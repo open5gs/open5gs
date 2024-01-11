@@ -798,7 +798,6 @@ int pcf_db_qos_data(char *supi,
         ogs_session_data_t *session_data)
 {
     int rv;
-    ogs_session_data_t zero_data;
 
     ogs_app_policy_conf_t *policy_conf = NULL;
 
@@ -807,10 +806,7 @@ int pcf_db_qos_data(char *supi,
     ogs_assert(dnn);
     ogs_assert(session_data);
 
-    memset(&zero_data, 0, sizeof(zero_data));
-
-    /* session_data should be initialized to zero */
-    ogs_assert(memcmp(session_data, &zero_data, sizeof(zero_data)) == 0);
+    memset(session_data, 0, sizeof(*session_data));
 
     if (plmn_id)
         policy_conf = ogs_app_policy_conf_find_by_plmn_id(plmn_id);
