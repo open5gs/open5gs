@@ -32,15 +32,10 @@ int ogs_dbi_msisdn_data(
     const char *utf8 = NULL;
     uint32_t length = 0;
 
-    ogs_msisdn_data_t zero_data;
-
     ogs_assert(msisdn_data);
     ogs_assert(imsi_or_msisdn_bcd);
 
-    memset(&zero_data, 0, sizeof(zero_data));
-
-    /* msisdn_data should be initialized to zero */
-    ogs_assert(memcmp(msisdn_data, &zero_data, sizeof(zero_data)) == 0);
+    memset(msisdn_data, 0, sizeof(*msisdn_data));
 
     query = BCON_NEW("$or",
             "[",
@@ -132,15 +127,10 @@ int ogs_dbi_ims_data(char *supi, ogs_ims_data_t *ims_data)
     char *supi_type = NULL;
     char *supi_id = NULL;
 
-    ogs_ims_data_t zero_data;
-
     ogs_assert(ims_data);
     ogs_assert(supi);
 
-    memset(&zero_data, 0, sizeof(zero_data));
-
-    /* ims_data should be initialized to zero */
-    ogs_assert(memcmp(ims_data, &zero_data, sizeof(zero_data)) == 0);
+    memset(ims_data, 0, sizeof(*ims_data));
 
     supi_type = ogs_id_get_type(supi);
     ogs_assert(supi_type);

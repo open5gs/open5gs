@@ -315,15 +315,10 @@ int ogs_dbi_subscription_data(char *supi,
     char *supi_type = NULL;
     char *supi_id = NULL;
 
-    ogs_subscription_data_t zero_data;
-
     ogs_assert(subscription_data);
     ogs_assert(supi);
 
-    memset(&zero_data, 0, sizeof(zero_data));
-
-    /* subscription_data should be initialized to zero */
-    ogs_assert(memcmp(subscription_data, &zero_data, sizeof(zero_data)) == 0);
+    memset(subscription_data, 0, sizeof(*subscription_data));
 
     supi_type = ogs_id_get_type(supi);
     ogs_assert(supi_type);
