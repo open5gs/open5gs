@@ -24,7 +24,7 @@ static void handle_nf_service(
 static void handle_smf_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_smf_info_t *SmfInfo);
 static void handle_scp_info(
-        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_scp_info_t *SeppInfo);
+        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_scp_info_t *ScpInfo);
 static void handle_sepp_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_sepp_info_t *SeppInfo);
 
