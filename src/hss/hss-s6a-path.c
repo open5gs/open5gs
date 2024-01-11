@@ -1329,7 +1329,7 @@ static void hss_s6a_cla_cb(void *data, struct msg **msg)
 
 /* HSS Sends Insert Subscriber Data Request to MME */
 /* arguments: flags, subscriber data, imsi */
-int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
+int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdata_mask)
 {
     int ret;
 
@@ -1360,7 +1360,7 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
      * Subscriber-Status is SERVICE_GRANTED, since then the field has no
      * meaning and won't be sent through the wire, so nothing really changes
      * from the PoV of the peer. */
-    if (subdatamask == OGS_DIAM_S6A_SUBDATA_OP_DET_BARRING &&
+    if (subdata_mask == OGS_DIAM_S6A_SUBDATA_OP_DET_BARRING &&
         subscription_data.subscriber_status == OGS_SUBSCRIBER_STATUS_SERVICE_GRANTED) {
         ogs_debug("    [%s] Skip sending IDR: Only Operator-Determined-Barring changed while"
                  " Subscriber-Status is SERVICE_GRANTED.", imsi_bcd);
@@ -1447,9 +1447,9 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
     /* Set the Subscription Data */
     ret = fd_msg_avp_new(ogs_diam_s6a_subscription_data, 0, &avp);
     ogs_assert(ret == 0);
-        if (subdatamask) {
+        if (subdata_mask) {
             ret = hss_s6a_avp_add_subscription_data(&subscription_data,
-                avp, subdatamask);
+                avp, subdata_mask);
             if (ret != OGS_OK) {
                 ogs_error("    [%s] Could not build Subscription-Data.",
                     imsi_bcd);

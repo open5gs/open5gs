@@ -25,7 +25,7 @@ static int response_handler(
 
 static void copy_request(
         ogs_sbi_request_t *target, ogs_sbi_request_t *source,
-        bool include_discovery);
+        bool do_not_remove_custom_header);
 
 int sepp_sbi_open(void)
 {

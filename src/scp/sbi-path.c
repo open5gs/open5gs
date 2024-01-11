@@ -38,7 +38,7 @@ static bool send_request(
 
 static void copy_request(
         ogs_sbi_request_t *target, ogs_sbi_request_t *source,
-        bool include_discovery);
+        bool do_not_remove_custom_header);
 
 int scp_sbi_open(void)
 {
