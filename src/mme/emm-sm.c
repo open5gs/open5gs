@@ -144,6 +144,7 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("Paging to IMSI[%s] failed. Stop paging",
                         mme_ue->imsi_bcd);
                 CLEAR_MME_UE_TIMER(mme_ue->t3413);
+                mme_ue->paging.failed = true;
 
                 if (MME_PAGING_ONGOING(mme_ue))
                     mme_send_after_paging(mme_ue, true);

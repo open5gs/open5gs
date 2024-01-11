@@ -586,6 +586,7 @@ struct mme_ue_s {
         ogs_assert(__mME); \
         ogs_debug("[%s] Clear Paging Info", (__mME)->imsi_bcd); \
         (__mME)->paging.type = 0; \
+        (__mME)->paging.failed = false; \
     } while(0)
 
 #define MME_STORE_PAGING_INFO(__mME, __tYPE, __dATA) \
@@ -608,6 +609,7 @@ struct mme_ue_s {
 #define MME_PAGING_TYPE_DETACH_TO_UE 7
         int type;
         void *data;
+        bool failed;
     } paging;
 
     /* SGW UE context */
