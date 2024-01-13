@@ -1132,8 +1132,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
     ogs_nas_5gmm_cause_t gmm_cause;
 
     amf_ue_t *amf_ue = NULL;
-    amf_sess_t *sess = NULL;
     ran_ue_t *ran_ue = NULL;
+    amf_sess_t *sess = NULL;
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
 
@@ -1187,7 +1187,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
                 ogs_error("gmm_handle_registration_request() failed [%d]",
                             gmm_cause);
-                r = nas_5gs_send_registration_reject(amf_ue, gmm_cause);
+                r = nas_5gs_send_registration_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -1216,7 +1216,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
                     ogs_error("[%s] gmm_handle_registration_update() "
                                 "failed [%d]", amf_ue->suci, gmm_cause);
-                    r = nas_5gs_send_registration_reject(amf_ue, gmm_cause);
+                    r = nas_5gs_send_registration_reject(
+                            ran_ue, amf_ue, gmm_cause);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
                     OGS_FSM_TRAN(s, gmm_state_exception);
@@ -1228,7 +1229,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                     if (amf_update_allowed_nssai(amf_ue) == false) {
                         ogs_error("No Allowed-NSSAI");
                         r = nas_5gs_send_gmm_reject(
-                                amf_ue,
+                                ran_ue, amf_ue,
                                 OGS_5GMM_CAUSE_NO_NETWORK_SLICES_AVAILABLE);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
@@ -1292,7 +1293,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             if (state != GMM_COMMON_STATE_REGISTERED) {
                 ogs_info("[%s] Handling service request failed [Not registered]",
                             amf_ue->suci);
-                r = nas_5gs_send_service_reject(amf_ue,
+                r = nas_5gs_send_service_reject(ran_ue, amf_ue,
                     OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
@@ -1305,7 +1306,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
                 ogs_error("[%s] gmm_handle_service_request() failed [%d]",
                             amf_ue->suci, gmm_cause);
-                r = nas_5gs_send_service_reject(amf_ue, gmm_cause);
+                r = nas_5gs_send_service_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -1314,7 +1315,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
 
             if (!AMF_UE_HAVE_SUCI(amf_ue)) {
                 ogs_info("Service request : Unknown UE");
-                r = nas_5gs_send_service_reject(amf_ue,
+                r = nas_5gs_send_service_reject(ran_ue, amf_ue,
                     OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
@@ -1324,7 +1325,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
 
             if (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue)) {
                 ogs_error("No Security Context");
-                r = nas_5gs_send_service_reject(amf_ue,
+                r = nas_5gs_send_service_reject(ran_ue, amf_ue,
                     OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
@@ -1344,7 +1345,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
                 ogs_error("[%s] gmm_handle_service_update() failed [%d]",
                             amf_ue->suci, gmm_cause);
-                r = nas_5gs_send_service_reject(amf_ue, gmm_cause);
+                r = nas_5gs_send_service_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -1364,7 +1365,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 ogs_error("gmm_handle_identity_response() "
                             "failed [%d] in type [%d]",
                             gmm_cause, amf_ue->nas.message_type);
-                r = nas_5gs_send_gmm_reject(amf_ue, gmm_cause);
+                r = nas_5gs_send_gmm_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -1373,7 +1374,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
 
             if (!AMF_UE_HAVE_SUCI(amf_ue)) {
                 ogs_error("No SUCI");
-                r = nas_5gs_send_gmm_reject(amf_ue, gmm_cause);
+                r = nas_5gs_send_gmm_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -1481,7 +1482,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             }
 
             gmm_handle_ul_nas_transport(
-                    amf_ue, &nas_message->gmm.ul_nas_transport);
+                    ran_ue, amf_ue, &nas_message->gmm.ul_nas_transport);
             break;
 
         case OGS_NAS_5GS_REGISTRATION_COMPLETE:
@@ -1506,6 +1507,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
     ogs_nas_5gmm_cause_t gmm_cause;
 
     amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
 
     ogs_nas_5gs_message_t *nas_message = NULL;
@@ -1539,6 +1541,9 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
     case AMF_EVENT_5GMM_MESSAGE:
         nas_message = e->nas.message;
         ogs_assert(nas_message);
+
+        ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+        ogs_assert(ran_ue);
 
         h.type = e->nas.type;
 
@@ -1626,7 +1631,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
                 ogs_error("[%s] gmm_handle_registration_request() failed [%d]",
                             amf_ue->suci, gmm_cause);
-                r = nas_5gs_send_registration_reject(amf_ue, gmm_cause);
+                r = nas_5gs_send_registration_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -1801,6 +1806,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
     int r;
     ogs_nas_5gmm_cause_t gmm_cause;
     amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
 
@@ -1824,6 +1830,9 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
     case AMF_EVENT_5GMM_MESSAGE:
         nas_message = e->nas.message;
         ogs_assert(nas_message);
+
+        ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+        ogs_assert(ran_ue);
 
         h.type = e->nas.type;
 
@@ -1873,7 +1882,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                 ogs_error("[%s] gmm_handle_security_mode_complete() "
                             "failed [%d] in type [%d]",
                             amf_ue->suci, gmm_cause, amf_ue->nas.message_type);
-                r = nas_5gs_send_gmm_reject(amf_ue, gmm_cause);
+                r = nas_5gs_send_gmm_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -1917,7 +1926,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
                 ogs_error("[%s] gmm_handle_registration_request() failed [%d]",
                             amf_ue->suci, gmm_cause);
-                r = nas_5gs_send_registration_reject(amf_ue, gmm_cause);
+                r = nas_5gs_send_registration_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -1935,7 +1944,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
 
         case OGS_NAS_5GS_SERVICE_REQUEST:
             ogs_info("[%s] Service request", amf_ue->supi);
-            r = nas_5gs_send_service_reject(amf_ue,
+            r = nas_5gs_send_service_reject(ran_ue, amf_ue,
                     OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -1967,7 +1976,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             if (amf_ue->t3560.retry_count >=
                     amf_timer_cfg(AMF_TIMER_T3560)->max_count) {
                 ogs_warn("[%s] Retransmission failed. Stop", amf_ue->supi);
-                r = nas_5gs_send_gmm_reject(amf_ue,
+                r = nas_5gs_send_gmm_reject(amf_ue->ran_ue, amf_ue,
                         OGS_5GMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
@@ -1997,6 +2006,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
     ogs_nas_5gmm_cause_t gmm_cause;
 
     amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
@@ -2041,7 +2051,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                     ogs_error("[%s] HTTP response error [%d]",
                             amf_ue->supi, sbi_message->res_status);
                     r = nas_5gs_send_gmm_reject(
-                            amf_ue, OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+                            amf_ue->ran_ue, amf_ue,
+                            OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
                     OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
@@ -2085,7 +2096,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                     ogs_error("[%s] HTTP response error [%d]",
                             amf_ue->supi, sbi_message->res_status);
                     r = nas_5gs_send_gmm_reject(
-                            amf_ue, OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+                            amf_ue->ran_ue, amf_ue,
+                            OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
                     OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
@@ -2170,6 +2182,9 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
     case AMF_EVENT_5GMM_MESSAGE:
         nas_message = e->nas.message;
         ogs_assert(nas_message);
+
+        ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+        ogs_assert(ran_ue);
 
         h.type = e->nas.type;
 
@@ -2266,7 +2281,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
                 ogs_error("[%s] gmm_handle_registration_request() failed [%d]",
                             amf_ue->suci, gmm_cause);
-                r = nas_5gs_send_registration_reject(amf_ue, gmm_cause);
+                r = nas_5gs_send_registration_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -2290,7 +2305,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 
         case OGS_NAS_5GS_SERVICE_REQUEST:
             ogs_info("[%s] Service request", amf_ue->supi);
-            r = nas_5gs_send_service_reject(amf_ue,
+            r = nas_5gs_send_service_reject(ran_ue, amf_ue,
                 OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -2444,7 +2459,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
             if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
                 ogs_error("gmm_handle_registration_request() failed [%d]",
                             gmm_cause);
-                r = nas_5gs_send_registration_reject(amf_ue, gmm_cause);
+                r = nas_5gs_send_registration_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -2475,7 +2490,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                 if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
                     ogs_error("[%s] gmm_handle_registration_update() "
                                 "failed [%d]", amf_ue->suci, gmm_cause);
-                    r = nas_5gs_send_registration_reject(amf_ue, gmm_cause);
+                    r = nas_5gs_send_registration_reject(
+                            ran_ue, amf_ue, gmm_cause);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
                     OGS_FSM_TRAN(s, gmm_state_exception);
@@ -2487,7 +2503,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                     if (amf_update_allowed_nssai(amf_ue) == false) {
                         ogs_error("No Allowed-NSSAI");
                         r = nas_5gs_send_gmm_reject(
-                                amf_ue,
+                                ran_ue, amf_ue,
                                 OGS_5GMM_CAUSE_NO_NETWORK_SLICES_AVAILABLE);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);

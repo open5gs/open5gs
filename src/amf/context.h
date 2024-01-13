@@ -697,6 +697,7 @@ typedef struct amf_sess_s {
 
     /* Related Context */
     amf_ue_t        *amf_ue;
+    ran_ue_t        *ran_ue;
 
     ogs_s_nssai_t s_nssai;
     ogs_s_nssai_t mapped_hplmn;

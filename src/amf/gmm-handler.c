@@ -1016,7 +1016,7 @@ ogs_nas_5gmm_cause_t gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
     return OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
 }
 
-int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
+int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
         ogs_nas_5gs_ul_nas_transport_t *ul_nas_transport)
 {
     int r;
@@ -1031,7 +1031,8 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
     ogs_nas_dnn_t *dnn = NULL;
     ogs_nas_5gsm_header_t *gsm_header = NULL;
 
-    ogs_assert(amf_ue);
+    ogs_assert(amf_ue_cycle(amf_ue));
+    ogs_assert(ran_ue_cycle(ran_ue));
     ogs_assert(ul_nas_transport);
 
     payload_container_type = &ul_nas_transport->payload_container_type;
@@ -1318,7 +1319,7 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             if (!SESSION_CONTEXT_IN_SMF(sess)) {
                 ogs_error("[%s:%d] Session Context is not in SMF [%d]",
                     amf_ue->supi, sess->psi, gsm_header->message_type);
-                r = nas_5gs_send_back_gsm_message(sess,
+                r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                         OGS_5GMM_CAUSE_DNN_NOT_SUPPORTED_OR_NOT_SUBSCRIBED_IN_THE_SLICE, 0);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);

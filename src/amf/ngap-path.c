@@ -494,18 +494,25 @@ int ngap_send_path_switch_ack(amf_sess_t *sess)
     int rv;
 
     amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
 
     ogs_assert(sess);
+    sess = amf_sess_cycle(sess);
+    if (!sess) {
+        ogs_error("Session has already been removed");
+        return OGS_NOTFOUND;
+    }
 
-    amf_ue = sess->amf_ue;
-    if (!amf_ue_cycle(amf_ue)) {
+    amf_ue = amf_ue_cycle(sess->amf_ue);
+    if (!amf_ue) {
         ogs_error("UE(amf-ue) context has already been removed");
         return OGS_NOTFOUND;
     }
 
-    if (!ran_ue_cycle(amf_ue->ran_ue)) {
-        ogs_error("NG context has already been removed");
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    if (!ran_ue) {
+        ogs_error("[%s] NG context has already been removed", amf_ue->supi);
         return OGS_NOTFOUND;
     }
 
@@ -687,17 +694,11 @@ int ngap_send_error_indication(
 }
 
 int ngap_send_error_indication2(
-        amf_ue_t *amf_ue, NGAP_Cause_PR group, long cause)
+        ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause)
 {
     int rv;
-    ran_ue_t *ran_ue;
 
-    if (!amf_ue_cycle(amf_ue)) {
-        ogs_error("UE(amf-ue) context has already been removed");
-        return OGS_NOTFOUND;
-    }
-
-    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    ran_ue = ran_ue_cycle(ran_ue);
     if (!ran_ue) {
         ogs_error("NG context has already been removed");
         return OGS_NOTFOUND;
