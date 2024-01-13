@@ -162,16 +162,31 @@ int amf_sess_sbi_discover_and_send(
     int rv;
     ogs_sbi_xact_t *xact = NULL;
 
+    amf_ue_t *amf_ue = NULL;
+
     ogs_assert(service_type);
     ogs_assert(sess);
     ogs_assert(build);
+
+    amf_ue = amf_ue_cycle(sess->amf_ue);
+    if (!amf_ue) {
+        ogs_error("UE(amf_ue) Context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    sess->ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    if (!sess->ran_ue) {
+        ogs_error("[%s] RAN-NG Context has already been removed",
+                    amf_ue->supi);
+        return OGS_NOTFOUND;
+    }
 
     xact = ogs_sbi_xact_add(
             &sess->sbi, service_type, discovery_option,
             (ogs_sbi_build_f)build, sess, data);
     if (!xact) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
-        r = nas_5gs_send_back_gsm_message(sess,
+        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -184,7 +199,7 @@ int amf_sess_sbi_discover_and_send(
     if (rv != OGS_OK) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
-        r = nas_5gs_send_back_gsm_message(sess,
+        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -252,7 +267,7 @@ static int client_discover_cb(
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
         ogs_error("cannot parse HTTP response");
-        r = nas_5gs_send_back_gsm_message(sess,
+        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -262,7 +277,7 @@ static int client_discover_cb(
 
     if (message.res_status != OGS_SBI_HTTP_STATUS_OK) {
         ogs_error("NF-Discover failed [%d]", message.res_status);
-        r = nas_5gs_send_back_gsm_message(sess,
+        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -272,7 +287,7 @@ static int client_discover_cb(
 
     if (!message.SearchResult) {
         ogs_error("No SearchResult");
-        r = nas_5gs_send_back_gsm_message(sess,
+        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -289,7 +304,7 @@ static int client_discover_cb(
         ogs_error("[%s:%d] (NF discover) No [%s]",
                     amf_ue->supi, sess->psi,
                     ogs_sbi_service_type_to_name(service_type));
-        r = nas_5gs_send_back_gsm_message(sess,
+        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
                 OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                 AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
@@ -329,6 +344,8 @@ int amf_sess_sbi_discover_by_nsi(
     ogs_sbi_xact_t *xact = NULL;
     ogs_sbi_client_t *client = NULL;
 
+    amf_ue_t *amf_ue = NULL;
+
     ogs_assert(sess);
     client = sess->nssf.nrf.client;
     ogs_assert(client);
@@ -336,6 +353,19 @@ int amf_sess_sbi_discover_by_nsi(
 
     ogs_warn("Try to discover [%s]",
                 ogs_sbi_service_type_to_name(service_type));
+
+    amf_ue = amf_ue_cycle(sess->amf_ue);
+    if (!amf_ue) {
+        ogs_error("UE(amf_ue) Context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    sess->ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    if (!sess->ran_ue) {
+        ogs_error("[%s] RAN-NG Context has already been removed",
+                    amf_ue->supi);
+        return OGS_NOTFOUND;
+    }
 
     xact = ogs_sbi_xact_add(
             &sess->sbi, service_type, discovery_option, NULL, NULL, NULL);

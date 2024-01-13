@@ -29,8 +29,28 @@ int amf_nsmf_pdusession_handle_create_sm_context(
 {
     int rv, r;
 
-    ogs_assert(sess);
+    amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
+
     ogs_assert(recvmsg);
+    ogs_assert(sess);
+    sess = amf_sess_cycle(sess);
+    if (!sess) {
+        ogs_error("Session has already been removed");
+        return OGS_ERROR;
+    }
+
+    amf_ue = amf_ue_cycle(sess->amf_ue);
+    if (!amf_ue) {
+        ogs_error("UE(amf_ue) Context has already been removed");
+        return OGS_ERROR;
+    }
+
+    ran_ue = ran_ue_cycle(sess->ran_ue);
+    if (!ran_ue) {
+        ogs_error("[%s] RAN-NG Context has already been removed", amf_ue->supi);
+        return OGS_ERROR;
+    }
 
     if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_CREATED) {
         ogs_sbi_message_t message;
@@ -38,7 +58,7 @@ int amf_nsmf_pdusession_handle_create_sm_context(
 
         if (!recvmsg->http.location) {
             ogs_error("[%d:%d] No http.location", sess->psi, sess->pti);
-            r = nas_5gs_send_back_gsm_message(sess,
+            r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                     OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                     AMF_NAS_BACKOFF_TIME);
             ogs_expect(r == OGS_OK);
@@ -54,7 +74,7 @@ int amf_nsmf_pdusession_handle_create_sm_context(
         if (rv != OGS_OK) {
             ogs_error("[%d:%d] Cannot parse http.location [%s]",
                     sess->psi, sess->pti, recvmsg->http.location);
-            r = nas_5gs_send_back_gsm_message(sess,
+            r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                     OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                     AMF_NAS_BACKOFF_TIME);
             ogs_expect(r == OGS_OK);
@@ -68,7 +88,7 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                     sess->psi, sess->pti, recvmsg->http.location);
 
             ogs_sbi_header_free(&header);
-            r = nas_5gs_send_back_gsm_message(sess,
+            r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                     OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                     AMF_NAS_BACKOFF_TIME);
             ogs_expect(r == OGS_OK);
@@ -86,11 +106,10 @@ int amf_nsmf_pdusession_handle_create_sm_context(
              * there is no sm-context-ref. The PDU session establishment accept
              * stored in [1-SERVER] is now trasnmitted to gNB.
              */
-            amf_ue_t *amf_ue = sess->amf_ue;
-            ogs_assert(amf_ue);
-
-            r = nas_5gs_send_to_gnb(amf_ue,
+            r = ngap_send_to_ran_ue(ran_ue,
                     sess->pdu_session_establishment_accept);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
 
             sess->pdu_session_establishment_accept = NULL;
 
@@ -99,7 +118,7 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                         sess->psi, sess->pti);
 
                 ogs_sbi_header_free(&header);
-                r = nas_5gs_send_back_gsm_message(sess,
+                r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                         OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                         AMF_NAS_BACKOFF_TIME);
                 ogs_expect(r == OGS_OK);
@@ -124,7 +143,7 @@ int amf_nsmf_pdusession_handle_create_sm_context(
         SmContextCreateError = recvmsg->SmContextCreateError;
         if (!SmContextCreateError) {
             ogs_error("[%d:%d] No SmContextCreateError", sess->psi, sess->pti);
-            r = nas_5gs_send_back_gsm_message(sess,
+            r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                     OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                     AMF_NAS_BACKOFF_TIME);
             ogs_expect(r == OGS_OK);
@@ -134,7 +153,7 @@ int amf_nsmf_pdusession_handle_create_sm_context(
         }
         if (!SmContextCreateError->error) {
             ogs_error("[%d:%d] No Error", sess->psi, sess->pti);
-            r = nas_5gs_send_back_gsm_message(sess,
+            r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                     OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                     AMF_NAS_BACKOFF_TIME);
             ogs_expect(r == OGS_OK);
@@ -157,7 +176,7 @@ int amf_nsmf_pdusession_handle_create_sm_context(
 
                 n1smbuf = ogs_pkbuf_copy(n1smbuf);
                 ogs_assert(n1smbuf);
-                r = nas_5gs_send_gsm_reject(sess,
+                r = nas_5gs_send_gsm_reject(ran_ue, sess,
                         OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
@@ -167,7 +186,7 @@ int amf_nsmf_pdusession_handle_create_sm_context(
         }
 
         ogs_error("[%d:%d] 5GMM was not forwarded", sess->psi, sess->pti);
-        r = nas_5gs_send_back_gsm_message(sess,
+        r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                 OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                 AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
@@ -187,10 +206,21 @@ int amf_nsmf_pdusession_handle_update_sm_context(
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *ran_ue = NULL;
 
-    ogs_assert(sess);
-    amf_ue = sess->amf_ue;
-    ogs_assert(amf_ue);
     ogs_assert(recvmsg);
+    ogs_assert(sess);
+    sess = amf_sess_cycle(sess);
+    if (!sess) {
+        ogs_error("Session has already been removed");
+        return OGS_ERROR;
+    }
+
+    amf_ue = amf_ue_cycle(sess->amf_ue);
+    if (!amf_ue) {
+        ogs_error("UE(amf_ue) Context has already been removed");
+        return OGS_ERROR;
+    }
+
+    ran_ue = ran_ue_cycle(sess->ran_ue);
 
     if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT ||
         recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
@@ -225,7 +255,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 if (!n2smbuf) {
                     ogs_error("[%s:%d] No N2 SM Content",
                             amf_ue->supi, sess->psi);
-                    nas_5gs_send_gmm_reject(amf_ue,
+                    nas_5gs_send_gmm_reject(ran_ue, amf_ue,
                             OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
 
                     AMF_SESS_CLEAR(sess);
@@ -242,8 +272,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                             AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) &&
                         AMF_SESSION_SYNC_DONE(amf_ue,
                             AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST)) {
-                        ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-
                         if (ran_ue) {
                             if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
                                 r = amf_ue_sbi_discover_and_send(
@@ -305,7 +333,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 if (!n1smbuf) {
                     ogs_error("[%s:%d] No N1 SM Content [%s]",
                             amf_ue->supi, sess->psi, n1SmMsg->content_id);
-                    r = nas_5gs_send_back_gsm_message(sess,
+                    r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                             AMF_NAS_BACKOFF_TIME);
                     ogs_expect(r == OGS_OK);
@@ -317,7 +345,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 if (!n2smbuf) {
                     ogs_error("[%s:%d] No N2 SM Content",
                             amf_ue->supi, sess->psi);
-                    r = nas_5gs_send_back_gsm_message(sess,
+                    r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                             AMF_NAS_BACKOFF_TIME);
                     ogs_expect(r == OGS_OK);
@@ -347,7 +375,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 if (!n1smbuf) {
                     ogs_error("[%s:%d] No N1 SM Content [%s]",
                             amf_ue->supi, sess->psi, n1SmMsg->content_id);
-                    r = nas_5gs_send_back_gsm_message(sess,
+                    r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                             AMF_NAS_BACKOFF_TIME);
                     ogs_expect(r == OGS_OK);
@@ -359,7 +387,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 if (!n2smbuf) {
                     ogs_error("[%s:%d] No N2 SM Content",
                             amf_ue->supi, sess->psi);
-                    r = nas_5gs_send_back_gsm_message(sess,
+                    r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                             AMF_NAS_BACKOFF_TIME);
                     ogs_expect(r == OGS_OK);
@@ -388,7 +416,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 if (!n2smbuf) {
                     ogs_error("[%s:%d] No N2 SM Content",
                             amf_ue->supi, sess->psi);
-                    r = ngap_send_error_indication2(amf_ue,
+                    r = ngap_send_error_indication2(ran_ue,
                             NGAP_Cause_PR_protocol,
                             NGAP_CauseProtocol_semantic_error);
                     ogs_expect(r == OGS_OK);
@@ -414,7 +442,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 if (!n2smbuf) {
                     ogs_error("[%s:%d] No N2 SM Content",
                             amf_ue->supi, sess->psi);
-                    r = ngap_send_error_indication2(amf_ue,
+                    r = ngap_send_error_indication2(ran_ue,
                             NGAP_Cause_PR_protocol,
                             NGAP_CauseProtocol_semantic_error);
                     ogs_expect(r == OGS_OK);
@@ -438,7 +466,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
             default:
                 ogs_error("Not implemented [%d]",
                         SmContextUpdatedData->n2_sm_info_type);
-                r = ngap_send_error_indication2(amf_ue,
+                r = ngap_send_error_indication2(ran_ue,
                         NGAP_Cause_PR_protocol,
                         NGAP_CauseProtocol_semantic_error);
                 ogs_expect(r == OGS_OK);
@@ -593,7 +621,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
             } else if (state ==
                     AMF_UPDATE_SM_CONTEXT_DUPLICATED_PDU_SESSION_ID) {
-                ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
                 /*
                  * 1. PDU session establishment request
                  *    (Duplicated PDU Session ID)
@@ -636,17 +663,21 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
                     ran_ue_t *source_ue = NULL, *target_ue = NULL;
 
-                    source_ue = amf_ue->ran_ue;
+                    source_ue = sess->ran_ue;
                     ogs_assert(source_ue);
-                    target_ue = source_ue->target_ue;
-                    ogs_assert(target_ue);
-
-                    r = ngap_send_ran_ue_context_release_command(target_ue,
-                            NGAP_Cause_PR_radioNetwork,
-                            NGAP_CauseRadioNetwork_handover_cancelled,
-                            NGAP_UE_CTX_REL_NG_HANDOVER_CANCEL, 0);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
+                    target_ue = ran_ue_cycle(source_ue->target_ue);
+                    if (target_ue) {
+                        r = ngap_send_ran_ue_context_release_command(
+                                target_ue,
+                                NGAP_Cause_PR_radioNetwork,
+                                NGAP_CauseRadioNetwork_handover_cancelled,
+                                NGAP_UE_CTX_REL_NG_HANDOVER_CANCEL, 0);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                    } else {
+                        ogs_warn("[%s] RAN-NG Context has already been removed",
+                                amf_ue->supi);
+                    }
                 }
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_HANDOVER_NOTIFY) {
@@ -655,7 +686,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
             } else if (state == AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED) {
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
-                    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
 
                     amf_ue_deassociate(amf_ue);
 
@@ -701,7 +731,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
             } else if (state == AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL) {
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
-                    ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
 
                     amf_ue_deassociate(amf_ue);
 
@@ -758,7 +787,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
             } else if (state == AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL) {
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
                     ran_ue_t *iter = NULL;
-                    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
 
                     amf_ue_deassociate(amf_ue);
 
@@ -867,7 +895,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         if (!SmContextUpdateError) {
             ogs_error("[%d:%d] No SmContextUpdateError [%d]",
                     sess->psi, sess->pti, recvmsg->res_status);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -879,7 +907,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         if (!ProblemDetails) {
             ogs_error("[%d:%d] No ProblemDetails [%d]",
                     sess->psi, sess->pti, recvmsg->res_status);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -941,7 +969,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
                 n1smbuf = ogs_pkbuf_copy(n1smbuf);
                 ogs_assert(n1smbuf);
-                r = nas_5gs_send_gsm_reject(sess,
+                r = nas_5gs_send_gsm_reject(ran_ue, sess,
                         OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
@@ -954,7 +982,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         n2SmInfo = SmContextUpdateError->n2_sm_info;
         if (!n2SmInfo || !n2SmInfo->content_id) {
             ogs_error("[%d:%d] No N2 SM Message", sess->psi, sess->pti);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -967,7 +995,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         if (!n2smbuf) {
             ogs_error("[%d:%d] No N2 SM Content [%s]",
                     sess->psi, sess->pti, n2SmInfo->content_id);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -979,7 +1007,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         ogs_error("[%d:%d] Error Indication [state:%d]",
                 sess->psi, sess->pti, state);
 
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(ran_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -994,10 +1022,22 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
 {
     int r;
     amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
 
     ogs_assert(sess);
-    amf_ue = sess->amf_ue;
-    ogs_assert(amf_ue);
+    sess = amf_sess_cycle(sess);
+    if (!sess) {
+        ogs_error("Session has already been removed");
+        return OGS_ERROR;
+    }
+
+    amf_ue = amf_ue_cycle(sess->amf_ue);
+    if (!amf_ue) {
+        ogs_error("UE(amf_ue) Context has already been removed");
+        return OGS_ERROR;
+    }
+
+    ran_ue = ran_ue_cycle(sess->ran_ue);
 
     /*
      * To check if Reactivation Request has been used.
@@ -1041,8 +1081,6 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                 amf_ue, AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) &&
             AMF_SESSION_SYNC_DONE(
                 amf_ue, AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST)) {
-            ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-
             if (ran_ue) {
                 if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
                     r = amf_ue_sbi_discover_and_send(

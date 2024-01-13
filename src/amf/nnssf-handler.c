@@ -39,14 +39,22 @@ int amf_nnssf_nsselection_handle_get(
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *ran_ue = NULL;
 
-    ogs_assert(sess);
-    amf_ue = sess->amf_ue;
-    ogs_assert(amf_ue);
     ogs_assert(recvmsg);
-
     ogs_assert(!SESSION_CONTEXT_IN_SMF(sess));
 
-    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    sess = amf_sess_cycle(sess);
+    if (!sess) {
+        ogs_error("Session has already been removed");
+        return OGS_ERROR;
+    }
+
+    amf_ue = amf_ue_cycle(sess->amf_ue);
+    if (!amf_ue) {
+        ogs_error("UE(amf_ue) Context has already been removed");
+        return OGS_ERROR;
+    }
+
+    ran_ue = ran_ue_cycle(sess->ran_ue);
     if (!ran_ue) {
         ogs_error("NG context has already been removed");
         return OGS_ERROR;

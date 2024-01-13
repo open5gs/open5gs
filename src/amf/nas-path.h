@@ -30,15 +30,15 @@ extern "C" {
 
 int nas_5gs_send_to_gnb(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf);
 int nas_5gs_send_to_downlink_nas_transport(
-        amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf);
+        ran_ue_t *ran_ue, amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf);
 
 int nas_5gs_send_registration_accept(amf_ue_t *amf_ue);
 int nas_5gs_send_registration_reject(
-        amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause);
+        ran_ue_t *ran_ue, amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause);
 
 int nas_5gs_send_service_accept(amf_ue_t *amf_ue);
 int nas_5gs_send_service_reject(
-        amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause);
+        ran_ue_t *ran_ue, amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause);
 
 int nas_5gs_send_de_registration_accept(amf_ue_t *amf_ue);
 int nas_5gs_send_de_registration_request(
@@ -66,17 +66,18 @@ int nas_send_pdu_session_release_command(amf_sess_t *sess,
 int nas_5gs_send_gmm_status(amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t cause);
 
 int nas_5gs_send_gmm_reject(
-        amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause);
+        ran_ue_t *ran_ue, amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause);
 int nas_5gs_send_gmm_reject_from_sbi(amf_ue_t *amf_ue, int status);
 
-int nas_5gs_send_dl_nas_transport(amf_sess_t *sess,
+int nas_5gs_send_dl_nas_transport(ran_ue_t *ran_ue, amf_sess_t *sess,
         uint8_t payload_container_type, ogs_pkbuf_t *payload_container,
         ogs_nas_5gmm_cause_t cause, uint8_t backoff_time);
 
-int nas_5gs_send_gsm_reject(amf_sess_t *sess,
+int nas_5gs_send_gsm_reject(ran_ue_t *ran_ue, amf_sess_t *sess,
         uint8_t payload_container_type, ogs_pkbuf_t *payload_container);
 int nas_5gs_send_back_gsm_message(
-        amf_sess_t *sess, ogs_nas_5gmm_cause_t cause, uint8_t backoff_time);
+        ran_ue_t *ran_ue, amf_sess_t *sess,
+        ogs_nas_5gmm_cause_t cause, uint8_t backoff_time);
 
 #ifdef __cplusplus
 }
