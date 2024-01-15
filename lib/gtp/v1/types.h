@@ -145,6 +145,13 @@ ED4(uint8_t spare:5;,
     uint8_t cs:1;)
 } __attribute__ ((packed)) ogs_gtp1_cause_t;
 
+/* 7.7.15 Tunnel Endpoint Identifier Data II */
+typedef struct ogs_gtp1_teidII_s {
+ED2(uint8_t spare:4;, /* Shall be set to 0 */
+    uint8_t nsapi:4;)
+    uint32_t teid;
+} __attribute__ ((packed)) ogs_gtp1_teidII_t;
+
 
 /* TS 29.060 16.0.0 Table 7.7.50.1 RAT Type values */
 #define OGS_GTP1_RAT_TYPE_RESERVED                               0
@@ -359,6 +366,8 @@ typedef struct ogs_gtp1_mm_context_decoded_s {
     uint8_t nrsrna;
 } ogs_gtp1_mm_context_decoded_t;
 
+int ogs_gtp1_parse_mm_context(
+    ogs_gtp1_mm_context_decoded_t *decoded, const ogs_tlv_octet_t *octet);
 int ogs_gtp1_build_mm_context(ogs_gtp1_tlv_mm_context_t *octet,
     const ogs_gtp1_mm_context_decoded_t *decoded, uint8_t *data, int data_len);
 
@@ -405,6 +414,8 @@ typedef struct ogs_gtp1_pdp_context_decoded_s {
     uint16_t trans_id:12;
 } ogs_gtp1_pdp_context_decoded_t;
 
+int ogs_gtp1_parse_pdp_context(
+    ogs_gtp1_pdp_context_decoded_t *decoded, const ogs_tlv_octet_t *octet);
 int ogs_gtp1_build_pdp_context(ogs_gtp1_tlv_pdp_context_t *octet,
     const ogs_gtp1_pdp_context_decoded_t *decoded, uint8_t *data, int data_len);
 
