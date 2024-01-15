@@ -399,8 +399,154 @@ int16_t ogs_gtp1_build_qos_profile(ogs_tlv_octet_t *octet,
     return octet->len;
 }
 
+/* 7.7.35 Authentication Quintuplet */
+static int decode_quintuple(ogs_gtp1_auth_quintuplet_t *decoded, uint8_t *data, unsigned int len)
+{
+    uint8_t *ptr = data;
+
+#define CHECK_SPACE_ERR(bytes) \
+    if ((ptr - data) + (bytes) > len) \
+        return OGS_ERROR
+
+    CHECK_SPACE_ERR(sizeof(decoded->rand));
+    memcpy(&decoded->rand, ptr, sizeof(decoded->rand));
+    ptr += sizeof(decoded->rand);
+
+    CHECK_SPACE_ERR(1);
+    decoded->xres_len = *ptr++;
+    CHECK_SPACE_ERR(decoded->xres_len);
+    memcpy(&decoded->xres[0], ptr, decoded->xres_len);
+    ptr += decoded->xres_len;
+
+    CHECK_SPACE_ERR(sizeof(decoded->ck));
+    memcpy(&decoded->ck, ptr, sizeof(decoded->ck));
+    ptr += sizeof(decoded->ck);
+
+    CHECK_SPACE_ERR(sizeof(decoded->ik));
+    memcpy(&decoded->ik, ptr, sizeof(decoded->ik));
+    ptr += sizeof(decoded->ik);
+
+    CHECK_SPACE_ERR(1);
+    decoded->autn_len = *ptr++;
+    CHECK_SPACE_ERR(decoded->autn_len);
+    memcpy(&decoded->autn[0], ptr, decoded->autn_len);
+    ptr += decoded->autn_len;
+
+    return (ptr - data);
+#undef CHECK_SPACE_ERR
+}
+
 /* 7.7.28 MM Context */
-/* TODO: UMTS support, see Figure 41 and Figure 42. */
+int ogs_gtp1_parse_mm_context(
+    ogs_gtp1_mm_context_decoded_t *decoded, const ogs_tlv_octet_t *octet)
+{
+    uint8_t *ptr = octet->data;
+    unsigned int i;
+    uint16_t val16;
+
+    ogs_assert(decoded);
+    ogs_assert(octet);
+
+    memset(decoded, 0, sizeof(ogs_gtp1_mm_context_decoded_t));
+
+#define CHECK_SPACE_ERR(bytes) \
+    if ((ptr - (uint8_t *)octet->data) + (bytes) > octet->len) \
+        return OGS_ERROR
+
+    CHECK_SPACE_ERR(2);
+    decoded->sec_mode = ptr[1] >> 6;
+    switch (decoded->sec_mode) {
+    case OGS_GTP1_SEC_MODE_UMTS_KEY_AND_QUINTUPLETS:
+    case OGS_GTP1_SEC_MODE_USED_CIPHER_VALUE_UMTS_KEY_AND_QUINTUPLETS:
+        break; /* Handle below */
+    case OGS_GTP1_SEC_MODE_GSM_KEY_AND_TRIPLETS:
+    case OGS_GTP1_SEC_MODE_GSM_KEY_AND_QUINTUPLETS:
+        ogs_error("[Gn] MM Context IE: Security Mode %u not supported!", decoded->sec_mode);
+        return OGS_ERROR; /* Not supported/expected here */
+    }
+    /* Structure for both sec modes is the same here, only difference is that
+    OGS_GTP1_SEC_MODE_UMTS_KEY_AND_QUINTUPLETS has "Used Cipher" field encoded
+    as spare all 1s. */
+    decoded->gupii = *ptr >> 7;
+    decoded->ugipai = (*ptr >> 6) & 0x01;
+    decoded->used_gprs_protection_algo = (*ptr >> 3) & 0x07;
+    decoded->ksi = *ptr & 0x07;
+    ptr++;
+    decoded->num_vectors = (*ptr >> 3) & 0x07;
+    decoded->used_cipher = *ptr & 0x07;
+    ptr++;
+
+    CHECK_SPACE_ERR(sizeof(decoded->ck));
+    memcpy(&decoded->ck[0], ptr, sizeof(decoded->ck));
+    ptr += sizeof(decoded->ck);
+    CHECK_SPACE_ERR(sizeof(decoded->ik));
+    memcpy(&decoded->ik[0], ptr, sizeof(decoded->ik));
+    ptr += sizeof(decoded->ik);
+
+    /* Quintuple length (in bytes) */
+    CHECK_SPACE_ERR(2);
+    memcpy(&val16, &ptr[0], 2);
+    val16 = be16toh(val16);
+    ptr += 2;
+
+    CHECK_SPACE_ERR(val16);
+    int remain = val16;
+    for (i = 0; i < decoded->num_vectors; i++) {
+        int rv = decode_quintuple(&decoded->auth_quintuplets[i], ptr + (val16 - remain), remain);
+        if (rv < 0)
+            return OGS_ERROR;
+        remain -= rv;
+    }
+    ptr += val16;
+
+    CHECK_SPACE_ERR(sizeof(decoded->drx_param));
+    memcpy(&decoded->drx_param, ptr, sizeof(decoded->drx_param));
+    ptr += sizeof(decoded->drx_param);
+
+    CHECK_SPACE_ERR(1);
+    decoded->ms_network_capability_len = *ptr++;
+    CHECK_SPACE_ERR(decoded->ms_network_capability_len);
+    if (decoded->ms_network_capability_len > 0) {
+        memcpy(&decoded->ms_network_capability[0], ptr,
+             ogs_min(decoded->ms_network_capability_len, sizeof(decoded->ms_network_capability)));
+    }
+    ptr += decoded->ms_network_capability_len;
+
+    /* Container length (in bytes) */
+    CHECK_SPACE_ERR(2);
+    memcpy(&val16, &ptr[0], 2);
+    val16 = be16toh(val16);
+    ptr += 2;
+
+    /* Extract IMEISV from Container: */
+    CHECK_SPACE_ERR(val16);
+    if (val16 > 0) {
+        CHECK_SPACE_ERR(2);
+         /* Validate Container (Mobile Identity IMEISV) IE, TS 29.060 Table 47A */
+        if (ptr[0] != 0x23)
+            return OGS_ERROR;
+        decoded->imeisv_len = ptr[1];
+        CHECK_SPACE_ERR(2 + decoded->imeisv_len);
+        memcpy(&decoded->imeisv[0], &ptr[2],
+               ogs_min(decoded->imeisv_len, sizeof(decoded->imeisv)));
+    }
+    ptr += val16;
+
+    if ((ptr - (uint8_t *)octet->data) + 1 <= octet->len) {
+        CHECK_SPACE_ERR(*ptr);
+        if (*ptr > 0) {
+            /* ptr[0] = Length of Access Restriction Data */
+            decoded->nrsrna = ptr[1] & 0x01;
+        }
+        ptr += 1 + *ptr;
+    }
+    /* else: Be tolerant and accept missing Length of Access Restriction Data field
+     * assuming the whole Access Restriction Data field is missing. */
+
+    return OGS_OK;
+#undef CHECK_SPACE_ERR
+}
+
 int ogs_gtp1_build_mm_context(ogs_gtp1_tlv_mm_context_t *octet,
     const ogs_gtp1_mm_context_decoded_t *decoded, uint8_t *data, int data_len)
 {
@@ -443,6 +589,7 @@ int ogs_gtp1_build_mm_context(ogs_gtp1_tlv_mm_context_t *octet,
     len_ptr = (uint16_t *)ptr; /* will be filled later */
     ptr += 2;
 
+    /* 7.7.35 Authentication Quintuplet */
     for (i = 0; i < decoded->num_vectors; i++) {
         CHECK_SPACE_ERR(sizeof(decoded->auth_quintuplets[0]));
 
@@ -515,6 +662,69 @@ int ogs_gtp1_build_mm_context(ogs_gtp1_tlv_mm_context_t *octet,
 }
 
 /* The format of EUA in PDP Context is not exactly the same for the entire EUA,
+ * hence a separate function is required to decode the value part of the address,
+ * instead of using regular ogs_gtp1_eua_to_ip(). */
+static int dec_eua_for_pdp_ctx(uint8_t pdp_type_org, uint8_t pdp_type_num, uint8_t *data, int data_len, ogs_ip_t *ip)
+{
+    ogs_assert(data);
+    ogs_assert(ip);
+
+    memset(ip, 0, sizeof *ip);
+
+    switch (pdp_type_org) {
+    case OGS_PDP_EUA_ORG_IETF:
+        break;
+    case OGS_PDP_EUA_ORG_ETSI:
+    default:
+        ogs_error("Unsupported EUA organization %u", pdp_type_org);
+        return OGS_ERROR;
+    }
+
+    switch (pdp_type_num) {
+    case OGS_PDP_EUA_IETF_IPV4:
+        if (data_len == OGS_IPV4_LEN) {
+            memcpy(&ip->addr, data, OGS_IPV4_LEN);
+        } else if (data_len != 0) {
+            ogs_error("Wrong IPv4 EUA length %u", data_len);
+            return OGS_ERROR;
+        }
+        ip->ipv4 = 1;
+        ip->ipv6 = 0;
+        break;
+    case OGS_PDP_EUA_IETF_IPV6:
+        if (data_len == OGS_IPV6_LEN) {
+            memcpy(ip->addr6, data, OGS_IPV6_LEN);
+        } else if (data_len != 0) {
+            ogs_error("Wrong IPv6 EUA length %u", data_len);
+            return OGS_ERROR;
+        }
+        ip->ipv4 = 0;
+        ip->ipv6 = 1;
+        break;
+    case OGS_PDP_EUA_IETF_IPV4V6:
+        if (data_len == OGS_IPV4_LEN) {
+            memcpy(&ip->addr, data, OGS_IPV4_LEN);
+        } else if (data_len == OGS_IPV6_LEN) {
+            memcpy(ip->addr6, data, OGS_IPV6_LEN);
+        } else if (data_len == OGS_IPV4_LEN + OGS_IPV6_LEN) {
+            memcpy(&ip->addr, data, OGS_IPV4_LEN);
+            memcpy(ip->addr6, data + OGS_IPV4_LEN, OGS_IPV6_LEN);
+        } else if (data_len != 0) {
+            ogs_error("Wrong IPv4v6 EUA length %u", data_len);
+            return OGS_ERROR;
+        }
+        ip->ipv4 = 1;
+        ip->ipv6 = 1;
+        break;
+    default:
+        ogs_error("No IPv4 or IPv6");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
+/* The format of EUA in PDP Context is not exactly the same for the entire EUA,
  * hence a separate function is required to encode the value part of the address,
  * instead of using regular ogs_gtp1_ip_to_eua(). */
 static int enc_pdp_ctx_as_eua(uint8_t pdu_session_type, const ogs_ip_t *ip,
@@ -570,6 +780,168 @@ static int enc_pdp_ctx_as_eua(uint8_t pdu_session_type, const ogs_ip_t *ip,
 }
 
 /* TS 29.060 7.7.29 PDP Context */
+int ogs_gtp1_parse_pdp_context(
+    ogs_gtp1_pdp_context_decoded_t *decoded, const ogs_tlv_octet_t *octet)
+{
+    uint8_t *ptr = octet->data;
+    uint16_t val16;
+    uint32_t val32;
+    ogs_tlv_octet_t qos;
+    int rv;
+
+    ogs_assert(decoded);
+    ogs_assert(octet);
+
+    memset(decoded, 0, sizeof(ogs_gtp1_pdp_context_decoded_t));
+
+#define CHECK_SPACE_ERR(bytes) \
+    if ((ptr - (uint8_t *)octet->data) + (bytes) > octet->len) \
+        return OGS_ERROR
+
+    CHECK_SPACE_ERR(1);
+    decoded->ea = *ptr >> 7;
+    decoded->vaa = (*ptr >> 6) & 0x01;
+    decoded->asi = (*ptr >> 5) & 0x01;
+    decoded->order = (*ptr >> 4) & 0x01;
+    decoded->nsapi = *ptr & 0x0f;
+    ptr++;
+
+    CHECK_SPACE_ERR(1);
+    decoded->sapi = *ptr++;
+
+    /* QoS Sub */
+    CHECK_SPACE_ERR(1);
+    qos.len = *ptr++;
+    CHECK_SPACE_ERR(qos.len);
+    qos.data = ptr;
+    rv = ogs_gtp1_parse_qos_profile(&decoded->qos_sub, &qos);
+    if (rv < 0)
+        return OGS_ERROR;
+    ptr += qos.len;
+
+    /* QoS Req */
+    CHECK_SPACE_ERR(1);
+    qos.len = *ptr++;
+    CHECK_SPACE_ERR(qos.len);
+    qos.data = ptr;
+    rv = ogs_gtp1_parse_qos_profile(&decoded->qos_req, &qos);
+    if (rv < 0)
+        return OGS_ERROR;
+    ptr += qos.len;
+
+    /* QoS Neg */
+    CHECK_SPACE_ERR(1);
+    qos.len = *ptr++;
+    CHECK_SPACE_ERR(qos.len);
+    qos.data = ptr;
+    rv = ogs_gtp1_parse_qos_profile(&decoded->qos_neg, &qos);
+    if (rv < 0)
+        return OGS_ERROR;
+    ptr += qos.len;
+
+    CHECK_SPACE_ERR(2);
+    memcpy(&val16, &ptr[0], 2);
+    decoded->snd = be16toh(val16);
+    ptr += 2;
+
+    CHECK_SPACE_ERR(2);
+    memcpy(&val16, &ptr[0], 2);
+    decoded->snu = be16toh(val16);
+    ptr += 2;
+
+    CHECK_SPACE_ERR(1);
+    decoded->send_npdu_nr = *ptr++;
+    CHECK_SPACE_ERR(1);
+    decoded->receive_npdu_nr = *ptr++;
+
+    CHECK_SPACE_ERR(4);
+    memcpy(&val32, &ptr[0], 4);
+    decoded->ul_teic = be32toh(val32);
+    ptr += 4;
+
+    CHECK_SPACE_ERR(4);
+    memcpy(&val32, &ptr[0], 4);
+    decoded->ul_teid = be32toh(val32);
+    ptr += 4;
+
+    CHECK_SPACE_ERR(1);
+    decoded->pdp_ctx_id = *ptr++;
+
+    /* 'PDP Address' related fields */
+    CHECK_SPACE_ERR(1);
+    decoded->pdp_type_org = *ptr & 0x0f;
+    ptr++;
+    CHECK_SPACE_ERR(2); /* PDP Address Type Number + PDP Address Length */
+    decoded->pdp_type_num[0] = ogs_gtp1_eua_ietf_type_to_pdu_session_type(ptr[0]);
+    CHECK_SPACE_ERR(2 + ptr[1]); /* + PDP Address Length value */
+    rv = dec_eua_for_pdp_ctx(decoded->pdp_type_org, ptr[0], &ptr[2],
+                             ptr[1], &decoded->pdp_address[0]);
+    if (rv < 0)
+        return rv;
+    ptr += 2 + ptr[1];
+
+    /* GGSN Address for control plane Length */
+    CHECK_SPACE_ERR(1);
+    CHECK_SPACE_ERR(1 + *ptr);
+    switch (*ptr) {
+    case OGS_GTP_GSN_ADDRESS_IPV4_LEN:
+        decoded->ggsn_address_c.ipv4 = 1;
+        memcpy((uint8_t *)&decoded->ggsn_address_c.addr, ptr + 1, *ptr);
+        break;
+    case OGS_GTP_GSN_ADDRESS_IPV6_LEN:
+        decoded->ggsn_address_c.ipv6 = 1;
+        memcpy((uint8_t *)&decoded->ggsn_address_c.addr6, ptr + 1, *ptr);
+        break;
+    default:
+        return OGS_ERROR;
+    }
+    decoded->ggsn_address_c.len = *ptr;
+    ptr += 1 + *ptr;
+
+    /* GGSN Address for User Traffic Length */
+    CHECK_SPACE_ERR(1);
+    CHECK_SPACE_ERR(1 + *ptr);
+    switch (*ptr) {
+    case OGS_GTP_GSN_ADDRESS_IPV4_LEN:
+        decoded->ggsn_address_u.ipv4 = 1;
+        memcpy((uint8_t *)&decoded->ggsn_address_u.addr, ptr + 1, *ptr);
+        break;
+    case OGS_GTP_GSN_ADDRESS_IPV6_LEN:
+        decoded->ggsn_address_u.ipv6 = 1;
+        memcpy((uint8_t *)&decoded->ggsn_address_u.addr6, ptr + 1, *ptr);
+        break;
+    default:
+        return OGS_ERROR;
+    }
+    decoded->ggsn_address_u.len = *ptr;
+    ptr += 1 + *ptr;
+
+    /* APN length */
+    CHECK_SPACE_ERR(1);
+    CHECK_SPACE_ERR(1 + *ptr);
+    rv = ogs_fqdn_parse(decoded->apn, (const char *)ptr + 1,
+                        ogs_min(*ptr, sizeof(decoded->apn)));
+    ptr += 1 + *ptr;
+
+    CHECK_SPACE_ERR(2);
+    decoded->trans_id = (((uint16_t)ptr[1]) << 4) | (ptr[0] & 0x0f);
+    ptr += 2;
+
+    if (decoded->ea == OGS_GTP1_PDPCTX_EXT_EUA_YES) {
+        CHECK_SPACE_ERR(2); /* PDP Address Type Number + PDP Address Length */
+        decoded->pdp_type_num[1] = ogs_gtp1_eua_ietf_type_to_pdu_session_type(ptr[0]);
+        CHECK_SPACE_ERR(2 + ptr[1]); /* + PDP Address Length value */
+        rv = dec_eua_for_pdp_ctx(decoded->pdp_type_org, ptr[0], &ptr[2],
+                                ptr[1], &decoded->pdp_address[1]);
+        if (rv < 0)
+            return rv;
+        ptr += 2 + ptr[1];
+    }
+
+    return OGS_OK;
+#undef CHECK_SPACE_ERR
+}
+
 int ogs_gtp1_build_pdp_context(ogs_tlv_octet_t *octet,
     const ogs_gtp1_pdp_context_decoded_t *decoded, uint8_t *data, int data_len)
 {
