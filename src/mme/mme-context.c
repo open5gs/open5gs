@@ -2488,6 +2488,15 @@ mme_sgsn_t *mme_sgsn_find_by_routing_address(const ogs_nas_rai_t *rai, uint16_t 
         }
     }
 
+    /* If no exact match found, try using any with same RAI: */
+    ogs_list_for_each(&self.sgsn_list, sgsn) {
+        mme_sgsn_route_t *rt = NULL;
+        ogs_list_for_each(&sgsn->route_list, rt) {
+            if (memcmp(&rt->rai, rai, sizeof(ogs_nas_rai_t)) == 0)
+                return sgsn;
+        }
+    }
+
     /* No route found, return default route if available: */
     return mme_sgsn_find_by_default_routing_address();
 }
