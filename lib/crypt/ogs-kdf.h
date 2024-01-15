@@ -109,6 +109,10 @@ void ogs_kdf_ck_ik_handover(
 void ogs_kdf_nas_token(
     uint32_t ul_count, const uint8_t *kasme, uint8_t *nas_token);
 
+/* TS33.401 Annex A.11 : K’ASME from CK, IK derivation during idle mode mobility */
+void ogs_kdf_kasme_idle_mobility(const uint8_t *ck, const uint8_t *ik,
+        uint32_t nonce_ue, uint32_t nonce_mme, uint8_t *kasme);
+
 /* TS33.401 Annex A.13: KASME to CK', IK' derivation at idle mobility */
 void ogs_kdf_ck_ik_idle_mobility(
     uint32_t ul_count, const uint8_t *kasme, uint8_t *ck, uint8_t *ik);

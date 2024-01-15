@@ -36,6 +36,7 @@
 #define FC_FOR_EPS_ALGORITHM_KEY_DERIVATION     0x15
 #define FC_FOR_CK_IK_DERIVATION_HANDOVER        0x16
 #define FC_FOR_NAS_TOKEN_DERIVATION             0x17
+#define FC_FOR_KASME_DERIVATION_IDLE_MOBILITY   0x19
 #define FC_FOR_CK_IK_DERIVATION_IDLE_MOBILITY   0x1B
 
 typedef struct kdf_param_s {
@@ -413,6 +414,32 @@ void ogs_kdf_nas_token(
     ogs_kdf_common(kasme, OGS_SHA256_DIGEST_SIZE,
             FC_FOR_NAS_TOKEN_DERIVATION, param, output);
     memcpy(nas_token, output, 2);
+}
+
+/* TS33.401 Annex A.11 : K’ASME from CK, IK derivation during idle mode mobility */
+void ogs_kdf_kasme_idle_mobility(
+        const uint8_t *ck, const uint8_t *ik,
+        uint32_t nonce_ue, uint32_t nonce_mme,
+        uint8_t *kasme)
+{
+    kdf_param_t param;
+    uint8_t key[OGS_KEY_LEN*2];
+
+    ogs_assert(ck);
+    ogs_assert(ik);
+    ogs_assert(kasme);
+
+    memcpy(key, ck, OGS_KEY_LEN);
+    memcpy(key+OGS_KEY_LEN, ik, OGS_KEY_LEN);
+
+    memset(param, 0, sizeof(param));
+    param[0].buf = (uint8_t *)&nonce_ue;
+    param[0].len = sizeof(nonce_ue);
+    param[1].buf = (uint8_t *)&nonce_mme;
+    param[1].len = sizeof(nonce_mme);
+
+    ogs_kdf_common(key, OGS_KEY_LEN*2,
+            FC_FOR_KASME_DERIVATION_IDLE_MOBILITY, param, kasme);
 }
 
 /* TS33.401 Annex A.13: KASME to CK', IK' derivation at idle mobility */
