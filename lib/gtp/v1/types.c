@@ -504,6 +504,9 @@ int ogs_gtp1_build_mm_context(ogs_gtp1_tlv_mm_context_t *octet,
         CHECK_SPACE_ERR(2);
         *ptr++ = 1;
         *ptr++ = 0x01;
+    } else {
+        CHECK_SPACE_ERR(1);
+        *ptr++ = 0;
     }
 
     octet->len = (ptr - data);
