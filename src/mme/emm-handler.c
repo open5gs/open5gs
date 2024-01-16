@@ -549,6 +549,36 @@ int emm_handle_service_request(
     return OGS_OK;
 }
 
+bool emm_tau_request_ue_comes_from_gb_or_iu(const ogs_nas_eps_tracking_area_update_request_t *tau_request)
+{
+    /* "When the tracking area updating procedure is initiated in EMM-IDLE mode
+     * to perform an inter-system change from A/Gb mode or Iu mode to S1 mode
+     * and the TIN is set to "P-TMSI", the UE shall include the GPRS ciphering
+     * key sequence number applicable for A/Gb mode or Iu mode and a nonce UE in
+     * the TRACKING AREA UPDATE REQUEST message."
+     */
+    if (!(tau_request->presencemask &
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_NONCEUE_PRESENT))
+            return false;
+
+    if (tau_request->presencemask &
+        OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_OLD_GUTI_TYPE_PRESENT) {
+            /* 0 = Native, 1 = Mapped */
+            return tau_request->old_guti_type.guti_type;
+    } else {
+        /* TS 23.003 2.8.2.2.2:
+            * "The most significant bit of the <LAC> shall be set to zero;
+            * and the most significant bit of <MME group id> shall be set to
+            * one. Based on this definition, the most significant bit of the
+            * <MME group id> can be used to distinguish the node type, i.e.
+            * whether it is an MME or SGSN */
+        const ogs_nas_eps_mobile_identity_t *eps_mobile_identity = &tau_request->old_guti;
+        if (eps_mobile_identity->imsi.type != OGS_NAS_EPS_MOBILE_IDENTITY_GUTI)
+            return false;
+        return !(eps_mobile_identity->guti.mme_gid & 0x8000);
+    }
+}
+
 int emm_handle_tau_request(mme_ue_t *mme_ue,
     ogs_nas_eps_tracking_area_update_request_t *tau_request, ogs_pkbuf_t *pkbuf)
 {
@@ -660,6 +690,19 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
                 sizeof(tau_request->ms_network_capability));
     }
 
+    if (tau_request->presencemask &
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_NONCEUE_PRESENT) {
+        mme_ue->gprs_ciphering_key_sequence_number = tau_request->gprs_ciphering_key_sequence_number.key_sequence;
+    } else {
+        /* Mark as unavailable, Table 10.5.2/3GPP TS 24.008 */
+        mme_ue->gprs_ciphering_key_sequence_number = OGS_NAS_CIPHERING_KEY_SEQUENCE_NUMBER_NO_KEY_FROM_MS;
+    }
+
+    if (tau_request->presencemask &
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_NONCEUE_PRESENT) {
+        mme_ue->nonceue = tau_request->nonceue;
+    }
+
     /* TODO:
      *   1) Consider if MME is changed or not.
      *   2) Consider if SGW is changed or not.
@@ -679,6 +722,10 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
                 nas_guti.m_tmsi,
                 MME_UE_HAVE_IMSI(mme_ue)
                     ? mme_ue->imsi_bcd : "Unknown");
+
+        memcpy(&mme_ue->next.guti,
+           &nas_guti, sizeof(ogs_nas_eps_guti_t));
+
         break;
     default:
         ogs_error("Not implemented[%d]", eps_mobile_identity->imsi.type);

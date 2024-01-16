@@ -20,11 +20,11 @@
 #include "mme-context.h"
 
 #include "mme-gn-build.h"
+#include "mme-gn-handler.h"
 
 static int sess_fill_mm_context_decoded(mme_sess_t *sess, ogs_gtp1_mm_context_decoded_t *mmctx_dec)
 {
     mme_ue_t *mme_ue = sess->mme_ue;
-    mme_bearer_t *bearer = NULL;
     *mmctx_dec = (ogs_gtp1_mm_context_decoded_t) {
         .gupii = 1, /* Integrity Protection not required */
         .ugipai = 1, /* Ignore "Used GPRS integrity protection algorithm" field" */
@@ -40,7 +40,6 @@ static int sess_fill_mm_context_decoded(mme_sess_t *sess, ogs_gtp1_mm_context_de
         .nrsrna = 0,
     };
 
-    //TODO: derive cK Ki from mme_ue->kasme
     ogs_kdf_ck_ik_idle_mobility(mme_ue->ul_count.i32, mme_ue->kasme, &mmctx_dec->ck[0], &mmctx_dec->ik[0]);
 
     mmctx_dec->imeisv_len = sizeof(mme_ue->nas_mobile_identity_imeisv);
@@ -48,12 +47,6 @@ static int sess_fill_mm_context_decoded(mme_sess_t *sess, ogs_gtp1_mm_context_de
 
     mmctx_dec->ms_network_capability_len = mme_ue->ms_network_capability.length;
     memcpy(&mmctx_dec->ms_network_capability[0], ((uint8_t*)&mme_ue->ms_network_capability)+1, sizeof(mme_ue->ms_network_capability) - 1);
-
-    ogs_list_for_each(&sess->bearer_list, bearer) {
-
-        /* FIXME: only 1 PDP Context supported in the message so far. */
-        break;
-    }
 
     return OGS_OK;
 }
@@ -177,6 +170,103 @@ static int sess_fill_pdp_context_decoded(mme_sess_t *sess, ogs_gtp1_pdp_context_
     return OGS_OK;
 }
 
+/* 3GPP TS 29.060 7.5.3 SGSN Context Request */
+ogs_pkbuf_t *mme_gn_build_sgsn_context_request(
+                mme_ue_t *mme_ue)
+{
+    ogs_gtp1_message_t gtp1_message;
+    ogs_gtp1_sgsn_context_request_t *req = NULL;
+    ogs_nas_rai_t rai;
+    mme_p_tmsi_t ptmsi;
+    uint32_t ptmsi_sig;
+    ogs_gtp1_gsn_addr_t mme_gnc_gsnaddr, mme_gnc_alt_gsnaddr;
+    int gsn_len;
+    int rv;
+
+    ogs_debug("[Gn] build SGSN Context Request");
+
+    ogs_assert(mme_ue);
+
+    req = &gtp1_message.sgsn_context_request;
+    memset(&gtp1_message, 0, sizeof(ogs_gtp1_message_t));
+
+    guti_to_rai_ptmsi(&mme_ue->next.guti, &rai, &ptmsi, &ptmsi_sig);
+
+    req->imsi.presence = 0;
+
+    req->routeing_area_identity.presence = 1;
+    req->routeing_area_identity.data = &rai;
+    req->routeing_area_identity.len = sizeof(ogs_nas_rai_t);
+
+    req->temporary_logical_link_identifier.presence = 0;
+
+    req->packet_tmsi.presence = 1;
+    req->packet_tmsi.u32 = be32toh(ptmsi);
+
+    req->p_tmsi_signature.presence = 1;
+    req->p_tmsi_signature.u24 = ptmsi_sig;
+
+    req->ms_validated.presence = 0;
+
+    req->tunnel_endpoint_identifier_control_plane.presence = 1;
+    req->tunnel_endpoint_identifier_control_plane.u32 = mme_ue->gn.mme_gn_teid;
+
+    /* SGSN Address for Control Plane */
+    if (ogs_gtp_self()->gtpc_addr && ogs_gtp_self()->gtpc_addr6) {
+        rv = ogs_gtp1_sockaddr_to_gsn_addr(NULL, ogs_gtp_self()->gtpc_addr6,
+                &mme_gnc_gsnaddr, &gsn_len);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+            return NULL;
+        }
+        req->sgsn_address_for_control_plane.presence = 1;
+        req->sgsn_address_for_control_plane.data = &mme_gnc_gsnaddr;
+        req->sgsn_address_for_control_plane.len = gsn_len;
+
+        rv = ogs_gtp1_sockaddr_to_gsn_addr(ogs_gtp_self()->gtpc_addr, NULL,
+                &mme_gnc_alt_gsnaddr, &gsn_len);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+            return NULL;
+        }
+        req->sgsn_address_for_control_plane.presence = 1;
+        req->sgsn_address_for_control_plane.data = &mme_gnc_alt_gsnaddr;
+        req->sgsn_address_for_control_plane.len = gsn_len;
+    } else if (ogs_gtp_self()->gtpc_addr6) {
+        rv = ogs_gtp1_sockaddr_to_gsn_addr(NULL, ogs_gtp_self()->gtpc_addr6,
+                &mme_gnc_gsnaddr, &gsn_len);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+            return NULL;
+        }
+        req->sgsn_address_for_control_plane.presence = 1;
+        req->sgsn_address_for_control_plane.data = &mme_gnc_gsnaddr;
+        req->sgsn_address_for_control_plane.len = gsn_len;
+        req->alternative_sgsn_address_for_control_plane.presence = 0;
+    } else {
+        rv = ogs_gtp1_sockaddr_to_gsn_addr(ogs_gtp_self()->gtpc_addr, NULL,
+                &mme_gnc_gsnaddr, &gsn_len);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_gtp1_sockaddr_to_gsn_addr() failed");
+            return NULL;
+        }
+        req->sgsn_address_for_control_plane.presence = 1;
+        req->sgsn_address_for_control_plane.data = &mme_gnc_gsnaddr;
+        req->sgsn_address_for_control_plane.len = gsn_len;
+        req->alternative_sgsn_address_for_control_plane.presence = 0;
+    }
+
+    req->sgsn_number.presence = 0;
+
+    req->rat_type.presence = 1;
+    req->rat_type.u8 = OGS_GTP1_RAT_TYPE_EUTRAN;
+
+    req->hop_counter.presence = 0;
+
+    gtp1_message.h.type = OGS_GTP1_SGSN_CONTEXT_REQUEST_TYPE;
+    return ogs_gtp1_build_msg(&gtp1_message);
+}
+
 /* 3GPP TS 29.060 7.5.4 SGSN Context Response */
 ogs_pkbuf_t *mme_gn_build_sgsn_context_response(
                 mme_ue_t *mme_ue, uint8_t cause)
@@ -273,6 +363,67 @@ ogs_pkbuf_t *mme_gn_build_sgsn_context_response(
     rsp->sgsn_address_for_control_plane.presence = 1;
     rsp->sgsn_address_for_control_plane.data = &mme_gnc_gsnaddr;
     rsp->sgsn_address_for_control_plane.len = gsn_len;
+
+
+build_ret:
+    return ogs_gtp1_build_msg(&gtp1_message);
+}
+
+/* 3GPP TS 29.060 7.5.5 SGSN Context Acknowledge */
+ogs_pkbuf_t *mme_gn_build_sgsn_context_ack(
+                mme_ue_t *mme_ue, uint8_t cause)
+{
+    ogs_gtp1_message_t gtp1_message;
+    ogs_gtp1_sgsn_context_acknowledge_t *ack = NULL;
+    mme_sess_t *sess = NULL;
+    ogs_gtp1_gsn_addr_t reserved_gnc_gsnaddr;
+    ogs_gtp1_teidII_t teidII;
+
+    ogs_debug("[Gn] build SGSN Context Acknowledge");
+
+    ack = &gtp1_message.sgsn_context_acknowledge;
+    memset(&gtp1_message, 0, sizeof(ogs_gtp1_message_t));
+    gtp1_message.h.type = OGS_GTP1_SGSN_CONTEXT_ACKNOWLEDGE_TYPE;
+
+    /* 3GPP TS 29.060 7.7.1 Cause, Mandatory */
+    ack->cause.presence = 1;
+    ack->cause.u8 = cause;
+
+    if (cause != OGS_GTP1_CAUSE_REQUEST_ACCEPTED)
+        goto build_ret;
+
+    ogs_list_for_each(&mme_ue->sess_list, sess) {
+        mme_bearer_t *bearer = NULL;
+        if (!MME_HAVE_SGW_S1U_PATH(sess))
+            continue;
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            /* MME, acting as a new SGSN, shall send the following values in the SGSN Context
+             * Acknowledge message in order to discard the packets received from the old SGSN
+             * (because the MME and the S4-SGSN do not have user plane):
+             * - any reserved TEID (e.g. all 0's, or all 1's) for Tunnel Endpoint Identifier
+             *   Data II value;
+             * - any reserved (implementation dependent) IP address for SGSN Address for user
+                 traffic value.
+             */
+            /* 3GPP TS 29.060 7.7.15 Tunnel Endpoint Identifier Data II, Conditional */
+            teidII.nsapi = bearer->ebi;
+            teidII.teid = 0xffffffff;
+            ack->tunnel_endpoint_identifier_data_ii.presence = 1;
+            ack->tunnel_endpoint_identifier_data_ii.data = &teidII;
+            ack->tunnel_endpoint_identifier_data_ii.len = sizeof(teidII);
+
+            /* Use IPv4 0.0.0.0 as reserved address: */
+            reserved_gnc_gsnaddr.addr = 0;
+            ack->sgsn_address_for_user_traffic.presence = 1;
+            ack->sgsn_address_for_user_traffic.data = &reserved_gnc_gsnaddr;
+            ack->sgsn_address_for_user_traffic.len = OGS_GTP_GSN_ADDRESS_IPV4_LEN;
+
+            /* FIXME: only 1 PDP Context supported in the message so far. */
+            break;
+        }
+        /* FIXME: right now we only support encoding 1 context in the message. */
+        break;
+    }
 
 
 build_ret:
