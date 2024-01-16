@@ -153,3 +153,30 @@ void smf_fd_msg_avp_add_3gpp_uli(smf_sess_t *sess, struct msg *req)
     ogs_assert(ret == 0);
 
 }
+
+/* 
+ * Sets the realm from IMSI
+ *
+ * The realm is in the following format:
+ * EPC_DOMAIN="epc.mnc${MNC}.mcc${MCC}.3gppnetwork.org"
+ * e.g. "epc.mnc0{01}.mcc{001}.3gppnetwork.org"
+ * and IMSI is {001}{ 01}XXXXXXXX
+ *              MCC  MNC
+ */
+DiamId_t set_realm_from_imsi_bcd(const char * imsi_bcd) {
+    DiamId_t realm = strdup(fd_g_config->cnf_diamrlm);
+
+    /* Get the MCC part */
+    char * mcc = strstr(realm, "mcc");
+    if (mcc != NULL) {
+        strncpy(mcc + 3, imsi_bcd, 3);
+    }
+
+    /* Get the MNC part */
+    char * mnc = strstr(realm, "mnc");
+    if (mnc != NULL) {
+        strncpy(mnc + 4, imsi_bcd + 3, 2);
+    }
+
+    return realm;
+}

@@ -19,6 +19,7 @@
 
 #include "mme-event.h"
 #include "mme-fd-path.h"
+#include <string.h>
 
 /* handler for Cancel-Location-Request cb */
 static struct disp_hdl *hdl_s6a_clr = NULL;
@@ -666,6 +667,33 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
     return error;
 }
 
+/* 
+ * Sets the realm from IMSI
+ *
+ * The realm is in the following format:
+ * EPC_DOMAIN="epc.mnc${MNC}.mcc${MCC}.3gppnetwork.org"
+ * e.g. "epc.mnc0{01}.mcc{001}.3gppnetwork.org"
+ * and IMSI is {001}{ 01}XXXXXXXX
+ *              MCC  MNC
+ */
+DiamId_t set_realm_from_imsi_bcd(const char * imsi_bcd) {
+    DiamId_t realm = strdup(fd_g_config->cnf_diamrlm);
+
+    /* Get the MCC part */
+    char * mcc = strstr(realm, "mcc");
+    if (mcc != NULL) {
+        strncpy(mcc + 3, imsi_bcd, 3);
+    }
+
+    /* Get the MNC part */
+    char * mnc = strstr(realm, "mnc");
+    if (mnc != NULL) {
+        strncpy(mnc + 4, imsi_bcd + 3, 2);
+    }
+
+    return realm;
+}
+
 /* MME Sends Authentication Information Request to HSS */
 void mme_s6a_send_air(mme_ue_t *mme_ue,
     ogs_nas_authentication_failure_parameter_t
@@ -722,10 +750,11 @@ void mme_s6a_send_air(mme_ue_t *mme_ue,
     ogs_assert(ret == 0);
 
     /* Set the Destination-Realm AVP */
+    DiamId_t dest_realm = set_realm_from_imsi_bcd(mme_ue->imsi_bcd);
     ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    val.os.data = (unsigned char *)(dest_realm);
+    val.os.len  = strlen(dest_realm);
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
@@ -1124,10 +1153,11 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     ogs_assert(ret == 0);
 
     /* Set the Destination-Realm AVP */
+    DiamId_t dest_realm = set_realm_from_imsi_bcd(mme_ue->imsi_bcd);
     ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    val.os.data = (unsigned char *)(dest_realm);
+    val.os.len  = strlen(dest_realm);
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
@@ -1280,10 +1310,11 @@ void mme_s6a_send_pur(mme_ue_t *mme_ue)
     ogs_assert(ret == 0);
 
     /* Set the Destination-Realm AVP */
+    DiamId_t dest_realm = set_realm_from_imsi_bcd(mme_ue->imsi_bcd);
     ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    val.os.data = (unsigned char *)(dest_realm);
+    val.os.len  = strlen(dest_realm);
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
