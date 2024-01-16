@@ -50,6 +50,9 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
 int emm_handle_security_mode_complete(mme_ue_t *mme_ue,
     ogs_nas_eps_security_mode_complete_t *security_mode_complete);
 
+bool emm_tau_request_ue_comes_from_gb_or_iu(
+    const ogs_nas_eps_tracking_area_update_request_t *tau_request);
+
 #ifdef __cplusplus
 }
 #endif

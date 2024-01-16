@@ -489,6 +489,8 @@ struct mme_ue_s {
     } ul_count;
     uint8_t         kenb[OGS_SHA256_DIGEST_SIZE];
     uint8_t         hash_mme[OGS_HASH_MME_LEN];
+    uint32_t        nonceue, noncemme;
+    uint8_t gprs_ciphering_key_sequence_number;
 
     struct {
     ED2(uint8_t nhcc_spare:5;,

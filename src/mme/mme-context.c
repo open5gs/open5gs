@@ -3184,6 +3184,11 @@ void mme_ue_confirm_guti(mme_ue_t *mme_ue)
 
     /* Clear Next GUTI */
     mme_ue->next.m_tmsi = NULL;
+
+    ogs_debug("Confirm GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+              mme_ue->current.guti.mme_gid,
+              mme_ue->current.guti.mme_code,
+              mme_ue->current.guti.m_tmsi);
 }
 
 static bool compare_ue_info(mme_sgw_t *node, enb_ue_t *enb_ue)
