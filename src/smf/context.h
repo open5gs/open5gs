@@ -486,7 +486,7 @@ void smf_sess_delete_cp_up_data_forwarding(smf_sess_t *sess);
 
 ogs_pcc_rule_t *smf_pcc_rule_find_by_id(smf_sess_t *sess, char *pcc_rule_id);
 
-smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess);
+smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess, uint8_t direction);
 smf_bearer_t *smf_qos_flow_find_by_qfi(smf_sess_t *sess, uint8_t qfi);
 smf_bearer_t *smf_qos_flow_find_by_pcc_rule_id(
         smf_sess_t *sess, char *pcc_rule_id);
@@ -503,8 +503,8 @@ smf_bearer_t *smf_bearer_find_by_pdr_id(
         smf_sess_t *sess, ogs_pfcp_pdr_id_t pdr_id);
 smf_bearer_t *smf_default_bearer_in_sess(smf_sess_t *sess);
 
-void smf_bearer_tft_update(smf_bearer_t *bearer);
-void smf_bearer_qos_update(smf_bearer_t *bearer);
+void smf_bearer_tft_update(smf_bearer_t *bearer, uint8_t direction);
+void smf_bearer_qos_update(smf_bearer_t *bearer, uint8_t direction);
 
 smf_ue_t *smf_ue_cycle(smf_ue_t *smf_ue);
 smf_sess_t *smf_sess_cycle(smf_sess_t *sess);

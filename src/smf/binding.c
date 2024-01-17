@@ -343,8 +343,8 @@ void smf_bearer_binding(smf_sess_t *sess)
 
             if (bearer_created == true) {
 
-                smf_bearer_tft_update(bearer);
-                smf_bearer_qos_update(bearer);
+                smf_bearer_tft_update(bearer, OGS_FLOW_UNSPECIFIED);
+                smf_bearer_qos_update(bearer, OGS_FLOW_UNSPECIFIED);
 
                 ogs_assert(OGS_OK ==
                     smf_epc_pfcp_send_one_bearer_modification_request(
@@ -491,6 +491,7 @@ void smf_qos_flow_binding(smf_sess_t *sess)
         if (pcc_rule->type == OGS_PCC_RULE_TYPE_INSTALL) {
             smf_pf_t *pf = NULL;
             ogs_pfcp_pdr_t *dl_pdr = NULL, *ul_pdr = NULL;
+            uint8_t direction = OGS_FLOW_UNSPECIFIED;
 
             bool qos_flow_created = false;
             bool qos_presence = false;
@@ -504,6 +505,28 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                     continue;
                 }
 
+                for (j = 0; j < pcc_rule->num_of_flow; j++) {
+                    ogs_flow_t *flow = &pcc_rule->flow[j];
+
+                    if (!flow) {
+                        ogs_error("No Flow");
+                        return;
+                    }
+
+                    if (flow->direction == OGS_FLOW_UPLINK_ONLY) {
+                        if (direction == OGS_FLOW_UNSPECIFIED)
+                            direction = flow->direction;
+                        else if (direction == OGS_FLOW_DOWNLINK_ONLY)
+                            direction = OGS_FLOW_BIDIRECTIONAL;
+                    }
+                    if (flow->direction == OGS_FLOW_DOWNLINK_ONLY) {
+                        if (direction == OGS_FLOW_UNSPECIFIED)
+                            direction = flow->direction;
+                        else if (direction == OGS_FLOW_UPLINK_ONLY)
+                            direction = OGS_FLOW_BIDIRECTIONAL;
+                    }
+                }
+
                 if (ogs_list_count(&sess->bearer_list) >=
                         OGS_MAX_NUM_OF_BEARER) {
                     ogs_error("QosFlow Overflow[%d]",
@@ -511,21 +534,29 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                     continue;
                 }
 
-                qos_flow = smf_qos_flow_add(sess);
+                qos_flow = smf_qos_flow_add(sess, direction);
                 ogs_assert(qos_flow);
 
-                dl_pdr = qos_flow->dl_pdr;
-                ogs_assert(dl_pdr);
-                ul_pdr = qos_flow->ul_pdr;
-                ogs_assert(ul_pdr);
+                if (direction != OGS_FLOW_UPLINK_ONLY) {
+                    dl_pdr = qos_flow->dl_pdr;
+                    ogs_assert(dl_pdr);
+                }
+
+                if (direction != OGS_FLOW_DOWNLINK_ONLY) {
+                    ul_pdr = qos_flow->ul_pdr;
+                    ogs_assert(ul_pdr);
+                }
 
                 /* Precedence is derived from PCC Rule Precedence */
-                dl_pdr->precedence = pcc_rule->precedence;
-                ul_pdr->precedence = pcc_rule->precedence;
+                if (direction != OGS_FLOW_UPLINK_ONLY)
+                    dl_pdr->precedence = pcc_rule->precedence;
+                if (direction != OGS_FLOW_DOWNLINK_ONLY)
+                    ul_pdr->precedence = pcc_rule->precedence;
 
                 /* Set UPF-N3 TEID & ADDR to the UL PDR */
-                ogs_assert(sess->pfcp_node);
-                if (sess->pfcp_node->up_function_features.ftup) {
+                if (direction != OGS_FLOW_DOWNLINK_ONLY) {
+                    ogs_assert(sess->pfcp_node);
+                    if (sess->pfcp_node->up_function_features.ftup) {
 
            /* TS 129 244 V16.5.0 8.2.3
             *
@@ -539,19 +570,19 @@ void smf_qos_flow_binding(smf_sess_t *sess)
             *   i.e. when CHOOSE bit is set to "1",
             *   and the IPv4 address and IPv6 address fields are not present.
             */
-
-                    ul_pdr->f_teid.ipv4 = 1;
-                    ul_pdr->f_teid.ipv6 = 1;
-                    ul_pdr->f_teid.ch = 1;
-                    ul_pdr->f_teid.chid = 1;
-                    ul_pdr->f_teid.choose_id = OGS_PFCP_DEFAULT_CHOOSE_ID;
-                    ul_pdr->f_teid_len = 2;
-                } else {
-                    ogs_assert(OGS_OK ==
-                        ogs_pfcp_sockaddr_to_f_teid(
-                            sess->upf_n3_addr, sess->upf_n3_addr6,
-                            &ul_pdr->f_teid, &ul_pdr->f_teid_len));
-                    ul_pdr->f_teid.teid = sess->upf_n3_teid;
+                        ul_pdr->f_teid.ipv4 = 1;
+                        ul_pdr->f_teid.ipv6 = 1;
+                        ul_pdr->f_teid.ch = 1;
+                        ul_pdr->f_teid.chid = 1;
+                        ul_pdr->f_teid.choose_id = OGS_PFCP_DEFAULT_CHOOSE_ID;
+                        ul_pdr->f_teid_len = 2;
+                    } else {
+                        ogs_assert(OGS_OK ==
+                            ogs_pfcp_sockaddr_to_f_teid(
+                                sess->upf_n3_addr, sess->upf_n3_addr6,
+                                &ul_pdr->f_teid, &ul_pdr->f_teid_len));
+                        ul_pdr->f_teid.teid = sess->upf_n3_teid;
+                    }
                 }
 
                 qos_flow->pcc_rule.id = ogs_strdup(pcc_rule->id);
@@ -671,8 +702,8 @@ void smf_qos_flow_binding(smf_sess_t *sess)
             }
 
             if (qos_flow_created == true) {
-                smf_bearer_tft_update(qos_flow);
-                smf_bearer_qos_update(qos_flow);
+                smf_bearer_tft_update(qos_flow, direction);
+                smf_bearer_qos_update(qos_flow, direction);
 
                 pfcp_flags |= OGS_PFCP_MODIFY_CREATE;
 
@@ -683,11 +714,11 @@ void smf_qos_flow_binding(smf_sess_t *sess)
 
                 if (ogs_list_count(&qos_flow->pf_to_add_list) > 0) {
                     pfcp_flags |= OGS_PFCP_MODIFY_TFT_ADD;
-                    smf_bearer_tft_update(qos_flow);
+                    smf_bearer_tft_update(qos_flow, direction);
                 }
                 if (qos_presence == true) {
                     pfcp_flags |= OGS_PFCP_MODIFY_QOS_MODIFY;
-                    smf_bearer_qos_update(qos_flow);
+                    smf_bearer_qos_update(qos_flow, direction);
                 }
 
                 ogs_list_add(&sess->qos_flow_to_modify_list,

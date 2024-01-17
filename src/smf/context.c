@@ -1899,7 +1899,7 @@ ogs_pcc_rule_t *smf_pcc_rule_find_by_id(smf_sess_t *sess, char *pcc_rule_id)
     return NULL;
 }
 
-smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
+smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess, uint8_t direction)
 {
     smf_bearer_t *qos_flow = NULL;
 
@@ -1920,96 +1920,105 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
 
     ogs_list_init(&qos_flow->pf_list);
 
-    /* PDR */
-    dl_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
-    ogs_assert(dl_pdr);
-    qos_flow->dl_pdr = dl_pdr;
+    if (direction != OGS_FLOW_UPLINK_ONLY) {
+        /* DL PDR */
+        dl_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
+        ogs_assert(dl_pdr);
+        qos_flow->dl_pdr = dl_pdr;
 
-    ogs_assert(sess->session.name);
-    dl_pdr->apn = ogs_strdup(sess->session.name);
-    ogs_assert(dl_pdr->apn);
+        ogs_assert(sess->session.name);
+        dl_pdr->apn = ogs_strdup(sess->session.name);
+        ogs_assert(dl_pdr->apn);
+        dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
 
-    dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
+        /* DL FAR */
+        dl_far = ogs_pfcp_far_add(&sess->pfcp);
+        ogs_assert(dl_far);
+        qos_flow->dl_far = dl_far;
 
-    ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
-    ogs_assert(ul_pdr);
-    qos_flow->ul_pdr = ul_pdr;
+        ogs_assert(sess->session.name);
+        dl_far->apn = ogs_strdup(sess->session.name);
+        ogs_assert(dl_far->apn);
 
-    ogs_assert(sess->session.name);
-    ul_pdr->apn = ogs_strdup(sess->session.name);
-    ogs_assert(ul_pdr->apn);
+        dl_far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+        ogs_pfcp_pdr_associate_far(dl_pdr, dl_far);
 
-    ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
+        dl_far->apply_action =
+            OGS_PFCP_APPLY_ACTION_BUFF| OGS_PFCP_APPLY_ACTION_NOCP;
+        ogs_assert(sess->pfcp.bar);
 
-    ul_pdr->outer_header_removal_len = 2;
-    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        ul_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
-        ul_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
-    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        ul_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
-    } else
-        ogs_assert_if_reached();
-    ul_pdr->outer_header_removal.gtpu_extheader_deletion =
-        OGS_PFCP_PDU_SESSION_CONTAINER_TO_BE_DELETED;
+        /* URR */
+        urr = ogs_pfcp_urr_add(&sess->pfcp);
+        ogs_assert(urr);
+        qos_flow->urr = urr;
 
-    /* FAR */
-    dl_far = ogs_pfcp_far_add(&sess->pfcp);
-    ogs_assert(dl_far);
-    qos_flow->dl_far = dl_far;
+        urr->meas_method = OGS_PFCP_MEASUREMENT_METHOD_VOLUME;
+        urr->rep_triggers.volume_threshold = 1;
+        urr->vol_threshold.tovol = 1;
+        urr->vol_threshold.total_volume = 1024*1024*100;
 
-    ogs_assert(sess->session.name);
-    dl_far->apn = ogs_strdup(sess->session.name);
-    ogs_assert(dl_far->apn);
+        ogs_pfcp_pdr_associate_urr(dl_pdr, urr);
+    }
 
-    dl_far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
-    ogs_pfcp_pdr_associate_far(dl_pdr, dl_far);
+    if (direction != OGS_FLOW_DOWNLINK_ONLY) {
+        /* UL PDR */
+        ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
+        ogs_assert(ul_pdr);
+        qos_flow->ul_pdr = ul_pdr;
 
-    dl_far->apply_action =
-        OGS_PFCP_APPLY_ACTION_BUFF| OGS_PFCP_APPLY_ACTION_NOCP;
-    ogs_assert(sess->pfcp.bar);
+        ogs_assert(sess->session.name);
+        ul_pdr->apn = ogs_strdup(sess->session.name);
+        ogs_assert(ul_pdr->apn);
 
-    ul_far = ogs_pfcp_far_add(&sess->pfcp);
-    ogs_assert(ul_far);
-    qos_flow->ul_far = ul_far;
+        ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
 
-    ogs_assert(sess->session.name);
-    ul_far->apn = ogs_strdup(sess->session.name);
-    ogs_assert(ul_far->apn);
+        ul_pdr->outer_header_removal_len = 2;
+        if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+            ul_pdr->outer_header_removal.description =
+                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
+        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
+            ul_pdr->outer_header_removal.description =
+                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
+        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+            ul_pdr->outer_header_removal.description =
+                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+        } else
+            ogs_assert_if_reached();
+        ul_pdr->outer_header_removal.gtpu_extheader_deletion =
+            OGS_PFCP_PDU_SESSION_CONTAINER_TO_BE_DELETED;
 
-    ul_far->dst_if = OGS_PFCP_INTERFACE_CORE;
-    ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
+        /* UL FAR */
+        ul_far = ogs_pfcp_far_add(&sess->pfcp);
+        ogs_assert(ul_far);
+        qos_flow->ul_far = ul_far;
 
-    ul_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+        ogs_assert(sess->session.name);
+        ul_far->apn = ogs_strdup(sess->session.name);
+        ogs_assert(ul_far->apn);
 
-    /* URR */
-    urr = ogs_pfcp_urr_add(&sess->pfcp);
-    ogs_assert(urr);
-    qos_flow->urr = urr;
+        ul_far->dst_if = OGS_PFCP_INTERFACE_CORE;
+        ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
 
-    urr->meas_method = OGS_PFCP_MEASUREMENT_METHOD_VOLUME;
-    urr->rep_triggers.volume_threshold = 1;
-    urr->vol_threshold.tovol = 1;
-    urr->vol_threshold.total_volume = 1024*1024*100;
-
-    ogs_pfcp_pdr_associate_urr(dl_pdr, urr);
+        ul_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+    }
 
     /* QER */
     qer = ogs_pfcp_qer_add(&sess->pfcp);
     ogs_assert(qer);
     qos_flow->qer = qer;
 
-    ogs_pfcp_pdr_associate_qer(dl_pdr, qer);
-    ogs_pfcp_pdr_associate_qer(ul_pdr, qer);
+    if (direction != OGS_FLOW_UPLINK_ONLY)
+        ogs_pfcp_pdr_associate_qer(dl_pdr, qer);
+    if (direction != OGS_FLOW_DOWNLINK_ONLY)
+        ogs_pfcp_pdr_associate_qer(ul_pdr, qer);
 
     /* Allocate QFI */
     ogs_pool_alloc(&sess->qfi_pool, &qos_flow->qfi_node);
     ogs_assert(qos_flow->qfi_node);
 
-    qos_flow->qfi = ul_pdr->qfi = qer->qfi = *(qos_flow->qfi_node);
+    qos_flow->qfi = qer->qfi = *(qos_flow->qfi_node);
+    if (direction != OGS_FLOW_DOWNLINK_ONLY)
+        ul_pdr->qfi = qos_flow->qfi;
 
     qos_flow->sess = sess;
 
@@ -2439,14 +2448,14 @@ int smf_bearer_remove(smf_bearer_t *bearer)
 
     ogs_list_remove(&bearer->sess->bearer_list, bearer);
 
-    ogs_assert(bearer->dl_pdr);
-    ogs_pfcp_pdr_remove(bearer->dl_pdr);
-    ogs_assert(bearer->ul_pdr);
-    ogs_pfcp_pdr_remove(bearer->ul_pdr);
-    ogs_assert(bearer->dl_far);
-    ogs_pfcp_far_remove(bearer->dl_far);
-    ogs_assert(bearer->ul_far);
-    ogs_pfcp_far_remove(bearer->ul_far);
+    if (bearer->dl_pdr)
+        ogs_pfcp_pdr_remove(bearer->dl_pdr);
+    if (bearer->ul_pdr)
+        ogs_pfcp_pdr_remove(bearer->ul_pdr);
+    if (bearer->dl_far)
+        ogs_pfcp_far_remove(bearer->dl_far);
+    if (bearer->ul_far)
+        ogs_pfcp_far_remove(bearer->ul_far);
     if (bearer->urr)
         ogs_pfcp_urr_remove(bearer->urr);
     if (bearer->qer)
@@ -2552,27 +2561,34 @@ smf_bearer_t *smf_bearer_find_by_pdr_id(
     return NULL;
 }
 
-void smf_bearer_tft_update(smf_bearer_t *bearer)
+void smf_bearer_tft_update(smf_bearer_t *bearer, uint8_t direction)
 {
     smf_pf_t *pf = NULL;
     ogs_pfcp_pdr_t *dl_pdr = NULL, *ul_pdr = NULL;
 
     ogs_assert(bearer);
 
-    dl_pdr = bearer->dl_pdr;
-    ogs_assert(dl_pdr);
-    ul_pdr = bearer->ul_pdr;
-    ogs_assert(ul_pdr);
+    if (direction != OGS_FLOW_UPLINK_ONLY) {
+        dl_pdr = bearer->dl_pdr;
+        ogs_assert(dl_pdr);
 
-    dl_pdr->num_of_flow = 0;
-    ul_pdr->num_of_flow = 0;
+        dl_pdr->num_of_flow = 0;
+    }
+    if (direction != OGS_FLOW_DOWNLINK_ONLY) {
+        ul_pdr = bearer->ul_pdr;
+        ogs_assert(ul_pdr);
+
+        ul_pdr->num_of_flow = 0;
+    }
 
     ogs_list_for_each(&bearer->pf_list, pf) {
-        if (pf->direction == OGS_FLOW_DOWNLINK_ONLY) {
+        if (pf->direction == OGS_FLOW_DOWNLINK_ONLY &&
+                direction != OGS_FLOW_UPLINK_ONLY) {
             dl_pdr->flow_description[dl_pdr->num_of_flow++] =
                 pf->flow_description;
 
-        } else if (pf->direction == OGS_FLOW_UPLINK_ONLY) {
+        } else if (pf->direction == OGS_FLOW_UPLINK_ONLY &&
+                direction != OGS_FLOW_DOWNLINK_ONLY) {
             ul_pdr->flow_description[ul_pdr->num_of_flow++] =
                 pf->flow_description;
         } else {
@@ -2583,7 +2599,7 @@ void smf_bearer_tft_update(smf_bearer_t *bearer)
     }
 }
 
-void smf_bearer_qos_update(smf_bearer_t *bearer)
+void smf_bearer_qos_update(smf_bearer_t *bearer, uint8_t direction)
 {
     smf_sess_t *sess = NULL;
 
@@ -2594,10 +2610,14 @@ void smf_bearer_qos_update(smf_bearer_t *bearer)
     sess = bearer->sess;
     ogs_assert(sess);
 
-    dl_pdr = bearer->dl_pdr;
-    ogs_assert(dl_pdr);
-    ul_pdr = bearer->ul_pdr;
-    ogs_assert(ul_pdr);
+    if (direction != OGS_FLOW_UPLINK_ONLY) {
+        dl_pdr = bearer->dl_pdr;
+        ogs_assert(dl_pdr);
+    }
+    if (direction != OGS_FLOW_DOWNLINK_ONLY) {
+        ul_pdr = bearer->ul_pdr;
+        ogs_assert(ul_pdr);
+    }
 
     qer = bearer->qer;
     if (!qer) {
@@ -2605,14 +2625,21 @@ void smf_bearer_qos_update(smf_bearer_t *bearer)
         ogs_assert(qer);
         bearer->qer = qer;
     }
-
-    ogs_pfcp_pdr_associate_qer(dl_pdr, qer);
-    ogs_pfcp_pdr_associate_qer(ul_pdr, qer);
+    if (direction != OGS_FLOW_UPLINK_ONLY)
+        ogs_pfcp_pdr_associate_qer(dl_pdr, qer);
+    if (direction != OGS_FLOW_DOWNLINK_ONLY)
+        ogs_pfcp_pdr_associate_qer(ul_pdr, qer);
 
     qer->mbr.uplink = bearer->qos.mbr.uplink;
     qer->mbr.downlink = bearer->qos.mbr.downlink;
     qer->gbr.uplink = bearer->qos.gbr.uplink;
     qer->gbr.downlink = bearer->qos.gbr.downlink;
+
+    if (direction == OGS_FLOW_UPLINK_ONLY)
+        qer->gate_status.downlink = OGS_PFCP_GATE_CLOSE;
+    if (direction == OGS_FLOW_DOWNLINK_ONLY)
+        qer->gate_status.uplink = OGS_PFCP_GATE_CLOSE;
+
 }
 
 smf_bearer_t *smf_default_bearer_in_sess(smf_sess_t *sess)

@@ -460,8 +460,10 @@ int ogs_check_qos_conf(ogs_qos_t *qos);
 
 /**********************************
  * Flow  Structure               */
+#define OGS_FLOW_UNSPECIFIED      0
 #define OGS_FLOW_DOWNLINK_ONLY    1
 #define OGS_FLOW_UPLINK_ONLY      2
+#define OGS_FLOW_BIDIRECTIONAL    3
 typedef struct ogs_flow_s {
     uint8_t direction;
     char *description;

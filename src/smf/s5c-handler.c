@@ -902,12 +902,12 @@ void smf_s5c_handle_update_bearer_response(
 
     if (gtp_flags & OGS_GTP_MODIFY_TFT_UPDATE) {
         pfcp_flags |= OGS_PFCP_MODIFY_EPC_TFT_UPDATE;
-        smf_bearer_tft_update(bearer);
+        smf_bearer_tft_update(bearer, OGS_FLOW_UNSPECIFIED);
     }
 
     if (gtp_flags & OGS_GTP_MODIFY_QOS_UPDATE) {
         pfcp_flags |= OGS_PFCP_MODIFY_EPC_QOS_UPDATE;
-        smf_bearer_qos_update(bearer);
+        smf_bearer_qos_update(bearer, OGS_FLOW_UNSPECIFIED);
     }
 
     if (pfcp_flags)
