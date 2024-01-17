@@ -28,16 +28,6 @@ extern "C" {
 
 typedef struct gtp_xact_s gtp_xact_t;
 
-/* 
- * Sets the realm from IMSI
- *
- * The realm is in the following format:
- * EPC_DOMAIN="epc.mnc${MNC}.mcc${MCC}.3gppnetwork.org"
- * e.g. "epc.mnc0{01}.mcc{001}.3gppnetwork.org"
- * and IMSI is {001}{ 01}XXXXXXXX
- *              MCC  MNC
- */
-DiamId_t set_realm_from_imsi_bcd(const char * imsi_bcd);
 
 int smf_fd_init(void);
 void smf_fd_final(void);

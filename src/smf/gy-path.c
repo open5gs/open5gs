@@ -675,7 +675,7 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
     ogs_assert(ret == 0);
 
     /* the Destination-Realm AVP */
-    DiamId_t dest_realm = set_realm_from_imsi_bcd(smf_ue->imsi_bcd);
+    DiamId_t dest_realm = ogs_set_realm_from_imsi_bcd(smf_ue->imsi_bcd);
     ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
     ogs_assert(ret == 0);
     val.os.data = (unsigned char *)(dest_realm);

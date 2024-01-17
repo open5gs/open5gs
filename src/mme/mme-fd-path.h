@@ -29,17 +29,6 @@ extern "C" {
 int mme_fd_init(void);
 void mme_fd_final(void);
 
-/* 
- * Sets the realm from IMSI
- *
- * The realm is in the following format:
- * EPC_DOMAIN="epc.mnc${MNC}.mcc${MCC}.3gppnetwork.org"
- * e.g. "epc.mnc0{01}.mcc{001}.3gppnetwork.org"
- * and IMSI is {001}{ 01}XXXXXXXX
- *              MCC  MNC
- */
-DiamId_t set_realm_from_imsi_bcd(const char * imsi_bcd);
-
 /* MME Sends Authentication Information Request to HSS */
 void mme_s6a_send_air(mme_ue_t *mme_ue,
     ogs_nas_authentication_failure_parameter_t
