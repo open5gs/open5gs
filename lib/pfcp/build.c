@@ -786,6 +786,17 @@ void ogs_pfcp_build_update_urr(
         }
     }
 
+    if (modify_flags & OGS_PFCP_MODIFY_URR_VOLUME_QUOTA) {
+        if (urr->vol_quota.flags) {
+            message->measurement_method.presence = 1;
+            message->measurement_method.u8 = urr->meas_method;
+            message->volume_quota.presence = 1;
+            ogs_pfcp_build_volume(
+                    &message->volume_quota, &urr->vol_quota,
+                    &urrbuf[i].vol_quota, sizeof(urrbuf[i].vol_quota));
+        }
+    }
+
     if (modify_flags & OGS_PFCP_MODIFY_URR_TIME_THRESH) {
         if (urr->time_threshold) {
             message->time_threshold.presence = 1;
