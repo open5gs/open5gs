@@ -93,7 +93,7 @@ typedef struct smf_context_s {
 
     uint16_t        mtu;            /* MTU to advertise in PCO */
     
-    kbool use_upg;
+    bool use_upg;
     const char* sgi_nwi;
 
     struct  {
