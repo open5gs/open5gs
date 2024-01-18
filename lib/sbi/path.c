@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -18,6 +18,9 @@
  */
 
 #include "ogs-sbi.h"
+
+static int sepp_discover_handler(
+        int status, ogs_sbi_response_t *response, void *data);
 
 static void build_default_discovery_parameter(
         ogs_sbi_request_t *request,
@@ -89,6 +92,7 @@ static int client_discover_cb(
     ogs_sbi_xact_t *xact = NULL;
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
     OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
     OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
 
@@ -111,8 +115,11 @@ static int client_discover_cb(
     service_type = xact->service_type;
     ogs_assert(service_type);
     target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
+    ogs_assert(target_nf_type);
     requester_nf_type = xact->requester_nf_type;
     ogs_assert(requester_nf_type);
+
+    discovery_option = xact->discovery_option;
 
     if (status != OGS_OK) {
         ogs_log_message(
@@ -143,6 +150,76 @@ static int client_discover_cb(
 
             ogs_sbi_nf_instance_set_id(nf_instance, producer_id);
             ogs_sbi_nf_instance_set_type(nf_instance, target_nf_type);
+
+            switch (target_nf_type) {
+            case OpenAPI_nf_type_SMF:
+                if (discovery_option &&
+                    discovery_option->num_of_snssais && discovery_option->dnn &&
+                    discovery_option->tai_presence == true) {
+    /*
+     * If we assume that SMF is executed first and then AMF is executed,
+     * AMF will not have SMF information, so it needs to discover SMF
+     * through NFDiscovery instead of the subscription notification.
+     *
+     * Let's assume that in smfInfo, TAC is set to 1 and 2, and two SMFs are
+     * executed. In this case, TAI will be added to the discovery option and
+     * will be performed during the NFDiscovery process.
+     *
+     * If the first SMF is discovered with TAC 1 in conjunction with SCP,
+     * AMF will remember this SMF through Producer-Id. However, if the second
+     * SMF with TAC 2 is discovered, the previously discovered SMF with TAC 1
+     * will be selected.
+     *
+     * Therefore, to avoid such a situation, we reflect the contents of
+     * the discovery option in NFProfile. For SMF, we record the s_nssai, dnn,
+     * and tai information in the ogs_sbi_smf_info_t structure, which is created
+     * as ogs_sbi_nf_info_t. Then, when we try to find the second SMF
+     * with TAC 2, we compare these values in the amf_sbi_select_nf() function,
+     * allowing us to discover a new SMF.
+     */
+                    ogs_sbi_nf_info_t *nf_info = NULL;
+                    ogs_sbi_smf_info_t *smf_info = NULL;
+
+                    nf_info = ogs_sbi_nf_info_add(
+                            &nf_instance->nf_info_list, OpenAPI_nf_type_SMF);
+                    ogs_assert(nf_info);
+
+                    smf_info = &nf_info->smf;
+                    ogs_assert(smf_info);
+
+                    smf_info->slice[0].dnn[0] =
+                        ogs_strdup(discovery_option->dnn);
+                    ogs_assert(smf_info->slice[0].dnn[0]);
+                    smf_info->slice[0].num_of_dnn++;
+
+                    memcpy(&smf_info->slice[0].s_nssai,
+                            &discovery_option->snssais[0],
+                            sizeof(ogs_s_nssai_t));
+                    smf_info->num_of_slice++;
+
+                    memcpy(&smf_info->nr_tai[0],
+                            &discovery_option->tai, sizeof(ogs_5gs_tai_t));
+                    smf_info->num_of_nr_tai++;
+                }
+                break;
+            default:
+                break;
+            }
+
+            ogs_sbi_nf_fsm_init(nf_instance);
+
+            ogs_info("[%s] (SCP-discover) NF registered [%s:%d]",
+                    nf_instance->nf_type ?
+                        OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
+                    nf_instance->id, nf_instance->reference_count);
+        } else {
+            ogs_warn("[%s] (SCP-discover) NF has already been added [%s:%d]",
+                    nf_instance->nf_type ?
+                        OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
+                    nf_instance->id, nf_instance->reference_count);
+
+            ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
+            ogs_sbi_nf_fsm_tran(nf_instance, ogs_sbi_nf_state_registered);
         }
 
         OGS_SBI_SETUP_NF_INSTANCE(
@@ -221,15 +298,21 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
         }
     } else {
         OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
-        ogs_sockaddr_t *addr = NULL;
+        char *fqdn = NULL;
+        uint16_t fqdn_port = 0;
+        ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
-        rc = ogs_sbi_getaddr_from_uri(&scheme, &addr, request->h.uri);
+        rc = ogs_sbi_getaddr_from_uri(
+                &scheme, &fqdn, &fqdn_port, &addr, &addr6, request->h.uri);
         if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
             ogs_error("Invalid URL [%s]", request->h.uri);
             return OGS_ERROR;
         }
-        client = ogs_sbi_client_find(scheme, addr);
+        client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
+
+        ogs_free(fqdn);
         ogs_freeaddrinfo(addr);
+        ogs_freeaddrinfo(addr6);
     }
 
     if (scp_client) {
@@ -241,7 +324,7 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
 
         if (client) {
             /*
-             * If `client` instance is avaiable,
+             * If `client` instance is available,
              * 3gpp-Sbi-Target-apiRoot is added to HTTP header.
              */
             apiroot = ogs_sbi_client_apiroot(client);
@@ -252,7 +335,7 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
 
             ogs_free(apiroot);
 
-            rc = ogs_sbi_client_send_via_scp(
+            rc = ogs_sbi_client_send_via_scp_or_sepp(
                     scp_client, ogs_sbi_client_handler, request, xact);
             ogs_expect(rc == true);
             return (rc == true) ? OGS_OK : OGS_ERROR;
@@ -274,6 +357,71 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
                         nf_instance->id);
             }
 
+            if (discovery_option && discovery_option->num_of_snssais) {
+                bool rc = false;
+                char *v = ogs_sbi_discovery_option_build_snssais(
+                        discovery_option);
+                ogs_expect(v);
+
+                if (v) {
+                    char *encoded = ogs_sbi_url_encode(v);
+                    ogs_expect(encoded);
+
+                    if (encoded) {
+            /*
+             * In http.params, the CURL library automatically encodes the URL.
+             * http.headers implements open5gs to directly encode URLs.
+             *
+             * Since it is http.headers,
+             * we need to encode `v` using ogs_sbi_url_encode();
+             */
+                        ogs_sbi_header_set(request->http.headers,
+                                OGS_SBI_CUSTOM_DISCOVERY_SNSSAIS, encoded);
+                        ogs_free(encoded);
+
+                        rc = true;
+                    }
+                    ogs_free(v);
+                }
+
+                if (rc == false)
+                    ogs_error("build failed: snssais(%d)[SST:%d SD:0x%x]",
+                                discovery_option->num_of_snssais,
+                                discovery_option->snssais[0].sst,
+                                discovery_option->snssais[0].sd.v);
+            }
+
+            if (discovery_option && discovery_option->dnn) {
+                ogs_sbi_header_set(request->http.headers,
+                        OGS_SBI_CUSTOM_DISCOVERY_DNN, discovery_option->dnn);
+            }
+
+            if (discovery_option && discovery_option->tai_presence) {
+                bool rc = false;
+                char *v = ogs_sbi_discovery_option_build_tai(discovery_option);
+                ogs_expect(v);
+
+                if (v) {
+                    char *encoded = ogs_sbi_url_encode(v);
+                    ogs_expect(encoded);
+
+                    if (encoded) {
+                        ogs_sbi_header_set(request->http.headers,
+                                OGS_SBI_CUSTOM_DISCOVERY_TAI, encoded);
+                        ogs_free(encoded);
+
+                        rc = true;
+                    }
+                    ogs_free(v);
+                }
+
+                if (rc == false)
+                    ogs_error("build failed: tai[PLMN_ID:%06x,TAC:%d]",
+                                ogs_plmn_id_hexdump(
+                                    &discovery_option->tai.plmn_id),
+                                discovery_option->tai.tac.v);
+            }
+
             if (discovery_option &&
                 discovery_option->requester_features) {
                 char *v = ogs_uint64_to_string(
@@ -289,7 +437,7 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
                 ogs_free(v);
             }
 
-            rc = ogs_sbi_client_send_via_scp(
+            rc = ogs_sbi_client_send_via_scp_or_sepp(
                     scp_client, client_discover_cb, request, xact);
             ogs_expect(rc == true);
             return (rc == true) ? OGS_OK : OGS_ERROR;
@@ -301,7 +449,7 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
          ***********************/
 
         /* If `client` instance is available, use direct communication */
-        rc = ogs_sbi_client_send_request(
+        rc = ogs_sbi_send_request_to_client(
                 client, ogs_sbi_client_handler, request, xact);
         ogs_expect(rc == true);
         return (rc == true) ? OGS_OK : OGS_ERROR;
@@ -401,36 +549,107 @@ bool ogs_sbi_send_request_to_nf_instance(
                     OpenAPI_nf_type_ToString(nf_instance->nf_type),
                     nf_instance->id,
                     request->h.service.name, request->h.api.version);
+            ogs_sbi_xact_remove(xact);
             return false;
         }
     } else {
+
+        /*********************************************************
+         *
+         * DEPRECATED
+         *
+         ********************************************************/
+
+        ogs_fatal("[%s] %s", request->h.method, request->h.uri);
+        ogs_assert_if_reached();
+
+#if 0
         bool rc;
         OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
-        ogs_sockaddr_t *addr = NULL;
+        char *fqdn = NULL;
+        uint16_t fqdn_port = 0;
+        ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
         char buf[OGS_ADDRSTRLEN];
 
-        rc = ogs_sbi_getaddr_from_uri(&scheme, &addr, request->h.uri);
+        rc = ogs_sbi_getaddr_from_uri(
+                &scheme, &fqdn, &fqdn_port, &addr, &addr6, request->h.uri);
         if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
             ogs_error("[%s:%s] Invalid URL [%s]",
                     OpenAPI_nf_type_ToString(nf_instance->nf_type),
                     nf_instance->id, request->h.uri);
             return false;
         }
-        client = ogs_sbi_client_find(scheme, addr);
+        client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
         if (!client) {
             ogs_error("[%s:%s] Cannot find client [%s:%d]",
                     OpenAPI_nf_type_ToString(nf_instance->nf_type),
                     nf_instance->id,
                     OGS_ADDR(addr, buf), OGS_PORT(addr));
+            ogs_free(fqdn);
             ogs_freeaddrinfo(addr);
+            ogs_freeaddrinfo(addr6);
             return false;
         }
+
+        ogs_free(fqdn);
         ogs_freeaddrinfo(addr);
+        ogs_freeaddrinfo(addr6);
+#endif
+    }
+
+    if (client->fqdn && ogs_sbi_fqdn_in_vplmn(client->fqdn) == true) {
+        ogs_sbi_client_t *sepp_client = NULL, *nrf_client = NULL;
+
+        /* Visited Network requires SEPP */
+        sepp_client = NF_INSTANCE_CLIENT(ogs_sbi_self()->sepp_instance);
+        nrf_client = NF_INSTANCE_CLIENT(ogs_sbi_self()->nrf_instance);
+
+        if (!sepp_client && !nrf_client) {
+
+            ogs_error("No SEPP(%p) and NRF(%p) [%s]",
+                    sepp_client, nrf_client, client->fqdn);
+
+            ogs_sbi_xact_remove(xact);
+            return false;
+
+        } else if (!sepp_client) {
+
+            ogs_sbi_request_t *nrf_request = NULL;
+
+            xact->target_apiroot = ogs_sbi_client_apiroot(client);
+            if (!xact->target_apiroot) {
+                ogs_error("ogs_strdup(xact->target_apiroot) failed");
+                ogs_sbi_xact_remove(xact);
+                return false;
+            }
+
+            nrf_request = ogs_nnrf_disc_build_discover(
+                        OpenAPI_nf_type_SEPP, xact->requester_nf_type, NULL);
+            if (!nrf_request) {
+                ogs_error("ogs_nnrf_disc_build_discover() failed");
+                ogs_sbi_xact_remove(xact);
+                return false;
+            }
+
+            rc = ogs_sbi_client_send_request(
+                    nrf_client, sepp_discover_handler, nrf_request, xact);
+            if (rc == false) {
+                ogs_error("ogs_sbi_client_send_request() failed");
+                ogs_sbi_xact_remove(xact);
+            }
+
+            ogs_sbi_request_free(nrf_request);
+
+            return rc;
+        }
     }
 
     rc = ogs_sbi_send_request_to_client(
             client, ogs_sbi_client_handler, request, xact);
-    ogs_expect(rc == true);
+    if (rc == false) {
+        ogs_error("ogs_sbi_send_request_to_client() failed");
+        ogs_sbi_xact_remove(xact);
+    }
 
     return rc;
 }
@@ -440,7 +659,8 @@ bool ogs_sbi_send_request_to_client(
         ogs_sbi_request_t *request, void *data)
 {
     bool rc;
-    ogs_sbi_client_t *scp_client = NULL;
+    ogs_sbi_client_t *scp_client = NULL, *sepp_client = NULL;
+    ogs_sbi_client_t *scp_or_sepp = NULL;
     char *apiroot = NULL;
 
     /*
@@ -451,12 +671,29 @@ bool ogs_sbi_send_request_to_client(
     ogs_assert(request);
 
     scp_client = NF_INSTANCE_CLIENT(ogs_sbi_self()->scp_instance);
+    sepp_client = NF_INSTANCE_CLIENT(ogs_sbi_self()->sepp_instance);
 
     if (scp_client && scp_client != client) {
 
         /*************************
          * INDIRECT COMMUNICATION
          *************************/
+        scp_or_sepp = scp_client;
+
+    } else if (client->fqdn && ogs_sbi_fqdn_in_vplmn(client->fqdn) == true) {
+
+        /***************************
+         * SEPP for Visited Network
+         ***************************/
+        if (sepp_client && sepp_client != client) {
+            scp_or_sepp = sepp_client;
+        } else {
+            ogs_error("No SEPP [%s]", client->fqdn);
+            return false;
+        }
+    }
+
+    if (scp_or_sepp) {
 
         /* Added 3gpp-Sbi-Target-apiRoot to HTTP header */
         apiroot = ogs_sbi_client_apiroot(client);
@@ -467,8 +704,8 @@ bool ogs_sbi_send_request_to_client(
 
         ogs_free(apiroot);
 
-        rc = ogs_sbi_client_send_via_scp(
-                scp_client, client_cb, request, data);
+        rc = ogs_sbi_client_send_via_scp_or_sepp(
+                scp_or_sepp, client_cb, request, data);
         ogs_expect(rc == true);
 
     } else {
@@ -477,7 +714,7 @@ bool ogs_sbi_send_request_to_client(
          * DIRECT COMMUNICATION
          ***********************/
 
-        /* Direct communication since `client' instance is always avaiable */
+        /* Direct communication since `client' instance is always available */
         rc = ogs_sbi_client_send_request(
                 client, client_cb, request, data);
         ogs_expect(rc == true);
@@ -517,7 +754,7 @@ bool ogs_sbi_send_notification_request(
         build_default_discovery_parameter(
             request, service_type, discovery_option);
 
-        rc = ogs_sbi_client_send_via_scp(
+        rc = ogs_sbi_client_send_via_scp_or_sepp(
                 scp_client, ogs_sbi_client_handler, request, data);
         ogs_expect(rc == true);
 
@@ -527,7 +764,7 @@ bool ogs_sbi_send_notification_request(
          * DIRECT COMMUNICATION
          ***********************/
 
-        /* NRF is avaiable */
+        /* NRF is available */
         rc = ogs_sbi_client_send_request(
                 client, ogs_sbi_client_handler, request, data);
         ogs_expect(rc == true);
@@ -562,6 +799,96 @@ bool ogs_sbi_send_response(ogs_sbi_stream_t *stream, int status)
     }
 
     return ogs_sbi_server_send_response(stream, response);
+}
+
+static int sepp_discover_handler(
+        int status, ogs_sbi_response_t *response, void *data)
+{
+    int rv;
+    char *strerror = NULL;
+    ogs_sbi_message_t message;
+
+    ogs_sbi_xact_t *xact = data;
+
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *scp_client = NULL, *sepp_client = NULL;
+
+    ogs_assert(xact);
+    request = xact->request;
+    ogs_assert(request);
+
+    if (status != OGS_OK) {
+
+        ogs_log_message(
+                status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
+                "sepp_discover_handler() failed [%d]", status);
+
+        ogs_sbi_xact_remove(xact);
+        return OGS_ERROR;
+    }
+
+    ogs_assert(response);
+
+    rv = ogs_sbi_parse_response(&message, response);
+    if (rv != OGS_OK) {
+        strerror = ogs_msprintf("cannot parse HTTP response");
+        goto cleanup;
+    }
+
+    if (message.res_status != OGS_SBI_HTTP_STATUS_OK) {
+        strerror = ogs_msprintf("NF-Discover failed [%d]", message.res_status);
+        goto cleanup;
+    }
+
+    if (!message.SearchResult) {
+        strerror = ogs_msprintf("No SearchResult");
+        goto cleanup;
+    }
+
+    ogs_nnrf_disc_handle_nf_discover_search_result(message.SearchResult);
+
+    /*****************************
+     * Check if SEPP is discovered
+     *****************************/
+    sepp_client = NF_INSTANCE_CLIENT(ogs_sbi_self()->sepp_instance);
+    if (!sepp_client) {
+        strerror = ogs_msprintf("No SEPP");
+        goto cleanup;
+    }
+
+    /* Added 3gpp-Sbi-Target-apiRoot to HTTP header */
+    ogs_sbi_header_set(request->http.headers,
+            OGS_SBI_CUSTOM_TARGET_APIROOT, xact->target_apiroot);
+
+    /**********************************************************************
+     * SCP should be checked considering 'discovery.delegated:no' situation
+     **********************************************************************/
+    scp_client = NF_INSTANCE_CLIENT(ogs_sbi_self()->scp_instance);
+
+    if (false == ogs_sbi_client_send_via_scp_or_sepp(
+                scp_client ? scp_client : sepp_client,
+                ogs_sbi_client_handler, request, xact)) {
+        strerror = ogs_msprintf("ogs_sbi_client_send_via_scp_or_sepp() failed");
+        goto cleanup;
+    }
+
+    ogs_sbi_response_free(response);
+    ogs_sbi_message_free(&message);
+
+    return OGS_OK;
+
+cleanup:
+    ogs_assert(strerror);
+    ogs_error("%s", strerror);
+
+    ogs_free(strerror);
+
+    ogs_sbi_xact_remove(xact);
+
+    ogs_sbi_response_free(response);
+    ogs_sbi_message_free(&message);
+
+    return OGS_ERROR;
 }
 
 static void build_default_discovery_parameter(
@@ -615,18 +942,70 @@ static void build_default_discovery_parameter(
         if (ogs_sbi_self()->discovery_config.
                 no_service_names == false &&
             discovery_option->num_of_service_names) {
+            bool rc = false;
 
             /* send array items separated by a comma */
             char *v = ogs_sbi_discovery_option_build_service_names(
                         discovery_option);
+            ogs_expect(v);
+
             if (v) {
-                ogs_sbi_header_set(request->http.headers,
-                        OGS_SBI_CUSTOM_DISCOVERY_SERVICE_NAMES, v);
+                char *encoded = ogs_sbi_url_encode(v);
+                ogs_expect(encoded);
+
+                if (encoded) {
+            /*
+             * In http.params, the CURL library automatically encodes the URL.
+             * http.headers implements open5gs to directly encode URLs.
+             *
+             * Since it is http.headers,
+             * we need to encode `v` using ogs_sbi_url_encode();
+             */
+                    ogs_sbi_header_set(request->http.headers,
+                            OGS_SBI_CUSTOM_DISCOVERY_SERVICE_NAMES, encoded);
+                    ogs_free(encoded);
+
+                    rc = true;
+                }
                 ogs_free(v);
-            } else {
+
+            }
+
+            if (rc == false)
                 ogs_warn("invalid service names failed[%d:%s]",
                             discovery_option->num_of_service_names,
                             discovery_option->service_names[0]);
+        }
+
+        if (discovery_option->num_of_target_plmn_list) {
+            char *v = ogs_sbi_discovery_option_build_plmn_list(
+                    discovery_option->target_plmn_list,
+                    discovery_option->num_of_target_plmn_list);
+            if (v) {
+                ogs_sbi_header_set(request->http.headers,
+                        OGS_SBI_CUSTOM_DISCOVERY_TARGET_PLMN_LIST, v);
+                ogs_free(v);
+            } else {
+                ogs_warn("invalid target-plmn-list failed[%d:%06x]",
+                            discovery_option->num_of_target_plmn_list,
+                            ogs_plmn_id_hexdump(
+                                &discovery_option->target_plmn_list[0]));
+            }
+        }
+
+        if (discovery_option->num_of_requester_plmn_list) {
+            char *v = ogs_sbi_discovery_option_build_plmn_list(
+                    discovery_option->requester_plmn_list,
+                    discovery_option->num_of_requester_plmn_list);
+            if (v) {
+                ogs_sbi_header_set(request->http.headers,
+                        OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_PLMN_LIST, v);
+                ogs_free(v);
+            } else {
+                ogs_warn("invalid target-plmn-list failed[%d:%06x]",
+                            discovery_option->num_of_requester_plmn_list,
+                            ogs_plmn_id_hexdump(
+                                &discovery_option->requester_plmn_list[0]));
             }
         }
     }

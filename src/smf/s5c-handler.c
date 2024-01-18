@@ -228,7 +228,7 @@ uint8_t smf_s5c_handle_create_session_request(
     }
 
     /* Serving Network */
-    ogs_nas_to_plmn_id(&sess->plmn_id, req->serving_network.data);
+    ogs_nas_to_plmn_id(&sess->serving_plmn_id, req->serving_network.data);
 
     /* Select PGW based on UE Location Information */
     smf_sess_select_upf(sess);
@@ -247,10 +247,30 @@ uint8_t smf_s5c_handle_create_session_request(
 
     /* Initially Set Session Type from UE */
     sess->session.session_type = sess->ue_session_type;
-    rv = ogs_gtp2_paa_to_ip(paa, &sess->session.ue_ip);
+    rv = ogs_paa_to_ip(paa, &sess->session.ue_ip);
     ogs_assert(rv == OGS_OK);
 
-    ogs_assert(OGS_PFCP_CAUSE_REQUEST_ACCEPTED == smf_sess_set_ue_ip(sess));
+    /* Set UE IP Address */
+    rv = smf_sess_set_ue_ip(sess);
+    if (rv != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+        /* only two possibilities are:
+         * OGS_PFCP_CAUSE_ALL_DYNAMIC_ADDRESS_ARE_OCCUPIED
+         * OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE
+         */
+        ogs_error("Failed to set UE IP Address");
+        switch(rv) {
+        case OGS_PFCP_CAUSE_ALL_DYNAMIC_ADDRESS_ARE_OCCUPIED:
+            cause_value = OGS_GTP2_CAUSE_ALL_DYNAMIC_ADDRESSES_ARE_OCCUPIED;
+            break;
+        case OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE:
+            cause_value = OGS_GTP2_CAUSE_NO_RESOURCES_AVAILABLE;
+            break;
+        default:
+            cause_value = OGS_GTP2_CAUSE_REQUEST_REJECTED_REASON_NOT_SPECIFIED;
+            break;
+        }
+        return cause_value;
+    }
 
     ogs_info("UE IMSI[%s] APN[%s] IPv4[%s] IPv6[%s]",
         smf_ue->imsi_bcd,

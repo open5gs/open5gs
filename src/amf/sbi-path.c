@@ -34,8 +34,8 @@ int amf_sbi_open(void)
 
     /* Build NF instance information. It will be transmitted to NRF. */
     ogs_sbi_nf_instance_build_default(nf_instance);
-    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SMF);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SCP);
+    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SMF);
 
     /* Build NF service information. It will be transmitted to NRF. */
     if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NAMF_COMM)) {
@@ -53,6 +53,7 @@ int amf_sbi_open(void)
         ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Setup Subscription-Data */
+    ogs_sbi_subscription_spec_add(OpenAPI_nf_type_SEPP, NULL);
     ogs_sbi_subscription_spec_add(
             OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NAUSF_AUTH);
     ogs_sbi_subscription_spec_add(
@@ -95,10 +96,33 @@ int amf_ue_sbi_discover_and_send(
     int r;
     int rv;
     ogs_sbi_xact_t *xact = NULL;
+    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
 
     ogs_assert(service_type);
+    target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
+    ogs_assert(target_nf_type);
     ogs_assert(amf_ue);
     ogs_assert(build);
+
+    if ((target_nf_type == OpenAPI_nf_type_AUSF ||
+        target_nf_type == OpenAPI_nf_type_UDM) &&
+        ogs_sbi_plmn_id_in_vplmn(&amf_ue->home_plmn_id) == true) {
+        int i;
+
+        if (!discovery_option) {
+            discovery_option = ogs_sbi_discovery_option_new();
+            ogs_assert(discovery_option);
+        }
+
+        ogs_sbi_discovery_option_add_target_plmn_list(
+                discovery_option, &amf_ue->home_plmn_id);
+
+        ogs_assert(ogs_local_conf()->num_of_serving_plmn_id);
+        for (i = 0; i < ogs_local_conf()->num_of_serving_plmn_id; i++) {
+            ogs_sbi_discovery_option_add_requester_plmn_list(
+                    discovery_option, &ogs_local_conf()->serving_plmn_id[i]);
+        }
+    }
 
     xact = ogs_sbi_xact_add(
             &amf_ue->sbi, service_type, discovery_option,
@@ -138,16 +162,31 @@ int amf_sess_sbi_discover_and_send(
     int rv;
     ogs_sbi_xact_t *xact = NULL;
 
+    amf_ue_t *amf_ue = NULL;
+
     ogs_assert(service_type);
     ogs_assert(sess);
     ogs_assert(build);
+
+    amf_ue = amf_ue_cycle(sess->amf_ue);
+    if (!amf_ue) {
+        ogs_error("UE(amf_ue) Context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    sess->ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    if (!sess->ran_ue) {
+        ogs_error("[%s] RAN-NG Context has already been removed",
+                    amf_ue->supi);
+        return OGS_NOTFOUND;
+    }
 
     xact = ogs_sbi_xact_add(
             &sess->sbi, service_type, discovery_option,
             (ogs_sbi_build_f)build, sess, data);
     if (!xact) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
-        r = nas_5gs_send_back_gsm_message(sess,
+        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -160,7 +199,7 @@ int amf_sess_sbi_discover_and_send(
     if (rv != OGS_OK) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
-        r = nas_5gs_send_back_gsm_message(sess,
+        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -228,7 +267,7 @@ static int client_discover_cb(
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
         ogs_error("cannot parse HTTP response");
-        r = nas_5gs_send_back_gsm_message(sess,
+        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -238,7 +277,7 @@ static int client_discover_cb(
 
     if (message.res_status != OGS_SBI_HTTP_STATUS_OK) {
         ogs_error("NF-Discover failed [%d]", message.res_status);
-        r = nas_5gs_send_back_gsm_message(sess,
+        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -248,7 +287,7 @@ static int client_discover_cb(
 
     if (!message.SearchResult) {
         ogs_error("No SearchResult");
-        r = nas_5gs_send_back_gsm_message(sess,
+        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -265,7 +304,7 @@ static int client_discover_cb(
         ogs_error("[%s:%d] (NF discover) No [%s]",
                     amf_ue->supi, sess->psi,
                     ogs_sbi_service_type_to_name(service_type));
-        r = nas_5gs_send_back_gsm_message(sess,
+        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
                 OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                 AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
@@ -305,6 +344,8 @@ int amf_sess_sbi_discover_by_nsi(
     ogs_sbi_xact_t *xact = NULL;
     ogs_sbi_client_t *client = NULL;
 
+    amf_ue_t *amf_ue = NULL;
+
     ogs_assert(sess);
     client = sess->nssf.nrf.client;
     ogs_assert(client);
@@ -312,6 +353,19 @@ int amf_sess_sbi_discover_by_nsi(
 
     ogs_warn("Try to discover [%s]",
                 ogs_sbi_service_type_to_name(service_type));
+
+    amf_ue = amf_ue_cycle(sess->amf_ue);
+    if (!amf_ue) {
+        ogs_error("UE(amf_ue) Context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    sess->ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    if (!sess->ran_ue) {
+        ogs_error("[%s] RAN-NG Context has already been removed",
+                    amf_ue->supi);
+        return OGS_NOTFOUND;
+    }
 
     xact = ogs_sbi_xact_add(
             &sess->sbi, service_type, discovery_option, NULL, NULL, NULL);

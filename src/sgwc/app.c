@@ -25,7 +25,7 @@ int app_initialize(const char *const argv[])
 
     rv = sgwc_initialize();
     if (rv != OGS_OK) {
-        ogs_error("Failed to intialize SGW-C");
+        ogs_error("Failed to initialize SGW-C");
         return rv;
     }
     ogs_info("SGW-C initialize...done");

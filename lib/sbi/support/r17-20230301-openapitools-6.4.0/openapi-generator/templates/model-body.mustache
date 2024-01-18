@@ -63,6 +63,9 @@ OpenAPI_{{classVarName}}_{{name}}_e OpenAPI_{{name}}{{classname}}_FromString(cha
 {{/vars}}
 OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_create(
 {{#vars}}
+    {{#isNullable}}
+    bool is_{{name}}_null,
+    {{/isNullable}}
     {{^isContainer}}
         {{^isPrimitiveType}}
             {{#isEnum}}
@@ -137,6 +140,9 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_create(
     ogs_assert({{classname}}_local_var);
 
 {{#vars}}
+    {{#isNullable}}
+    {{classname}}_local_var->is_{{{name}}}_null = is_{{{name}}}_null;
+    {{/isNullable}}
     {{^isContainer}}
         {{#isPrimitiveType}}
             {{^isEnum}}
@@ -588,6 +594,13 @@ cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}
         {{/isMap}}
     {{/isContainer}}
     {{^required}}
+    {{#isNullable}}
+    } else if ({{{classname}}}->is_{{{name}}}_null) {
+        if (cJSON_AddNullToObject(item, "{{{baseName}}}") == NULL) {
+            ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
+            goto end;
+        }
+    {{/isNullable}}
     }
     {{/required}}
 
@@ -649,6 +662,9 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
     {{/required}}
     {{^required}}
     if ({{{name}}}) {
+        {{#isNullable}}
+    if (!cJSON_IsNull({{{name}}})) {
+        {{/isNullable}}
     {{/required}}
     {{^isContainer}}
         {{#isPrimitiveType}}
@@ -773,10 +789,11 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
             }
             localEnum = OpenAPI_{{{complexType}}}_FromString({{{name}}}_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_{{{complexType}}}_FromString({{{name}}}_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"{{{name}}}\" is not supported. Ignoring it ...",
+                         {{{name}}}_local->valuestring);
+            } else {
+                OpenAPI_list_add({{{name}}}List, (void *)localEnum);
             }
-            OpenAPI_list_add({{{name}}}List, (void *)localEnum);
             {{/isEnum}}
             {{^isEnum}}
                 {{#isPrimitiveType}}
@@ -841,6 +858,12 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
                 {{/items}}
             {{/isEnum}}
         }
+        {{#isEnum}}
+        if ({{{name}}}List->count == 0) {
+            ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed: Expected {{{name}}}List to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
+        {{/isEnum}}
         {{/isArray}}
         {{#isMap}}
         cJSON *{{{name}}}_local_map = NULL;
@@ -928,11 +951,17 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
     {{/isContainer}}
     {{^required}}
     }
+        {{#isNullable}}
+    }
+        {{/isNullable}}
     {{/required}}
 
 {{/vars}}
     {{classname}}_local_var = OpenAPI_{{classname}}_create (
 {{#vars}}
+    {{#isNullable}}
+        {{{name}}} && cJSON_IsNull({{{name}}}) ? true : false,
+    {{/isNullable}}
     {{^isContainer}}
         {{^isPrimitiveType}}
             {{#isEnum}}

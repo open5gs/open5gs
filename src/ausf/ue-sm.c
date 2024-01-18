@@ -150,7 +150,8 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
         SWITCH(message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UEAU)
             if (message->res_status != OGS_SBI_HTTP_STATUS_OK &&
-                message->res_status != OGS_SBI_HTTP_STATUS_CREATED) {
+                message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
+                message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
                 if (message->res_status == OGS_SBI_HTTP_STATUS_NOT_FOUND) {
                     ogs_warn("[%s] Cannot find SUPI [%d]",
                         ausf_ue->suci, message->res_status);
@@ -171,6 +172,7 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                 CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
                     ausf_nudm_ueau_handle_auth_removal_ind(
                             ausf_ue, stream, message);
+                    OGS_FSM_TRAN(s, &ausf_ue_state_deleted);
                     break;
 
                 DEFAULT
@@ -209,6 +211,30 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
     default:
         ogs_error("[%s] Unknown event %s",
                 ausf_ue->suci, ausf_event_get_name(e));
+        break;
+    }
+}
+
+void ausf_ue_state_deleted(ogs_fsm_t *s, ausf_event_t *e)
+{
+    ausf_ue_t *ausf_ue = NULL;
+    ogs_assert(s);
+    ogs_assert(e);
+
+    ausf_sm_debug(e);
+
+    ausf_ue = e->ausf_ue;
+    ogs_assert(ausf_ue);
+
+    switch (e->h.id) {
+    case OGS_FSM_ENTRY_SIG:
+        break;
+
+    case OGS_FSM_EXIT_SIG:
+        break;
+
+    default:
+        ogs_error("[%s] Unknown event %s", ausf_ue->supi, ausf_event_get_name(e));
         break;
     }
 }

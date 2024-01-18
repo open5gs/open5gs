@@ -25,7 +25,7 @@ int app_initialize(const char *const argv[])
 
     rv = scp_initialize();
     if (rv != OGS_OK) {
-        ogs_error("Failed to intialize SCP");
+        ogs_error("Failed to initialize SCP");
         return rv;
     }
     ogs_info("SCP initialize...done");

@@ -29,6 +29,7 @@ typedef struct OpenAPI_af_routing_requirement_s {
     OpenAPI_list_t *route_to_locs;
     struct OpenAPI_spatial_validity_s *sp_val;
     OpenAPI_list_t *temp_vals;
+    bool is_up_path_chg_sub_null;
     struct OpenAPI_up_path_chg_event_s *up_path_chg_sub;
     bool is_addr_preser_ind;
     int addr_preser_ind;
@@ -49,6 +50,7 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_create(
     OpenAPI_list_t *route_to_locs,
     OpenAPI_spatial_validity_t *sp_val,
     OpenAPI_list_t *temp_vals,
+    bool is_up_path_chg_sub_null,
     OpenAPI_up_path_chg_event_t *up_path_chg_sub,
     bool is_addr_preser_ind,
     int addr_preser_ind,

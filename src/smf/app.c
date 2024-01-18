@@ -25,7 +25,7 @@ int app_initialize(const char *const argv[])
 
     rv = smf_initialize();
     if (rv != OGS_OK) {
-        ogs_error("Failed to intialize SMF");
+        ogs_error("Failed to initialize SMF");
         return rv;
     }
     ogs_info("SMF initialize...done");

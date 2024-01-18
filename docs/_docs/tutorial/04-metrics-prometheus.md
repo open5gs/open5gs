@@ -45,18 +45,21 @@ A HTTP server is not created if 'metrics' is not defined.
 #
 #  o Metrics Server(http://<any address>:9090)
 #    metrics:
-#      - addr: 0.0.0.0
-#        port: 9090
+#      server:
+#        - address: 0.0.0.0
+#          port: 9090
 #
 #  o Metrics Server(127.0.0.5:9090, [::1]:9090)
 #    metrics:
-#      - addr: 127.0.0.5
-#      - addr: ::1
+#      server:
+#        - address: 127.0.0.5
+#        - addr: ::1
 #
 amf:
   metrics:
-    - addr: 127.0.0.5
-      port: 9090
+    server:
+      - address: 127.0.0.5
+        port: 9090
 ```
 
 Note: You may want to change the default IP address or port if you are running

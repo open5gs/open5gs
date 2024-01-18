@@ -42,6 +42,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     int _3gpp_ps_data_off_status,
     bool is_ref_qos_indication,
     int ref_qos_indication,
+    bool is_trace_req_null,
     OpenAPI_trace_data_t *trace_req,
     OpenAPI_snssai_t *slice_info,
     OpenAPI_qos_flow_usage_e qos_flow_usage,
@@ -54,6 +55,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     OpenAPI_list_t *ipv4_frame_route_list,
     OpenAPI_list_t *ipv6_frame_route_list,
     OpenAPI_satellite_backhaul_category_e sat_backhaul_category,
+    bool is_pcf_ue_info_null,
     OpenAPI_pcf_ue_callback_info_t *pcf_ue_info,
     OpenAPI_list_t *pvs_info,
     bool is_onboard_ind,
@@ -101,6 +103,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     sm_policy_context_data_local_var->_3gpp_ps_data_off_status = _3gpp_ps_data_off_status;
     sm_policy_context_data_local_var->is_ref_qos_indication = is_ref_qos_indication;
     sm_policy_context_data_local_var->ref_qos_indication = ref_qos_indication;
+    sm_policy_context_data_local_var->is_trace_req_null = is_trace_req_null;
     sm_policy_context_data_local_var->trace_req = trace_req;
     sm_policy_context_data_local_var->slice_info = slice_info;
     sm_policy_context_data_local_var->qos_flow_usage = qos_flow_usage;
@@ -113,6 +116,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     sm_policy_context_data_local_var->ipv4_frame_route_list = ipv4_frame_route_list;
     sm_policy_context_data_local_var->ipv6_frame_route_list = ipv6_frame_route_list;
     sm_policy_context_data_local_var->sat_backhaul_category = sat_backhaul_category;
+    sm_policy_context_data_local_var->is_pcf_ue_info_null = is_pcf_ue_info_null;
     sm_policy_context_data_local_var->pcf_ue_info = pcf_ue_info;
     sm_policy_context_data_local_var->pvs_info = pvs_info;
     sm_policy_context_data_local_var->is_onboard_ind = is_onboard_ind;
@@ -571,6 +575,11 @@ cJSON *OpenAPI_sm_policy_context_data_convertToJSON(OpenAPI_sm_policy_context_da
         ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [trace_req]");
         goto end;
     }
+    } else if (sm_policy_context_data->is_trace_req_null) {
+        if (cJSON_AddNullToObject(item, "traceReq") == NULL) {
+            ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [trace_req]");
+            goto end;
+        }
     }
 
     if (!sm_policy_context_data->slice_info) {
@@ -689,6 +698,11 @@ cJSON *OpenAPI_sm_policy_context_data_convertToJSON(OpenAPI_sm_policy_context_da
         ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [pcf_ue_info]");
         goto end;
     }
+    } else if (sm_policy_context_data->is_pcf_ue_info_null) {
+        if (cJSON_AddNullToObject(item, "pcfUeInfo") == NULL) {
+            ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [pcf_ue_info]");
+            goto end;
+        }
     }
 
     if (sm_policy_context_data->pvs_info) {
@@ -1095,10 +1109,12 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     trace_req = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "traceReq");
     if (trace_req) {
+    if (!cJSON_IsNull(trace_req)) {
     trace_req_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_req);
     if (!trace_req_local_nonprim) {
         ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_req]");
         goto end;
+    }
     }
     }
 
@@ -1226,10 +1242,12 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     pcf_ue_info = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "pcfUeInfo");
     if (pcf_ue_info) {
+    if (!cJSON_IsNull(pcf_ue_info)) {
     pcf_ue_info_local_nonprim = OpenAPI_pcf_ue_callback_info_parseFromJSON(pcf_ue_info);
     if (!pcf_ue_info_local_nonprim) {
         ogs_error("OpenAPI_pcf_ue_callback_info_parseFromJSON failed [pcf_ue_info]");
         goto end;
+    }
     }
     }
 
@@ -1328,6 +1346,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         _3gpp_ps_data_off_status ? _3gpp_ps_data_off_status->valueint : 0,
         ref_qos_indication ? true : false,
         ref_qos_indication ? ref_qos_indication->valueint : 0,
+        trace_req && cJSON_IsNull(trace_req) ? true : false,
         trace_req ? trace_req_local_nonprim : NULL,
         slice_info_local_nonprim,
         qos_flow_usage ? qos_flow_usageVariable : 0,
@@ -1340,6 +1359,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         ipv4_frame_route_list ? ipv4_frame_route_listList : NULL,
         ipv6_frame_route_list ? ipv6_frame_route_listList : NULL,
         sat_backhaul_category ? sat_backhaul_categoryVariable : 0,
+        pcf_ue_info && cJSON_IsNull(pcf_ue_info) ? true : false,
         pcf_ue_info ? pcf_ue_info_local_nonprim : NULL,
         pvs_info ? pvs_infoList : NULL,
         onboard_ind ? true : false,

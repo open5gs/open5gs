@@ -9,6 +9,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_create(
     char *serving_network_name,
     OpenAPI_resynchronization_info_t *resynchronization_info,
     char *pei,
+    bool is_trace_data_null,
     OpenAPI_trace_data_t *trace_data,
     char *udm_group_id,
     char *routing_indicator,
@@ -31,6 +32,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_create(
     authentication_info_local_var->serving_network_name = serving_network_name;
     authentication_info_local_var->resynchronization_info = resynchronization_info;
     authentication_info_local_var->pei = pei;
+    authentication_info_local_var->is_trace_data_null = is_trace_data_null;
     authentication_info_local_var->trace_data = trace_data;
     authentication_info_local_var->udm_group_id = udm_group_id;
     authentication_info_local_var->routing_indicator = routing_indicator;
@@ -157,6 +159,11 @@ cJSON *OpenAPI_authentication_info_convertToJSON(OpenAPI_authentication_info_t *
         ogs_error("OpenAPI_authentication_info_convertToJSON() failed [trace_data]");
         goto end;
     }
+    } else if (authentication_info->is_trace_data_null) {
+        if (cJSON_AddNullToObject(item, "traceData") == NULL) {
+            ogs_error("OpenAPI_authentication_info_convertToJSON() failed [trace_data]");
+            goto end;
+        }
     }
 
     if (authentication_info->udm_group_id) {
@@ -285,10 +292,12 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
 
     trace_data = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "traceData");
     if (trace_data) {
+    if (!cJSON_IsNull(trace_data)) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
     if (!trace_data_local_nonprim) {
         ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_data]");
         goto end;
+    }
     }
     }
 
@@ -374,6 +383,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
         ogs_strdup(serving_network_name->valuestring),
         resynchronization_info ? resynchronization_info_local_nonprim : NULL,
         pei && !cJSON_IsNull(pei) ? ogs_strdup(pei->valuestring) : NULL,
+        trace_data && cJSON_IsNull(trace_data) ? true : false,
         trace_data ? trace_data_local_nonprim : NULL,
         udm_group_id && !cJSON_IsNull(udm_group_id) ? ogs_strdup(udm_group_id->valuestring) : NULL,
         routing_indicator && !cJSON_IsNull(routing_indicator) ? ogs_strdup(routing_indicator->valuestring) : NULL,

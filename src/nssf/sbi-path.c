@@ -31,8 +31,8 @@ int nssf_sbi_open(void)
 
     /* Build NF instance information. It will be transmitted to NRF. */
     ogs_sbi_nf_instance_build_default(nf_instance);
-    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AMF);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SCP);
+    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AMF);
 
     /* Build NF service information. It will be transmitted to NRF. */
     if (ogs_sbi_nf_service_is_available(
@@ -49,6 +49,9 @@ int nssf_sbi_open(void)
     nf_instance = ogs_sbi_self()->nrf_instance;
     if (nf_instance)
         ogs_sbi_nf_fsm_init(nf_instance);
+
+    /* Setup Subscription-Data */
+    ogs_sbi_subscription_spec_add(OpenAPI_nf_type_SEPP, NULL);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;

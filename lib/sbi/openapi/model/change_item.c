@@ -8,7 +8,9 @@ OpenAPI_change_item_t *OpenAPI_change_item_create(
     OpenAPI_change_type_e op,
     char *path,
     char *from,
+    bool is_orig_value_null,
     OpenAPI_any_type_t *orig_value,
+    bool is_new_value_null,
     OpenAPI_any_type_t *new_value
 )
 {
@@ -18,7 +20,9 @@ OpenAPI_change_item_t *OpenAPI_change_item_create(
     change_item_local_var->op = op;
     change_item_local_var->path = path;
     change_item_local_var->from = from;
+    change_item_local_var->is_orig_value_null = is_orig_value_null;
     change_item_local_var->orig_value = orig_value;
+    change_item_local_var->is_new_value_null = is_new_value_null;
     change_item_local_var->new_value = new_value;
 
     return change_item_local_var;
@@ -97,6 +101,11 @@ cJSON *OpenAPI_change_item_convertToJSON(OpenAPI_change_item_t *change_item)
         ogs_error("OpenAPI_change_item_convertToJSON() failed [orig_value]");
         goto end;
     }
+    } else if (change_item->is_orig_value_null) {
+        if (cJSON_AddNullToObject(item, "origValue") == NULL) {
+            ogs_error("OpenAPI_change_item_convertToJSON() failed [orig_value]");
+            goto end;
+        }
     }
 
     if (change_item->new_value) {
@@ -110,6 +119,11 @@ cJSON *OpenAPI_change_item_convertToJSON(OpenAPI_change_item_t *change_item)
         ogs_error("OpenAPI_change_item_convertToJSON() failed [new_value]");
         goto end;
     }
+    } else if (change_item->is_new_value_null) {
+        if (cJSON_AddNullToObject(item, "newValue") == NULL) {
+            ogs_error("OpenAPI_change_item_convertToJSON() failed [new_value]");
+            goto end;
+        }
     }
 
 end:
@@ -159,19 +173,25 @@ OpenAPI_change_item_t *OpenAPI_change_item_parseFromJSON(cJSON *change_itemJSON)
 
     orig_value = cJSON_GetObjectItemCaseSensitive(change_itemJSON, "origValue");
     if (orig_value) {
+    if (!cJSON_IsNull(orig_value)) {
     orig_value_local_object = OpenAPI_any_type_parseFromJSON(orig_value);
+    }
     }
 
     new_value = cJSON_GetObjectItemCaseSensitive(change_itemJSON, "newValue");
     if (new_value) {
+    if (!cJSON_IsNull(new_value)) {
     new_value_local_object = OpenAPI_any_type_parseFromJSON(new_value);
+    }
     }
 
     change_item_local_var = OpenAPI_change_item_create (
         opVariable,
         ogs_strdup(path->valuestring),
         from && !cJSON_IsNull(from) ? ogs_strdup(from->valuestring) : NULL,
+        orig_value && cJSON_IsNull(orig_value) ? true : false,
         orig_value ? orig_value_local_object : NULL,
+        new_value && cJSON_IsNull(new_value) ? true : false,
         new_value ? new_value_local_object : NULL
     );
 

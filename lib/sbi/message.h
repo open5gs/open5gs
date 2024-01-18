@@ -144,6 +144,8 @@ extern "C" {
 
 #define OGS_SBI_RESOURCE_NAME_PCF_BINDINGS          "pcfBindings"
 
+#define OGS_SBI_RESOURCE_NAME_EXCHANGE_CAPABILITY   "exchange-capability"
+
 #define OGS_SBI_PATCH_PATH_NF_STATUS                "/nfStatus"
 #define OGS_SBI_PATCH_PATH_LOAD                     "/load"
 #define OGS_SBI_PATCH_PATH_VALIDITY_TIME            "/validityTime"
@@ -240,6 +242,8 @@ extern "C" {
 #define OGS_SBI_NBSF_MANAGEMENT_ES3XX 4
 #define OGS_SBI_NBSF_MANAGEMENT_EXTENDED_SAME_PCF 5
 
+#define OGS_SBI_N32_HANDSHAKE_NFTLST 1
+
 #define OGS_SBI_SCHEME                              ":scheme"
 #define OGS_SBI_AUTHORITY                           ":authority"
 #define OGS_SBI_ACCEPT                              "Accept"
@@ -279,6 +283,16 @@ extern "C" {
     OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_REQUESTER_NF_INSTANCE_ID
 #define OGS_SBI_CUSTOM_DISCOVERY_SERVICE_NAMES  \
     OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_SERVICE_NAMES
+#define OGS_SBI_CUSTOM_DISCOVERY_SNSSAIS  \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_SNSSAIS
+#define OGS_SBI_CUSTOM_DISCOVERY_DNN  \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_DNN
+#define OGS_SBI_CUSTOM_DISCOVERY_TAI  \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_TAI
+#define OGS_SBI_CUSTOM_DISCOVERY_TARGET_PLMN_LIST  \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_TARGET_PLMN_LIST
+#define OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_PLMN_LIST  \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_REQUESTER_PLMN_LIST
 #define OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_FEATURES  \
     OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_REQUESTER_FEATURES
 #define OGS_SBI_CUSTOM_PRODUCER_ID       \
@@ -305,6 +319,8 @@ extern "C" {
 #define OGS_SBI_PARAM_TARGET_NF_INSTANCE_ID         "target-nf-instance-id"
 #define OGS_SBI_PARAM_REQUESTER_NF_INSTANCE_ID      "requester-nf-instance-id"
 #define OGS_SBI_PARAM_SERVICE_NAMES                 "service-names"
+#define OGS_SBI_PARAM_TARGET_PLMN_LIST              "target-plmn-list"
+#define OGS_SBI_PARAM_REQUESTER_PLMN_LIST           "requester-plmn-list"
 #define OGS_SBI_PARAM_REQUESTER_FEATURES            "requester-features"
 
 #define OGS_SBI_PARAM_NF_ID                         "nf-id"
@@ -314,6 +330,8 @@ extern "C" {
 #define OGS_SBI_PARAM_PLMN_ID                       "plmn-id"
 #define OGS_SBI_PARAM_SINGLE_NSSAI                  "single-nssai"
 #define OGS_SBI_PARAM_SNSSAI                        "snssai"
+#define OGS_SBI_PARAM_SNSSAIS                       "snssais"
+#define OGS_SBI_PARAM_TAI                           "tai"
 #define OGS_SBI_PARAM_SLICE_INFO_REQUEST_FOR_PDU_SESSION \
         "slice-info-request-for-pdu-session"
 #define OGS_SBI_PARAM_IPV4ADDR                      "ipv4Addr"
@@ -406,6 +424,17 @@ typedef struct ogs_sbi_discovery_option_s {
 
     int num_of_service_names;
     char *service_names[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE];
+
+    int num_of_snssais;
+    ogs_s_nssai_t snssais[OGS_MAX_NUM_OF_SLICE];
+    char *dnn;
+    bool tai_presence;
+    ogs_5gs_tai_t tai;
+
+    int num_of_target_plmn_list;
+    ogs_plmn_id_t target_plmn_list[OGS_MAX_NUM_OF_PLMN];
+    int num_of_requester_plmn_list;
+    ogs_plmn_id_t requester_plmn_list[OGS_MAX_NUM_OF_PLMN];
 
     uint64_t requester_features;
 } ogs_sbi_discovery_option_t;
@@ -511,6 +540,8 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_sdm_subscription_t *SDMSubscription;
     OpenAPI_modification_notification_t *ModificationNotification;
     OpenAPI_smf_registration_t *SmfRegistration;
+    OpenAPI_sec_negotiate_req_data_t *SecNegotiateReqData;
+    OpenAPI_sec_negotiate_rsp_data_t *SecNegotiateRspData;
 
     ogs_sbi_links_t *links;
 
@@ -591,6 +622,8 @@ void ogs_sbi_discovery_option_set_target_nf_instance_id(
 void ogs_sbi_discovery_option_set_requester_nf_instance_id(
         ogs_sbi_discovery_option_t *discovery_option,
         char *requester_nf_instance_id);
+void ogs_sbi_discovery_option_set_dnn(
+        ogs_sbi_discovery_option_t *discovery_option, char *dnn);
 
 void ogs_sbi_discovery_option_add_service_names(
         ogs_sbi_discovery_option_t *discovery_option,
@@ -600,6 +633,32 @@ char *ogs_sbi_discovery_option_build_service_names(
 void ogs_sbi_discovery_option_parse_service_names(
         ogs_sbi_discovery_option_t *discovery_option,
         char *service_names);
+
+void ogs_sbi_discovery_option_add_snssais(
+        ogs_sbi_discovery_option_t *discovery_option, ogs_s_nssai_t *s_nssai);
+char *ogs_sbi_discovery_option_build_snssais(
+        ogs_sbi_discovery_option_t *discovery_option);
+void ogs_sbi_discovery_option_parse_snssais(
+        ogs_sbi_discovery_option_t *discovery_option, char *snssais);
+
+void ogs_sbi_discovery_option_set_tai(
+        ogs_sbi_discovery_option_t *discovery_option, ogs_5gs_tai_t *tai);
+char *ogs_sbi_discovery_option_build_tai(
+        ogs_sbi_discovery_option_t *discovery_option);
+void ogs_sbi_discovery_option_parse_tai(
+        ogs_sbi_discovery_option_t *discovery_option, char *tai);
+
+void ogs_sbi_discovery_option_add_target_plmn_list(
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_plmn_id_t *target_plmn_id);
+void ogs_sbi_discovery_option_add_requester_plmn_list(
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_plmn_id_t *requester_plmn_id);
+
+char *ogs_sbi_discovery_option_build_plmn_list(
+        ogs_plmn_id_t *plmn_list, int num_of_plmn_list);
+int ogs_sbi_discovery_option_parse_plmn_list(
+        ogs_plmn_id_t *plmn_list, char *v);
 
 #ifdef __cplusplus
 }

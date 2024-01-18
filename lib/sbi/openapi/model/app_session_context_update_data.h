@@ -31,9 +31,11 @@ extern "C" {
 typedef struct OpenAPI_app_session_context_update_data_s OpenAPI_app_session_context_update_data_t;
 typedef struct OpenAPI_app_session_context_update_data_s {
     char *af_app_id;
+    bool is_af_rout_req_null;
     struct OpenAPI_af_routing_requirement_rm_s *af_rout_req;
     char *asp_id;
     char *bdt_ref_id;
+    bool is_ev_subsc_null;
     struct OpenAPI_events_subsc_req_data_rm_s *ev_subsc;
     char *mcptt_id;
     char *mc_video_id;
@@ -54,9 +56,11 @@ typedef struct OpenAPI_app_session_context_update_data_s {
 
 OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_data_create(
     char *af_app_id,
+    bool is_af_rout_req_null,
     OpenAPI_af_routing_requirement_rm_t *af_rout_req,
     char *asp_id,
     char *bdt_ref_id,
+    bool is_ev_subsc_null,
     OpenAPI_events_subsc_req_data_rm_t *ev_subsc,
     char *mcptt_id,
     char *mc_video_id,

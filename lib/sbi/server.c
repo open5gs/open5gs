@@ -53,15 +53,34 @@ void ogs_sbi_server_final(void)
 }
 
 ogs_sbi_server_t *ogs_sbi_server_add(
-        ogs_sockaddr_t *addr, ogs_sockopt_t *option)
+        const char *interface,
+        OpenAPI_uri_scheme_e scheme, ogs_sockaddr_t *addr,
+        ogs_sockopt_t *option)
 {
     ogs_sbi_server_t *server = NULL;
 
     ogs_assert(addr);
+    ogs_assert(scheme);
 
     ogs_pool_alloc(&server_pool, &server);
     ogs_assert(server);
     memset(server, 0, sizeof(ogs_sbi_server_t));
+
+    if (interface)
+        server->interface = ogs_strdup(interface);
+
+    server->scheme = scheme;
+
+    if (ogs_sbi_self()->tls.server.private_key)
+        server->private_key =
+            ogs_strdup(ogs_sbi_self()->tls.server.private_key);
+    if (ogs_sbi_self()->tls.server.cert)
+        server->cert = ogs_strdup(ogs_sbi_self()->tls.server.cert);
+
+    server->verify_client = ogs_sbi_self()->tls.server.verify_client;
+    if (ogs_sbi_self()->tls.server.verify_client_cacert)
+        server->verify_client_cacert =
+            ogs_strdup(ogs_sbi_self()->tls.server.verify_client_cacert);
 
     ogs_assert(OGS_OK == ogs_copyaddrinfo(&server->node.addr, addr));
     if (option)
@@ -78,12 +97,22 @@ void ogs_sbi_server_remove(ogs_sbi_server_t *server)
 
     ogs_list_remove(&ogs_sbi_self()->server_list, server);
 
+    if (server->interface)
+        ogs_free(server->interface);
+
     ogs_assert(server->node.addr);
     ogs_freeaddrinfo(server->node.addr);
     if (server->node.option)
         ogs_free(server->node.option);
     if (server->advertise)
         ogs_freeaddrinfo(server->advertise);
+
+    if (server->verify_client_cacert)
+        ogs_free(server->verify_client_cacert);
+    if (server->private_key)
+        ogs_free(server->private_key);
+    if (server->cert)
+        ogs_free(server->cert);
 
     ogs_pool_free(&server_pool, server);
 }
@@ -209,4 +238,55 @@ bool ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
 ogs_sbi_server_t *ogs_sbi_server_from_stream(ogs_sbi_stream_t *stream)
 {
     return ogs_sbi_server_actions.from_stream(stream);
+}
+
+char *ogs_sbi_server_id_context(ogs_sbi_server_t *server)
+{
+    return ogs_msprintf("%d", (int)ogs_pool_index(&server_pool, server));
+}
+
+static ogs_sbi_server_t *ogs_sbi_server_find_by_interface(
+        ogs_sbi_server_t *current, const char *interface)
+{
+    ogs_sbi_server_t *server = NULL;
+
+    server = current ?
+        ogs_list_next(current) : ogs_list_first(&ogs_sbi_self()->server_list);
+
+    for (; server; server = ogs_list_next(server)) {
+        if (interface == NULL) {
+            if (server->interface == NULL)
+                return server;
+        } else {
+            if (server->interface && strcmp(interface, server->interface) == 0)
+                return server;
+        }
+    }
+
+    return NULL;
+}
+
+ogs_sbi_server_t *ogs_sbi_server_first(void)
+{
+    return ogs_sbi_server_find_by_interface(NULL, NULL);
+}
+
+ogs_sbi_server_t *ogs_sbi_server_next(ogs_sbi_server_t *current)
+{
+    ogs_assert(current);
+    return ogs_sbi_server_find_by_interface(current, NULL);
+}
+
+ogs_sbi_server_t *ogs_sbi_server_first_by_interface(const char *interface)
+{
+    ogs_assert(interface);
+    return ogs_sbi_server_find_by_interface(NULL, interface);
+}
+
+ogs_sbi_server_t *ogs_sbi_server_next_by_interface(
+        ogs_sbi_server_t *current, const char *interface)
+{
+    ogs_assert(current);
+    ogs_assert(interface);
+    return ogs_sbi_server_find_by_interface(current, interface);
 }

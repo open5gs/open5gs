@@ -83,12 +83,31 @@ extern "C" {
 #define OGS_MAX_EPCO_LEN                65535
 #define OGS_MAX_FQDN_LEN                256
 
-#define OGS_MAX_NUM_OF_SERVED_GUAMI     8
-#define OGS_MAX_NUM_OF_SERVED_TAI       OGS_MAX_NUM_OF_TAI
-#define OGS_MAX_NUM_OF_ACCESS_CONTROL   8
 #define OGS_MAX_NUM_OF_ALGORITHM        8
 
-#define OGS_MAX_NUM_OF_BPLMN            6
+#define OGS_MAX_NUM_OF_SERVED_GUMMEI    8   /* maxnoofRATs: 8 */
+#define OGS_MAX_NUM_OF_SERVED_GUAMI     256 /* maxnoofServedGUAMIs: 256 */
+#define OGS_MAX_NUM_OF_SUPPORTED_TA     256 /* maxnoofTACs: 256 */
+
+/*
+ * <December 3, 2023>
+ * If I set it to 1024, the AMF crashes in the 'meson test -v registration'.
+ * So for now, I will use 512. Once I figure out the cause of this problem,
+ * I will try 1024.
+ *
+ * <December 4, 2023>
+ * After increasing the delay in test/app/5gc-init.c from 300ms to 500ms,
+ * the problem has been resolved. It seems that as the context memory increases,
+ * it takes time for the AMF execution to be completed."
+ */
+#define OGS_MAX_NUM_OF_SLICE_SUPPORT    1024 /* maxnoofSliceItems: 1024 */
+
+#define OGS_MAX_NUM_OF_PLMN_PER_MME     32  /* maxnoofPLMNs(MME): 32 */
+#define OGS_MAX_NUM_OF_PLMN             12  /* maxnoofPLMNs(AMF): 12 */
+#define OGS_MAX_NUM_OF_BPLMN            OGS_MAX_NUM_OF_PLMN
+
+#define OGS_MAX_NUM_OF_TAI              16
+#define OGS_MAX_NUM_OF_SLICE            8
 
 #define OGS_NEXT_ID(__id, __min, __max) \
     ((__id) = ((__id) == (__max) ? (__min) : ((__id) + 1)))
@@ -108,9 +127,66 @@ extern "C" {
 
 #define OGS_MAX_QOS_FLOW_ID             63
 
+#define OGS_IMSI_STRING "imsi"
+#define OGS_MSISDN_STRING "msisdn"
+#define OGS_IMEISV_STRING "imeisv"
+
+#define OGS_ACCESS_RESTRICTION_DATA_STRING "access_restriction_data"
+#define OGS_SUBSCRIBER_STATUS_STRING "subscriber_status"
+#define OGS_OPERATOR_DETERMINED_BARRING_STRING "operator_determined_barring"
+#define OGS_NETWORK_ACCESS_MODE_STRING "network_access_mode"
+#define OGS_SUBSCRIBED_RAU_TAU_TIMER_STRING "subscribed_rau_tau_timer"
+
+#define OGS_SECURITY_STRING "security"
+#define OGS_K_STRING "k"
+#define OGS_OPC_STRING "opc"
+#define OGS_OP_STRING "op"
+#define OGS_AMF_STRING "amf"
+#define OGS_RAND_STRING "rand"
+#define OGS_SQN_STRING "sqn"
+
+#define OGS_MME_HOST_STRING "mme_host"
+#define OGS_MME_REALM_STRING "mme_realm"
+#define OGS_MME_TIMESTAMP_STRING "mme_timestamp"
+#define OGS_PURGE_FLAG_STRING "purge_flag"
+
+#define OGS_AMBR_STRING "ambr"
+#define OGS_DOWNLINK_STRING "downlink"
+#define OGS_UPLINK_STRING "uplink"
+#define OGS_VALUE_STRING "value"
+#define OGS_UNIT_STRING "unit"
+
+#define OGS_POLICY_STRING "policy"
+#define OGS_SLICE_STRING "slice"
+#define OGS_SST_STRING "sst"
+#define OGS_SD_STRING "sd"
+#define OGS_DEFAULT_INDICATOR_STRING "default_indicator"
+#define OGS_SESSION_STRING "session"
+#define OGS_NAME_STRING "name"
+#define OGS_TYPE_STRING "type"
+#define OGS_QOS_STRING "qos"
+#define OGS_INDEX_STRING "index"
+#define OGS_ARP_STRING "arp"
+#define OGS_PRIORITY_LEVEL_STRING "priority_level"
+#define OGS_PRE_EMPTION_CAPABILITY_STRING "pre_emption_capability"
+#define OGS_PRE_EMPTION_VULNERABILITY_STRING "pre_emption_vulnerability"
+
+#define OGS_PCC_RULE_STRING "pcc_rule"
+#define OGS_MBR_STRING "mbr"
+#define OGS_GBR_STRING "gbr"
+#define OGS_FLOW_STRING "flow"
+#define OGS_DIRECTION_STRING "direction"
+#define OGS_DESCRIPTION_STRING "description"
+
+#define OGS_SMF_STRING "smf"
+#define OGS_IPV4_STRING "ipv4"
+#define OGS_IPV6_STRING "ipv6"
+#define OGS_UE_STRING "ue"
+#define OGS_IPV4_FRAMED_ROUTES_STRING "ipv4_framed_routes"
+#define OGS_IPV6_FRAMED_ROUTES_STRING "ipv6_framed_routes"
+
 /************************************
  * PLMN_ID Structure                */
-#define OGS_MAX_NUM_OF_PLMN         6
 typedef struct ogs_plmn_id_s {
 ED2(uint8_t mcc2:4;,
     uint8_t mcc1:4;)
@@ -120,21 +196,28 @@ ED2(uint8_t mnc3:4;,
     uint8_t mnc2:4;)
 } __attribute__ ((packed)) ogs_plmn_id_t;
 
-uint32_t ogs_plmn_id_hexdump(void *plmn_id);
+uint32_t ogs_plmn_id_hexdump(const void *plmn_id);
 
-uint16_t ogs_plmn_id_mcc(ogs_plmn_id_t *plmn_id);
-uint16_t ogs_plmn_id_mnc(ogs_plmn_id_t *plmn_id);
-uint16_t ogs_plmn_id_mnc_len(ogs_plmn_id_t *plmn_id);
+uint16_t ogs_plmn_id_mcc(const ogs_plmn_id_t *plmn_id);
+uint16_t ogs_plmn_id_mnc(const ogs_plmn_id_t *plmn_id);
+uint16_t ogs_plmn_id_mnc_len(const ogs_plmn_id_t *plmn_id);
 
 void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id,
         uint16_t mcc, uint16_t mnc, uint16_t mnc_len);
 
-char *ogs_serving_network_name_from_plmn_id(ogs_plmn_id_t *plmn_id);
-char *ogs_plmn_id_mcc_string(ogs_plmn_id_t *plmn_id);
-char *ogs_plmn_id_mnc_string(ogs_plmn_id_t *plmn_id);
+char *ogs_plmn_id_mcc_string(const ogs_plmn_id_t *plmn_id);
+char *ogs_plmn_id_mnc_string(const ogs_plmn_id_t *plmn_id);
 
 #define OGS_PLMNIDSTRLEN    (sizeof(ogs_plmn_id_t)*2+1)
-char *ogs_plmn_id_to_string(ogs_plmn_id_t *plmn_id, char *buf);
+char *ogs_plmn_id_to_string(const ogs_plmn_id_t *plmn_id, char *buf);
+
+char *ogs_serving_network_name_from_plmn_id(const ogs_plmn_id_t *plmn_id);
+char *ogs_home_network_domain_from_plmn_id(const ogs_plmn_id_t *plmn_id);
+char *ogs_nrf_fqdn_from_plmn_id(const ogs_plmn_id_t *plmn_id);
+char *ogs_nssf_fqdn_from_plmn_id(const ogs_plmn_id_t *plmn_id);
+char *ogs_home_network_domain_from_fqdn(char *fqdn);
+uint16_t ogs_plmn_id_mnc_from_fqdn(char *fqdn);
+uint16_t ogs_plmn_id_mcc_from_fqdn(char *fqdn);
 
 /*************************
  * NAS PLMN_ID Structure */
@@ -148,9 +231,9 @@ ED2(uint8_t mnc2:4;,
 } __attribute__ ((packed)) ogs_nas_plmn_id_t;
 
 void *ogs_nas_from_plmn_id(
-        ogs_nas_plmn_id_t *ogs_nas_plmn_id, ogs_plmn_id_t *plmn_id);
+        ogs_nas_plmn_id_t *ogs_nas_plmn_id, const ogs_plmn_id_t *plmn_id);
 void *ogs_nas_to_plmn_id(
-        ogs_plmn_id_t *plmn_id, ogs_nas_plmn_id_t *ogs_nas_plmn_id);
+        ogs_plmn_id_t *plmn_id, const ogs_nas_plmn_id_t *ogs_nas_plmn_id);
 
 /************************************
  * AMF_ID Structure                 */
@@ -166,14 +249,14 @@ typedef struct ogs_guami_s {
     ogs_amf_id_t amf_id;
 } ogs_guami_t;
 
-uint32_t ogs_amf_id_hexdump(ogs_amf_id_t *amf_id);
+uint32_t ogs_amf_id_hexdump(const ogs_amf_id_t *amf_id);
 
 ogs_amf_id_t *ogs_amf_id_from_string(ogs_amf_id_t *amf_id, const char *hex);
-char *ogs_amf_id_to_string(ogs_amf_id_t *amf_id);
+char *ogs_amf_id_to_string(const ogs_amf_id_t *amf_id);
 
-uint8_t ogs_amf_region_id(ogs_amf_id_t *amf_id);
-uint16_t ogs_amf_set_id(ogs_amf_id_t *amf_id);
-uint8_t ogs_amf_pointer(ogs_amf_id_t *amf_id);
+uint8_t ogs_amf_region_id(const ogs_amf_id_t *amf_id);
+uint16_t ogs_amf_set_id(const ogs_amf_id_t *amf_id);
+uint8_t ogs_amf_pointer(const ogs_amf_id_t *amf_id);
 
 ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
         uint8_t region, uint16_t set, uint8_t pointer);
@@ -190,12 +273,11 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
 #define OGS_ID_SUPI_TYPE_IMSI "imsi"
 #define OGS_ID_GPSI_TYPE_MSISDN "msisdn"
 #define OGS_ID_SUPI_TYPE_IMEISV "imeisv"
-char *ogs_id_get_type(char *str);
-char *ogs_id_get_value(char *str);
+char *ogs_id_get_type(const char *str);
+char *ogs_id_get_value(const char *str);
 
 /************************************
  * TAI Structure                    */
-#define OGS_MAX_NUM_OF_TAI              16
 typedef struct ogs_eps_tai_s {
     ogs_plmn_id_t plmn_id;
     uint16_t tac;
@@ -218,14 +300,13 @@ typedef struct ogs_nr_cgi_s {
 
 /************************************
  * S-NSSAI Structure                */
-#define OGS_MAX_NUM_OF_SLICE        8
 #define OGS_S_NSSAI_NO_SD_VALUE     0xffffff
 typedef struct ogs_s_nssai_s {
     uint8_t sst;
     ogs_uint24_t sd;
 } __attribute__ ((packed)) ogs_s_nssai_t;
 
-char *ogs_s_nssai_sd_to_string(ogs_uint24_t sd);
+char *ogs_s_nssai_sd_to_string(const ogs_uint24_t sd);
 ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex);
 
 /**************************************************
@@ -251,12 +332,12 @@ int ogs_sockaddr_to_ip(
         ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, ogs_ip_t *ip);
 
 char *ogs_ipv4_to_string(uint32_t addr);
-char *ogs_ipv6addr_to_string(uint8_t *addr6);
-char *ogs_ipv6prefix_to_string(uint8_t *addr6, uint8_t prefixlen);
-int ogs_ipv4_from_string(uint32_t *addr, char *string);
-int ogs_ipv6addr_from_string(uint8_t *addr6, char *string);
+char *ogs_ipv6addr_to_string(const uint8_t *addr6);
+char *ogs_ipv6prefix_to_string(const uint8_t *addr6, uint8_t prefixlen);
+int ogs_ipv4_from_string(uint32_t *addr, const char *string);
+int ogs_ipv6addr_from_string(uint8_t *addr6, const char *string);
 int ogs_ipv6prefix_from_string(
-        uint8_t *addr6, uint8_t *prefixlen, char *string);
+        uint8_t *addr6, uint8_t *prefixlen, const char *string);
 
 /**************************************************
  * GTPv1-C: TS 29.060 7.7.27 End User Address (EUA) */
@@ -331,6 +412,8 @@ typedef struct ogs_bitrate_s {
     uint64_t uplink;          /* bits per seconds */
 } ogs_bitrate_t;
 
+int ogs_check_br_conf(ogs_bitrate_t *br);
+
 /**********************************
  * QoS Structure                 */
 typedef struct ogs_qos_s {
@@ -373,6 +456,8 @@ typedef struct ogs_qos_s {
     ogs_bitrate_t   gbr;  /* Guaranteed Bit Rate (GBR) */
 } ogs_qos_t;
 
+int ogs_check_qos_conf(ogs_qos_t *qos);
+
 /**********************************
  * Flow  Structure               */
 #define OGS_FLOW_DOWNLINK_ONLY    1
@@ -413,8 +498,8 @@ typedef struct ogs_pcc_rule_s {
 #define OGS_STORE_PCC_RULE(__dST, __sRC) \
     do { \
         int __iNDEX; \
-        ogs_assert((__sRC)); \
-        ogs_assert((__dST)); \
+        ogs_assert((__sRC) != NULL); \
+        ogs_assert((__dST) != NULL); \
         OGS_PCC_RULE_FREE(__dST); \
         (__dST)->type = (__sRC)->type; \
         if ((__sRC)->name) { \
@@ -441,7 +526,7 @@ typedef struct ogs_pcc_rule_s {
 #define OGS_PCC_RULE_FREE(__pCCrULE) \
     do { \
         int __pCCrULE_iNDEX; \
-        ogs_assert((__pCCrULE)); \
+        ogs_assert((__pCCrULE) != NULL); \
         if ((__pCCrULE)->id) \
             ogs_free((__pCCrULE)->id); \
         if ((__pCCrULE)->name) \
@@ -450,9 +535,8 @@ typedef struct ogs_pcc_rule_s {
             __pCCrULE_iNDEX < (__pCCrULE)->num_of_flow; __pCCrULE_iNDEX++) { \
             OGS_FLOW_FREE(&((__pCCrULE)->flow[__pCCrULE_iNDEX])); \
         } \
-        (__pCCrULE)->num_of_flow = 0; \
+        memset((__pCCrULE), 0, sizeof(ogs_pcc_rule_t)); \
     } while(0)
-
 
 /**********************************
  * PDN Structure                 */
@@ -490,8 +574,8 @@ typedef struct ogs_session_s {
     ogs_ip_t smf_ip;
 } ogs_session_t;
 
-int ogs_fqdn_build(char *dst, char *src, int len);
-int ogs_fqdn_parse(char *dst, char *src, int len);
+int ogs_fqdn_build(char *dst, const char *src, int len);
+int ogs_fqdn_parse(char *dst, const char *src, int len);
 
 /**************************************************
  * Protocol Configuration Options Structure
@@ -685,6 +769,16 @@ typedef struct ogs_subscription_data_s {
 #define OGS_SUBSCRIBER_STATUS_SERVICE_GRANTED                   0
 #define OGS_SUBSCRIBER_STATUS_OPERATOR_DETERMINED_BARRING       1
     uint32_t                subscriber_status;
+#define OGS_OP_DET_BARRING_ALL_PS_BARRED                                            (1<<0)
+#define OGS_OP_DET_BARRING_ROAM_ACC_HPLMN_AP_BARRED                                 (1<<1)
+#define OGS_OP_DET_BARRING_ROAM_ACC_VPLMN_AP_BARRED                                 (1<<2)
+#define OGS_OP_DET_BARRING_ALL_OUT_CALLS                                            (1<<3)
+#define OGS_OP_DET_BARRING_ALL_OUT_INT_CALLS                                        (1<<4)
+#define OGS_OP_DET_BARRING_ALL_OUT_INT_CALLS_EXCL_HPLMN_COUNTRY                     (1<<5)
+#define OGS_OP_DET_BARRING_ALL_OUT_INTERZONE_CALLS                                  (1<<6)
+#define OGS_OP_DET_BARRING_ALL_OUT_INTERZONE_CALLS_EXCL_HPLMN_COUNTRY               (1<<7)
+#define OGS_OPD_ETEBARRING_OUT_INT_CALLS_EXCL_EXCL_HPLMN_COUNTRY_AND_INTERZONE_CALLS (1<<8)
+    uint32_t operator_determined_barring; /* 3GPP TS 29.272 7.3.30 */
 #define OGS_NETWORK_ACCESS_MODE_PACKET_AND_CIRCUIT              0
 #define OGS_NETWORK_ACCESS_MODE_RESERVED                        1
 #define OGS_NETWORK_ACCESS_MODE_ONLY_PACKET                     2
@@ -722,7 +816,39 @@ typedef struct ogs_session_data_s {
     int num_of_pcc_rule;
 } ogs_session_data_t;
 
-void ogs_session_data_free(ogs_session_data_t *session_data);
+#define OGS_STORE_SESSION_DATA(__dST, __sRC) \
+    do { \
+        int rv, j; \
+        ogs_assert((__dST) != NULL); \
+        ogs_assert((__sRC) != NULL); \
+        OGS_SESSION_DATA_FREE(__dST); \
+        if ((__sRC)->session.name) { \
+            (__dST)->session.name = ogs_strdup((__sRC)->session.name); \
+            ogs_assert((__dST)->session.name); \
+        } \
+        (__dST)->session.session_type = (__sRC)->session.session_type; \
+        memcpy(&(__dST)->session.ambr, &(__sRC)->session.ambr, \
+                sizeof((__dST)->session.ambr)); \
+        memcpy(&(__dST)->session.qos, &(__sRC)->session.qos, \
+                sizeof((__dST)->session.qos)); \
+        (__dST)->num_of_pcc_rule = (__sRC)->num_of_pcc_rule; \
+        for (j = 0; j < (__dST)->num_of_pcc_rule; j++) { \
+            rv = ogs_check_qos_conf(&(__sRC)->pcc_rule[j].qos); \
+            ogs_assert(rv == OGS_OK); \
+            OGS_STORE_PCC_RULE(&(__dST)->pcc_rule[j], &(__sRC)->pcc_rule[j]); \
+        } \
+    } while(0)
+
+#define OGS_SESSION_DATA_FREE(__sESSdATA) \
+    do { \
+        int i; \
+        ogs_assert((__sESSdATA) != NULL); \
+        if ((__sESSdATA)->session.name) \
+            ogs_free((__sESSdATA)->session.name); \
+        for (i = 0; i < (__sESSdATA)->num_of_pcc_rule; i++) \
+            OGS_PCC_RULE_FREE(&(__sESSdATA)->pcc_rule[i]); \
+        memset((__sESSdATA), 0, sizeof(ogs_session_data_t)); \
+    } while(0)
 
 typedef struct ogs_media_sub_component_s {
     uint32_t            flow_number;

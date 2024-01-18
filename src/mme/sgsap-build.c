@@ -199,6 +199,9 @@ ogs_pkbuf_t *sgsap_build_mo_csfb_indication(mme_ue_t *mme_ue)
     ogs_tlv_t *root = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
+    ogs_gtp2_uli_tai_t tai;
+    ogs_gtp2_uli_e_cgi_t e_cgi;
+
     ogs_assert(mme_ue);
     csmap = mme_ue->csmap;
     ogs_assert(csmap);
@@ -207,6 +210,20 @@ ogs_pkbuf_t *sgsap_build_mo_csfb_indication(mme_ue_t *mme_ue)
 
     root = ogs_tlv_add(NULL, OGS_TLV_MODE_T1_L1, SGSAP_IE_IMSI_TYPE,
             SGSAP_IE_IMSI_LEN, 0, &mme_ue->nas_mobile_identity_imsi);
+
+    memset(&tai, 0, sizeof(tai));
+    ogs_nas_from_plmn_id(&tai.nas_plmn_id, &mme_ue->tai.plmn_id);
+    tai.tac = htobe16(mme_ue->tai.tac);
+
+    ogs_tlv_add(root, OGS_TLV_MODE_T1_L1,
+            SGSAP_IE_TAI_TYPE, SGSAP_IE_TAI_LEN, 0, &tai);
+
+    memset(&e_cgi, 0, sizeof(e_cgi));
+    ogs_nas_from_plmn_id(&e_cgi.nas_plmn_id, &mme_ue->e_cgi.plmn_id);
+    e_cgi.cell_id = htobe32(mme_ue->e_cgi.cell_id);
+
+    ogs_tlv_add(root, OGS_TLV_MODE_T1_L1,
+            SGSAP_IE_E_CGI_TYPE, SGSAP_IE_E_CGI_LEN, 0, &e_cgi);
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     if (!pkbuf) {

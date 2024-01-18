@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -35,16 +35,35 @@ typedef struct ogs_sbi_header_s ogs_sbi_header_t;
 char *ogs_supi_from_suci(char *suci);
 char *ogs_supi_from_supi_or_suci(char *supi_or_suci);
 
-char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h);
+char *ogs_uridup(
+        OpenAPI_uri_scheme_e scheme,
+        char *fqdn, ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, uint16_t port,
+        ogs_sbi_header_t *h);
+uint16_t ogs_sbi_uri_port_from_scheme_and_addr(
+        OpenAPI_uri_scheme_e scheme, ogs_sockaddr_t *addr);
+char *ogs_sbi_sockaddr_uri(
+        OpenAPI_uri_scheme_e scheme,
+        ogs_sockaddr_t *sa_list, ogs_sbi_header_t *h);
 char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h);
 char *ogs_sbi_client_apiroot(ogs_sbi_client_t *client);
 char *ogs_sbi_client_uri(ogs_sbi_client_t *client, ogs_sbi_header_t *h);
 
+char *ogs_sbi_url_encode(const char *str);
+char *ogs_sbi_url_decode(const char *str);
+
 char *ogs_sbi_parse_uri(char *uri, const char *delim, char **saveptr);
 
 bool ogs_sbi_getaddr_from_uri(
-        OpenAPI_uri_scheme_e *scheme, ogs_sockaddr_t **addr, char *uri);
+        OpenAPI_uri_scheme_e *scheme,
+        char **fqdn, uint16_t *fqdn_port,
+        ogs_sockaddr_t **addr, ogs_sockaddr_t **addr6,
+        char *uri);
 bool ogs_sbi_getpath_from_uri(char **path, char *uri);
+
+char *ogs_sbi_client_resolve(
+        OpenAPI_uri_scheme_e scheme,
+        char *fqdn, uint16_t fqdn_port,
+        const char **resolve, int num_of_resolve);
 
 #define OGS_SBI_BITRATE_BPS     0
 #define OGS_SBI_BITRATE_KBPS    1
@@ -73,6 +92,12 @@ OpenAPI_plmn_id_t *ogs_sbi_build_plmn_id(ogs_plmn_id_t *plmn_id);
 bool ogs_sbi_parse_plmn_id(
         ogs_plmn_id_t *plmn_id, OpenAPI_plmn_id_t *PlmnId);
 void ogs_sbi_free_plmn_id(OpenAPI_plmn_id_t *PlmnId);
+
+OpenAPI_list_t *ogs_sbi_build_plmn_list(
+        ogs_plmn_id_t *plmn_list, int num_of_plmn_list);
+int ogs_sbi_parse_plmn_list(
+        ogs_plmn_id_t *plmn_list, OpenAPI_list_t *PlmnList);
+void ogs_sbi_free_plmn_list(OpenAPI_list_t *PlmnList);
 
 OpenAPI_plmn_id_nid_t *ogs_sbi_build_plmn_id_nid(ogs_plmn_id_t *plmn_id);
 bool ogs_sbi_parse_plmn_id_nid(

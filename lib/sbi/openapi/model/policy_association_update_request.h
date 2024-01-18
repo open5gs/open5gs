@@ -43,6 +43,7 @@ typedef struct OpenAPI_policy_association_update_request_s {
     struct OpenAPI_wireline_service_area_restriction_s *wl_serv_area_res;
     bool is_rfsp;
     int rfsp;
+    bool is_smf_sel_info_null;
     struct OpenAPI_smf_selection_data_s *smf_sel_info;
     struct OpenAPI_ambr_s *ue_ambr;
     OpenAPI_list_t *ue_slice_mbrs;
@@ -54,8 +55,10 @@ typedef struct OpenAPI_policy_association_update_request_s {
     OpenAPI_list_t *access_types;
     OpenAPI_list_t *rat_types;
     OpenAPI_list_t *n3g_allowed_snssais;
+    bool is_trace_req_null;
     struct OpenAPI_trace_data_s *trace_req;
     struct OpenAPI_guami_s *guami;
+    bool is_nwdaf_datas_null;
     OpenAPI_list_t *nwdaf_datas;
 } OpenAPI_policy_association_update_request_t;
 
@@ -69,6 +72,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res,
     bool is_rfsp,
     int rfsp,
+    bool is_smf_sel_info_null,
     OpenAPI_smf_selection_data_t *smf_sel_info,
     OpenAPI_ambr_t *ue_ambr,
     OpenAPI_list_t *ue_slice_mbrs,
@@ -80,8 +84,10 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     OpenAPI_list_t *access_types,
     OpenAPI_list_t *rat_types,
     OpenAPI_list_t *n3g_allowed_snssais,
+    bool is_trace_req_null,
     OpenAPI_trace_data_t *trace_req,
     OpenAPI_guami_t *guami,
+    bool is_nwdaf_datas_null,
     OpenAPI_list_t *nwdaf_datas
 );
 void OpenAPI_policy_association_update_request_free(OpenAPI_policy_association_update_request_t *policy_association_update_request);

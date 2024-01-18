@@ -34,6 +34,7 @@ typedef struct OpenAPI_traffic_influ_data_patch_s {
     int traff_corre_ind;
     char *valid_start_time;
     char *valid_end_time;
+    bool is_temp_validities_null;
     OpenAPI_list_t *temp_validities;
     struct OpenAPI_network_area_info_2_s *nw_area_info;
     char *up_path_chg_notif_uri;
@@ -42,10 +43,12 @@ typedef struct OpenAPI_traffic_influ_data_patch_s {
     int af_ack_ind;
     bool is_addr_preser_ind;
     int addr_preser_ind;
+    bool is_max_allowed_up_lat_null;
     bool is_max_allowed_up_lat;
     int max_allowed_up_lat;
     bool is_sim_conn_ind;
     int sim_conn_ind;
+    bool is_sim_conn_term_null;
     bool is_sim_conn_term;
     int sim_conn_term;
 } OpenAPI_traffic_influ_data_patch_t;
@@ -61,6 +64,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     int traff_corre_ind,
     char *valid_start_time,
     char *valid_end_time,
+    bool is_temp_validities_null,
     OpenAPI_list_t *temp_validities,
     OpenAPI_network_area_info_2_t *nw_area_info,
     char *up_path_chg_notif_uri,
@@ -69,10 +73,12 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     int af_ack_ind,
     bool is_addr_preser_ind,
     int addr_preser_ind,
+    bool is_max_allowed_up_lat_null,
     bool is_max_allowed_up_lat,
     int max_allowed_up_lat,
     bool is_sim_conn_ind,
     int sim_conn_ind,
+    bool is_sim_conn_term_null,
     bool is_sim_conn_term,
     int sim_conn_term
 );

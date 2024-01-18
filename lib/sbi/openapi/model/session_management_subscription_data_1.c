@@ -11,6 +11,7 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     OpenAPI_list_t* shared_vn_group_data_ids,
     char *shared_dnn_configurations_id,
     OpenAPI_odb_packet_services_e odb_packet_services,
+    bool is_trace_data_null,
     OpenAPI_trace_data_t *trace_data,
     char *shared_trace_data_id,
     OpenAPI_list_t* expected_ue_behaviours_list,
@@ -28,6 +29,7 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     session_management_subscription_data_1_local_var->shared_vn_group_data_ids = shared_vn_group_data_ids;
     session_management_subscription_data_1_local_var->shared_dnn_configurations_id = shared_dnn_configurations_id;
     session_management_subscription_data_1_local_var->odb_packet_services = odb_packet_services;
+    session_management_subscription_data_1_local_var->is_trace_data_null = is_trace_data_null;
     session_management_subscription_data_1_local_var->trace_data = trace_data;
     session_management_subscription_data_1_local_var->shared_trace_data_id = shared_trace_data_id;
     session_management_subscription_data_1_local_var->expected_ue_behaviours_list = expected_ue_behaviours_list;
@@ -240,6 +242,11 @@ cJSON *OpenAPI_session_management_subscription_data_1_convertToJSON(OpenAPI_sess
         ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [trace_data]");
         goto end;
     }
+    } else if (session_management_subscription_data_1->is_trace_data_null) {
+        if (cJSON_AddNullToObject(item, "traceData") == NULL) {
+            ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [trace_data]");
+            goto end;
+        }
     }
 
     if (session_management_subscription_data_1->shared_trace_data_id) {
@@ -452,10 +459,12 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
 
     trace_data = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "traceData");
     if (trace_data) {
+    if (!cJSON_IsNull(trace_data)) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
     if (!trace_data_local_nonprim) {
         ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_data]");
         goto end;
+    }
     }
     }
 
@@ -542,6 +551,7 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
         shared_vn_group_data_ids ? shared_vn_group_data_idsList : NULL,
         shared_dnn_configurations_id && !cJSON_IsNull(shared_dnn_configurations_id) ? ogs_strdup(shared_dnn_configurations_id->valuestring) : NULL,
         odb_packet_services ? odb_packet_servicesVariable : 0,
+        trace_data && cJSON_IsNull(trace_data) ? true : false,
         trace_data ? trace_data_local_nonprim : NULL,
         shared_trace_data_id && !cJSON_IsNull(shared_trace_data_id) ? ogs_strdup(shared_trace_data_id->valuestring) : NULL,
         expected_ue_behaviours_list ? expected_ue_behaviours_listList : NULL,

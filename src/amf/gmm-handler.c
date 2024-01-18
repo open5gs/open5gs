@@ -153,6 +153,15 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
                 mobile_identity_suci->protection_scheme_id);
             return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
         }
+        ogs_nas_to_plmn_id(&amf_ue->home_plmn_id,
+                &mobile_identity_suci->nas_plmn_id);
+
+        gmm_cause = gmm_cause_from_access_control(&amf_ue->home_plmn_id);
+        if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
+            ogs_error("Rejected by PLMN-ID access control");
+            return gmm_cause;
+        }
+
         amf_ue_set_suci(amf_ue, mobile_identity);
         ogs_info("[%s]    SUCI", amf_ue->suci);
         break;
@@ -288,18 +297,6 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
     memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
     amf_ue->ue_location_timestamp = ogs_time_now();
-
-    /* Check PLMN-ID access control */
-    gmm_cause = gmm_cause_from_access_control(&amf_ue->nr_tai.plmn_id);
-    if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in TAI) access control");
-        return gmm_cause;
-    }
-    gmm_cause = gmm_cause_from_access_control(&amf_ue->nr_cgi.plmn_id);
-    if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in CGI) access control");
-        return gmm_cause;
-    }
 
     /* Check TAI */
     served_tai_index = amf_find_served_tai(&amf_ue->nr_tai);
@@ -539,7 +536,6 @@ ogs_nas_5gmm_cause_t gmm_handle_service_request(amf_ue_t *amf_ue,
         ogs_nas_5gs_service_request_t *service_request)
 {
     int served_tai_index = 0;
-    uint8_t gmm_cause;
 
     ran_ue_t *ran_ue = NULL;
     ogs_nas_key_set_identifier_t *ngksi = NULL;
@@ -633,18 +629,6 @@ ogs_nas_5gmm_cause_t gmm_handle_service_request(amf_ue_t *amf_ue,
     memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
     amf_ue->ue_location_timestamp = ogs_time_now();
-
-    /* Check PLMN-ID access control */
-    gmm_cause = gmm_cause_from_access_control(&amf_ue->nr_tai.plmn_id);
-    if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in TAI) access control");
-        return gmm_cause;
-    }
-    gmm_cause = gmm_cause_from_access_control(&amf_ue->nr_cgi.plmn_id);
-    if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in CGI) access control");
-        return gmm_cause;
-    }
 
     /* Check TAI */
     served_tai_index = amf_find_served_tai(&amf_ue->nr_tai);
@@ -879,10 +863,11 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
     return OGS_OK;
 }
 
-int gmm_handle_identity_response(amf_ue_t *amf_ue,
+ogs_nas_5gmm_cause_t gmm_handle_identity_response(amf_ue_t *amf_ue,
         ogs_nas_5gs_identity_response_t *identity_response)
 {
     ran_ue_t *ran_ue = NULL;
+    uint8_t gmm_cause;
 
     ogs_nas_5gs_mobile_identity_t *mobile_identity = NULL;
     ogs_nas_5gs_mobile_identity_suci_t *mobile_identity_suci = NULL;
@@ -898,7 +883,7 @@ int gmm_handle_identity_response(amf_ue_t *amf_ue,
 
     if (!mobile_identity->length || !mobile_identity->buffer) {
         ogs_error("No Mobile Identity");
-        return OGS_ERROR;
+        return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
     }
 
     mobile_identity_header =
@@ -921,8 +906,17 @@ int gmm_handle_identity_response(amf_ue_t *amf_ue,
                 OGS_PROTECTION_SCHEME_PROFILE_B) {
             ogs_error("Invalid ProtectionSchemeID(%d) in SUCI",
                 mobile_identity_suci->protection_scheme_id);
-            return OGS_ERROR;
+            return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
         }
+        ogs_nas_to_plmn_id(&amf_ue->home_plmn_id,
+                &mobile_identity_suci->nas_plmn_id);
+
+        gmm_cause = gmm_cause_from_access_control(&amf_ue->home_plmn_id);
+        if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
+            ogs_error("Rejected by PLMN-ID access control");
+            return gmm_cause;
+        }
+
         amf_ue_set_suci(amf_ue, mobile_identity);
         ogs_info("[%s]    SUCI", amf_ue->suci);
     } else {
@@ -930,7 +924,7 @@ int gmm_handle_identity_response(amf_ue_t *amf_ue,
                 mobile_identity_header->type);
     }
 
-    return OGS_OK;
+    return OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
 }
 
 ogs_nas_5gmm_cause_t gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
@@ -1022,7 +1016,7 @@ ogs_nas_5gmm_cause_t gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
     return OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
 }
 
-int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
+int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
         ogs_nas_5gs_ul_nas_transport_t *ul_nas_transport)
 {
     int r;
@@ -1037,7 +1031,8 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
     ogs_nas_dnn_t *dnn = NULL;
     ogs_nas_5gsm_header_t *gsm_header = NULL;
 
-    ogs_assert(amf_ue);
+    ogs_assert(amf_ue_cycle(amf_ue));
+    ogs_assert(ran_ue_cycle(ran_ue));
     ogs_assert(ul_nas_transport);
 
     payload_container_type = &ul_nas_transport->payload_container_type;
@@ -1244,13 +1239,26 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             sess->s_nssai.sst = selected_slice->s_nssai.sst;
             sess->s_nssai.sd.v = selected_slice->s_nssai.sd.v;
 
-            ogs_info("UE SUPI[%s] DNN[%s] S_NSSAI[SST:%d SD:0x%x]",
-                amf_ue->supi, sess->dnn, sess->s_nssai.sst, sess->s_nssai.sd.v);
+            ogs_info("UE SUPI[%s] DNN[%s] S_NSSAI[SST:%d SD:0x%x] "
+                    "smContextRef [%s]",
+                amf_ue->supi, sess->dnn, sess->s_nssai.sst, sess->s_nssai.sd.v,
+                sess->sm_context_ref ? sess->sm_context_ref : "NULL");
 
             if (!SESSION_CONTEXT_IN_SMF(sess)) {
                 ogs_sbi_nf_instance_t *nf_instance = NULL;
                 ogs_sbi_service_type_e service_type =
                     OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION;
+
+                ogs_sbi_discovery_option_t *discovery_option = NULL;
+
+                discovery_option = ogs_sbi_discovery_option_new();
+                ogs_assert(discovery_option);
+
+                ogs_sbi_discovery_option_add_snssais(
+                        discovery_option, &sess->s_nssai);
+                ogs_sbi_discovery_option_set_dnn(discovery_option, sess->dnn);
+                ogs_sbi_discovery_option_set_tai(
+                        discovery_option, &amf_ue->nr_tai);
 
                 nf_instance = sess->sbi.
                     service_type_array[service_type].nf_instance;
@@ -1263,21 +1271,29 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                             &sess->sbi,
                             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION,
                             requester_nf_type,
-                            NULL);
+                            discovery_option);
                     nf_instance = sess->sbi.
                         service_type_array[service_type].nf_instance;
-                }
+
+                    if (!nf_instance)
+                        ogs_info("No SMF Instance");
+                    else
+                        ogs_info("SMF Instance [%s]", nf_instance->id);
+                } else
+                    ogs_info("SMF Instance [%s]", nf_instance->id);
 
                 if (nf_instance) {
                     r = amf_sess_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION,
+                            discovery_option,
                             amf_nsmf_pdusession_build_create_sm_context,
                             sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
                 } else {
                     r = amf_sess_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NNSSF_NSSELECTION, NULL,
+                            OGS_SBI_SERVICE_TYPE_NNSSF_NSSELECTION,
+                            discovery_option,
                             amf_nnssf_nsselection_build_get, sess, 0, NULL);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
@@ -1303,7 +1319,7 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             if (!SESSION_CONTEXT_IN_SMF(sess)) {
                 ogs_error("[%s:%d] Session Context is not in SMF [%d]",
                     amf_ue->supi, sess->psi, gsm_header->message_type);
-                r = nas_5gs_send_back_gsm_message(sess,
+                r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                         OGS_5GMM_CAUSE_DNN_NOT_SUPPORTED_OR_NOT_SUBSCRIBED_IN_THE_SLICE, 0);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);

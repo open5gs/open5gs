@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -39,7 +39,7 @@ void scp_context_init(void)
     ogs_log_install_domain(&__scp_log_domain, "scp", ogs_core()->log.level);
 
 #define MAX_NUM_OF_SCP_ASSOC 8
-    max_num_of_scp_assoc = ogs_app()->max.ue * MAX_NUM_OF_SCP_ASSOC;
+    max_num_of_scp_assoc = ogs_global_conf()->max.ue * MAX_NUM_OF_SCP_ASSOC;
 
     ogs_pool_init(&scp_assoc_pool, max_num_of_scp_assoc);
 
@@ -64,6 +64,48 @@ scp_context_t *scp_self(void)
 
 static int scp_context_prepare(void)
 {
+    ogs_sbi_server_t *server = NULL;
+
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+    ogs_sbi_nf_info_t *nf_info = NULL;
+    ogs_sbi_scp_info_t *scp_info = NULL;
+
+    /*********************************************************************
+     * SCP Port Configuration
+     *********************************************************************/
+    nf_instance = ogs_sbi_self()->nf_instance;
+    ogs_assert(nf_instance);
+
+    nf_info = ogs_sbi_nf_info_add(
+            &nf_instance->nf_info_list, OpenAPI_nf_type_SCP);
+    if (!nf_info) {
+        ogs_error("ogs_sbi_nf_info_add() failed");
+        return OGS_ERROR;
+    }
+
+    scp_info = &nf_info->scp;
+
+    for (server = ogs_sbi_server_first();
+            server; server = ogs_sbi_server_next(server)) {
+        ogs_sockaddr_t *advertise = NULL;
+
+        advertise = server->advertise;
+        if (!advertise)
+            advertise = server->node.addr;
+        ogs_assert(advertise);
+
+        if (server->scheme == OpenAPI_uri_scheme_https) {
+            scp_info->https.presence = true;
+            scp_info->https.port = OGS_PORT(advertise);
+        } else if (server->scheme == OpenAPI_uri_scheme_http) {
+            scp_info->http.presence = true;
+            scp_info->http.port = OGS_PORT(advertise);
+        } else {
+            ogs_error("Unknown scheme[%d]", server->scheme);
+            ogs_assert_if_reached();
+        }
+    }
+
     return OGS_OK;
 }
 
@@ -94,7 +136,13 @@ int scp_context_parse_config(void)
             while (ogs_yaml_iter_next(&scp_iter)) {
                 const char *scp_key = ogs_yaml_iter_key(&scp_iter);
                 ogs_assert(scp_key);
-                if (!strcmp(scp_key, "sbi")) {
+                if (!strcmp(scp_key, "default")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(scp_key, "sbi")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(scp_key, "nrf")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(scp_key, "scp")) {
                     /* handle config in sbi library */
                 } else if (!strcmp(scp_key, "service_name")) {
                     /* handle config in sbi library */
@@ -111,7 +159,7 @@ int scp_context_parse_config(void)
                     nf_instance = ogs_sbi_self()->nf_instance;
                     ogs_assert(nf_instance);
 
-                    nf_info = ogs_sbi_nf_info_add(
+                    nf_info = ogs_sbi_nf_info_find(
                                 &nf_instance->nf_info_list,
                                     OpenAPI_nf_type_SCP);
                     ogs_assert(nf_info);
@@ -192,15 +240,19 @@ int scp_context_parse_config(void)
                                                         port_key);
                                         }
                                     } else if (!strcmp(domain_key, "name")) {
-                                        scp_info->domain[
-                                            scp_info->num_of_domain].
-                                            name = (char *)ogs_yaml_iter_value(
+                                        const char *v = ogs_yaml_iter_value(
                                                     &domain_iter);
+                                        if (v)
+                                            scp_info->domain[
+                                                scp_info->num_of_domain].
+                                                name = ogs_strdup(v);
                                     } else if (!strcmp(domain_key, "fqdn")) {
-                                        scp_info->domain[
-                                            scp_info->num_of_domain].
-                                            fqdn = (char *)ogs_yaml_iter_value(
+                                        const char *v = ogs_yaml_iter_value(
                                                     &domain_iter);
+                                        if (v)
+                                            scp_info->domain[
+                                                scp_info->num_of_domain].
+                                                fqdn = ogs_strdup(v);
                                     } else
                                         ogs_warn("unknown key `%s`",
                                                 domain_key);
@@ -268,6 +320,9 @@ scp_assoc_t *scp_assoc_add(ogs_sbi_stream_t *stream)
 
     assoc->stream = stream;
 
+    assoc->discovery_option = ogs_sbi_discovery_option_new();
+    ogs_assert(assoc->discovery_option);
+
     ogs_list_add(&self.assoc_list, assoc);
 
     return assoc;
@@ -279,10 +334,16 @@ void scp_assoc_remove(scp_assoc_t *assoc)
 
     ogs_list_remove(&self.assoc_list, assoc);
 
+    ogs_assert(assoc->discovery_option);
+    ogs_sbi_discovery_option_free(assoc->discovery_option);
+
     if (assoc->client)
         ogs_sbi_client_remove(assoc->client);
     if (assoc->nrf_client)
         ogs_sbi_client_remove(assoc->nrf_client);
+
+    if (assoc->target_apiroot)
+        ogs_free(assoc->target_apiroot);
 
     ogs_pool_free(&scp_assoc_pool, assoc);
 }
@@ -293,9 +354,4 @@ void scp_assoc_remove_all(void)
 
     ogs_list_for_each_safe(&self.assoc_list, next_assoc, assoc)
         scp_assoc_remove(assoc);
-}
-
-scp_assoc_t *scp_assoc_find(uint32_t index)
-{
-    return ogs_pool_find(&scp_assoc_pool, index);
 }

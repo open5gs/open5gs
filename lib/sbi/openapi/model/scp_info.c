@@ -657,10 +657,15 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
             }
             localEnum = OpenAPI_scp_capability_FromString(scp_capabilities_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_scp_capability_FromString(scp_capabilities_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"scp_capabilities\" is not supported. Ignoring it ...",
+                         scp_capabilities_local->valuestring);
+            } else {
+                OpenAPI_list_add(scp_capabilitiesList, (void *)localEnum);
             }
-            OpenAPI_list_add(scp_capabilitiesList, (void *)localEnum);
+        }
+        if (scp_capabilitiesList->count == 0) {
+            ogs_error("OpenAPI_scp_info_parseFromJSON() failed: Expected scp_capabilitiesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

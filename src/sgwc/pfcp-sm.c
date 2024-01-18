@@ -85,7 +85,7 @@ void sgwc_pfcp_state_will_associate(ogs_fsm_t *s, sgwc_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         if (node->t_association) {
             ogs_timer_start(node->t_association,
-                    ogs_app()->time.message.pfcp.association_interval);
+                    ogs_local_conf()->time.message.pfcp.association_interval);
 
             ogs_pfcp_cp_send_association_setup_request(node, node_timeout);
         }
@@ -103,12 +103,12 @@ void sgwc_pfcp_state_will_associate(ogs_fsm_t *s, sgwc_event_t *e)
             node = e->pfcp_node;
             ogs_assert(node);
 
-            ogs_warn("Retry to association with peer [%s]:%d failed",
+            ogs_warn("Retry association with peer [%s]:%d failed",
                         OGS_ADDR(addr, buf), OGS_PORT(addr));
 
             ogs_assert(node->t_association);
             ogs_timer_start(node->t_association,
-                ogs_app()->time.message.pfcp.association_interval);
+                ogs_local_conf()->time.message.pfcp.association_interval);
 
             ogs_pfcp_cp_send_association_setup_request(node, node_timeout);
             break;
@@ -184,7 +184,7 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
             OGS_ADDR(&node->addr, buf),
             OGS_PORT(&node->addr));
         ogs_timer_start(node->t_no_heartbeat,
-                ogs_app()->time.message.pfcp.no_heartbeat_duration);
+                ogs_local_conf()->time.message.pfcp.no_heartbeat_duration);
         ogs_assert(OGS_OK ==
             ogs_pfcp_send_heartbeat_request(node, node_timeout));
 

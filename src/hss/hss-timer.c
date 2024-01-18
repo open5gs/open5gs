@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,25 +17,39 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-dbi.h"
+#include "hss-timer.h"
+#include "hss-event.h"
+#include "ogs-app.h"
+
+const char *hss_timer_get_name(hss_timer_e id)
+{
+    switch (id) {
+    case HSS_TIMER_DBI_POLL_CHANGE_STREAM:
+        return "HSS_TIMER_DBI_POLL_CHANGE_STREAM";
+    default: 
+       break;
+    }
+
+    return "UNKNOWN_TIMER";
+}
 
 static void timer_send_event(int timer_id, void *data)
 {
     int rv;
-    ogs_event_t *e = NULL;
+    hss_event_t *e = NULL;
 
-    e = ogs_event_new(OGS_EVENT_DBI_POLL_TIMER);
+    e = hss_event_new(HSS_EVENT_DBI_POLL_TIMER);
     ogs_assert(e);
     e->timer_id = timer_id;
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        ogs_event_free(e);
+        hss_event_free(e);
     }
 }
 
-void ogs_timer_dbi_poll_change_stream(void *data)
+void hss_timer_dbi_poll_change_stream(void *data)
 {
-    timer_send_event(OGS_TIMER_DBI_POLL_CHANGE_STREAM, data);
+    timer_send_event(HSS_TIMER_DBI_POLL_CHANGE_STREAM, data);
 }

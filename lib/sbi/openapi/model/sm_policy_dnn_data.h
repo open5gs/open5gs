@@ -52,6 +52,7 @@ typedef struct OpenAPI_sm_policy_dnn_data_s {
     bool is_mcs_priority_level;
     int mcs_priority_level;
     OpenAPI_list_t* pra_infos;
+    bool is_bdt_ref_ids_null;
     OpenAPI_list_t* bdt_ref_ids;
     bool is_loc_rout_not_allowed;
     int loc_rout_not_allowed;
@@ -88,6 +89,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_create(
     bool is_mcs_priority_level,
     int mcs_priority_level,
     OpenAPI_list_t* pra_infos,
+    bool is_bdt_ref_ids_null,
     OpenAPI_list_t* bdt_ref_ids,
     bool is_loc_rout_not_allowed,
     int loc_rout_not_allowed

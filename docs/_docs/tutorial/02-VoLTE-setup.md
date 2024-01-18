@@ -457,7 +457,7 @@ $ mysql
 
 ```
 $ cd ~ && git clone https://github.com/herlesupreeth/Kamailio_IMS_Config
-$ cd Kamailio_IMS_Config
+$ cd Kamailio_IMS_Config && git checkout 5.3
 $ cp -r kamailio_icscf /etc
 $ cp -r kamailio_pcscf /etc
 $ cp -r kamailio_scscf /etc

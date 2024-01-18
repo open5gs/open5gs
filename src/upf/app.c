@@ -25,7 +25,7 @@ int app_initialize(const char *const argv[])
 
     rv = upf_initialize();
     if (rv != OGS_OK) {
-        ogs_error("Failed to intialize UPF");
+        ogs_error("Failed to initialize UPF");
         return rv;
     }
     ogs_info("UPF initialize...done");

@@ -104,6 +104,34 @@ int ogs_gtp1_gsn_addr_to_ip(const ogs_gtp1_gsn_addr_t *gsnaddr, uint16_t gsnaddr
     return OGS_OK;
 }
 
+int ogs_gtp1_pdu_session_type_to_eua_ietf_type(uint8_t session_type)
+{
+    switch (session_type) {
+    case OGS_PDU_SESSION_TYPE_IPV4:
+        return OGS_PDP_EUA_IETF_IPV4;
+    case OGS_PDU_SESSION_TYPE_IPV6:
+        return OGS_PDP_EUA_IETF_IPV6;
+    case OGS_PDU_SESSION_TYPE_IPV4V6:
+        return OGS_PDP_EUA_IETF_IPV4V6;
+    default:
+        return OGS_ERROR;
+    }
+}
+
+int ogs_gtp1_eua_ietf_type_to_pdu_session_type(uint8_t eua_ietf_type)
+{
+    switch (eua_ietf_type) {
+    case OGS_PDP_EUA_IETF_IPV4:
+        return OGS_PDU_SESSION_TYPE_IPV4;
+    case OGS_PDP_EUA_IETF_IPV6:
+        return OGS_PDU_SESSION_TYPE_IPV6;
+    case OGS_PDP_EUA_IETF_IPV4V6:
+        return OGS_PDU_SESSION_TYPE_IPV4V6;
+    default:
+        return OGS_ERROR;
+    }
+}
+
 int ogs_gtp1_eua_to_ip(const ogs_eua_t *eua, uint16_t eua_len, ogs_ip_t *ip,
         uint8_t *pdu_session_type)
 {

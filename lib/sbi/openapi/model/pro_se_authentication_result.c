@@ -6,6 +6,7 @@
 
 OpenAPI_pro_se_authentication_result_t *OpenAPI_pro_se_authentication_result_create(
     char *knr_pro_se,
+    bool is_nonce2_null,
     char *nonce2,
     char *supported_features
 )
@@ -14,6 +15,7 @@ OpenAPI_pro_se_authentication_result_t *OpenAPI_pro_se_authentication_result_cre
     ogs_assert(pro_se_authentication_result_local_var);
 
     pro_se_authentication_result_local_var->knr_pro_se = knr_pro_se;
+    pro_se_authentication_result_local_var->is_nonce2_null = is_nonce2_null;
     pro_se_authentication_result_local_var->nonce2 = nonce2;
     pro_se_authentication_result_local_var->supported_features = supported_features;
 
@@ -65,6 +67,11 @@ cJSON *OpenAPI_pro_se_authentication_result_convertToJSON(OpenAPI_pro_se_authent
         ogs_error("OpenAPI_pro_se_authentication_result_convertToJSON() failed [nonce2]");
         goto end;
     }
+    } else if (pro_se_authentication_result->is_nonce2_null) {
+        if (cJSON_AddNullToObject(item, "nonce2") == NULL) {
+            ogs_error("OpenAPI_pro_se_authentication_result_convertToJSON() failed [nonce2]");
+            goto end;
+        }
     }
 
     if (pro_se_authentication_result->supported_features) {
@@ -95,9 +102,11 @@ OpenAPI_pro_se_authentication_result_t *OpenAPI_pro_se_authentication_result_par
 
     nonce2 = cJSON_GetObjectItemCaseSensitive(pro_se_authentication_resultJSON, "nonce2");
     if (nonce2) {
+    if (!cJSON_IsNull(nonce2)) {
     if (!cJSON_IsString(nonce2) && !cJSON_IsNull(nonce2)) {
         ogs_error("OpenAPI_pro_se_authentication_result_parseFromJSON() failed [nonce2]");
         goto end;
+    }
     }
     }
 
@@ -111,6 +120,7 @@ OpenAPI_pro_se_authentication_result_t *OpenAPI_pro_se_authentication_result_par
 
     pro_se_authentication_result_local_var = OpenAPI_pro_se_authentication_result_create (
         knr_pro_se && !cJSON_IsNull(knr_pro_se) ? ogs_strdup(knr_pro_se->valuestring) : NULL,
+        nonce2 && cJSON_IsNull(nonce2) ? true : false,
         nonce2 && !cJSON_IsNull(nonce2) ? ogs_strdup(nonce2->valuestring) : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
     );

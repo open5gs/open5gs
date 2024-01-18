@@ -26,6 +26,7 @@ typedef struct OpenAPI_pcf_for_pdu_session_info_s {
     struct OpenAPI_snssai_s *snssai;
     char *pcf_fqdn;
     OpenAPI_list_t *pcf_ip_end_points;
+    bool is_ipv4_addr_null;
     char *ipv4_addr;
     char *ip_domain;
     OpenAPI_list_t *ipv6_prefixes;
@@ -40,6 +41,7 @@ OpenAPI_pcf_for_pdu_session_info_t *OpenAPI_pcf_for_pdu_session_info_create(
     OpenAPI_snssai_t *snssai,
     char *pcf_fqdn,
     OpenAPI_list_t *pcf_ip_end_points,
+    bool is_ipv4_addr_null,
     char *ipv4_addr,
     char *ip_domain,
     OpenAPI_list_t *ipv6_prefixes,

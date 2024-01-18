@@ -8,6 +8,7 @@ OpenAPI_patch_item_t *OpenAPI_patch_item_create(
     OpenAPI_patch_operation_e op,
     char *path,
     char *from,
+    bool is_value_null,
     OpenAPI_any_type_t *value
 )
 {
@@ -17,6 +18,7 @@ OpenAPI_patch_item_t *OpenAPI_patch_item_create(
     patch_item_local_var->op = op;
     patch_item_local_var->path = path;
     patch_item_local_var->from = from;
+    patch_item_local_var->is_value_null = is_value_null;
     patch_item_local_var->value = value;
 
     return patch_item_local_var;
@@ -91,6 +93,11 @@ cJSON *OpenAPI_patch_item_convertToJSON(OpenAPI_patch_item_t *patch_item)
         ogs_error("OpenAPI_patch_item_convertToJSON() failed [value]");
         goto end;
     }
+    } else if (patch_item->is_value_null) {
+        if (cJSON_AddNullToObject(item, "value") == NULL) {
+            ogs_error("OpenAPI_patch_item_convertToJSON() failed [value]");
+            goto end;
+        }
     }
 
 end:
@@ -138,13 +145,16 @@ OpenAPI_patch_item_t *OpenAPI_patch_item_parseFromJSON(cJSON *patch_itemJSON)
 
     value = cJSON_GetObjectItemCaseSensitive(patch_itemJSON, "value");
     if (value) {
+    if (!cJSON_IsNull(value)) {
     value_local_object = OpenAPI_any_type_parseFromJSON(value);
+    }
     }
 
     patch_item_local_var = OpenAPI_patch_item_create (
         opVariable,
         ogs_strdup(path->valuestring),
         from && !cJSON_IsNull(from) ? ogs_strdup(from->valuestring) : NULL,
+        value && cJSON_IsNull(value) ? true : false,
         value ? value_local_object : NULL
     );
 

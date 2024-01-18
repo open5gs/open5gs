@@ -40,6 +40,8 @@ CHOICE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         value = per_get_few_bits(pd, 1);
         if(value < 0) ASN__DECODE_STARVED;
         if(value) ct = 0;  /* Not restricted */
+        if((unsigned)value >= td->elements_count)
+            ASN__DECODE_FAILED;
     }
 
     if(ct && ct->range_bits >= 0) {
@@ -53,8 +55,8 @@ CHOICE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         if(specs->ext_start == -1)
             ASN__DECODE_FAILED;
 
-        if (ct && ct->upper_bound >= ct->lower_bound) {
-            value = aper_get_nsnnwn(pd, ct->upper_bound - ct->lower_bound + 1);
+        if(specs && specs->tag2el_count > specs->ext_start) {
+            value = aper_get_nsnnwn(pd, specs->tag2el_count - specs->ext_start); /* extension elements range */
             if(value < 0) ASN__DECODE_STARVED;
             value += specs->ext_start;
             if((unsigned)value >= td->elements_count)

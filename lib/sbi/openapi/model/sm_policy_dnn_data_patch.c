@@ -6,6 +6,7 @@
 
 OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_create(
     char *dnn,
+    bool is_bdt_ref_ids_null,
     OpenAPI_list_t* bdt_ref_ids
 )
 {
@@ -13,6 +14,7 @@ OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_create(
     ogs_assert(sm_policy_dnn_data_patch_local_var);
 
     sm_policy_dnn_data_patch_local_var->dnn = dnn;
+    sm_policy_dnn_data_patch_local_var->is_bdt_ref_ids_null = is_bdt_ref_ids_null;
     sm_policy_dnn_data_patch_local_var->bdt_ref_ids = bdt_ref_ids;
 
     return sm_policy_dnn_data_patch_local_var;
@@ -86,6 +88,11 @@ cJSON *OpenAPI_sm_policy_dnn_data_patch_convertToJSON(OpenAPI_sm_policy_dnn_data
             }
         }
     }
+    } else if (sm_policy_dnn_data_patch->is_bdt_ref_ids_null) {
+        if (cJSON_AddNullToObject(item, "bdtRefIds") == NULL) {
+            ogs_error("OpenAPI_sm_policy_dnn_data_patch_convertToJSON() failed [bdt_ref_ids]");
+            goto end;
+        }
     }
 
 end:
@@ -111,6 +118,7 @@ OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_parseFromJS
 
     bdt_ref_ids = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_data_patchJSON, "bdtRefIds");
     if (bdt_ref_ids) {
+    if (!cJSON_IsNull(bdt_ref_ids)) {
         cJSON *bdt_ref_ids_local_map = NULL;
         if (!cJSON_IsObject(bdt_ref_ids) && !cJSON_IsNull(bdt_ref_ids)) {
             ogs_error("OpenAPI_sm_policy_dnn_data_patch_parseFromJSON() failed [bdt_ref_ids]");
@@ -132,9 +140,11 @@ OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_parseFromJS
             }
         }
     }
+    }
 
     sm_policy_dnn_data_patch_local_var = OpenAPI_sm_policy_dnn_data_patch_create (
         ogs_strdup(dnn->valuestring),
+        bdt_ref_ids && cJSON_IsNull(bdt_ref_ids) ? true : false,
         bdt_ref_ids ? bdt_ref_idsList : NULL
     );
 

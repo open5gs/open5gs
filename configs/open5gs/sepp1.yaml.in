@@ -1,0 +1,254 @@
+logger:
+  file: @localstatedir@/log/open5gs/sepp1.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
+
+global:
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
+
+sepp:
+  default:
+    tls:
+      server:
+        private_key: @sysconfdir@/open5gs/tls/sepp1.key
+        cert: @sysconfdir@/open5gs/tls/sepp1.crt
+      client:
+        cacert: @sysconfdir@/open5gs/tls/ca.crt
+  sbi:
+    server:
+      - address: 127.0.1.250
+        port: 7777
+    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+      scp:
+        - uri: http://127.0.0.200:7777
+  n32:
+    server:
+      - sender: sepp1.localdomain
+        scheme: https
+        address: 127.0.1.251
+        port: 7777
+        n32f:
+          scheme: https
+          address: 127.0.1.252
+          port: 7777
+    client:
+      sepp:
+        - receiver: sepp2.localdomain
+          uri: https://sepp2.localdomain:7777
+          resolve: 127.0.2.251
+          n32f:
+            uri: https://sepp2.localdomain:7777
+            resolve: 127.0.2.252
+
+################################################################################
+# SEPP Info
+################################################################################
+#  o SEPP port number(s) for HTTP and/or HTTPS
+#   - This attribute shall be present if the SEPP uses non-default HTTP and/or
+#     HTTPS ports. When present, it shall contain the HTTP and/or HTTPS ports.
+#     (Minimum: 0 Maximum: 65535)
+#  info:
+#    port:
+#      http: 7777
+#      https: 8888
+#
+################################################################################
+# No TLS - N32 Server/Client
+################################################################################
+#  o SEPP uses the same interface that other NFs(NRF, AMF, ...) use.
+#  sbi:
+#    server:
+#      - address: 127.0.1.250
+#        port: 7777
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#  n32:
+#    server:
+#      - sender: sepp1.localdomain
+#    client:
+#      sepp:
+#        - receiver: sepp2.localdomain
+#          uri: http://127.0.2.250:7777
+#
+#  o SEPP uses a separate interface
+#    that is different from those used by other NFs.
+#  sbi:
+#    server:
+#      - address: 127.0.1.250
+#        port: 7777
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#  n32:
+#    server:
+#      - sender: sepp1.localdomain
+#        address: 127.0.1.251
+#        port: 7777
+#    client:
+#      sepp:
+#        - receiver: sepp2.localdomain
+#          uri: http://127.0.2.251:7777
+#
+#  o Not only SEPP but also the N32 forwarding uses a separate interface
+#    that is different from those used by other NFs.
+#  sbi:
+#    server:
+#      - address: 127.0.1.250
+#        port: 7777
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#  n32:
+#    server:
+#      - sender: sepp1.localdomain
+#        address: 127.0.1.251
+#        port: 7777
+#        n32f:
+#          address: 127.0.1.252
+#          port: 7777
+#    client:
+#      sepp:
+#        - receiver: sepp2.localdomain
+#          uri: http://127.0.2.251:7777
+#          n32f:
+#            uri: http://127.0.2.252:7777
+#
+################################################################################
+# HTTPS scheme with TLS - N32 Server/Client
+################################################################################
+#
+#  o Only N32 uses HTTPS with TLS, while other NFs use HTTP without TLS.
+#  default:
+#    tls:
+#      server:
+#        private_key: @sysconfdir@/open5gs/tls/sepp1.key
+#        cert: @sysconfdir@/open5gs/tls/sepp1.crt
+#      client:
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: 127.0.1.250
+#        port: 7777
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#  n32:
+#    server:
+#      - sender: sepp1.localdomain
+#        scheme: https
+#        address: 127.0.1.251
+#    client:
+#      sepp:
+#        - receiver: sepp2.localdomain
+#          uri: https://sepp2.localdomain
+#          resolve: 127.0.2.251
+#
+#  o Add client TLS verification to N32 interface
+#  default:
+#    tls:
+#      server:
+#        private_key: @sysconfdir@/open5gs/tls/sepp1.key
+#        cert: @sysconfdir@/open5gs/tls/sepp1.crt
+#        verify_client: true
+#        verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
+#      client:
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_private_key: @sysconfdir@/open5gs/tls/sepp1.key
+#        client_cert: @sysconfdir@/open5gs/tls/sepp1.crt
+#  sbi:
+#    server:
+#      - address: 127.0.1.250
+#        port: 7777
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#  n32:
+#    server:
+#      - sender: sepp1.localdomain
+#        scheme: https
+#        address: 127.0.1.251
+#    client:
+#      sepp:
+#        - receiver: sepp2.localdomain
+#          uri: https://sepp2.localdomain
+#          resolve: 127.0.2.251
+#
+#  o Both SEPP and N32 forwarding also uses HTTPS with TLS,
+#    while other NFs use HTTP without TLS.
+#  default:
+#    tls:
+#      server:
+#        private_key: @sysconfdir@/open5gs/tls/sepp1.key
+#        cert: @sysconfdir@/open5gs/tls/sepp1.crt
+#        verify_client: true
+#        verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
+#      client:
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_private_key: @sysconfdir@/open5gs/tls/sepp1.key
+#        client_cert: @sysconfdir@/open5gs/tls/sepp1.crt
+#  sbi:
+#    server:
+#      - address: 127.0.1.250
+#        port: 7777
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#  n32:
+#    server:
+#      - sender: sepp1.localdomain
+#        scheme: https
+#        address: 127.0.1.251
+#        n32f:
+#          scheme: https
+#          address: 127.0.1.252
+#    client:
+#      sepp:
+#        - receiver: sepp2.localdomain
+#          uri: https://sepp2.localdomain
+#          resolve: 127.0.2.251
+#          n32f:
+#            uri: https://sepp2.localdomain
+#            resolve: 127.0.2.252
+#
+#  o N32 control and N32 forwarding interface use different key/certificate.
+#  sbi:
+#    server:
+#      - address: 127.0.1.250
+#        port: 7777
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#  n32:
+#    server:
+#      - sender: sepp1.localdomain
+#        scheme: https
+#        address: 127.0.1.251
+#        private_key: @sysconfdir@/open5gs/tls/sepp1.key
+#        cert: @sysconfdir@/open5gs/tls/sepp1.crt
+#        verify_client: true
+#        verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        n32f:
+#          scheme: https
+#          address: 127.0.1.252
+#          private_key: @sysconfdir@/open5gs/tls/sepp1-n32f.key
+#          cert: @sysconfdir@/open5gs/tls/sepp1-n32f.crt
+#          verify_client: true
+#          verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
+#    client:
+#      sepp:
+#        - receiver: sepp2.localdomain
+#          uri: https://sepp2.localdomain
+#          resolve: 127.0.2.251
+#          cacert: @sysconfdir@/open5gs/tls/ca.crt
+#          client_private_key: @sysconfdir@/open5gs/tls/sepp1.key
+#          client_cert: @sysconfdir@/open5gs/tls/sepp1.crt
+#          n32f:
+#            uri: https://sepp2.localdomain
+#            resolve: 127.0.2.252
+#            cacert: @sysconfdir@/open5gs/tls/ca.crt
+#            client_private_key: @sysconfdir@/open5gs/tls/sepp1-n32f.key
+#            client_cert: @sysconfdir@/open5gs/tls/sepp1-n32f.crt

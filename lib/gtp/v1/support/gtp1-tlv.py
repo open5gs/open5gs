@@ -303,6 +303,8 @@ set_size("MS Time Zone", 2) # Wrongly specified as 1 in spec table
 set_c_type("Cause", 'uint')
 set_c_type("TLLI", 'uint')
 set_c_type("P-TMSI", 'uint')
+set_c_type("P-TMSI Signature", 'uint')
+set_c_type("MS Validated", 'uint')
 set_c_type("Recovery", 'uint')
 set_c_type("Tunnel Endpoint Identifier Data I", 'uint')
 set_c_type("Tunnel Endpoint Identifier Control Plane", 'uint')

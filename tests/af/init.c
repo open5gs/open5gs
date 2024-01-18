@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -27,13 +27,27 @@ static int initialized = 0;
 
 int af_initialize(void)
 {
+    bool no_scp, no_nrf;
     int rv;
+
+#define APP_NAME "af"
+    rv = ogs_app_parse_local_conf(APP_NAME);
+    if (rv != OGS_OK) return rv;
 
     ogs_sbi_context_init(OpenAPI_nf_type_AF);
     af_context_init();
 
-    rv = ogs_sbi_context_parse_config("af", "nrf", "scp");
+    no_scp = ogs_global_conf()->parameter.no_scp;
+    no_nrf = ogs_global_conf()->parameter.no_nrf;
+
+    ogs_global_conf()->parameter.no_scp = false;
+    ogs_global_conf()->parameter.no_nrf = false;
+
+    rv = ogs_sbi_context_parse_config(APP_NAME, "nrf", "scp");
     if (rv != OGS_OK) return rv;
+
+    ogs_global_conf()->parameter.no_scp = no_scp;
+    ogs_global_conf()->parameter.no_nrf = no_nrf;
 
     rv = af_context_parse_config();
     if (rv != OGS_OK) return rv;

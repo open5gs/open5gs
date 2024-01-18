@@ -33,7 +33,7 @@
 static uint8_t emm_cause_from_diameter(
                 const uint32_t *dia_err, const uint32_t *dia_exp_err);
 
-static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue, 
+static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue,
     ogs_slice_data_t *slice_data);
 
 uint8_t mme_s6a_handle_aia(
@@ -279,7 +279,18 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
         }
         break;
     case OGS_DIAM_S6A_CT_MME_UPDATE_PROCEDURE:
+    case OGS_DIAM_S6A_CT_SGSN_UPDATE_PROCEDURE:
         mme_ue->detach_type = MME_DETACH_TYPE_HSS_IMPLICIT;
+
+        /* 3GPP TS 23.401 D.3.5.5 8), 3GPP TS 23.060 6.9.1.2.2 8):
+         * "When the timer described in step 2 is running, the MM and PDP/EPS
+         * Bearer Contexts and any affected S-GW resources are removed when the
+         * timer expires and the SGSN received a Cancel Location".
+         */
+        if (mme_ue->gn.t_gn_holding->running) {
+            ogs_debug("Gn Holding Timer is running, delay removing UE resources");
+            break;
+        }
 
         /*
          * There is no need to send NAS or S1AP message to the UE.
@@ -299,7 +310,7 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
     }
 }
 
-static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue, 
+static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue,
     ogs_slice_data_t *slice_data)
 {
     int i;

@@ -38,13 +38,17 @@ typedef struct OpenAPI_policy_association_s {
     int rfsp;
     bool is_target_rfsp;
     int target_rfsp;
+    bool is_smf_sel_info_null;
     struct OpenAPI_smf_selection_data_s *smf_sel_info;
     struct OpenAPI_ambr_s *ue_ambr;
     OpenAPI_list_t *ue_slice_mbrs;
     OpenAPI_list_t* pras;
     char *supp_feat;
+    bool is_pcf_ue_info_null;
     struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_info;
+    bool is_match_pdus_null;
     OpenAPI_list_t *match_pdus;
+    bool is_as_time_dis_param_null;
     struct OpenAPI_as_time_distribution_param_s *as_time_dis_param;
 } OpenAPI_policy_association_t;
 
@@ -57,13 +61,17 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_create(
     int rfsp,
     bool is_target_rfsp,
     int target_rfsp,
+    bool is_smf_sel_info_null,
     OpenAPI_smf_selection_data_t *smf_sel_info,
     OpenAPI_ambr_t *ue_ambr,
     OpenAPI_list_t *ue_slice_mbrs,
     OpenAPI_list_t* pras,
     char *supp_feat,
+    bool is_pcf_ue_info_null,
     OpenAPI_pcf_ue_callback_info_t *pcf_ue_info,
+    bool is_match_pdus_null,
     OpenAPI_list_t *match_pdus,
+    bool is_as_time_dis_param_null,
     OpenAPI_as_time_distribution_param_t *as_time_dis_param
 );
 void OpenAPI_policy_association_free(OpenAPI_policy_association_t *policy_association);

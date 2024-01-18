@@ -34,9 +34,9 @@ int pcf_sbi_open(void)
 
     /* Build NF instance information. It will be transmitted to NRF. */
     ogs_sbi_nf_instance_build_default(nf_instance);
+    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SCP);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AMF);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SMF);
-    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SCP);
 
     /* Build NF service information. It will be transmitted to NRF. */
     if (ogs_sbi_nf_service_is_available(
@@ -97,6 +97,7 @@ int pcf_sbi_open(void)
         ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Setup Subscription-Data */
+    ogs_sbi_subscription_spec_add(OpenAPI_nf_type_SEPP, NULL);
     ogs_sbi_subscription_spec_add(
             OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT);
     ogs_sbi_subscription_spec_add(
@@ -341,7 +342,10 @@ bool pcf_sbi_send_smpolicycontrol_delete_notify(
 
     rc = ogs_sbi_send_request_to_client(
             client, client_delete_notify_cb, request, app_session);
-    ogs_expect(rc == true);
+    if (rc == false) {
+        ogs_error("ogs_sbi_send_request_to_client() failed");
+        pcf_app_remove(app_session);
+    }
 
     ogs_sbi_request_free(request);
 

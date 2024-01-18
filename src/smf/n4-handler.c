@@ -389,7 +389,7 @@ void smf_5gc_n4_handle_session_modification_response(
                     smf_5gc_pfcp_send_all_pdr_modification_request(
                         sess, stream,
                         OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_REMOVE,
-                        ogs_app()->time.handover.duration));
+                        ogs_local_conf()->time.handover.duration));
             }
 
             smf_sbi_send_sm_context_updated_data_ho_state(
@@ -495,7 +495,7 @@ void smf_5gc_n4_handle_session_modification_response(
             ogs_list_for_each_entry_safe(&sess->qos_flow_to_modify_list,
                     next, qos_flow, to_modify_node) {
                 smf_metrics_inst_by_5qi_add(
-                        &qos_flow->sess->plmn_id,
+                        &qos_flow->sess->serving_plmn_id,
                         &qos_flow->sess->s_nssai,
                         qos_flow->sess->session.qos.index,
                         SMF_METR_GAUGE_SM_QOSFLOWNBR, -1);
@@ -527,7 +527,7 @@ void smf_5gc_n4_handle_session_modification_response(
             ogs_list_for_each_entry_safe(&sess->qos_flow_to_modify_list,
                     next, qos_flow, to_modify_node) {
                 smf_metrics_inst_by_5qi_add(
-                        &qos_flow->sess->plmn_id,
+                        &qos_flow->sess->serving_plmn_id,
                         &qos_flow->sess->s_nssai,
                         qos_flow->sess->session.qos.index,
                         SMF_METR_GAUGE_SM_QOSFLOWNBR, -1);

@@ -56,14 +56,14 @@ typedef struct amf_context_s {
         ogs_5gs_tai0_list_t list0;
         ogs_5gs_tai1_list_t list1;
         ogs_5gs_tai2_list_t list2;
-    } served_tai[OGS_MAX_NUM_OF_SERVED_TAI];
+    } served_tai[OGS_MAX_NUM_OF_SUPPORTED_TA];
 
     /* PLMN Support */
     int num_of_plmn_support;
     struct {
         ogs_plmn_id_t plmn_id;
         int num_of_s_nssai;
-        ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
+        ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE_SUPPORT];
     } plmn_support[OGS_MAX_NUM_OF_PLMN];
 
     /* Access Control */
@@ -72,7 +72,7 @@ typedef struct amf_context_s {
     struct {
         int reject_cause;
         ogs_plmn_id_t plmn_id;
-    } access_control[OGS_MAX_NUM_OF_ACCESS_CONTROL];
+    } access_control[OGS_MAX_NUM_OF_PLMN];
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
@@ -107,7 +107,7 @@ typedef struct amf_context_s {
 
     ogs_hash_t      *gnb_addr_hash; /* hash table for GNB Address */
     ogs_hash_t      *gnb_id_hash;   /* hash table for GNB-ID */
-    ogs_hash_t      *guti_ue_hash;          /* hash table (GUTI : AMF_UE) */
+    ogs_hash_t      *guti_ue_hash;  /* hash table (GUTI : AMF_UE) */
     ogs_hash_t      *suci_hash;     /* hash table (SUCI) */
     ogs_hash_t      *supi_hash;     /* hash table (SUPI) */
 
@@ -147,9 +147,9 @@ typedef struct amf_gnb_s {
         struct {
             ogs_plmn_id_t plmn_id;
             int num_of_s_nssai;
-            ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
+            ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE_SUPPORT];
         } bplmn_list[OGS_MAX_NUM_OF_BPLMN];
-    } supported_ta_list[OGS_MAX_NUM_OF_TAI];
+    } supported_ta_list[OGS_MAX_NUM_OF_SUPPORTED_TA];
 
     OpenAPI_rat_type_e rat_type;
 
@@ -173,6 +173,11 @@ struct ran_ue_s {
     /* UE context */
     bool            ue_context_requested;
     bool            initial_context_setup_request_sent;
+
+#define CONTEXT_SETUP_ESTABLISHED(__aMF) \
+    CM_CONNECTED(__aMF) && \
+    ((__aMF)->ran_ue->initial_context_setup_response_received == true)
+    bool            initial_context_setup_response_received;
     bool            ue_ambr_sent;
 
     /* Handover Info */
@@ -246,6 +251,9 @@ struct amf_ue_s {
     char            *supi; /* TS33.501 : SUPI */
     ogs_nas_5gs_mobile_identity_suci_t nas_mobile_identity_suci;
 
+    /* Home PLMN ID */
+    ogs_plmn_id_t   home_plmn_id;
+
     char            *pei;
     uint8_t         masked_imeisv[OGS_MAX_IMEISV_LEN];
     int             masked_imeisv_len;
@@ -302,6 +310,12 @@ struct amf_ue_s {
     ((__aMF)->security_context_available == 1) && \
      ((__aMF)->mac_failed == 0) && \
      ((__aMF)->nas.ue.ksi != OGS_NAS_KSI_NO_KEY_IS_AVAILABLE))
+#define CLEAR_SECURITY_CONTEXT(__aMF) \
+    do { \
+        ogs_assert((__aMF)); \
+        (__aMF)->security_context_available = 0; \
+        (__aMF)->mac_failed = 0; \
+    } while(0)
     int             security_context_available;
     int             mac_failed;
 
@@ -367,6 +381,45 @@ struct amf_ue_s {
      (((__aMF)->ran_ue == NULL) || (ran_ue_cycle((__aMF)->ran_ue) == NULL)))
     /* NG UE context */
     ran_ue_t        *ran_ue;
+
+#define HOLDING_NG_CONTEXT(__aMF) \
+    do { \
+        ran_ue_deassociate((__aMF)->ran_ue); \
+        \
+        (__aMF)->ran_ue_holding = ran_ue_cycle((__aMF)->ran_ue); \
+        if ((__aMF)->ran_ue_holding) { \
+            ogs_warn("[%s] Holding NG Context", (__aMF)->suci); \
+            ogs_warn("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]", \
+                    (__aMF)->suci, (__aMF)->ran_ue_holding->ran_ue_ngap_id, \
+                    (long long)(__aMF)->ran_ue_holding->amf_ue_ngap_id); \
+            \
+            (__aMF)->ran_ue_holding->ue_ctx_rel_action = \
+                NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE; \
+            ogs_timer_start((__aMF)->ran_ue_holding->t_ng_holding, \
+                    amf_timer_cfg(AMF_TIMER_NG_HOLDING)->duration); \
+        } else \
+            ogs_error("[%s] NG Context has already been removed", \
+                    (__aMF)->suci); \
+    } while(0)
+#define CLEAR_NG_CONTEXT(__aMF) \
+    do { \
+        if (ran_ue_cycle((__aMF)->ran_ue_holding)) { \
+            int r; \
+            ogs_warn("[%s] Clear NG Context", (__aMF)->suci); \
+            ogs_warn("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]", \
+                    (__aMF)->suci, (__aMF)->ran_ue_holding->ran_ue_ngap_id, \
+                    (long long)(__aMF)->ran_ue_holding->amf_ue_ngap_id); \
+            \
+            r = ngap_send_ran_ue_context_release_command( \
+                    (__aMF)->ran_ue_holding, \
+                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
+                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
+            ogs_expect(r == OGS_OK); \
+            ogs_assert(r != OGS_ERROR); \
+        } \
+        (__aMF)->ran_ue_holding = NULL; \
+    } while(0)
+    ran_ue_t        *ran_ue_holding;
 
 #define CLEAR_AMF_UE_ALL_TIMERS(__aMF) \
     do { \
@@ -644,6 +697,7 @@ typedef struct amf_sess_s {
 
     /* Related Context */
     amf_ue_t        *amf_ue;
+    ran_ue_t        *ran_ue;
 
     ogs_s_nssai_t s_nssai;
     ogs_s_nssai_t mapped_hplmn;

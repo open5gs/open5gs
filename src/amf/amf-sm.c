@@ -478,11 +478,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             SWITCH(sbi_message.h.resource.component[2])
             CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                rv = amf_nsmf_pdusession_handle_update_sm_context(
+                amf_nsmf_pdusession_handle_update_sm_context(
                         sess, state, &sbi_message);
-                if (rv != OGS_OK) {
-                    AMF_SESS_CLEAR(sess);
-                }
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
@@ -693,9 +690,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     break;
                 }
 
-                amf_ue = sess->amf_ue;
-                ogs_assert(amf_ue);
-                amf_ue = amf_ue_cycle(amf_ue);
+                amf_ue = amf_ue_cycle(sess->amf_ue);
                 if (!amf_ue) {
                     ogs_error("UE(amf_ue) Context has already been removed");
                     break;
@@ -704,13 +699,13 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 ogs_error("[%d:%d] Cannot receive SBI message",
                         sess->psi, sess->pti);
                 if (sess->payload_container_type) {
-                    r = nas_5gs_send_back_gsm_message(sess,
+                    r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
                             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                             AMF_NAS_BACKOFF_TIME);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
                 } else {
-                    r = ngap_send_error_indication2(amf_ue,
+                    r = ngap_send_error_indication2(sess->ran_ue,
                             NGAP_Cause_PR_transport,
                             NGAP_CauseTransport_transport_resource_unavailable);
                     ogs_expect(r == OGS_OK);
@@ -891,19 +886,19 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     ogs_pkbuf_free(pkbuf);
                     break;
                 }
+
+                ogs_assert(CM_IDLE(amf_ue));
             } else {
                 /* Here, if the AMF_UE Context is found,
                  * the integrity check is not performed
-                 * For example, REGISTRATION_REQUEST,
-                 * TRACKING_AREA_UPDATE_REQUEST message
+                 * For example, REGISTRATION_REQUEST, SERVICE_REQUEST message
                  *
                  * Now, We will check the MAC in the NAS message*/
                 ogs_nas_security_header_type_t h;
                 h.type = e->nas.type;
                 if (h.integrity_protected) {
                     /* Decryption was performed in NGAP handler.
-                     * So, we disabled 'ciphered'
-                     * not to decrypt NAS message */
+                     * So, we disabled 'ciphered' not to decrypt NAS message */
                     h.ciphered = 0;
                     if (nas_5gs_security_decode(amf_ue, h, pkbuf) != OGS_OK) {
                         ogs_error("[%s] nas_security_decode() failed",
@@ -912,42 +907,45 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                         break;
                     }
                 }
-            }
 
-            /* 
-             * TS23.502
-             * 4.2.3.2 UE Triggered Service Request
-             *
-             * 4. [Conditional]
-             * AMF to SMF: Nsmf_PDUSession_UpdateSMContext Request
-             *
-             * The AMF may receive a Service Request to establish another
-             * NAS signalling connection via a NG-RAN while it has maintained
-             * an old NAS signalling connection for UE still via NG-RAN.
-             * In this case, AMF shall trigger the AN release procedure toward
-             * the old NG-RAN to release the old NAS signalling connection
-             * as defined in clause 4.2.6 with following logic: */
+                /*
+                 * TS23.502
+                 * 4.2.3.2 UE Triggered Service Request
+                 *
+                 * 4. [Conditional]
+                 * AMF to SMF: Nsmf_PDUSession_UpdateSMContext Request
+                 *
+                 * The AMF may receive a Service Request to establish another
+                 * NAS signalling connection via a NG-RAN while it has
+                 * maintained an old NAS signalling connection for UE still
+                 * via NG-RAN. In this case, AMF shall trigger the AN release
+                 * procedure toward the old NG-RAN to release the old NAS
+                 * signalling connection as defined in clause 4.2.6
+                 * with following logic:
+                 */
 
-            /* If NAS(amf_ue_t) has already been associated with
-             * older NG(ran_ue_t) context */
-            if (CM_CONNECTED(amf_ue)) {
-                /* Previous NG(ran_ue_t) context the holding timer(30secs)
-                 * is started.
-                 * Newly associated NG(ran_ue_t) context holding timer
-                 * is stopped. */
-                ogs_debug("[%s] Start NG Holding Timer", amf_ue->suci);
-                ogs_debug("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-                        amf_ue->suci, amf_ue->ran_ue->ran_ue_ngap_id,
-                        (long long)amf_ue->ran_ue->amf_ue_ngap_id);
-
-                /* De-associate NG with NAS/EMM */
-                ran_ue_deassociate(amf_ue->ran_ue);
-
-                r = ngap_send_ran_ue_context_release_command(amf_ue->ran_ue,
-                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
+                /* If NAS(amf_ue_t) has already been associated with
+                 * older NG(ran_ue_t) context */
+                if (CM_CONNECTED(amf_ue)) {
+    /*
+     * Issue #2786
+     *
+     * In cases where the UE sends an Integrity Un-Protected Registration
+     * Request or Service Request, there is an issue of sending
+     * a UEContextReleaseCommand for the OLD RAN Context.
+     *
+     * For example, if the UE switchs off and power-on after
+     * the first connection, the 5G Core sends a UEContextReleaseCommand.
+     *
+     * However, since there is no RAN context for this on the gNB,
+     * the gNB does not send a UEContextReleaseComplete,
+     * so the deletion of the RAN Context does not function properly.
+     *
+     * To solve this problem, the 5G Core has been modified to implicitly
+     * delete the RAN Context instead of sending a UEContextReleaseCommand.
+     */
+                    HOLDING_NG_CONTEXT(amf_ue);
+                }
             }
             amf_ue_associate_ran_ue(amf_ue, ran_ue);
 

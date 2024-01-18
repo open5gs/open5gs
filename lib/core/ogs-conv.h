@@ -36,7 +36,7 @@ static ogs_inline void *ogs_hex_from_string(
     return out;
 }
 
-void *ogs_hex_to_ascii(void *in, int in_len, void *out, int out_len);
+void *ogs_hex_to_ascii(const void *in, int in_len, void *out, int out_len);
 void *ogs_uint64_to_buffer(uint64_t num, int size, void *buffer);
 uint64_t ogs_buffer_to_uint64(void *buffer, int size);
 void *ogs_bcd_to_buffer(const char *in, void *out, int *out_len);
@@ -44,6 +44,7 @@ void *ogs_bcd_to_buffer_reverse_order(const char *in, void *out, int *out_len);
 void *ogs_buffer_to_bcd(uint8_t *in, int in_len, void *out);
 
 char ogs_from_hex(char ch);
+char ogs_to_hex(char ch);
 
 char *ogs_uint24_to_0string(ogs_uint24_t x);
 char *ogs_uint28_to_0string(uint32_t x);

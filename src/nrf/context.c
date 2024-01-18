@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -23,7 +23,11 @@ static nrf_context_t self;
 
 int __nrf_log_domain;
 
+static OGS_POOL(nrf_assoc_pool, nrf_assoc_t);
+
 static int context_initialized = 0;
+
+static int max_num_of_nrf_assoc = 0;
 
 void nrf_context_init(void)
 {
@@ -33,6 +37,10 @@ void nrf_context_init(void)
     memset(&self, 0, sizeof(nrf_context_t));
 
     ogs_log_install_domain(&__nrf_log_domain, "nrf", ogs_core()->log.level);
+
+#define MAX_NUM_OF_NRF_ASSOC 8
+    max_num_of_nrf_assoc = ogs_global_conf()->max.ue * MAX_NUM_OF_NRF_ASSOC;
+    ogs_pool_init(&nrf_assoc_pool, max_num_of_nrf_assoc);
 
     context_initialized = 1;
 }
@@ -51,6 +59,10 @@ void nrf_context_final(void)
             nrf_nf_fsm_fini(nf_instance);
     }
 
+    nrf_assoc_remove_all();
+
+    ogs_pool_final(&nrf_assoc_pool);
+
     context_initialized = 0;
 }
 
@@ -63,8 +75,8 @@ static int nrf_context_prepare(void)
 {
     /* NF Instance Heartbeat
      * Default value is 10 seconds if it is not configured in nrf.yaml */
-    if (!ogs_app()->time.nf_instance.heartbeat_interval)
-        ogs_app()->time.nf_instance.heartbeat_interval = 10;
+    if (!ogs_local_conf()->time.nf_instance.heartbeat_interval)
+        ogs_local_conf()->time.nf_instance.heartbeat_interval = 10;
 
     return OGS_OK;
 }
@@ -107,7 +119,7 @@ int nrf_context_parse_config(void)
 
                         if (!strcmp(sbi_key, "heartbeat")) {
                             const char *v = ogs_yaml_iter_value(&sbi_iter);
-                            if (v) ogs_app()->time.nf_instance.
+                            if (v) ogs_local_conf()->time.nf_instance.
                                     heartbeat_interval = atoi(v);
                         }
                     }
@@ -120,4 +132,42 @@ int nrf_context_parse_config(void)
     if (rv != OGS_OK) return rv;
 
     return OGS_OK;
+}
+
+nrf_assoc_t *nrf_assoc_add(ogs_sbi_stream_t *stream)
+{
+    nrf_assoc_t *assoc = NULL;
+
+    ogs_assert(stream);
+
+    ogs_pool_alloc(&nrf_assoc_pool, &assoc);
+    if (!assoc) {
+        ogs_error("Maximum number of association[%d] reached",
+                    max_num_of_nrf_assoc);
+        return NULL;
+    }
+    memset(assoc, 0, sizeof *assoc);
+
+    assoc->stream = stream;
+
+    ogs_list_add(&self.assoc_list, assoc);
+
+    return assoc;
+}
+
+void nrf_assoc_remove(nrf_assoc_t *assoc)
+{
+    ogs_assert(assoc);
+
+    ogs_list_remove(&self.assoc_list, assoc);
+
+    ogs_pool_free(&nrf_assoc_pool, assoc);
+}
+
+void nrf_assoc_remove_all(void)
+{
+    nrf_assoc_t *assoc = NULL, *next_assoc = NULL;
+
+    ogs_list_for_each_safe(&self.assoc_list, next_assoc, assoc)
+        nrf_assoc_remove(assoc);
 }

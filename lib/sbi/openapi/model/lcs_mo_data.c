@@ -109,10 +109,15 @@ OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_parseFromJSON(cJSON *lcs_mo_dataJSON)
             }
             localEnum = OpenAPI_lcs_mo_service_class_FromString(allowed_service_classes_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_lcs_mo_service_class_FromString(allowed_service_classes_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"allowed_service_classes\" is not supported. Ignoring it ...",
+                         allowed_service_classes_local->valuestring);
+            } else {
+                OpenAPI_list_add(allowed_service_classesList, (void *)localEnum);
             }
-            OpenAPI_list_add(allowed_service_classesList, (void *)localEnum);
+        }
+        if (allowed_service_classesList->count == 0) {
+            ogs_error("OpenAPI_lcs_mo_data_parseFromJSON() failed: Expected allowed_service_classesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
 
     mo_assistance_data_types = cJSON_GetObjectItemCaseSensitive(lcs_mo_dataJSON, "moAssistanceDataTypes");

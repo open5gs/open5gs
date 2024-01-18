@@ -35,6 +35,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_create(
     bool is_mcs_priority_level,
     int mcs_priority_level,
     OpenAPI_list_t* pra_infos,
+    bool is_bdt_ref_ids_null,
     OpenAPI_list_t* bdt_ref_ids,
     bool is_loc_rout_not_allowed,
     int loc_rout_not_allowed
@@ -73,6 +74,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_create(
     sm_policy_dnn_data_local_var->is_mcs_priority_level = is_mcs_priority_level;
     sm_policy_dnn_data_local_var->mcs_priority_level = mcs_priority_level;
     sm_policy_dnn_data_local_var->pra_infos = pra_infos;
+    sm_policy_dnn_data_local_var->is_bdt_ref_ids_null = is_bdt_ref_ids_null;
     sm_policy_dnn_data_local_var->bdt_ref_ids = bdt_ref_ids;
     sm_policy_dnn_data_local_var->is_loc_rout_not_allowed = is_loc_rout_not_allowed;
     sm_policy_dnn_data_local_var->loc_rout_not_allowed = loc_rout_not_allowed;
@@ -386,6 +388,11 @@ cJSON *OpenAPI_sm_policy_dnn_data_convertToJSON(OpenAPI_sm_policy_dnn_data_t *sm
             }
         }
     }
+    } else if (sm_policy_dnn_data->is_bdt_ref_ids_null) {
+        if (cJSON_AddNullToObject(item, "bdtRefIds") == NULL) {
+            ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [bdt_ref_ids]");
+            goto end;
+        }
     }
 
     if (sm_policy_dnn_data->is_loc_rout_not_allowed) {
@@ -649,6 +656,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
 
     bdt_ref_ids = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "bdtRefIds");
     if (bdt_ref_ids) {
+    if (!cJSON_IsNull(bdt_ref_ids)) {
         cJSON *bdt_ref_ids_local_map = NULL;
         if (!cJSON_IsObject(bdt_ref_ids) && !cJSON_IsNull(bdt_ref_ids)) {
             ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [bdt_ref_ids]");
@@ -669,6 +677,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
                 OpenAPI_list_add(bdt_ref_idsList, localMapKeyPair);
             }
         }
+    }
     }
 
     loc_rout_not_allowed = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_dataJSON, "locRoutNotAllowed");
@@ -710,6 +719,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
         mcs_priority_level ? true : false,
         mcs_priority_level ? mcs_priority_level->valuedouble : 0,
         pra_infos ? pra_infosList : NULL,
+        bdt_ref_ids && cJSON_IsNull(bdt_ref_ids) ? true : false,
         bdt_ref_ids ? bdt_ref_idsList : NULL,
         loc_rout_not_allowed ? true : false,
         loc_rout_not_allowed ? loc_rout_not_allowed->valueint : 0

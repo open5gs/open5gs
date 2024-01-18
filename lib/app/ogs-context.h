@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,12 +28,6 @@
 extern "C" {
 #endif
 
-typedef enum {
-    OGS_SBI_TLS_ENABLED_AUTO = 0,
-    OGS_SBI_TLS_ENABLED_YES,
-    OGS_SBI_TLS_ENABLED_NO,
-} ogs_sbi_tls_enabled_mode_e;
-
 typedef struct ogs_app_context_s {
     const char *version;
 
@@ -41,7 +35,6 @@ typedef struct ogs_app_context_s {
     void *document;
 
     const char *db_uri;
-    int use_mongodb_change_stream;
 
     struct {
         const char *file;
@@ -54,58 +47,10 @@ typedef struct ogs_app_context_s {
     ogs_pollset_t *pollset;
 
     struct {
-        /* Element */
-        int no_mme;
-        int no_hss;
-        int no_sgw;
-        int no_sgwc;
-        int no_sgwu;
-        int no_pgw;
-        int no_pcrf;
-
-        int no_amf;
-        int no_smf;
-        int no_upf;
-        int no_ausf;
-        int no_udm;
-        int no_pcf;
-        int no_nssf;
-        int no_bsf;
-        int no_udr;
-        int no_scp;
-        int no_nrf;
-
-        /* Network */
-        int no_ipv4;
-        int no_ipv6;
-        int prefer_ipv4;
-        int multicast;
-
-        int use_openair;
-        int no_ipv4v6_local_addr_in_packet_filter;
-
-        int no_pfcp_rr_select;
-    } parameter;
-
-    struct {
-        int no_delay;
-        int l_onoff;
-        int l_linger;
-    } sockopt;
-
-    struct {
         int udp_port;
     } usrsctp;
 
     struct {
-        uint64_t ue;
-        uint64_t peer;
-        uint64_t gtp_peer;
-    } max;
-
-    struct {
-        ogs_pkbuf_config_t defconfig;
-
         uint64_t packet;
 
         uint64_t sess;
@@ -131,70 +76,16 @@ typedef struct ogs_app_context_s {
         uint64_t impu;
     } pool;
 
-    struct {
-        struct {
-            int heartbeat_interval;
-            int no_heartbeat_margin;
-            int validity_duration;
-        } nf_instance;
-        struct {
-            int validity_duration;
-        } subscription;
-
-        struct {
-            ogs_time_t duration;
-            struct {
-                ogs_time_t client_wait_duration;
-                ogs_time_t connection_deadline;
-                ogs_time_t nf_register_interval;
-                ogs_time_t nf_register_interval_in_exception;
-            } sbi;
-
-            struct {
-                ogs_time_t t3_response_duration;
-                int n3_response_rcount;
-                ogs_time_t t3_holding_duration;
-                int n3_holding_rcount;
-            } gtp;
-
-            struct {
-                ogs_time_t t1_response_duration;
-                int n1_response_rcount;
-                ogs_time_t t1_holding_duration;
-                int n1_holding_rcount;
-                ogs_time_t association_interval;
-                ogs_time_t no_heartbeat_duration;
-            } pfcp;
-        } message;
-
-        struct {
-            ogs_time_t duration;
-            ogs_time_t complete_delay;
-        } handover;
-
-    } time;
-
     struct metrics {
         uint64_t max_specs;
     } metrics;
-
-    struct {
-        struct {
-            bool no_tls;
-            bool no_verify;
-            const char *cacert;
-            const char *cert;
-            const char *key;
-        } server, client;
-    } sbi;
 
 } ogs_app_context_t;
 
 int ogs_app_context_init(void);
 void ogs_app_context_final(void);
-ogs_app_context_t *ogs_app(void);
 
-int ogs_app_context_parse_config(void);
+ogs_app_context_t *ogs_app(void);
 
 #ifdef __cplusplus
 }

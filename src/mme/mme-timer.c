@@ -58,6 +58,9 @@ static mme_timer_cfg_t g_mme_timer_cfg[MAX_NUM_OF_MME_TIMER] = {
 
     [MME_TIMER_S11_HOLDING] =
         { .have = true, .duration = ogs_time_from_msec(300) },
+
+    [MME_TIMER_GN_HOLDING] =
+        { .have = true, .duration = ogs_time_from_sec(20) },
 };
 
 static void emm_timer_event_send(
@@ -251,6 +254,27 @@ void mme_timer_s11_holding_timer_expire(void *data)
 
     e->timer_id = MME_TIMER_S11_HOLDING;
     e->sgw_ue = sgw_ue;
+
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        mme_event_free(e);
+    }
+}
+
+void mme_timer_gn_holding_timer_expire(void *data)
+{
+    int rv;
+    mme_event_t *e = NULL;
+    mme_ue_t *mme_ue;
+
+    ogs_assert(data);
+    mme_ue = data;
+
+    e = mme_event_new(MME_EVENT_GN_TIMER);
+
+    e->timer_id = MME_TIMER_GN_HOLDING;
+    e->mme_ue = mme_ue;
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {

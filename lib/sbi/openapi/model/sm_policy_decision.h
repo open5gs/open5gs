@@ -38,18 +38,23 @@ extern "C" {
 typedef struct OpenAPI_sm_policy_decision_s OpenAPI_sm_policy_decision_t;
 typedef struct OpenAPI_sm_policy_decision_s {
     OpenAPI_list_t* sess_rules;
+    bool is_pcc_rules_null;
     OpenAPI_list_t* pcc_rules;
     bool is_pcscf_rest_indication;
     int pcscf_rest_indication;
     OpenAPI_list_t* qos_decs;
+    bool is_chg_decs_null;
     OpenAPI_list_t* chg_decs;
     struct OpenAPI_charging_information_s *charging_info;
     OpenAPI_list_t* traff_cont_decs;
+    bool is_um_decs_null;
     OpenAPI_list_t* um_decs;
     OpenAPI_list_t* qos_chars;
+    bool is_qos_mon_decs_null;
     OpenAPI_list_t* qos_mon_decs;
     bool is_reflective_qo_s_timer;
     int reflective_qo_s_timer;
+    bool is_conds_null;
     OpenAPI_list_t* conds;
     char *revalidation_time;
     bool is_offline;
@@ -58,9 +63,11 @@ typedef struct OpenAPI_sm_policy_decision_s {
     int online;
     bool is_offline_ch_only;
     int offline_ch_only;
+    bool is_policy_ctrl_req_triggers_null;
     OpenAPI_list_t *policy_ctrl_req_triggers;
     OpenAPI_list_t *last_req_rule_data;
     struct OpenAPI_requested_usage_data_s *last_req_usage_data;
+    bool is_pra_infos_null;
     OpenAPI_list_t* pra_infos;
     bool is_ipv4_index;
     int ipv4_index;
@@ -78,18 +85,23 @@ typedef struct OpenAPI_sm_policy_decision_s {
 
 OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_create(
     OpenAPI_list_t* sess_rules,
+    bool is_pcc_rules_null,
     OpenAPI_list_t* pcc_rules,
     bool is_pcscf_rest_indication,
     int pcscf_rest_indication,
     OpenAPI_list_t* qos_decs,
+    bool is_chg_decs_null,
     OpenAPI_list_t* chg_decs,
     OpenAPI_charging_information_t *charging_info,
     OpenAPI_list_t* traff_cont_decs,
+    bool is_um_decs_null,
     OpenAPI_list_t* um_decs,
     OpenAPI_list_t* qos_chars,
+    bool is_qos_mon_decs_null,
     OpenAPI_list_t* qos_mon_decs,
     bool is_reflective_qo_s_timer,
     int reflective_qo_s_timer,
+    bool is_conds_null,
     OpenAPI_list_t* conds,
     char *revalidation_time,
     bool is_offline,
@@ -98,9 +110,11 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_create(
     int online,
     bool is_offline_ch_only,
     int offline_ch_only,
+    bool is_policy_ctrl_req_triggers_null,
     OpenAPI_list_t *policy_ctrl_req_triggers,
     OpenAPI_list_t *last_req_rule_data,
     OpenAPI_requested_usage_data_t *last_req_usage_data,
+    bool is_pra_infos_null,
     OpenAPI_list_t* pra_infos,
     bool is_ipv4_index,
     int ipv4_index,

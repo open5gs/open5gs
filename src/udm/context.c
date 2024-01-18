@@ -37,7 +37,7 @@ void udm_context_init(void)
 
     ogs_log_install_domain(&__udm_log_domain, "udm", ogs_core()->log.level);
 
-    ogs_pool_init(&udm_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&udm_ue_pool, ogs_global_conf()->max.ue);
     ogs_pool_init(&udm_sess_pool, ogs_app()->pool.sess);
 
     ogs_list_init(&self.udm_ue_list);
@@ -103,7 +103,13 @@ int udm_context_parse_config(void)
             while (ogs_yaml_iter_next(&udm_iter)) {
                 const char *udm_key = ogs_yaml_iter_key(&udm_iter);
                 ogs_assert(udm_key);
-                if (!strcmp(udm_key, "sbi")) {
+                if (!strcmp(udm_key, "default")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(udm_key, "sbi")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(udm_key, "nrf")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(udm_key, "scp")) {
                     /* handle config in sbi library */
                 } else if (!strcmp(udm_key, "service_name")) {
                     /* handle config in sbi library */

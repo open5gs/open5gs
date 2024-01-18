@@ -105,10 +105,15 @@ OpenAPI_downlink_data_notification_control_t *OpenAPI_downlink_data_notification
             }
             localEnum = OpenAPI_notification_control_indication_FromString(notif_ctrl_inds_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_notification_control_indication_FromString(notif_ctrl_inds_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"notif_ctrl_inds\" is not supported. Ignoring it ...",
+                         notif_ctrl_inds_local->valuestring);
+            } else {
+                OpenAPI_list_add(notif_ctrl_indsList, (void *)localEnum);
             }
-            OpenAPI_list_add(notif_ctrl_indsList, (void *)localEnum);
+        }
+        if (notif_ctrl_indsList->count == 0) {
+            ogs_error("OpenAPI_downlink_data_notification_control_parseFromJSON() failed: Expected notif_ctrl_indsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -130,10 +135,15 @@ OpenAPI_downlink_data_notification_control_t *OpenAPI_downlink_data_notification
             }
             localEnum = OpenAPI_dl_data_delivery_status_FromString(types_of_notif_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_dl_data_delivery_status_FromString(types_of_notif_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"types_of_notif\" is not supported. Ignoring it ...",
+                         types_of_notif_local->valuestring);
+            } else {
+                OpenAPI_list_add(types_of_notifList, (void *)localEnum);
             }
-            OpenAPI_list_add(types_of_notifList, (void *)localEnum);
+        }
+        if (types_of_notifList->count == 0) {
+            ogs_error("OpenAPI_downlink_data_notification_control_parseFromJSON() failed: Expected types_of_notifList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

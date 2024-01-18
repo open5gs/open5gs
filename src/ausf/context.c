@@ -36,7 +36,7 @@ void ausf_context_init(void)
 
     ogs_log_install_domain(&__ausf_log_domain, "ausf", ogs_core()->log.level);
 
-    ogs_pool_init(&ausf_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&ausf_ue_pool, ogs_global_conf()->max.ue);
 
     ogs_list_init(&self.ausf_ue_list);
     self.suci_hash = ogs_hash_make();
@@ -100,7 +100,13 @@ int ausf_context_parse_config(void)
             while (ogs_yaml_iter_next(&ausf_iter)) {
                 const char *ausf_key = ogs_yaml_iter_key(&ausf_iter);
                 ogs_assert(ausf_key);
-                if (!strcmp(ausf_key, "sbi")) {
+                if (!strcmp(ausf_key, "default")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(ausf_key, "sbi")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(ausf_key, "nrf")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(ausf_key, "scp")) {
                     /* handle config in sbi library */
                 } else if (!strcmp(ausf_key, "service_name")) {
                     /* handle config in sbi library */

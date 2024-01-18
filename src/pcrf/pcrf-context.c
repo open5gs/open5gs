@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -86,6 +86,76 @@ static int pcrf_context_validation(void)
                 ogs_app()->file);
         return OGS_ERROR;
     }
+
+    return OGS_OK;
+}
+
+static int session_conf_prepare(void)
+{
+    ogs_app_policy_conf_t *policy_conf = NULL;
+    ogs_app_slice_conf_t *slice_conf = NULL;
+
+    ogs_plmn_id_t plmn_id;
+    ogs_s_nssai_t s_nssai;
+
+    ogs_plmn_id_build(&plmn_id, 999, 70, 2);
+
+    s_nssai.sst = 1;
+    s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+
+    /* Added Dummy POLICY for EPC */
+    policy_conf = ogs_app_policy_conf_add(&plmn_id);
+    if (!policy_conf) {
+        ogs_error("ogs_app_policy_conf_add() failed");
+        return OGS_ERROR;
+    }
+
+    /* Added Dummy SLICE for EPC */
+    slice_conf = ogs_app_slice_conf_add(policy_conf, &s_nssai);
+    if (!slice_conf) {
+        ogs_error("ogs_app_slice_conf_add() failed");
+        return OGS_ERROR;
+    }
+    slice_conf->data.default_indicator = true;
+
+    return OGS_OK;
+}
+
+static int session_conf_validation(void)
+{
+    int rv;
+
+    rv = ogs_app_check_policy_conf();
+    if (rv != OGS_OK) {
+        ogs_error("ogs_app_check_policy_conf() failed");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
+static int parse_session_conf(ogs_yaml_iter_t *parent)
+{
+    int rv;
+    ogs_app_policy_conf_t *policy_conf = NULL;
+    ogs_app_slice_conf_t *slice_conf = NULL;
+
+    ogs_assert(parent);
+
+    rv = session_conf_prepare();
+    if (rv != OGS_OK) return rv;
+
+    policy_conf = ogs_list_first(&ogs_local_conf()->policy_list);
+    ogs_assert(policy_conf);
+
+    slice_conf = ogs_list_first(&policy_conf->slice_list);
+    ogs_assert(slice_conf);
+
+    rv = ogs_app_parse_session_conf(parent, slice_conf);
+    if (rv != OGS_OK) return rv;
+
+    rv = session_conf_validation();
+    if (rv != OGS_OK) return rv;
 
     return OGS_OK;
 }
@@ -224,7 +294,8 @@ int pcrf_context_parse_config(void)
                                         if (!strcmp(conn_key, "identity")) {
                                             identity = ogs_yaml_iter_value(
                                                     &conn_iter);
-                                        } else if (!strcmp(conn_key, "addr")) {
+                                        } else if (!strcmp(conn_key,
+                                                    "address")) {
                                             addr = ogs_yaml_iter_value(
                                                     &conn_iter);
                                         } else if (!strcmp(conn_key, "port")) {
@@ -254,6 +325,12 @@ int pcrf_context_parse_config(void)
                                 ogs_warn("unknown key `%s`", fd_key);
                         }
                     }
+                } else if (!strcmp(pcrf_key, OGS_SESSION_STRING)) {
+                    rv = parse_session_conf(&pcrf_iter);
+                    if (rv != OGS_OK) {
+                        ogs_error("parse_session_conf() failed");
+                        return rv;
+                    }
                 } else
                     ogs_warn("unknown key `%s`", pcrf_key);
             }
@@ -271,17 +348,39 @@ int pcrf_db_qos_data(
 {
     int rv, i;
     char *supi = NULL;
+    ogs_session_data_t zero_data;
+
+    ogs_app_policy_conf_t *policy_conf = NULL;
+    ogs_app_slice_conf_t *slice_conf = NULL;
 
     ogs_assert(imsi_bcd);
     ogs_assert(apn);
     ogs_assert(session_data);
 
     ogs_thread_mutex_lock(&self.db_lock);
+
+    memset(&zero_data, 0, sizeof(zero_data));
+
+    /* session_data should be initialized to zero */
+    ogs_assert(memcmp(session_data, &zero_data, sizeof(zero_data)) == 0);
+
     supi = ogs_msprintf("%s-%s", OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
     ogs_assert(supi);
 
-    /* For EPC, we'll use [S_NSSAI = NULL] */
-    rv = ogs_dbi_session_data(supi, NULL, apn, session_data);
+    policy_conf = ogs_list_first(&ogs_local_conf()->policy_list);
+    if (policy_conf)
+        slice_conf = ogs_list_first(&policy_conf->slice_list);
+
+    if (slice_conf) {
+        rv = ogs_app_config_session_data(NULL, NULL, apn, session_data);
+        if (rv != OGS_OK)
+            ogs_error("ogs_app_config_session_data() failed for APN(%s)", apn);
+    } else {
+        rv = ogs_dbi_session_data(supi, NULL, apn, session_data);
+        if (rv != OGS_OK)
+            ogs_error("ogs_dbi_session_data() failed for IMSI(%s)+APN(%s)",
+                    imsi_bcd, apn);
+    }
 
     /* For EPC, we need to inialize Flow-Status in Pcc-Rule */
     for (i = 0; i < session_data->num_of_pcc_rule; i++) {

@@ -73,7 +73,7 @@ bool pcf_nudr_dr_handle_query_am_data(
 
         if (!subscription_data.ambr.uplink &&
                 !subscription_data.ambr.downlink) {
-            ogs_error("[%s] No UE-AMBR", pcf_ue->supi);
+            strerror = ogs_msprintf("[%s] No UE-AMBR", pcf_ue->supi);
             status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
             goto cleanup;
         }

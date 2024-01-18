@@ -40,7 +40,7 @@ static struct session_handler *hss_s6a_reg = NULL;
 
 /* s6a Subscription-Data builder */
 static int hss_s6a_avp_add_subscription_data(
-    ogs_subscription_data_t *subscription_data, struct avp *avp, 
+    ogs_subscription_data_t *subscription_data, struct avp *avp,
     uint32_t subdatamask);
 
 struct sess_state {
@@ -303,7 +303,7 @@ static int hss_s6a_avp_add_subscription_data(
 
     struct avp *avp_msisdn, *avp_a_msisdn;
     struct avp *avp_access_restriction_data;
-    struct avp *avp_subscriber_status, *avp_network_access_mode;
+    struct avp *avp_subscriber_status, *avp_operator_determined_barring, *avp_network_access_mode;
     struct avp *avp_ambr, *avp_max_bandwidth_ul, *avp_max_bandwidth_dl;
     struct avp *avp_rau_tau_timer;
 
@@ -364,7 +364,7 @@ static int hss_s6a_avp_add_subscription_data(
         }
     }
 
-    if (subdatamask & OGS_DIAM_S6A_SUBDATA_SUB_STATUS) {
+    if (subdatamask & (OGS_DIAM_S6A_SUBDATA_SUB_STATUS | OGS_DIAM_S6A_SUBDATA_OP_DET_BARRING)) {
         ret = fd_msg_avp_new(
                 ogs_diam_s6a_subscriber_status, 0, &avp_subscriber_status);
         ogs_assert(ret == 0);
@@ -373,6 +373,17 @@ static int hss_s6a_avp_add_subscription_data(
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_subscriber_status);
         ogs_assert(ret == 0);
+
+        if (subscription_data->subscriber_status == OGS_SUBSCRIBER_STATUS_OPERATOR_DETERMINED_BARRING) {
+            ret = fd_msg_avp_new(
+                    ogs_diam_s6a_operator_determined_barring, 0, &avp_operator_determined_barring);
+            ogs_assert(ret == 0);
+            val.i32 = subscription_data->operator_determined_barring;
+            ret = fd_msg_avp_setvalue(avp_operator_determined_barring, &val);
+            ogs_assert(ret == 0);
+            ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_operator_determined_barring);
+            ogs_assert(ret == 0);
+        }
     }
 
     if (subdatamask & OGS_DIAM_S6A_SUBDATA_NAM) {
@@ -825,7 +836,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     ogs_assert(mme_host);
     ogs_assert(mme_realm);
 
-    /* If UE is not purged at MME, determine if the MME sending the ULR 
+    /* If UE is not purged at MME, determine if the MME sending the ULR
      * is different from the one that was last used.  if so, send CLR.
      */
     if (subscription_data.mme_host != NULL &&
@@ -843,7 +854,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     }
 
     /* Update database with current MME and timestamp */
-    ogs_assert(OGS_OK == hss_db_update_mme(imsi_bcd, mme_host, mme_realm, 
+    ogs_assert(OGS_OK == hss_db_update_mme(imsi_bcd, mme_host, mme_realm,
         false));
 
     ret = fd_msg_search_avp(qry, ogs_diam_s6a_terminal_information, &avp);
@@ -909,7 +920,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         /* Set the Subscription Data */
         ret = fd_msg_avp_new(ogs_diam_s6a_subscription_data, 0, &avp);
         ogs_assert(ret == 0);
-        rv = hss_s6a_avp_add_subscription_data(&subscription_data, 
+        rv = hss_s6a_avp_add_subscription_data(&subscription_data,
             avp, OGS_DIAM_S6A_SUBDATA_ALL);
         if (rv != OGS_OK) {
             result_code = OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION;
@@ -1059,7 +1070,7 @@ static int hss_ogs_diam_s6a_pur_cb( struct msg **msg, struct avp *avp,
     ogs_cpystrn(mme_realm, (char*)hdr->avp_value->os.data,
         ogs_min(hdr->avp_value->os.len, OGS_MAX_FQDN_LEN)+1);
 
-    if (!strcmp(subscription_data.mme_host, mme_host) && 
+    if (!strcmp(subscription_data.mme_host, mme_host) &&
             !strcmp(subscription_data.mme_realm, mme_realm)) {
         rv = hss_db_update_mme(imsi_bcd, mme_host, mme_realm, true);
         if (rv != OGS_OK) {
@@ -1074,7 +1085,7 @@ static int hss_ogs_diam_s6a_pur_cb( struct msg **msg, struct avp *avp,
     /* Set the PUA Flags */
     ret = fd_msg_avp_new(ogs_diam_s6a_pua_flags, 0, &avp);
     ogs_assert(ret == 0);
-    if (!strcmp(subscription_data.mme_host, mme_host) && 
+    if (!strcmp(subscription_data.mme_host, mme_host) &&
             !strcmp(subscription_data.mme_realm, mme_realm)) {
         val.i32 = OGS_DIAM_S6A_PUA_FLAGS_FREEZE_MTMSI;
     } else {
@@ -1145,7 +1156,7 @@ outnoexp:
 }
 
 /* HSS Sends Cancel Location Request to MME */
-void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm, 
+void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm,
     uint32_t cancellation_type)
 {
     int ret;
@@ -1168,7 +1179,7 @@ void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm,
 
     /* Create a new session */
     #define OGS_DIAM_S6A_APP_SID_OPT  "app_s6a"
-    ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_S6A_APP_SID_OPT, 
+    ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_S6A_APP_SID_OPT,
             CONSTSTRLEN(OGS_DIAM_S6A_APP_SID_OPT));
     ogs_assert(ret == 0);
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
@@ -1228,7 +1239,7 @@ void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm,
     ret = fd_msg_avp_new(ogs_diam_s6a_clr_flags, 0, &avp);
     ogs_assert(ret == 0);
     if (cancellation_type == OGS_DIAM_S6A_CT_SUBSCRIPTION_WITHDRAWL) {
-        val.u32 = (OGS_DIAM_S6A_CLR_FLAGS_REATTACH_REQUIRED | 
+        val.u32 = (OGS_DIAM_S6A_CLR_FLAGS_REATTACH_REQUIRED |
             OGS_DIAM_S6A_CLR_FLAGS_S6A_S6D_INDICATOR);
     } else {
         val.u32 = OGS_DIAM_S6A_CLR_FLAGS_S6A_S6D_INDICATOR;
@@ -1257,7 +1268,7 @@ void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm,
     svg = sess_data;
 
     /* Store this value in the session */
-    ret = fd_sess_state_store(hss_s6a_reg, session, &sess_data); 
+    ret = fd_sess_state_store(hss_s6a_reg, session, &sess_data);
     ogs_assert(ret == 0);
     ogs_assert(sess_data == 0);
 
@@ -1345,6 +1356,17 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
         return OGS_ERROR;
     }
 
+    /* Avoid sending IDR if only Operator-Determined-Barring field changed and
+     * Subscriber-Status is SERVICE_GRANTED, since then the field has no
+     * meaning and won't be sent through the wire, so nothing really changes
+     * from the PoV of the peer. */
+    if (subdatamask == OGS_DIAM_S6A_SUBDATA_OP_DET_BARRING &&
+        subscription_data.subscriber_status == OGS_SUBSCRIBER_STATUS_SERVICE_GRANTED) {
+        ogs_debug("    [%s] Skip sending IDR: Only Operator-Determined-Barring changed while"
+                 " Subscriber-Status is SERVICE_GRANTED.", imsi_bcd);
+        return OGS_OK;
+    }
+
     /* Create the random value to store with the session */
     sess_data = ogs_calloc(1, sizeof(*sess_data));
     ogs_assert(sess_data);
@@ -1355,7 +1377,7 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
 
     /* Create a new session */
     #define OGS_DIAM_S6A_APP_SID_OPT  "app_s6a"
-    ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_S6A_APP_SID_OPT, 
+    ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_S6A_APP_SID_OPT,
             CONSTSTRLEN(OGS_DIAM_S6A_APP_SID_OPT));
     ogs_assert(ret == 0);
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
@@ -1429,7 +1451,7 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
             ret = hss_s6a_avp_add_subscription_data(&subscription_data,
                 avp, subdatamask);
             if (ret != OGS_OK) {
-                ogs_error("    [%s] Could not build Subscription-Data.", 
+                ogs_error("    [%s] Could not build Subscription-Data.",
                     imsi_bcd);
                 return OGS_ERROR;
             }
@@ -1447,7 +1469,7 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdatamask)
     svg = sess_data;
 
     /* Store this value in the session */
-    ret = fd_sess_state_store(hss_s6a_reg, session, &sess_data); 
+    ret = fd_sess_state_store(hss_s6a_reg, session, &sess_data);
     ogs_assert(ret == 0);
     ogs_assert(sess_data == 0);
 

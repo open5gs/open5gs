@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,7 +28,10 @@ int amf_nnssf_nsselection_handle_get(
     int r;
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     ogs_sbi_client_t *client = NULL, *scp_client = NULL;
-    ogs_sockaddr_t *addr = NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
 
     OpenAPI_authorized_network_slice_info_t *AuthorizedNetworkSliceInfo = NULL;
     OpenAPI_nsi_information_t *NsiInformation = NULL;
@@ -36,14 +39,22 @@ int amf_nnssf_nsselection_handle_get(
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *ran_ue = NULL;
 
-    ogs_assert(sess);
-    amf_ue = sess->amf_ue;
-    ogs_assert(amf_ue);
     ogs_assert(recvmsg);
-
     ogs_assert(!SESSION_CONTEXT_IN_SMF(sess));
 
-    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    sess = amf_sess_cycle(sess);
+    if (!sess) {
+        ogs_error("Session has already been removed");
+        return OGS_ERROR;
+    }
+
+    amf_ue = amf_ue_cycle(sess->amf_ue);
+    if (!amf_ue) {
+        ogs_error("UE(amf_ue) Context has already been removed");
+        return OGS_ERROR;
+    }
+
+    ran_ue = ran_ue_cycle(sess->ran_ue);
     if (!ran_ue) {
         ogs_error("NG context has already been removed");
         return OGS_ERROR;
@@ -87,6 +98,13 @@ int amf_nnssf_nsselection_handle_get(
         return OGS_ERROR;
     }
 
+    discovery_option = ogs_sbi_discovery_option_new();
+    ogs_assert(discovery_option);
+
+    ogs_sbi_discovery_option_add_snssais(discovery_option, &sess->s_nssai);
+    ogs_sbi_discovery_option_set_dnn(discovery_option, sess->dnn);
+    ogs_sbi_discovery_option_set_tai(discovery_option, &amf_ue->nr_tai);
+
     if (sess->nssf.nrf.id)
         ogs_free(sess->nssf.nrf.id);
     sess->nssf.nrf.id = ogs_strdup(NsiInformation->nrf_id);
@@ -101,13 +119,15 @@ int amf_nnssf_nsselection_handle_get(
         param.nrf_uri.nrf.id = sess->nssf.nrf.id;
 
         r = amf_sess_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, discovery_option,
                 amf_nsmf_pdusession_build_create_sm_context,
                 sess, AMF_CREATE_SM_CONTEXT_NO_STATE, &param);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     } else {
-        rc = ogs_sbi_getaddr_from_uri(&scheme, &addr, NsiInformation->nrf_id);
+        rc = ogs_sbi_getaddr_from_uri(
+                &scheme, &fqdn, &fqdn_port, &addr, &addr6,
+                NsiInformation->nrf_id);
         if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
             ogs_error("[%s:%d] Invalid URI [%s]",
                     amf_ue->supi, sess->psi, NsiInformation->nrf_id);
@@ -115,20 +135,35 @@ int amf_nnssf_nsselection_handle_get(
                     amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
-            return OGS_ERROR;;
+
+            ogs_sbi_discovery_option_free(discovery_option);
+
+            return OGS_ERROR;
         }
 
-        client = ogs_sbi_client_find(scheme, addr);
+        client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
         if (!client) {
-            client = ogs_sbi_client_add(scheme, addr);
-            ogs_assert(client);
-        }
+            ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
+            client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
+            if (!client) {
+                ogs_error("%s: ogs_sbi_client_add() failed", OGS_FUNC);
 
+                ogs_sbi_discovery_option_free(discovery_option);
+                ogs_free(fqdn);
+                ogs_freeaddrinfo(addr);
+                ogs_freeaddrinfo(addr6);
+
+                return OGS_ERROR;
+            }
+        }
         OGS_SBI_SETUP_CLIENT(&sess->nssf.nrf, client);
+
+        ogs_free(fqdn);
         ogs_freeaddrinfo(addr);
+        ogs_freeaddrinfo(addr6);
 
         r = amf_sess_sbi_discover_by_nsi(
-                sess, OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL);
+                sess, OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, discovery_option);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     }

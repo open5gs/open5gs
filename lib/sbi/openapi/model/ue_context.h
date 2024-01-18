@@ -88,6 +88,7 @@ typedef struct OpenAPI_ue_context_s {
     OpenAPI_list_t *mm_context_list;
     OpenAPI_list_t *session_context_list;
     struct OpenAPI_eps_interworking_info_s *eps_interworking_info;
+    bool is_trace_data_null;
     struct OpenAPI_trace_data_s *trace_data;
     char *service_gap_expiry_time;
     char *stn_sr;
@@ -121,6 +122,7 @@ typedef struct OpenAPI_ue_context_s {
     OpenAPI_list_t* pra_in_ue_policy;
     struct OpenAPI_updp_subscription_data_s *updp_subscription_data;
     OpenAPI_list_t *sm_policy_notify_pdu_list;
+    bool is_pcf_ue_callback_info_null;
     struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_callback_info;
     char *ue_positioning_cap;
     bool is_asti_distribution_indication;
@@ -129,6 +131,7 @@ typedef struct OpenAPI_ue_context_s {
     int ts_error_budget;
     bool is_snpn_onboard_ind;
     int snpn_onboard_ind;
+    bool is_smf_sel_info_null;
     struct OpenAPI_smf_selection_data_s *smf_sel_info;
     OpenAPI_list_t* pcf_ue_slice_mbr_list;
     char *smsf_set_id;
@@ -181,6 +184,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     OpenAPI_list_t *mm_context_list,
     OpenAPI_list_t *session_context_list,
     OpenAPI_eps_interworking_info_t *eps_interworking_info,
+    bool is_trace_data_null,
     OpenAPI_trace_data_t *trace_data,
     char *service_gap_expiry_time,
     char *stn_sr,
@@ -214,6 +218,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     OpenAPI_list_t* pra_in_ue_policy,
     OpenAPI_updp_subscription_data_t *updp_subscription_data,
     OpenAPI_list_t *sm_policy_notify_pdu_list,
+    bool is_pcf_ue_callback_info_null,
     OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info,
     char *ue_positioning_cap,
     bool is_asti_distribution_indication,
@@ -222,6 +227,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     int ts_error_budget,
     bool is_snpn_onboard_ind,
     int snpn_onboard_ind,
+    bool is_smf_sel_info_null,
     OpenAPI_smf_selection_data_t *smf_sel_info,
     OpenAPI_list_t* pcf_ue_slice_mbr_list,
     char *smsf_set_id,

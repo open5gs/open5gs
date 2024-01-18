@@ -1,0 +1,5 @@
+usr/bin/open5gs-seppd
+configs/open5gs/sepp*.yaml etc/open5gs
+configs/open5gs/tls/sepp*.key etc/open5gs/tls
+configs/open5gs/tls/sepp*.crt etc/open5gs/tls
+configs/systemd/open5gs-seppd.service lib/systemd/system

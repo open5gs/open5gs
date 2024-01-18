@@ -7,6 +7,7 @@
 OpenAPI_as_time_distribution_param_t *OpenAPI_as_time_distribution_param_create(
     bool is_as_time_dist_ind,
     int as_time_dist_ind,
+    bool is_uu_error_budget_null,
     bool is_uu_error_budget,
     int uu_error_budget
 )
@@ -16,6 +17,7 @@ OpenAPI_as_time_distribution_param_t *OpenAPI_as_time_distribution_param_create(
 
     as_time_distribution_param_local_var->is_as_time_dist_ind = is_as_time_dist_ind;
     as_time_distribution_param_local_var->as_time_dist_ind = as_time_dist_ind;
+    as_time_distribution_param_local_var->is_uu_error_budget_null = is_uu_error_budget_null;
     as_time_distribution_param_local_var->is_uu_error_budget = is_uu_error_budget;
     as_time_distribution_param_local_var->uu_error_budget = uu_error_budget;
 
@@ -55,6 +57,11 @@ cJSON *OpenAPI_as_time_distribution_param_convertToJSON(OpenAPI_as_time_distribu
         ogs_error("OpenAPI_as_time_distribution_param_convertToJSON() failed [uu_error_budget]");
         goto end;
     }
+    } else if (as_time_distribution_param->is_uu_error_budget_null) {
+        if (cJSON_AddNullToObject(item, "uuErrorBudget") == NULL) {
+            ogs_error("OpenAPI_as_time_distribution_param_convertToJSON() failed [uu_error_budget]");
+            goto end;
+        }
     }
 
 end:
@@ -77,15 +84,18 @@ OpenAPI_as_time_distribution_param_t *OpenAPI_as_time_distribution_param_parseFr
 
     uu_error_budget = cJSON_GetObjectItemCaseSensitive(as_time_distribution_paramJSON, "uuErrorBudget");
     if (uu_error_budget) {
+    if (!cJSON_IsNull(uu_error_budget)) {
     if (!cJSON_IsNumber(uu_error_budget)) {
         ogs_error("OpenAPI_as_time_distribution_param_parseFromJSON() failed [uu_error_budget]");
         goto end;
+    }
     }
     }
 
     as_time_distribution_param_local_var = OpenAPI_as_time_distribution_param_create (
         as_time_dist_ind ? true : false,
         as_time_dist_ind ? as_time_dist_ind->valueint : 0,
+        uu_error_budget && cJSON_IsNull(uu_error_budget) ? true : false,
         uu_error_budget ? true : false,
         uu_error_budget ? uu_error_budget->valuedouble : 0
     );

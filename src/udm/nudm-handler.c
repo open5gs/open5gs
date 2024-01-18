@@ -264,7 +264,7 @@ bool udm_nudm_uecm_handle_amf_registration(
     }
 
     if (!Amf3GppAccessRegistration->amf_instance_id) {
-        ogs_error("[%s] No amfInstanceId", udm_ue->suci);
+        ogs_error("[%s] No amfInstanceId", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 message, "No amfInstanceId", udm_ue->supi));

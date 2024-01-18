@@ -254,6 +254,7 @@ static int epoll_process(ogs_pollset_t *pollset, ogs_time_t timeout)
             }
             if (received & EPOLLRDHUP) {
                 when |= OGS_POLLIN;
+                when &= ~OGS_POLLOUT;
             }
         }
 

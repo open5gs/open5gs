@@ -41,6 +41,7 @@ subdir('pcrf')
 
 subdir('nrf')
 subdir('scp')
+subdir('sepp')
 
 subdir('udr')
 subdir('udm')

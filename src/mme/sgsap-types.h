@@ -69,9 +69,9 @@ extern "C" {
 #define SGSAP_IE_SERVICE_INDICATOR_TYPE         32
 #define SGSAP_IE_SERVICE_INDICATOR_LEN          1
 #define SGSAP_IE_TAI_TYPE                       35
-#define SGSAP_IE_TAI_LEN                        7
+#define SGSAP_IE_TAI_LEN                        5
 #define SGSAP_IE_E_CGI_TYPE                     36
-#define SGSAP_IE_E_CGI_LEN                      9
+#define SGSAP_IE_E_CGI_LEN                      7
 #define SGSAP_IE_UE_EMM_MODE_TYPE               37
 #define SGSAP_IE_UE_EMM_MODE_LEN                1
 

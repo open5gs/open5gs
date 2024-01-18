@@ -105,6 +105,9 @@ int amf_nausf_auth_handle_authenticate(
     ogs_ascii_to_hex(AV5G_AKA->autn, strlen(AV5G_AKA->autn),
         amf_ue->autn, sizeof(amf_ue->autn));
 
+    /* Clear Security Context */
+    CLEAR_SECURITY_CONTEXT(amf_ue);
+
     if (amf_ue->nas.amf.ksi < (OGS_NAS_KSI_NO_KEY_IS_AVAILABLE - 1))
         amf_ue->nas.amf.ksi++;
     else

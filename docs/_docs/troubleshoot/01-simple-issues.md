@@ -163,17 +163,18 @@ Problem with Open5GS can be filed as [GitHub Issues](https://github.com/{{ site.
 You can modify the configuration file to record more logs.
 
 ```diff
-$ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
---- amf.yaml.old    2020-08-22 12:26:56.132213488 -0400
-+++ amf.yaml    2020-08-22 12:27:04.135901201 -0400
-@@ -20,6 +20,7 @@
- #
+$ diff --git a/configs/open5gs/amf.yaml.in b/configs/open5gs/amf.yaml.in
+index a70143f08..e0dba560c 100644
+--- a/configs/open5gs/amf.yaml.in
++++ b/configs/open5gs/amf.yaml.in
+@@ -1,6 +1,6 @@
  logger:
      file: @localstatedir@/log/open5gs/amf.log
+-#    level: info   # fatal|error|warn|info(default)|debug|trace
 +    level: debug
 
- #
- # amf:
+ max:
+     ue: 1024  # The number of UE can be increased depending on memory size.
 ```
 
 After changing conf files, please restart Open5GS daemons.

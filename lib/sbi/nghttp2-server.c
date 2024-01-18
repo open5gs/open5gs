@@ -312,57 +312,75 @@ static int server_start(ogs_sbi_server_t *server,
     ogs_assert(addr);
 
     /* Create SSL CTX */
-    if (ogs_app()->sbi.server.no_tls == false) {
+    if (server->scheme == OpenAPI_uri_scheme_https) {
 
-        server->ssl_ctx = create_ssl_ctx(
-                    ogs_app()->sbi.server.key,
-                    ogs_app()->sbi.server.cert);
+        server->ssl_ctx = create_ssl_ctx(server->private_key, server->cert);
         if (!server->ssl_ctx) {
             ogs_error("Cannot create SSL CTX");
             return OGS_ERROR;
         }
 
-        if (ogs_app()->sbi.server.no_verify == false) {
-            if (ogs_app()->sbi.server.cacert) {
-                STACK_OF(X509_NAME) *cert_names = NULL;
+        if (server->verify_client_cacert) {
+            char *context = NULL;
+            STACK_OF(X509_NAME) *cert_names = NULL;
 
-                if (SSL_CTX_load_verify_locations(server->ssl_ctx,
-                        ogs_app()->sbi.server.cacert, NULL) != 1) {
-                    ogs_error("Could not load trusted ca certificates "
-                            "from %s:%s", ogs_app()->sbi.server.cacert,
-                            ERR_error_string(ERR_get_error(), NULL));
-
-                    if (server->ssl_ctx)
-                        SSL_CTX_free(server->ssl_ctx);
-
-                    return OGS_ERROR;
-                }
-
-                /*
-                 * It is heard that SSL_CTX_load_verify_locations() may leave
-                 * error even though it returns success. See
-                 * http://forum.nginx.org/read.php?29,242540
-                 */
-                cert_names = SSL_load_client_CA_file(
-                        ogs_app()->sbi.server.cacert);
-                if (!cert_names) {
-                    ogs_error("Could not load ca certificates from %s:%s",
-                        ogs_app()->sbi.server.cacert,
+            if (SSL_CTX_load_verify_locations(
+                        server->ssl_ctx,
+                        server->verify_client_cacert, NULL) != 1) {
+                ogs_error("Could not load trusted ca certificates from %s:%s",
+                        server->verify_client_cacert,
                         ERR_error_string(ERR_get_error(), NULL));
 
-                    if (server->ssl_ctx)
-                        SSL_CTX_free(server->ssl_ctx);
+                SSL_CTX_free(server->ssl_ctx);
 
-                    return OGS_ERROR;
-                }
-                SSL_CTX_set_client_CA_list(server->ssl_ctx, cert_names);
+                return OGS_ERROR;
             }
 
-            SSL_CTX_set_verify(
-                    server->ssl_ctx,
-                    SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE |
-                    SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
-                    verify_callback);
+            /*
+             * It is heard that SSL_CTX_load_verify_locations() may leave
+             * error even though it returns success. See
+             * http://forum.nginx.org/read.php?29,242540
+             */
+            cert_names = SSL_load_client_CA_file(server->verify_client_cacert);
+            if (!cert_names) {
+                ogs_error("Could not load ca certificates from %s:%s",
+                    server->verify_client_cacert,
+                    ERR_error_string(ERR_get_error(), NULL));
+
+                SSL_CTX_free(server->ssl_ctx);
+
+                return OGS_ERROR;
+            }
+            SSL_CTX_set_client_CA_list(server->ssl_ctx, cert_names);
+
+            if (server->verify_client)
+                SSL_CTX_set_verify(
+                        server->ssl_ctx,
+                        SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE |
+                        SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+                        verify_callback);
+
+            context = ogs_sbi_server_id_context(server);
+            if (!context) {
+                ogs_error("ogs_sbi_server_id_context() failed");
+
+                SSL_CTX_free(server->ssl_ctx);
+
+                return OGS_ERROR;
+            }
+
+            if (!SSL_CTX_set_session_id_context(
+                        server->ssl_ctx,
+                        (unsigned char *)context, strlen(context))) {
+                ogs_error("SSL_CTX_set_session_id_context() failed");
+
+                ogs_free(context);
+                SSL_CTX_free(server->ssl_ctx);
+
+                return OGS_ERROR;
+            }
+
+            ogs_free(context);
         }
     }
 
@@ -388,11 +406,13 @@ static int server_start(ogs_sbi_server_t *server,
 
     hostname = ogs_gethostname(addr);
     if (hostname)
-        ogs_info("nghttp2_server() [%s://%s]:%d",
+        ogs_info("nghttp2_server(%s) [%s://%s]:%d",
+                server->interface ? server->interface : "",
                 server->ssl_ctx ? "https" : "http",
                 hostname, OGS_PORT(addr));
     else
-        ogs_info("nghttp2_server() [%s://%s]:%d",
+        ogs_info("nghttp2_server(%s) [%s://%s]:%d",
+                server->interface ? server->interface : "",
                 server->ssl_ctx ? "https" : "http",
                 OGS_ADDR(addr, buf), OGS_PORT(addr));
 
@@ -763,13 +783,37 @@ static ogs_sbi_session_t *session_add(
     memcpy(sbi_sess->addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
 
     if (server->ssl_ctx) {
+        char *context = NULL;
+
         sbi_sess->ssl = SSL_new(server->ssl_ctx);
         if (!sbi_sess->ssl) {
             ogs_error("SSL_new() failed");
-            ogs_pool_free(&session_pool, sbi_sess);
             ogs_free(sbi_sess->addr);
+            ogs_pool_free(&session_pool, sbi_sess);
             return NULL;
         }
+
+        context = ogs_msprintf("%d",
+                (int)ogs_pool_index(&session_pool, sbi_sess));
+        if (!context) {
+            ogs_error("No memory for session id context");
+            SSL_free(sbi_sess->ssl);
+            ogs_free(sbi_sess->addr);
+            ogs_pool_free(&session_pool, sbi_sess);
+            return NULL;
+        }
+
+        if (!SSL_set_session_id_context(
+                    sbi_sess->ssl, (unsigned char *)context, strlen(context))) {
+            ogs_error("SSL_set_session_id_context() failed");
+            ogs_free(context);
+            ogs_free(sbi_sess->addr);
+            SSL_free(sbi_sess->ssl);
+            ogs_pool_free(&session_pool, sbi_sess);
+            return NULL;
+        }
+
+        ogs_free(context);
     }
 
     ogs_list_add(&server->session_list, sbi_sess);

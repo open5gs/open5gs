@@ -14,6 +14,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res,
     bool is_rfsp,
     int rfsp,
+    bool is_smf_sel_info_null,
     OpenAPI_smf_selection_data_t *smf_sel_info,
     OpenAPI_ambr_t *ue_ambr,
     OpenAPI_list_t *ue_slice_mbrs,
@@ -25,8 +26,10 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     OpenAPI_list_t *access_types,
     OpenAPI_list_t *rat_types,
     OpenAPI_list_t *n3g_allowed_snssais,
+    bool is_trace_req_null,
     OpenAPI_trace_data_t *trace_req,
     OpenAPI_guami_t *guami,
+    bool is_nwdaf_datas_null,
     OpenAPI_list_t *nwdaf_datas
 )
 {
@@ -42,6 +45,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     policy_association_update_request_local_var->wl_serv_area_res = wl_serv_area_res;
     policy_association_update_request_local_var->is_rfsp = is_rfsp;
     policy_association_update_request_local_var->rfsp = rfsp;
+    policy_association_update_request_local_var->is_smf_sel_info_null = is_smf_sel_info_null;
     policy_association_update_request_local_var->smf_sel_info = smf_sel_info;
     policy_association_update_request_local_var->ue_ambr = ue_ambr;
     policy_association_update_request_local_var->ue_slice_mbrs = ue_slice_mbrs;
@@ -53,8 +57,10 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     policy_association_update_request_local_var->access_types = access_types;
     policy_association_update_request_local_var->rat_types = rat_types;
     policy_association_update_request_local_var->n3g_allowed_snssais = n3g_allowed_snssais;
+    policy_association_update_request_local_var->is_trace_req_null = is_trace_req_null;
     policy_association_update_request_local_var->trace_req = trace_req;
     policy_association_update_request_local_var->guami = guami;
+    policy_association_update_request_local_var->is_nwdaf_datas_null = is_nwdaf_datas_null;
     policy_association_update_request_local_var->nwdaf_datas = nwdaf_datas;
 
     return policy_association_update_request_local_var;
@@ -305,6 +311,11 @@ cJSON *OpenAPI_policy_association_update_request_convertToJSON(OpenAPI_policy_as
         ogs_error("OpenAPI_policy_association_update_request_convertToJSON() failed [smf_sel_info]");
         goto end;
     }
+    } else if (policy_association_update_request->is_smf_sel_info_null) {
+        if (cJSON_AddNullToObject(item, "smfSelInfo") == NULL) {
+            ogs_error("OpenAPI_policy_association_update_request_convertToJSON() failed [smf_sel_info]");
+            goto end;
+        }
     }
 
     if (policy_association_update_request->ue_ambr) {
@@ -482,6 +493,11 @@ cJSON *OpenAPI_policy_association_update_request_convertToJSON(OpenAPI_policy_as
         ogs_error("OpenAPI_policy_association_update_request_convertToJSON() failed [trace_req]");
         goto end;
     }
+    } else if (policy_association_update_request->is_trace_req_null) {
+        if (cJSON_AddNullToObject(item, "traceReq") == NULL) {
+            ogs_error("OpenAPI_policy_association_update_request_convertToJSON() failed [trace_req]");
+            goto end;
+        }
     }
 
     if (policy_association_update_request->guami) {
@@ -511,6 +527,11 @@ cJSON *OpenAPI_policy_association_update_request_convertToJSON(OpenAPI_policy_as
         }
         cJSON_AddItemToArray(nwdaf_datasList, itemLocal);
     }
+    } else if (policy_association_update_request->is_nwdaf_datas_null) {
+        if (cJSON_AddNullToObject(item, "nwdafDatas") == NULL) {
+            ogs_error("OpenAPI_policy_association_update_request_convertToJSON() failed [nwdaf_datas]");
+            goto end;
+        }
     }
 
 end:
@@ -652,10 +673,15 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
             }
             localEnum = OpenAPI_request_trigger_FromString(triggers_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_request_trigger_FromString(triggers_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"triggers\" is not supported. Ignoring it ...",
+                         triggers_local->valuestring);
+            } else {
+                OpenAPI_list_add(triggersList, (void *)localEnum);
             }
-            OpenAPI_list_add(triggersList, (void *)localEnum);
+        }
+        if (triggersList->count == 0) {
+            ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed: Expected triggersList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -687,10 +713,12 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
 
     smf_sel_info = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "smfSelInfo");
     if (smf_sel_info) {
+    if (!cJSON_IsNull(smf_sel_info)) {
     smf_sel_info_local_nonprim = OpenAPI_smf_selection_data_parseFromJSON(smf_sel_info);
     if (!smf_sel_info_local_nonprim) {
         ogs_error("OpenAPI_smf_selection_data_parseFromJSON failed [smf_sel_info]");
         goto end;
+    }
     }
     }
 
@@ -852,10 +880,15 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
             }
             localEnum = OpenAPI_access_type_FromString(access_types_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_access_type_FromString(access_types_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"access_types\" is not supported. Ignoring it ...",
+                         access_types_local->valuestring);
+            } else {
+                OpenAPI_list_add(access_typesList, (void *)localEnum);
             }
-            OpenAPI_list_add(access_typesList, (void *)localEnum);
+        }
+        if (access_typesList->count == 0) {
+            ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed: Expected access_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -877,10 +910,15 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
             }
             localEnum = OpenAPI_rat_type_FromString(rat_types_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_rat_type_FromString(rat_types_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"rat_types\" is not supported. Ignoring it ...",
+                         rat_types_local->valuestring);
+            } else {
+                OpenAPI_list_add(rat_typesList, (void *)localEnum);
             }
-            OpenAPI_list_add(rat_typesList, (void *)localEnum);
+        }
+        if (rat_typesList->count == 0) {
+            ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed: Expected rat_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -910,10 +948,12 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
 
     trace_req = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "traceReq");
     if (trace_req) {
+    if (!cJSON_IsNull(trace_req)) {
     trace_req_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_req);
     if (!trace_req_local_nonprim) {
         ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_req]");
         goto end;
+    }
     }
     }
 
@@ -928,6 +968,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
 
     nwdaf_datas = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "nwdafDatas");
     if (nwdaf_datas) {
+    if (!cJSON_IsNull(nwdaf_datas)) {
         cJSON *nwdaf_datas_local = NULL;
         if (!cJSON_IsArray(nwdaf_datas)) {
             ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [nwdaf_datas]");
@@ -949,6 +990,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
             OpenAPI_list_add(nwdaf_datasList, nwdaf_datasItem);
         }
     }
+    }
 
     policy_association_update_request_local_var = OpenAPI_policy_association_update_request_create (
         notification_uri && !cJSON_IsNull(notification_uri) ? ogs_strdup(notification_uri->valuestring) : NULL,
@@ -960,6 +1002,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
         wl_serv_area_res ? wl_serv_area_res_local_nonprim : NULL,
         rfsp ? true : false,
         rfsp ? rfsp->valuedouble : 0,
+        smf_sel_info && cJSON_IsNull(smf_sel_info) ? true : false,
         smf_sel_info ? smf_sel_info_local_nonprim : NULL,
         ue_ambr ? ue_ambr_local_nonprim : NULL,
         ue_slice_mbrs ? ue_slice_mbrsList : NULL,
@@ -971,8 +1014,10 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
         access_types ? access_typesList : NULL,
         rat_types ? rat_typesList : NULL,
         n3g_allowed_snssais ? n3g_allowed_snssaisList : NULL,
+        trace_req && cJSON_IsNull(trace_req) ? true : false,
         trace_req ? trace_req_local_nonprim : NULL,
         guami ? guami_local_nonprim : NULL,
+        nwdaf_datas && cJSON_IsNull(nwdaf_datas) ? true : false,
         nwdaf_datas ? nwdaf_datasList : NULL
     );
 

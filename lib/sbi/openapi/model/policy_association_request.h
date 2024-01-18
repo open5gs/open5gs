@@ -59,6 +59,7 @@ typedef struct OpenAPI_policy_association_request_s {
     OpenAPI_list_t *n3g_allowed_snssais;
     struct OpenAPI_guami_s *guami;
     char *service_name;
+    bool is_trace_req_null;
     struct OpenAPI_trace_data_s *trace_req;
     OpenAPI_list_t *nwdaf_datas;
     char *supp_feat;
@@ -92,6 +93,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_create(
     OpenAPI_list_t *n3g_allowed_snssais,
     OpenAPI_guami_t *guami,
     char *service_name,
+    bool is_trace_req_null,
     OpenAPI_trace_data_t *trace_req,
     OpenAPI_list_t *nwdaf_datas,
     char *supp_feat

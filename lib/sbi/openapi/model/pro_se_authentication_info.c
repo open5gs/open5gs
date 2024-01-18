@@ -8,6 +8,7 @@ OpenAPI_pro_se_authentication_info_t *OpenAPI_pro_se_authentication_info_create(
     char *supi_or_suci,
     char *_5g_pruk_id,
     int relay_service_code,
+    bool is_nonce1_null,
     char *nonce1,
     char *supported_features
 )
@@ -18,6 +19,7 @@ OpenAPI_pro_se_authentication_info_t *OpenAPI_pro_se_authentication_info_create(
     pro_se_authentication_info_local_var->supi_or_suci = supi_or_suci;
     pro_se_authentication_info_local_var->_5g_pruk_id = _5g_pruk_id;
     pro_se_authentication_info_local_var->relay_service_code = relay_service_code;
+    pro_se_authentication_info_local_var->is_nonce1_null = is_nonce1_null;
     pro_se_authentication_info_local_var->nonce1 = nonce1;
     pro_se_authentication_info_local_var->supported_features = supported_features;
 
@@ -158,6 +160,7 @@ OpenAPI_pro_se_authentication_info_t *OpenAPI_pro_se_authentication_info_parseFr
         _5g_pruk_id && !cJSON_IsNull(_5g_pruk_id) ? ogs_strdup(_5g_pruk_id->valuestring) : NULL,
         
         relay_service_code->valuedouble,
+        nonce1 && cJSON_IsNull(nonce1) ? true : false,
         ogs_strdup(nonce1->valuestring),
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
     );

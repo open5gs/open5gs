@@ -314,7 +314,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
         }
 
-        ogs_session_data_free(&gx_message->session_data);
+        OGS_SESSION_DATA_FREE(&gx_message->session_data);
         ogs_free(gx_message);
         break;
 

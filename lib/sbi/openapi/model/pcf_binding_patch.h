@@ -20,11 +20,17 @@ extern "C" {
 
 typedef struct OpenAPI_pcf_binding_patch_s OpenAPI_pcf_binding_patch_t;
 typedef struct OpenAPI_pcf_binding_patch_s {
+    bool is_ipv4_addr_null;
     char *ipv4_addr;
+    bool is_ip_domain_null;
     char *ip_domain;
+    bool is_ipv6_prefix_null;
     char *ipv6_prefix;
+    bool is_add_ipv6_prefixes_null;
     OpenAPI_list_t *add_ipv6_prefixes;
+    bool is_mac_addr48_null;
     char *mac_addr48;
+    bool is_add_mac_addrs_null;
     OpenAPI_list_t *add_mac_addrs;
     char *pcf_id;
     char *pcf_fqdn;
@@ -34,11 +40,17 @@ typedef struct OpenAPI_pcf_binding_patch_s {
 } OpenAPI_pcf_binding_patch_t;
 
 OpenAPI_pcf_binding_patch_t *OpenAPI_pcf_binding_patch_create(
+    bool is_ipv4_addr_null,
     char *ipv4_addr,
+    bool is_ip_domain_null,
     char *ip_domain,
+    bool is_ipv6_prefix_null,
     char *ipv6_prefix,
+    bool is_add_ipv6_prefixes_null,
     OpenAPI_list_t *add_ipv6_prefixes,
+    bool is_mac_addr48_null,
     char *mac_addr48,
+    bool is_add_mac_addrs_null,
     OpenAPI_list_t *add_mac_addrs,
     char *pcf_id,
     char *pcf_fqdn,

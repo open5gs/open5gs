@@ -20,11 +20,13 @@ extern "C" {
 
 typedef struct OpenAPI_eap_auth_method_200_response_s OpenAPI_eap_auth_method_200_response_t;
 typedef struct OpenAPI_eap_auth_method_200_response_s {
+    bool is_eap_payload_null;
     char *eap_payload;
     OpenAPI_list_t* _links;
 } OpenAPI_eap_auth_method_200_response_t;
 
 OpenAPI_eap_auth_method_200_response_t *OpenAPI_eap_auth_method_200_response_create(
+    bool is_eap_payload_null,
     char *eap_payload,
     OpenAPI_list_t* _links
 );

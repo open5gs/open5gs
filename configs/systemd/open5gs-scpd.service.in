@@ -1,5 +1,5 @@
 [Unit]
-Description=Open5GS NRF Daemon
+Description=Open5GS SCP Daemon
 Wants=mongodb.service mongod.service
 
 [Service]

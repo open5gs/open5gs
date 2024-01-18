@@ -42,6 +42,7 @@ typedef struct OpenAPI_subscription_data_sets_s {
     struct OpenAPI_ue_context_in_smsf_data_s *uec_smsf_data;
     struct OpenAPI_sms_subscription_data_s *sms_subs_data;
     struct OpenAPI_sm_subs_data_s *sm_data;
+    bool is_trace_data_null;
     struct OpenAPI_trace_data_s *trace_data;
     struct OpenAPI_sms_management_subscription_data_s *sms_mng_data;
     struct OpenAPI_lcs_privacy_data_s *lcs_privacy_data;
@@ -61,6 +62,7 @@ OpenAPI_subscription_data_sets_t *OpenAPI_subscription_data_sets_create(
     OpenAPI_ue_context_in_smsf_data_t *uec_smsf_data,
     OpenAPI_sms_subscription_data_t *sms_subs_data,
     OpenAPI_sm_subs_data_t *sm_data,
+    bool is_trace_data_null,
     OpenAPI_trace_data_t *trace_data,
     OpenAPI_sms_management_subscription_data_t *sms_mng_data,
     OpenAPI_lcs_privacy_data_t *lcs_privacy_data,

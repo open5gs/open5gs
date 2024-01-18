@@ -85,6 +85,7 @@ extern "C" {
 #define OGS_DIAM_S6A_SUBDATA_UEAMBR                     (1 << 7)
 #define OGS_DIAM_S6A_SUBDATA_APN_CONFIG                 (1 << 8)
 #define OGS_DIAM_S6A_SUBDATA_RAU_TAU_TIMER              (1 << 9)
+#define OGS_DIAM_S6A_SUBDATA_OP_DET_BARRING             (1 << 10)
 #define OGS_DIAM_S6A_SUBDATA_ALL                        0xFFFFFFFF
 
 extern struct dict_object *ogs_diam_s6a_application;
@@ -119,6 +120,7 @@ extern struct dict_object *ogs_diam_s6a_xres;
 extern struct dict_object *ogs_diam_s6a_autn;
 extern struct dict_object *ogs_diam_s6a_kasme;
 extern struct dict_object *ogs_diam_s6a_subscriber_status;
+extern struct dict_object *ogs_diam_s6a_operator_determined_barring;
 extern struct dict_object *ogs_diam_s6a_ambr;
 extern struct dict_object *ogs_diam_s6a_network_access_mode;
 extern struct dict_object *ogs_diam_s6a_access_restriction_data;
@@ -142,6 +144,9 @@ extern struct dict_object *ogs_diam_s6a_pdn_gw_allocation_type;
 extern struct dict_object *ogs_diam_s6a_vplmn_dynamic_address_allowed;
 extern struct dict_object *ogs_diam_s6a_eps_location_information;
 extern struct dict_object *ogs_diam_s6a_mme_location_information;
+extern struct dict_object *ogs_diam_s6a_eps_user_state;
+extern struct dict_object *ogs_diam_s6a_mme_user_state;
+extern struct dict_object *ogs_diam_s6a_user_state;
 extern struct dict_object *ogs_diam_s6a_e_utran_cell_global_identity;
 extern struct dict_object *ogs_diam_s6a_tracking_area_identity;
 extern struct dict_object *ogs_diam_s6a_age_of_location_information;

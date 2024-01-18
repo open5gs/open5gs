@@ -21,13 +21,17 @@ extern "C" {
 typedef struct OpenAPI_route_to_location_s OpenAPI_route_to_location_t;
 typedef struct OpenAPI_route_to_location_s {
     char *dnai;
+    bool is_route_info_null;
     struct OpenAPI_route_information_s *route_info;
+    bool is_route_prof_id_null;
     char *route_prof_id;
 } OpenAPI_route_to_location_t;
 
 OpenAPI_route_to_location_t *OpenAPI_route_to_location_create(
     char *dnai,
+    bool is_route_info_null,
     OpenAPI_route_information_t *route_info,
+    bool is_route_prof_id_null,
     char *route_prof_id
 );
 void OpenAPI_route_to_location_free(OpenAPI_route_to_location_t *route_to_location);

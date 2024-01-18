@@ -266,7 +266,8 @@ void tests1ap_handle_e_rab_modify_request(
     S1AP_E_RABModifyRequestIEs_t *ie = NULL;
     S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
     S1AP_NAS_PDU_t *NAS_PDU = NULL;
-    S1AP_E_RABToBeModifiedListBearerModReq_t *E_RABToBeModifiedListBearerModReq;
+    S1AP_E_RABToBeModifiedListBearerModReq_t *E_RABToBeModifiedListBearerModReq
+        = NULL;
 
     ogs_assert(test_ue);
     ogs_assert(message);
@@ -294,6 +295,7 @@ void tests1ap_handle_e_rab_modify_request(
     if (MME_UE_S1AP_ID)
         test_ue->mme_ue_s1ap_id = *MME_UE_S1AP_ID;
 
+    ogs_assert(E_RABToBeModifiedListBearerModReq);
     for (i = 0; i < E_RABToBeModifiedListBearerModReq->list.count; i++) {
         S1AP_E_RABToBeModifiedItemBearerModReqIEs_t *ie2 = NULL;
         S1AP_E_RABToBeModifiedItemBearerModReq_t *e_rab = NULL;

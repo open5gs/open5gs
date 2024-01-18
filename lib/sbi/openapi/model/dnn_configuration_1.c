@@ -36,6 +36,7 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_create(
     char *iptv_acc_ctrl_info,
     OpenAPI_ip_index_t *ipv4_index,
     OpenAPI_ip_index_t *ipv6_index,
+    bool is_ecs_addr_config_info_null,
     OpenAPI_ecs_addr_config_info_1_t *ecs_addr_config_info,
     OpenAPI_list_t *additional_ecs_addr_config_infos,
     char *shared_ecs_addr_config_info,
@@ -83,6 +84,7 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_create(
     dnn_configuration_1_local_var->iptv_acc_ctrl_info = iptv_acc_ctrl_info;
     dnn_configuration_1_local_var->ipv4_index = ipv4_index;
     dnn_configuration_1_local_var->ipv6_index = ipv6_index;
+    dnn_configuration_1_local_var->is_ecs_addr_config_info_null = is_ecs_addr_config_info_null;
     dnn_configuration_1_local_var->ecs_addr_config_info = ecs_addr_config_info;
     dnn_configuration_1_local_var->additional_ecs_addr_config_infos = additional_ecs_addr_config_infos;
     dnn_configuration_1_local_var->shared_ecs_addr_config_info = shared_ecs_addr_config_info;
@@ -511,6 +513,11 @@ cJSON *OpenAPI_dnn_configuration_1_convertToJSON(OpenAPI_dnn_configuration_1_t *
         ogs_error("OpenAPI_dnn_configuration_1_convertToJSON() failed [ecs_addr_config_info]");
         goto end;
     }
+    } else if (dnn_configuration_1->is_ecs_addr_config_info_null) {
+        if (cJSON_AddNullToObject(item, "ecsAddrConfigInfo") == NULL) {
+            ogs_error("OpenAPI_dnn_configuration_1_convertToJSON() failed [ecs_addr_config_info]");
+            goto end;
+        }
     }
 
     if (dnn_configuration_1->additional_ecs_addr_config_infos) {
@@ -919,10 +926,12 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
 
     ecs_addr_config_info = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "ecsAddrConfigInfo");
     if (ecs_addr_config_info) {
+    if (!cJSON_IsNull(ecs_addr_config_info)) {
     ecs_addr_config_info_local_nonprim = OpenAPI_ecs_addr_config_info_1_parseFromJSON(ecs_addr_config_info);
     if (!ecs_addr_config_info_local_nonprim) {
         ogs_error("OpenAPI_ecs_addr_config_info_1_parseFromJSON failed [ecs_addr_config_info]");
         goto end;
+    }
     }
     }
 
@@ -1044,6 +1053,7 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
         iptv_acc_ctrl_info && !cJSON_IsNull(iptv_acc_ctrl_info) ? ogs_strdup(iptv_acc_ctrl_info->valuestring) : NULL,
         ipv4_index ? ipv4_index_local_nonprim : NULL,
         ipv6_index ? ipv6_index_local_nonprim : NULL,
+        ecs_addr_config_info && cJSON_IsNull(ecs_addr_config_info) ? true : false,
         ecs_addr_config_info ? ecs_addr_config_info_local_nonprim : NULL,
         additional_ecs_addr_config_infos ? additional_ecs_addr_config_infosList : NULL,
         shared_ecs_addr_config_info && !cJSON_IsNull(shared_ecs_addr_config_info) ? ogs_strdup(shared_ecs_addr_config_info->valuestring) : NULL,

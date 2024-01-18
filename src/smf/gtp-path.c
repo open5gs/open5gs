@@ -643,7 +643,6 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
     ogs_assert(pkbuf);
     ogs_pkbuf_reserve(pkbuf, OGS_GTPV1U_5GC_HEADER_LEN);
     ogs_pkbuf_put(pkbuf, 200);
-    pkbuf->len = sizeof *ip6_h + sizeof *advert_h + sizeof *prefix;
     memset(pkbuf->data, 0, pkbuf->len);
 
     p = (uint8_t *)pkbuf->data;
@@ -671,15 +670,29 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
             ue_ip->addr, (OGS_IPV6_DEFAULT_PREFIX_LEN >> 3));
 
     /* For IPv6 Pseudo-Header */
-    plen = htobe16(sizeof *advert_h + sizeof *prefix);
+    plen = sizeof *advert_h + sizeof *prefix;
     nxt = IPPROTO_ICMPV6;
+
+    if (smf_self()->mtu) {
+        struct nd_opt_mtu *mtu =
+            (struct nd_opt_mtu *)((uint8_t*)prefix + sizeof *prefix);
+
+        mtu->nd_opt_mtu_type = ND_OPT_MTU;
+        mtu->nd_opt_mtu_len = 1; /* 8bytes */
+        mtu->nd_opt_mtu_mtu = htobe32(smf_self()->mtu);
+
+        plen += sizeof *mtu;
+    }
+
+    pkbuf->len = sizeof *ip6_h + plen;
 
     memcpy(p, src_ipsub.sub, sizeof src_ipsub.sub);
     p += sizeof src_ipsub.sub;
     memcpy(p, ip6_dst, OGS_IPV6_LEN);
     p += OGS_IPV6_LEN;
-    p += 2; memcpy(p, &plen, 2); p += 2;
+    p += 2; plen = htobe16(plen); memcpy(p, &plen, 2); p += 2;
     p += 3; *p = nxt; p += 1;
+
     advert_h->nd_ra_cksum = ogs_in_cksum((uint16_t *)pkbuf->data, pkbuf->len);
 
     ip6_h->ip6_flow = htobe32(0x60000001);

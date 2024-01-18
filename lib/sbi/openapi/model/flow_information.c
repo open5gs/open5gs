@@ -10,8 +10,11 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_create(
     char *pack_filt_id,
     bool is_packet_filter_usage,
     int packet_filter_usage,
+    bool is_tos_traffic_class_null,
     char *tos_traffic_class,
+    bool is_spi_null,
     char *spi,
+    bool is_flow_label_null,
     char *flow_label,
     OpenAPI_flow_direction_e flow_direction
 )
@@ -24,8 +27,11 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_create(
     flow_information_local_var->pack_filt_id = pack_filt_id;
     flow_information_local_var->is_packet_filter_usage = is_packet_filter_usage;
     flow_information_local_var->packet_filter_usage = packet_filter_usage;
+    flow_information_local_var->is_tos_traffic_class_null = is_tos_traffic_class_null;
     flow_information_local_var->tos_traffic_class = tos_traffic_class;
+    flow_information_local_var->is_spi_null = is_spi_null;
     flow_information_local_var->spi = spi;
+    flow_information_local_var->is_flow_label_null = is_flow_label_null;
     flow_information_local_var->flow_label = flow_label;
     flow_information_local_var->flow_direction = flow_direction;
 
@@ -116,6 +122,11 @@ cJSON *OpenAPI_flow_information_convertToJSON(OpenAPI_flow_information_t *flow_i
         ogs_error("OpenAPI_flow_information_convertToJSON() failed [tos_traffic_class]");
         goto end;
     }
+    } else if (flow_information->is_tos_traffic_class_null) {
+        if (cJSON_AddNullToObject(item, "tosTrafficClass") == NULL) {
+            ogs_error("OpenAPI_flow_information_convertToJSON() failed [tos_traffic_class]");
+            goto end;
+        }
     }
 
     if (flow_information->spi) {
@@ -123,6 +134,11 @@ cJSON *OpenAPI_flow_information_convertToJSON(OpenAPI_flow_information_t *flow_i
         ogs_error("OpenAPI_flow_information_convertToJSON() failed [spi]");
         goto end;
     }
+    } else if (flow_information->is_spi_null) {
+        if (cJSON_AddNullToObject(item, "spi") == NULL) {
+            ogs_error("OpenAPI_flow_information_convertToJSON() failed [spi]");
+            goto end;
+        }
     }
 
     if (flow_information->flow_label) {
@@ -130,6 +146,11 @@ cJSON *OpenAPI_flow_information_convertToJSON(OpenAPI_flow_information_t *flow_i
         ogs_error("OpenAPI_flow_information_convertToJSON() failed [flow_label]");
         goto end;
     }
+    } else if (flow_information->is_flow_label_null) {
+        if (cJSON_AddNullToObject(item, "flowLabel") == NULL) {
+            ogs_error("OpenAPI_flow_information_convertToJSON() failed [flow_label]");
+            goto end;
+        }
     }
 
     if (flow_information->flow_direction != OpenAPI_flow_direction_NULL) {
@@ -192,25 +213,31 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_i
 
     tos_traffic_class = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "tosTrafficClass");
     if (tos_traffic_class) {
+    if (!cJSON_IsNull(tos_traffic_class)) {
     if (!cJSON_IsString(tos_traffic_class) && !cJSON_IsNull(tos_traffic_class)) {
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [tos_traffic_class]");
         goto end;
     }
     }
+    }
 
     spi = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "spi");
     if (spi) {
+    if (!cJSON_IsNull(spi)) {
     if (!cJSON_IsString(spi) && !cJSON_IsNull(spi)) {
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [spi]");
         goto end;
     }
     }
+    }
 
     flow_label = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "flowLabel");
     if (flow_label) {
+    if (!cJSON_IsNull(flow_label)) {
     if (!cJSON_IsString(flow_label) && !cJSON_IsNull(flow_label)) {
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [flow_label]");
         goto end;
+    }
     }
     }
 
@@ -229,8 +256,11 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_i
         pack_filt_id && !cJSON_IsNull(pack_filt_id) ? ogs_strdup(pack_filt_id->valuestring) : NULL,
         packet_filter_usage ? true : false,
         packet_filter_usage ? packet_filter_usage->valueint : 0,
+        tos_traffic_class && cJSON_IsNull(tos_traffic_class) ? true : false,
         tos_traffic_class && !cJSON_IsNull(tos_traffic_class) ? ogs_strdup(tos_traffic_class->valuestring) : NULL,
+        spi && cJSON_IsNull(spi) ? true : false,
         spi && !cJSON_IsNull(spi) ? ogs_strdup(spi->valuestring) : NULL,
+        flow_label && cJSON_IsNull(flow_label) ? true : false,
         flow_label && !cJSON_IsNull(flow_label) ? ogs_strdup(flow_label->valuestring) : NULL,
         flow_direction ? flow_directionVariable : 0
     );

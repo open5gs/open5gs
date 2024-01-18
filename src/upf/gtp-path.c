@@ -203,7 +203,7 @@ static void _gtpv1_tun_recv_common_cb(
         pdr = fallback_pdr;
 
     if (!pdr) {
-        if (ogs_app()->parameter.multicast) {
+        if (ogs_global_conf()->parameter.multicast) {
             upf_gtp_handle_multicast(recvbuf);
         }
         goto cleanup;
@@ -409,8 +409,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
              */
             if (ogs_time_ntp32_now() >
                    (ogs_pfcp_self()->local_recovery +
-                    ogs_time_sec(
-                        ogs_app()->time.message.pfcp.association_interval))) {
+                    ogs_time_sec(ogs_local_conf()->time.message.pfcp.
+                        association_interval))) {
                 ogs_error("[%s] Send Error Indication [TEID:0x%x] to [%s]",
                         OGS_ADDR(&sock->local_addr, buf1),
                         header_desc.teid,
@@ -469,7 +469,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                  */
                 if (ogs_time_ntp32_now() >
                        (ogs_pfcp_self()->local_recovery +
-                        ogs_time_sec(ogs_app()->time.message.pfcp.
+                        ogs_time_sec(ogs_local_conf()->time.message.pfcp.
                             association_interval))) {
                     ogs_error(
                             "[%s] Send Error Indication [TEID:0x%x] to [%s]",
@@ -867,7 +867,7 @@ static void upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)
             /* IPv6 Multicast */
             ogs_list_for_each(&upf_self()->sess_list, sess) {
                 if (sess->ipv6) {
-                    /* PDN IPv6 is avaiable */
+                    /* PDN IPv6 is available */
                     ogs_pfcp_pdr_t *pdr = NULL;
 
                     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {

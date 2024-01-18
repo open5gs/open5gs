@@ -103,10 +103,15 @@ OpenAPI_pdu_session_types_t *OpenAPI_pdu_session_types_parseFromJSON(cJSON *pdu_
             }
             localEnum = OpenAPI_pdu_session_type_FromString(allowed_session_types_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_pdu_session_type_FromString(allowed_session_types_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"allowed_session_types\" is not supported. Ignoring it ...",
+                         allowed_session_types_local->valuestring);
+            } else {
+                OpenAPI_list_add(allowed_session_typesList, (void *)localEnum);
             }
-            OpenAPI_list_add(allowed_session_typesList, (void *)localEnum);
+        }
+        if (allowed_session_typesList->count == 0) {
+            ogs_error("OpenAPI_pdu_session_types_parseFromJSON() failed: Expected allowed_session_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 

@@ -82,7 +82,13 @@ int udr_context_parse_config(void)
             while (ogs_yaml_iter_next(&udr_iter)) {
                 const char *udr_key = ogs_yaml_iter_key(&udr_iter);
                 ogs_assert(udr_key);
-                if (!strcmp(udr_key, "sbi")) {
+                if (!strcmp(udr_key, "default")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(udr_key, "sbi")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(udr_key, "nrf")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(udr_key, "scp")) {
                     /* handle config in sbi library */
                 } else if (!strcmp(udr_key, "service_name")) {
                     /* handle config in sbi library */

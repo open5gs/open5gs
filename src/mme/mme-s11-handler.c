@@ -366,12 +366,17 @@ void mme_s11_handle_create_session_response(
     if (rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.presence) {
         pgw_s5c_teid = rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.data;
         sess->pgw_s5c_teid = be32toh(pgw_s5c_teid->teid);
+        ogs_assert(OGS_OK ==
+                ogs_gtp2_f_teid_to_ip(pgw_s5c_teid, &sess->pgw_s5c_ip));
     }
 
     /* PDN Addresss Allocation */
     if (rsp->pdn_address_allocation.presence) {
         memcpy(&session->paa, rsp->pdn_address_allocation.data,
                 rsp->pdn_address_allocation.len);
+        session->session_type = session->paa.session_type;
+        ogs_assert(OGS_OK ==
+                ogs_paa_to_ip(&session->paa, &session->ue_ip));
     }
 
     /* ePCO */
@@ -601,6 +606,8 @@ void mme_s11_handle_delete_session_response(
 
     if (action == OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST) {
         source_ue = sgw_ue_cycle(target_ue->source_ue);
+        if (!source_ue) /* InterRAT to 2G/3G (SGSN) case: */
+             source_ue = target_ue;
         ogs_assert(source_ue);
     } else {
         source_ue = target_ue;

@@ -248,20 +248,20 @@ Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username
 
 ```diff
 $ diff --git a/configs/open5gs/mme.yaml.in b/configs/open5gs/mme.yaml.in
-index 722648dd6..c998a1e47 100644
+index db2cdaef1..49bbeef76 100644
 --- a/configs/open5gs/mme.yaml.in
 +++ b/configs/open5gs/mme.yaml.in
-@@ -251,7 +251,7 @@ logger:
- mme:
+@@ -10,7 +10,7 @@ mme:
      freeDiameter: @sysconfdir@/freeDiameter/mme.conf
      s1ap:
--      - addr: 127.0.0.2
-+      - addr: 127.0.1.2
+       server:
+-        - address: 127.0.0.2
++        - address: 127.0.1.2
      gtpc:
-       - addr: 127.0.0.2
-     metrics:
-@@ -259,15 +259,15 @@ mme:
-         port: 9090
+       server:
+         - address: 127.0.0.2
+@@ -25,15 +25,15 @@ mme:
+           port: 9090
      gummei:
        plmn_id:
 -        mcc: 999

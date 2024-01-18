@@ -202,8 +202,10 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
     LinksValueScheme = OpenAPI_map_create(
             (char *)links_member_name(UeAuthenticationCtx.auth_type),
             &LinksValueSchemeValue);
+    ogs_assert(LinksValueScheme);
 
     UeAuthenticationCtx._links = OpenAPI_list_create();
+    ogs_assert(UeAuthenticationCtx._links);
     OpenAPI_list_add(UeAuthenticationCtx._links, LinksValueScheme);
 
     memset(&sendmsg, 0, sizeof(sendmsg));
@@ -242,8 +244,6 @@ bool ausf_nudm_ueau_handle_auth_removal_ind(ausf_ue_t *ausf_ue,
 
     ogs_assert(ausf_ue);
     ogs_assert(stream);
-
-    ausf_ue_remove(ausf_ue);
 
     memset(&sendmsg, 0, sizeof(sendmsg));
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);

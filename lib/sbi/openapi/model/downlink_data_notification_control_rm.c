@@ -5,14 +5,18 @@
 #include "downlink_data_notification_control_rm.h"
 
 OpenAPI_downlink_data_notification_control_rm_t *OpenAPI_downlink_data_notification_control_rm_create(
+    bool is_notif_ctrl_inds_null,
     OpenAPI_list_t *notif_ctrl_inds,
+    bool is_types_of_notif_null,
     OpenAPI_list_t *types_of_notif
 )
 {
     OpenAPI_downlink_data_notification_control_rm_t *downlink_data_notification_control_rm_local_var = ogs_malloc(sizeof(OpenAPI_downlink_data_notification_control_rm_t));
     ogs_assert(downlink_data_notification_control_rm_local_var);
 
+    downlink_data_notification_control_rm_local_var->is_notif_ctrl_inds_null = is_notif_ctrl_inds_null;
     downlink_data_notification_control_rm_local_var->notif_ctrl_inds = notif_ctrl_inds;
+    downlink_data_notification_control_rm_local_var->is_types_of_notif_null = is_types_of_notif_null;
     downlink_data_notification_control_rm_local_var->types_of_notif = types_of_notif;
 
     return downlink_data_notification_control_rm_local_var;
@@ -59,6 +63,11 @@ cJSON *OpenAPI_downlink_data_notification_control_rm_convertToJSON(OpenAPI_downl
             goto end;
         }
     }
+    } else if (downlink_data_notification_control_rm->is_notif_ctrl_inds_null) {
+        if (cJSON_AddNullToObject(item, "notifCtrlInds") == NULL) {
+            ogs_error("OpenAPI_downlink_data_notification_control_rm_convertToJSON() failed [notif_ctrl_inds]");
+            goto end;
+        }
     }
 
     if (downlink_data_notification_control_rm->types_of_notif != OpenAPI_dl_data_delivery_status_NULL) {
@@ -73,6 +82,11 @@ cJSON *OpenAPI_downlink_data_notification_control_rm_convertToJSON(OpenAPI_downl
             goto end;
         }
     }
+    } else if (downlink_data_notification_control_rm->is_types_of_notif_null) {
+        if (cJSON_AddNullToObject(item, "typesOfNotif") == NULL) {
+            ogs_error("OpenAPI_downlink_data_notification_control_rm_convertToJSON() failed [types_of_notif]");
+            goto end;
+        }
     }
 
 end:
@@ -89,6 +103,7 @@ OpenAPI_downlink_data_notification_control_rm_t *OpenAPI_downlink_data_notificat
     OpenAPI_list_t *types_of_notifList = NULL;
     notif_ctrl_inds = cJSON_GetObjectItemCaseSensitive(downlink_data_notification_control_rmJSON, "notifCtrlInds");
     if (notif_ctrl_inds) {
+    if (!cJSON_IsNull(notif_ctrl_inds)) {
         cJSON *notif_ctrl_inds_local = NULL;
         if (!cJSON_IsArray(notif_ctrl_inds)) {
             ogs_error("OpenAPI_downlink_data_notification_control_rm_parseFromJSON() failed [notif_ctrl_inds]");
@@ -105,15 +120,22 @@ OpenAPI_downlink_data_notification_control_rm_t *OpenAPI_downlink_data_notificat
             }
             localEnum = OpenAPI_notification_control_indication_FromString(notif_ctrl_inds_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_notification_control_indication_FromString(notif_ctrl_inds_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"notif_ctrl_inds\" is not supported. Ignoring it ...",
+                         notif_ctrl_inds_local->valuestring);
+            } else {
+                OpenAPI_list_add(notif_ctrl_indsList, (void *)localEnum);
             }
-            OpenAPI_list_add(notif_ctrl_indsList, (void *)localEnum);
         }
+        if (notif_ctrl_indsList->count == 0) {
+            ogs_error("OpenAPI_downlink_data_notification_control_rm_parseFromJSON() failed: Expected notif_ctrl_indsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
+    }
     }
 
     types_of_notif = cJSON_GetObjectItemCaseSensitive(downlink_data_notification_control_rmJSON, "typesOfNotif");
     if (types_of_notif) {
+    if (!cJSON_IsNull(types_of_notif)) {
         cJSON *types_of_notif_local = NULL;
         if (!cJSON_IsArray(types_of_notif)) {
             ogs_error("OpenAPI_downlink_data_notification_control_rm_parseFromJSON() failed [types_of_notif]");
@@ -130,15 +152,23 @@ OpenAPI_downlink_data_notification_control_rm_t *OpenAPI_downlink_data_notificat
             }
             localEnum = OpenAPI_dl_data_delivery_status_FromString(types_of_notif_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_dl_data_delivery_status_FromString(types_of_notif_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"types_of_notif\" is not supported. Ignoring it ...",
+                         types_of_notif_local->valuestring);
+            } else {
+                OpenAPI_list_add(types_of_notifList, (void *)localEnum);
             }
-            OpenAPI_list_add(types_of_notifList, (void *)localEnum);
         }
+        if (types_of_notifList->count == 0) {
+            ogs_error("OpenAPI_downlink_data_notification_control_rm_parseFromJSON() failed: Expected types_of_notifList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
+    }
     }
 
     downlink_data_notification_control_rm_local_var = OpenAPI_downlink_data_notification_control_rm_create (
+        notif_ctrl_inds && cJSON_IsNull(notif_ctrl_inds) ? true : false,
         notif_ctrl_inds ? notif_ctrl_indsList : NULL,
+        types_of_notif && cJSON_IsNull(types_of_notif) ? true : false,
         types_of_notif ? types_of_notifList : NULL
     );
 

@@ -33,7 +33,7 @@ static bool maximum_number_of_gnbs_is_reached(void)
         }
     }
 
-    return number_of_gnbs_online >= ogs_app()->max.peer;
+    return number_of_gnbs_online >= ogs_global_conf()->max.peer;
 }
 
 static bool gnb_plmn_id_is_foreign(amf_gnb_t *gnb)
@@ -66,7 +66,7 @@ static bool served_tai_is_found(amf_gnb_t *gnb)
             tai.tac.v = gnb->supported_ta_list[i].tac.v;
             served_tai_index = amf_find_served_tai(&tai);
             if (served_tai_index >= 0 &&
-                    served_tai_index < OGS_MAX_NUM_OF_SERVED_TAI) {
+                    served_tai_index < OGS_MAX_NUM_OF_SUPPORTED_TA) {
                 ogs_debug("    TAC[%d]", gnb->supported_ta_list[i].tac.v);
                 ogs_debug("    PLMN_ID[MCC:%d MNC:%d]",
                     ogs_plmn_id_mcc(&gnb->supported_ta_list[i].
@@ -205,8 +205,8 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     /* Parse Supported TA */
     for (i = 0, gnb->num_of_supported_ta_list = 0;
             i < SupportedTAList->list.count &&
-            gnb->num_of_supported_ta_list < OGS_MAX_NUM_OF_TAI;
-                i++) {
+            gnb->num_of_supported_ta_list < OGS_MAX_NUM_OF_SUPPORTED_TA;
+            i++) {
         NGAP_SupportedTAItem_t *SupportedTAItem = NULL;
 
         SupportedTAItem = (NGAP_SupportedTAItem_t *)
@@ -263,7 +263,7 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                             bplmn_list[j].num_of_s_nssai = 0;
                     k < BroadcastPLMNItem->tAISliceSupportList.list.count &&
                     gnb->supported_ta_list[i].bplmn_list[j].num_of_s_nssai <
-                        OGS_MAX_NUM_OF_SLICE;
+                        OGS_MAX_NUM_OF_SLICE_SUPPORT;
                             k++) {
                 NGAP_SliceSupportItem_t *SliceSupportItem = NULL;
                 NGAP_S_NSSAI_t *s_NSSAI = NULL;
@@ -486,24 +486,24 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                 /* If NAS(amf_ue_t) has already been associated with
                  * older NG(ran_ue_t) context */
                 if (CM_CONNECTED(amf_ue)) {
-                    /* Previous NG(ran_ue_t) context the holding timer(30secs)
-                     * is started.
-                     * Newly associated NG(ran_ue_t) context holding timer
-                     * is stopped. */
-                    ogs_debug("[%s] Start NG Holding Timer", amf_ue->suci);
-                    ogs_debug("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-                            amf_ue->suci, amf_ue->ran_ue->ran_ue_ngap_id,
-                            (long long)amf_ue->ran_ue->amf_ue_ngap_id);
-
-                    /* De-associate NG with NAS/EMM */
-                    ran_ue_deassociate(amf_ue->ran_ue);
-
-                    r = ngap_send_ran_ue_context_release_command(
-                            amf_ue->ran_ue,
-                            NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                            NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
+    /*
+     * Issue #2786
+     *
+     * In cases where the UE sends an Integrity Un-Protected Registration
+     * Request or Service Request, there is an issue of sending
+     * a UEContextReleaseCommand for the OLD RAN Context.
+     *
+     * For example, if the UE switchs off and power-on after
+     * the first connection, the 5G Core sends a UEContextReleaseCommand.
+     *
+     * However, since there is no RAN context for this on the gNB,
+     * the gNB does not send a UEContextReleaseComplete,
+     * so the deletion of the RAN Context does not function properly.
+     *
+     * To solve this problem, the 5G Core has been modified to implicitly
+     * delete the RAN Context instead of sending a UEContextReleaseCommand.
+     */
+                    HOLDING_NG_CONTEXT(amf_ue);
                 }
                 amf_ue_associate_ran_ue(amf_ue, ran_ue);
 
@@ -593,6 +593,9 @@ void ngap_handle_uplink_nas_transport(
     NGAP_NAS_PDU_t *NAS_PDU = NULL;
     NGAP_UserLocationInformation_t *UserLocationInformation = NULL;
     NGAP_UserLocationInformationNR_t *UserLocationInformationNR = NULL;
+
+    ogs_5gs_tai_t nr_tai;
+    int served_tai_index = 0;
 
     ogs_assert(gnb);
     ogs_assert(gnb->sctp.sock);
@@ -706,6 +709,22 @@ void ngap_handle_uplink_nas_transport(
     UserLocationInformationNR =
         UserLocationInformation->choice.userLocationInformationNR;
     ogs_assert(UserLocationInformationNR);
+    ogs_ngap_ASN_to_5gs_tai(&UserLocationInformationNR->tAI, &nr_tai);
+
+    served_tai_index = amf_find_served_tai(&nr_tai);
+    if (served_tai_index < 0) {
+        ogs_error("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
+            ogs_plmn_id_hexdump(&nr_tai.plmn_id), nr_tai.tac.v);
+        r = ngap_send_error_indication(
+                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                NGAP_Cause_PR_protocol,
+                NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
+
     ogs_ngap_ASN_to_nr_cgi(
             &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
     ogs_ngap_ASN_to_5gs_tai(
@@ -915,6 +934,8 @@ void ngap_handle_initial_context_setup_response(
     ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
             ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
 
+    ran_ue->initial_context_setup_response_received = true;
+
     amf_ue = ran_ue->amf_ue;
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
@@ -934,7 +955,7 @@ void ngap_handle_initial_context_setup_response(
 
         if (!PDUSessionItem) {
             ogs_error("No PDUSessionResourceSetupItemCxtRes");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -944,7 +965,7 @@ void ngap_handle_initial_context_setup_response(
         transfer = &PDUSessionItem->pDUSessionResourceSetupResponseTransfer;
         if (!transfer) {
             ogs_error("No PDUSessionResourceSetupResponseTransfer");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -954,7 +975,7 @@ void ngap_handle_initial_context_setup_response(
         if (PDUSessionItem->pDUSessionID ==
                 OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
             ogs_error("PDU Session Identity is unassigned");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -965,7 +986,7 @@ void ngap_handle_initial_context_setup_response(
         if (!sess) {
             ogs_error("Cannot find PDU Session ID [%d]",
                     (int)PDUSessionItem->pDUSessionID);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_radioNetwork,
                     NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
             ogs_expect(r == OGS_OK);
@@ -976,7 +997,7 @@ void ngap_handle_initial_context_setup_response(
         if (!SESSION_CONTEXT_IN_SMF(sess)) {
             ogs_error("Session Context is not in SMF [%d]",
                     (int)PDUSessionItem->pDUSessionID);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_radioNetwork,
                     NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
             ogs_expect(r == OGS_OK);
@@ -1542,7 +1563,7 @@ void ngap_handle_ue_context_release_request(
                 if (!PDUSessionItem) {
                     ogs_error("No PDUSessionResourceSetupItemSURes");
                     r = ngap_send_error_indication2(
-                            amf_ue, NGAP_Cause_PR_protocol,
+                            ran_ue, NGAP_Cause_PR_protocol,
                             NGAP_CauseProtocol_semantic_error);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
@@ -1553,7 +1574,7 @@ void ngap_handle_ue_context_release_request(
                         OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
                     ogs_error("PDU Session Identity is unassigned");
                     r = ngap_send_error_indication2(
-                            amf_ue, NGAP_Cause_PR_protocol,
+                            ran_ue, NGAP_Cause_PR_protocol,
                             NGAP_CauseProtocol_semantic_error);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
@@ -1913,7 +1934,7 @@ void ngap_handle_pdu_session_resource_setup_response(
             if (!PDUSessionItem) {
                 ogs_error("No PDUSessionResourceSetupItemSURes");
                 r = ngap_send_error_indication2(
-                        amf_ue,
+                        ran_ue,
                         NGAP_Cause_PR_protocol,
                         NGAP_CauseProtocol_semantic_error);
                 ogs_expect(r == OGS_OK);
@@ -1925,7 +1946,7 @@ void ngap_handle_pdu_session_resource_setup_response(
             if (!transfer) {
                 ogs_error("No PDUSessionResourceSetupResponseTransfer");
                 r = ngap_send_error_indication2(
-                        amf_ue,
+                        ran_ue,
                         NGAP_Cause_PR_protocol,
                         NGAP_CauseProtocol_semantic_error);
                 ogs_expect(r == OGS_OK);
@@ -1937,7 +1958,7 @@ void ngap_handle_pdu_session_resource_setup_response(
                     OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
                 ogs_error("PDU Session Identity is unassigned");
                 r = ngap_send_error_indication2(
-                        amf_ue,
+                        ran_ue,
                         NGAP_Cause_PR_protocol,
                         NGAP_CauseProtocol_semantic_error);
                 ogs_expect(r == OGS_OK);
@@ -1949,7 +1970,7 @@ void ngap_handle_pdu_session_resource_setup_response(
             if (!sess) {
                 ogs_error("Cannot find PDU Session ID [%d]",
                         (int)PDUSessionItem->pDUSessionID);
-                r = ngap_send_error_indication2(amf_ue,
+                r = ngap_send_error_indication2(ran_ue,
                         NGAP_Cause_PR_radioNetwork,
                         NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
                 ogs_expect(r == OGS_OK);
@@ -1960,7 +1981,7 @@ void ngap_handle_pdu_session_resource_setup_response(
             if (!SESSION_CONTEXT_IN_SMF(sess)) {
                 ogs_error("Session Context is not in SMF [%d]",
                         (int)PDUSessionItem->pDUSessionID);
-                r = ngap_send_error_indication2(amf_ue,
+                r = ngap_send_error_indication2(ran_ue,
                         NGAP_Cause_PR_radioNetwork,
                         NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
                 ogs_expect(r == OGS_OK);
@@ -1998,7 +2019,7 @@ void ngap_handle_pdu_session_resource_setup_response(
             if (!PDUSessionFailedItem) {
                 ogs_error("No PDUSessionResourceFailedToSetupItemSURes");
                 r = ngap_send_error_indication2(
-                        amf_ue,
+                        ran_ue,
                         NGAP_Cause_PR_protocol,
                         NGAP_CauseProtocol_semantic_error);
                 ogs_expect(r == OGS_OK);
@@ -2012,7 +2033,7 @@ void ngap_handle_pdu_session_resource_setup_response(
             if (!transfer) {
                 ogs_error("No PDUSessionResourceSetupUnsuccessfulTransfer");
                 r = ngap_send_error_indication2(
-                        amf_ue,
+                        ran_ue,
                         NGAP_Cause_PR_protocol,
                         NGAP_CauseProtocol_semantic_error);
                 ogs_expect(r == OGS_OK);
@@ -2024,7 +2045,7 @@ void ngap_handle_pdu_session_resource_setup_response(
                     OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
                 ogs_error("PDU Session Identity is unassigned");
                 r = ngap_send_error_indication2(
-                        amf_ue,
+                        ran_ue,
                         NGAP_Cause_PR_protocol,
                         NGAP_CauseProtocol_semantic_error);
                 ogs_expect(r == OGS_OK);
@@ -2038,7 +2059,7 @@ void ngap_handle_pdu_session_resource_setup_response(
                 ogs_error("Cannot find PDU Session ID [%d]",
                         (int)PDUSessionFailedItem->pDUSessionID);
                 r = ngap_send_error_indication2(
-                        amf_ue,
+                        ran_ue,
                         NGAP_Cause_PR_radioNetwork,
                         NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
                 ogs_expect(r == OGS_OK);
@@ -2049,7 +2070,7 @@ void ngap_handle_pdu_session_resource_setup_response(
             if (!SESSION_CONTEXT_IN_SMF(sess)) {
                 ogs_error("Session Context is not in SMF [%d]",
                         (int)PDUSessionFailedItem->pDUSessionID);
-                r = ngap_send_error_indication2(amf_ue,
+                r = ngap_send_error_indication2(ran_ue,
                         NGAP_Cause_PR_radioNetwork,
                         NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
                 ogs_expect(r == OGS_OK);
@@ -2116,7 +2137,7 @@ void ngap_handle_pdu_session_resource_setup_response(
         }
     } else {
         ogs_error("No PDUSessionResourceList");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(ran_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -2228,7 +2249,7 @@ void ngap_handle_pdu_session_resource_modify_response(
 
     if (!PDUSessionList) {
         ogs_error("No PDUSessionResourceModifyListModRes");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(ran_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -2242,7 +2263,7 @@ void ngap_handle_pdu_session_resource_modify_response(
 
         if (!PDUSessionItem) {
             ogs_error("No PDUSessionResourceModifyItemModRes");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -2252,7 +2273,7 @@ void ngap_handle_pdu_session_resource_modify_response(
         transfer = &PDUSessionItem->pDUSessionResourceModifyResponseTransfer;
         if (!transfer) {
             ogs_error("No PDUSessionResourceModifyResponseTransfer");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -2262,7 +2283,7 @@ void ngap_handle_pdu_session_resource_modify_response(
         if (PDUSessionItem->pDUSessionID ==
                 OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
             ogs_error("PDU Session Identity is unassigned");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -2273,7 +2294,7 @@ void ngap_handle_pdu_session_resource_modify_response(
         if (!sess) {
             ogs_error("Cannot find PDU Session ID [%d]",
                     (int)PDUSessionItem->pDUSessionID);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_radioNetwork,
                     NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
             ogs_expect(r == OGS_OK);
@@ -2284,7 +2305,7 @@ void ngap_handle_pdu_session_resource_modify_response(
         if (!SESSION_CONTEXT_IN_SMF(sess)) {
             ogs_error("Session Context is not in SMF [%d]",
                     (int)PDUSessionItem->pDUSessionID);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_radioNetwork,
                     NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
             ogs_expect(r == OGS_OK);
@@ -2415,7 +2436,7 @@ void ngap_handle_pdu_session_resource_release_response(
 
     if (!PDUSessionList) {
         ogs_error("No PDUSessionResourceReleasedListRelRes");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(ran_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -2429,7 +2450,7 @@ void ngap_handle_pdu_session_resource_release_response(
 
         if (!PDUSessionItem) {
             ogs_error("No PDUSessionResourceReleasedItemRelRes");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -2439,7 +2460,7 @@ void ngap_handle_pdu_session_resource_release_response(
         transfer = &PDUSessionItem->pDUSessionResourceReleaseResponseTransfer;
         if (!transfer) {
             ogs_error("No PDUSessionResourceReleaseResponseTransfer");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -2449,7 +2470,7 @@ void ngap_handle_pdu_session_resource_release_response(
         if (PDUSessionItem->pDUSessionID ==
                 OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
             ogs_error("PDU Session Identity is unassigned");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -2460,7 +2481,7 @@ void ngap_handle_pdu_session_resource_release_response(
         if (!sess) {
             ogs_error("Cannot find PDU Session ID [%d]",
                     (int)PDUSessionItem->pDUSessionID);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_radioNetwork,
                     NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
             ogs_expect(r == OGS_OK);
@@ -2471,7 +2492,7 @@ void ngap_handle_pdu_session_resource_release_response(
         if (!SESSION_CONTEXT_IN_SMF(sess)) {
             ogs_error("Session Context is not in SMF [%d]",
                     (int)PDUSessionItem->pDUSessionID);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_radioNetwork,
                     NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
             ogs_expect(r == OGS_OK);
@@ -2662,6 +2683,9 @@ void ngap_handle_path_switch_request(
 
     amf_nsmf_pdusession_sm_context_param_t param;
 
+    ogs_5gs_tai_t nr_tai;
+    int served_tai_index = 0;
+
     ogs_assert(gnb);
     ogs_assert(gnb->sctp.sock);
 
@@ -2767,7 +2791,7 @@ void ngap_handle_path_switch_request(
 
     if (!UserLocationInformation) {
         ogs_error("No UserLocationInformation");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(ran_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -2778,7 +2802,7 @@ void ngap_handle_path_switch_request(
             NGAP_UserLocationInformation_PR_userLocationInformationNR) {
         ogs_error("Not implemented UserLocationInformation[%d]",
                 UserLocationInformation->present);
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(ran_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_unspecified);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -2787,7 +2811,7 @@ void ngap_handle_path_switch_request(
 
     if (!UESecurityCapabilities) {
         ogs_error("No UESecurityCapabilities");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(ran_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -2796,7 +2820,7 @@ void ngap_handle_path_switch_request(
 
     if (!PDUSessionResourceToBeSwitchedDLList) {
         ogs_error("No PDUSessionResourceToBeSwitchedDLList");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(ran_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -2805,7 +2829,7 @@ void ngap_handle_path_switch_request(
 
     if (!SECURITY_CONTEXT_IS_VALID(amf_ue)) {
         ogs_error("No Security Context");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(ran_ue,
                 NGAP_Cause_PR_nas, NGAP_CauseNas_authentication_failure);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -2818,6 +2842,22 @@ void ngap_handle_path_switch_request(
     UserLocationInformationNR =
             UserLocationInformation->choice.userLocationInformationNR;
     ogs_assert(UserLocationInformationNR);
+    ogs_ngap_ASN_to_5gs_tai(&UserLocationInformationNR->tAI, &nr_tai);
+
+    served_tai_index = amf_find_served_tai(&nr_tai);
+    if (served_tai_index < 0) {
+        ogs_error("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
+            ogs_plmn_id_hexdump(&nr_tai.plmn_id), nr_tai.tac.v);
+        r = ngap_send_error_indication(
+                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                NGAP_Cause_PR_protocol,
+                NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
+
     ogs_ngap_ASN_to_nr_cgi(
             &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
     ogs_ngap_ASN_to_5gs_tai(
@@ -2875,7 +2915,7 @@ void ngap_handle_path_switch_request(
 
         if (!PDUSessionItem) {
             ogs_error("No NGAP_PDUSessionResourceToBeSwitchedDLItem");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -2885,7 +2925,7 @@ void ngap_handle_path_switch_request(
         transfer = &PDUSessionItem->pathSwitchRequestTransfer;
         if (!transfer) {
             ogs_error("No PDUSessionResourceSetupResponseTransfer");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -2895,7 +2935,7 @@ void ngap_handle_path_switch_request(
         if (PDUSessionItem->pDUSessionID ==
                 OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
             ogs_error("PDU Session Identity is unassigned");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -2906,7 +2946,7 @@ void ngap_handle_path_switch_request(
         if (!sess) {
             ogs_error("Cannot find PDU Session ID [%d]",
                     (int)PDUSessionItem->pDUSessionID);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_radioNetwork,
                     NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
             ogs_expect(r == OGS_OK);
@@ -2917,7 +2957,7 @@ void ngap_handle_path_switch_request(
         if (!SESSION_CONTEXT_IN_SMF(sess)) {
             ogs_error("Session Context is not in SMF [%d]",
                     (int)PDUSessionItem->pDUSessionID);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(ran_ue,
                     NGAP_Cause_PR_radioNetwork,
                     NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
             ogs_expect(r == OGS_OK);
@@ -3070,7 +3110,7 @@ void ngap_handle_handover_required(
 
     if (!HandoverType) {
         ogs_error("No HandoverType");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(source_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -3079,7 +3119,7 @@ void ngap_handle_handover_required(
 
     if (!Cause) {
         ogs_error("No Cause");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(source_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -3088,7 +3128,7 @@ void ngap_handle_handover_required(
 
     if (!TargetID) {
         ogs_error("No TargetID");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(source_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -3097,7 +3137,7 @@ void ngap_handle_handover_required(
 
     if (TargetID->present != NGAP_TargetID_PR_targetRANNodeID) {
         ogs_error("Not implemented TargetID[%d]", TargetID->present);
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(source_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -3106,7 +3146,7 @@ void ngap_handle_handover_required(
     targetRANNodeID = TargetID->choice.targetRANNodeID;
     if (!targetRANNodeID) {
         ogs_error("No targetRANNodeID");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(source_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -3117,7 +3157,7 @@ void ngap_handle_handover_required(
     if (globalRANNodeID->present != NGAP_GlobalRANNodeID_PR_globalGNB_ID) {
         ogs_error("Not implemented globalRANNodeID[%d]",
                 globalRANNodeID->present);
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(source_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -3127,7 +3167,7 @@ void ngap_handle_handover_required(
     globalGNB_ID = globalRANNodeID->choice.globalGNB_ID;
     if (!globalGNB_ID) {
         ogs_error("No globalGNB_ID");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(source_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -3139,7 +3179,7 @@ void ngap_handle_handover_required(
     if (!target_gnb) {
         ogs_error("Handover required : cannot find target gNB-id[0x%x]",
                 target_gnb_id);
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(source_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -3148,7 +3188,7 @@ void ngap_handle_handover_required(
 
     if (!PDUSessionList) {
         ogs_error("No PDUSessionList");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(source_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -3157,7 +3197,7 @@ void ngap_handle_handover_required(
 
     if (!SourceToTarget_TransparentContainer) {
         ogs_error("No SourceToTarget_TransparentContainer");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(source_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -3166,7 +3206,7 @@ void ngap_handle_handover_required(
 
     if (!SECURITY_CONTEXT_IS_VALID(amf_ue)) {
         ogs_error("No Security Context");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(source_ue,
                 NGAP_Cause_PR_nas, NGAP_CauseNas_authentication_failure);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -3176,7 +3216,7 @@ void ngap_handle_handover_required(
     /* Target UE */
     target_ue = ran_ue_add(target_gnb, INVALID_UE_NGAP_ID);
     if (target_ue == NULL) {
-        r = ngap_send_error_indication2(amf_ue, NGAP_Cause_PR_misc,
+        r = ngap_send_error_indication2(source_ue, NGAP_Cause_PR_misc,
                 NGAP_CauseMisc_control_processing_overload);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -3190,6 +3230,8 @@ void ngap_handle_handover_required(
     target_ue->ue_context_requested = source_ue->ue_context_requested;
     target_ue->initial_context_setup_request_sent =
             source_ue->initial_context_setup_request_sent;
+    target_ue->initial_context_setup_response_received =
+            source_ue->initial_context_setup_response_received;
 
     target_ue->psimask.activated = source_ue->psimask.activated;
 
@@ -3218,7 +3260,7 @@ void ngap_handle_handover_required(
 
         if (!PDUSessionItem) {
             ogs_error("No PDUSessionResourceItemHORqd");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(source_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -3228,7 +3270,7 @@ void ngap_handle_handover_required(
         transfer = &PDUSessionItem->handoverRequiredTransfer;
         if (!transfer) {
             ogs_error("No handoverRequiredTransfer");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(source_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -3238,7 +3280,7 @@ void ngap_handle_handover_required(
         if (PDUSessionItem->pDUSessionID ==
                 OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
             ogs_error("PDU Session Identity is unassigned");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(source_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -3249,7 +3291,7 @@ void ngap_handle_handover_required(
         if (!sess) {
             ogs_error("Cannot find PDU Session ID [%d]",
                     (int)PDUSessionItem->pDUSessionID);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(source_ue,
                     NGAP_Cause_PR_radioNetwork,
                     NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
             ogs_expect(r == OGS_OK);
@@ -3260,7 +3302,7 @@ void ngap_handle_handover_required(
         if (!SESSION_CONTEXT_IN_SMF(sess)) {
             ogs_error("Session Context is not in SMF [%d]",
                     (int)PDUSessionItem->pDUSessionID);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(source_ue,
                     NGAP_Cause_PR_radioNetwork,
                     NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
             ogs_expect(r == OGS_OK);
@@ -3432,7 +3474,7 @@ void ngap_handle_handover_request_ack(
 
     if (!PDUSessionList) {
         ogs_error("No PDUSessionList");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(target_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -3441,7 +3483,7 @@ void ngap_handle_handover_request_ack(
 
     if (!TargetToSource_TransparentContainer) {
         ogs_error("No TargetToSource_TransparentContainer");
-        r = ngap_send_error_indication2(amf_ue,
+        r = ngap_send_error_indication2(target_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -3459,7 +3501,7 @@ void ngap_handle_handover_request_ack(
 
         if (!PDUSessionItem) {
             ogs_error("No PDUSessionResourceAdmittedItem");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(target_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -3469,7 +3511,7 @@ void ngap_handle_handover_request_ack(
         transfer = &PDUSessionItem->handoverRequestAcknowledgeTransfer;
         if (!transfer) {
             ogs_error("No handoverRequestAcknowledgeTransfer");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(target_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -3479,7 +3521,7 @@ void ngap_handle_handover_request_ack(
         if (PDUSessionItem->pDUSessionID ==
                 OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
             ogs_error("PDU Session Identity is unassigned");
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(target_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -3490,7 +3532,7 @@ void ngap_handle_handover_request_ack(
         if (!sess) {
             ogs_error("Cannot find PDU Session ID [%d]",
                     (int)PDUSessionItem->pDUSessionID);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(target_ue,
                     NGAP_Cause_PR_radioNetwork,
                     NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
             ogs_expect(r == OGS_OK);
@@ -3501,7 +3543,7 @@ void ngap_handle_handover_request_ack(
         if (!SESSION_CONTEXT_IN_SMF(sess)) {
             ogs_error("Session Context is not in SMF [%d]",
                     (int)PDUSessionItem->pDUSessionID);
-            r = ngap_send_error_indication2(amf_ue,
+            r = ngap_send_error_indication2(target_ue,
                     NGAP_Cause_PR_radioNetwork,
                     NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
             ogs_expect(r == OGS_OK);
@@ -4066,7 +4108,7 @@ void ngap_handle_handover_notification(
             NGAP_Cause_PR_radioNetwork,
             NGAP_CauseRadioNetwork_successful_handover,
             NGAP_UE_CTX_REL_NG_HANDOVER_COMPLETE,
-            ogs_app()->time.handover.duration);
+            ogs_local_conf()->time.handover.duration);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 
@@ -4214,7 +4256,7 @@ void ngap_handle_ran_configuration_update(
                                 bplmn_list[j].num_of_s_nssai = 0;
                         k < BroadcastPLMNItem->tAISliceSupportList.list.count &&
                         gnb->supported_ta_list[i].bplmn_list[j].num_of_s_nssai <
-                            OGS_MAX_NUM_OF_SLICE;
+                            OGS_MAX_NUM_OF_SLICE_SUPPORT;
                                 k++) {
                     NGAP_SliceSupportItem_t *SliceSupportItem = NULL;
                     NGAP_S_NSSAI_t *s_NSSAI = NULL;

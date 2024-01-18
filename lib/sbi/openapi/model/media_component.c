@@ -23,8 +23,10 @@ OpenAPI_media_component_t *OpenAPI_media_component_create(
     OpenAPI_flow_status_e f_status,
     char *mar_bw_dl,
     char *mar_bw_ul,
+    bool is_max_packet_loss_rate_dl_null,
     bool is_max_packet_loss_rate_dl,
     int max_packet_loss_rate_dl,
+    bool is_max_packet_loss_rate_ul_null,
     bool is_max_packet_loss_rate_ul,
     int max_packet_loss_rate_ul,
     char *max_supp_bw_dl,
@@ -47,7 +49,9 @@ OpenAPI_media_component_t *OpenAPI_media_component_create(
     bool is_sharing_key_ul,
     int sharing_key_ul,
     OpenAPI_tsn_qos_container_t *tsn_qos,
+    bool is_tscai_input_dl_null,
     OpenAPI_tscai_input_container_t *tscai_input_dl,
+    bool is_tscai_input_ul_null,
     OpenAPI_tscai_input_container_t *tscai_input_ul,
     bool is_tscai_time_dom,
     int tscai_time_dom
@@ -74,8 +78,10 @@ OpenAPI_media_component_t *OpenAPI_media_component_create(
     media_component_local_var->f_status = f_status;
     media_component_local_var->mar_bw_dl = mar_bw_dl;
     media_component_local_var->mar_bw_ul = mar_bw_ul;
+    media_component_local_var->is_max_packet_loss_rate_dl_null = is_max_packet_loss_rate_dl_null;
     media_component_local_var->is_max_packet_loss_rate_dl = is_max_packet_loss_rate_dl;
     media_component_local_var->max_packet_loss_rate_dl = max_packet_loss_rate_dl;
+    media_component_local_var->is_max_packet_loss_rate_ul_null = is_max_packet_loss_rate_ul_null;
     media_component_local_var->is_max_packet_loss_rate_ul = is_max_packet_loss_rate_ul;
     media_component_local_var->max_packet_loss_rate_ul = max_packet_loss_rate_ul;
     media_component_local_var->max_supp_bw_dl = max_supp_bw_dl;
@@ -98,7 +104,9 @@ OpenAPI_media_component_t *OpenAPI_media_component_create(
     media_component_local_var->is_sharing_key_ul = is_sharing_key_ul;
     media_component_local_var->sharing_key_ul = sharing_key_ul;
     media_component_local_var->tsn_qos = tsn_qos;
+    media_component_local_var->is_tscai_input_dl_null = is_tscai_input_dl_null;
     media_component_local_var->tscai_input_dl = tscai_input_dl;
+    media_component_local_var->is_tscai_input_ul_null = is_tscai_input_ul_null;
     media_component_local_var->tscai_input_ul = tscai_input_ul;
     media_component_local_var->is_tscai_time_dom = is_tscai_time_dom;
     media_component_local_var->tscai_time_dom = tscai_time_dom;
@@ -358,6 +366,11 @@ cJSON *OpenAPI_media_component_convertToJSON(OpenAPI_media_component_t *media_co
         ogs_error("OpenAPI_media_component_convertToJSON() failed [max_packet_loss_rate_dl]");
         goto end;
     }
+    } else if (media_component->is_max_packet_loss_rate_dl_null) {
+        if (cJSON_AddNullToObject(item, "maxPacketLossRateDl") == NULL) {
+            ogs_error("OpenAPI_media_component_convertToJSON() failed [max_packet_loss_rate_dl]");
+            goto end;
+        }
     }
 
     if (media_component->is_max_packet_loss_rate_ul) {
@@ -365,6 +378,11 @@ cJSON *OpenAPI_media_component_convertToJSON(OpenAPI_media_component_t *media_co
         ogs_error("OpenAPI_media_component_convertToJSON() failed [max_packet_loss_rate_ul]");
         goto end;
     }
+    } else if (media_component->is_max_packet_loss_rate_ul_null) {
+        if (cJSON_AddNullToObject(item, "maxPacketLossRateUl") == NULL) {
+            ogs_error("OpenAPI_media_component_convertToJSON() failed [max_packet_loss_rate_ul]");
+            goto end;
+        }
     }
 
     if (media_component->max_supp_bw_dl) {
@@ -531,6 +549,11 @@ cJSON *OpenAPI_media_component_convertToJSON(OpenAPI_media_component_t *media_co
         ogs_error("OpenAPI_media_component_convertToJSON() failed [tscai_input_dl]");
         goto end;
     }
+    } else if (media_component->is_tscai_input_dl_null) {
+        if (cJSON_AddNullToObject(item, "tscaiInputDl") == NULL) {
+            ogs_error("OpenAPI_media_component_convertToJSON() failed [tscai_input_dl]");
+            goto end;
+        }
     }
 
     if (media_component->tscai_input_ul) {
@@ -544,6 +567,11 @@ cJSON *OpenAPI_media_component_convertToJSON(OpenAPI_media_component_t *media_co
         ogs_error("OpenAPI_media_component_convertToJSON() failed [tscai_input_ul]");
         goto end;
     }
+    } else if (media_component->is_tscai_input_ul_null) {
+        if (cJSON_AddNullToObject(item, "tscaiInputUl") == NULL) {
+            ogs_error("OpenAPI_media_component_convertToJSON() failed [tscai_input_ul]");
+            goto end;
+        }
     }
 
     if (media_component->is_tscai_time_dom) {
@@ -770,17 +798,21 @@ OpenAPI_media_component_t *OpenAPI_media_component_parseFromJSON(cJSON *media_co
 
     max_packet_loss_rate_dl = cJSON_GetObjectItemCaseSensitive(media_componentJSON, "maxPacketLossRateDl");
     if (max_packet_loss_rate_dl) {
+    if (!cJSON_IsNull(max_packet_loss_rate_dl)) {
     if (!cJSON_IsNumber(max_packet_loss_rate_dl)) {
         ogs_error("OpenAPI_media_component_parseFromJSON() failed [max_packet_loss_rate_dl]");
         goto end;
     }
     }
+    }
 
     max_packet_loss_rate_ul = cJSON_GetObjectItemCaseSensitive(media_componentJSON, "maxPacketLossRateUl");
     if (max_packet_loss_rate_ul) {
+    if (!cJSON_IsNull(max_packet_loss_rate_ul)) {
     if (!cJSON_IsNumber(max_packet_loss_rate_ul)) {
         ogs_error("OpenAPI_media_component_parseFromJSON() failed [max_packet_loss_rate_ul]");
         goto end;
+    }
     }
     }
 
@@ -956,19 +988,23 @@ OpenAPI_media_component_t *OpenAPI_media_component_parseFromJSON(cJSON *media_co
 
     tscai_input_dl = cJSON_GetObjectItemCaseSensitive(media_componentJSON, "tscaiInputDl");
     if (tscai_input_dl) {
+    if (!cJSON_IsNull(tscai_input_dl)) {
     tscai_input_dl_local_nonprim = OpenAPI_tscai_input_container_parseFromJSON(tscai_input_dl);
     if (!tscai_input_dl_local_nonprim) {
         ogs_error("OpenAPI_tscai_input_container_parseFromJSON failed [tscai_input_dl]");
         goto end;
     }
     }
+    }
 
     tscai_input_ul = cJSON_GetObjectItemCaseSensitive(media_componentJSON, "tscaiInputUl");
     if (tscai_input_ul) {
+    if (!cJSON_IsNull(tscai_input_ul)) {
     tscai_input_ul_local_nonprim = OpenAPI_tscai_input_container_parseFromJSON(tscai_input_ul);
     if (!tscai_input_ul_local_nonprim) {
         ogs_error("OpenAPI_tscai_input_container_parseFromJSON failed [tscai_input_ul]");
         goto end;
+    }
     }
     }
 
@@ -999,8 +1035,10 @@ OpenAPI_media_component_t *OpenAPI_media_component_parseFromJSON(cJSON *media_co
         f_status ? f_statusVariable : 0,
         mar_bw_dl && !cJSON_IsNull(mar_bw_dl) ? ogs_strdup(mar_bw_dl->valuestring) : NULL,
         mar_bw_ul && !cJSON_IsNull(mar_bw_ul) ? ogs_strdup(mar_bw_ul->valuestring) : NULL,
+        max_packet_loss_rate_dl && cJSON_IsNull(max_packet_loss_rate_dl) ? true : false,
         max_packet_loss_rate_dl ? true : false,
         max_packet_loss_rate_dl ? max_packet_loss_rate_dl->valuedouble : 0,
+        max_packet_loss_rate_ul && cJSON_IsNull(max_packet_loss_rate_ul) ? true : false,
         max_packet_loss_rate_ul ? true : false,
         max_packet_loss_rate_ul ? max_packet_loss_rate_ul->valuedouble : 0,
         max_supp_bw_dl && !cJSON_IsNull(max_supp_bw_dl) ? ogs_strdup(max_supp_bw_dl->valuestring) : NULL,
@@ -1024,7 +1062,9 @@ OpenAPI_media_component_t *OpenAPI_media_component_parseFromJSON(cJSON *media_co
         sharing_key_ul ? true : false,
         sharing_key_ul ? sharing_key_ul->valuedouble : 0,
         tsn_qos ? tsn_qos_local_nonprim : NULL,
+        tscai_input_dl && cJSON_IsNull(tscai_input_dl) ? true : false,
         tscai_input_dl ? tscai_input_dl_local_nonprim : NULL,
+        tscai_input_ul && cJSON_IsNull(tscai_input_ul) ? true : false,
         tscai_input_ul ? tscai_input_ul_local_nonprim : NULL,
         tscai_time_dom ? true : false,
         tscai_time_dom ? tscai_time_dom->valuedouble : 0

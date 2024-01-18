@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -41,7 +41,7 @@ typedef struct scp_context_s {
 typedef struct scp_assoc_s scp_assoc_t;
 
 typedef struct scp_assoc_s {
-    ogs_sbi_object_t sbi;
+    ogs_lnode_t lnode;
 
     ogs_sbi_stream_t *stream;
 
@@ -49,10 +49,16 @@ typedef struct scp_assoc_s {
     ogs_sbi_client_t *nrf_client;
 
     ogs_sbi_request_t *request;
+
     ogs_sbi_service_type_e service_type;
+
+    OpenAPI_nf_type_e target_nf_type;
     OpenAPI_nf_type_e requester_nf_type;
+    ogs_sbi_discovery_option_t *discovery_option;
 
     ogs_sbi_nf_instance_t *nf_service_producer;
+
+    char *target_apiroot;
 } scp_assoc_t;
 
 void scp_context_init(void);
@@ -62,10 +68,8 @@ scp_context_t *scp_self(void);
 int scp_context_parse_config(void);
 
 scp_assoc_t *scp_assoc_add(ogs_sbi_stream_t *stream);
-void scp_assoc_remove(scp_assoc_t *sess);
+void scp_assoc_remove(scp_assoc_t *assoc);
 void scp_assoc_remove_all(void);
-
-scp_assoc_t *scp_assoc_find(uint32_t index);
 
 #ifdef __cplusplus
 }

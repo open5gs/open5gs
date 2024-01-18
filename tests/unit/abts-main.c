@@ -29,6 +29,7 @@ extern int __ogs_sbi_domain;
 void ogs_sbi_message_init(int num_of_request_pool, int num_of_response_pool);
 void ogs_sbi_message_final(void);
 
+abts_suite *test_proto_message(abts_suite *suite);
 abts_suite *test_s1ap_message(abts_suite *suite);
 abts_suite *test_nas_message(abts_suite *suite);
 abts_suite *test_gtp_message(abts_suite *suite);
@@ -40,6 +41,7 @@ abts_suite *test_crash(abts_suite *suite);
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
 } alltests[] = {
+    {test_proto_message},
     {test_s1ap_message},
     {test_nas_message},
     {test_gtp_message},

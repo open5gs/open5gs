@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -42,7 +42,7 @@ void pcf_context_init(void)
     ogs_log_install_domain(&__ogs_dbi_domain, "dbi", ogs_core()->log.level);
     ogs_log_install_domain(&__pcf_log_domain, "pcf", ogs_core()->log.level);
 
-    ogs_pool_init(&pcf_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&pcf_ue_pool, ogs_global_conf()->max.ue);
     ogs_pool_init(&pcf_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&pcf_app_pool, ogs_app()->pool.sess);
 
@@ -93,6 +93,183 @@ static int pcf_context_validation(void)
     return OGS_OK;
 }
 
+static int slice_conf_prepare(void)
+{
+    return OGS_OK;
+}
+
+static int slice_conf_validation(void)
+{
+    return OGS_OK;
+}
+
+static int parse_slice_conf(
+        ogs_yaml_iter_t *parent, ogs_app_policy_conf_t *policy_conf)
+{
+    int rv;
+    ogs_yaml_iter_t slice_array, slice_iter;
+
+    ogs_assert(parent);
+    ogs_assert(policy_conf);
+
+    rv = slice_conf_prepare();
+    if (rv != OGS_OK) return rv;
+
+    ogs_yaml_iter_recurse(parent, &slice_array);
+    do {
+        ogs_app_slice_conf_t *slice_conf = NULL;
+        ogs_s_nssai_t s_nssai;
+        bool default_indicator = false;
+
+        s_nssai.sst = 0;
+        s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+
+        OGS_YAML_ARRAY_NEXT(&slice_array, &slice_iter);
+        while (ogs_yaml_iter_next(&slice_iter)) {
+            const char *slice_key = ogs_yaml_iter_key(&slice_iter);
+            ogs_assert(slice_key);
+            if (!strcmp(slice_key, OGS_SST_STRING)) {
+                const char *v = ogs_yaml_iter_value(&slice_iter);
+                if (v) {
+                    s_nssai.sst = atoi(v);
+                    if (s_nssai.sst == 1 || s_nssai.sst == 2 ||
+                            s_nssai.sst == 3 || s_nssai.sst == 4) {
+                    } else {
+                        ogs_error("Unknown SST [%d]", s_nssai.sst);
+                        return OGS_ERROR;
+                    }
+                }
+            } else if (!strcmp(slice_key, OGS_SD_STRING)) {
+                const char *v = ogs_yaml_iter_value(&slice_iter);
+                if (v) s_nssai.sd = ogs_s_nssai_sd_from_string(v);
+            } else if (!strcmp(slice_key, OGS_DEFAULT_INDICATOR_STRING)) {
+                default_indicator = ogs_yaml_iter_bool(&slice_iter);
+            }
+        }
+
+        if (s_nssai.sst) {
+            slice_conf = ogs_app_slice_conf_add(policy_conf, &s_nssai);
+            if (!slice_conf) {
+                ogs_error("ogs_app_slice_conf_add() failed [SST:%d,SD:0x%x]",
+                        s_nssai.sst, s_nssai.sd.v);
+                return OGS_ERROR;
+            }
+            slice_conf->data.default_indicator = default_indicator;
+        } else {
+            ogs_error("No SST");
+            return OGS_ERROR;
+        }
+
+        OGS_YAML_ARRAY_RECURSE(&slice_array, &slice_iter);
+        while (ogs_yaml_iter_next(&slice_iter)) {
+            const char *slice_key = ogs_yaml_iter_key(&slice_iter);
+            ogs_assert(slice_key);
+            if (!strcmp(slice_key, OGS_SESSION_STRING)) {
+                rv = ogs_app_parse_session_conf(&slice_iter, slice_conf);
+                if (rv != OGS_OK) {
+                    ogs_error("parse_session_conf() failed");
+                    return rv;
+                }
+            }
+        }
+
+    } while (ogs_yaml_iter_type(&slice_array) == YAML_SEQUENCE_NODE);
+
+    rv = slice_conf_validation();
+    if (rv != OGS_OK) return rv;
+
+    return OGS_OK;
+}
+
+static int policy_conf_prepare(void)
+{
+    return OGS_OK;
+}
+
+static int policy_conf_validation(void)
+{
+    int rv;
+
+    rv = ogs_app_check_policy_conf();
+    if (rv != OGS_OK) {
+        ogs_error("ogs_app_check_policy_conf() failed");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
+static int parse_policy_conf(ogs_yaml_iter_t *parent)
+{
+    int rv;
+    ogs_yaml_iter_t policy_array, policy_iter;
+
+    ogs_assert(parent);
+
+    rv = policy_conf_prepare();
+    if (rv != OGS_OK) return rv;
+
+    ogs_yaml_iter_recurse(parent, &policy_array);
+    do {
+        const char *mnc = NULL, *mcc = NULL;
+        ogs_app_policy_conf_t *policy_conf = NULL;
+
+        OGS_YAML_ARRAY_NEXT(&policy_array, &policy_iter);
+        while (ogs_yaml_iter_next(&policy_iter)) {
+            const char *policy_key = ogs_yaml_iter_key(&policy_iter);
+            ogs_assert(policy_key);
+            if (!strcmp(policy_key, "plmn_id")) {
+                ogs_yaml_iter_t plmn_id_iter;
+
+                ogs_yaml_iter_recurse(&policy_iter, &plmn_id_iter);
+                while (ogs_yaml_iter_next(&plmn_id_iter)) {
+                    const char *id_key = ogs_yaml_iter_key(&plmn_id_iter);
+                    ogs_assert(id_key);
+                    if (!strcmp(id_key, "mcc")) {
+                        mcc = ogs_yaml_iter_value(&plmn_id_iter);
+                    } else if (!strcmp(id_key, "mnc")) {
+                        mnc = ogs_yaml_iter_value(&plmn_id_iter);
+                    }
+                }
+
+            }
+        }
+
+        if (mcc && mnc) {
+            ogs_plmn_id_t plmn_id;
+            ogs_plmn_id_build(&plmn_id, atoi(mcc), atoi(mnc), strlen(mnc));
+            policy_conf = ogs_app_policy_conf_add(&plmn_id);
+            if (!policy_conf) {
+                ogs_error("ogs_app_policy_conf_add() failed "
+                        "[MCC:%s,MNC:%s]", mcc, mnc);
+                return OGS_ERROR;
+            }
+        } else {
+            ogs_error("No PLMN-ID [MCC:%s, MNC:%s]", mcc, mnc);
+            return OGS_ERROR;
+        }
+
+        OGS_YAML_ARRAY_RECURSE(&policy_array, &policy_iter);
+        while (ogs_yaml_iter_next(&policy_iter)) {
+            const char *policy_key = ogs_yaml_iter_key(&policy_iter);
+            ogs_assert(policy_key);
+            if (!strcmp(policy_key, OGS_SLICE_STRING)) {
+                rv = parse_slice_conf(&policy_iter, policy_conf);
+                if (rv != OGS_OK) {
+                    ogs_error("parse_slice_conf() failed");
+                    return rv;
+                }
+            }
+        }
+
+    } while (ogs_yaml_iter_type(&policy_array) == YAML_SEQUENCE_NODE);
+
+    rv = policy_conf_validation();
+    if (rv != OGS_OK) return rv;
+
+    return OGS_OK;
+}
+
 int pcf_context_parse_config(void)
 {
     int rv;
@@ -115,7 +292,13 @@ int pcf_context_parse_config(void)
             while (ogs_yaml_iter_next(&pcf_iter)) {
                 const char *pcf_key = ogs_yaml_iter_key(&pcf_iter);
                 ogs_assert(pcf_key);
-                if (!strcmp(pcf_key, "sbi")) {
+                if (!strcmp(pcf_key, "default")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(pcf_key, "sbi")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(pcf_key, "nrf")) {
+                    /* handle config in sbi library */
+                } else if (!strcmp(pcf_key, "scp")) {
                     /* handle config in sbi library */
                 } else if (!strcmp(pcf_key, "service_name")) {
                     /* handle config in sbi library */
@@ -123,6 +306,12 @@ int pcf_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(pcf_key, "metrics")) {
                     /* handle config in metrics library */
+                } else if (!strcmp(pcf_key, OGS_POLICY_STRING)) {
+                    rv = parse_policy_conf(&pcf_iter);
+                    if (rv != OGS_OK) {
+                        ogs_error("parse_policy_conf() failed");
+                        return rv;
+                    }
                 } else
                     ogs_warn("unknown key `%s`", pcf_key);
             }
@@ -311,6 +500,8 @@ void pcf_sess_remove(pcf_sess_t *sess)
 
     if (sess->dnn)
         ogs_free(sess->dnn);
+    if (sess->full_dnn)
+        ogs_free(sess->full_dnn);
 
     if (sess->notification_uri)
         ogs_free(sess->notification_uri);
@@ -600,4 +791,47 @@ int pcf_instance_get_load(void)
     return (((ogs_pool_size(&pcf_ue_pool) -
             ogs_pool_avail(&pcf_ue_pool)) * 100) /
             ogs_pool_size(&pcf_ue_pool));
+}
+
+int pcf_db_qos_data(char *supi,
+        ogs_plmn_id_t *plmn_id, ogs_s_nssai_t *s_nssai, char *dnn,
+        ogs_session_data_t *session_data)
+{
+    int rv;
+    ogs_session_data_t zero_data;
+
+    ogs_app_policy_conf_t *policy_conf = NULL;
+
+    ogs_assert(supi);
+    ogs_assert(s_nssai);
+    ogs_assert(dnn);
+    ogs_assert(session_data);
+
+    memset(&zero_data, 0, sizeof(zero_data));
+
+    /* session_data should be initialized to zero */
+    ogs_assert(memcmp(session_data, &zero_data, sizeof(zero_data)) == 0);
+
+    if (plmn_id)
+        policy_conf = ogs_app_policy_conf_find_by_plmn_id(plmn_id);
+    else
+        ogs_warn("No PLMN_ID");
+
+    if (policy_conf) {
+        rv = ogs_app_config_session_data(
+                plmn_id, s_nssai, dnn, session_data);
+        if (rv != OGS_OK)
+            ogs_error("ogs_app_config_session_data() failed - "
+                    "MCC[%d] MNC[%d] SST[%d] SD[0x%x] DNN[%s]",
+                    ogs_plmn_id_mcc(plmn_id), ogs_plmn_id_mnc(plmn_id),
+                    s_nssai->sst, s_nssai->sd.v, dnn);
+    } else {
+        rv = ogs_dbi_session_data(supi, s_nssai, dnn, session_data);
+        if (rv != OGS_OK)
+            ogs_error("ogs_dbi_session_data() failed - "
+                    "SUPI[%s] SST[%d] SD[0x%x] DNN[%s]",
+                    supi, s_nssai->sst, s_nssai->sd.v, dnn);
+    }
+
+    return rv;
 }

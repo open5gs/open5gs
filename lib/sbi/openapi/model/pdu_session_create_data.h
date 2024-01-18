@@ -124,6 +124,7 @@ typedef struct OpenAPI_pdu_session_create_data_s {
     char *old_pdu_session_ref;
     bool is_sm_policy_notify_ind;
     int sm_policy_notify_ind;
+    bool is_pcf_ue_callback_info_null;
     struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_callback_info;
     OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat;
     bool is_upip_supported;
@@ -216,6 +217,7 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     char *old_pdu_session_ref,
     bool is_sm_policy_notify_ind,
     int sm_policy_notify_ind,
+    bool is_pcf_ue_callback_info_null,
     OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info,
     OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat,
     bool is_upip_supported,

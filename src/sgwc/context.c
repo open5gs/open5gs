@@ -52,8 +52,8 @@ void sgwc_context_init(void)
     ogs_pool_init(&sgwc_bearer_pool, ogs_app()->pool.bearer);
     ogs_pool_init(&sgwc_tunnel_pool, ogs_app()->pool.tunnel);
 
-    ogs_pool_init(&sgwc_ue_pool, ogs_app()->max.ue);
-    ogs_pool_init(&sgwc_s11_teid_pool, ogs_app()->max.ue);
+    ogs_pool_init(&sgwc_ue_pool, ogs_global_conf()->max.ue);
+    ogs_pool_init(&sgwc_s11_teid_pool, ogs_global_conf()->max.ue);
     ogs_pool_random_id_generate(&sgwc_s11_teid_pool);
 
     ogs_pool_init(&sgwc_sess_pool, ogs_app()->pool.sess);
@@ -145,6 +145,8 @@ int sgwc_context_parse_config(void)
                 if (!strcmp(sgwc_key, "gtpc")) {
                     /* handle config in gtp library */
                 } else if (!strcmp(sgwc_key, "pfcp")) {
+                    /* handle config in pfcp library */
+                } else if (!strcmp(sgwc_key, "sgwu")) {
                     /* handle config in pfcp library */
                 } else
                     ogs_warn("unknown key `%s`", sgwc_key);
@@ -381,7 +383,7 @@ static ogs_pfcp_node_t *selected_sgwu_node(
             compare_ue_info(node, sess) == true) return node;
     }
 
-    if (ogs_app()->parameter.no_pfcp_rr_select == 0) {
+    if (ogs_global_conf()->parameter.no_pfcp_rr_select == 0) {
         /* continue search from current position */
         next = ogs_list_next(current);
         for (node = next; node; node = ogs_list_next(node)) {
@@ -630,7 +632,8 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
 
-    uint8_t src_if, dst_if;
+    uint8_t src_if = OGS_PFCP_INTERFACE_UNKNOWN;
+    uint8_t dst_if = OGS_PFCP_INTERFACE_UNKNOWN;
 
     ogs_assert(bearer);
     sess = bearer->sess;

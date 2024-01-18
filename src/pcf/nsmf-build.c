@@ -37,7 +37,7 @@ ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_update(
     memset(&SmPolicyNotification, 0, sizeof(SmPolicyNotification));
     memset(&message, 0, sizeof(message));
 
-    server = ogs_list_first(&ogs_sbi_self()->server_list);
+    server = ogs_sbi_server_first();
     if (!server) {
         ogs_error("No server");
         goto end;

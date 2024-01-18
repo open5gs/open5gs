@@ -102,8 +102,8 @@ static void encode_traffic_flow_template(
 
                 ogs_pf_content_from_ipfw_rule(
                         pf->direction, &tft->pf[i].content, &pf->ipfw_rule,
-                        ogs_app()->
-                        parameter.no_ipv4v6_local_addr_in_packet_filter);
+                        ogs_global_conf()->parameter.
+                        no_ipv4v6_local_addr_in_packet_filter);
             }
 
             i++;

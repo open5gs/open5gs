@@ -51,12 +51,12 @@ const Subscriber = new Schema({
         uplink: { value: Number, unit: Number }
       },
       ue: {
-        addr: String,
-        addr6: String
+        ipv4: String,
+        ipv6: String
       },
       smf: {
-        addr: String,
-        addr6: String
+        ipv4: String,
+        ipv6: String
       },
       pcc_rule: [{
         flow: [{
@@ -90,6 +90,10 @@ const Subscriber = new Schema({
   subscriber_status: {
     $type: Number,
     default: 0  // Service Granted
+  },
+  operator_determined_barring: {
+    $type: Number,
+    default: 0 // No barring
   },
   network_access_mode: {
     $type: Number,

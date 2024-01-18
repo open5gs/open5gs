@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -177,7 +177,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
              * 4.3.2 PDU Session Establishment *
              ***********************************/
 
-            ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+            ran_ue = ran_ue_cycle(sess->ran_ue);
             if (ran_ue) {
                 if (sess->pdu_session_establishment_accept) {
                     ogs_pkbuf_free(sess->pdu_session_establishment_accept);
@@ -187,11 +187,11 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                 if (ran_ue->initial_context_setup_request_sent == true) {
                     ngapbuf =
                         ngap_sess_build_pdu_session_resource_setup_request(
-                            sess, gmmbuf, n2buf);
+                                ran_ue, sess, gmmbuf, n2buf);
                     ogs_assert(ngapbuf);
                 } else {
                     ngapbuf = ngap_sess_build_initial_context_setup_request(
-                            sess, gmmbuf, n2buf);
+                            ran_ue, sess, gmmbuf, n2buf);
                     ogs_assert(ngapbuf);
 
                     ran_ue->initial_context_setup_request_sent = true;
@@ -228,7 +228,9 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                 ogs_sbi_header_t header;
                 ogs_sbi_client_t *client = NULL;
                 OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
-                ogs_sockaddr_t *addr = NULL;
+                char *fqdn = NULL;
+                uint16_t fqdn_port = 0;
+                ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
                 if (!N1N2MessageTransferReqData->n1n2_failure_txf_notif_uri) {
                     ogs_error("[%s:%d] No n1-n2-failure-notification-uri",
@@ -236,7 +238,8 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                     return OGS_ERROR;
                 }
 
-                rc = ogs_sbi_getaddr_from_uri(&scheme, &addr,
+                rc = ogs_sbi_getaddr_from_uri(
+                        &scheme, &fqdn, &fqdn_port, &addr, &addr6,
                         N1N2MessageTransferReqData->n1n2_failure_txf_notif_uri);
                 if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
                     ogs_error("[%s:%d] Invalid URI [%s]",
@@ -246,13 +249,27 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                     return OGS_ERROR;;
                 }
 
-                client = ogs_sbi_client_find(scheme, addr);
+                client = ogs_sbi_client_find(
+                        scheme, fqdn, fqdn_port, addr, addr6);
                 if (!client) {
-                    client = ogs_sbi_client_add(scheme, addr);
-                    ogs_assert(client);
+                    ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
+                    client = ogs_sbi_client_add(
+                            scheme, fqdn, fqdn_port, addr, addr6);
+                    if (!client) {
+                        ogs_error("%s: ogs_sbi_client_add() failed", OGS_FUNC);
+
+                        ogs_free(fqdn);
+                        ogs_freeaddrinfo(addr);
+                        ogs_freeaddrinfo(addr6);
+
+                        return OGS_ERROR;
+                    }
                 }
                 OGS_SBI_SETUP_CLIENT(&sess->paging, client);
+
+                ogs_free(fqdn);
                 ogs_freeaddrinfo(addr);
+                ogs_freeaddrinfo(addr6);
 
                 status = OGS_SBI_HTTP_STATUS_ACCEPTED;
                 N1N2MessageTransferRspData.cause =
@@ -350,10 +367,18 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             ogs_assert(r != OGS_ERROR);
 
         } else if (CM_CONNECTED(amf_ue)) {
-            r = nas_send_pdu_session_modification_command(sess, n1buf, n2buf);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-
+            if (CONTEXT_SETUP_ESTABLISHED(amf_ue)) {
+                r = nas_send_pdu_session_modification_command(
+                        sess, n1buf, n2buf);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            } else {
+                /* Store 5GSM Message */
+                ogs_warn("[Session MODIFY] Context setup is not established");
+                AMF_SESS_STORE_5GSM_MESSAGE(sess,
+                        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND,
+                        n1buf, n2buf);
+            }
         } else {
             ogs_fatal("[%s] Invalid AMF-UE state", amf_ue->supi);
             ogs_assert_if_reached();
@@ -418,9 +443,17 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             }
 
         } else if (CM_CONNECTED(amf_ue)) {
-            r = nas_send_pdu_session_release_command(sess, n1buf, n2buf);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
+            if (CONTEXT_SETUP_ESTABLISHED(amf_ue)) {
+                r = nas_send_pdu_session_release_command(sess, n1buf, n2buf);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            } else {
+                /* Store 5GSM Message */
+                ogs_warn("[Session RELEASE] Context setup is not established");
+                AMF_SESS_STORE_5GSM_MESSAGE(sess,
+                        OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND,
+                        n1buf, n2buf);
+            }
         } else {
             ogs_fatal("[%s] Invalid AMF-UE state", amf_ue->supi);
             ogs_assert_if_reached();
@@ -449,7 +482,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_error("[%d:%d] PDU session establishment reject",
                 sess->psi, sess->pti);
 
-        r = nas_5gs_send_gsm_reject(sess,
+        r = nas_5gs_send_gsm_reject(sess->ran_ue, sess,
                 OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1buf);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -709,6 +742,10 @@ static int update_rat_res_add_one(cJSON *restriction,
     }
 
     restr = (void *) OpenAPI_rat_type_FromString(cJSON_GetStringValue(restriction));
+    if (!restr) {
+        ogs_error("No restr");
+        return OGS_ERROR;
+    }
 
     if (index == restrictions->count) {
         OpenAPI_list_add(restrictions, restr);
@@ -969,38 +1006,35 @@ int amf_namf_callback_handle_sdm_data_change_notify(
 
     if (amf_ue) {
         ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-        if ((!ran_ue) || (amf_ue_is_rat_restricted(amf_ue))) {
+        if (!ran_ue) {
+            ogs_error("NG context has already been removed");
+            /* ran_ue is required for amf_ue_is_rat_restricted() */
 
-            if (!ran_ue) {
-                ogs_error("NG context has already been removed");
-                /* ran_ue is required for amf_ue_is_rat_restricted() */
+            ogs_error("Not implemented : Use Implicit De-registration");
+            state = AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED;
 
-                ogs_error("Not implemented : Use Implicit De-registration");
-                state = AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED;
-            }
-            else {
-                /*
-                * - AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED
-                * 1. UDM_UECM_DeregistrationNotification
-                * 2. Deregistration request
-                * 3. UDM_SDM_Unsubscribe
-                * 4. UDM_UECM_Deregistration
-                * 5. PDU session release request
-                * 6. PDUSessionResourceReleaseCommand +
-                *    PDU session release command
-                * 7. PDUSessionResourceReleaseResponse
-                * 8. AM_Policy_Association_Termination
-                * 9.  Deregistration accept
-                * 10. Signalling Connection Release
-                */
-                r = nas_5gs_send_de_registration_request(
-                        amf_ue,
-                        OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED, 0);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
+        } else if (amf_ue_is_rat_restricted(amf_ue)) {
+            /*
+             * - AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED
+             * 1. UDM_UECM_DeregistrationNotification
+             * 2. Deregistration request
+             * 3. UDM_SDM_Unsubscribe
+             * 4. UDM_UECM_Deregistration
+             * 5. PDU session release request
+             * 6. PDUSessionResourceReleaseCommand +
+             *    PDU session release command
+             * 7. PDUSessionResourceReleaseResponse
+             * 8. AM_Policy_Association_Termination
+             * 9.  Deregistration accept
+             * 10. Signalling Connection Release
+             */
+            r = nas_5gs_send_de_registration_request(
+                    amf_ue,
+                    OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED, 0);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
 
-                state = AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED;
-            }
+            state = AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED;
 
             if (UDM_SDM_SUBSCRIBED(amf_ue)) {
                 r = amf_ue_sbi_discover_and_send(
@@ -1025,7 +1059,7 @@ int amf_namf_callback_handle_sdm_data_change_notify(
             ngapbuf = ngap_build_ue_context_modification_request(amf_ue);
             ogs_assert(ngapbuf);
 
-            r = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+            r = ngap_send_to_ran_ue(ran_ue, ngapbuf);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
         }

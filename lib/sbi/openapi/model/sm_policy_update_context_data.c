@@ -47,6 +47,7 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     OpenAPI_qos_flow_usage_e qos_flow_usage,
     OpenAPI_credit_management_status_e credit_manage_status,
     OpenAPI_serving_nf_identity_t *serv_nf_id,
+    bool is_trace_req_null,
     OpenAPI_trace_data_t *trace_req,
     OpenAPI_ma_pdu_indication_e ma_pdu_ind,
     OpenAPI_npcf_atsss_capability_e atsss_capab,
@@ -62,7 +63,9 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     OpenAPI_list_t *types_of_notif,
     OpenAPI_list_t *inter_grp_ids,
     OpenAPI_satellite_backhaul_category_e sat_backhaul_category,
+    bool is_pcf_ue_info_null,
     OpenAPI_pcf_ue_callback_info_t *pcf_ue_info,
+    bool is_nwdaf_datas_null,
     OpenAPI_list_t *nwdaf_datas,
     bool is_an_gw_status,
     int an_gw_status
@@ -113,6 +116,7 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     sm_policy_update_context_data_local_var->qos_flow_usage = qos_flow_usage;
     sm_policy_update_context_data_local_var->credit_manage_status = credit_manage_status;
     sm_policy_update_context_data_local_var->serv_nf_id = serv_nf_id;
+    sm_policy_update_context_data_local_var->is_trace_req_null = is_trace_req_null;
     sm_policy_update_context_data_local_var->trace_req = trace_req;
     sm_policy_update_context_data_local_var->ma_pdu_ind = ma_pdu_ind;
     sm_policy_update_context_data_local_var->atsss_capab = atsss_capab;
@@ -128,7 +132,9 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     sm_policy_update_context_data_local_var->types_of_notif = types_of_notif;
     sm_policy_update_context_data_local_var->inter_grp_ids = inter_grp_ids;
     sm_policy_update_context_data_local_var->sat_backhaul_category = sat_backhaul_category;
+    sm_policy_update_context_data_local_var->is_pcf_ue_info_null = is_pcf_ue_info_null;
     sm_policy_update_context_data_local_var->pcf_ue_info = pcf_ue_info;
+    sm_policy_update_context_data_local_var->is_nwdaf_datas_null = is_nwdaf_datas_null;
     sm_policy_update_context_data_local_var->nwdaf_datas = nwdaf_datas;
     sm_policy_update_context_data_local_var->is_an_gw_status = is_an_gw_status;
     sm_policy_update_context_data_local_var->an_gw_status = an_gw_status;
@@ -802,6 +808,11 @@ cJSON *OpenAPI_sm_policy_update_context_data_convertToJSON(OpenAPI_sm_policy_upd
         ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [trace_req]");
         goto end;
     }
+    } else if (sm_policy_update_context_data->is_trace_req_null) {
+        if (cJSON_AddNullToObject(item, "traceReq") == NULL) {
+            ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [trace_req]");
+            goto end;
+        }
     }
 
     if (sm_policy_update_context_data->ma_pdu_ind != OpenAPI_ma_pdu_indication_NULL) {
@@ -988,6 +999,11 @@ cJSON *OpenAPI_sm_policy_update_context_data_convertToJSON(OpenAPI_sm_policy_upd
         ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [pcf_ue_info]");
         goto end;
     }
+    } else if (sm_policy_update_context_data->is_pcf_ue_info_null) {
+        if (cJSON_AddNullToObject(item, "pcfUeInfo") == NULL) {
+            ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [pcf_ue_info]");
+            goto end;
+        }
     }
 
     if (sm_policy_update_context_data->nwdaf_datas) {
@@ -1004,6 +1020,11 @@ cJSON *OpenAPI_sm_policy_update_context_data_convertToJSON(OpenAPI_sm_policy_upd
         }
         cJSON_AddItemToArray(nwdaf_datasList, itemLocal);
     }
+    } else if (sm_policy_update_context_data->is_nwdaf_datas_null) {
+        if (cJSON_AddNullToObject(item, "nwdafDatas") == NULL) {
+            ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [nwdaf_datas]");
+            goto end;
+        }
     }
 
     if (sm_policy_update_context_data->is_an_gw_status) {
@@ -1133,10 +1154,15 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
             }
             localEnum = OpenAPI_policy_control_request_trigger_FromString(rep_policy_ctrl_req_triggers_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_policy_control_request_trigger_FromString(rep_policy_ctrl_req_triggers_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"rep_policy_ctrl_req_triggers\" is not supported. Ignoring it ...",
+                         rep_policy_ctrl_req_triggers_local->valuestring);
+            } else {
+                OpenAPI_list_add(rep_policy_ctrl_req_triggersList, (void *)localEnum);
             }
-            OpenAPI_list_add(rep_policy_ctrl_req_triggersList, (void *)localEnum);
+        }
+        if (rep_policy_ctrl_req_triggersList->count == 0) {
+            ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed: Expected rep_policy_ctrl_req_triggersList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -1581,10 +1607,12 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
 
     trace_req = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "traceReq");
     if (trace_req) {
+    if (!cJSON_IsNull(trace_req)) {
     trace_req_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_req);
     if (!trace_req_local_nonprim) {
         ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_req]");
         goto end;
+    }
     }
     }
 
@@ -1699,10 +1727,15 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
             }
             localEnum = OpenAPI_policy_decision_failure_code_FromString(policy_dec_failure_reports_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_policy_decision_failure_code_FromString(policy_dec_failure_reports_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"policy_dec_failure_reports\" is not supported. Ignoring it ...",
+                         policy_dec_failure_reports_local->valuestring);
+            } else {
+                OpenAPI_list_add(policy_dec_failure_reportsList, (void *)localEnum);
             }
-            OpenAPI_list_add(policy_dec_failure_reportsList, (void *)localEnum);
+        }
+        if (policy_dec_failure_reportsList->count == 0) {
+            ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed: Expected policy_dec_failure_reportsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -1780,10 +1813,15 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
             }
             localEnum = OpenAPI_dl_data_delivery_status_FromString(types_of_notif_local->valuestring);
             if (!localEnum) {
-                ogs_error("OpenAPI_dl_data_delivery_status_FromString(types_of_notif_local->valuestring) failed");
-                goto end;
+                ogs_info("Enum value \"%s\" for field \"types_of_notif\" is not supported. Ignoring it ...",
+                         types_of_notif_local->valuestring);
+            } else {
+                OpenAPI_list_add(types_of_notifList, (void *)localEnum);
             }
-            OpenAPI_list_add(types_of_notifList, (void *)localEnum);
+        }
+        if (types_of_notifList->count == 0) {
+            ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed: Expected types_of_notifList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -1819,15 +1857,18 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
 
     pcf_ue_info = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "pcfUeInfo");
     if (pcf_ue_info) {
+    if (!cJSON_IsNull(pcf_ue_info)) {
     pcf_ue_info_local_nonprim = OpenAPI_pcf_ue_callback_info_parseFromJSON(pcf_ue_info);
     if (!pcf_ue_info_local_nonprim) {
         ogs_error("OpenAPI_pcf_ue_callback_info_parseFromJSON failed [pcf_ue_info]");
         goto end;
     }
     }
+    }
 
     nwdaf_datas = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "nwdafDatas");
     if (nwdaf_datas) {
+    if (!cJSON_IsNull(nwdaf_datas)) {
         cJSON *nwdaf_datas_local = NULL;
         if (!cJSON_IsArray(nwdaf_datas)) {
             ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [nwdaf_datas]");
@@ -1848,6 +1889,7 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
             }
             OpenAPI_list_add(nwdaf_datasList, nwdaf_datasItem);
         }
+    }
     }
 
     an_gw_status = cJSON_GetObjectItemCaseSensitive(sm_policy_update_context_dataJSON, "anGwStatus");
@@ -1901,6 +1943,7 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         qos_flow_usage ? qos_flow_usageVariable : 0,
         credit_manage_status ? credit_manage_statusVariable : 0,
         serv_nf_id ? serv_nf_id_local_nonprim : NULL,
+        trace_req && cJSON_IsNull(trace_req) ? true : false,
         trace_req ? trace_req_local_nonprim : NULL,
         ma_pdu_ind ? ma_pdu_indVariable : 0,
         atsss_capab ? atsss_capabVariable : 0,
@@ -1916,7 +1959,9 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         types_of_notif ? types_of_notifList : NULL,
         inter_grp_ids ? inter_grp_idsList : NULL,
         sat_backhaul_category ? sat_backhaul_categoryVariable : 0,
+        pcf_ue_info && cJSON_IsNull(pcf_ue_info) ? true : false,
         pcf_ue_info ? pcf_ue_info_local_nonprim : NULL,
+        nwdaf_datas && cJSON_IsNull(nwdaf_datas) ? true : false,
         nwdaf_datas ? nwdaf_datasList : NULL,
         an_gw_status ? true : false,
         an_gw_status ? an_gw_status->valueint : 0

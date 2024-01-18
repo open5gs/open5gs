@@ -25,7 +25,7 @@ int app_initialize(const char *const argv[])
 
     rv = ausf_initialize();
     if (rv != OGS_OK) {
-        ogs_error("Failed to intialize AUSF");
+        ogs_error("Failed to initialize AUSF");
         return rv;
     }
     ogs_info("AUSF initialize...done");

@@ -89,37 +89,44 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
     ogs_thread_mutex_unlock(&sess_state_mutex);
 }
 
-/* TS 32.299 7.1.9 Multiple-Services-Credit-Control AVP for CCR */
-static void fill_multiple_services_credit_control_ccr(smf_sess_t *sess,
-                                                      uint32_t cc_request_type, struct msg *req)
+/* Requested-Service-Unit, RFC4006 8.18 */
+static void fill_requested_service_unit(smf_sess_t *sess, struct avp *parent_avp)
 {
     int ret;
     union avp_value val;
-    struct avp *avp;
-    struct avp *avpch1, *avpch2, *avpch3;
+    struct avp *avpch1, *avpch2;
 
-    /* Multiple-Services-Credit-Control */
-    ret = fd_msg_avp_new(ogs_diam_gy_multiple_services_cc, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_gy_requested_service_unit, 0, &avpch1);
     ogs_assert(ret == 0);
 
-    /* Requested-Service-Unit, RFC4006 8.18 */
-    if (cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST ||
-        cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST) {
-        ret = fd_msg_avp_new(ogs_diam_gy_requested_service_unit, 0, &avpch1);
-        ogs_assert(ret == 0);
+    /* CC-Time, RFC4006 8.21 */
+    /* CC-Money, RFC4006 8.22. Not used in 3GPP. */
 
-        /* CC-Time, RFC4006 8.21 */
-        /* CC-Money, RFC4006 8.22. Not used in 3GPP. */
-        /* CC-Total-Octets, RFC4006 8.23 */
-        /* CC-Input-Octets, RFC4006 8.24 */
-        /* CC-Output-Octets, RFC4006 8.25 */
-        /* CC-Service-Specific-Units, RFC4006 8.26 */
+    /* CC-Total-Octets, RFC4006 8.23 */
+    ret = fd_msg_avp_new(ogs_diam_gy_cc_total_octets, 0, &avpch2);
+    ogs_assert(ret == 0);
+    val.u64 = 1000000;
+    ret = fd_msg_avp_setvalue(avpch2, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    ogs_assert(ret == 0);
 
-        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-        ogs_assert(ret == 0);
-    }
+    /* CC-Input-Octets, RFC4006 8.24 */
+    /* CC-Output-Octets, RFC4006 8.25 */
+    /* CC-Service-Specific-Units, RFC4006 8.26 */
 
-    /* Used-Service-Unit, RFC4006 8.18 */
+    ret = fd_msg_avp_add(parent_avp, MSG_BRW_LAST_CHILD, avpch1);
+    ogs_assert(ret == 0);
+}
+
+/* Used-Service-Unit, RFC4006 8.18 */
+static void fill_used_service_unit(smf_sess_t *sess,
+                                   uint32_t cc_request_type, struct avp *parent_avp)
+{
+    int ret;
+    union avp_value val;
+    struct avp *avpch1, *avpch2;
+
     ret = fd_msg_avp_new(ogs_diam_gy_used_service_unit, 0, &avpch1);
     ogs_assert(ret == 0);
 
@@ -180,42 +187,17 @@ static void fill_multiple_services_credit_control_ccr(smf_sess_t *sess,
 
     /* CC-Service-Specific-Units, RFC4006 8.26 */
 
-    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    ret = fd_msg_avp_add (parent_avp, MSG_BRW_LAST_CHILD, avpch1);
     ogs_assert(ret == 0);
+}
 
-    /* Service-Identifier, RFC4006 8.28. Not used in Gy. */
-    /* Rating-Group */
+/* QoS-Information */
+static void fill_qos_information(smf_sess_t *sess, struct avp *parent_avp)
+{
+    int ret;
+    union avp_value val;
+    struct avp *avpch1, *avpch2, *avpch3;
 
-    /* Reporting-Reason, TS 32.299 7.2.175 */
-    /* "values QHT, FINAL, VALIDITY_TIME, FORCED_REAUTHORISATION,
-     * RATING_CONDITION_CHANGE, UNUSED_QUOTA_TIMER apply for all quota types
-     * and are used directly in the Multiple-Services-Credit-Control AVP"
-     */
-    if (cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST ||
-        cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
-        switch (sess->gy.reporting_reason) {
-        case OGS_DIAM_GY_REPORTING_REASON_QHT:
-        case OGS_DIAM_GY_REPORTING_REASON_FINAL:
-        case OGS_DIAM_GY_REPORTING_REASON_FORCED_REAUTHORISATION:
-        case OGS_DIAM_GY_REPORTING_REASON_VALIDITY_TIME:
-        case OGS_DIAM_GY_REPORTING_REASON_RATING_CONDITION_CHANGE:
-        case OGS_DIAM_GY_REPORTING_REASON_UNUSED_QUOTA_TIMER:
-            ret = fd_msg_avp_new(ogs_diam_gy_reporting_reason, 0, &avpch1);
-            ogs_assert(ret == 0);
-            val.u32 = sess->gy.reporting_reason;
-            ret = fd_msg_avp_setvalue (avpch1, &val);
-            ogs_assert(ret == 0);
-            ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-            ogs_assert(ret == 0);
-            break;
-        default:
-            break;
-        }
-    }
-
-    /* ... lots of AVPs ... */
-
-    /* QoS-Information */
     ret = fd_msg_avp_new(ogs_diam_gx_qos_information, 0, &avpch1);
     ogs_assert(ret == 0);
 
@@ -283,8 +265,65 @@ static void fill_multiple_services_credit_control_ccr(smf_sess_t *sess,
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
         ogs_assert(ret == 0);
     }
-    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    ret = fd_msg_avp_add (parent_avp, MSG_BRW_LAST_CHILD, avpch1);
     ogs_assert(ret == 0);
+}
+
+/* TS 32.299 7.1.9 Multiple-Services-Credit-Control AVP for CCR */
+static void fill_multiple_services_credit_control_ccr(smf_sess_t *sess,
+                                                      uint32_t cc_request_type, struct msg *req)
+{
+    int ret;
+    union avp_value val;
+    struct avp *avp;
+    struct avp *avpch1;
+
+    /* Multiple-Services-Credit-Control */
+    ret = fd_msg_avp_new(ogs_diam_gy_multiple_services_cc, 0, &avp);
+    ogs_assert(ret == 0);
+
+    /* Requested-Service-Unit, RFC4006 8.18 */
+    if (cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST ||
+        cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST)
+        fill_requested_service_unit(sess, avp);
+
+    if (cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST ||
+        cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
+        /* Used-Service-Unit, RFC4006 8.18 */
+        fill_used_service_unit(sess, cc_request_type, avp);
+
+        /* Service-Identifier, RFC4006 8.28. Not used in Gy. */
+        /* Rating-Group */
+
+        /* Reporting-Reason, TS 32.299 7.2.175 */
+        /* "values QHT, FINAL, VALIDITY_TIME, FORCED_REAUTHORISATION,
+        * RATING_CONDITION_CHANGE, UNUSED_QUOTA_TIMER apply for all quota types
+        * and are used directly in the Multiple-Services-Credit-Control AVP"
+        */
+        switch (sess->gy.reporting_reason) {
+        case OGS_DIAM_GY_REPORTING_REASON_QHT:
+        case OGS_DIAM_GY_REPORTING_REASON_FINAL:
+        case OGS_DIAM_GY_REPORTING_REASON_FORCED_REAUTHORISATION:
+        case OGS_DIAM_GY_REPORTING_REASON_VALIDITY_TIME:
+        case OGS_DIAM_GY_REPORTING_REASON_RATING_CONDITION_CHANGE:
+        case OGS_DIAM_GY_REPORTING_REASON_UNUSED_QUOTA_TIMER:
+            ret = fd_msg_avp_new(ogs_diam_gy_reporting_reason, 0, &avpch1);
+            ogs_assert(ret == 0);
+            val.u32 = sess->gy.reporting_reason;
+            ret = fd_msg_avp_setvalue (avpch1, &val);
+            ogs_assert(ret == 0);
+            ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+            ogs_assert(ret == 0);
+            break;
+        default:
+            break;
+        }
+    }
+
+    /* ... lots of AVPs ... */
+
+    /* QoS-Information */
+    fill_qos_information(sess, avp);
 
     /* 3GPP-RAT-Type, TS 29.061 16.4.7.2 21 */
     /* GGSN: TS 29.060 7.7.50, PGW: TS 29.274 8.17 */
@@ -306,6 +345,7 @@ static void fill_multiple_services_credit_control_ccr(smf_sess_t *sess,
 static void fill_service_information_ccr(smf_sess_t *sess,
                                          uint32_t cc_request_type, struct msg *req)
 {
+
     int ret;
     union avp_value val;
     struct avp *avp;
@@ -465,7 +505,7 @@ static void fill_service_information_ccr(smf_sess_t *sess,
     /* 3GPP-SGSN-MCC-MNC */
     ret = fd_msg_avp_new(ogs_diam_gy_3gpp_sgsn_mcc_mnc, 0, &avpch2);
     ogs_assert(ret == 0);
-    val.os.data = (uint8_t *)ogs_plmn_id_to_string(&sess->plmn_id, buf);
+    val.os.data = (uint8_t *)ogs_plmn_id_to_string(&sess->serving_plmn_id, buf);
     val.os.len = strlen(buf);
     ret = fd_msg_avp_setvalue(avpch2, &val);
     ogs_assert(ret == 0);
@@ -558,6 +598,7 @@ static void fill_service_information_ccr(smf_sess_t *sess,
 void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
         uint32_t cc_request_type)
 {
+
     int ret;
     smf_ue_t *smf_ue = NULL;
 
@@ -599,7 +640,6 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
         ogs_assert(new == 0);
 
         ogs_debug("    Found Gy Session-Id: [%s]", sess->gy_sid);
-
         /* Add Session-Id to the message */
         ret = ogs_diam_message_session_id_set(req, (os0_t)sess->gy_sid, sidlen);
         ogs_assert(ret == 0);
@@ -630,12 +670,10 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
         ogs_assert(sess_data);
 
         ogs_debug("    Allocate new Gy session: [%s]", sess_data->gy_sid);
-
         /* Save Session-Id to SMF Session Context */
         sess->gy_sid = (char *)sess_data->gy_sid;
     } else
         ogs_debug("    Retrieve Gy session: [%s]", sess_data->gy_sid);
-
     /*
      * 8.2.  CC-Request-Number AVP
      *
@@ -669,6 +707,7 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
         sess_data->xact_data[req_slot].pfcp = false;
     sess_data->xact_data[req_slot].cc_req_no = sess_data->cc_request_number;
     sess_data->xact_data[req_slot].ptr = xact;
+
 
     /* Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
@@ -720,6 +759,8 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
+
+
 
     /* Set the Destination-Host AVP */
     if (sess_data->peer_host) {
@@ -881,6 +922,7 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
     /* Send the request */
     ret = fd_msg_send(&req, smf_gy_cca_cb, svg);
     ogs_assert(ret == 0);
+
 
     /* Increment the counter */
     ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);

@@ -52,7 +52,7 @@ typedef struct ogs_rbtree_s {
 static ogs_inline void ogs_rbtree_link_node(
         void *rb_node, ogs_rbnode_t *parent, ogs_rbnode_t **rb_link)
 {
-    ogs_rbnode_t *node = rb_node;
+    ogs_rbnode_t *node = (ogs_rbnode_t *)rb_node;
     node->parent = parent;
     node->left = node->right = NULL;
     node->color = OGS_RBTREE_RED;
@@ -76,7 +76,7 @@ static ogs_inline void *ogs_rbtree_min(const ogs_rbnode_t *rb_node)
 
 static ogs_inline void *ogs_rbtree_max(const void *rb_node)
 {
-    const ogs_rbnode_t *node = rb_node;
+    const ogs_rbnode_t *node = (const ogs_rbnode_t *)rb_node;
     ogs_assert(node);
 
     while (node->right)
@@ -105,7 +105,7 @@ static ogs_inline bool ogs_rbtree_empty(const ogs_rbtree_t *tree)
 
 static ogs_inline int ogs_rbtree_count(const ogs_rbtree_t *tree)
 {
-    ogs_rbnode_t *node;
+    void *node;
     int i = 0;
     ogs_rbtree_for_each(tree, node)
         i++;

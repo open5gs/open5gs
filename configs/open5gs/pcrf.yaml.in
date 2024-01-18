@@ -1,54 +1,100 @@
 db_uri: mongodb://localhost/open5gs
-
-#
-#  o Set OGS_LOG_INFO to all domain level
-#   - If `level` is omitted, the default level is OGS_LOG_INFO)
-#   - If `domain` is omitted, the all domain level is set from 'level'
-#    (Default values are used, so no configuration is required)
-#
-#  o Set OGS_LOG_ERROR to all domain level
-#   - `level` can be set with none, fatal, error, warn, info, debug, trace
-#  logger:
-#    level: error
-#
-#  o Set OGS_LOG_DEBUG to mme/emm domain level
-#  logger:
-#    level: debug
-#    domain: mme,emm
-#
-#  o Set OGS_LOG_TRACE to all domain level
-#  logger:
-#    level: trace
-#    domain: core,sbi,ausf,event,tlv,mem,sock
-#
 logger:
-    file: @localstatedir@/log/open5gs/pcrf.log
+  file: @localstatedir@/log/open5gs/pcrf.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
 
-pcrf:
-    freeDiameter: @sysconfdir@/freeDiameter/pcrf.conf
-
-#
-#  o Disable use of IPv4 addresses (only IPv6)
-#  parameter:
-#    no_ipv4: true
-#
-#  o Disable use of IPv6 addresses (only IPv4)
-#  parameter:
-#    no_ipv6: true
-#
-#  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
-#  parameter:
-#    prefer_ipv4: true
-#
-parameter:
-
-#
-#  o Maximum Number of UE
-#  max:
-#    ue: 1024
-#
-#  o Maximum Number of Peer(S1AP/NGAP, DIAMETER, GTP, PFCP or SBI)
-#  max:
+global:
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
 #    peer: 64
+pcrf:
+  freeDiameter: @sysconfdir@/freeDiameter/pcrf.conf
+
+################################################################################
+# Locally configured policy
+################################################################################
 #
-max:
+#  o You don't have to use MongoDB if you use the policy configuration as below.
+#
+#  session:
+#    - name: internet
+#      type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+#      ambr:
+#        downlink:
+#          value: 1
+#          unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#        uplink:
+#          value: 1
+#          unit: 3
+#      qos:
+#        index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#        arp:
+#          priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#          pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
+#          pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+#    - name: ims
+#      type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+#      ambr:
+#        downlink:
+#          value: 1
+#          unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#        uplink:
+#          value: 1
+#          unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#      qos:
+#        index: 5  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#        arp:
+#          priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#          pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
+#          pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+#      pcc_rule:
+#        - qos:
+#            index: 1  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#            arp:
+#              priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#              pre_emption_vulnerability: 1   # 1: Disabled, 2:Enabled
+#              pre_emption_capability: 1   # 1: Disabled, 2:Enabled
+#            mbr:
+#              downlink:
+#                value: 82
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#              uplink:
+#                value: 82
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#            gbr:
+#              downlink:
+#                value: 82
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#              uplink:
+#                value: 82
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#          flow:
+#            - direction: 2
+#              description: "permit out icmp from any to assigned"
+#            - direction: 1
+#              description: "permit out icmp from any to assigned"
+#            - direction: 2
+#              description: "permit out udp from 10.200.136.98/32 23455 to assigned 1-65535"
+#            - direction: 1
+#              description: "permit out udp from 10.200.136.98/32 1-65535 to assigned 50021"
+#        - qos:
+#            index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#            arp:
+#              priority_level: 4  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+#              pre_emption_vulnerability: 2   # 1: Disabled, 2:Enabled
+#              pre_emption_capability: 2   # 1: Disabled, 2:Enabled
+#            mbr:
+#              downlink:
+#                value: 802
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#              uplink:
+#                value: 802
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#            gbr:
+#              downlink:
+#                value: 802
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#              uplink:
+#                value: 802
+#                unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#

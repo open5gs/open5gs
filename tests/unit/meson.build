@@ -17,6 +17,7 @@
 
 testunit_unit_sources = files('''
     abts-main.c
+    proto-message-test.c
     s1ap-message-test.c
     nas-message-test.c
     gtp-message-test.c

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -39,9 +39,6 @@ typedef enum {
     OGS_EVENT_SBI_CLIENT,
     OGS_EVENT_SBI_TIMER,
 
-    OGS_EVENT_DBI_POLL_TIMER,
-    OGS_EVENT_DBI_MESSAGE,
-
     OGS_MAX_NUM_OF_PROTO_EVENT,
 
 } ogs_event_e;
@@ -63,9 +60,6 @@ typedef struct ogs_event_s {
         ogs_sbi_message_t *message;
     } sbi;
 
-    struct {
-        void *document;
-    } dbi;
 } ogs_event_t;
 
 #define OGS_EVENT_SIZE 256

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -30,33 +30,51 @@ extern "C" {
 
 #define OGS_SBI_SETUP_CLIENT(__cTX, __pClient) \
     do { \
+        char buf[OGS_ADDRSTRLEN]; \
         ogs_assert((__cTX)); \
         ogs_assert((__pClient)); \
         \
         if ((__cTX)->client) { \
             ogs_sbi_client_t *client = NULL; \
-            ogs_sockaddr_t *addr = NULL; \
-            char buf[OGS_ADDRSTRLEN]; \
             \
             client = ((__cTX)->client); \
             ogs_assert(client); \
-            addr = client->node.addr; \
-            ogs_assert(addr); \
-            ogs_warn("NF EndPoint updated [%s:%d]", \
-                        OGS_ADDR(addr, buf), OGS_PORT(addr)); \
+            if (client->fqdn) { \
+                ogs_warn("NF EndPoint(fqdn) updated [%s:%d]", \
+                        client->fqdn, client->fqdn_port); \
+            } \
+            if (client->addr) { \
+                ogs_warn("NF EndPoint(addr) updated [%s:%d]", \
+                    OGS_ADDR(client->addr, buf), OGS_PORT(client->addr)); \
+            } \
+            if (client->addr6) { \
+                ogs_warn("NF EndPoint(addr6) updated [%s:%d]", \
+                    OGS_ADDR(client->addr6, buf), OGS_PORT(client->addr6)); \
+            } \
             ogs_sbi_client_remove(client); \
         } \
         \
         OGS_OBJECT_REF(__pClient); \
         ((__cTX)->client) = (__pClient); \
+        ogs_debug("CLIENT Ref [%d]", (__pClient)->reference_count); \
     } while(0)
 
 typedef int (*ogs_sbi_client_cb_f)(
         int status, ogs_sbi_response_t *response, void *data);
 
 typedef struct ogs_sbi_client_s {
-    ogs_socknode_t  node;
+    ogs_lnode_t lnode;
+
     OpenAPI_uri_scheme_e scheme;
+    bool insecure_skip_verify;
+    char *cacert, *private_key, *cert;
+
+    char *fqdn;
+    uint16_t fqdn_port;
+    ogs_sockaddr_t  *addr;
+    ogs_sockaddr_t  *addr6;
+
+    char *resolve;
 
     ogs_timer_t     *t_curl;            /* timer for CURL */
     ogs_list_t      connection_list;    /* CURL connection list */
@@ -73,11 +91,15 @@ void ogs_sbi_client_init(int num_of_sockinfo_pool, int num_of_connection_pool);
 void ogs_sbi_client_final(void);
 
 ogs_sbi_client_t *ogs_sbi_client_add(
-        OpenAPI_uri_scheme_e scheme, ogs_sockaddr_t *addr);
+        OpenAPI_uri_scheme_e scheme,
+        char *fqdn, uint16_t fqdn_port,
+        ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6);
 void ogs_sbi_client_remove(ogs_sbi_client_t *client);
 void ogs_sbi_client_remove_all(void);
 ogs_sbi_client_t *ogs_sbi_client_find(
-        OpenAPI_uri_scheme_e scheme, ogs_sockaddr_t *addr);
+        OpenAPI_uri_scheme_e scheme,
+        char *fqdn, uint16_t fqdn_port,
+        ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6);
 
 void ogs_sbi_client_stop(ogs_sbi_client_t *client);
 void ogs_sbi_client_stop_all(void);
@@ -85,7 +107,7 @@ void ogs_sbi_client_stop_all(void);
 bool ogs_sbi_client_send_request(
         ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
         ogs_sbi_request_t *request, void *data);
-bool ogs_sbi_client_send_via_scp(
+bool ogs_sbi_client_send_via_scp_or_sepp(
         ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
         ogs_sbi_request_t *request, void *data);
 

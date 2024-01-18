@@ -1,10 +1,19 @@
 Use mounse07410(vlm_master) git's fork for asn1c
 
-commit ebed802c88b3049cfe67326e4df780cefc6da49e (HEAD -> vlm_master, origin/vlm_master, origin/HEAD)
-Author: Leith Bade <leith@swiftnav.com>
-Date:   Mon Nov 14 20:28:25 2022 +1100
+commit 3e6592bd840b42a2e16cc6286449f286b118ae8b (HEAD, origin/vlm_master, origin/HEAD, vlm_master)
+Merge: 29ef59bb 4e28be09
+Author: Mouse <mouse07410@users.noreply.github.com>
+Date:   Mon Nov 13 21:08:35 2023 -0500
 
-    Check SEQUENCE field constraint check result instead of returning
+    Merge pull request #140 from velichkov/mouse07410_issues134
+
+commit 4e28be09549f3ad6ee4fd5e84996899671591a36
+Author: Vasil Velichkov <vvvelichkov@gmail.com>
+Date:   Mon Nov 13 21:42:39 2023 +0200
+
+    aper: Check CHOICE present value is not greater than elements count
+
+    Fixes mouse07410/asn1c#134
 
 ===========================================
 user@host ~/Documents/git/my$ \

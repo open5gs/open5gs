@@ -19,15 +19,19 @@ extern "C" {
 
 typedef struct OpenAPI_threshold_value_s OpenAPI_threshold_value_t;
 typedef struct OpenAPI_threshold_value_s {
+    bool is_rtt_thres_null;
     bool is_rtt_thres;
     int rtt_thres;
+    bool is_plr_thres_null;
     bool is_plr_thres;
     int plr_thres;
 } OpenAPI_threshold_value_t;
 
 OpenAPI_threshold_value_t *OpenAPI_threshold_value_create(
+    bool is_rtt_thres_null,
     bool is_rtt_thres,
     int rtt_thres,
+    bool is_plr_thres_null,
     bool is_plr_thres,
     int plr_thres
 );

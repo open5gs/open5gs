@@ -32,7 +32,7 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __emm_log_domain
 
-static uint8_t emm_cause_from_access_control(ogs_plmn_id_t *plmn_id);
+static uint8_t emm_cause_from_access_control(mme_ue_t *mme_ue);
 
 int emm_handle_attach_request(mme_ue_t *mme_ue,
         ogs_nas_eps_attach_request_t *attach_request, ogs_pkbuf_t *pkbuf)
@@ -137,26 +137,6 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
     mme_ue->ue_location_timestamp = ogs_time_now();
 
-    /* Check PLMN-ID access control */
-    emm_cause = emm_cause_from_access_control(&mme_ue->tai.plmn_id);
-    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in TAI) access control");
-        r = nas_eps_send_attach_reject(mme_ue,
-                emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return OGS_ERROR;
-    }
-    emm_cause = emm_cause_from_access_control(&mme_ue->e_cgi.plmn_id);
-    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in CGI) access control");
-        r = nas_eps_send_attach_reject(mme_ue,
-                emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return OGS_ERROR;
-    }
-
     /* Check TAI */
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
     if (served_tai_index < 0) {
@@ -175,7 +155,7 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
     /* Store UE specific information */
     if (attach_request->presencemask &
         OGS_NAS_EPS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT) {
-        ogs_nas_eps_tai_t *last_visited_registered_tai = 
+        ogs_nas_eps_tai_t *last_visited_registered_tai =
             &attach_request->last_visited_registered_tai;
 
         ogs_nas_to_plmn_id(&mme_ue->last_visited_plmn_id,
@@ -184,13 +164,13 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
                 ogs_plmn_id_hexdump(&mme_ue->last_visited_plmn_id));
     }
 
-    memcpy(&mme_ue->ue_network_capability, 
+    memcpy(&mme_ue->ue_network_capability,
             &attach_request->ue_network_capability,
             sizeof(attach_request->ue_network_capability));
 
     if (attach_request->presencemask &
             OGS_NAS_EPS_ATTACH_REQUEST_MS_NETWORK_CAPABILITY_PRESENT) {
-        memcpy(&mme_ue->ms_network_capability, 
+        memcpy(&mme_ue->ms_network_capability,
                 &attach_request->ms_network_capability,
                 sizeof(attach_request->ms_network_capability));
     }
@@ -205,7 +185,7 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
             OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
         ogs_warn("Encrypt[0x%x] can be skipped with EEA0, "
             "but Integrity[0x%x] cannot be bypassed with EIA0",
-            mme_selected_enc_algorithm(mme_ue), 
+            mme_selected_enc_algorithm(mme_ue),
             mme_selected_int_algorithm(mme_ue));
         r = nas_eps_send_attach_reject(mme_ue,
                 OGS_NAS_EMM_CAUSE_UE_SECURITY_CAPABILITIES_MISMATCH,
@@ -224,8 +204,19 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
                     eps_mobile_identity->length);
             return OGS_ERROR;
         }
-        memcpy(&mme_ue->nas_mobile_identity_imsi, 
+        memcpy(&mme_ue->nas_mobile_identity_imsi,
             &eps_mobile_identity->imsi, eps_mobile_identity->length);
+
+        emm_cause = emm_cause_from_access_control(mme_ue);
+        if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
+            ogs_error("Rejected by PLMN-ID access control");
+            r = nas_eps_send_attach_reject(mme_ue,
+                    emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return OGS_ERROR;
+        }
+
         ogs_nas_eps_imsi_to_bcd(
             &eps_mobile_identity->imsi, eps_mobile_identity->length,
             imsi_bcd);
@@ -246,7 +237,7 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
                 nas_guti.mme_gid,
                 nas_guti.mme_code,
                 nas_guti.m_tmsi,
-                MME_UE_HAVE_IMSI(mme_ue) 
+                MME_UE_HAVE_IMSI(mme_ue)
                     ? mme_ue->imsi_bcd : "Unknown IMSI");
         break;
     default:
@@ -272,7 +263,7 @@ int emm_handle_attach_complete(
     ogs_nas_time_zone_t *local_time_zone = &emm_information->local_time_zone;
     ogs_nas_time_zone_and_time_t *universal_time_and_local_time_zone =
         &emm_information->universal_time_and_local_time_zone;
-    ogs_nas_daylight_saving_time_t *network_daylight_saving_time = 
+    ogs_nas_daylight_saving_time_t *network_daylight_saving_time =
         &emm_information->network_daylight_saving_time;
 
     struct timeval tv;
@@ -304,7 +295,7 @@ int emm_handle_attach_complete(
     }
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
@@ -325,36 +316,41 @@ int emm_handle_attach_complete(
             &mme_self()->short_name, sizeof(ogs_nas_network_name_t));
     }
 
-    emm_information->presencemask |=
-        OGS_NAS_EPS_EMM_INFORMATION_LOCAL_TIME_ZONE_PRESENT;
+    if (!ogs_global_conf()->parameter.no_time_zone_information) {
+        emm_information->presencemask |=
+            OGS_NAS_EPS_EMM_INFORMATION_LOCAL_TIME_ZONE_PRESENT;
 
-    if (local.tm_gmtoff >= 0) {
-        *local_time_zone = OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
-    } else {
-        *local_time_zone = OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
-        *local_time_zone |= 0x08;
+        if (local.tm_gmtoff >= 0) {
+            *local_time_zone = OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
+        } else {
+            *local_time_zone = OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
+            *local_time_zone |= 0x08;
+        }
+        ogs_debug("    Timezone:0x%x", *local_time_zone);
+
+        emm_information->presencemask |=
+            OGS_NAS_EPS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
+        universal_time_and_local_time_zone->year =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
+        universal_time_and_local_time_zone->mon =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_mon+1);
+        universal_time_and_local_time_zone->mday =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_mday);
+        universal_time_and_local_time_zone->hour =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_hour);
+        universal_time_and_local_time_zone->min =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_min);
+        universal_time_and_local_time_zone->sec =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
+        universal_time_and_local_time_zone->timezone = *local_time_zone;
+
+        emm_information->presencemask |=
+            OGS_NAS_EPS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
+        network_daylight_saving_time->length = 1;
+        if (local.tm_isdst > 0) {
+            network_daylight_saving_time->value = 1;
+        }
     }
-    ogs_debug("    Timezone:0x%x", *local_time_zone);
-
-    emm_information->presencemask |=
-        OGS_NAS_EPS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
-    universal_time_and_local_time_zone->year = 
-                OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
-    universal_time_and_local_time_zone->mon =
-                OGS_NAS_TIME_TO_BCD(gmt.tm_mon+1);
-    universal_time_and_local_time_zone->mday = 
-                OGS_NAS_TIME_TO_BCD(gmt.tm_mday);
-    universal_time_and_local_time_zone->hour = 
-                OGS_NAS_TIME_TO_BCD(gmt.tm_hour);
-    universal_time_and_local_time_zone->min =
-                OGS_NAS_TIME_TO_BCD(gmt.tm_min);
-    universal_time_and_local_time_zone->sec =
-                OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
-    universal_time_and_local_time_zone->timezone = *local_time_zone;
-
-    emm_information->presencemask |=
-        OGS_NAS_EPS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
-    network_daylight_saving_time->length = 1;
 
     emmbuf = nas_eps_security_encode(mme_ue, &message);
     if (!emmbuf) {
@@ -375,6 +371,8 @@ int emm_handle_attach_complete(
 int emm_handle_identity_response(
         mme_ue_t *mme_ue, ogs_nas_eps_identity_response_t *identity_response)
 {
+    int r;
+    uint8_t emm_cause;
     ogs_nas_mobile_identity_t *mobile_identity = NULL;
     enb_ue_t *enb_ue = NULL;
 
@@ -393,16 +391,37 @@ int emm_handle_identity_response(
             ogs_error("mobile_identity length (%d != %d)",
                     (int)sizeof(ogs_nas_mobile_identity_imsi_t),
                     mobile_identity->length);
+            r = nas_eps_send_attach_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+                    OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             return OGS_ERROR;
         }
-        memcpy(&mme_ue->nas_mobile_identity_imsi, 
+        memcpy(&mme_ue->nas_mobile_identity_imsi,
             &mobile_identity->imsi, mobile_identity->length);
+
+        emm_cause = emm_cause_from_access_control(mme_ue);
+        if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
+            ogs_error("Rejected by PLMN-ID access control");
+            r = nas_eps_send_attach_reject(mme_ue,
+                    emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return OGS_ERROR;
+        }
+
         ogs_nas_eps_imsi_to_bcd(
             &mobile_identity->imsi, mobile_identity->length, imsi_bcd);
         mme_ue_set_imsi(mme_ue, imsi_bcd);
 
         if (mme_ue->imsi_len != OGS_MAX_IMSI_LEN) {
             ogs_error("Invalid IMSI LEN[%d]", mme_ue->imsi_len);
+            r = nas_eps_send_attach_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+                    OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
             return OGS_ERROR;
         }
 
@@ -451,11 +470,11 @@ int emm_handle_detach_request(
 
     switch (detach_request->detach_type.value) {
     /* 0 0 1 : EPS detach */
-    case OGS_NAS_DETACH_TYPE_FROM_UE_EPS_DETACH: 
+    case OGS_NAS_DETACH_TYPE_FROM_UE_EPS_DETACH:
         ogs_debug("    EPS Detach");
         break;
     /* 0 1 0 : IMSI detach */
-    case OGS_NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH: 
+    case OGS_NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH:
         ogs_debug("    IMSI Detach");
         break;
     case 6: /* 1 1 0 : reserved */
@@ -464,7 +483,7 @@ int emm_handle_detach_request(
             detach_request->detach_type.value);
         break;
     /* 0 1 1 : combined EPS/IMSI detach */
-    case OGS_NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH: 
+    case OGS_NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH:
         ogs_debug("    Combined EPS/IMSI Detach");
     default: /* all other values */
         break;
@@ -535,7 +554,6 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
 {
     int r;
     int served_tai_index = 0;
-    uint8_t emm_cause;
 
     ogs_nas_eps_mobile_identity_guti_t *eps_mobile_identity_guti = NULL;
     ogs_nas_eps_guti_t nas_guti;
@@ -602,24 +620,6 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
     mme_ue->ue_location_timestamp = ogs_time_now();
 
-    /* Check PLMN-ID access control */
-    emm_cause = emm_cause_from_access_control(&mme_ue->tai.plmn_id);
-    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in TAI) access control");
-        r = nas_eps_send_tau_reject(mme_ue, emm_cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return OGS_ERROR;
-    }
-    emm_cause = emm_cause_from_access_control(&mme_ue->e_cgi.plmn_id);
-    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in CGI) access control");
-        r = nas_eps_send_tau_reject(mme_ue, emm_cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return OGS_ERROR;
-    }
-
     /* Check TAI */
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
     if (served_tai_index < 0) {
@@ -637,30 +637,30 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
     /* Store UE specific information */
     if (tau_request->presencemask &
         OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT) {
-        ogs_nas_eps_tai_t *last_visited_registered_tai = 
+        ogs_nas_eps_tai_t *last_visited_registered_tai =
             &tau_request->last_visited_registered_tai;
 
         ogs_nas_to_plmn_id(&mme_ue->last_visited_plmn_id,
                 &last_visited_registered_tai->nas_plmn_id);
         ogs_debug("    Visited_PLMN_ID:%06x",
                 ogs_plmn_id_hexdump(&mme_ue->last_visited_plmn_id));
-    } 
+    }
 
     if (tau_request->presencemask &
             OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_NETWORK_CAPABILITY_PRESENT) {
-        memcpy(&mme_ue->ue_network_capability, 
+        memcpy(&mme_ue->ue_network_capability,
                 &tau_request->ue_network_capability,
                 sizeof(tau_request->ue_network_capability));
     }
 
     if (tau_request->presencemask &
             OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_CAPABILITY_PRESENT) {
-        memcpy(&mme_ue->ms_network_capability, 
+        memcpy(&mme_ue->ms_network_capability,
                 &tau_request->ms_network_capability,
                 sizeof(tau_request->ms_network_capability));
     }
 
-    /* TODO: 
+    /* TODO:
      *   1) Consider if MME is changed or not.
      *   2) Consider if SGW is changed or not.
      */
@@ -677,12 +677,12 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
                 nas_guti.mme_gid,
                 nas_guti.mme_code,
                 nas_guti.m_tmsi,
-                MME_UE_HAVE_IMSI(mme_ue) 
+                MME_UE_HAVE_IMSI(mme_ue)
                     ? mme_ue->imsi_bcd : "Unknown");
         break;
     default:
         ogs_error("Not implemented[%d]", eps_mobile_identity->imsi.type);
-        
+
         return OGS_OK;
     }
 
@@ -694,7 +694,6 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
 {
     int r;
     int served_tai_index = 0;
-    uint8_t emm_cause;
 
     ogs_nas_service_type_t *service_type =
         &extended_service_request->service_type;
@@ -714,7 +713,7 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
     mme_ue->nas_eps.ksi = service_type->nas_key_set_identifier;
     ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
             mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
-    
+
     /*
      * ATTACH_REQUEST
      * TAU_REQUEST
@@ -740,24 +739,6 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
     memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
     mme_ue->ue_location_timestamp = ogs_time_now();
-
-    /* Check PLMN-ID access control */
-    emm_cause = emm_cause_from_access_control(&mme_ue->tai.plmn_id);
-    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in TAI) access control");
-        r = nas_eps_send_tau_reject(mme_ue, emm_cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return OGS_ERROR;
-    }
-    emm_cause = emm_cause_from_access_control(&mme_ue->e_cgi.plmn_id);
-    if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
-        ogs_error("Rejected by PLMN-ID(in CGI) access control");
-        r = nas_eps_send_tau_reject(mme_ue, emm_cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return OGS_ERROR;
-    }
 
     /* Check TAI */
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
@@ -838,19 +819,35 @@ int emm_handle_security_mode_complete(mme_ue_t *mme_ue,
     return OGS_OK;
 }
 
-static uint8_t emm_cause_from_access_control(ogs_plmn_id_t *plmn_id)
+static uint8_t emm_cause_from_access_control(mme_ue_t *mme_ue)
 {
+    ogs_nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
     int i;
 
-    ogs_assert(plmn_id);
+    ogs_assert(mme_ue);
+    nas_mobile_identity_imsi = &mme_ue->nas_mobile_identity_imsi;
 
     /* No Access Control */
     if (mme_self()->num_of_access_control == 0)
         return OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
 
     for (i = 0; i < mme_self()->num_of_access_control; i++) {
-        if (memcmp(&mme_self()->access_control[i].plmn_id,
-                        plmn_id, OGS_PLMN_ID_LEN) == 0) {
+        if ((nas_mobile_identity_imsi->digit1 ==
+                mme_self()->access_control[i].plmn_id.mcc1 &&
+             nas_mobile_identity_imsi->digit2 ==
+                mme_self()->access_control[i].plmn_id.mcc2 &&
+             nas_mobile_identity_imsi->digit3 ==
+                mme_self()->access_control[i].plmn_id.mcc3) &&
+           ((nas_mobile_identity_imsi->digit4 ==
+                mme_self()->access_control[i].plmn_id.mnc2 &&
+             nas_mobile_identity_imsi->digit5 ==
+                 mme_self()->access_control[i].plmn_id.mnc3) ||
+            (nas_mobile_identity_imsi->digit4 ==
+                 mme_self()->access_control[i].plmn_id.mnc1 &&
+             nas_mobile_identity_imsi->digit5 ==
+                 mme_self()->access_control[i].plmn_id.mnc2 &&
+             nas_mobile_identity_imsi->digit6 ==
+                 mme_self()->access_control[i].plmn_id.mnc3))) {
             if (mme_self()->access_control[i].reject_cause)
                 return mme_self()->access_control[i].reject_cause;
             else

@@ -27,10 +27,13 @@ typedef struct OpenAPI_events_subsc_req_data_rm_s {
     OpenAPI_list_t *events;
     char *notif_uri;
     OpenAPI_list_t *req_qos_mon_params;
+    bool is_qos_mon_null;
     struct OpenAPI_qos_monitoring_information_rm_s *qos_mon;
     OpenAPI_list_t *req_anis;
+    bool is_usg_thres_null;
     struct OpenAPI_usage_threshold_rm_s *usg_thres;
     char *notif_corre_id;
+    bool is_direct_notif_ind_null;
     bool is_direct_notif_ind;
     int direct_notif_ind;
 } OpenAPI_events_subsc_req_data_rm_t;
@@ -39,10 +42,13 @@ OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_create(
     OpenAPI_list_t *events,
     char *notif_uri,
     OpenAPI_list_t *req_qos_mon_params,
+    bool is_qos_mon_null,
     OpenAPI_qos_monitoring_information_rm_t *qos_mon,
     OpenAPI_list_t *req_anis,
+    bool is_usg_thres_null,
     OpenAPI_usage_threshold_rm_t *usg_thres,
     char *notif_corre_id,
+    bool is_direct_notif_ind_null,
     bool is_direct_notif_ind,
     int direct_notif_ind
 );

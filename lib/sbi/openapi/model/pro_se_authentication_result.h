@@ -20,12 +20,14 @@ extern "C" {
 typedef struct OpenAPI_pro_se_authentication_result_s OpenAPI_pro_se_authentication_result_t;
 typedef struct OpenAPI_pro_se_authentication_result_s {
     char *knr_pro_se;
+    bool is_nonce2_null;
     char *nonce2;
     char *supported_features;
 } OpenAPI_pro_se_authentication_result_t;
 
 OpenAPI_pro_se_authentication_result_t *OpenAPI_pro_se_authentication_result_create(
     char *knr_pro_se,
+    bool is_nonce2_null,
     char *nonce2,
     char *supported_features
 );

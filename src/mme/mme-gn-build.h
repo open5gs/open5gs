@@ -30,6 +30,9 @@ extern "C" {
 }
 #endif
 
+ogs_pkbuf_t *mme_gn_build_sgsn_context_response(
+                mme_ue_t *mme_ue, uint8_t cause);
+
 ogs_pkbuf_t *mme_gn_build_ran_information_relay(
                 uint8_t type, const uint8_t *buf, size_t len,
                 const ogs_nas_rai_t *rai, uint16_t cell_id);

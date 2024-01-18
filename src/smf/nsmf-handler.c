@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -35,7 +35,9 @@ bool smf_nsmf_handle_create_sm_context(
 
     ogs_sbi_client_t *client = NULL;
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
-    ogs_sockaddr_t *addr = NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
     OpenAPI_sm_context_create_data_t *SmContextCreateData = NULL;
     OpenAPI_nr_location_t *NrLocation = NULL;
@@ -151,7 +153,7 @@ bool smf_nsmf_handle_create_sm_context(
         return false;
     }
 
-    rc = ogs_sbi_getaddr_from_uri(&scheme, &addr,
+    rc = ogs_sbi_getaddr_from_uri(&scheme, &fqdn, &fqdn_port, &addr, &addr6,
             SmContextCreateData->sm_context_status_uri);
     if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
         ogs_error("[%s:%d] Invalid URI [%s]",
@@ -220,7 +222,9 @@ bool smf_nsmf_handle_create_sm_context(
         }
     }
 
-    ogs_sbi_parse_plmn_id_nid(&sess->plmn_id, servingNetwork);
+    /* Serving PLMN & Home PLMN */
+    ogs_sbi_parse_plmn_id_nid(&sess->serving_plmn_id, servingNetwork);
+    memcpy(&sess->home_plmn_id, &sess->serving_plmn_id, OGS_PLMN_ID_LEN);
 
     sess->sbi_rat_type = SmContextCreateData->rat_type;
 
@@ -237,9 +241,9 @@ bool smf_nsmf_handle_create_sm_context(
                                     SmContextCreateData->hplmn_snssai->sd);
     }
 
-    smf_metrics_inst_by_slice_add(&sess->plmn_id, &sess->s_nssai,
+    smf_metrics_inst_by_slice_add(&sess->serving_plmn_id, &sess->s_nssai,
             SMF_METR_GAUGE_SM_SESSIONNBR, 1);
-    smf_metrics_inst_by_slice_add(&sess->plmn_id, &sess->s_nssai,
+    smf_metrics_inst_by_slice_add(&sess->serving_plmn_id, &sess->s_nssai,
             SMF_METR_CTR_SM_PDUSESSIONCREATIONREQ, 1);
 
     if (sess->sm_context_status_uri)
@@ -248,18 +252,104 @@ bool smf_nsmf_handle_create_sm_context(
         ogs_strdup(SmContextCreateData->sm_context_status_uri);
     ogs_assert(sess->sm_context_status_uri);
 
-    client = ogs_sbi_client_find(scheme, addr);
+    client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
     if (!client) {
-        client = ogs_sbi_client_add(scheme, addr);
-        ogs_assert(client);
+        ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
+        client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
+        if (!client) {
+            ogs_error("%s: ogs_sbi_client_add() failed", OGS_FUNC);
+
+            ogs_free(fqdn);
+            ogs_freeaddrinfo(addr);
+            ogs_freeaddrinfo(addr6);
+
+            return false;
+        }
     }
     OGS_SBI_SETUP_CLIENT(&sess->namf, client);
-    ogs_freeaddrinfo(addr);
 
+    ogs_free(fqdn);
+    ogs_freeaddrinfo(addr);
+    ogs_freeaddrinfo(addr6);
+
+    /*
+     * TS29.502
+     * 6.1 Nsmf_PDUSession Service API
+     * Table 6.1.6.2.2-1: Definition of type SmContextCreateData
+     *
+     * NAME: dnn
+     * Data type: Dnn
+     * P: C
+     * Cardinality: 0..1
+     *
+     * This IE shall be present, except during an EPS to 5GS Idle mode mobility
+     * or handover using the N26 interface.
+     *
+     * When present, it shall contain the requested DNN; the DNN shall
+     * be the full DNN (i.e. with both the Network Identifier and
+     * Operator Identifier) for a HR PDU session, and it should be
+     * the full DNN in LBO and non-roaming scenarios. If the Operator Identifier
+     * is absent, the serving core network operator shall be assumed.
+     */
     if (SmContextCreateData->dnn) {
-        if (sess->session.name) ogs_free(sess->session.name);
-        sess->session.name = ogs_strdup(SmContextCreateData->dnn);
-        ogs_assert(sess->session.name);
+        char *home_network_domain =
+            ogs_home_network_domain_from_fqdn(SmContextCreateData->dnn);
+
+        if (home_network_domain) {
+            char dnn_network_identifer[OGS_MAX_DNN_LEN+1];
+            uint16_t mcc = 0, mnc = 0;
+
+            ogs_assert(home_network_domain > SmContextCreateData->dnn);
+
+            ogs_cpystrn(dnn_network_identifer, SmContextCreateData->dnn,
+                ogs_min(OGS_MAX_DNN_LEN,
+                    home_network_domain - SmContextCreateData->dnn));
+
+            if (sess->session.name)
+                ogs_free(sess->session.name);
+            sess->session.name = ogs_strdup(dnn_network_identifer);
+            ogs_assert(sess->session.name);
+
+            if (sess->full_dnn)
+                ogs_free(sess->full_dnn);
+            sess->full_dnn = ogs_strdup(SmContextCreateData->dnn);
+            ogs_assert(sess->full_dnn);
+
+            mcc = ogs_plmn_id_mcc_from_fqdn(sess->full_dnn);
+            mnc = ogs_plmn_id_mnc_from_fqdn(sess->full_dnn);
+
+            /*
+             * To generate the Home PLMN ID of the SMF-UE,
+             * the length of the MNC is obtained
+             * by comparing the MNC part of the SUPI and full-DNN.
+             */
+            if (mcc && mnc &&
+                strncmp(smf_ue->supi, "imsi-", strlen("imsi-")) == 0) {
+                int mnc_len = 0;
+                char buf[OGS_PLMNIDSTRLEN];
+
+                ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%02d", mcc, mnc);
+                if (strncmp(smf_ue->supi + 5, buf, strlen(buf)) == 0)
+                    mnc_len = 2;
+
+                ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%03d", mcc, mnc);
+                if (strncmp(smf_ue->supi + 5, buf, strlen(buf)) == 0)
+                    mnc_len = 3;
+
+                /* Change Home PLMN for VPLMN */
+                if (mnc_len == 2 || mnc_len == 3)
+                    ogs_plmn_id_build(&sess->home_plmn_id, mcc, mnc, mnc_len);
+            }
+        } else {
+            if (sess->session.name)
+                ogs_free(sess->session.name);
+            sess->session.name = ogs_strdup(SmContextCreateData->dnn);
+            ogs_assert(sess->session.name);
+
+            if (sess->full_dnn)
+                ogs_free(sess->full_dnn);
+            sess->full_dnn = NULL;
+        }
     }
 
     if (SmContextCreateData->pcf_id) {

@@ -94,13 +94,14 @@ ogs_gtp_xact_t *ogs_gtp1_xact_local_create(ogs_gtp_node_t *gnode,
         xact->tm_response = ogs_timer_add(
                 ogs_app()->timer_mgr, response_timeout, xact);
         ogs_assert(xact->tm_response);
-        xact->response_rcount = ogs_app()->time.message.gtp.n3_response_rcount;
+        xact->response_rcount =
+            ogs_local_conf()->time.message.gtp.n3_response_rcount;
     }
 
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
-    xact->holding_rcount = ogs_app()->time.message.gtp.n3_holding_rcount;
+    xact->holding_rcount = ogs_local_conf()->time.message.gtp.n3_holding_rcount;
 
     ogs_list_add(&xact->gnode->local_list, xact);
 
@@ -151,12 +152,13 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout, xact);
     ogs_assert(xact->tm_response);
-    xact->response_rcount = ogs_app()->time.message.gtp.n3_response_rcount,
+    xact->response_rcount =
+        ogs_local_conf()->time.message.gtp.n3_response_rcount,
 
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
-    xact->holding_rcount = ogs_app()->time.message.gtp.n3_holding_rcount,
+    xact->holding_rcount = ogs_local_conf()->time.message.gtp.n3_holding_rcount,
 
     ogs_list_add(&xact->gnode->local_list, xact);
 
@@ -196,12 +198,13 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout, xact);
     ogs_assert(xact->tm_response);
-    xact->response_rcount = ogs_app()->time.message.gtp.n3_response_rcount,
+    xact->response_rcount =
+        ogs_local_conf()->time.message.gtp.n3_response_rcount,
 
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
-    xact->holding_rcount = ogs_app()->time.message.gtp.n3_holding_rcount,
+    xact->holding_rcount = ogs_local_conf()->time.message.gtp.n3_holding_rcount,
 
     ogs_list_add(&xact->gnode->remote_list, xact);
 
@@ -265,7 +268,7 @@ int ogs_gtp1_xact_update_tx(ogs_gtp_xact_t *xact,
             return OGS_ERROR;
 
         case GTP_XACT_FINAL_STAGE:
-            if (xact->step != 2) {
+            if (xact->step != 2 && xact->step != 3) {
                 ogs_error("invalid step[%d]", xact->step);
                 ogs_pkbuf_free(pkbuf);
                 return OGS_ERROR;
@@ -474,7 +477,7 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
                 if (pkbuf) {
                     if (xact->tm_holding)
                         ogs_timer_start(xact->tm_holding,
-                                ogs_app()->time.message.
+                                ogs_local_conf()->time.message.
                                     gtp.t3_holding_duration);
 
                     ogs_warn("[%d] %s Request Duplicated. Retransmit!"
@@ -509,7 +512,7 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
 
             if (xact->tm_holding)
                 ogs_timer_start(xact->tm_holding,
-                        ogs_app()->time.message.gtp.t3_holding_duration);
+                        ogs_local_conf()->time.message.gtp.t3_holding_duration);
 
             break;
 
@@ -539,7 +542,7 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
                 if (pkbuf) {
                     if (xact->tm_holding)
                         ogs_timer_start(xact->tm_holding,
-                                ogs_app()->time.message.
+                                ogs_local_conf()->time.message.
                                     gtp.t3_holding_duration);
 
                     ogs_warn("[%d] %s Request Duplicated. Retransmit!"
@@ -573,7 +576,7 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
             }
             if (xact->tm_holding)
                 ogs_timer_start(xact->tm_holding,
-                        ogs_app()->time.message.gtp.t3_holding_duration);
+                        ogs_local_conf()->time.message.gtp.t3_holding_duration);
 
             break;
 
@@ -646,14 +649,18 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
 
             if (xact->tm_response)
                 ogs_timer_start(xact->tm_response,
-                        ogs_app()->time.message.gtp.t3_response_duration);
+                        ogs_local_conf()->time.message.gtp.
+                        t3_response_duration);
 
             break;
 
         case GTP_XACT_INTERMEDIATE_STAGE:
-            ogs_expect(0);
-            ogs_gtp_xact_delete(xact);
-            return OGS_ERROR;
+            if (xact->step != 2) {
+                ogs_error("invalid step[%d]", xact->step);
+                ogs_gtp_xact_delete(xact);
+                return OGS_ERROR;
+            }
+            return OGS_OK;
 
         case GTP_XACT_FINAL_STAGE:
             if (xact->step != 2 && xact->step != 3) {
@@ -688,7 +695,8 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
             }
             if (xact->tm_response)
                 ogs_timer_start(xact->tm_response,
-                        ogs_app()->time.message.gtp.t3_response_duration);
+                        ogs_local_conf()->time.message.gtp.
+                        t3_response_duration);
 
             break;
 
@@ -745,7 +753,7 @@ static void response_timeout(void *data)
 
         if (xact->tm_response)
             ogs_timer_start(xact->tm_response,
-                    ogs_app()->time.message.gtp.t3_response_duration);
+                    ogs_local_conf()->time.message.gtp.t3_response_duration);
 
         pkbuf = xact->seq[xact->step-1].pkbuf;
         ogs_assert(pkbuf);
@@ -786,7 +794,7 @@ static void holding_timeout(void *data)
     if (--xact->holding_rcount > 0) {
         if (xact->tm_holding)
             ogs_timer_start(xact->tm_holding,
-                    ogs_app()->time.message.gtp.t3_holding_duration);
+                    ogs_local_conf()->time.message.gtp.t3_holding_duration);
     } else {
         ogs_debug("[%d] %s Delete Transaction "
                 "for step %d type %d peer [%s]:%d",
@@ -833,7 +841,13 @@ int ogs_gtp1_xact_receive(
         list = &gnode->local_list;
         break;
     case GTP_XACT_FINAL_STAGE:
-        list = &gnode->local_list; // FIXME: is this correct?
+        /* For types which are replies to replies, the xact is never locally
+         * created during transmit, but actually during rx of the initial req, hence
+         * it is never placed in the local_list, but in the remote_list. */
+        if (type == OGS_GTP1_SGSN_CONTEXT_ACKNOWLEDGE_TYPE)
+            list = &gnode->remote_list;
+        else
+            list = &gnode->local_list;
         break;
     default:
         ogs_error("[%d] Unexpected type %u from GTPv1 peer [%s]:%d",
@@ -854,11 +868,11 @@ int ogs_gtp1_xact_receive(
         }
     }
 
-    ogs_debug("[%d] Cannot find xact type %u from GTPv1 peer [%s]:%d",
-            xid, type, OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
-
-    if (!new)
+    if (!new) {
+        ogs_debug("[%d] Cannot find xact type %u from GTPv1 peer [%s]:%d",
+                  xid, type, OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
         new = ogs_gtp_xact_remote_create(gnode, 1, sqn);
+    }
     ogs_assert(new);
 
     ogs_debug("[%d] %s Receive peer [%s]:%d",
@@ -942,12 +956,11 @@ int ogs_gtp_xact_receive(
         }
     }
 
-    ogs_debug("[%d] Cannot find xact type %u from GTPv2 peer [%s]:%d",
-            xid, type,
-            OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
-
-    if (!new)
+    if (!new) {
+        ogs_debug("[%d] Cannot find xact type %u from GTPv2 peer [%s]:%d",
+                  xid, type, OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
         new = ogs_gtp_xact_remote_create(gnode, 2, sqn);
+    }
     ogs_assert(new);
 
     ogs_debug("[%d] %s Receive peer [%s]:%d",
@@ -994,6 +1007,9 @@ static ogs_gtp_xact_stage_t ogs_gtp1_xact_get_stage(uint8_t type, uint32_t xid)
     case OGS_GTP1_RAN_INFORMATION_RELAY_TYPE:
         stage = GTP_XACT_INITIAL_STAGE;
         break;
+    case OGS_GTP1_SGSN_CONTEXT_RESPONSE_TYPE:
+        stage = GTP_XACT_INTERMEDIATE_STAGE;
+        break;
     case OGS_GTP1_ECHO_RESPONSE_TYPE:
     case OGS_GTP1_NODE_ALIVE_RESPONSE_TYPE:
     case OGS_GTP1_REDIRECTION_RESPONSE_TYPE:
@@ -1007,7 +1023,7 @@ static ogs_gtp_xact_stage_t ogs_gtp1_xact_get_stage(uint8_t type, uint32_t xid)
     case OGS_GTP1_FAILURE_REPORT_RESPONSE_TYPE:
     case OGS_GTP1_NOTE_MS_GPRS_PRESENT_RESPONSE_TYPE:
     case OGS_GTP1_IDENTIFICATION_RESPONSE_TYPE:
-    case OGS_GTP1_SGSN_CONTEXT_RESPONSE_TYPE:
+    case OGS_GTP1_SGSN_CONTEXT_ACKNOWLEDGE_TYPE:
     case OGS_GTP1_FORWARD_RELOCATION_RESPONSE_TYPE:
     case OGS_GTP1_RELOCATION_CANCEL_RESPONSE_TYPE:
     case OGS_GTP1_UE_REGISTRATION_QUERY_RESPONSE_TYPE:

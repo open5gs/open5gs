@@ -37,6 +37,7 @@ void ogs_sbi_nf_fsm_tran(ogs_sbi_nf_instance_t *nf_instance, void *state)
     ogs_event_t e;
 
     ogs_assert(nf_instance);
+    ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
 
     memset(&e, 0, sizeof(e));
     e.sbi.data = nf_instance;
@@ -52,6 +53,12 @@ void ogs_sbi_nf_fsm_fini(ogs_sbi_nf_instance_t *nf_instance)
 
     memset(&e, 0, sizeof(e));
     e.sbi.data = nf_instance;
+
+    if (NF_INSTANCE_TYPE_IS_NRF(nf_instance) &&
+        OGS_FSM_CHECK(&nf_instance->sm, ogs_sbi_nf_state_registered)) {
+        ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_de_register(nf_instance));
+    }
 
     ogs_fsm_fini(&nf_instance->sm, &e);
 }
@@ -124,9 +131,9 @@ void ogs_sbi_nf_state_will_register(ogs_fsm_t *s, ogs_event_t *e)
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
         ogs_timer_start(nf_instance->t_registration_interval,
-            ogs_app()->time.message.sbi.nf_register_interval);
+            ogs_local_conf()->time.message.sbi.reconnect_interval);
 
-        ogs_assert(true == ogs_nnrf_nfm_send_nf_register(nf_instance));
+        ogs_expect(true == ogs_nnrf_nfm_send_nf_register(nf_instance));
         break;
 
     case OGS_FSM_EXIT_SIG:
@@ -172,13 +179,13 @@ void ogs_sbi_nf_state_will_register(ogs_fsm_t *s, ogs_event_t *e)
     case OGS_EVENT_SBI_TIMER:
         switch(e->timer_id) {
         case OGS_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
-            ogs_warn("[%s] Retry to registration with NRF",
+            ogs_warn("[%s] Retry registration with NRF",
                     NF_INSTANCE_ID(ogs_sbi_self()->nf_instance));
 
             ogs_timer_start(nf_instance->t_registration_interval,
-                ogs_app()->time.message.sbi.nf_register_interval);
+                ogs_local_conf()->time.message.sbi.reconnect_interval);
 
-            ogs_assert(true == ogs_nnrf_nfm_send_nf_register(nf_instance));
+            ogs_expect(true == ogs_nnrf_nfm_send_nf_register(nf_instance));
             break;
 
         default:
@@ -221,7 +228,8 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
                 ogs_timer_start(nf_instance->t_no_heartbeat,
                     ogs_time_from_sec(
                         nf_instance->time.heartbeat_interval +
-                        ogs_app()->time.nf_instance.no_heartbeat_margin));
+                        ogs_local_conf()->time.nf_instance.
+                        no_heartbeat_margin));
             }
 
             ogs_list_for_each(
@@ -244,11 +252,6 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
                 ogs_timer_stop(nf_instance->t_heartbeat_interval);
                 ogs_timer_stop(nf_instance->t_no_heartbeat);
             }
-
-            if (!OGS_FSM_CHECK(&nf_instance->sm, ogs_sbi_nf_state_exception)) {
-                ogs_assert(true ==
-                        ogs_nnrf_nfm_send_nf_de_register(nf_instance));
-            }
         }
         break;
 
@@ -268,7 +271,7 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
                         ogs_timer_start(nf_instance->t_no_heartbeat,
                             ogs_time_from_sec(
                                 nf_instance->time.heartbeat_interval +
-                                ogs_app()->time.nf_instance.
+                                ogs_local_conf()->time.nf_instance.
                                     no_heartbeat_margin));
                 } else {
                     ogs_warn("[%s] HTTP response error [%d]",
@@ -385,8 +388,8 @@ void ogs_sbi_nf_state_exception(ogs_fsm_t *s, ogs_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         if (NF_INSTANCE_TYPE_IS_NRF(nf_instance)) {
             ogs_timer_start(nf_instance->t_registration_interval,
-                ogs_app()->time.message.sbi.
-                    nf_register_interval_in_exception);
+                ogs_local_conf()->time.message.sbi.
+                    reconnect_interval_in_exception);
         }
         break;
 
@@ -399,7 +402,7 @@ void ogs_sbi_nf_state_exception(ogs_fsm_t *s, ogs_event_t *e)
     case OGS_EVENT_SBI_TIMER:
         switch(e->timer_id) {
         case OGS_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
-            ogs_warn("[%s] Retry to registration with NRF",
+            ogs_warn("[%s] Retry registration with NRF",
                     NF_INSTANCE_ID(ogs_sbi_self()->nf_instance));
 
             OGS_FSM_TRAN(s, &ogs_sbi_nf_state_will_register);

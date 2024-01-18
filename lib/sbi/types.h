@@ -28,6 +28,9 @@
 extern "C" {
 #endif
 
+#define OGS_SBI_INTERFACE_NAME_SEPP "sepp"
+#define OGS_SBI_INTERFACE_NAME_N32F "n32f"
+
 typedef enum {
     OGS_SBI_SERVICE_TYPE_NULL = 0,
 
@@ -152,6 +155,8 @@ typedef enum {
 #define OGS_SBI_SERVICE_NAME_NSPAF_SECURED_PACKET "nspaf-secured-packet"
 #define OGS_SBI_SERVICE_NAME_NUDSF_DR "nudsf-dr"
 #define OGS_SBI_SERVICE_NAME_NNSSAAF_NSSAA "nnssaaf-nssaa"
+
+#define OGS_SBI_SERVICE_NAME_N32C_HANDSHAKE "n32c-handshake"
 
 #define OGS_SBI_SERVICE_NAME_NAMF_CALLBACK "namf-callback"
 #define OGS_SBI_SERVICE_NAME_NSMF_CALLBACK "nsmf-callback"

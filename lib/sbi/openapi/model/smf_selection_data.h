@@ -23,6 +23,7 @@ typedef struct OpenAPI_smf_selection_data_s OpenAPI_smf_selection_data_t;
 typedef struct OpenAPI_smf_selection_data_s {
     bool is_unsupp_dnn;
     int unsupp_dnn;
+    bool is_candidates_null;
     OpenAPI_list_t* candidates;
     struct OpenAPI_snssai_s *snssai;
     struct OpenAPI_snssai_s *mapping_snssai;
@@ -32,6 +33,7 @@ typedef struct OpenAPI_smf_selection_data_s {
 OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_create(
     bool is_unsupp_dnn,
     int unsupp_dnn,
+    bool is_candidates_null,
     OpenAPI_list_t* candidates,
     OpenAPI_snssai_t *snssai,
     OpenAPI_snssai_t *mapping_snssai,
