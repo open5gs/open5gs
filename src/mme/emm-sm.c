@@ -20,6 +20,7 @@
 #include "mme-event.h"
 #include "mme-timer.h"
 #include "s1ap-handler.h"
+#include "mme-gn-handler.h"
 #include "mme-fd-path.h"
 #include "emm-handler.h"
 #include "emm-build.h"
@@ -286,7 +287,9 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
 
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
+    mme_sgsn_t *sgsn = NULL;
     ogs_nas_eps_message_t *message = NULL;
+    ogs_nas_rai_t rai;
     ogs_nas_security_header_type_t h;
 
     ogs_assert(e);
@@ -486,6 +489,26 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_tau_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
+                break;
+            }
+
+            if (emm_tau_request_ue_comes_from_gb_or_iu(&message->emm.tracking_area_update_request)) {
+                ogs_info("TAU request : UE comes from SGSN, attempt retrieving context");
+                guti_to_rai_ptmsi(&mme_ue->next.guti, &rai, NULL, NULL);
+                sgsn = mme_sgsn_find_by_routing_address(&rai, 0xffff);
+                if (!sgsn) {
+                    ogs_plmn_id_t plmn_id;
+                    ogs_nas_to_plmn_id(&plmn_id, &rai.lai.nas_plmn_id);
+                    ogs_warn("No SGSN route matching RAI[MCC:%u MNC:%u LAC:%u RAC:%u]",
+                             ogs_plmn_id_mcc(&plmn_id), ogs_plmn_id_mnc(&plmn_id),
+                             rai.lai.lac, rai.rac);
+                    r = nas_eps_send_tau_reject(mme_ue,
+                    OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                    OGS_FSM_TRAN(s, &emm_state_exception);
+                    break;
+                }
+                mme_gtp1_send_sgsn_context_request(sgsn, mme_ue);
+                /* FIXME: use a specific FSM state here to state we are waiting for resolution from Gn? */
                 break;
             }
 

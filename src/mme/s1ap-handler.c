@@ -1046,8 +1046,14 @@ void s1ap_handle_initial_context_setup_response(
                     ogs_debug("    ### ULI PRESENT ###");
                     uli_presence = 1;
                 }
-                ogs_list_add(&mme_ue->bearer_to_modify_list,
-                                &bearer->to_modify_node);
+                if (ogs_list_exists(
+                            &mme_ue->bearer_to_modify_list,
+                            &bearer->to_modify_node) == false)
+                    ogs_list_add(
+                            &mme_ue->bearer_to_modify_list,
+                            &bearer->to_modify_node);
+                else
+                    ogs_warn("Bearer [%d] Duplicated", (int)e_rab->e_RAB_ID);
             }
         }
 
@@ -2195,7 +2201,13 @@ void s1ap_handle_e_rab_modification_indication(
             return;
         }
 
-        ogs_list_add(&mme_ue->bearer_to_modify_list, &bearer->to_modify_node);
+        if (ogs_list_exists(
+                    &mme_ue->bearer_to_modify_list,
+                    &bearer->to_modify_node) == false)
+            ogs_list_add(
+                    &mme_ue->bearer_to_modify_list, &bearer->to_modify_node);
+        else
+            ogs_warn("Bearer [%d] Duplicated", (int)e_rab->e_RAB_ID);
     }
 
     if (ogs_list_count(&mme_ue->bearer_to_modify_list)) {
@@ -2623,8 +2635,13 @@ void s1ap_handle_path_switch_request(
             return;
         }
 
-        ogs_list_add(
-                &mme_ue->bearer_to_modify_list, &bearer->to_modify_node);
+        if (ogs_list_exists(
+                    &mme_ue->bearer_to_modify_list,
+                    &bearer->to_modify_node) == false)
+            ogs_list_add(
+                    &mme_ue->bearer_to_modify_list, &bearer->to_modify_node);
+        else
+            ogs_warn("Bearer [%d] Duplicated", (int)e_rab->e_RAB_ID);
     }
 
     relocation = sgw_ue_check_if_relocated(mme_ue);

@@ -232,6 +232,12 @@ void mme_s11_handle_create_session_response(
                     OGS_NAS_ESM_CAUSE_NETWORK_FAILURE);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
+        } else if (create_action == OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE) {
+            ogs_error("[%s] TAU reject [Cause:%d]",
+                    mme_ue->imsi_bcd, session_cause);
+            r = nas_eps_send_tau_reject(mme_ue, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         }
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
@@ -342,6 +348,10 @@ void mme_s11_handle_create_session_response(
 
         ogs_debug("    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d] PGW_S5U_TEID[%d]",
             bearer->enb_s1u_teid, bearer->sgw_s1u_teid, bearer->pgw_s5u_teid);
+
+        if (create_action == OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE &&
+            !OGS_FSM_CHECK(&bearer->sm, esm_state_active))
+            OGS_FSM_TRAN(&bearer->sm, esm_state_active);
     }
 
     /* Bearer Level QoS */
@@ -428,6 +438,9 @@ void mme_s11_handle_create_session_response(
             ogs_assert(r != OGS_ERROR);
         }
 
+    } else if (create_action == OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE) {
+        /* 3GPP TS 23.401 D.3.6 step 13, 14: */
+        mme_s6a_send_ulr(mme_ue);
     } else if (create_action == OGS_GTP_CREATE_IN_UPLINK_NAS_TRANSPORT) {
         ogs_assert(OGS_PDU_SESSION_TYPE_IS_VALID(session->paa.session_type));
         r = nas_eps_send_activate_default_bearer_context_request(

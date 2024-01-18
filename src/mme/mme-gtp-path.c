@@ -758,6 +758,45 @@ int mme_gtp_send_bearer_resource_command(
     return rv;
 }
 
+/*************************
+ * GTPv1C (Gn interface):
+ *************************/
+
+int mme_gtp1_send_sgsn_context_request(
+        mme_sgsn_t *sgsn, mme_ue_t *mme_ue)
+{
+    int rv;
+    ogs_gtp1_header_t h;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_gtp_xact_t *xact = NULL;
+
+    ogs_assert(sgsn);
+
+    memset(&h, 0, sizeof(ogs_gtp1_header_t));
+    h.type = OGS_GTP1_SGSN_CONTEXT_REQUEST_TYPE;
+    h.teid = 0;
+
+    pkbuf = mme_gn_build_sgsn_context_request(mme_ue);
+    if (!pkbuf) {
+        ogs_error("mme_gn_build_ran_information_relay() failed");
+        return OGS_ERROR;
+    }
+
+    xact = ogs_gtp1_xact_local_create(&sgsn->gnode, &h, pkbuf, NULL, NULL);
+    if (!xact) {
+        ogs_error("ogs_gtp1_xact_local_create() failed");
+        return OGS_ERROR;
+    }
+    /* TS 29.060 8.2: "The SGSN Context Request message, where the Tunnel
+     * Endpoint Identifier shall be set to all zeroes." */
+    xact->local_teid = 0;
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
 int mme_gtp1_send_sgsn_context_response(
         mme_ue_t *mme_ue, uint8_t cause, ogs_gtp_xact_t *xact)
 {
@@ -775,6 +814,38 @@ int mme_gtp1_send_sgsn_context_response(
         return OGS_ERROR;
     }
     xact->local_teid = mme_ue ? mme_ue->gn.mme_gn_teid : 0;
+
+    rv = ogs_gtp1_xact_update_tx(xact, &h, pkbuf);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp1_xact_update_tx() failed");
+        return OGS_ERROR;
+    }
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
+int mme_gtp1_send_sgsn_context_ack(
+        mme_ue_t *mme_ue, uint8_t cause, ogs_gtp_xact_t *xact)
+{
+    int rv;
+    ogs_gtp1_header_t h;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(mme_ue);
+
+    memset(&h, 0, sizeof(ogs_gtp1_header_t));
+    h.type = OGS_GTP1_SGSN_CONTEXT_ACKNOWLEDGE_TYPE;
+    h.teid = mme_ue->gn.sgsn_gn_teid;
+
+    pkbuf = mme_gn_build_sgsn_context_ack(mme_ue, cause);
+    if (!pkbuf) {
+        ogs_error("mme_gn_build_sgsn_context_response() failed");
+        return OGS_ERROR;
+    }
+    xact->local_teid = mme_ue->gn.mme_gn_teid;
 
     rv = ogs_gtp1_xact_update_tx(xact, &h, pkbuf);
     if (rv != OGS_OK) {

@@ -398,6 +398,18 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
     imeisv_request->type = OGS_NAS_IMEISV_TYPE;
     imeisv_request->value = OGS_NAS_IMEISV_REQUESTED;
 
+    if (mme_ue->nonceue) {
+        security_mode_command->presencemask |=
+            OGS_NAS_EPS_SECURITY_MODE_COMMAND_REPLAYED_NONCEUE_PRESENT;
+            security_mode_command->replayed_nonceue = mme_ue->nonceue;
+    }
+
+    if (mme_ue->noncemme) {
+        security_mode_command->presencemask |=
+            OGS_NAS_EPS_SECURITY_MODE_COMMAND_NONCEMME_PRESENT;
+            security_mode_command->noncemme = mme_ue->noncemme;
+    }
+
     /*
      * TS24.301
      * 5.4.3.2 NAS security mode control initiation by the network

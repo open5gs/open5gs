@@ -674,6 +674,17 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         case OGS_GTP1_SGSN_CONTEXT_REQUEST_TYPE:
             mme_gn_handle_sgsn_context_request(xact, &gtp1_message.sgsn_context_request);
             break;
+        case OGS_GTP1_SGSN_CONTEXT_RESPONSE_TYPE:
+            /* 3GPP TS 23.401 Figure D.3.6-1 step 5 */
+            rv = mme_gn_handle_sgsn_context_response(xact, mme_ue, &gtp1_message.sgsn_context_response);
+            if (rv == OGS_GTP1_CAUSE_ACCEPT) {
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_initial_context_setup);
+            } else if (rv == OGS_GTP1_CAUSE_REQUEST_IMEI) {
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
+            } else {
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+            }
+            break;
         case OGS_GTP1_SGSN_CONTEXT_ACKNOWLEDGE_TYPE:
             mme_gn_handle_sgsn_context_acknowledge(xact, mme_ue, &gtp1_message.sgsn_context_acknowledge);
             break;

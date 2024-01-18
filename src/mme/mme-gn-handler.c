@@ -30,6 +30,7 @@
 #include "mme-gn-handler.h"
 
 #include "s1ap-path.h"
+#include "nas-path.h"
 
 void mme_gn_handle_echo_request(
         ogs_gtp_xact_t *xact, ogs_gtp1_echo_request_t *req)
@@ -68,12 +69,26 @@ static int decode_global_enb_id(S1AP_Global_ENB_ID_t *glob_enb_id, const uint8_t
     return OGS_OK;
 }
 
-/* 3GPP TS 23.003 2.8.2.2 Mapping from RAI and P-TMSI to GUT */
+/* 3GPP TS 23.003 2.8.2.1 Mapping from GUTI to RAI, P-TMSI and P-TMSI signature */
+void guti_to_rai_ptmsi(const ogs_nas_eps_guti_t *nas_guti, ogs_nas_rai_t *rai, mme_p_tmsi_t *ptmsi, uint32_t *ptmsi_sig)
+{
+    rai->lai.nas_plmn_id = nas_guti->nas_plmn_id;
+    rai->lai.lac = nas_guti->mme_gid;
+    rai->rac = nas_guti->mme_code;
+    if (ptmsi)
+        *ptmsi = 0xC0000000 |
+                (nas_guti->m_tmsi & 0x3f000000) |
+                (nas_guti->mme_code & 0x0ff) << 16 |
+                (nas_guti->m_tmsi & 0x0000ffff);
+    if (ptmsi_sig)
+        *ptmsi_sig = (nas_guti->m_tmsi & 0x00ff0000);
+}
+
+/* 3GPP TS 23.003 2.8.2.2 Mapping from RAI and P-TMSI to GUTI */
 static void rai_ptmsi_to_guti(const ogs_nas_rai_t *rai, mme_p_tmsi_t ptmsi, uint32_t ptmsi_sig, ogs_nas_eps_guti_t *nas_guti)
 {
-    uint16_t lac = be16toh(rai->lai.lac);;
-    nas_guti->nas_plmn_id =rai->lai.nas_plmn_id;
-    nas_guti->mme_gid = lac;
+    nas_guti->nas_plmn_id = rai->lai.nas_plmn_id;
+    nas_guti->mme_gid = rai->lai.lac;
     nas_guti->mme_code = rai->rac;
     nas_guti->m_tmsi = 0xC0000000 | (ptmsi & 0x3f000000) | (ptmsi_sig & 0x00ff0000) | (ptmsi & 0x0000ffff);
 }
@@ -83,7 +98,8 @@ void mme_gn_handle_sgsn_context_request(
         ogs_gtp_xact_t *xact, ogs_gtp1_sgsn_context_request_t *req)
 {
     ogs_nas_eps_guti_t nas_guti;
-    ogs_nas_rai_t *rai;
+    ogs_plmn_id_t plmn_id;
+    ogs_nas_rai_t rai;
     mme_ue_t *mme_ue = NULL;
     int rv;
 
@@ -94,9 +110,10 @@ void mme_gn_handle_sgsn_context_request(
         mme_gtp1_send_sgsn_context_response(NULL, OGS_GTP1_CAUSE_MANDATORY_IE_MISSING, xact);
         return;
     }
-    if (req->routeing_area_identity.len != sizeof(*rai)) {
+
+    if (req->routeing_area_identity.len != sizeof(rai)) {
         ogs_warn("[Gn] Rx SGSN Context Request RAI wrong size %u vs exp %zu!",
-                 req->routeing_area_identity.len, sizeof(*rai));
+                 req->routeing_area_identity.len, sizeof(rai));
         mme_gtp1_send_sgsn_context_response(NULL, OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT, xact);
         return;
     }
@@ -126,17 +143,35 @@ void mme_gn_handle_sgsn_context_request(
         return;
     }
 
-    rai = req->routeing_area_identity.data;
+    memcpy(&rai, req->routeing_area_identity.data, sizeof(rai));
+    rai.lai.lac = be16toh(rai.lai.lac);
+    ogs_nas_to_plmn_id(&plmn_id, &rai.lai.nas_plmn_id);
+    ogs_debug("    RAI[MCC:%u MNC:%u LAC:%u RAC:%u]",
+             ogs_plmn_id_mcc(&plmn_id), ogs_plmn_id_mnc(&plmn_id),
+             rai.lai.lac, rai.rac);
 
     if (req->imsi.presence) {
+        char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+        ogs_buffer_to_bcd(req->imsi.data, req->imsi.len, imsi_bcd);
+        ogs_debug("    IMSI[%s]", imsi_bcd);
         mme_ue = mme_ue_find_by_imsi(req->imsi.data, req->imsi.len);
+        if (!mme_ue)
+            ogs_warn("[Gn] Rx SGSN Context Request: Unknown UE with IMSI[%s]", imsi_bcd);
     } else if (req->packet_tmsi.presence) { /* P-TMSI */
         if (!req->p_tmsi_signature.presence) {
             ogs_warn("[Gn] Rx SGSN Context Request with 'P-TMSI' but no P-TMSI Signature! Assuming value 0.");
             req->p_tmsi_signature.u24 = 0;
         }
-        rai_ptmsi_to_guti(rai, req->packet_tmsi.u32, req->p_tmsi_signature.u24, &nas_guti);
+        rai_ptmsi_to_guti(&rai, req->packet_tmsi.u32, req->p_tmsi_signature.u24, &nas_guti);
+        ogs_debug("    PTMSI[0x%08x] PTMSI_SIG[0x%06x] -> GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                  req->packet_tmsi.u32, req->p_tmsi_signature.u24,
+                  nas_guti.mme_gid, nas_guti.mme_code, nas_guti.m_tmsi);
         mme_ue = mme_ue_find_by_guti(&nas_guti);
+        if (!mme_ue)
+            ogs_warn("[Gn] Rx SGSN Context Request: Unknown UE with RAI[MCC:%u MNC:%u LAC:%u RAC:%u] PTMSI[0x%08x] PTMSI_SIG[0x%06x] -> GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                     ogs_plmn_id_mcc(&plmn_id), ogs_plmn_id_mnc(&plmn_id), rai.lai.lac, rai.rac,
+                     req->packet_tmsi.u32, req->p_tmsi_signature.u24,
+                     nas_guti.mme_gid, nas_guti.mme_code, nas_guti.m_tmsi);
     } else if (req->temporary_logical_link_identifier.presence) {
         if (!req->p_tmsi_signature.presence) {
             ogs_warn("[Gn] Rx SGSN Context Request with 'TLLI' but no P-TMSI Signature! Assuming value 0.");
@@ -145,8 +180,16 @@ void mme_gn_handle_sgsn_context_request(
         /* TS 29.060 7.5.3 "The TLLI/P-TMSI and RAI is a foreign TLLI/P-TMSI and an RAI in the old SGSN."
          * A foregin TLLI is "tlli = (p_tmsi & 0x3fffffff) | 0x80000000", and since we only use 0x3fffffff
          * bits of P-TMSI to derive the GUTI, it's totally fine passing the TLLI as P-TMSI. */
-        rai_ptmsi_to_guti(rai, req->temporary_logical_link_identifier.u32, req->p_tmsi_signature.u24, &nas_guti);
+        rai_ptmsi_to_guti(&rai, req->temporary_logical_link_identifier.u32, req->p_tmsi_signature.u24, &nas_guti);
+        ogs_debug("    TLLI[0x%08x] PTMSI_SIG[0x%06x] -> GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                  req->temporary_logical_link_identifier.u32, req->p_tmsi_signature.u24,
+                  nas_guti.mme_gid, nas_guti.mme_code, nas_guti.m_tmsi);
         mme_ue = mme_ue_find_by_guti(&nas_guti);
+        if (!mme_ue)
+            ogs_warn("[Gn] Rx SGSN Context Request: Unknown UE with RAI[MCC:%u MNC:%u LAC:%u RAC:%u] TLLI[0x%08x] PTMSI_SIG[0x%06x] -> GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                     ogs_plmn_id_mcc(&plmn_id), ogs_plmn_id_mnc(&plmn_id), rai.lai.lac, rai.rac,
+                     req->temporary_logical_link_identifier.u32, req->p_tmsi_signature.u24,
+                     nas_guti.mme_gid, nas_guti.mme_code, nas_guti.m_tmsi);
     }
 
     if (!mme_ue) {
@@ -175,6 +218,223 @@ void mme_gn_handle_sgsn_context_request(
     ogs_timer_start(mme_ue->gn.t_gn_holding, mme_timer_cfg(MME_TIMER_GN_HOLDING)->duration);
 
     mme_gtp1_send_sgsn_context_response(mme_ue, OGS_GTP1_CAUSE_REQUEST_ACCEPTED, xact);
+}
+
+static mme_sess_t *mme_ue_session_from_gtp1_pdp_ctx(mme_ue_t *mme_ue, const ogs_gtp1_pdp_context_decoded_t *gtp1_pdp_ctx)
+{
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+    const ogs_gtp1_qos_profile_decoded_t *qos_pdec = &gtp1_pdp_ctx->qos_sub;
+    uint8_t pti = gtp1_pdp_ctx->trans_id;
+    uint8_t qci = 0;
+    ogs_session_t *ogs_sess;
+
+    ogs_sess = mme_session_find_by_apn(mme_ue, gtp1_pdp_ctx->apn);
+    if (!ogs_sess) {
+        ogs_assert(mme_ue->num_of_session < OGS_MAX_NUM_OF_SESS);
+        ogs_sess = &mme_ue->session[mme_ue->num_of_session];
+        mme_ue->num_of_session++;
+        ogs_sess->name = ogs_strdup(gtp1_pdp_ctx->apn);
+    }
+    ogs_sess->smf_ip = gtp1_pdp_ctx->ggsn_address_c;
+    ogs_sess->context_identifier = gtp1_pdp_ctx->pdp_ctx_id;
+    ogs_sess->session_type = gtp1_pdp_ctx->pdp_type_num[0];
+    ogs_sess->ue_ip = gtp1_pdp_ctx->pdp_address[0];
+    /* TODO: sess->paa with gtp1_pdp_ctx->pdp_address[0],
+     using/implementing ogs_gtp2_ip_to_paa ? */
+    ogs_ip_to_paa(&ogs_sess->ue_ip, &ogs_sess->paa);
+
+    /* 3GPP TS 23.060 section 9.2.1A: "The QoS profiles of the PDP context and EPS bearer are mapped as specified in TS 23.401"
+     * 3GPP TS 23.401 Annex E: "Mapping between EPS and Release 99 QoS parameters"
+     */
+    ogs_gtp1_qos_profile_to_qci(qos_pdec, &qci);
+    ogs_sess->qos.index = qci;
+    ogs_sess->qos.arp.priority_level = qos_pdec->qos_profile.arp; /* 3GPP TS 23.401 Annex E Table E.2 */
+    ogs_sess->qos.arp.pre_emption_capability = 0; /* ignored as per 3GPP TS 23.401 Annex E */
+    ogs_sess->qos.arp.pre_emption_vulnerability = 0; /* ignored as per 3GPP TS 23.401 Annex E */
+    if (qos_pdec->data_octet6_to_13_present) {
+        ogs_sess->ambr.downlink = qos_pdec->dec_mbr_kbps_dl * 1000;
+        ogs_sess->ambr.uplink = qos_pdec->dec_mbr_kbps_ul * 1000;
+    }
+
+    sess = mme_sess_find_by_pti(mme_ue, pti);
+    if (!sess) {
+        sess = mme_sess_add(mme_ue, pti);
+        ogs_assert(sess);
+    }
+
+    sess->session = ogs_sess;
+    sess->pgw_s5c_teid = gtp1_pdp_ctx->ul_teic;
+    sess->pgw_s5c_ip = gtp1_pdp_ctx->ggsn_address_c;
+    switch (ogs_sess->session_type) {
+    case OGS_PDU_SESSION_TYPE_IPV4:
+        sess->request_type.type = OGS_NAS_EPS_PDN_TYPE_IPV4;
+        break;
+    case OGS_PDU_SESSION_TYPE_IPV6:
+        sess->request_type.type = OGS_NAS_EPS_PDN_TYPE_IPV6;
+        break;
+    case OGS_PDU_SESSION_TYPE_IPV4V6:
+        sess->request_type.type = OGS_NAS_EPS_PDN_TYPE_IPV4V6;
+        break;
+    }
+    sess->request_type.value = OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
+
+    bearer = mme_bearer_find_by_sess_ebi(sess, gtp1_pdp_ctx->nsapi);
+    if (!bearer) {
+        bearer = mme_default_bearer_in_sess(sess);
+        if (!bearer) {
+            bearer = mme_bearer_add(sess);
+            ogs_assert(bearer);
+        }
+    }
+    bearer->pgw_s5u_teid = gtp1_pdp_ctx->ul_teid;
+    bearer->pgw_s5u_ip = gtp1_pdp_ctx->ggsn_address_u;
+    /* Send invalid Remote Address and TEID since it makes no sense that SGW
+     * forwards GTPUv2 traffic to SGSN: */
+    bearer->enb_s1u_ip.ipv4 = 1;
+    bearer->enb_s1u_ip.addr = 0;
+    bearer->enb_s1u_teid = 0xffffffff;
+
+    return sess;
+}
+
+/* TS 29.060 7.5.4 SGSN Context Response */
+int mme_gn_handle_sgsn_context_response(
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue, ogs_gtp1_sgsn_context_response_t *resp)
+{
+    int rv;
+    int gtp1_cause, emm_cause = OGS_NAS_EMM_CAUSE_NETWORK_FAILURE;
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+    ogs_gtp1_mm_context_decoded_t gtp1_mm_ctx;
+    ogs_gtp1_pdp_context_decoded_t gtp1_pdp_ctx;
+    mme_sess_t *sess = NULL;
+    uint8_t ret_cause = OGS_GTP1_CAUSE_REQUEST_ACCEPTED;
+
+    ogs_debug("[Gn] Rx SGSN Context Response");
+
+    rv = ogs_gtp_xact_commit(xact);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_commit() failed");
+        return OGS_GTP1_CAUSE_SYSTEM_FAILURE;
+    }
+
+    if (!mme_ue) {
+        ogs_error("MME-UE Context has already been removed");
+        return OGS_GTP1_CAUSE_IMSI_IMEI_NOT_KNOWN;
+    }
+
+    switch (resp->cause.u8) {
+     case OGS_GTP1_CAUSE_REQUEST_ACCEPTED:
+        break; /* Handle below */
+    case OGS_GTP1_CAUSE_TGT_ACC_RESTRICTED_SUBSCRIBER:
+        emm_cause = OGS_NAS_EMM_CAUSE_REQUESTED_SERVICE_OPTION_NOT_AUTHORIZED_IN_THIS_PLMN;
+        break;
+    case OGS_GTP1_CAUSE_IMSI_IMEI_NOT_KNOWN:
+    case OGS_GTP1_CAUSE_SYSTEM_FAILURE:
+    case OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT:
+    case OGS_GTP1_CAUSE_MANDATORY_IE_MISSING:
+    case OGS_GTP1_CAUSE_OPTIONAL_IE_INCORRECT:
+    case OGS_GTP1_CAUSE_INVALID_MESSAGE_FORMAT:
+    case OGS_GTP1_CAUSE_P_TMSI_SIGNATURE_MISMATCH:
+    default:
+        emm_cause = OGS_NAS_EMM_CAUSE_NETWORK_FAILURE;
+        break;
+    }
+
+    if (resp->cause.u8 != OGS_GTP1_CAUSE_REQUEST_ACCEPTED) {
+        ogs_error("[Gn] Rx SGSN Context Response cause:%u", resp->cause.u8);
+        rv = nas_eps_send_tau_reject(mme_ue, emm_cause);
+        return OGS_GTP1_CAUSE_SYSTEM_FAILURE;
+    }
+
+    if (!resp->imsi.presence) {
+        ogs_error("[Gn] Rx SGSN Context Response with no IMSI!");
+        gtp1_cause = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
+        goto nack_and_reject;
+    }
+
+    ogs_buffer_to_bcd(resp->imsi.data, resp->imsi.len, imsi_bcd);
+    ogs_info("    IMSI[%s]", imsi_bcd);
+    mme_ue_set_imsi(mme_ue, imsi_bcd);
+
+    if (!resp->tunnel_endpoint_identifier_control_plane.presence) {
+        ogs_error("[Gn] Rx SGSN Context Response with no Tunnel Endpoint Identifier Control Plane!");
+        gtp1_cause = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
+        goto nack_and_reject;
+    }
+
+    mme_ue->gn.sgsn_gn_teid = resp->tunnel_endpoint_identifier_control_plane.u32;
+
+    if (!resp->mm_context.presence) {
+        ogs_error("[Gn] Rx SGSN Context Response with no MM Context!");
+        gtp1_cause = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
+        goto nack_and_reject;
+    }
+
+    if (!resp->pdp_context.presence) {
+        ogs_error("[Gn] Rx SGSN Context Response with no PDP Context!");
+        gtp1_cause = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
+        goto nack_and_reject;
+    }
+
+    rv = ogs_gtp1_parse_mm_context(&gtp1_mm_ctx, &resp->mm_context);
+    if (rv != OGS_OK) {
+        ogs_error("[Gn] Rx SGSN Context Response: Failed parsing MM Context");
+        gtp1_cause = OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+        goto nack_and_reject;
+    }
+
+    rv = ogs_gtp1_parse_pdp_context(&gtp1_pdp_ctx, &resp->pdp_context);
+    if (rv != OGS_OK) {
+        ogs_error("[Gn] Rx SGSN Context Response: Failed parsing PDP Context");
+        gtp1_cause = OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+        goto nack_and_reject;
+    }
+
+    if (gtp1_mm_ctx.imeisv_len > 0) {
+        memcpy(&mme_ue->nas_mobile_identity_imeisv, &gtp1_mm_ctx.imeisv[0],
+               ogs_min(gtp1_mm_ctx.imeisv_len, sizeof(mme_ue->nas_mobile_identity_imeisv)));
+    } else {
+        /* 3GPP TS 23.401 D3.6: we need to request IMEI to the UE over EUTRAN */
+        ret_cause = OGS_GTP1_CAUSE_REQUEST_IMEI;
+    }
+
+    mme_ue->ms_network_capability.length = gtp1_mm_ctx.ms_network_capability_len;
+    if (gtp1_mm_ctx.ms_network_capability_len > 0)
+        memcpy(((uint8_t*)&mme_ue->ms_network_capability)+1, &gtp1_mm_ctx.ms_network_capability[0],
+             ogs_min(gtp1_mm_ctx.ms_network_capability_len, sizeof(mme_ue->ms_network_capability) - 1));
+    /* TODO: how to fill first byte of mme_ue->ms_network_capability ? */
+
+    mme_ue->nas_eps.ksi = gtp1_mm_ctx.ksi;
+    /* 3GPP TS 33.401 A.10, A.11: */
+    mme_ue->noncemme = ogs_random32();
+    /* 3GPP TS 33.401 7.2.6.2 Establishment of keys for cryptographically protected radio bearers: */
+    /* See also 3GPP TS 33.401 9.1.2 */
+    ogs_kdf_kasme_idle_mobility(gtp1_mm_ctx.ck, gtp1_mm_ctx.ik, mme_ue->nonceue, mme_ue->noncemme, mme_ue->kasme);
+    ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
+    ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+    mme_ue->nhcc = 1;
+
+    if (gtp1_mm_ctx.num_vectors > 0) {
+        mme_ue->xres_len = gtp1_mm_ctx.auth_quintuplets[0].xres_len;
+        memcpy(mme_ue->xres, gtp1_mm_ctx.auth_quintuplets[0].xres, mme_ue->xres_len);
+        memcpy(mme_ue->rand, gtp1_mm_ctx.auth_quintuplets[0].rand, OGS_RAND_LEN);
+        memcpy(mme_ue->autn, gtp1_mm_ctx.auth_quintuplets[0].autn, OGS_AUTN_LEN);
+    }
+
+    sess = mme_ue_session_from_gtp1_pdp_ctx(mme_ue, &gtp1_pdp_ctx);
+
+    rv = mme_gtp1_send_sgsn_context_ack(mme_ue, OGS_GTP1_CAUSE_REQUEST_ACCEPTED, xact);
+
+    mme_gtp_send_create_session_request(sess, OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE);
+
+    return ret_cause;
+
+nack_and_reject:
+    rv = mme_gtp1_send_sgsn_context_ack(mme_ue, gtp1_cause, xact);
+    ogs_info("[%s] TAU Reject [OGS_NAS_EMM_CAUSE:%d]", mme_ue->imsi_bcd, emm_cause);
+    rv = nas_eps_send_tau_reject(mme_ue, emm_cause);
+    return OGS_GTP1_CAUSE_SYSTEM_FAILURE;
 }
 
 /* TS 29.060 7.5.5 SGSN Context Acknowledge */

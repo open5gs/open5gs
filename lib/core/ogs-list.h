@@ -206,6 +206,19 @@ static ogs_inline int ogs_list_count(const ogs_list_t *list)
     return i;
 }
 
+static ogs_inline bool ogs_list_exists(const ogs_list_t *list, void *lnode)
+{
+    ogs_list_t *node = (ogs_list_t *)lnode;
+    void *iter = NULL;
+
+    ogs_list_for_each(list, iter) {
+        if (node == (ogs_list_t *)iter)
+            return true;
+    }
+
+    return false;
+}
+
 #ifdef __cplusplus
 }
 #endif
