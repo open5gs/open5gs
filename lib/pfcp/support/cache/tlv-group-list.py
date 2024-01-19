@@ -327,7 +327,13 @@ ies.append({ "ie_type" : "LNS Address", "ie_value" : "LNS Address", "presence" :
 group_list["Created L2TP Session"] = { "index" : "379", "type" : "279", "ies" : ies }
 ies = []
 ies.append({ "ie_type" : "Multicast Transport Information", "ie_value" : "Multicast Transport Information", "presence" : "C", "tlv_more" : "0", "comment" : "This IE shall be present to include a low layer source specific multicast address information (i.e. multicast destination address and related source IP address) and a GTP-U Common Tunnel EndPoint Identifier (C-TEID) if the CP function has requested to allocate such information for multicast transport over N3mb and/or N19mb."})
-group_list["MBS Session N4 Information"] = { "index" : "403", "type" : "303", "ies" : ies }
+group_list["MBS Session N4mb Information"] = { "index" : "403", "type" : "303", "ies" : ies }
+ies = []
+ies.append({ "ie_type" : "MBS Session Identifier", "ie_value" : "MBS Session Identifier", "presence" : "M", "tlv_more" : "0", "comment" : ""})
+ies.append({ "ie_type" : "Area Session ID", "ie_value" : "Area Session ID", "presence" : "C", "tlv_more" : "0", "comment" : "This IE shall be present for a location dependent MBS service. When present, it shall contain the Area Session ID, which together with the MBS Session Identifier, uniquely identify the service area part of the content data of the MBS service. "})
+ies.append({ "ie_type" : "F-TEID", "ie_value" : "N19mb DL Tunnel ID", "presence" : "C", "tlv_more" : "0", "comment" : "This IE shall be present when the SMF has requested the UPF to allocate a Local F-TEID in the PDI or in the Create Traffic Endpoint IE. (NOTE1)"})
+ies.append({ "ie_type" : "MBSN4Resp-Flags", "ie_value" : "MBSN4Resp-Flags", "presence" : "C", "tlv_more" : "0", "comment" : "This IE shall be included if at least one of the flags is set to 1. NOTE2.-	NN19DT (New N19mb Downlink Tunnel): the UPF shall set this flag if it has allocated a new N19mb DL TEID for the MBS session;-	JMTI (Joined N19mb Multicast Tree Indication): the UPF shall set this flag if it has joined the multicast tree from the MB-UPF;-	N19DTR (N19mb Downlink Tunnel Removal): the UPF shall set this flag if it is about to remove the N19mb DL Tunnel for receiving the MBS session data. "})
+group_list["MBS Session N4 Information"] = { "index" : "411", "type" : "311", "ies" : ies }
 ies = []
 ies.append({ "ie_type" : "PDR ID", "ie_value" : "PDR ID", "presence" : "M", "tlv_more" : "0", "comment" : ""})
 ies.append({ "ie_type" : "F-TEID", "ie_value" : "Local F-TEID", "presence" : "C", "tlv_more" : "0", "comment" : "If the UP function allocates the F-TEID, this IE shall be present and shall contain the local F-TEID to be used for this PDR."})

@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2023-08-18 22:15:59.596820 by acetcom
+ * Created on: 2024-01-19 23:36:01.346970 by acetcom
  * from 29244-h71-modified.docx
  ******************************************************************************/
 
@@ -2369,17 +2369,6 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_predefined_rules_name =
     { NULL }
 };
 
-ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4mb_information =
-{
-    OGS_TLV_VAR_STR,
-    "MBS Session N4mb Information",
-    OGS_PFCP_MBS_SESSION_N4MB_INFORMATION_TYPE,
-    0,
-    0,
-    sizeof(ogs_pfcp_tlv_mbs_session_n4mb_information_t),
-    { NULL }
-};
-
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_remove_mbs_unicast_parameters =
 {
     OGS_TLV_VAR_STR,
@@ -4188,14 +4177,14 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4mb_control_information =
     }
 };
 
-ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4_information =
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4mb_information =
 {
     OGS_TLV_COMPOUND,
-    "MBS Session N4 Information",
-    OGS_PFCP_MBS_SESSION_N4_INFORMATION_TYPE,
+    "MBS Session N4mb Information",
+    OGS_PFCP_MBS_SESSION_N4MB_INFORMATION_TYPE,
     0,
     0,
-    sizeof(ogs_pfcp_tlv_mbs_session_n4_information_t),
+    sizeof(ogs_pfcp_tlv_mbs_session_n4mb_information_t),
     {
         &ogs_pfcp_tlv_desc_multicast_transport_information,
         NULL,
@@ -4214,6 +4203,23 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4_control_information =
         &ogs_pfcp_tlv_desc_mbs_session_identifier,
         &ogs_pfcp_tlv_desc_area_session_id,
         &ogs_pfcp_tlv_desc_multicast_transport_information,
+        NULL,
+    }
+};
+
+ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4_information =
+{
+    OGS_TLV_COMPOUND,
+    "MBS Session N4 Information",
+    OGS_PFCP_MBS_SESSION_N4_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_pfcp_tlv_mbs_session_n4_information_t),
+    {
+        &ogs_pfcp_tlv_desc_mbs_session_identifier,
+        &ogs_pfcp_tlv_desc_area_session_id,
+        &ogs_pfcp_tlv_desc_f_teid,
+        &ogs_pfcp_tlv_desc_mbsn4resp_flags,
         NULL,
     }
 };

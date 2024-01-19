@@ -110,6 +110,26 @@ $ cd ../
 
 ##### 5G Core
 
+Modify [install/etc/open5gs/nrf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/nrf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI.
+
+```diff
+$ diff --git a/configs/open5gs/nrf.yaml.in b/configs/open5gs/nrf.yaml.in
+index cd9e45feb..58e8cbbce 100644
+--- a/configs/open5gs/nrf.yaml.in
++++ b/configs/open5gs/nrf.yaml.in
+@@ -10,8 +10,8 @@ global:
+ nrf:
+   serving:  # 5G roaming requires PLMN in NRF
+     - plmn_id:
+-        mcc: 999
+-        mnc: 70
++        mcc: 001
++        mnc: 01
+   sbi:
+     server:
+       - address: 127.0.0.10
+```
+
 Modify [install/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI.
 
 ```diff
