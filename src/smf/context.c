@@ -2632,8 +2632,10 @@ void smf_bearer_qos_update(smf_bearer_t *bearer, uint8_t direction)
 
     qer->mbr.uplink = bearer->qos.mbr.uplink;
     qer->mbr.downlink = bearer->qos.mbr.downlink;
-    qer->gbr.uplink = bearer->qos.gbr.uplink;
-    qer->gbr.downlink = bearer->qos.gbr.downlink;
+    if (FIVE_QI_IS_GBR(bearer->qos.index)) {
+        qer->gbr.uplink = bearer->qos.gbr.uplink;
+        qer->gbr.downlink = bearer->qos.gbr.downlink;
+    }
 
     if (direction == OGS_FLOW_UPLINK_ONLY)
         qer->gate_status.downlink = OGS_PFCP_GATE_CLOSE;

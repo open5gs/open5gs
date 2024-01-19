@@ -420,6 +420,12 @@ typedef struct ogs_qos_s {
 #define OGS_QOS_INDEX_1                                       1
 #define OGS_QOS_INDEX_2                                       2
 #define OGS_QOS_INDEX_5                                       5
+#define FIVE_QI_IS_GBR(__iNDEX) \
+    (!(((__iNDEX) >= 5 && (__iNDEX) <= 9) || \
+    (__iNDEX) == 69 || \
+    (__iNDEX) == 70 || \
+    (__iNDEX) == 79 || \
+    (__iNDEX) == 80))
     uint8_t         index;
 
     struct {
