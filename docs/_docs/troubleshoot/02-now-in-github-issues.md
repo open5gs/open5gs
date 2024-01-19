@@ -10,6 +10,119 @@ head_inline: "<style> .blue { color: blue; } </style>"
   }
 </style>
 
+#### What to do if a FATAL occurs?
+
+You may occasionally encounter a FATAL like the one below.
+
+```
+FATAL: s1ap_build_initial_context_setup_request: Assertion `E_RABToBeSetupListCtxtSUReq->list.count' failed. (../src/mme/s1ap-build.c:577)
+01/19 22:01:49.169: [core] FATAL: backtrace() returned 10 addresses (../lib/core/ogs-abort.c:37)
+./src/mme/open5gs-mmed(+0x8ef5e) [0x55f6f8a78f5e]
+./src/mme/open5gs-mmed(+0x5910b) [0x55f6f8a4310b]
+./src/mme/open5gs-mmed(+0xa4ea5) [0x55f6f8a8eea5]
+./src/mme/open5gs-mmed(+0x88b65) [0x55f6f8a72b65]
+/home/acetcom/Documents/git/open5gs/build/src/mme/../../lib/core/libogscore.so.2(ogs_fsm_dispatch+0x119) [0x7fc2362f4c2f]
+./src/mme/open5gs-mmed(+0x9e99) [0x55f6f89f3e99]
+/home/acetcom/Documents/git/open5gs/build/src/mme/../../lib/core/libogscore.so.2(+0x1199d) [0x7fc2362e599d]
+/lib/x86_64-linux-gnu/libc.so.6(+0x94ac3) [0x7fc235a94ac3]
+/lib/x86_64-linux-gnu/libc.so.6(+0x126850) [0x7fc235b26850]
+[1]    41823 IOT instruction (core dumped)  ./src/mme/open5gs-mmed
+```
+
+When a FATAL occurs, Open5GS automatically calls backtrace(), and from the address information it outputs, we can see in which source code this happened. Note the addresses 0x8ef5e, 0x5910b, 0xa4ea5, 0x88b65 in the output below. You can find those addresses in the following places.
+
+```
+./src/mme/open5gs-mmed(+0x8ef5e)
+./src/mme/open5gs-mmed(+0x5910b)
+./src/mme/open5gs-mmed(+0xa4ea5)
+./src/mme/open5gs-mmed(+0x88b65)
+```
+
+And you can use the GDB tool to provide additional information. If you are in a Ubuntu environment, you can install GDB as shown below.
+```
+$ sudo apt install gdb
+```
+
+Then run gdb like below.
+
+```
+$ gdb ./src/mme/open5gs-mmed
+GNU gdb (Ubuntu 12.1-0ubuntu1~22.04) 12.1
+Copyright (C) 2022 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<https://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./src/mme/open5gs-mmed...
+(gdb)
+```
+
+With the address 0x8ef5e, 0x5910b, 0xa4ea5, 0x88b65 that you remembered from above and the `list` command within the GDB prompt, you can find out in which source code the problem is occurring.
+
+```
+(gdb) list *0x8ef5e
+0x8ef5e is in s1ap_build_initial_context_setup_request (../src/mme/s1ap-build.c:579).
+574	        emmbuf = NULL;
+575	    }
+576
+577	    ogs_assert(E_RABToBeSetupListCtxtSUReq->list.count);
+578
+579	    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
+580	    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+581
+582	    ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
+583	    ie->criticality = S1AP_Criticality_reject;
+(gdb) list *0x5910b
+0x5910b is in nas_eps_send_attach_accept (../src/mme/nas-path.c:171).
+166	     * the MME shall delete the stored UE radio capability information
+167	     * or the UE radio capability ID, if any.
+168	     */
+169	    OGS_ASN_CLEAR_DATA(&mme_ue->ueRadioCapability);
+170
+171	    s1apbuf = s1ap_build_initial_context_setup_request(mme_ue, emmbuf);
+172	    if (!s1apbuf) {
+173	        ogs_error("s1ap_build_initial_context_setup_request() failed");
+174	        return OGS_ERROR;
+175	    }
+(gdb) list *0xa4ea5
+0xa4ea5 is in mme_s11_handle_create_session_response (../src/mme/mme-s11-handler.c:436).
+431	            ogs_assert(OGS_OK ==
+432	                sgsap_send_location_update_request(mme_ue));
+433	        } else {
+434	            ogs_assert(OGS_PDU_SESSION_TYPE_IS_VALID(
+435	                        session->paa.session_type));
+436	            r = nas_eps_send_attach_accept(mme_ue);
+437	            ogs_expect(r == OGS_OK);
+438	            ogs_assert(r != OGS_ERROR);
+439	        }
+440
+(gdb) list *0x88b65
+0x88b65 is in mme_state_operational (../src/mme/mme-sm.c:552).
+547	            break;
+548	        case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
+549	            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
+550	            mme_s11_handle_create_session_response(
+551	                xact, mme_ue, &gtp_message.create_session_response);
+552	            break;
+553	        case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
+554	            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
+555	            mme_s11_handle_modify_bearer_response(
+556	                xact, mme_ue, &gtp_message.modify_bearer_response);
+(gdb)
+```
+
+Reporting this information to a github issue or discussion will help others troubleshoot the issue.
+
+
 #### MME sends Attach reject(EMM-Cause:15) with Diameter error(Result-Code:3002)
 
 If you see the Attach reject(EMM-Cause:15] with Diameter error(Result-Code:3002), it means that HSS is not running.

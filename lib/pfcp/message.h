@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2023-08-18 22:15:59.578047 by acetcom
+ * Created on: 2024-01-19 23:36:01.327925 by acetcom
  * from 29244-h71-modified.docx
  ******************************************************************************/
 
@@ -626,7 +626,6 @@ extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_event_notification_uri;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_notification_correlation_id;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_reporting_flags;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_predefined_rules_name;
-extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4mb_information;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_remove_mbs_unicast_parameters;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_identifier;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_multicast_transport_information;
@@ -733,8 +732,9 @@ extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_l2tp_session_information;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_created_l2tp_session;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcp_session_change_info;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4mb_control_information;
-extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4_information;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4mb_information;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4_control_information;
+extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_mbs_session_n4_information;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_dscp_to_ppi_control_information;
 
 /* Message Descriptor */
@@ -978,7 +978,6 @@ typedef ogs_tlv_octet_t ogs_pfcp_tlv_event_notification_uri_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_notification_correlation_id_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_reporting_flags_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_predefined_rules_name_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_mbs_session_n4mb_information_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_remove_mbs_unicast_parameters_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_mbs_session_identifier_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_multicast_transport_information_t;
@@ -1827,10 +1826,10 @@ typedef struct ogs_pfcp_tlv_mbs_session_n4mb_control_information_s {
     ogs_pfcp_tlv_multicast_transport_information_t multicast_transport_information_for_n3mb_and_or_n19mb;
 } ogs_pfcp_tlv_mbs_session_n4mb_control_information_t;
 
-typedef struct ogs_pfcp_tlv_mbs_session_n4_information_s {
+typedef struct ogs_pfcp_tlv_mbs_session_n4mb_information_s {
     ogs_tlv_presence_t presence;
     ogs_pfcp_tlv_multicast_transport_information_t multicast_transport_information;
-} ogs_pfcp_tlv_mbs_session_n4_information_t;
+} ogs_pfcp_tlv_mbs_session_n4mb_information_t;
 
 typedef struct ogs_pfcp_tlv_mbs_session_n4_control_information_s {
     ogs_tlv_presence_t presence;
@@ -1838,6 +1837,14 @@ typedef struct ogs_pfcp_tlv_mbs_session_n4_control_information_s {
     ogs_pfcp_tlv_area_session_id_t area_session_id;
     ogs_pfcp_tlv_multicast_transport_information_t multicast_transport_information;
 } ogs_pfcp_tlv_mbs_session_n4_control_information_t;
+
+typedef struct ogs_pfcp_tlv_mbs_session_n4_information_s {
+    ogs_tlv_presence_t presence;
+    ogs_pfcp_tlv_mbs_session_identifier_t mbs_session_identifier;
+    ogs_pfcp_tlv_area_session_id_t area_session_id;
+    ogs_pfcp_tlv_f_teid_t n19mb_dl_tunnel_id;
+    ogs_pfcp_tlv_mbsn4resp_flags_t mbsn4resp_flags;
+} ogs_pfcp_tlv_mbs_session_n4_information_t;
 
 typedef struct ogs_pfcp_tlv_dscp_to_ppi_control_information_s {
     ogs_tlv_presence_t presence;
