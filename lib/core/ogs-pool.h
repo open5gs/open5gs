@@ -157,6 +157,12 @@ typedef uint32_t ogs_pool_id_t;
        (pool)->array[j] = temp; \
     } \
 } while (0)
+#define ogs_pool_assert_if_has_duplicate(pool) do { \
+    int i, j; \
+    for (i = 0; i < (pool)->size; i++) \
+        for (j = i+1; j < (pool)->size; j++) \
+            ogs_assert(((pool)->array[i]) != ((pool)->array[j])); \
+} while (0)
 
 #ifdef __cplusplus
 }

@@ -62,8 +62,12 @@ void amf_context_init(void)
     ogs_pool_init(&amf_ue_pool, ogs_global_conf()->max.ue);
     ogs_pool_init(&ran_ue_pool, ogs_global_conf()->max.ue);
     ogs_pool_init(&amf_sess_pool, ogs_app()->pool.sess);
+    /* Increase size of TMSI pool (#1827) */
     ogs_pool_init(&m_tmsi_pool, ogs_global_conf()->max.ue*2);
     ogs_pool_random_id_generate(&m_tmsi_pool);
+#if 0 /* For debugging : Verify whether there are duplicates of M_TMSI. */
+    ogs_pool_assert_if_has_duplicate(&m_tmsi_pool);
+#endif
 
     ogs_list_init(&self.gnb_list);
     ogs_list_init(&self.amf_ue_list);
@@ -2487,7 +2491,8 @@ int amf_m_tmsi_free(amf_m_tmsi_t *m_tmsi)
     ogs_assert(m_tmsi);
 
     /* Restore M-TMSI by Issue #2307 */
-    *m_tmsi &= 0x003fffff;
+    *m_tmsi &= 0x3fffffff;
+    *m_tmsi = ((*m_tmsi & 0xffff) | ((*m_tmsi & 0x3f000000) >> 8));
     ogs_pool_free(&m_tmsi_pool, m_tmsi);
 
     return OGS_OK;
