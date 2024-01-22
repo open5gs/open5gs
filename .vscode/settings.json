@@ -7,6 +7,8 @@
         "mme-event.h": "c",
         "ogs-proto.h": "c",
         "mme-fd-path.h": "c",
-        "fd-path.h": "c"
+        "fd-path.h": "c",
+        "*.tcc": "c",
+        "cstdio": "c"
     }
 }
