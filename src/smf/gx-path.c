@@ -207,8 +207,6 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
     ogs_assert(ret == 0);
 
     /* Set the Destination-Realm AVP */
-    printf("*******%c******",smf_ue->imsi_bcd[0]);
-    printf("*******%c******",smf_ue->imsi_bcd[1]);
     DiamId_t dest_realm = ogs_set_realm_from_imsi_bcd(smf_ue->imsi_bcd);
     ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
     ogs_assert(ret == 0);
