@@ -1,4 +1,4 @@
-/*
+/* Gx Interface, 3GPP TS 29.212 section 4
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
@@ -87,6 +87,7 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
     ogs_thread_mutex_unlock(&sess_state_mutex);
 }
 
+/* 3GPP TS 29.212 5.6.2 Credit-Control-Request */
 void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         uint32_t cc_request_type)
 {
@@ -701,6 +702,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
     ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 }
 
+/* 3GPP TS 29.212 5b.6.5 Credit-Control-Answer */
 static void smf_gx_cca_cb(void *data, struct msg **msg)
 {
     int rv;
