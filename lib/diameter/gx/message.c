@@ -1,4 +1,4 @@
-/*
+/* Gx Interface, 3GPP TS 29.212 section 4
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
