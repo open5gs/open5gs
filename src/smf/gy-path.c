@@ -1,4 +1,4 @@
-/*
+/* Gy Interface, 3GPP TS 32.299
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
