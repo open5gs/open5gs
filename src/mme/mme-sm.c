@@ -407,8 +407,53 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         break;
 
     case MME_EVENT_S6A_MESSAGE:
-        mme_ue = e->mme_ue;
-        ogs_assert(mme_ue);
+        /*
+         * A race condition can occur in the following situations.
+         * In conclusion, we can use this situation to determine
+         * whether or not the UE Context has been removed and avoiding a crash.
+         *
+         * For example, suppose a UE Context is removed in the followings.
+         *
+         * 1. Attach Request
+         * 2. Authentication-Information-Request
+         * 3. Authentication-Information-Answer
+         * 4. Authentication Request
+         * 5. Authentication Response(MAC Failed)
+         * 6. Authentication Reject
+         * 7. UEContextReleaseCommand
+         * 8. UEContextReleaseComplete
+         *
+         * The MME then sends a Purge-UE-request to the HSS and deletes
+         * the UE context as soon as it receives a Purge-UE-Answer.
+         *
+         * Suppose an Attach Request is received from the same UE
+         * between Purge-UE-Request/Answer, then the MME and HSS start
+         * the Authentication-Information-Request/Answer process.
+         *
+         * This can lead to the following situations.
+         *
+         * 1. Purge-UE-Request
+         * 2. Attach Request
+         * 3. Authentication-Information-Request
+         * 4. Purge-UE-Answer
+         * 5. [UE Context Removed]
+         * 6. Authentication-Information-Answer
+         *
+         * Since the UE Context has already been deleted
+         * when the Authentication-Information-Answer is received,
+         * it cannot be processed properly.
+         *
+         * Therefore, mme_ue_cycle() is used to check
+         * whether the UE Context has been deleted and
+         * decide whether to process or
+         * ignore the Authentication-Information-Answer as shown below.
+         */
+        mme_ue = mme_ue_cycle(e->mme_ue);
+        if (!mme_ue) {
+            ogs_error("UE(mme-ue) context has already been removed");
+            goto cleanup;
+        }
+
         s6a_message = e->s6a_message;
         ogs_assert(s6a_message);
 
@@ -473,6 +518,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_error("Invalid Type[%d]", s6a_message->cmd_code);
             break;
         }
+
+cleanup:
         ogs_subscription_data_free(&s6a_message->idr_message.subscription_data);
         ogs_subscription_data_free(&s6a_message->ula_message.subscription_data);
         ogs_free(s6a_message);

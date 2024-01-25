@@ -574,7 +574,28 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
         emmbuf = NULL;
     }
 
-    ogs_assert(E_RABToBeSetupListCtxtSUReq->list.count);
+    if (!E_RABToBeSetupListCtxtSUReq->list.count) {
+        ogs_error("    IMSI[%s] NAS-EPS Type[%d] "
+                "ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                mme_ue->imsi_bcd, mme_ue->nas_eps.type,
+                enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+        ogs_list_for_each(&mme_ue->sess_list, sess) {
+            ogs_error("    APN[%s]",
+                    sess->session ? sess->session->name : "Unknown");
+            ogs_list_for_each(&sess->bearer_list, bearer) {
+                if (OGS_FSM_CHECK(&bearer->sm, esm_state_inactive))
+                    ogs_error("    IN-ACTIVE");
+                else if (OGS_FSM_CHECK(&bearer->sm, esm_state_active))
+                    ogs_error("    ACTIVE");
+                else
+                    ogs_error("    OTHER STATE");
+
+                ogs_error("    EBI[%d] QCI[%d] SGW-S1U-TEID[%d]",
+                        bearer->ebi, bearer->qos.index, bearer->sgw_s1u_teid);
+            }
+        }
+        return NULL;
+    }
 
     ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
     ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);

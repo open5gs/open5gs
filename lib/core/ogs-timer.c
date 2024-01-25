@@ -146,7 +146,6 @@ void ogs_timer_stop_debug(ogs_timer_t *timer, const char *file_line)
     manager = timer->manager;
     ogs_assert(manager);
     timer = ogs_timer_cycle(manager, timer);
-    ogs_assert(timer);
     if (!timer) {
         ogs_fatal("ogs_timer_stop() failed in %s", file_line);
         ogs_assert_if_reached();
