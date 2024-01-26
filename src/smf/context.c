@@ -2865,6 +2865,7 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
 
                 ogs_assert(num_of_ipcp <= OGS_PCO_MAX_NUM_OF_IPCP);
                 pco_ipcp[num_of_ipcp].code = 2; /* Code : Configuration Ack */
+                pco_ipcp[num_of_ipcp].identifier = ipcp->identifier; /* ID: Needs to match request */
 
                 out_len = 4;
                 /* Primary DNS Server IP Address */
