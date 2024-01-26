@@ -224,6 +224,12 @@ typedef struct ogs_gtp1_gsn_addr_s {
 #define OGS_GTP1_DELIVERY_ORDER_YES 1
 #define OGS_GTP1_DELIVERY_ORDER_NO 2
 
+/* Delivery of erroneous SDUs, octet 6 (see also 3GPP TS 23.107) */
+#define OGS_GTP1_DELIVERY_ERR_SDU_SUBSCRIBED 0
+#define OGS_GTP1_DELIVERY_ERR_SDU_NO_DETECT 1
+#define OGS_GTP1_DELIVERY_ERR_SDU_YES 2
+#define OGS_GTP1_DELIVERY_ERR_SDU_NO 3
+
 /* TS 29.060 7.7.34 Quality of Service (QoS) Profile */
 #define OGS_GTP1_QOS_PROFILE_MAX_LEN 255
 /* TS 24.008 10.5.6.5 Quality of service */
