@@ -71,6 +71,9 @@ static void build_qos_profile_from_session(ogs_gtp1_qos_profile_decoded_t *qos_p
 
     qos_pdec->qos_profile.data.delivery_erroneous_sdu = OGS_GTP1_DELIVERY_ERR_SDU_NO;
 
+    /* Maximum SDU Size: Encode it as 1500, the maximum for IP 3GPP TS 23.107 Table 4, Note 4) */
+    qos_pdec->qos_profile.data.max_sdu_size = 0x96;
+
      /* 3GPP TS 23.401 Annex E table Table E.3 */
     /* Also take into account table 7 in 3GPP TS 23.107 9.1.2.2 */
     switch (session->qos.index) { /* QCI */
