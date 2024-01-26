@@ -39,6 +39,8 @@ static void build_qos_profile_from_session(ogs_gtp1_qos_profile_decoded_t *qos_p
      * required" [...] as described in clause "compatibility issues" (4.8.1) */
     qos_pdec->qos_profile.data.delivery_order = OGS_GTP1_DELIVERY_ORDER_NO;
 
+    qos_pdec->qos_profile.data.delivery_erroneous_sdu = OGS_GTP1_DELIVERY_ERR_SDU_NO;
+
      /* 3GPP TS 23.401 Annex E table Table E.3 */
     /* Also take into account table 7 in 3GPP TS 23.107 9.1.2.2 */
     switch (sess->session.qos.index) { /* QCI */
