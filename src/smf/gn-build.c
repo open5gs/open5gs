@@ -32,6 +32,13 @@ static void build_qos_profile_from_session(ogs_gtp1_qos_profile_decoded_t *qos_p
 
     qos_pdec->qos_profile.arp = sess->session.qos.arp.priority_level;
 
+    /* 3GPP TS 23.107 "Delivery order should be set to 'no' for PDP Type =
+     * 'IPv4' or 'IPv6'. The SGSN shall ensure that the appropriate value is set."
+     * 3GPP TS 23.401 D.3.5 2b NOTE4: The GTP and PDCP sequence numbers are not
+     * relevant as the network does not configure usage of "delivery order
+     * required" [...] as described in clause "compatibility issues" (4.8.1) */
+    qos_pdec->qos_profile.data.delivery_order = OGS_GTP1_DELIVERY_ORDER_NO;
+
      /* 3GPP TS 23.401 Annex E table Table E.3 */
     /* Also take into account table 7 in 3GPP TS 23.107 9.1.2.2 */
     switch (sess->session.qos.index) { /* QCI */
