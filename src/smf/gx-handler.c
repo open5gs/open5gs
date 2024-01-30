@@ -196,7 +196,7 @@ uint32_t smf_gx_handle_cca_initial_request(
         ogs_gtpu_resource_t *resource = NULL;
         resource = ogs_pfcp_find_gtpu_resource(
                 &sess->pfcp_node->gtpu_resource_list,
-                sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
+                sess->session.name, ul_pdr->src_if);
         if (resource) {
             ogs_user_plane_ip_resource_info_to_sockaddr(&resource->info,
                 &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6);

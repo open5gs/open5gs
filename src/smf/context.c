@@ -2116,7 +2116,7 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
 
                 resource = ogs_pfcp_find_gtpu_resource(
                         &sess->pfcp_node->gtpu_resource_list,
-                        sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
+                        sess->session.name, pdr->src_if);
 
                 if (resource) {
                     ogs_user_plane_ip_resource_info_to_sockaddr(&resource->info,
