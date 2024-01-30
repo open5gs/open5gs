@@ -1184,7 +1184,7 @@ void ogs_pfcp_object_teid_hash_set(
             ogs_gtpu_resource_t *resource = NULL;
             resource = ogs_pfcp_find_gtpu_resource(
                     &ogs_gtp_self()->gtpu_resource_list,
-                    pdr->dnn, OGS_PFCP_INTERFACE_ACCESS);
+                    pdr->dnn, pdr->src_if);
             if (resource) {
                 ogs_assert(
                     (resource->info.v4 && pdr->f_teid.ipv4) ||
