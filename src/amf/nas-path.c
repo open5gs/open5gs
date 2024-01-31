@@ -638,6 +638,33 @@ int nas_5gs_send_configuration_update_command(
     return rv;
 }
 
+int nas_5gs_send_downlink_sms(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
+{
+    int rv;
+    ran_ue_t *ran_ue = NULL;
+    ogs_pkbuf_t *gmmbuf = NULL;
+
+    ogs_assert(amf_ue);
+    ogs_assert(pkbuf);
+
+    ogs_debug("[%s] Downlink SMS", amf_ue->supi);
+    
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    ogs_assert(ran_ue);
+
+    gmmbuf = gmm_build_sms_dl_nas_transport(amf_ue,
+            OGS_NAS_PAYLOAD_CONTAINER_SMS, pkbuf);
+    if (!gmmbuf) {
+        ogs_error("gmm_build_sms_dl_nas_transport() failed");
+        return OGS_ERROR;
+    }
+
+    rv = nas_5gs_send_to_downlink_nas_transport(ran_ue, amf_ue, gmmbuf);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
 int nas_send_pdu_session_setup_request(amf_sess_t *sess,
         ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf)
 {
@@ -918,6 +945,9 @@ int nas_5gs_send_gmm_reject(
     case OGS_NAS_5GS_SERVICE_REQUEST:
         rv = nas_5gs_send_service_reject(ran_ue, amf_ue, gmm_cause);
         ogs_expect(rv == OGS_OK);
+        break;
+    case OGS_NAS_5GS_UL_NAS_TRANSPORT:
+        ogs_error("inbound sms failure");
         break;
     default:
         ogs_error("Unknown message type [%d]", amf_ue->nas.message_type);

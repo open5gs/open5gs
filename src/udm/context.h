@@ -50,6 +50,7 @@ struct udm_ue_s {
 
     OpenAPI_auth_event_t *auth_event;
     OpenAPI_amf3_gpp_access_registration_t *amf_3gpp_access_registration;
+    OpenAPI_smsf_registration_t *smsf_registration;
 
     char *ctx_id;
     char *suci;
@@ -58,6 +59,7 @@ struct udm_ue_s {
 
     char *ausf_instance_id;
     char *amf_instance_id;
+    char *smsf_instance_id;
 
     char *dereg_callback_uri;
 

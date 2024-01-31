@@ -1,0 +1,211 @@
+openapi: 3.0.0
+
+info:
+  version: '1.0.1'
+  title: 'Nipsmgw_SMService Service API'
+  description: |
+    IP-SM-GW SMService.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.577 V17.1.0; 5G System; IP Short Message Gateway and SMS Router For Short Message Services; Stage 3
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.577/'
+
+security:
+  - oAuth2ClientCredentials:
+    - nipsmgw-smservice
+  - {}
+
+servers:
+  - url: '{apiRoot}/nipsmgw-smservice/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+paths:
+  /mt-sm-infos/{gpsi}:
+    put:
+      summary: Create the routing information for a given UE
+      operationId: RoutingInfo
+      tags:
+        - Creation of Routing Info
+      parameters:
+        - name: gpsi
+          in: path
+          required: true
+          description: Generic Public Subscription Identifier (GPSI)
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoutingData'
+        required: true
+      responses:
+        '201':
+          description: Routing Information is created in IP-SM-GW
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedRoutingData'
+          headers:
+            Location:
+              description: >
+                'Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/nipsmgw-smservice/<apiVersion>/mt-sm-infos/{gpsi}'
+              required: true
+              schema:
+                type: string
+        '200':
+          description: Routing Information is updated in IP-SM-GW
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedRoutingData'
+        '204':
+          description: Routing Information is updated in IP-SM-GW
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /mt-sm-infos/{gpsi}/sendsms:
+    post:
+      summary: Send SMS payload for a given UE
+      operationId: SendSMS
+      tags:
+        - Send MT SMS message and the delivery report
+      parameters:
+        - name: gpsi
+          in: path
+          required: true
+          description: Generic Public Subscription Identifier (GPSI)
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/related:  # message with a binary body part
+            schema:
+              type: object
+              properties:
+                jsonData:
+                  $ref: '#/components/schemas/SmsData'
+                binaryPayload:
+                  type: string
+                  format: binary
+            encoding:
+              jsonData:
+                contentType: application/json
+              binaryPayload:
+                contentType: application/vnd.3gpp.sms
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string
+        required: true
+      responses:
+        '200':
+          description: sending delivery report
+          content:
+            multipart/related:  # message with a binary body part
+              schema:
+                type: object
+                properties:
+                  jsonData:
+                    $ref: '#/components/schemas/SmsDeliveryData'
+                  binaryPayload:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType: application/json
+                binaryPayload:
+                  contentType: application/vnd.3gpp.sms
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nipsmgw-smservice: Access to the nipsmgw-smservice API
+
+  schemas:
+
+    CreateRoutingData:
+      description: Information used for creating or updating the routing information of the user.
+      type: object
+      required:
+        - smsfId
+      properties:
+        smsfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    CreatedRoutingData:
+      description: Information used for receiving the MT SMS.
+      type: object
+      properties:
+        ipsmgwIpv4:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipsmgwIpv6:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        ipsmgwFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        correlationId:
+          type: string
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    SmsData:
+      description: Information within request message for delivering SMS.
+      type: object
+      required:
+        - smsPayload
+      properties:
+        smsPayload:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+
+    SmsDeliveryData:
+      description: >
+        Information within response message invoking MtForwardSm service operation, for delivering
+        MT SMS Delivery Report.
+      type: object
+      required:
+        - smsPayload
+      properties:
+        smsPayload:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'

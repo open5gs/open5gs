@@ -401,6 +401,48 @@ bool udr_nudr_dr_handle_subscription_context(
                     recvmsg, "Invalid HTTP method", recvmsg->h.method));
         END
         break;
+    CASE(OGS_SBI_RESOURCE_NAME_SMSF_3GPP_ACCESS)
+        SWITCH(recvmsg->h.method)
+        CASE(OGS_SBI_HTTP_METHOD_PUT)
+            OpenAPI_smsf_registration_t *SmsfRegistration;
+
+            SmsfRegistration = recvmsg->SmsfRegistration;
+            if (!SmsfRegistration) {
+                ogs_error("[%s] No SmsfRegistration", supi);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(
+                        stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        recvmsg, "No SmsfRegistration", supi));
+                return false;
+            }
+
+            memset(&sendmsg, 0, sizeof(sendmsg));
+
+            response = ogs_sbi_build_response(
+                    &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            ogs_assert(response);
+            ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+            return true;
+
+        CASE(OGS_SBI_HTTP_METHOD_DELETE)
+            memset(&sendmsg, 0, sizeof(sendmsg));
+
+            response = ogs_sbi_build_response(
+                    &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            ogs_assert(response);
+            ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+            return true;
+
+        DEFAULT
+            ogs_error("Invalid HTTP method [%s]", recvmsg->h.method);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED,
+                    recvmsg, "Invalid HTTP method", recvmsg->h.method));
+        END
+        break;
 
     DEFAULT
         ogs_error("Invalid resource name [%s]",
@@ -1023,6 +1065,56 @@ bool udr_nudr_dr_handle_subscription_provisioned(
         }
 
         OpenAPI_list_free(dnnConfigurationList);
+
+        break;
+
+    CASE(OGS_SBI_RESOURCE_NAME_SMS_MANAGEMENT_DATA)
+        OpenAPI_sms_management_subscription_data_t SmsManagementSubscriptionData;
+
+        memset(&SmsManagementSubscriptionData, 0, 
+                sizeof(SmsManagementSubscriptionData));
+
+        SmsManagementSubscriptionData.is_mt_sms_subscribed = true;
+        SmsManagementSubscriptionData.mt_sms_subscribed = true;
+        SmsManagementSubscriptionData.is_mt_sms_barring_all = false;
+        SmsManagementSubscriptionData.mt_sms_barring_all = false;
+        SmsManagementSubscriptionData.is_mt_sms_barring_roaming = false;
+        SmsManagementSubscriptionData.mt_sms_barring_roaming = false;
+        SmsManagementSubscriptionData.is_mo_sms_subscribed = true;
+        SmsManagementSubscriptionData.mo_sms_subscribed = true;
+        SmsManagementSubscriptionData.is_mo_sms_barring_all = false;
+        SmsManagementSubscriptionData.mo_sms_barring_all = false;
+        SmsManagementSubscriptionData.is_mo_sms_barring_all = false;
+        SmsManagementSubscriptionData.mo_sms_barring_all = false;
+
+        memset(&sendmsg, 0, sizeof(sendmsg));
+        sendmsg.SmsManagementSubscriptionData = &SmsManagementSubscriptionData;
+
+        response = ogs_sbi_build_response(
+                &sendmsg, OGS_SBI_HTTP_STATUS_OK);
+        ogs_assert(response);
+        ogs_assert(true ==
+                ogs_sbi_server_send_response(stream, response));
+
+        break;
+
+    CASE(OGS_SBI_RESOURCE_NAME_SMS_DATA)
+        OpenAPI_sms_subscription_data_t SmsSubscriptionData;
+
+        memset(&SmsSubscriptionData, 0, 
+                sizeof(SmsSubscriptionData));
+
+        SmsSubscriptionData.is_sms_subscribed = true;
+        SmsSubscriptionData.sms_subscribed = true;
+
+        memset(&sendmsg, 0, sizeof(sendmsg));
+        sendmsg.SmsSubscriptionData = &SmsSubscriptionData;
+
+        response = ogs_sbi_build_response(
+                &sendmsg, OGS_SBI_HTTP_STATUS_OK);
+        ogs_assert(response);
+        ogs_assert(true ==
+                ogs_sbi_server_send_response(stream, response));
 
         break;
 

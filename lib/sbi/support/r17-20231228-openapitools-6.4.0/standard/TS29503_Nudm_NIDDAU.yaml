@@ -1,0 +1,195 @@
+openapi: 3.0.0
+
+info:
+  version: '1.1.1'
+  title: 'Nudm_NIDDAU'
+  description: |
+    Nudm NIDD Authorization Service.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.503 Unified Data Management Services, version 17.8.0
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.503/'
+
+servers:
+  - url: '{apiRoot}/nudm-niddau/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - oAuth2ClientCredentials:
+    - nudm-niddau
+  - {}
+
+paths:
+  /{ueIdentity}/authorize:
+    post:
+      summary: Authorize the NIDD configuration request.
+      operationId: AuthorizeNiddData
+      tags:
+        - Authorize the NIDD configuration request
+      parameters:
+        - name: ueIdentity
+          in: path
+          description: Represents the scope of the UE for which the NIDD configuration are authorized. Contains the GPSI of the user or the external group ID.
+          required: true
+          schema:
+            type: string
+            pattern: '^(msisdn-[0-9]{5,15}|.+|extid-[^@]+@[^@]+|extgroupid-[^@]+@[^@]+)$'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizationInfo'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+      callbacks:
+        niddAuthUpdateNotification:
+          '{request.body#/authUpdateCallbackUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NiddAuthUpdateNotification'
+              responses:
+                '204':
+                  description: Expected response to a valid request
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nudm-niddau: Access to the nudm-niddau API
+
+  schemas:
+
+# COMPLEX TYPES:
+#
+    AuthorizationData:
+      description: Represents NIDD authorization data.
+      type: object
+      required:
+       - authorizationData
+      properties:
+        authorizationData:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserIdentifier'
+          minItems: 1
+          uniqueItems: true
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+
+    UserIdentifier:
+      description: Represents the user identifier.
+      type: object
+      required:
+        - supi
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+
+    NiddAuthUpdateInfo:
+      description: Represents NIDD authorization update information.
+      type: object
+      required:
+        - authorizationData
+      properties:
+        authorizationData:
+          $ref: '#/components/schemas/AuthorizationData'
+        invalidityInd:
+          type: boolean
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        niddCause:
+          $ref: '#/components/schemas/NiddCause'
+
+    NiddAuthUpdateNotification:
+      description: Represents a NIDD authorization update notification.
+      type: object
+      required:
+        - niddAuthUpdateInfoList
+      properties:
+        niddAuthUpdateInfoList:
+          type: array
+          items:
+            $ref: '#/components/schemas/NiddAuthUpdateInfo'
+          minItems: 1
+
+    AuthorizationInfo:
+      description: Represents NIDD authorization information.
+      type: object
+      required:
+       - snssai
+       - dnn
+       - mtcProviderInformation
+       - authUpdateCallbackUri
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        mtcProviderInformation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+        authUpdateCallbackUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        afId:
+          type: string
+        nefId:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NefId'
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        contextInfo:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ContextInfo'
+
+
+# SIMPLE TYPES:
+
+
+
+# ENUMS:
+
+    NiddCause:
+      anyOf:
+        - type: string
+          enum:
+          - SUBSCRIPTION_WITHDRAWAL
+          - DNN_REMOVED
+        - type: string
+

@@ -27,6 +27,7 @@
 #include "nsmf-handler.h"
 #include "nudm-handler.h"
 #include "npcf-handler.h"
+#include "nsmsf-handler.h"
 #include "sbi-path.h"
 #include "amf-sm.h"
 
@@ -232,6 +233,13 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                         amf_ue, state, NULL);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
+            } else if (SMSF_SERVICE_ACTIVATED(amf_ue)) {
+                r = amf_ue_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NSMSF_SMS, NULL,
+                        amf_nsmsf_sm_service_build_deactivate,
+                        amf_ue, state, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
             break;
 
@@ -287,6 +295,13 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                                     amf_ue, state, NULL);
                             ogs_expect(r == OGS_OK);
                             ogs_assert(r != OGS_ERROR);
+                        } else if (SMSF_SERVICE_ACTIVATED(amf_ue)) {
+                            r = amf_ue_sbi_discover_and_send(
+                                    OGS_SBI_SERVICE_TYPE_NSMSF_SMS, NULL,
+                                    amf_nsmsf_sm_service_build_deactivate,
+                                    amf_ue, state, NULL);
+                            ogs_expect(r == OGS_OK);
+                            ogs_assert(r != OGS_ERROR);
                         } else {
                             r = nas_5gs_send_de_registration_accept(amf_ue);
                             ogs_expect(r == OGS_OK);
@@ -309,6 +324,13 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                                         OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
                                         NULL,
                                         amf_npcf_am_policy_control_build_delete,
+                                        amf_ue, state, NULL);
+                                ogs_expect(r == OGS_OK);
+                                ogs_assert(r != OGS_ERROR);
+                            } else if (SMSF_SERVICE_ACTIVATED(amf_ue)) {
+                                r = amf_ue_sbi_discover_and_send(
+                                        OGS_SBI_SERVICE_TYPE_NSMSF_SMS, NULL,
+                                        amf_nsmsf_sm_service_build_deactivate,
                                         amf_ue, state, NULL);
                                 ogs_expect(r == OGS_OK);
                                 ogs_assert(r != OGS_ERROR);
@@ -461,6 +483,13 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                                         amf_ue, state, NULL);
                                 ogs_expect(r == OGS_OK);
                                 ogs_assert(r != OGS_ERROR);
+                            } else if (SMSF_SERVICE_ACTIVATED(amf_ue)) {
+                                r = amf_ue_sbi_discover_and_send(
+                                        OGS_SBI_SERVICE_TYPE_NSMSF_SMS, NULL,
+                                        amf_nsmsf_sm_service_build_deactivate,
+                                        amf_ue, state, NULL);
+                                ogs_expect(r == OGS_OK);
+                                ogs_assert(r != OGS_ERROR);
                             } else {
                                 r = nas_5gs_send_de_registration_accept(amf_ue);
                                 ogs_expect(r == OGS_OK);
@@ -522,15 +551,79 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                      */
                     if (state == AMF_RELEASE_SM_CONTEXT_NO_STATE ||
                         state == AMF_UE_INITIATED_DE_REGISTERED) {
-                        r = nas_5gs_send_de_registration_accept(amf_ue);
-                        ogs_expect(r == OGS_OK);
-                        ogs_assert(r != OGS_ERROR);
+                        if (SMSF_SERVICE_ACTIVATED(amf_ue)) {
+                            r = amf_ue_sbi_discover_and_send(
+                                    OGS_SBI_SERVICE_TYPE_NSMSF_SMS, NULL,
+                                    amf_nsmsf_sm_service_build_deactivate,
+                                    amf_ue, state, NULL);
+                            ogs_expect(r == OGS_OK);
+                            ogs_assert(r != OGS_ERROR);
+                        } else {
+                            r = nas_5gs_send_de_registration_accept(amf_ue);
+                            ogs_expect(r == OGS_OK);
+                            ogs_assert(r != OGS_ERROR);
+                        }
 
                         PCF_AM_POLICY_CLEAR(amf_ue);
                     } else {
                         ogs_fatal("Invalid state [%d]", state);
                         ogs_assert_if_reached();
                     }
+                    break;
+
+                DEFAULT
+                    ogs_error("Unknown method [%s]", sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NSMSF_SMS)
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    ogs_warn("[%s] Ignore SBI message", amf_ue->suci);
+                    break;
+
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    /*
+                     * - AMF_UE_INITIATED_DE_REGISTERED
+                     * 1. PDU session establishment request
+                     * 2. PDUSessionResourceSetupRequest +
+                     *    PDU session establishment accept
+                     * 3. PDUSessionResourceSetupResponse
+                     * 4. Deregistration request
+                     * 5. UEContextReleaseCommand
+                     * 6. UEContextReleaseComplete
+                     *
+                     * - AMF_RELEASE_SM_CONTEXT_NO_STATE
+                     * 1. PDU session release request
+                     * 2. PDUSessionResourceReleaseCommand +
+                     *    PDU session release command
+                     * 3. PDUSessionResourceReleaseREsponse
+                     * 4. PDU session release complete
+                     * 5. Deregistration request
+                     * 6. UEContextReleaseCommand
+                     * 7. UEContextReleaseComplete
+                     */
+                    if (state == AMF_RELEASE_SM_CONTEXT_NO_STATE ||
+                        state == AMF_UE_INITIATED_DE_REGISTERED) {
+                        r = nas_5gs_send_de_registration_accept(amf_ue);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                    } else {
+                        ogs_fatal("Invalid state [%d]", state);
+                        ogs_assert_if_reached();
+                    }
+
+                    CLEAR_SMSF_SERVICE_ACTIVATION(amf_ue);
                     break;
 
                 DEFAULT
@@ -622,6 +715,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                     }
                 }
 
+                AMF_UE_CLEAR_N1_PAGING_INFO(amf_ue);
                 AMF_UE_CLEAR_PAGING_INFO(amf_ue);
                 AMF_UE_CLEAR_N2_TRANSFER(
                         amf_ue, pdu_session_resource_setup_request);
@@ -753,13 +847,20 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
-                    r = amf_ue_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
-                        NULL,
-                        amf_npcf_am_policy_control_build_delete,
+                r = amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                    NULL,
+                    amf_npcf_am_policy_control_build_delete,
+                    amf_ue, state, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            } else if (SMSF_SERVICE_ACTIVATED(amf_ue)) {
+                r = amf_ue_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NSMSF_SMS, NULL,
+                        amf_nsmsf_sm_service_build_deactivate,
                         amf_ue, state, NULL);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
             }
             break;
 
@@ -817,6 +918,13 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                                     amf_ue, state, NULL);
                             ogs_expect(r == OGS_OK);
                             ogs_assert(r != OGS_ERROR);
+                        } else if (SMSF_SERVICE_ACTIVATED(amf_ue)) {
+                            r = amf_ue_sbi_discover_and_send(
+                                    OGS_SBI_SERVICE_TYPE_NSMSF_SMS, NULL,
+                                    amf_nsmsf_sm_service_build_deactivate,
+                                    amf_ue, state, NULL);
+                            ogs_expect(r == OGS_OK);
+                            ogs_assert(r != OGS_ERROR);
                         } else {
                             r = nas_5gs_send_de_registration_accept(amf_ue);
                             ogs_expect(r == OGS_OK);
@@ -839,6 +947,13 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                                         OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
                                         NULL,
                                         amf_npcf_am_policy_control_build_delete,
+                                        amf_ue, state, NULL);
+                                ogs_expect(r == OGS_OK);
+                                ogs_assert(r != OGS_ERROR);
+                            } else if (SMSF_SERVICE_ACTIVATED(amf_ue)) {
+                                r = amf_ue_sbi_discover_and_send(
+                                        OGS_SBI_SERVICE_TYPE_NSMSF_SMS, NULL,
+                                        amf_nsmsf_sm_service_build_deactivate,
                                         amf_ue, state, NULL);
                                 ogs_expect(r == OGS_OK);
                                 ogs_assert(r != OGS_ERROR);
@@ -894,6 +1009,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                      *    PDU session release command
                      * 6. PDUSessionResourceReleaseResponse
                      * 7. AM_Policy_Association_Termination
+                     * 8. SMSF_SMService Deactivate
                      *
                      * - AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED
                      * 1. UDM_UECM_DeregistrationNotification
@@ -905,8 +1021,9 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                      *    PDU session release command
                      * 7. PDUSessionResourceReleaseResponse
                      * 8. AM_Policy_Association_Termination
-                     * 9.  Deregistration accept
-                     * 10. Signalling Connecion Release
+                     * 9. SMSF_SMService Deactivate
+                     * 10. Deregistration accept
+                     * 11. Signalling Connecion Release
                      */
                     if (state ==
                             AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED ||
@@ -969,6 +1086,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                          *    PDU session release command
                          * 7. PDUSessionResourceReleaseResponse
                          * 8. AM_Policy_Association_Termination
+                         * 9. SMSF_SMService Deactivate
                          *
                          * - AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED
                          * 1. UDM_UECM_DeregistrationNotification
@@ -981,8 +1099,9 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                          *    PDU session release command
                          * 8. PDUSessionResourceReleaseResponse
                          * 9. AM_Policy_Association_Termination
-                         * 10. Deregistration accept
-                         * 11. Signalling Connecion Release
+                         * 10. SMSF_SMService Deactivate
+                         * 11. Deregistration accept
+                         * 12. Signalling Connecion Release
                          */
                         if (state ==
                                 AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED ||
@@ -1010,6 +1129,14 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                                                 OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
                                                 NULL,
                                                 amf_npcf_am_policy_control_build_delete,
+                                                amf_ue, state, NULL);
+                                        ogs_expect(r == OGS_OK);
+                                        ogs_assert(r != OGS_ERROR);
+                                    }  else if (SMSF_SERVICE_ACTIVATED(amf_ue)) {
+                                        r = amf_ue_sbi_discover_and_send(
+                                                OGS_SBI_SERVICE_TYPE_NSMSF_SMS,
+                                                NULL,
+                                                amf_nsmsf_sm_service_build_deactivate,
                                                 amf_ue, state, NULL);
                                         ogs_expect(r == OGS_OK);
                                         ogs_assert(r != OGS_ERROR);
@@ -1060,6 +1187,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                      *    PDU session release command
                      * 6. PDUSessionResourceReleaseResponse
                      * 7. AM_Policy_Association_Termination
+                     * 8. SM_Service_Deactivation
                      *
                      * - AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED
                      * 1. UDM_UECM_DeregistrationNotification
@@ -1071,17 +1199,115 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                      *    PDU session release command
                      * 7. PDUSessionResourceReleaseResponse
                      * 8. AM_Policy_Association_Termination
-                     * 9. Deregistration accept
-                     * 10.Signalling Connecion Release
+                     * 9. SM_Service_Deactivation
+                     * 10. Deregistration accept
+                     * 11. Signalling Connecion Release
                      */
                     if (state == AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED) {
-                        ogs_warn("[%s] Implicit De-registered", amf_ue->supi);
+                        if (SMSF_SERVICE_ACTIVATED(amf_ue)) {
+                            r = amf_ue_sbi_discover_and_send(
+                                    OGS_SBI_SERVICE_TYPE_NSMSF_SMS, NULL,
+                                    amf_nsmsf_sm_service_build_deactivate,
+                                    amf_ue, state, NULL);
+                            ogs_expect(r == OGS_OK);
+                            ogs_assert(r != OGS_ERROR);
+                        } else {
+                            ogs_warn("[%s] Implicit De-registered",
+                                    amf_ue->supi);
+                            OGS_FSM_TRAN(&amf_ue->sm,
+                                    &gmm_state_ue_context_will_remove);
+                        }
+
+                    } else if (state ==
+                            AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED) {
+                        if (SMSF_SERVICE_ACTIVATED(amf_ue)) {
+                            r = amf_ue_sbi_discover_and_send(
+                                    OGS_SBI_SERVICE_TYPE_NSMSF_SMS, NULL,
+                                    amf_nsmsf_sm_service_build_deactivate,
+                                    amf_ue, state, NULL);
+                            ogs_expect(r == OGS_OK);
+                            ogs_assert(r != OGS_ERROR);
+                        } else {
+                            ogs_warn("[%s] Explicit De-registered", 
+                                    amf_ue->supi);
+
+                            amf_ue->explict_de_registered.sbi_done = true;
+
+                            if (amf_ue->explict_de_registered.n1_done == true) {
+                                r = ngap_send_ran_ue_context_release_command(
+                                        amf_ue->ran_ue,
+                                        NGAP_Cause_PR_misc,
+                                        NGAP_CauseMisc_om_intervention,
+                                        NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                                ogs_expect(r == OGS_OK);
+                                ogs_assert(r != OGS_ERROR);
+                            }
+                        }
+
+                    } else {
+                        ogs_fatal("Invalid state [%d]", state);
+                        ogs_assert_if_reached();
+                    }
+                    break;
+
+                DEFAULT
+                    ogs_error("Unknown method [%s]", sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NSMSF_SMS)
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_PUT)
+                    ogs_warn("[%s] Ignore SBI message", amf_ue->suci);
+                    break;
+
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    /*
+                     * - AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED
+                     * 1. Implicit Timer Expiration
+                     * 2. UDM_SDM_Unsubscribe
+                     * 3. UDM_UECM_Deregisration
+                     * 4. PDU session release request
+                     * 5. PDUSessionResourceReleaseCommand +
+                     *    PDU session release command
+                     * 6. PDUSessionResourceReleaseResponse
+                     * 7. AM_Policy_Association_Termination
+                     * 8. SM_Service_Deactivation
+                     *
+                     * - AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED
+                     * 1. UDM_UECM_DeregistrationNotification
+                     * 2. Deregistration request
+                     * 3. UDM_SDM_Unsubscribe
+                     * 4. UDM_UECM_Deregisration
+                     * 5. PDU session release request
+                     * 6. PDUSessionResourceReleaseCommand +
+                     *    PDU session release command
+                     * 7. PDUSessionResourceReleaseResponse
+                     * 8. AM_Policy_Association_Termination
+                     * 9. SM_Service_Deactivation
+                     * 10. Deregistration accept
+                     * 11. Signalling Connecion Release
+                     */
+                    if (state == AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED) {
+                        ogs_warn("[%s] Implicit De-registered",
+                                amf_ue->supi);
                         OGS_FSM_TRAN(&amf_ue->sm,
                                 &gmm_state_ue_context_will_remove);
 
                     } else if (state ==
-                            AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED) {
-                        ogs_warn("[%s] Explicit De-registered", amf_ue->supi);
+                        AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED) {
+                        ogs_warn("[%s] Explicit De-registered", 
+                                amf_ue->supi);
 
                         amf_ue->explict_de_registered.sbi_done = true;
 
@@ -1098,6 +1324,22 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                     } else {
                         ogs_fatal("Invalid state [%d]", state);
                         ogs_assert_if_reached();
+                    }
+                    break;
+
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
+                        ogs_error("[%s] HTTP response error [%d]",
+                                amf_ue->supi, sbi_message->res_status);
+                        break;
+                    }
+
+                    r = amf_nsmsf_sm_service_handle_uplink_sms(
+                            amf_ue, sbi_message);
+                    if (r != OGS_OK) {
+                        ogs_error("[%s] amf_nsmsf_sm_service_handle_uplink_sms(%s) failed",
+                                amf_ue->supi, sbi_message->h.resource.component[1]);
+                        break;
                     }
                     break;
 
@@ -1251,6 +1493,14 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                                 NULL,
                                 amf_npcf_am_policy_control_build_create,
                                 amf_ue, 0, NULL);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                        OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
+                        break;
+                    } else if (SMSF_SERVICE_CAN_BE_ACTIVATED(amf_ue)) {
+                        r = amf_ue_sbi_discover_and_send(
+                                OGS_SBI_SERVICE_TYPE_NSMSF_SMS, NULL,
+                                amf_nsmsf_sm_service_build_activate, amf_ue, 0, NULL);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
                         OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
@@ -2090,6 +2340,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
             CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
+            CASE(OGS_SBI_RESOURCE_NAME_SMS_DATA)
+            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMSF_DATA)
             CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
                 if ((sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) &&
                     (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED)) {
@@ -2135,6 +2387,62 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                         break;
                     }
 
+                    if (SMSF_SERVICE_CAN_BE_ACTIVATED(amf_ue)) {
+                        r = amf_ue_sbi_discover_and_send(
+                                OGS_SBI_SERVICE_TYPE_NSMSF_SMS, NULL,
+                                amf_nsmsf_sm_service_build_activate,
+                                amf_ue, 0, NULL);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                    } else {
+                        ogs_assert(amf_ue->nas.message_type ==
+                                OGS_NAS_5GS_REGISTRATION_REQUEST);
+                        CLEAR_AMF_UE_TIMER(amf_ue->t3550);
+                        r = nas_5gs_send_registration_accept(amf_ue);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+
+                        /* In nsmf-handler.c
+                        *
+                        * 1. AMF_SESS_STORE_N2_TRANSFER
+                        * 2. if PCF_AM_POLICY is NOT associated
+                        * 3. AMF sends npcf-am-policy-control/create to PCF
+                        *
+                        * In gmm-sm.c
+                        * 4. Send Registration Accept
+                        * 5. We should clear N2 transfer
+                        *    (PDUSessionResourceSetupRequest)
+                        */
+                        AMF_UE_CLEAR_N2_TRANSFER(
+                                amf_ue, pdu_session_resource_setup_request);
+
+                        if (!amf_ue->next.m_tmsi)
+                            OGS_FSM_TRAN(s, &gmm_state_registered);
+                    }
+                    break;
+
+                DEFAULT
+                    ogs_error("Unknown method [%s]", sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NSMSF_SMS)
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
+                if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
+                sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+                    ogs_error("[%s] HTTP response error [%d]",
+                            amf_ue->supi, sbi_message->res_status);
+
+                    /* Continue without registering SMS over NAS */
                     ogs_assert(amf_ue->nas.message_type ==
                             OGS_NAS_5GS_REGISTRATION_REQUEST);
                     CLEAR_AMF_UE_TIMER(amf_ue->t3550);
@@ -2142,28 +2450,47 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
 
-                    /* In nsmf-handler.c
-                     *
-                     * 1. AMF_SESS_STORE_N2_TRANSFER
-                     * 2. if PCF_AM_POLICY is NOT associated
-                     * 3. AMF sends npcf-am-policy-control/create to PCF
-                     *
-                     * In gmm-sm.c
-                     * 4. Send Registration Accept
-                     * 5. We should clear N2 transfer
-                     *    (PDUSessionResourceSetupRequest)
-                     */
                     AMF_UE_CLEAR_N2_TRANSFER(
                             amf_ue, pdu_session_resource_setup_request);
 
                     if (!amf_ue->next.m_tmsi)
                         OGS_FSM_TRAN(s, &gmm_state_registered);
-                    break;
 
-                DEFAULT
-                    ogs_error("Unknown method [%s]", sbi_message->h.method);
-                    ogs_assert_if_reached();
-                END
+                    break;
+                }
+
+                rv = amf_nsmsf_sm_service_handle_activate(
+                        amf_ue, state, sbi_message);
+                if (rv != OGS_OK) {
+                    ogs_error("[%s] amf_nsmsf_sm_service_handle_activate(%s) failed",
+                            amf_ue->supi, sbi_message->h.resource.component[1]);
+                    OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                    break;
+                }
+
+                ogs_assert(amf_ue->nas.message_type ==
+                        OGS_NAS_5GS_REGISTRATION_REQUEST);
+                CLEAR_AMF_UE_TIMER(amf_ue->t3550);
+                r = nas_5gs_send_registration_accept(amf_ue);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+
+                /* In nsmf-handler.c
+                *
+                * 1. AMF_SESS_STORE_N2_TRANSFER
+                * 2. if PCF_AM_POLICY is NOT associated
+                * 3. AMF sends npcf-am-policy-control/create to PCF
+                *
+                * In gmm-sm.c
+                * 4. Send Registration Accept
+                * 5. We should clear N2 transfer
+                *    (PDUSessionResourceSetupRequest)
+                */
+                AMF_UE_CLEAR_N2_TRANSFER(
+                        amf_ue, pdu_session_resource_setup_request);
+
+                if (!amf_ue->next.m_tmsi)
+                    OGS_FSM_TRAN(s, &gmm_state_registered);
                 break;
 
             DEFAULT

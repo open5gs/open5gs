@@ -1,0 +1,498 @@
+openapi: 3.0.0
+info:
+  version: 1.2.0
+  title: Npcf_EventExposure
+  description: |
+    PCF Event Exposure Service.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.523 V17.7.0; 5G System; Policy Control Event Exposure Service; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.523/
+
+servers:
+  - url: '{apiRoot}/npcf-eventexposure/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+        
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - npcf-eventexposure
+
+paths:
+  /subscriptions:
+    post:
+      summary: Creates a new Individual Policy Control Events Subscription resource
+      operationId: PostPcEventExposureSubsc
+      tags:
+        - Policy Control Events Subscription (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PcEventExposureSubsc'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PcEventExposureSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created individual policy control events subscription
+                resource, according to the structure
+                {apiRoot}/npcf-eventexposure/v1/subscriptions/{subscriptionId}
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        PcEventNotification:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/PcEventExposureNotif'
+              responses:
+                '204':
+                  description: No Content, Notification was succesfull.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /subscriptions/{subscriptionId}:
+    get:
+      summary: "Reads an existing Individual Policy Control Events Subscription"
+      operationId: GetPcEventExposureSubsc
+      tags:
+        - Individual Policy Control Events Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Policy Control Event Subscription ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource representation is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PcEventExposureSubsc'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      summary: "Modifies an existing Individual Policy Control Events Subscription "
+      operationId: PutPcEventExposureSubsc
+      tags:
+        - Individual Policy Control Events Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PcEventExposureSubsc'
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Policy Control Event Subscription ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource was succesfully modified and representation is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PcEventExposureSubsc'
+        '204':
+          description: No Content. Resource was succesfully modified.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: "Cancels an existing Individual Policy Control Events Subscription "
+      operationId: DeletePcEventExposureSubsc
+      tags:
+        - Individual Policy Control Events Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Policy Control Event Subscription ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. Resource was succesfully deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            npcf-eventexposure: Access to the Npcf_EventExposure API.
+
+  schemas:
+  
+    PcEventExposureNotif:
+      description: >
+        Represents notifications about Policy Control events related to an Individual
+        Policy Events Subscription resource.
+      type: object
+      properties:
+        notifId:
+          type: string
+        eventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/PcEventNotification'
+          minItems: 1
+      required:
+        - notifId
+        - eventNotifs
+
+          
+    PcEventExposureSubsc:
+      description: Represents an Individual Policy Events Subscription resource.
+      type: object
+      properties:
+        eventSubs:
+          type: array
+          items:
+            $ref: '#/components/schemas/PcEvent'
+          minItems: 1
+        eventsRepInfo:
+          $ref: '#/components/schemas/ReportingInformation'
+        groupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        filterDnns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+          minItems: 1
+        filterSnssais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        snssaiDnns:
+          type: array
+          items:
+            $ref: '#/components/schemas/SnssaiDnnCombination'
+          minItems: 1
+        filterServices:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceIdentification'
+          minItems: 1
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifId:
+          type: string
+        eventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/PcEventNotification'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - eventSubs
+        - notifId
+        - notifUri
+        
+    ReportingInformation:
+      description: Represents the type of reporting that the subscription requires.
+      type: object
+      properties:
+        immRep: 
+          type: boolean
+        notifMethod:
+          $ref: 'TS29508_Nsmf_EventExposure.yaml#/components/schemas/NotificationMethod'
+        maxReportNbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        monDur:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        repPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        sampRatio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SamplingRatio'
+        partitionCriteria:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PartitioningCriteria'
+          minItems: 1
+          description: Criteria for partitioning the UEs before applying the sampling ratio.
+        grpRepTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        notifFlag:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NotificationFlag'
+          
+    ServiceIdentification:
+      description: Identifies the service to which the subscription applies.
+      type: object
+      properties:
+        servEthFlows:
+          type: array
+          items:
+            $ref: '#/components/schemas/EthernetFlowInfo'
+          minItems: 1
+        servIpFlows:
+          type: array
+          items:
+            $ref: '#/components/schemas/IpFlowInfo'
+          minItems: 1
+        afAppId:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/AfAppId'
+      # All conditions in allOf must be met
+      allOf:
+        # First condition is that servEthFlows and servIpFlows are mutually exclusive
+        - not:
+            required: [servEthFlows, servIpFlows]
+        # Second condition is that at least one the servEthFlows, servIpFlows and afAppId shall be present
+        - anyOf:
+          - required: [servEthFlows]
+          - required: [servIpFlows]
+          - required: [afAppId]
+            
+    EthernetFlowInfo:
+      description: Identifies an UL/DL ethernet flow.
+      type: object
+      properties:
+        ethFlows: 
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/EthFlowDescription'
+          minItems: 1
+          maxItems: 2
+        flowNumber:
+          type: integer
+      required:
+        - flowNumber
+    
+    IpFlowInfo:
+      description: Identifies an UL/DL IP flow.
+      type: object
+      properties:
+        ipFlows:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/FlowDescription'
+          minItems: 1
+          maxItems: 2
+        flowNumber:
+          type: integer
+      required:
+        - flowNumber
+        
+    PcEventNotification:
+      description: Represents the information reported for a Policy Control event.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/PcEvent'
+        accType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        addAccessInfo:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/AdditionalAccessInfo'
+        relAccessInfo:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/AdditionalAccessInfo'
+        anGwAddr:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/AnGwAddress'
+        ratType: 
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        satBackhaulCategory: 
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SatelliteBackhaulCategory'
+        appliedCov:
+          $ref: 'TS29534_Npcf_AMPolicyAuthorization.yaml#/components/schemas/ServiceAreaCoverageInfo'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        timeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        pduSessionInfo:
+          $ref: '#/components/schemas/PduSessionInformation'
+        repServices:
+          $ref: '#/components/schemas/ServiceIdentification'
+        delivFailure:
+          $ref: 'TS29522_ServiceParameter.yaml#/components/schemas/Failure'
+      required:
+        - event
+        - timeStamp
+        
+    PduSessionInformation:
+      description: Represents PDU session identification information.
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        ueIpv4:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ueIpv6:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        ipDomain:
+          type: string
+        ueMac:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+      required:
+        - snssai
+        - dnn
+      oneOf:
+        - required: [ueMac]
+        - anyOf:
+          - required: [ueIpv4]
+          - required: [ueIpv6]
+    SnssaiDnnCombination:
+      description: Represents a combination of S-NSSAI and DNN(s).
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dnns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+          minItems: 1
+
+# Simple data types and Enumerations
+
+    PcEvent:
+      description: Represents the policy control events that can be subscribed.
+      anyOf:
+      - type: string
+        enum:
+          - AC_TY_CH
+          - PLMN_CH
+          - SAC_CH
+          - SAT_CATEGORY_CH
+          - SUCCESS_UE_POL_DEL_SP
+          - UNSUCCESS_UE_POL_DEL_SP
+      - type: string

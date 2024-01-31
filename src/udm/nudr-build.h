@@ -42,6 +42,11 @@ ogs_sbi_request_t *udm_nudr_dr_build_update_smf_context(
 ogs_sbi_request_t *udm_nudr_dr_build_delete_smf_context(
         udm_sess_t *sess, void *data);
 
+ogs_sbi_request_t *udm_nudr_dr_build_update_smsf_context(
+        udm_ue_t *udm_ue, void *data);
+ogs_sbi_request_t *udm_nudr_dr_build_delete_smsf_context(
+        udm_ue_t *udm_ue, void *data);
+
 #ifdef __cplusplus
 }
 #endif

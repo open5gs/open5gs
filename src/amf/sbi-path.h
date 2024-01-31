@@ -26,6 +26,7 @@
 #include "npcf-build.h"
 #include "nnssf-build.h"
 #include "nnrf-build.h"
+#include "nsmsf-build.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -97,6 +98,8 @@ bool amf_sbi_send_n1_n2_failure_notify(
 
 bool amf_ue_have_session_release_pending(amf_ue_t *amf_ue);
 bool amf_sess_have_session_release_pending(amf_sess_t *sess);
+
+void amf_smsf_sms_send_uplink_sms(amf_ue_t *amf_ue, void *data);
 
 #ifdef __cplusplus
 }

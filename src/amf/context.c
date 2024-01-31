@@ -2327,7 +2327,7 @@ bool amf_paging_ongoing(amf_ue_t *amf_ue)
     return false;
 }
 
-bool amf_downlink_signalling_pending(amf_ue_t *amf_ue)
+bool amf_downlink_sess_signalling_pending(amf_ue_t *amf_ue)
 {
     amf_sess_t *sess = NULL;
 
@@ -2336,6 +2336,16 @@ bool amf_downlink_signalling_pending(amf_ue_t *amf_ue)
     ogs_list_for_each(&amf_ue->sess_list, sess)
         if (sess->gsm_message.type)
             return true;
+
+    return false;
+}
+
+bool amf_downlink_ue_signalling_pending(amf_ue_t *amf_ue)
+{
+    ogs_assert(amf_ue);
+
+    if (amf_ue->paging.n1MessageClass)
+        return true;
 
     return false;
 }

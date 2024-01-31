@@ -437,6 +437,30 @@ bool udm_nudr_dr_handle_subscription_context(
             ogs_free(strerror);
             return false;
         END
+    CASE(OGS_SBI_HTTP_METHOD_DELETE)
+        SWITCH(recvmsg->h.resource.component[3])
+        CASE(OGS_SBI_RESOURCE_NAME_SMSF_3GPP_ACCESS)
+            memset(&sendmsg, 0, sizeof(sendmsg));
+
+            response = ogs_sbi_build_response(
+                    &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            ogs_assert(response);
+            ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+            return true;
+
+        DEFAULT
+            strerror = ogs_msprintf("[%s] Invalid resource name [%s]",
+                    udm_ue->supi, recvmsg->h.resource.component[3]);
+            ogs_assert(strerror);
+
+            ogs_error("%s", strerror);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, strerror, NULL));
+            ogs_free(strerror);
+            return false;
+        END
     END
 
     SWITCH(recvmsg->h.resource.component[3])
@@ -573,6 +597,93 @@ bool udm_nudr_dr_handle_subscription_context(
         ogs_free(sendmsg.http.location);
         OpenAPI_amf3_gpp_access_registration_free(
                 sendmsg.Amf3GppAccessRegistration);
+        break;
+
+    CASE(OGS_SBI_RESOURCE_NAME_SMSF_3GPP_ACCESS)
+        OpenAPI_smsf_registration_t *SmsfRegistration = NULL;
+
+        SmsfRegistration = udm_ue->smsf_registration;
+
+        if (!SmsfRegistration) {
+            ogs_error("[%s] No SmsfRegistration", udm_ue->supi);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No SmsfRegistration", udm_ue->supi));
+            return false;
+        }
+
+        if (!SmsfRegistration->smsf_instance_id) {
+            ogs_error("[%s] No smsfInstanceId", udm_ue->supi);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No smsfInstanceId", udm_ue->supi));
+            return false;
+        }
+
+        if (!SmsfRegistration->plmn_id) {
+            ogs_error("[%s] No PlmnId", udm_ue->supi);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No PlmnId", udm_ue->supi));
+            return false;
+        }
+
+        if (!SmsfRegistration->plmn_id->mnc) {
+            ogs_error("[%s] No PlmnId.Mnc", udm_ue->supi);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No PlmnId.Mnc", udm_ue->supi));
+            return false;
+        }
+
+        if (!SmsfRegistration->plmn_id->mcc) {
+            ogs_error("[%s] No PlmnId.Mcc", udm_ue->supi);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No PlmnId.Mcc", udm_ue->supi));
+            return false;
+        }
+
+        memset(&sendmsg, 0, sizeof(sendmsg));
+
+        memset(&header, 0, sizeof(header));
+        header.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UECM;
+        header.api.version = (char *)OGS_SBI_API_V1;
+        header.resource.component[0] = udm_ue->supi;
+        header.resource.component[1] =
+            (char *)OGS_SBI_RESOURCE_NAME_REGISTRATIONS;
+        header.resource.component[2] =
+            (char *)OGS_SBI_RESOURCE_NAME_SMSF_3GPP_ACCESS;
+
+        if (udm_ue->smsf_instance_id &&
+            strcmp(udm_ue->smsf_instance_id,
+                SmsfRegistration->smsf_instance_id) == 0) {
+
+            status = OGS_SBI_HTTP_STATUS_OK;
+        } else {
+            if (udm_ue->smsf_instance_id)
+                ogs_free(udm_ue->smsf_instance_id);
+            udm_ue->smsf_instance_id =
+                ogs_strdup(SmsfRegistration->smsf_instance_id);
+            ogs_assert(udm_ue->smsf_instance_id);
+
+            status = OGS_SBI_HTTP_STATUS_CREATED;
+        }
+
+        if (status == OGS_SBI_HTTP_STATUS_CREATED)
+            sendmsg.http.location = ogs_sbi_server_uri(server, &header);
+
+        sendmsg.SmsfRegistration = OpenAPI_smsf_registration_copy(
+                sendmsg.SmsfRegistration,
+                udm_ue->smsf_registration);
+
+        response = ogs_sbi_build_response(&sendmsg, status);
+        ogs_assert(response);
+        ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+        ogs_free(sendmsg.http.location);
+        OpenAPI_smsf_registration_free(
+                sendmsg.SmsfRegistration);
         break;
 
     DEFAULT
@@ -712,6 +823,64 @@ bool udm_nudr_dr_handle_subscription_provisioned(
             OpenAPI_session_management_subscription_data_free(node->data);
         OpenAPI_list_free(sendmsg.SessionManagementSubscriptionDataList);
 
+        break;
+
+    CASE(OGS_SBI_RESOURCE_NAME_SMS_MANAGEMENT_DATA)
+        OpenAPI_sms_management_subscription_data_t *SmsManagementSubscriptionData = NULL;
+
+        SmsManagementSubscriptionData = recvmsg->SmsManagementSubscriptionData;
+        if (!SmsManagementSubscriptionData) {
+            ogs_error("[%s] No SmsManagementSubscriptionData", udm_ue->supi);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No SmsManagementSubscriptionData",
+                    udm_ue->supi));
+            return false;
+        }
+
+        memset(&sendmsg, 0, sizeof(sendmsg));
+
+        sendmsg.SmsManagementSubscriptionData =
+            OpenAPI_sms_management_subscription_data_copy(
+                sendmsg.SmsManagementSubscriptionData,
+                recvmsg->SmsManagementSubscriptionData);
+
+        response = ogs_sbi_build_response(&sendmsg, recvmsg->res_status);
+        ogs_assert(response);
+        ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+        OpenAPI_sms_management_subscription_data_free(
+                sendmsg.SmsManagementSubscriptionData);
+        break;
+
+    CASE(OGS_SBI_RESOURCE_NAME_SMS_DATA)
+        OpenAPI_sms_subscription_data_t *SmsSubscriptionData = NULL;
+
+        SmsSubscriptionData = recvmsg->SmsSubscriptionData;
+        if (!SmsSubscriptionData) {
+            ogs_error("[%s] No SmsSubscriptionData", udm_ue->supi);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No SmsSubscriptionData",
+                    udm_ue->supi));
+            return false;
+        }
+
+        memset(&sendmsg, 0, sizeof(sendmsg));
+
+        sendmsg.SmsSubscriptionData =
+            OpenAPI_sms_subscription_data_copy(
+                sendmsg.SmsSubscriptionData,
+                recvmsg->SmsSubscriptionData);
+
+        response = ogs_sbi_build_response(&sendmsg, recvmsg->res_status);
+        ogs_assert(response);
+        ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+        OpenAPI_sms_subscription_data_free(
+                sendmsg.SmsSubscriptionData);
         break;
 
     DEFAULT

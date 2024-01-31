@@ -215,3 +215,10 @@ void testgmm_handle_dl_nas_transport(test_ue_t *test_ue,
 
     testgmm_send_to_gsm(sess, &dl_nas_transport->payload_container);
 }
+
+void testgmm_handle_sms_dl_nas_transport(test_ue_t *test_ue,
+        ogs_nas_5gs_dl_nas_transport_t *dl_nas_transport)
+{
+    ogs_assert(test_ue);
+    ogs_assert(dl_nas_transport);
+}

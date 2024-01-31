@@ -60,6 +60,9 @@ ogs_pkbuf_t *gmm_build_dl_nas_transport(amf_sess_t *sess,
         uint8_t payload_container_type, ogs_pkbuf_t *payload,
         ogs_nas_5gmm_cause_t cause, uint8_t backoff_time);
 
+ogs_pkbuf_t *gmm_build_sms_dl_nas_transport(amf_ue_t *amf_ue,
+        uint8_t payload_container_type, ogs_pkbuf_t *payload_container);
+
 ogs_pkbuf_t *gmm_build_status(amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t cause);
 
 #ifdef __cplusplus

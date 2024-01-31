@@ -1,0 +1,704 @@
+openapi: 3.0.0
+
+info:
+  version: 1.2.2
+  title: Nnwdaf_AnalyticsInfo
+  description: |
+    Nnwdaf_AnalyticsInfo Service API.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.520 V17.9.0; 5G System; Network Data Analytics Services.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.520/'
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nnwdaf-analyticsinfo
+
+servers:
+  - url: '{apiRoot}/nnwdaf-analyticsinfo/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+paths:
+  /analytics:
+    get:
+      summary: Read a NWDAF Analytics
+      operationId: GetNWDAFAnalytics
+      tags:
+        - NWDAF Analytics (Document)
+      parameters:
+        - name: event-id
+          in: query
+          description: Identify the analytics.
+          required: true
+          schema:
+            $ref: '#/components/schemas/EventId'
+        - name: ana-req
+          in: query
+          description: Identifies the analytics reporting requirement information.
+          required: false
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/EventReportingRequirement'
+        - name: event-filter
+          in: query
+          description: Identify the analytics.
+          required: false
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventFilter'
+        - name: supported-features
+          in: query
+          description: To filter irrelevant responses related to unsupported features.
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: tgt-ue
+          in: query
+          description: Identify the target UE information.
+          required: false
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/TargetUeInformation'
+      responses:
+        '200':
+          description: >
+            Containing the analytics with parameters as relevant for the requesting NF service 
+            consumer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsData'
+        '204':
+          description: No Content. The requested NWDAF Analytics data does not exist.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          description: Indicates that the NWDAF Analytics resource does not exist.
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          description: >
+            The request is rejected by the NWDAF and more details (not only the ProblemDetails) are 
+            returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailsAnalyticsInfoRequest'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /context:
+    get:
+      summary: Get context information related to analytics subscriptions.
+      operationId: GetNwdafContext
+      tags:
+        - NWDAF Context (Document)
+      parameters:
+        - name: context-ids
+          in: query
+          description: Identifies specific context information related to analytics subscriptions.
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContextIdList'
+        - name: req-context
+          in: query
+          description: >
+            Identfies the type(s) of the analytics context information the consumer wishes to receive.
+          required: false
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestedContext'
+      responses:
+        '200':
+          description: >
+            Contains context information related to analytics subscriptions corresponding with one or 
+            more context identifiers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContextData'
+        '204':
+          description: >
+            No Content. (\No context information could be retrieved for the requested context 
+            Identifiers.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nnwdaf-analyticsinfo: Access to the Nnwdaf_AnalyticsInfo API
+
+  schemas:
+
+    AnalyticsData:
+      description: >
+        Represents the description of analytics with parameters as relevant for the requesting NF 
+        service consumer.
+      type: object
+      properties:
+        start:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        expiry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        timeStampGen:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        anaMetaInfo:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/AnalyticsMetadataInfo'
+        sliceLoadLevelInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/SliceLoadLevelInformation'
+          minItems: 1
+          description: The slices and their load level information.
+        nsiLoadLevelInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NsiLoadLevelInfo'
+          minItems: 1
+        nfLoadLevelInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NfLoadLevelInformation'
+          minItems: 1
+        nwPerfs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NetworkPerfInfo'
+          minItems: 1
+        svcExps:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ServiceExperienceInfo'
+          minItems: 1
+        qosSustainInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/QosSustainabilityInfo'
+          minItems: 1
+        ueMobs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/UeMobility'
+          minItems: 1
+        ueComms:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/UeCommunication'
+          minItems: 1
+        userDataCongInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/UserDataCongestionInfo'
+          minItems: 1
+        abnorBehavrs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/AbnormalBehaviour'
+          minItems: 1
+        smccExps:
+          type: array
+          items:
+            $ref: '#/components/schemas/SmcceInfo'
+          minItems: 1
+        disperInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/DispersionInfo'
+          minItems: 1
+        redTransInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/RedundantTransmissionExpInfo'
+          minItems: 1
+        wlanInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/WlanPerformanceInfo'
+          minItems: 1
+        dnPerfInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/DnPerfInfo'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    EventFilter:
+      description: Represents the event filters used to identify the requested analytics.
+      type: object
+      properties:
+        anySlice:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/AnySlice'
+        snssais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+          description: Identification(s) of network slice.
+        appIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+          minItems: 1
+        dnns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+          minItems: 1
+        dnais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+          minItems: 1
+        ladnDnns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+          minItems: 1
+          description: Identification(s) of LADN DNN to indicate the LADN service area as the AOI.
+        networkArea:
+          $ref: 'TS29554_Npcf_BDTPolicyControl.yaml#/components/schemas/NetworkAreaInfo'
+        visitedAreas:
+          type: array
+          items:
+            $ref: 'TS29554_Npcf_BDTPolicyControl.yaml#/components/schemas/NetworkAreaInfo'
+          minItems: 1
+        maxTopAppUlNbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxTopAppDlNbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        nfInstanceIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+          minItems: 1
+        nfSetIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+          minItems: 1
+        nfTypes:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NFType'
+          minItems: 1
+        nsiIdInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NsiIdInfo'
+          minItems: 1
+        qosRequ:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/QosRequirement'
+        nwPerfTypes:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NetworkPerfType'
+          minItems: 1
+        bwRequs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/BwRequirement'
+          minItems: 1
+        excepIds:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ExceptionId'
+          minItems: 1
+        exptAnaType:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ExpectedAnalyticsType'
+        exptUeBehav:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ExpectedUeBehaviourData'
+        ratFreqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/RatFreqInformation'
+          minItems: 1
+        disperReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/DispersionRequirement'
+          minItems: 1
+        redTransReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/RedundantTransmissionExpReq'
+          minItems: 1
+        wlanReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/WlanPerformanceReq'
+          minItems: 1
+        listOfAnaSubsets:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/AnalyticsSubset'
+          minItems: 1
+        upfInfo:
+          $ref: 'TS29508_Nsmf_EventExposure.yaml#/components/schemas/UpfInformation'
+
+        appServerAddrs:
+          type: array
+          items:
+            $ref: 'TS29517_Naf_EventExposure.yaml#/components/schemas/AddrFqdn'
+          minItems: 1
+        dnPerfReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/DnPerformanceReq'
+          minItems: 1
+      not:
+        required: [anySlice, snssais]
+
+    ProblemDetailsAnalyticsInfoRequest:
+      description: >
+        Extends ProblemDetails to indicate more details why the analytics request is rejected.
+      allOf:
+        - $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        - $ref: '#/components/schemas/AdditionInfoAnalyticsInfoRequest'
+
+    AdditionInfoAnalyticsInfoRequest:
+      description: Indicates additional information why the analytics request is rejected.
+      type: object
+      properties:
+        rvWaitTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+
+    ContextData:
+      description: >
+        Contains context information related to analytics subscriptions corresponding with one or 
+        more context identifiers.
+      type: object
+      properties:
+        contextElems:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContextElement'
+          minItems: 1
+          description: >
+            List of items that contain context information corresponding with a context identifier.
+      required:
+        - contextElems
+
+    ContextElement:
+      description: Contains context information corresponding with a specific context identifier.
+      type: object
+      properties:
+        contextId:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/AnalyticsContextIdentifier'
+        pendAnalytics:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/EventNotification'
+          minItems: 1
+          description: >
+            Output analytics for the analytics subscription which have not yet been sent to the 
+            analytics consumer.
+        histAnalytics:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/EventNotification'
+          minItems: 1
+          description: Historical output analytics.
+        lastOutputTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        aggrSubs:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpecificAnalyticsSubscription'
+          minItems: 1
+          description: >
+            Information about analytics subscriptions that the NWDAF has with other NWDAFs to perform 
+            aggregation.
+        histData:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoricalData'
+          minItems: 1
+          description: Historical data related to the analytics subscription.
+        adrfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        adrfDataTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdrfDataType'
+          minItems: 1
+          description: Type(s) of data stored in the ADRF by the NWDAF.
+        aggrNwdafIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+          minItems: 1
+          description: >
+            NWDAF identifiers of NWDAF instances used by the NWDAF service consumer when aggregating 
+            multiple analytics subscriptions.
+        modelInfo:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ModelInfo'
+          minItems: 1
+          description: >
+            Contains information identifying the ML model(s) that the consumer NWDAF is currently
+            subscribing for the analytics.
+      required:
+        - contextId
+
+    ContextIdList:
+      description: >
+            Contains a list of context identifiers of context information of analytics subscriptions.
+      type: object
+      properties:
+        contextIds:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/AnalyticsContextIdentifier'
+          minItems: 1
+      required:
+        - contextIds
+
+    HistoricalData:
+      description: Contains historical data related to an analytics subscription.
+      type: object
+      properties:
+        startTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        endTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        subsWithSources:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpecificDataSubscription'
+          minItems: 1
+          description: Information about subscriptions with the data sources.
+        data:
+          type: array
+          items:
+            $ref: 'TS29575_Nadrf_DataManagement.yaml#/components/schemas/DataNotification'
+          minItems: 1
+          description: Historical data related to the analytics.
+      required:
+        - data
+
+    SpecificAnalyticsSubscription:
+      description: >
+        Represents an existing subscription for a specific type of analytics to a specific NWDAF.
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+        producerId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        producerSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        nwdafEvSub:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NnwdafEventsSubscription'
+      allOf:
+        - oneOf:
+          - required: [producerId]
+          - required: [producerSetId]
+        - required: [subscriptionId]
+        - required: [nwdafEvSub]
+
+    RequestedContext:
+      description: Contains types of analytics context information.
+      type: object
+      properties:
+        contexts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContextType'
+          minItems: 1
+          description: List of analytics context types.
+      required:
+        - contexts
+
+    SmcceInfo:
+      description: Represents the Session Management congestion control experience information.
+      type: object
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        smcceUeList:
+          $ref: '#/components/schemas/SmcceUeList'
+      required:
+        - smcceUeList
+
+    SmcceUeList:
+      description: >
+        Represents the List of UEs classified based on experience level of Session Management 
+        congestion control.
+      type: object
+      properties:
+        highLevel:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        mediumLevel:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        lowLevel:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+      anyOf:
+        - required: [highLevel]
+        - required: [mediumLevel]
+        - required: [lowLevel]
+
+    SpecificDataSubscription:
+      description: >
+        Represents an existing subscription for data collection to a specific data source NF.
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+        producerId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        producerSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        dataSub:
+          $ref: 'TS29575_Nadrf_DataManagement.yaml#/components/schemas/DataSubscription'
+      allOf:
+        - oneOf:
+          - required: [producerId]
+          - required: [producerSetId]
+        - required: [subscriptionId]
+        - required: [dataSub]
+
+    EventId:
+      anyOf:
+      - type: string
+        enum:
+          - LOAD_LEVEL_INFORMATION
+          - NETWORK_PERFORMANCE
+          - NF_LOAD
+          - SERVICE_EXPERIENCE
+          - UE_MOBILITY
+          - UE_COMMUNICATION
+          - QOS_SUSTAINABILITY
+          - ABNORMAL_BEHAVIOUR
+          - USER_DATA_CONGESTION
+          - NSI_LOAD_LEVEL
+          - SM_CONGESTION
+          - DISPERSION
+          - RED_TRANS_EXP
+          - WLAN_PERFORMANCE
+          - DN_PERFORMANCE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Possible values are:
+        - LOAD_LEVEL_INFORMATION: Represent the analytics of load level information of corresponding network slice.
+        - NETWORK_PERFORMANCE: Represent the analytics of network performance information.
+        - NF_LOAD: Indicates that the event subscribed is NF Load.
+        - SERVICE_EXPERIENCE: Represent the analytics of service experience information of the specific applications.
+        - UE_MOBILITY: Represent the analytics of UE mobility.
+        - UE_COMMUNICATION: Represent the analytics of UE communication.
+        - QOS_SUSTAINABILITY: Represent the analytics of QoS sustainability information in the certain area.
+        - ABNORMAL_BEHAVIOUR: Indicates that the event subscribed is abnormal behaviour information.
+        - USER_DATA_CONGESTION: Represent the analytics of the user data congestion in the certain area.
+        - NSI_LOAD_LEVEL: Represent the analytics of Network Slice and the optionally associated Network Slice Instance.
+        - SM_CONGESTION: Represent the analytics of Session Management congestion control experience information for specific DNN and/or S-NSSAI.
+        - DISPERSION: Represents the analytics of dispersion.
+        - RED_TRANS_EXP: Represents the analytics of Redundant Transmission Experience.
+        - WLAN_PERFORMANCE: Represents the analytics of WLAN performance.
+        - DN_PERFORMANCE: Represents the analytics of DN performance.
+
+    ContextType:
+      anyOf:
+      - type: string
+        enum:
+          - PENDING_ANALYTICS
+          - HISTORICAL_ANALYTICS
+          - AGGR_SUBS
+          - DATA
+          - AGGR_INFO
+          - ML_MODELS
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Possible values are:
+        - PENDING_ANALYTICS: Represents context information that relates to pending output analytics.
+        - HISTORICAL_ANALYTICS: Represents context information that relates to historical output analytics.
+        - AGGR_SUBS: Represents context information about the analytics subscriptions that an NWDAF has with other NWDAFs that collectively serve an analytics subscription.
+        - DATA: Represents context information about historical data that is available.
+        - AGGR_INFO: Represents context information that is related to aggregation of analytics from multiple NWDAF subscriptions.
+        - ML_MODELS: Represents context information about used ML models.
+
+    AdrfDataType:
+      anyOf:
+      - type: string
+        enum:
+          - HISTORICAL_ANALYTICS
+          - HISTORICAL_DATA
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Possible values are:
+        - HISTORICAL_ANALYTICS: Indicates that historical analytics are stored in the ADRF.
+        - HISTORICAL_DATA: Indicates that historical data are stored in the ADRF.
+

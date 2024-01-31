@@ -1037,7 +1037,7 @@ void ngap_handle_initial_context_setup_response(
      * from the network and before the release of the N1 NAS signalling
      * connection.
      */
-    if (DOWNLINK_SIGNALLING_PENDING(amf_ue) == true) {
+    if (DOWNLINK_SESS_SIGNALLING_PENDING(amf_ue) == true) {
         /*
          * TS24.501
          * 5.4.4 Generic UE configuration update procedure
@@ -1090,6 +1090,21 @@ void ngap_handle_initial_context_setup_response(
                         sess->gsm_message.type);
                 ogs_assert_if_reached();
             }
+        }
+    } else if (DOWNLINK_UE_SIGNALLING_PENDING(amf_ue) == true) {
+        switch(amf_ue->paging.n1MessageClass) {
+        case OpenAPI_n1_message_class_SMS:
+            r = nas_5gs_send_downlink_sms(amf_ue, amf_ue->paging.n1buf);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+
+            AMF_UE_CLEAR_N1_PAGING_INFO(amf_ue);
+
+            break;
+        default:
+            ogs_fatal("Not implemented n1MessageClass[%d]",
+                    amf_ue->paging.n1MessageClass);
+            ogs_assert_if_reached();
         }
     } else if (PAGING_ONGOING(amf_ue) == true) {
         gmm_configuration_update_command_param_t param;

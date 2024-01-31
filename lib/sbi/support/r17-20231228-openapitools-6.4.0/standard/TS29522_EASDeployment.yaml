@@ -1,0 +1,402 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-eas-deployment
+  version: 1.0.2
+  description: |
+    API for AF provisioned EAS Deployment.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+externalDocs:
+  description: >
+    3GPP TS 29.522 V17.8.0; 5G System; Network Exposure Function Northbound APIs.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.522/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/3gpp-eas-deployment/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+paths:
+  /{afId}/eas-deployment-info:
+    get:
+      summary: Read all EAS Deployment information for a given AF
+      operationId: ReadAllDeployment
+      tags:
+        - EAS Deployment Information (Collection)
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (Successful get all of the EAS Deployment information for the AF)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EasDeployInfo'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Create a new Individual EAS Deployment information resource.
+      operationId: CreateAnDeployment
+      tags:
+        - EAS Deployment Information (Collection)
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: new resource creation
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EasDeployInfo'
+      responses:
+        '201':
+          description: Created (Successful creation)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EasDeployInfo'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{afId}/eas-deployment-info/{easDeployInfoId}:
+    get:
+      summary: Read an active Individual EAS Deployment Information resource for the AF
+      operationId: ReadAnDeployment
+      tags:
+        - Individual EAS Deployment Information
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+        - name: easDeployInfoId
+          in: path
+          description: Identifier of an EAS Deployment Information.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (Successful get the active resource)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EasDeployInfo'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Fully updates/replaces an existing resource
+      operationId: FullyUpdateAnDeployment
+      tags:
+        - Individual EAS Deployment Information
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+        - name: easDeployInfoId
+          in: path
+          description: Identifier of the EAS Deployment information resource
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to update/replace the existing resource
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EasDeployInfo'
+      responses:
+        '200':
+          description: OK (Successful update of the existing resource)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EasDeployInfo'
+        '204':
+          description: >
+            Successful case. The resource has been successfully updated and no additional content is 
+            sent in the response message.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Deletes an already existing EAS Deployment information resource
+      operationId: DeleteAnDeployment
+      tags:
+        - Individual EAS Deployment Information
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+        - name: easDeployInfoId
+          in: path
+          description: Identifier of the EAS Deployment information resource
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content (Successful deletion of the existing resource)
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /remove-edis:
+    post:
+      summary: Remove EAS Deployment Information based on given criteria.
+      operationId: DeleteEDIs
+      tags:
+        - EAS Deployment Information removal
+      requestBody:
+        description: Criteria to be used for deleting EAS Deployment Information that match them.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EdiDeleteCriteria'
+        required: true
+      responses:
+        '204':
+          description: >
+            No Content. The EDIs matching the provided criteria have been successfully deleted.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    EasDeployInfo:
+      description: Represents EAS Deployment Information.
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        afServiceId:
+          type: string
+        fqdnPatternList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/FqdnPatternMatchingRule'
+          minItems: 1
+        appId:
+          type: string
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        externalGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        dnaiInfos:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DnaiInformation'
+          minProperties: 1
+          description: >
+            list of DNS server identifier (consisting of IP address and port) and/or IP address(s)
+            of the EAS in the local DN for each DNAI. The key of map is the DNAI.
+      required:
+        - fqdnPatternList
+    DnaiInformation:
+      description: Represents DNAI information.
+      type: object
+      properties:
+        dnai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+        dnsServIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnsServerIdentifier'
+          minItems: 1
+        easIpAddrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+          minItems: 1
+      required:
+        - dnai
+      anyOf:
+        - required: [dnsServIds]
+        - required: [easIpAddrs]
+    DnsServerIdentifier:
+      description: Represents DNS server identifier (consisting of IP address and port).
+      type: object
+      properties:
+        dnsServIpAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        portNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - dnsServIpAddr
+        - portNumber
+
+    EdiDeleteCriteria:
+      description: >
+        Contains criteria to be used for deleting EAS Deployment Information entries that match
+        them.
+      type: object
+      properties:
+        afId:
+          $ref: 'TS29522_AKMA.yaml#/components/schemas/AfId'
+        dnnSnssai:
+          $ref: 'TS29522_AMInfluence.yaml#/components/schemas/DnnSnssaiInformation'
+      anyOf:
+        - required: [afId]
+        - required: [dnnSnssai]

@@ -329,3 +329,64 @@ end:
 
     return request;
 }
+
+ogs_sbi_request_t *udm_nudr_dr_build_update_smsf_context(
+        udm_ue_t *udm_ue, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    ogs_assert(udm_ue);
+    ogs_assert(udm_ue->smsf_registration);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_PUT;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDR_DR;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+    message.h.resource.component[0] =
+        (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA;
+    message.h.resource.component[1] = udm_ue->supi;
+    message.h.resource.component[2] =
+        (char *)OGS_SBI_RESOURCE_NAME_CONTEXT_DATA;
+    message.h.resource.component[3] =
+        (char *)OGS_SBI_RESOURCE_NAME_SMSF_3GPP_ACCESS;
+
+    message.SmsfRegistration = OpenAPI_smsf_registration_copy(
+            message.SmsfRegistration,
+            udm_ue->smsf_registration);
+
+    request = ogs_sbi_build_request(&message);
+    ogs_assert(request);
+
+    OpenAPI_smsf_registration_free(message.SmsfRegistration);
+
+    return request;
+}
+
+ogs_sbi_request_t *udm_nudr_dr_build_delete_smsf_context(
+        udm_ue_t *udm_ue, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    ogs_assert(udm_ue);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDR_DR;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+    message.h.resource.component[0] =
+        (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA;
+    message.h.resource.component[1] = udm_ue->supi;
+    message.h.resource.component[2] =
+        (char *)OGS_SBI_RESOURCE_NAME_CONTEXT_DATA;
+    message.h.resource.component[3] =
+        (char *)OGS_SBI_RESOURCE_NAME_SMSF_3GPP_ACCESS;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_assert(request);
+
+    ogs_free(message.h.resource.component[4]);
+
+    return request;
+}

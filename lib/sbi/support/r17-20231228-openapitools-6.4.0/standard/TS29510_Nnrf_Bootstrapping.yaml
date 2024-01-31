@@ -1,0 +1,122 @@
+openapi: 3.0.0
+
+info:
+  version: '1.1.0'
+  title: 'NRF Bootstrapping'
+  description: |
+    NRF Bootstrapping.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.510 V17.6.0; 5G System; Network Function Repository Services; Stage 3
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.510/'
+
+paths:
+  /bootstrapping:
+    get:
+      summary: Bootstrapping Info Request
+      operationId: BootstrappingInfoRequest
+      tags:
+        - Bootstrapping Request
+      parameters:
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in IETF RFC 7232, 3.2
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful Bootstrapping Request
+          content:
+            application/3gppHal+json:
+              schema:
+                $ref: '#/components/schemas/BootstrappingInfo'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, described in IETF RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag containing a strong validator, described in IETF RFC 7232, 2.3
+              schema:
+                type: string
+        '307':
+          description: Temporary Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: The URI pointing to the resource located on the redirect target NRF
+              required: true
+              schema:
+                type: string
+        '308':
+          description: Permanent Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: The URI pointing to the resource located on the redirect target NRF
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  schemas:
+    BootstrappingInfo:
+      description: Information returned by NRF in the bootstrapping response message
+      type: object
+      required:
+        - _links
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        _links:
+          type: object
+          description: >
+            Map of link objects where the keys are the link relations defined in
+            3GPP TS 29.510 clause 6.4.6.3.3
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/LinksValueSchema'
+          minProperties: 1
+        nrfFeatures:
+          type: object
+          description: >
+            Map of features supported by the NRF, where the keys are the NRF services
+            as defined in 3GPP TS 29.510 clause 6.1.6.3.11
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+          minProperties: 1
+        oauth2Required:
+          type: object
+          description: >
+            Map indicating whether the NRF requires Oauth2-based authorization for accessing
+            its services. The key of the map shall be the name of an NRF service,
+            e.g. "nnrf-nfm" or "nnrf-disc"
+          additionalProperties:
+            type: boolean
+          minProperties: 1
+        nrfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        nrfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+
+    Status:
+      description: Overal status of the NRF
+      anyOf:
+        - type: string
+          enum:
+            - OPERATIVE
+            - NON_OPERATIVE
+        - type: string

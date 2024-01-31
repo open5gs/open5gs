@@ -45,6 +45,7 @@ subdir('sepp')
 
 subdir('udr')
 subdir('udm')
+subdir('smsf')
 subdir('pcf')
 subdir('nssf')
 subdir('bsf')

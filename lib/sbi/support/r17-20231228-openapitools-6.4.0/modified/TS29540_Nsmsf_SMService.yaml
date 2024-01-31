@@ -1,0 +1,470 @@
+openapi: 3.0.0
+
+info:
+  version: '2.2.1'
+  title: 'Nsmsf_SMService Service API'
+  description: |
+    SMSF SMService.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.540 V17.6.0; 5G System; SMS Services; Stage 3
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.540/'
+
+security:
+  - oAuth2ClientCredentials:
+    - nsmsf-sms
+  - {}
+
+servers:
+  - url: '{apiRoot}/nsmsf-sms/v2'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+paths:
+  /ue-contexts/{supi}:
+    put:
+      summary: Activate SMS Service for a given UE
+      operationId: SMServiceActivation
+      tags:
+        - Activation of SMS service
+      parameters:
+        - name: supi
+          in: path
+          required: true
+          description: Subscriber Permanent Identifier (SUPI)
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UeSmsContextData'
+        required: true
+      responses:
+        '201':
+          description: UE Context for SMS is created in SMSF
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeSmsContextData'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nsmsf-sms/<apiVersion>/ue-contexts/{supi}'
+              required: true
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in IETF RFC 7232, 2.3
+              schema:
+                type: string
+        '204':
+          description: UE Context for SMS is updated in SMSF
+          headers:
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in IETF RFC 7232, 2.3
+              schema:
+                type: string
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          description: Invalid Service Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '403':
+          description: Unable to create/update UE Context for SMS in SMSF
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '404':
+          description: Unable to found subscription for service user or UE Context for SMS in SMSF
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        default:
+          description: Unexpected error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+    patch:
+      summary: Update a parameter in the UE SMS Context in SMSF
+      operationId: SMSServiceParameterUpdate
+      tags:
+        - Parameter update in the UE SMS Context in SMSF
+      parameters:
+        - name: supi
+          in: path
+          required: true
+          description: Subscriber Permanent Identifier (SUPI)
+          schema:
+            type: string
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+                  - $ref: '#/components/schemas/UeSmsContextData'
+        '204':
+          description: Successful response
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '422':
+          description: Unprocessable Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+    delete:
+      summary: Deactivate SMS Service for a given UE
+      operationId: SMServiceDeactivation
+      tags:
+        - Deactivation of SMS service
+      parameters:
+        - name: supi
+          in: path
+          required: true
+          description: Subscriber Permanent Identifier (SUPI)
+          schema:
+            type: string
+        - name: If-Match
+          in: header
+          description: Validator for conditional requests, as described in IETF RFC 7232, 3.1
+          schema:
+            type: string
+      responses:
+        '204':
+          description: UE Context for SMS is deleted from SMSF
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          description: Invalid Service Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '404':
+          description: Unable to found UE Context for SMS in SMSF
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+
+  /ue-contexts/{supi}/sendsms:
+    post:
+      summary: Send SMS payload for a given UE
+      operationId: SendSMS
+      tags:
+        - Send SMS payload in uplink direction
+      parameters:
+        - name: supi
+          in: path
+          required: true
+          description: Subscriber Permanent Identifier (SUPI)
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/related:
+            schema:
+              type: object
+              properties:
+                jsonData:
+                  $ref: '#/components/schemas/SmsRecordData'
+                binaryPayload:
+                  type: string
+                  format: binary
+            encoding:
+              jsonData:
+                contentType: application/json
+              binaryPayload:
+                contentType: application/vnd.3gpp.sms
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string
+        required: true
+      responses:
+        '200':
+          description: SMS payload is received by SMSF, and is being delivered out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmsRecordDeliveryData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          description: Invalid Service Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '403':
+          description: Unable to deliver SMS at SMSF
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '404':
+          description: Unable to found UE Context for SMS in SMSF
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+
+  /ue-contexts/{supi}/send-mt-sms:
+    post:
+      summary: Send MT SMS payload for a given UE
+      operationId: SendMtSMS
+      tags:
+        - Send SMS payload in downlink direction
+      parameters:
+        - name: supi
+          in: path
+          required: true
+          description: Subscriber Permanent Identifier (SUPI)
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/related:
+            schema:
+              type: object
+              properties:
+                jsonData:
+                  $ref: 'TS29577_Nipsmgw_SMService.yaml#/components/schemas/SmsData'
+                binaryPayload:
+                  type: string
+                  format: binary
+            encoding:
+              jsonData:
+                contentType: application/json
+              binaryPayload:
+                contentType: application/vnd.3gpp.sms
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string
+        required: true
+      responses:
+        '200':
+          description: sending delivery report
+          content:
+            multipart/related:
+              schema:
+                type: object
+                properties:
+                  jsonData:
+                    $ref: 'TS29577_Nipsmgw_SMService.yaml#/components/schemas/SmsDeliveryData'
+                  binaryPayload:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType: application/json
+                binaryPayload:
+                  contentType: application/vnd.3gpp.sms
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          description: Invalid Service Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '403':
+          description: Unable to deliver SMS at SMSF
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '404':
+          description: Unable to found UE Context for SMS in SMSF
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nsmsf-sms: Access to the nsmsf-sms API
+
+  schemas:
+
+    UeSmsContextData:
+      description: Represents the information used for activating the SMS service for a service user, or updating the parameters of the SMS service.
+      type: object
+      required:
+        - supi
+        - amfId
+        - accessType
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        amfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        guamis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+          minItems: 1
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        additionalAccessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        ueLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        ueTimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        traceData:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+        backupAmfInfo:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/BackupAmfInfo'
+          minItems: 1
+        udmGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+        routingIndicator:
+          type: string
+        hNwPubKeyId:
+          type: integer
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        additionalRatType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    SmsRecordData:
+      description: Represents the information sent within a request message of the UplinkSMS service operation, for delivering SMS payload.
+      type: object
+      required:
+        - smsRecordId
+        - smsPayload
+      properties:
+        smsRecordId:
+          $ref: '#/components/schemas/RecordId'
+        smsPayload:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        ueLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        ueTimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+
+    RecordId:
+      description: Represents a record ID, used to identify a message carrying SMS payload.
+      type: string
+
+    SmsRecordDeliveryData:
+      description: Represents information on the result of invoking the UplinkSMS service operation.
+      type: object
+      required:
+        - smsRecordId
+        - deliveryStatus
+      properties:
+        smsRecordId:
+          $ref: '#/components/schemas/RecordId'
+        deliveryStatus:
+          $ref: '#/components/schemas/SmsDeliveryStatus'
+
+    SmsDeliveryStatus:
+      description: Represents the Status of an SMS delivery attempt.
+      type: string
+      enum:
+        - SMS_DELIVERY_PENDING
+        - SMS_DELIVERY_COMPLETED
+        - SMS_DELIVERY_FAILED
+        - SMS_DELIVERY_SMSF_ACCEPTED

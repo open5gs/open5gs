@@ -263,6 +263,7 @@ PCF-sbi   = 127.0.0.13:7777 for 5G SBI
 NSSF-sbi  = 127.0.0.14:7777 for 5G SBI
 BSF-sbi   = 127.0.0.15:7777 for 5G SBI
 UDR-sbi   = 127.0.0.20:7777 for 5G SBI
+SMSF-sbi  = 127.0.0.21:7777 for 5G SBI
 ```
 
 #### Setup a 4G/ 5G NSA Core

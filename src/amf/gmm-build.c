@@ -68,6 +68,10 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     registration_result->length = 1;
     registration_result->value = amf_ue->nas.access_type;
 
+    if (amf_ue->sms_over_nas_supported && amf_ue->sms_subscribed
+            && amf_ue->sm_service_activated)
+        registration_result->sms_over_nas_transport_allowed = 1;
+
     /* Set GUTI */
     if (amf_ue->next.m_tmsi) {
         registration_accept->presencemask |=
@@ -680,6 +684,39 @@ ogs_pkbuf_t *gmm_build_dl_nas_transport(amf_sess_t *sess,
             OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_2_SS;
         back_off_timer_value->t.value = backoff_time / 2;
     }
+
+    gmmbuf = nas_5gs_security_encode(amf_ue, &message);
+    ogs_pkbuf_free(payload_container);
+
+    return gmmbuf;
+}
+
+ogs_pkbuf_t *gmm_build_sms_dl_nas_transport(amf_ue_t *amf_ue,
+        uint8_t payload_container_type, ogs_pkbuf_t *payload_container)
+{
+    ogs_pkbuf_t *gmmbuf = NULL;
+
+    ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_dl_nas_transport_t *dl_nas_transport =
+        &message.gmm.dl_nas_transport;
+
+    ogs_assert(amf_ue);
+    ogs_assert(payload_container_type);
+    ogs_assert(payload_container);
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type =
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+
+    message.gmm.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+    message.gmm.h.message_type = OGS_NAS_5GS_DL_NAS_TRANSPORT;
+
+    dl_nas_transport->payload_container_type.value = payload_container_type;
+    dl_nas_transport->payload_container.length = payload_container->len;
+    dl_nas_transport->payload_container.buffer = payload_container->data;
 
     gmmbuf = nas_5gs_security_encode(amf_ue, &message);
     ogs_pkbuf_free(payload_container);

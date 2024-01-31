@@ -33,6 +33,7 @@ jobs:
           sudo ifconfig lo0 alias 127.0.0.18 netmask 255.255.255.255
           sudo ifconfig lo0 alias 127.0.0.19 netmask 255.255.255.255
           sudo ifconfig lo0 alias 127.0.0.20 netmask 255.255.255.255
+          sudo ifconfig lo0 alias 127.0.0.21 netmask 255.255.255.255
           sudo ifconfig lo0 alias 127.0.1.10 netmask 255.255.255.255
     - name: Install the dependencies for building the source code.
       run: brew install mongo-c-driver libidn libmicrohttpd nghttp2 bison libusrsctp libtins talloc meson

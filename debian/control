@@ -190,6 +190,18 @@ Description: SEPP (Security Edge Protection Proxy)
  .
  This package provides the SEPP (Security Edge Protection Proxy)
 
+Package: open5gs-smsf
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         open5gs-common (= ${binary:Version})
+Description: SMSF (Short Message Service Function)
+ Open5GS is a C-language implementation of 5G Core and EPC
+ Packet Core, i.e. the core network of an NR/LTE network (Release-17)
+ .
+ This package provides the SMSF (Short Message Service Function)
+
 Package: open5gs-ausf
 Architecture: any
 Multi-Arch: same
@@ -278,6 +290,7 @@ Depends: ${misc:Depends},
          open5gs-nrf (= ${binary:Version}),
          open5gs-scp (= ${binary:Version}),
          open5gs-sepp (= ${binary:Version}),
+         open5gs-smsf (= ${binary:Version}),
          open5gs-ausf (= ${binary:Version}),
          open5gs-udm (= ${binary:Version}),
          open5gs-pcf (= ${binary:Version}),

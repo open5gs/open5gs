@@ -41,6 +41,8 @@ void testgmm_handle_configuration_update_command(test_ue_t *test_ue,
             *configuration_update_command);
 void testgmm_handle_dl_nas_transport(test_ue_t *test_ue,
         ogs_nas_5gs_dl_nas_transport_t *dl_nas_transport);
+void testgmm_handle_sms_dl_nas_transport(test_ue_t *test_ue,
+        ogs_nas_5gs_dl_nas_transport_t *dl_nas_transport);
 
 #ifdef __cplusplus
 }

@@ -100,6 +100,9 @@ void scp_terminate(void);
 int sepp_initialize(void);
 void sepp_terminate(void);
 
+int smsf_initialize(void);
+void smsf_terminate(void);
+
 #ifdef __cplusplus
 }
 #endif

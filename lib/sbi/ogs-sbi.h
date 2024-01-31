@@ -84,6 +84,10 @@
 #include "model/sec_negotiate_rsp_data.h"
 #include "model/patch_item.h"
 #include "model/ue_authentication_ctx.h"
+#include "model/ue_sms_context_data.h"
+#include "model/smsf_registration.h"
+#include "model/sms_record_data.h"
+#include "model/sms_record_delivery_data.h"
 
 #include "custom/links.h"
 

@@ -4,6 +4,7 @@
 @localstatedir@/log/open5gs/nrf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-nrfd/pid`
 @localstatedir@/log/open5gs/scp.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-scpd/pid`
 @localstatedir@/log/open5gs/sepp.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-seppd/pid`
+@localstatedir@/log/open5gs/smsf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-smsfd/pid`
 @localstatedir@/log/open5gs/pcrf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-pcrfd/pid`
 @localstatedir@/log/open5gs/hss.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-hssd/pid`
 @localstatedir@/log/open5gs/ausf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-ausfd/pid`

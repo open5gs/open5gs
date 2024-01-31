@@ -487,6 +487,46 @@ struct amf_ue_s {
         bool sbi_done;
     } explict_de_registered;
 
+    struct {
+#define AMF_UE_CLEAR_N1_PAGING_INFO(__aMF) \
+    do { \
+        ogs_assert(__aMF); \
+        ogs_debug("[%s] Clear N1 Paging Info", (__aMF)->supi); \
+        (__aMF)->paging.n1MessageClass = OpenAPI_n1_message_class_NULL; \
+    } while(0)
+
+#define AMF_UE_STORE_N1_PAGING_MESSAGE(__aMF, __mESSAGECLASS, __n1BUF) \
+    do { \
+        ogs_assert(__aMF); \
+        ogs_assert(__mESSAGECLASS); \
+        ogs_debug("[%s] Store N1 Paging Info", (__aMF)->supi); \
+        (__aMF)->paging.n1MessageClass = __mESSAGECLASS; \
+        (__aMF)->paging.n1buf = __n1BUF; \
+    } while(0)
+
+#define AMF_UE_PAGING_ONGOING(__aMF) ((__aMF) && \
+        ((__aMF)->paging.n1MessageClass))
+
+        int n1MessageClass;
+        ogs_pkbuf_t *n1buf;
+    } paging;
+
+#define SMSF_SERVICE_CAN_BE_ACTIVATED(__aMF) \
+    ((__aMF) && ((__aMF)->sms_over_nas_supported) && \
+    ((__aMF)->sms_subscribed) && \
+    ((__aMF)->sm_service_activated == false))
+#define SMSF_SERVICE_ACTIVATED(__aMF) \
+    ((__aMF) && ((__aMF)->sm_service_activated))
+#define CLEAR_SMSF_SERVICE_ACTIVATION(__aMF) \
+        ogs_assert((__aMF)); \
+        (__aMF)->sm_service_activated = false;
+
+    bool            sms_over_nas_supported;
+    bool            sms_subscribed;
+    /* Set when SMSF sends response to [PUT] /nsmsf-sms/v2/ue-contexts */
+    bool            sm_service_activated;
+    char            *smsf_instance_id;
+
     ogs_list_t      sess_list;
 };
 
@@ -858,9 +898,12 @@ bool amf_handover_request_transfer_needed(amf_ue_t *amf_ue);
 #define PAGING_ONGOING(__aMF) \
     (amf_paging_ongoing(__aMF) == true)
 bool amf_paging_ongoing(amf_ue_t *amf_ue);
-#define DOWNLINK_SIGNALLING_PENDING(__aMF) \
-    (amf_downlink_signalling_pending(__aMF) == true)
-bool amf_downlink_signalling_pending(amf_ue_t *amf_ue);
+#define DOWNLINK_SESS_SIGNALLING_PENDING(__aMF) \
+    (amf_downlink_sess_signalling_pending(__aMF) == true)
+bool amf_downlink_sess_signalling_pending(amf_ue_t *amf_ue);
+#define DOWNLINK_UE_SIGNALLING_PENDING(__aMF) \
+    (amf_downlink_ue_signalling_pending(__aMF) == true)
+bool amf_downlink_ue_signalling_pending(amf_ue_t *amf_ue);
 
 int amf_find_served_tai(ogs_5gs_tai_t *nr_tai);
 ogs_s_nssai_t *amf_find_s_nssai(

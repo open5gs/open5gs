@@ -1029,6 +1029,9 @@ libsbi_openapi_sources = files('''
     model/security_result.c
     model/send_mo_data_req_data.c
     model/send_mo_data_request.c
+    model/send_mt_sms_200_response.c
+    model/send_mt_sms_request.c
+    model/send_sms_request.c
     model/sensor_measurement.c
     model/sepp_info.c
     model/sequence_number.c
@@ -1115,9 +1118,15 @@ libsbi_openapi_sources = files('''
     model/smsc_data.c
     model/smsf_info.c
     model/smsf_registration.c
+    model/sms_data.c
+    model/sms_delivery_data.c
+    model/sms_delivery_status.c
     model/sms_management_subscription_data_1.c
     model/sms_management_subscription_data.c
+    model/sms_record_data.c
+    model/sms_record_delivery_data.c
     model/sms_router_info.c
+    model/sms_service_parameter_update_200_response.c
     model/sms_subscription_data_1.c
     model/sms_subscription_data.c
     model/sms_support.c
@@ -1290,6 +1299,7 @@ libsbi_openapi_sources = files('''
     model/ue_reg_status_update_req_data.c
     model/ue_reg_status_update_rsp_data.c
     model/ue_slice_mbr.c
+    model/ue_sms_context_data.c
     model/ue_type_any_of.c
     model/ue_type.c
     model/ue_update_status.c

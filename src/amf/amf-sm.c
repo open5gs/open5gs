@@ -263,6 +263,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION)
             api_version = OGS_SBI_API_V2;
             break;
+        CASE(OGS_SBI_SERVICE_NAME_NSMSF_SMS)
+            api_version = OGS_SBI_API_V2;
+            break;
         DEFAULT
             api_version = OGS_SBI_API_V1;
         END
@@ -375,6 +378,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UECM)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
         CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
+        CASE(OGS_SBI_SERVICE_NAME_NSMSF_SMS)
             sbi_xact = e->h.sbi.data;
             ogs_assert(sbi_xact);
 

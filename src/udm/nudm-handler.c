@@ -557,6 +557,87 @@ bool udm_nudm_uecm_handle_smf_deregistration(
     return true;
 }
 
+bool udm_nudm_uecm_handle_smsf_registration(
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
+{
+    OpenAPI_smsf_registration_t *SmsfRegistration = NULL;
+
+    int r;
+
+    ogs_assert(udm_ue);
+    ogs_assert(stream);
+    ogs_assert(message);
+
+    SmsfRegistration = message->SmsfRegistration;
+    if (!SmsfRegistration) {
+        ogs_error("[%s] No SmsfRegistration", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No SmsfRegistration", udm_ue->supi));
+        return false;
+    }
+
+    if (!SmsfRegistration->smsf_instance_id) {
+        ogs_error("[%s] No smsfInstanceId", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No smsfInstanceId", udm_ue->supi));
+        return false;
+    }
+
+    if (!SmsfRegistration->plmn_id) {
+        ogs_error("[%s] No PlmnId", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No PlmnId", udm_ue->supi));
+        return false;
+    }
+
+    if (!SmsfRegistration->plmn_id->mnc) {
+        ogs_error("[%s] No PlmnId.Mnc", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No PlmnId.Mnc", udm_ue->supi));
+        return false;
+    }
+
+    if (!SmsfRegistration->plmn_id->mcc) {
+        ogs_error("[%s] No PlmnId.Mcc", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No PlmnId.Mcc", udm_ue->supi));
+        return false;
+    }
+
+    udm_ue->smsf_registration = OpenAPI_smsf_registration_copy(
+            udm_ue->smsf_registration,
+            message->SmsfRegistration);
+
+    r = udm_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
+            udm_nudr_dr_build_update_smsf_context, udm_ue, stream, NULL);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
+
+    return true;
+}
+
+bool udm_nudm_uecm_handle_smsf_deregistration(
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
+{
+    int r;
+
+    ogs_assert(udm_ue);
+    ogs_assert(stream);
+    ogs_assert(message);
+
+    r = udm_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
+            udm_nudr_dr_build_delete_smsf_context, udm_ue, stream, NULL);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
+
+    return true;
+}
+
 bool udm_nudm_sdm_handle_subscription_provisioned(
     udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
@@ -575,6 +656,20 @@ bool udm_nudm_sdm_handle_subscription_provisioned(
 
         memset(&sendmsg, 0, sizeof(sendmsg));
         sendmsg.UeContextInSmfData = &UeContextInSmfData;
+
+        response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
+        ogs_assert(response);
+        ogs_sbi_server_send_response(stream, response);
+
+        break;
+
+    CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMSF_DATA)
+        OpenAPI_ue_context_in_smsf_data_t UeContextInSmsfData;
+
+        memset(&UeContextInSmsfData, 0, sizeof(UeContextInSmsfData));
+
+        memset(&sendmsg, 0, sizeof(sendmsg));
+        sendmsg.UeContextInSmsfData = &UeContextInSmsfData;
 
         response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
         ogs_assert(response);
@@ -602,7 +697,7 @@ bool udm_nudm_sdm_handle_subscription_create(
     OpenAPI_sdm_subscription_t *SDMSubscription = NULL;
 
     udm_sdm_subscription_t *sdm_subscription = NULL;
-    
+
     ogs_assert(udm_ue);
     ogs_assert(stream);
     ogs_assert(recvmsg);
@@ -684,6 +779,7 @@ bool udm_nudm_sdm_handle_subscription_delete(
     ogs_assert(udm_ue);
     ogs_assert(stream);
     ogs_assert(recvmsg);
+
 
     if (!recvmsg->h.resource.component[2]) {
         ogs_error("[%s] No subscriptionID", udm_ue->supi);

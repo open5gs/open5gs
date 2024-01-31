@@ -51,6 +51,7 @@ typedef struct ogs_global_conf_s {
         int no_sepp;
         int no_scp;
         int no_nrf;
+        int no_smsf;
 
         /* Network */
         int no_ipv4;

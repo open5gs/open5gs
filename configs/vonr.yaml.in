@@ -324,3 +324,16 @@ udr:
     client:
       scp:
         - uri: http://127.0.0.200:7777
+
+smsf:
+  serving:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+  sbi:
+    server:
+      - address: 127.0.0.21
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.0.200:7777
