@@ -146,6 +146,15 @@ typedef struct mme_context_s {
     /* Generator for unique identification */
     uint32_t        mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
 
+#define MME_UE_CHECK(level, __mME) \
+    do { \
+        ogs_log_message(level, 0, "IMSI [%s] NAS-EPS Type[%d]", \
+                (__mME) ? (__mME)->imsi_bcd : "No MME_UE", \
+                (__mME) ? (__mME)->nas_eps.type : 0); \
+        ogs_log_message(level, 0, "mme_ue[%p:%p]", \
+                (__mME), mme_ue_cycle((__mME))); \
+    } while(0)
+
 #define MME_UE_LIST_CHECK \
     if (ogs_log_get_domain_level(OGS_LOG_DOMAIN) >= OGS_LOG_TRACE) { \
         mme_ue_t *mme_ue = NULL; \
@@ -154,8 +163,9 @@ typedef struct mme_context_s {
         mme_sess_t *sess = NULL; \
         mme_bearer_t *bearer = NULL; \
         ogs_list_for_each(&mme_self()->mme_ue_list, mme_ue) { \
-            ogs_trace("MME_UE(%p) [%s] MME_S11_TEID[%d]", \
-                    mme_ue, mme_ue->imsi_bcd, mme_ue->mme_s11_teid); \
+            ogs_trace("MME_UE(%p:%p) [%s] MME_S11_TEID[%d]", \
+                    mme_ue, mme_ue_cycle(mme_ue), \
+                    mme_ue->imsi_bcd, mme_ue->mme_s11_teid); \
             if (mme_ue->sgw_ue) { \
                 sgw_ue = mme_ue->sgw_ue; \
                 ogs_trace("SGW_UE(%p) MME_UE(%p) SGW_S11_TEID[%d]", \

@@ -74,7 +74,11 @@ static void epoll_init(ogs_pollset_t *pollset)
     ogs_assert(context->map_hash);
 
     context->epfd = epoll_create(pollset->capacity);
-    ogs_assert(context->epfd >= 0);
+    if (context->epfd < 0) {
+        ogs_log_message(OGS_LOG_FATAL, ogs_errno, "epoll_create() failed");
+        ogs_assert_if_reached();
+        return;
+    }
 
     ogs_notify_init(pollset);
 }

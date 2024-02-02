@@ -575,10 +575,7 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
     }
 
     if (!E_RABToBeSetupListCtxtSUReq->list.count) {
-        ogs_error("    IMSI[%s] NAS-EPS Type[%d] "
-                "ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-                mme_ue->imsi_bcd, mme_ue->nas_eps.type,
-                enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+        MME_UE_CHECK(OGS_LOG_ERROR, mme_ue);
         ogs_list_for_each(&mme_ue->sess_list, sess) {
             ogs_error("    APN[%s]",
                     sess->session ? sess->session->name : "Unknown");
