@@ -1249,6 +1249,8 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                         OGS_5GMM_CAUSE_DNN_NOT_SUPPORTED_OR_NOT_SUBSCRIBED_IN_THE_SLICE);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
+
+                amf_sess_remove(sess);
                 return OGS_ERROR;
             }
 
