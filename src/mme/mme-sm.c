@@ -255,6 +255,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             mme_ue = mme_ue_find_by_message(&nas_message);
             if (!mme_ue) {
                 mme_ue = mme_ue_add(enb_ue);
+                MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
                 if (mme_ue == NULL) {
                     r = s1ap_send_ue_context_release_command(enb_ue,
                             S1AP_Cause_PR_misc,
@@ -319,6 +320,17 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
 
         ogs_assert(mme_ue);
+        if (!OGS_FSM_STATE(&mme_ue->sm)) {
+            ogs_fatal("MESSAGE[%d]", nas_message.emm.h.message_type);
+            ogs_fatal("ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                    enb_ue ? enb_ue->enb_ue_s1ap_id : 0,
+                    enb_ue ? enb_ue->mme_ue_s1ap_id : 0);
+            ogs_fatal("context [%p:%p]", enb_ue, mme_ue);
+            ogs_fatal("cycle [%p:%p]",
+                    enb_ue_cycle(enb_ue), mme_ue_cycle(mme_ue));
+            ogs_fatal("IMSI [%s]", mme_ue ? mme_ue->imsi_bcd : "No MME_UE");
+            ogs_assert_if_reached();
+        }
         ogs_assert(OGS_FSM_STATE(&mme_ue->sm));
 
         e->mme_ue = mme_ue;
@@ -347,6 +359,103 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(pkbuf);
         if (ogs_nas_esm_decode(&nas_message, pkbuf) != OGS_OK) {
             ogs_error("ogs_nas_esm_decode() failed");
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
+
+#define ESM_MESSAGE_CHECK \
+    do { \
+        ogs_error("emm_state_exception"); \
+        ogs_error("nas_type:%d, create_action:%d", \
+                e->nas_type, e->create_action); \
+        ogs_error("esm.message[EBI:%d,PTI:%d,TYPE:%d]", \
+                nas_message.esm.h.eps_bearer_identity, \
+                nas_message.esm.h.procedure_transaction_identity, \
+                nas_message.esm.h.message_type); \
+    } while(0)
+
+    /*
+     * Because a race condition can occur between S6A Diameter and S1AP message,
+     * the following error handling code has been added.
+     *
+     * 1. InitialUEMessage + Attach Request + PDN Connectivity request
+     * 2. Authentication-Information-Request/Authentication-Information-Answer
+     * 3. Authentication Request/Response
+     * 4. Security-mode command/complete
+     * 5. Update-Location-Request/Update-Location-Answer
+     * 6. Detach request/accept
+     *
+     * In the ULR/ULA process in step 6, the PDN Connectivity request is
+     * pushed to the queue as an ESM_MESSAGE because the NAS-Type is still
+     * an Attach Request.
+     *
+     * See the code below in 'mme-s6a-handler.c' for where the queue is pushed.
+     *
+     *   if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
+     *       rv = nas_eps_send_emm_to_esm(mme_ue,
+     *               &mme_ue->pdn_connectivity_request);
+     *       if (rv != OGS_OK) {
+     *           ogs_error("nas_eps_send_emm_to_esm() failed");
+     *           return OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED;
+     *       }
+     *   } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
+     *       r = nas_eps_send_tau_accept(mme_ue,
+     *               S1AP_ProcedureCode_id_InitialContextSetup);
+     *       ogs_expect(r == OGS_OK);
+     *       ogs_assert(r != OGS_ERROR);
+     *   } else {
+     *       ogs_error("Invalid Type[%d]", mme_ue->nas_eps.type);
+     *       return OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED;
+     *   }
+     *
+     * If you perform step 7 Detach request/accept here,
+     * the NAS-Type becomes Detach Request and the EMM state changes
+     * to emm_state_de_registered().
+     *
+     * Since the PDN, which is an ESM message that was previously queued,
+     * should not be processed in de_registered, the message is ignored
+     * through error handling below.
+     *
+     * Otherwise, MME will crash because there is no active bearer
+     * in the initial_context_setup_request build process.
+     *
+     * See the code below in 's1ap-build.c' for where the crash occurs.
+     *   ogs_list_for_each(&mme_ue->sess_list, sess) {
+     *       ogs_list_for_each(&sess->bearer_list, bearer) {
+     *           ...
+     *           if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
+     *           } else if (OGS_FSM_CHECK(&bearer->sm, esm_state_inactive)) {
+     *               ogs_warn("No active EPS bearer [%d]", bearer->ebi);
+     *               ogs_warn("    IMSI[%s] NAS-EPS Type[%d] "
+     *                       "ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+     *                       mme_ue->imsi_bcd, mme_ue->nas_eps.type,
+     *                       enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+     *               continue;
+     *           }
+     *           ...
+     *       }
+     *   }
+     */
+        if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered)) {
+            ESM_MESSAGE_CHECK;
+            MME_UE_CHECK(OGS_LOG_ERROR, mme_ue);
+            ogs_pkbuf_free(pkbuf);
+            break;
+        } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication)) {
+            ESM_MESSAGE_CHECK;
+            MME_UE_CHECK(OGS_LOG_ERROR, mme_ue);
+            ogs_pkbuf_free(pkbuf);
+            break;
+        } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_security_mode)) {
+            ESM_MESSAGE_CHECK;
+            MME_UE_CHECK(OGS_LOG_ERROR, mme_ue);
+            ogs_pkbuf_free(pkbuf);
+            break;
+        } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup)) {
+        } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
+        } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_exception)) {
+            ESM_MESSAGE_CHECK;
+            MME_UE_CHECK(OGS_LOG_ERROR, mme_ue);
             ogs_pkbuf_free(pkbuf);
             break;
         }
@@ -459,6 +568,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         switch (s6a_message->cmd_code) {
         case OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION:
+            ogs_debug("OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION");
             emm_cause = mme_s6a_handle_aia(mme_ue, s6a_message);
             if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
                 ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
@@ -481,6 +591,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             }
             break;
         case OGS_DIAM_S6A_CMD_CODE_UPDATE_LOCATION:
+            ogs_debug("OGS_DIAM_S6A_CMD_CODE_UPDATE_LOCATION");
             emm_cause = mme_s6a_handle_ula(mme_ue, s6a_message);
             if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
                 ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
@@ -505,13 +616,16 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             mme_ue->location_updated_but_not_canceled_yet = true;
             break;
         case OGS_DIAM_S6A_CMD_CODE_PURGE_UE:
+            ogs_debug("OGS_DIAM_S6A_CMD_CODE_PURGE_UE");
             mme_s6a_handle_pua(mme_ue, s6a_message);
             break;
         case OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION:
+            ogs_debug("OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION");
             mme_ue->location_updated_but_not_canceled_yet = false;
             mme_s6a_handle_clr(mme_ue, s6a_message);
             break;
         case OGS_DIAM_S6A_CMD_CODE_INSERT_SUBSCRIBER_DATA:
+            ogs_debug("OGS_DIAM_S6A_CMD_CODE_INSERT_SUBSCRIBER_DATA");
             mme_s6a_handle_idr(mme_ue, s6a_message);
             break;
         default:

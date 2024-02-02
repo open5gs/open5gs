@@ -143,6 +143,7 @@ uint8_t mme_s6a_handle_pua(
     if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
         ogs_error("Purge UE failed for IMSI[%s] [%d]", mme_ue->imsi_bcd,
             s6a_message->result_code);
+        MME_UE_CHECK(OGS_LOG_ERROR, mme_ue);
         mme_ue_remove(mme_ue);
         return OGS_ERROR;
     }
@@ -150,6 +151,7 @@ uint8_t mme_s6a_handle_pua(
     if (pua_message->pua_flags & OGS_DIAM_S6A_PUA_FLAGS_FREEZE_MTMSI)
         ogs_debug("Freeze M-TMSI requested but not implemented.");
 
+    MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
     mme_ue_remove(mme_ue);
 
     return OGS_OK;
@@ -224,6 +226,7 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
      */
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered)) {
         ogs_warn("UE has already been de-registered");
+        MME_UE_CHECK(OGS_LOG_ERROR, mme_ue);
         mme_ue_remove(mme_ue);
         return;
     }

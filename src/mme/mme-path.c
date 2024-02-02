@@ -86,6 +86,7 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
                 if (mme_ue->location_updated_but_not_canceled_yet == true) {
                     mme_s6a_send_pur(mme_ue);
                 } else {
+                    MME_UE_CHECK(OGS_LOG_WARN, mme_ue);
                     mme_ue_remove(mme_ue);
                 }
             }

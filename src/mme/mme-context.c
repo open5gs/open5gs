@@ -3764,6 +3764,7 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
             ogs_assert(mme_ue->sgw_ue);
             mme_ue->sgw_ue->sgw_s11_teid = old_mme_ue->sgw_ue->sgw_s11_teid;
 
+            MME_UE_CHECK(OGS_LOG_WARN, old_mme_ue);
             mme_ue_remove(old_mme_ue);
         }
     }

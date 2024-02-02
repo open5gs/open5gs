@@ -1949,6 +1949,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         if (mme_ue->location_updated_but_not_canceled_yet == true) {
             mme_s6a_send_pur(mme_ue);
         } else {
+            MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
             mme_ue_remove(mme_ue);
         }
         break;
