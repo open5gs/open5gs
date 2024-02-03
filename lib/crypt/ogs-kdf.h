@@ -121,7 +121,8 @@ void ogs_kdf_ck_ik_idle_mobility(
  * TS33.401 Annex I Hash Functions
  * Use the KDF given in TS33.220
  */
-void ogs_kdf_hash_mme(const uint8_t *message, uint8_t message_len, uint8_t *hash_mme);
+void ogs_kdf_hash_mme(
+        const uint8_t *message, uint32_t message_len, uint8_t *hash_mme);
 
 /*
  * TS33.102

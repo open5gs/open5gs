@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2023-03-04 20:50:00.889117 by acetcom
+ * Created on: 2024-01-21 18:47:47.827076 by acetcom
  * from 24501-h90.docx
  ******************************************************************************/
 
@@ -4449,15 +4449,14 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
 
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->data);
-    ogs_assert(pkbuf->len);
-
-    memset(message, 0, sizeof(ogs_nas_5gs_message_t));
 
     size = sizeof(ogs_nas_5gmm_header_t);
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
        ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
        return OGS_ERROR;
     }
+
+    memset(message, 0, sizeof(ogs_nas_5gs_message_t));
     memcpy(&message->gmm.h, pkbuf->data - size, size);
     decoded += size;
 
@@ -4710,15 +4709,14 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
 
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->data);
-    ogs_assert(pkbuf->len);
-
-    memset(message, 0, sizeof(ogs_nas_5gs_message_t));
 
     size = sizeof(ogs_nas_5gsm_header_t);
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
        ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
        return OGS_ERROR;
     }
+
+    memset(message, 0, sizeof(ogs_nas_5gs_message_t));
     memcpy(&message->gsm.h, pkbuf->data - size, size);
     decoded += size;
 
