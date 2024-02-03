@@ -509,6 +509,8 @@ typedef struct amf_sess_s {
     /* SMF sends the RESPONSE
      * of [POST] /nsmf-pdusession/v1/sm-contexts */
     char *sm_context_ref;
+    bool pdu_session_release_complete_received;
+    bool pdu_session_resource_release_response_received;
 
     /* SMF sends the REQUEST
      * of [POST] /namf-comm/v1/ue-contexts/{supi}/n1-n2-messages */
@@ -818,7 +820,6 @@ amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi);
         sbi_object = &(__sESS)->sbi; \
         ogs_assert(sbi_object); \
         \
-        ogs_error("AMF_SESS_CLEAR"); \
         if (ogs_list_count(&sbi_object->xact_list)) { \
             ogs_error("SBI running [%d]", \
                     ogs_list_count(&sbi_object->xact_list)); \

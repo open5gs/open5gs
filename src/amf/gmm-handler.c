@@ -1099,6 +1099,23 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
             if (!sess) {
                 sess = amf_sess_add(amf_ue, *pdu_session_id);
                 ogs_assert(sess);
+            } else {
+            /*
+             * These are variables that should be initialized
+             * when a PDU session establishment message is received
+             * for an existing session.
+             *
+             * It should be noted that XXX_recieved, which is initialized now,
+             * has a different initialization location than XXX_gsm_type.
+             *
+             * XXX_received is initialized in the ESTABLISHMENT phase,
+             * but XXX_gsm_type is initialized in the RELEASE phase
+             * when a PDU session release command with a Reactivation Request
+             * and a PDU session release complete are sent simultaneously.
+             */
+                sess->pdu_session_resource_release_response_received = false;
+                sess->pdu_session_release_complete_received = false;
+
             }
         } else {
             sess = amf_sess_find_by_psi(amf_ue, *pdu_session_id);
@@ -1386,8 +1403,10 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                 }
                 break;
             case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
-                /* Prevent to invoke SMF for this session */
-                CLEAR_SM_CONTEXT_REF(sess);
+                sess->pdu_session_release_complete_received = true;
+                if (sess->pdu_session_resource_release_response_received ==
+                        true)
+                    CLEAR_SM_CONTEXT_REF(sess);
                 break;
             default:
                 break;

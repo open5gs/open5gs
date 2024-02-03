@@ -2514,7 +2514,12 @@ void ngap_handle_pdu_session_resource_release_response(
         ogs_assert(r != OGS_ERROR);
 
         ogs_pkbuf_free(param.n2smbuf);
+
+        sess->pdu_session_resource_release_response_received = true;
+        if (sess->pdu_session_release_complete_received == true)
+            CLEAR_SM_CONTEXT_REF(sess);
     }
+
 }
 
 void ngap_handle_uplink_ran_configuration_transfer(
