@@ -1056,8 +1056,21 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
         ogs_error("[%s:%d] Do not remove Session due to Reactivation-requested",
                 amf_ue->supi, sess->psi);
 
-        /* Initialize the context instead of using amf_sess_remove() */
-
+        /*
+         * Issue #2917
+         *
+         * These are variables that need to be initialized
+         * when a PDU session release command with a Reactivation Request
+         * and a PDU session release complete are sent at the same time.
+         *
+         * It is important to note that XXX_gsm_type, which is initialized now,
+         * has a different initialization location than
+         * pdu_session_release_complete_received/
+         * pdu_session_resource_release_response_received
+         *
+         * XXX_received is initialized in the ESTABLISHMENT phase,
+         * but XXX_gsm_type must be initialized in the RELEASE phase.
+         */
         sess->old_gsm_type = 0;
         sess->current_gsm_type = 0;
 
@@ -1068,7 +1081,7 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
     } else {
         ogs_info("[%s:%d] Release SM Context [state:%d]",
                 amf_ue->supi, sess->psi, state);
-        amf_sess_remove(sess);
+        AMF_SESS_CLEAR(sess);
     }
 
     if (state == AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) {

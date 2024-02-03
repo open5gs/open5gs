@@ -488,10 +488,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     ogs_info("[%s:%d] Release SM context [%d]",
                             amf_ue->supi, sess->psi, sbi_message.res_status);
                 } else {
-                    ogs_error("[%s] HTTP response error [%d]",
-                            amf_ue->supi, sbi_message.res_status);
+                    ogs_error("[%s:%d] HTTP response error [%d]",
+                            amf_ue->supi, sess->psi, sbi_message.res_status);
                 }
-
                 amf_nsmf_pdusession_handle_release_sm_context(sess, state);
                 break;
 
@@ -518,6 +517,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                      * So, if CreateSMContext is failed,
                      * we'll clear SM_CONTEXT_REF.
                      */
+                    ogs_error("[%s:%d] create_sm_context failed() [%d]",
+                            amf_ue->supi, sess->psi, sbi_message.res_status);
                     AMF_SESS_CLEAR(sess);
                 }
             END
