@@ -50,13 +50,16 @@ int nas_eps_send_emm_to_esm(mme_ue_t *mme_ue,
     int rv;
     ogs_pkbuf_t *esmbuf = NULL;
 
+    ogs_assert(esm_message_container);
+    if (!esm_message_container->length) {
+        ogs_error("Invalid ESM Message Container");
+        return OGS_ERROR;
+    }
+
     if (!mme_ue_cycle(mme_ue)) {
         ogs_error("UE(mme-ue) context has already been removed");
         return OGS_NOTFOUND;
     }
-
-    ogs_assert(esm_message_container);
-    ogs_assert(esm_message_container->length);
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
