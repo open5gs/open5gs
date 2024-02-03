@@ -3819,6 +3819,16 @@ void ngap_handle_handover_cancel(
             Cause->present, (int)Cause->choice.radioNetwork);
 
     ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if (!SESSION_CONTEXT_IN_SMF(sess)) {
+            ogs_error("Session Context is not in SMF [%d]", sess->psi);
+            r = ngap_send_error_indication2(source_ue,
+                    NGAP_Cause_PR_radioNetwork,
+                    NGAP_CauseRadioNetwork_handover_cancelled);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return;
+        }
+
         memset(&param, 0, sizeof(param));
         param.hoState = OpenAPI_ho_state_CANCELLED;
         param.ngApCause.group = Cause->present;
@@ -4118,6 +4128,16 @@ void ngap_handle_handover_notification(
     ogs_assert(r != OGS_ERROR);
 
     ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if (!SESSION_CONTEXT_IN_SMF(sess)) {
+            ogs_error("Session Context is not in SMF [%d]", sess->psi);
+            r = ngap_send_error_indication2(source_ue,
+                    NGAP_Cause_PR_radioNetwork,
+                    NGAP_CauseRadioNetwork_partial_handover);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return;
+        }
+
         memset(&param, 0, sizeof(param));
         param.hoState = OpenAPI_ho_state_COMPLETED;
 
