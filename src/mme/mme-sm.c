@@ -612,8 +612,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             }
-
-            mme_ue->location_updated_but_not_canceled_yet = true;
             break;
         case OGS_DIAM_S6A_CMD_CODE_PURGE_UE:
             ogs_debug("OGS_DIAM_S6A_CMD_CODE_PURGE_UE");
@@ -621,7 +619,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             break;
         case OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION:
             ogs_debug("OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION");
-            mme_ue->location_updated_but_not_canceled_yet = false;
             mme_s6a_handle_clr(mme_ue, s6a_message);
             break;
         case OGS_DIAM_S6A_CMD_CODE_INSERT_SUBSCRIBER_DATA:

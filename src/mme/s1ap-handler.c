@@ -1846,11 +1846,11 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         return;
     }
 
-    mme_ue = enb_ue->mme_ue;
-
     ogs_info("UE Context Release [Action:%d]", enb_ue->ue_ctx_rel_action);
     ogs_info("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+
+    mme_ue = mme_ue_cycle(enb_ue->mme_ue);
     if (mme_ue) {
         ogs_info("    IMSI[%s]", mme_ue->imsi_bcd);
 
@@ -1946,12 +1946,8 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
             return;
         }
 
-        if (mme_ue->location_updated_but_not_canceled_yet == true) {
-            mme_s6a_send_pur(mme_ue);
-        } else {
-            MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
-            mme_ue_remove(mme_ue);
-        }
+        MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
+        mme_ue_remove(mme_ue);
         break;
     case S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE:
         ogs_debug("    Action: S1 handover complete");

@@ -704,12 +704,8 @@ void mme_s11_handle_delete_session_response(
     } else if (action == OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
             if (ECM_IDLE(mme_ue)) {
-                if (mme_ue->location_updated_but_not_canceled_yet == true) {
-                    mme_s6a_send_pur(mme_ue);
-                } else {
-                    MME_UE_CHECK(OGS_LOG_ERROR, mme_ue);
-                    mme_ue_remove(mme_ue);
-                }
+                MME_UE_CHECK(OGS_LOG_ERROR, mme_ue);
+                mme_ue_remove(mme_ue);
             } else {
                 ogs_assert(mme_ue->enb_ue);
                 r = s1ap_send_ue_context_release_command(mme_ue->enb_ue,

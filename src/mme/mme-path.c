@@ -83,12 +83,8 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
             } else {
-                if (mme_ue->location_updated_but_not_canceled_yet == true) {
-                    mme_s6a_send_pur(mme_ue);
-                } else {
-                    MME_UE_CHECK(OGS_LOG_WARN, mme_ue);
-                    mme_ue_remove(mme_ue);
-                }
+                MME_UE_CHECK(OGS_LOG_WARN, mme_ue);
+                mme_ue_remove(mme_ue);
             }
         }
         break;

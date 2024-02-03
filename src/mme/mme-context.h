@@ -474,8 +474,6 @@ struct mme_ue_s {
     int             security_context_available;
     int             mac_failed;
 
-    bool            location_updated_but_not_canceled_yet;
-
     /* Security Context */
     ogs_nas_ue_network_capability_t ue_network_capability;
     ogs_nas_ms_network_capability_t ms_network_capability;
