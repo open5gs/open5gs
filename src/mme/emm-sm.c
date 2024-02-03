@@ -814,9 +814,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
 
         case OGS_NAS_EPS_EMM_STATUS:
             ogs_warn("EMM STATUS : IMSI[%s] Cause[%d]",
-                    mme_ue->imsi_bcd,
-                    message->emm.emm_status.emm_cause);
-            OGS_FSM_TRAN(s, &emm_state_exception);
+                    mme_ue->imsi_bcd, message->emm.emm_status.emm_cause);
             break;
 
         case OGS_NAS_EPS_DETACH_REQUEST:
@@ -1037,9 +1035,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             break;
         case OGS_NAS_EPS_EMM_STATUS:
             ogs_warn("EMM STATUS : IMSI[%s] Cause[%d]",
-                    mme_ue->imsi_bcd,
-                    message->emm.emm_status.emm_cause);
-            OGS_FSM_TRAN(s, &emm_state_exception);
+                    mme_ue->imsi_bcd, message->emm.emm_status.emm_cause);
             break;
         case OGS_NAS_EPS_DETACH_REQUEST:
             ogs_warn("[%s] Detach request", mme_ue->imsi_bcd);
@@ -1251,9 +1247,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             break;
         case OGS_NAS_EPS_EMM_STATUS:
             ogs_warn("EMM STATUS : IMSI[%s] Cause[%d]",
-                    mme_ue->imsi_bcd,
-                    message->emm.emm_status.emm_cause);
-            OGS_FSM_TRAN(s, &emm_state_exception);
+                    mme_ue->imsi_bcd, message->emm.emm_status.emm_cause);
             break;
         case OGS_NAS_EPS_DETACH_REQUEST:
             ogs_warn("[%s] Detach request", mme_ue->imsi_bcd);
@@ -1503,9 +1497,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 
         case OGS_NAS_EPS_EMM_STATUS:
             ogs_warn("EMM STATUS : IMSI[%s] Cause[%d]",
-                    mme_ue->imsi_bcd,
-                    message->emm.emm_status.emm_cause);
-            OGS_FSM_TRAN(s, &emm_state_exception);
+                    mme_ue->imsi_bcd, message->emm.emm_status.emm_cause);
             break;
         case OGS_NAS_EPS_DETACH_REQUEST:
             ogs_warn("[%s] Detach request", mme_ue->imsi_bcd);

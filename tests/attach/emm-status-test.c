@@ -35,6 +35,9 @@ static void test1_func(abts_case *tc, void *data)
     test_sess_t *sess = NULL;
     test_bearer_t *bearer = NULL;
 
+    uint32_t enb_ue_s1ap_id;
+    uint64_t mme_ue_s1ap_id;
+
     bson_t *doc = NULL;
 
     /* Setup Test UE & Session Context */
@@ -53,7 +56,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf0;
-    test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+    test_ue->nas.ksi = 0;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
@@ -88,7 +91,9 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Send Attach Request */
-    sess->pdn_connectivity_param.pco = 1;
+    memset(&sess->pdn_connectivity_param,
+            0, sizeof(sess->pdn_connectivity_param));
+    sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
     esmbuf = testesm_build_pdn_connectivity_request(sess, false);
@@ -101,9 +106,10 @@ static void test1_func(abts_case *tc, void *data)
     test_ue->attach_request_param.tmsi_status = 1;
     test_ue->attach_request_param.mobile_station_classmark_2 = 1;
     test_ue->attach_request_param.ue_usage_setting = 1;
-    emmbuf = testemm_build_attach_request(test_ue, esmbuf, false, false);
+    emmbuf = testemm_build_attach_request(test_ue, esmbuf, true, false);
     ABTS_PTR_NOTNULL(tc, emmbuf);
 
+    memset(&test_ue->initial_ue_param, 0, sizeof(test_ue->initial_ue_param));
     sendbuf = test_s1ap_build_initial_ue_message(
             test_ue, emmbuf, S1AP_RRC_Establishment_Cause_mo_Signalling, false);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -137,6 +143,20 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Receive ESM Information Request */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send ESM Information Response */
+    sess->esm_information_param.epco = 1;
+    esmbuf = testesm_build_esm_information_response(sess);
+    ABTS_PTR_NOTNULL(tc, esmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     /* Receive Initial Context Setup Request +
      * Attach Accept +
      * Activate Default Bearer Context Request */
@@ -149,6 +169,44 @@ static void test1_func(abts_case *tc, void *data)
             OGS_NAS_ESM_CAUSE_MESSAGE_NOT_COMPATIBLE_WITH_PROTOCOL_STATE);
     ABTS_PTR_NOTNULL(tc, emmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send UE Capability Info Indication */
+    sendbuf = tests1ap_build_ue_radio_capability_info_indication(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send Initial Context Setup Response */
+    sendbuf = test_s1ap_build_initial_context_setup_response(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send Attach Complete + Activate default EPS bearer cotext accept */
+    test_ue->nr_cgi.cell_id = 0x1234502;
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    ogs_assert(bearer);
+    esmbuf = testesm_build_activate_default_eps_bearer_context_accept(
+            bearer, false);
+    ABTS_PTR_NOTNULL(tc, esmbuf);
+    emmbuf = testemm_build_attach_complete(test_ue, esmbuf);
+    ABTS_PTR_NOTNULL(tc, emmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive EMM information */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send UE Context Release Request */
+    sendbuf = test_s1ap_build_ue_context_release_request(test_ue,
+            S1AP_Cause_PR_radioNetwork, S1AP_CauseRadioNetwork_user_inactivity);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
