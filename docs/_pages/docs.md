@@ -18,9 +18,9 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [Dockerized VoLTE Setup](tutorial/03-VoLTE-dockerized)
   - [Roaming](tutorial/05-roaming)
 
-- Inside Source Code
-  - [UPF Code Explanation](https://medium.com/@aditya.koranga/open5gs-upf-code-explanation-with-flow-c-79c50f253dd1)
-  - [SMF Code Explanation](https://medium.com/@aditya.koranga/open5gs-smf-code-explanation-with-flow-charts-a3b3cd38c991)
+- In the lab
+  - [A Demonstration of 30 Gbps Load Testing for Accelerated UPF with Open5gs](https://nextepc.com/technology)
+  - [Measurement of UPF Performance](https://github.com/s5uishida/simple_measurement_of_upf_performance)
 
 - Troubleshooting
   - [Simple Issues](troubleshoot/01-simple-issues)
@@ -37,6 +37,10 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
 
 - Hardware Specific Notes
   - [eNodeBs/gNodeBs tested on Open5GS](hardware/01-genodebs)
+
+- Inside Source Code
+  - [UPF Code Explanation](https://medium.com/@aditya.koranga/open5gs-upf-code-explanation-with-flow-c-79c50f253dd1)
+  - [SMF Code Explanation](https://medium.com/@aditya.koranga/open5gs-smf-code-explanation-with-flow-charts-a3b3cd38c991)
 
 - @infinitydon
   - [Open5GS on Amazon Elastic Kubernetes Service](https://aws.amazon.com/blogs/opensource/open-source-mobile-core-network-implementation-on-amazon-elastic-kubernetes-service/)
@@ -69,7 +73,6 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [VPP-UPF with DPDK](https://github.com/s5uishida/open5gs_5gc_ueransim_vpp_upf_dpdk_sample_config)
   - [UERANSIM with eUPF(eBPF/XDP UPF)](https://github.com/s5uishida/open5gs_5gc_ueransim_eupf_sample_config)
   - [srsRAN with eUPF(eBPF/XDP UPF)](https://github.com/s5uishida/open5gs_epc_srsran_eupf_sample_config)
-  - [Measurement of UPF Performance](https://github.com/s5uishida/simple_measurement_of_upf_performance)
  
 - @gradiant helm charts
   - [Open5GS EPC and SRS LTE in kubernetes](https://gradiant.github.io/openverso-charts/open5gs-srslte.html)
