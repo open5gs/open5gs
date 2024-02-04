@@ -242,12 +242,6 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         return NULL;
     }
 
-    if (service_map == true) {
-        NFProfile->nf_service_list = NFServiceList;
-    } else {
-        NFProfile->nf_services = NFServiceList;
-    }
-
     ogs_list_for_each(&nf_instance->nf_service_list, nf_service) {
         OpenAPI_nf_service_t *NFService = NULL;
 
@@ -289,6 +283,16 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
             OpenAPI_list_add(NFServiceList, NFService);
         }
     }
+
+    if (NFServiceList->count) {
+        if (service_map == true) {
+            NFProfile->nf_service_list = NFServiceList;
+        } else {
+            NFProfile->nf_services = NFServiceList;
+        }
+    }
+    else
+        OpenAPI_list_free(NFServiceList);
 
     InfoList = OpenAPI_list_create();
     ogs_assert(InfoList);
