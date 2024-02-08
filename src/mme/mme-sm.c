@@ -516,6 +516,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         break;
 
     case MME_EVENT_S6A_MESSAGE:
+        s6a_message = e->s6a_message;
+        ogs_assert(s6a_message);
+
         /*
          * A race condition can occur in the following situations.
          * In conclusion, we can use this situation to determine
@@ -562,9 +565,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_error("UE(mme-ue) context has already been removed");
             goto cleanup;
         }
-
-        s6a_message = e->s6a_message;
-        ogs_assert(s6a_message);
 
         switch (s6a_message->cmd_code) {
         case OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION:
