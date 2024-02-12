@@ -640,8 +640,7 @@ void ngap_handle_uplink_nas_transport(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -803,8 +802,7 @@ void ngap_handle_ue_radio_capability_info_indication(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -908,8 +906,7 @@ void ngap_handle_initial_context_setup_response(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -1187,8 +1184,7 @@ void ngap_handle_initial_context_setup_failure(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -1320,8 +1316,7 @@ void ngap_handle_ue_context_modification_response(
 
     if (AMF_UE_NGAP_ID) {
 
-        if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                    (unsigned long *)&amf_ue_ngap_id) != 0) {
+        if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
             ogs_warn("Invalid AMF_UE_NGAP_ID");
         }
 
@@ -1388,8 +1383,7 @@ void ngap_handle_ue_context_modification_failure(
 
     if (AMF_UE_NGAP_ID) {
 
-        if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                    (unsigned long *)&amf_ue_ngap_id) != 0) {
+        if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
             ogs_warn("Invalid AMF_UE_NGAP_ID");
         }
 
@@ -1483,8 +1477,7 @@ void ngap_handle_ue_context_release_request(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -1655,8 +1648,7 @@ void ngap_handle_ue_context_release_complete(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -1886,8 +1878,7 @@ void ngap_handle_pdu_session_resource_setup_response(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -2208,8 +2199,7 @@ void ngap_handle_pdu_session_resource_modify_response(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -2395,8 +2385,7 @@ void ngap_handle_pdu_session_resource_release_response(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -2747,8 +2736,7 @@ void ngap_handle_path_switch_request(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -3074,8 +3062,7 @@ void ngap_handle_handover_required(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -3413,8 +3400,7 @@ void ngap_handle_handover_request_ack(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -3629,8 +3615,7 @@ void ngap_handle_handover_failure(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, NULL, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -3753,8 +3738,7 @@ void ngap_handle_handover_cancel(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -3904,8 +3888,7 @@ void ngap_handle_uplink_ran_status_transfer(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -4025,8 +4008,7 @@ void ngap_handle_handover_notification(
         return;
     }
 
-    if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id) != 0) {
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
         r = ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
@@ -4512,8 +4494,8 @@ void ngap_handle_ng_reset(
             }
 
             if (item->aMF_UE_NGAP_ID) {
-                if (asn_INTEGER2ulong(item->aMF_UE_NGAP_ID,
-                            (unsigned long *)&amf_ue_ngap_id) != 0) {
+                if (asn_INTEGER2uint64(item->aMF_UE_NGAP_ID,
+                            &amf_ue_ngap_id) != 0) {
                     ogs_error("Invalid AMF_UE_NGAP_ID");
                     continue;
                 }
@@ -4650,8 +4632,7 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 
     if (AMF_UE_NGAP_ID) {
 
-        if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
-                    (unsigned long *)&amf_ue_ngap_id) != 0) {
+        if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
             ogs_warn("Invalid AMF_UE_NGAP_ID");
         }
 

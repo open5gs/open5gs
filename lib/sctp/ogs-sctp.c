@@ -32,20 +32,25 @@ int ogs_sctp_recvdata(ogs_sock_t *sock, void *msg, size_t len,
 
     do {
         size = ogs_sctp_recvmsg(sock, msg, len, from, sinfo, &flags);
-        if (size < 0) {
-            ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                    "ogs_sctp_recvdata(%d)", size);
+        if (size < 0 || size >= OGS_MAX_SDU_LEN) {
+            ogs_error("ogs_sctp_recvmsg(%d) failed(%d:%s)",
+                    size, errno, strerror(errno));
             return size;
         }
 
         if (flags & MSG_NOTIFICATION) {
             /* Nothing */
-        }
-        else if (flags & MSG_EOR) {
+        } else if (flags & MSG_EOR) {
             break;
-        }
-        else {
-            ogs_assert_if_reached();
+        } else {
+            if (ogs_socket_errno != OGS_EAGAIN) {
+                ogs_fatal("ogs_sctp_recvmsg(%d) failed(%d:%s-0x%x)",
+                        size, errno, strerror(errno), flags);
+                ogs_assert_if_reached();
+            } else {
+                ogs_error("ogs_sctp_recvmsg(%d) failed(%d:%s-0x%x)",
+                        size, errno, strerror(errno), flags);
+            }
         }
     } while(1);
 

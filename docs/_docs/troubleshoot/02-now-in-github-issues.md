@@ -10,6 +10,62 @@ head_inline: "<style> .blue { color: blue; } </style>"
   }
 </style>
 
+#### How to run wireshark from within Docker?
+
+In the following, I will explain how to run wireshark on Ubuntu 32bit.
+
+First, make the following modifications to get wireshark working.
+
+```diff
+$ diff --git a/docker/docker-compose.yml b/docker/docker-compose.yml
+index 01925303b..8d5e23a4f 100644
+--- a/docker/docker-compose.yml
++++ b/docker/docker-compose.yml
+@@ -105,7 +105,7 @@ services:
+     volumes:
+       - home:/home/${USER}
+       - ${HOME}:/mnt
+-    # - /tmp/.X11-unix:/tmp/.X11-unix
++      - /tmp/.X11-unix:/tmp/.X11-unix
+     # - /etc/localtime:/etc/localtime:ro
+     # - /usr/share/zoneinfo/Europe/Helsinki:/etc/localtime:ro
+     hostname: open5gs-dev
+
+$ diff --git a/docker/ubuntu/latest/dev/Dockerfile b/docker/ubuntu/latest/dev/Dockerfile
+index 970dddb72..6902fc59c 100644
+--- a/docker/ubuntu/latest/dev/Dockerfile
++++ b/docker/ubuntu/latest/dev/Dockerfile
+@@ -23,12 +23,12 @@ RUN apt-get update && \
+         net-tools && \
+     apt-get clean
+
+-#RUN apt-get update && \
+-#    apt-get install -y software-properties-common && \
+-#    sudo add-apt-repository ppa:wireshark-dev/stable -y && \
+-#    apt-get update && \
+-#    DEBIAN_FRONTEND=noninteractive \
+-#    apt-get install -y wireshark
++RUN apt-get update && \
++    apt-get install -y software-properties-common && \
++    sudo add-apt-repository ppa:wireshark-dev/stable -y && \
++    apt-get update && \
++    DEBIAN_FRONTEND=noninteractive \
++    apt-get install -y wireshark
+
+ COPY setup.sh /root
+```
+
+It allows any program run by the docker user to communicate with X windows.
+```
+$ xhost +local:docker
+```
+
+And run 32bit ubuntu like below.
+```
+$ cd docker
+$ DIST=i386/ubuntu docker compose run dev
+```
+
 #### What to do if a FATAL occurs?
 
 You may occasionally encounter a FATAL like the one below.

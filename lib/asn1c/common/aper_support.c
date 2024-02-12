@@ -25,8 +25,7 @@ aper_get_length(asn_per_data_t *pd, ssize_t lb, ssize_t ub,
 	*repeat = 0;
 
 	if (constrained && ub < 65536) {
-		int range = ub - lb + 1;
-		return aper_get_nsnnwn(pd, range);
+		return aper_get_constrained_whole_number(pd, lb, ub);
 	}
 
 	if (aper_get_align(pd) < 0)
@@ -70,55 +69,117 @@ aper_get_nslength(asn_per_data_t *pd) {
 }
 
 ssize_t
-aper_get_nsnnwn(asn_per_data_t *pd, int range) {
-	ssize_t value;
-	int bytes = 0;
+aper_get_nsnnwn(asn_per_data_t *pd) {
+	int b;
+	int length;
 
-	ASN_DEBUG("getting nsnnwn with range %d", range);
+	ASN_DEBUG("getting nsnnwn");
 
-	if(range <= 255) {
-		int i;
+	b = per_get_few_bits(pd, 1);
+	if (b == -1)
+		return -1;
 
-		if (range < 0) return -1;
-		/* 1 -> 8 bits */
-		for (i = 1; i <= 8; i++) {
-			int upper = 1 << i;
-			if (upper >= range)
-				break;
-		}
-		value = per_get_few_bits(pd, i);
-		return value;
-	} else if (range == 256){
-		/* 1 byte */
-		bytes = 1;
-	} else if (range <= 65536) {
-		/* 2 bytes */
-		bytes = 2;
-	} else {
-		//return -1;
-		int length;
+	/* X.691 2002 10.6.1 */
+	if (b == 0)
+		return per_get_few_bits(pd, 6);
 
-		/* handle indefinite range */
-		length = per_get_few_bits(pd, 1);
-		if (length == 0)
-			return per_get_few_bits(pd, 6);
-
-		if (aper_get_align(pd) < 0)
-			return -1;
-
-		length = per_get_few_bits(pd, 8);
-		/* the length is not likely to be that big */
-		if (length > 4)
-			return -1;
-		value = 0;
-		if (per_get_many_bits(pd, (uint8_t *)&value, 0, length * 8) < 0)
-			return -1;
-		return value;
-	}
 	if (aper_get_align(pd) < 0)
 		return -1;
-	value = per_get_few_bits(pd, 8 * bytes);
-	return value;
+
+	/* X.691 2002 10.6.2 */
+	/* X.691 2002 10.9.3.5 */
+	b = per_get_few_bits(pd, 1);
+	if (b == -1)
+		return -1;
+
+	if (b == 1) {
+		/* other 10.9.3.x cases not handled, it's doubtful we reach them in practice */
+		ASN_DEBUG("todo: X.691 2002 10.9.3.x");
+		return -1;
+	}
+
+	/* X.691 2002 10.9.3.6 */
+	length = per_get_few_bits(pd, 7);
+	if (length > 4) {
+		/* todo */
+		ASN_DEBUG("todo: X.691 2002 10.9.3.6 for length > 4");
+		return -1;
+	}
+	ASN_DEBUG("length %d\n", length);
+
+	/* todo: 0xffffffff will be seen as -1 and will lead to decoding failure */
+	return per_get_few_bits(pd, length * 8);
+}
+
+/* X.691 2002 10.5 - Decoding of a constrained whole number */
+long
+aper_get_constrained_whole_number(asn_per_data_t *pd, long lb, long ub) {
+	assert(ub >= lb);
+	long range = ub - lb + 1;
+	int range_len;
+	int value_len;
+	long value;
+
+	ASN_DEBUG("aper get constrained_whole_number with lb %ld and ub %ld", lb, ub);
+
+	/* X.691 2002 10.5.4 */
+	if (range == 1)
+		return lb;
+
+	/* X.691 2002 10.5.7.1 - The bit-field case. */
+	if (range <= 255) {
+		int bitfield_size = 8;
+		for (bitfield_size = 8; bitfield_size >= 2; bitfield_size--)
+			if ((range - 1) & (1 << (bitfield_size-1)))
+				break;
+		value = per_get_few_bits(pd, bitfield_size);
+		if (value < 0 || value >= range)
+			return -1;
+		return value + lb;
+	}
+
+	/* X.691 2002 10.5.7.2 - The one-octet case. */
+	if (range == 256) {
+		if (aper_get_align(pd))
+			return -1;
+		value = per_get_few_bits(pd, 8);
+		if (value < 0 || value >= range)
+			return -1;
+		return value + lb;
+	}
+
+	/* X.691 2002 10.5.7.3 - The two-octet case. */
+	if (range <= 65536) {
+		if (aper_get_align(pd))
+			return -1;
+		value = per_get_few_bits(pd, 16);
+		if (value < 0 || value >= range)
+			return -1;
+		return value + lb;
+	}
+
+	/* X.691 2002 10.5.7.4 - The indefinite length case. */
+	/* since we limit input to be 'long' we don't handle all numbers */
+	/* and so length determinant is retrieved as X.691 2002 10.9.3.3 */
+	/* number of bytes to store the range */
+	for (range_len = 3; ; range_len++) {
+		long bits = ((long)1) << (8 * range_len);
+		if (range - 1 < bits)
+			break;
+	}
+	value_len = aper_get_constrained_whole_number(pd, 1, range_len);
+	if (value_len == -1)
+		return -1;
+	if (value_len > 4) {
+		ASN_DEBUG("todo: aper_get_constrained_whole_number: value_len > 4");
+		return -1;
+	}
+	if (aper_get_align(pd))
+		return -1;
+	value = per_get_few_bits(pd, value_len * 8);
+	if (value < 0 || value >= range)
+		return -1;
+	return value + lb;
 }
 
 int aper_put_align(asn_per_outp_t *po) {
@@ -142,11 +203,9 @@ aper_put_length(asn_per_outp_t *po, ssize_t lb, ssize_t ub, size_t n, int *need_
 
 	ASN_DEBUG("APER put length %zu with range (%zd..%zd)", n, lb, ub);
 
-	/* 11.9 X.691 Note 2 */
-	if (constrained && ub < 65536) {
-		int range = ub - lb + 1;
-		return aper_put_nsnnwn(po, range, n) ? -1 : (ssize_t)n;
-	}
+	/* X.691 2002 10.9.3.3 */
+	if (constrained && ub < 65536)
+		return aper_put_constrained_whole_number(po, lb, ub, n + lb) ? -1 : (ssize_t)n;
 
 	if (aper_put_align(po) < 0)
 		return -1;
@@ -189,51 +248,113 @@ aper_put_nslength(asn_per_outp_t *po, size_t length) {
 }
 
 int
-aper_put_nsnnwn(asn_per_outp_t *po, int range, int number) {
-	int bytes;
+aper_put_nsnnwn(asn_per_outp_t *po, int number) {
+	int len;
 
-	ASN_DEBUG("aper put nsnnwn %d with range %d", number, range);
-	/* 10.5.7.1 X.691 */
-	if(range < 0) {
-		int i;
-		for (i = 1; ; i++) {
-			int bits = 1 << (8 * i);
-			if (number <= bits)
-				break;
-		}
-		bytes = i;
-		assert(i <= 4);
+	ASN_DEBUG("aper put nsnnwn %d", number);
+
+	if (number <= 63) {
+		if (per_put_few_bits(po, 0, 1))
+			return -1;
+		return per_put_few_bits(po, number, 6);
 	}
-	if(range <= 255) {
+
+	if (per_put_few_bits(po, 1, 1))
+		return -1;
+
+	if (number < 256) {
+		len = 1;
+	} else if (number < 65536) {
+		len = 2;
+	} else { /* number > 64K */
 		int i;
-		for (i = 1; i <= 8; i++) {
-			int bits = 1 << i;
-			if (range <= bits)
-				break;
-		}
-		return per_put_few_bits(po, number, i);
-	} else if(range == 256) {
-		if (number >= range)
-			return -1;
-		bytes = 1;
-	} else if(range <= 65536) {
-		if (number >= range)
-			return -1;
-		bytes = 2;
-	} else { /* Ranges > 64K */
-		int i;
-		for (i = 1; ; i++) {
+		for (i = 3; ; i++) {
 			int bits = 1 << (8 * i);
-			if (range <= bits)
+			if (number < bits)
 				break;
 		}
-		assert(i <= 4);
-		bytes = i;
+		len = i;
+	}
+
+	if (aper_put_align(po) < 0)
+		return -1;
+
+	/* put the length which is a non-constrained whole number */
+	if (len <= 127) {
+		if(per_put_few_bits(po, 0, 1))
+			return -1;
+		if(per_put_few_bits(po, len, 7))
+			return -1;
+	} else {
+		/* todo but not big problem, it's very doubtful that the
+		 * number of bytes to encode 'number' will be > 127
+		 */
+		return -1;
 	}
 	if(aper_put_align(po) < 0) /* Aligning on octet */
 		return -1;
-/* 	if(per_put_few_bits(po, bytes, 8))
+	return per_put_few_bits(po, number, 8 * len);
+}
+
+/* X.691 2002 10.5 - Encoding of a constrained whole number */
+int
+aper_put_constrained_whole_number(asn_per_outp_t *po, long lb, long ub, long number) {
+	assert(ub >= lb);
+	long range = ub - lb + 1;
+	long value = number - lb;
+	int range_len;
+	int value_len;
+
+	ASN_DEBUG("aper put constrained_whole_number %ld with lb %ld and ub %ld", number, lb, ub);
+
+	if (number < lb || number > ub)
 		return -1;
-*/
-	return per_put_few_bits(po, number, 8 * bytes);
+
+	/* X.691 2002 10.5.4 */
+	if (range == 1)
+		return 0;
+
+	/* X.691 2002 10.5.7.1 - The bit-field case. */
+	if (range <= 255) {
+		int bitfield_size = 8;
+		for (bitfield_size = 8; bitfield_size >= 2; bitfield_size--)
+			if ((range - 1) & (1 << (bitfield_size-1)))
+				break;
+		return per_put_few_bits(po, value, bitfield_size);
+	}
+
+	/* X.691 2002 10.5.7.2 - The one-octet case. */
+	if (range == 256) {
+		if (aper_put_align(po))
+			return -1;
+		return per_put_few_bits(po, value, 8);
+	}
+
+	/* X.691 2002 10.5.7.3 - The two-octet case. */
+	if (range <= 65536) {
+		if (aper_put_align(po))
+			return -1;
+		return per_put_few_bits(po, value, 16);
+	}
+
+	/* X.691 2002 10.5.7.4 - The indefinite length case. */
+	/* since we limit input to be 'long' we don't handle all numbers */
+	/* and so length determinant is stored as X.691 2002 10.9.3.3 */
+	/* number of bytes to store the range */
+	for (range_len = 3; ; range_len++) {
+		int bits = 1 << (8 * range_len);
+		if (range - 1 < bits)
+			break;
+	}
+	/* number of bytes to store the value */
+	for (value_len = 1; ; value_len++) {
+		long bits = ((long)1) << (8 * value_len);
+		if (value < bits)
+			break;
+	}
+	if (aper_put_constrained_whole_number(po, 1, range_len, value_len))
+		return -1;
+	if (aper_put_align(po))
+		return -1;
+	return per_put_few_bits(po, value, value_len * 8);
 }

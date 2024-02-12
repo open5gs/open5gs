@@ -26,6 +26,7 @@ asn_TYPE_operation_t asn_OP_OCTET_STRING = {
     0,
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
     OCTET_STRING_compare,
+    OCTET_STRING_copy,
 #if !defined(ASN_DISABLE_BER_SUPPORT)
     OCTET_STRING_decode_ber,
     OCTET_STRING_encode_der,
@@ -41,8 +42,10 @@ asn_TYPE_operation_t asn_OP_OCTET_STRING = {
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+    OCTET_STRING_decode_jer_hex,
     OCTET_STRING_encode_jer,
 #else
+    0,
     0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -245,6 +248,43 @@ OCTET_STRING_compare(const asn_TYPE_descriptor_t *td, const void *aptr,
         return 1;
     }
 
+}
+
+int
+OCTET_STRING_copy(const asn_TYPE_descriptor_t *td, void **aptr,
+                     const void *bptr) {
+    const asn_OCTET_STRING_specifics_t *specs = 
+        td->specifics ? (const asn_OCTET_STRING_specifics_t *)td->specifics
+                      : &asn_SPC_OCTET_STRING_specs;
+    OCTET_STRING_t *a = *aptr;
+    const OCTET_STRING_t *b = bptr;
+
+    if(!b) {
+        if(a) {
+            FREEMEM(a->buf);
+            a->buf = 0;
+            a->size = 0;
+            FREEMEM(a);
+        }
+        *aptr = 0;
+        return 0;
+    }
+
+    if(!a) {
+        a = *aptr = (OCTET_STRING_t *)CALLOC(1, specs->struct_size);
+        if(!a) return -1;
+    }
+
+    void *buf = MALLOC(b->size + 1);
+    if(!buf) return -1;
+    memcpy(buf, b->buf, b->size);
+    ((uint8_t *)buf)[b->size] = '\0';
+
+    FREEMEM(a->buf);
+    a->buf = (uint8_t *)buf;
+    a->size = b->size;
+
+    return 0;
 }
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)

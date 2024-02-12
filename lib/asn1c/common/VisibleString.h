@@ -23,6 +23,7 @@ extern asn_TYPE_operation_t asn_OP_VisibleString;
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 #define VisibleString_compare OCTET_STRING_compare
+#define VisibleString_copy    OCTET_STRING_copy   
 
 asn_constr_check_f VisibleString_constraint;
 
@@ -37,6 +38,7 @@ asn_constr_check_f VisibleString_constraint;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+#define VisibleString_decode_jer OCTET_STRING_decode_jer_hex
 #define VisibleString_encode_jer OCTET_STRING_encode_jer
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 

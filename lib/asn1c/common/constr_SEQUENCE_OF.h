@@ -23,6 +23,7 @@ extern "C" {
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 asn_struct_compare_f SEQUENCE_OF_compare;
+#define SEQUENCE_OF_copy SET_OF_copy
 
 #define SEQUENCE_OF_constraint SET_OF_constraint
 
@@ -37,6 +38,7 @@ xer_type_encoder_f SEQUENCE_OF_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+#define SEQUENCE_OF_decode_jer SET_OF_decode_jer
 jer_type_encoder_f SEQUENCE_OF_encode_jer;
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 

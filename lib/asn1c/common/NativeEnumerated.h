@@ -13,6 +13,7 @@
 #define	_NativeEnumerated_H_
 
 #include <NativeInteger.h>
+#include <ENUMERATED.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,6 +29,7 @@ extern asn_TYPE_operation_t asn_OP_NativeEnumerated;
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 #define NativeEnumerated_compare NativeInteger_compare
+#define NativeEnumerated_copy    NativeInteger_copy
 
 #define NativeEnumerated_constraint asn_generic_no_constraint
 
@@ -42,6 +44,7 @@ xer_type_encoder_f NativeEnumerated_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+jer_type_decoder_f NativeEnumerated_decode_jer;
 jer_type_encoder_f NativeEnumerated_encode_jer;
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 

@@ -29,6 +29,7 @@ extern asn_OCTET_STRING_specifics_t asn_SPC_ANY_specs;
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 #define ANY_compare OCTET_STRING_compare
+#define ANY_copy    OCTET_STRING_copy
 
 #define ANY_constraint asn_generic_no_constraint
 
@@ -43,6 +44,7 @@ xer_type_encoder_f ANY_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+jer_type_decoder_f ANY_decode_jer;
 jer_type_encoder_f ANY_encode_jer;
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 

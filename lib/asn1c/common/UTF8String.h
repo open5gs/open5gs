@@ -23,6 +23,7 @@ asn_struct_print_f UTF8String_print;
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 #define UTF8String_compare OCTET_STRING_compare
+#define UTF8String_copy    OCTET_STRING_copy
 
 asn_constr_check_f UTF8String_constraint;
 
@@ -37,6 +38,7 @@ asn_constr_check_f UTF8String_constraint;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+#define UTF8String_decode_jer OCTET_STRING_decode_jer_utf8
 #define UTF8String_encode_jer OCTET_STRING_encode_jer_utf8
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 

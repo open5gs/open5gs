@@ -1129,7 +1129,7 @@ bool pcf_npcf_policyauthorization_handle_update(
 
     OpenAPI_list_t *SubComponentList = NULL;
     OpenAPI_map_t *SubComponentMap = NULL;
-    OpenAPI_media_sub_component_t *SubComponent = NULL;
+    OpenAPI_media_sub_component_rm_t *SubComponent = NULL;
 
     OpenAPI_list_t *fDescList = NULL;
 
