@@ -235,8 +235,7 @@ ogs_pkbuf_t *ogs_ngap_build_ng_reset_ack(
             }
 
             if (item->aMF_UE_NGAP_ID)
-                asn_INTEGER2ulong(item->aMF_UE_NGAP_ID,
-                            (unsigned long *)&amf_ue_ngap_id);
+                asn_INTEGER2uint64(item->aMF_UE_NGAP_ID, &amf_ue_ngap_id);
 
             if (item->rAN_UE_NGAP_ID)
                 ran_ue_ngap_id = *item->rAN_UE_NGAP_ID;

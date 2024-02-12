@@ -47,6 +47,7 @@ asn_struct_print_f INTEGER_print;
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 asn_struct_compare_f INTEGER_compare;
+asn_struct_copy_f INTEGER_copy;
 
 #define INTEGER_constraint asn_generic_no_constraint
 
@@ -61,6 +62,7 @@ xer_type_encoder_f INTEGER_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+jer_type_decoder_f INTEGER_decode_jer;
 jer_type_encoder_f INTEGER_encode_jer;
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 
@@ -106,6 +108,8 @@ int asn_INTEGER2long(const INTEGER_t *i, long *l);
 int asn_INTEGER2ulong(const INTEGER_t *i, unsigned long *l);
 int asn_long2INTEGER(INTEGER_t *i, long l);
 int asn_ulong2INTEGER(INTEGER_t *i, unsigned long l);
+int asn_INTEGER2int64(const INTEGER_t *i, int64_t *l);
+int asn_INTEGER2uint64(const INTEGER_t *i, uint64_t *l);
 int asn_int642INTEGER(INTEGER_t *i, int64_t l);
 int asn_uint642INTEGER(INTEGER_t *i, uint64_t l);
 

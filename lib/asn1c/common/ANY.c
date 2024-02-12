@@ -18,6 +18,7 @@ asn_TYPE_operation_t asn_OP_ANY = {
     0,
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
     OCTET_STRING_compare,
+    OCTET_STRING_copy,
 #if !defined(ASN_DISABLE_BER_SUPPORT)
     OCTET_STRING_decode_ber,
     OCTET_STRING_encode_der,
@@ -33,8 +34,10 @@ asn_TYPE_operation_t asn_OP_ANY = {
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+    OCTET_STRING_decode_jer_hex,
     ANY_encode_jer,
 #else
+    0,
     0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)

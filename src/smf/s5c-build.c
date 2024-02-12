@@ -303,7 +303,6 @@ ogs_pkbuf_t *smf_s5c_build_delete_session_response(
     gtp_message.h.type = type;
     pkbuf = ogs_gtp2_build_msg(&gtp_message);
 
-cleanup:
     if (epco_buf)
         ogs_free(epco_buf);
 

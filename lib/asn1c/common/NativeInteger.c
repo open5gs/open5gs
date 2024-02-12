@@ -27,6 +27,7 @@ asn_TYPE_operation_t asn_OP_NativeInteger = {
     0,
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
     NativeInteger_compare,
+    NativeInteger_copy,
 #if !defined(ASN_DISABLE_BER_SUPPORT)
     NativeInteger_decode_ber,
     NativeInteger_encode_der,
@@ -42,8 +43,10 @@ asn_TYPE_operation_t asn_OP_NativeInteger = {
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+    NativeInteger_decode_jer,
     NativeInteger_encode_jer,
 #else
+    0,
     0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -149,4 +152,31 @@ NativeInteger_compare(const asn_TYPE_descriptor_t *td, const void *aptr, const v
     } else {
         return 1;
     }
+}
+
+int
+NativeInteger_copy(const asn_TYPE_descriptor_t *td, void **aptr, const void *bptr) {
+    unsigned long *a = *aptr;
+    const unsigned long *b = bptr;
+
+    (void)td;
+
+    /* Check if source has data */
+    if(!b) {
+        /* Clear destination */
+        if(a) {
+            FREEMEM(a);
+            *aptr = 0;
+        }
+        return 0;
+    }
+
+    if(!a) {
+        a = *aptr = MALLOC(sizeof(*a));
+        if(!a) return -1;
+    }
+
+    *a = *b;
+
+    return 0;
 }

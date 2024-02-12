@@ -24,6 +24,7 @@ asn_TYPE_operation_t asn_OP_BIT_STRING = {
     0,
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
     BIT_STRING_compare,
+    BIT_STRING_copy,
 #if !defined(ASN_DISABLE_BER_SUPPORT)
     OCTET_STRING_decode_ber,   /* Implemented in terms of OCTET STRING */
     OCTET_STRING_encode_der,   /* Implemented in terms of OCTET STRING */
@@ -39,8 +40,10 @@ asn_TYPE_operation_t asn_OP_BIT_STRING = {
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+    OCTET_STRING_decode_jer_hex,
     BIT_STRING_encode_jer,
 #else
+    0,
     0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -210,4 +213,38 @@ BIT_STRING_compare(const asn_TYPE_descriptor_t *td, const void *aptr,
     } else {
         return 1;
     }
+}
+
+int
+BIT_STRING_copy(const asn_TYPE_descriptor_t *td, void **aptr,
+                const void *bptr) {
+    const asn_OCTET_STRING_specifics_t *specs = td->specifics;
+    BIT_STRING_t *a = (BIT_STRING_t *)*aptr;
+    const BIT_STRING_t *b = (const BIT_STRING_t *)bptr;
+
+    if(!b) {
+        if(a) {
+            FREEMEM(a->buf);
+            FREEMEM(a);
+            *aptr = 0;
+        }
+        return 0;
+    }
+
+    if(!a) {
+        a = *aptr = CALLOC(1, specs->struct_size);
+        if(!a) return -1;
+    }
+
+    uint8_t* buf = MALLOC(b->size + 1);
+    if(!buf) return -1;
+    memcpy(buf, b->buf, b->size);
+    buf[b->size] = 0;
+
+    FREEMEM(a->buf);
+    a->buf = buf;
+    a->size = b->size;
+    a->bits_unused = b->bits_unused;
+
+    return 0;
 }

@@ -106,9 +106,7 @@ void testngap_handle_downlink_nas_transport(
     }
 
     if (AMF_UE_NGAP_ID) {
-        uint64_t amf_ue_ngap_id;
-        asn_INTEGER2ulong(AMF_UE_NGAP_ID, (unsigned long *)&amf_ue_ngap_id);
-        test_ue->amf_ue_ngap_id = (uint64_t)amf_ue_ngap_id;
+        asn_INTEGER2uint64(AMF_UE_NGAP_ID, &test_ue->amf_ue_ngap_id);
     }
     if (RAN_UE_NGAP_ID) {
         test_ue->ran_ue_ngap_id = *RAN_UE_NGAP_ID;
@@ -179,9 +177,7 @@ void testngap_handle_initial_context_setup_request(
     }
 
     if (AMF_UE_NGAP_ID) {
-        uint64_t amf_ue_ngap_id;
-        asn_INTEGER2ulong(AMF_UE_NGAP_ID, (unsigned long *)&amf_ue_ngap_id);
-        test_ue->amf_ue_ngap_id = (uint64_t)amf_ue_ngap_id;
+        asn_INTEGER2uint64(AMF_UE_NGAP_ID, &test_ue->amf_ue_ngap_id);
     }
     if (RAN_UE_NGAP_ID) {
         test_ue->ran_ue_ngap_id = *RAN_UE_NGAP_ID;
@@ -299,12 +295,9 @@ void testngap_handle_ue_release_context_command(
 
     if (UE_NGAP_IDs) {
         if (UE_NGAP_IDs->present == NGAP_UE_NGAP_IDs_PR_uE_NGAP_ID_pair) {
-            uint64_t amf_ue_ngap_id;
-            uint64_t ran_ue_ngap_id;
-            asn_INTEGER2ulong(
+            asn_INTEGER2uint64(
                 &UE_NGAP_IDs->choice.uE_NGAP_ID_pair->aMF_UE_NGAP_ID,
-                (unsigned long *)&amf_ue_ngap_id);
-            test_ue->amf_ue_ngap_id = (uint64_t)amf_ue_ngap_id;
+                &test_ue->amf_ue_ngap_id);
 
             test_ue->ran_ue_ngap_id =
                 UE_NGAP_IDs->choice.uE_NGAP_ID_pair->rAN_UE_NGAP_ID;
@@ -370,9 +363,7 @@ void testngap_handle_pdu_session_resource_setup_request(
     }
 
     if (AMF_UE_NGAP_ID) {
-        uint64_t amf_ue_ngap_id;
-        asn_INTEGER2ulong(AMF_UE_NGAP_ID, (unsigned long *)&amf_ue_ngap_id);
-        test_ue->amf_ue_ngap_id = (uint64_t)amf_ue_ngap_id;
+        asn_INTEGER2uint64(AMF_UE_NGAP_ID, &test_ue->amf_ue_ngap_id);
     }
     if (RAN_UE_NGAP_ID) {
         test_ue->ran_ue_ngap_id = *RAN_UE_NGAP_ID;
@@ -645,9 +636,7 @@ void testngap_handle_handover_request(
     }
 
     if (AMF_UE_NGAP_ID) {
-        uint64_t amf_ue_ngap_id;
-        asn_INTEGER2ulong(AMF_UE_NGAP_ID, (unsigned long *)&amf_ue_ngap_id);
-        test_ue->amf_ue_ngap_id = (uint64_t)amf_ue_ngap_id;
+        asn_INTEGER2uint64(AMF_UE_NGAP_ID, &test_ue->amf_ue_ngap_id);
     }
 
     if (PDUSessionList) {
@@ -740,9 +729,7 @@ void testngap_handle_handover_command(
     }
 
     if (AMF_UE_NGAP_ID) {
-        uint64_t amf_ue_ngap_id;
-        asn_INTEGER2ulong(AMF_UE_NGAP_ID, (unsigned long *)&amf_ue_ngap_id);
-        test_ue->amf_ue_ngap_id = (uint64_t)amf_ue_ngap_id;
+        asn_INTEGER2uint64(AMF_UE_NGAP_ID, &test_ue->amf_ue_ngap_id);
     }
 
     if (RAN_UE_NGAP_ID) {
@@ -840,9 +827,7 @@ void testngap_handle_handover_preparation_failure(
     }
 
     if (AMF_UE_NGAP_ID) {
-        uint64_t amf_ue_ngap_id;
-        asn_INTEGER2ulong(AMF_UE_NGAP_ID, (unsigned long *)&amf_ue_ngap_id);
-        test_ue->amf_ue_ngap_id = (uint64_t)amf_ue_ngap_id;
+        asn_INTEGER2uint64(AMF_UE_NGAP_ID, &test_ue->amf_ue_ngap_id);
     }
 
     if (RAN_UE_NGAP_ID) {
@@ -889,9 +874,7 @@ void testngap_handle_handover_cancel_ack(
     }
 
     if (AMF_UE_NGAP_ID) {
-        uint64_t amf_ue_ngap_id;
-        asn_INTEGER2ulong(AMF_UE_NGAP_ID, (unsigned long *)&amf_ue_ngap_id);
-        test_ue->amf_ue_ngap_id = (uint64_t)amf_ue_ngap_id;
+        asn_INTEGER2uint64(AMF_UE_NGAP_ID, &test_ue->amf_ue_ngap_id);
     }
 
     if (RAN_UE_NGAP_ID) {
@@ -937,9 +920,7 @@ void testngap_handle_downlink_ran_status_transfer(
     }
 
     if (AMF_UE_NGAP_ID) {
-        uint64_t amf_ue_ngap_id;
-        asn_INTEGER2ulong(AMF_UE_NGAP_ID, (unsigned long *)&amf_ue_ngap_id);
-        test_ue->amf_ue_ngap_id = (uint64_t)amf_ue_ngap_id;
+        asn_INTEGER2uint64(AMF_UE_NGAP_ID, &test_ue->amf_ue_ngap_id);
     }
     if (RAN_UE_NGAP_ID) {
         test_ue->ran_ue_ngap_id = *RAN_UE_NGAP_ID;

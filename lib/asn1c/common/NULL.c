@@ -19,6 +19,7 @@ asn_TYPE_operation_t asn_OP_NULL = {
     0,
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
     NULL_compare,
+    NULL_copy,
 #if !defined(ASN_DISABLE_BER_SUPPORT)
     NULL_decode_ber,
     NULL_encode_der,  /* Special handling of DER encoding */
@@ -34,8 +35,10 @@ asn_TYPE_operation_t asn_OP_NULL = {
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+    NULL_decode_jer,
     NULL_encode_jer,
 #else
+    0,
     0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -109,5 +112,17 @@ NULL_compare(const asn_TYPE_descriptor_t *td, const void *a, const void *b) {
     (void)td;
     (void)a;
     (void)b;
+    return 0;
+}
+
+int
+NULL_copy(const asn_TYPE_descriptor_t *td, void **a, const void *b) {
+    (void)td;
+
+    if(b && !*a) {
+        *a = CALLOC(1, sizeof(NULL_t));
+        if (!*a) return -1;
+    }
+
     return 0;
 }

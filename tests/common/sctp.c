@@ -136,7 +136,7 @@ ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node, int type)
     size = ogs_sctp_recvdata(node->sock, recvbuf->data, OGS_MAX_SDU_LEN,
             type == 1 ? &last_addr : NULL, NULL);
     if (size <= 0) {
-        ogs_error("sgsap_recv() failed");
+        ogs_error("ogs_sctp_recvdata() failed");
         return NULL;
     }
 
