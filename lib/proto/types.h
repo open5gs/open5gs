@@ -420,6 +420,12 @@ typedef struct ogs_qos_s {
 #define OGS_QOS_INDEX_1                                       1
 #define OGS_QOS_INDEX_2                                       2
 #define OGS_QOS_INDEX_5                                       5
+#define FIVE_QI_IS_GBR(__iNDEX) \
+    (!(((__iNDEX) >= 5 && (__iNDEX) <= 9) || \
+    (__iNDEX) == 69 || \
+    (__iNDEX) == 70 || \
+    (__iNDEX) == 79 || \
+    (__iNDEX) == 80))
     uint8_t         index;
 
     struct {
@@ -460,8 +466,10 @@ int ogs_check_qos_conf(ogs_qos_t *qos);
 
 /**********************************
  * Flow  Structure               */
+#define OGS_FLOW_UNSPECIFIED      0
 #define OGS_FLOW_DOWNLINK_ONLY    1
 #define OGS_FLOW_UPLINK_ONLY      2
+#define OGS_FLOW_BIDIRECTIONAL    3
 typedef struct ogs_flow_s {
     uint8_t direction;
     char *description;

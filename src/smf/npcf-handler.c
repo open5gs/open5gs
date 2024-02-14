@@ -447,7 +447,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
     smf_bearer_remove_all(sess);
 
     /* Setup Default QoS flow */
-    qos_flow = smf_qos_flow_add(sess);
+    qos_flow = smf_qos_flow_add(sess, OGS_FLOW_UNSPECIFIED);
     ogs_assert(qos_flow);
 
     /* Setup CP/UP Data Forwarding PDR/FAR */

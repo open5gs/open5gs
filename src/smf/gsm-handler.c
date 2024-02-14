@@ -506,10 +506,10 @@ int gsm_handle_pdu_session_modification_request(
         if (pfcp_flags &
                 (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
                 OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE))
-            smf_bearer_tft_update(qos_flow);
+            smf_bearer_tft_update(qos_flow, OGS_FLOW_UNSPECIFIED);
 
         if (pfcp_flags & OGS_PFCP_MODIFY_QOS_MODIFY)
-            smf_bearer_qos_update(qos_flow);
+            smf_bearer_qos_update(qos_flow, OGS_FLOW_UNSPECIFIED);
 
     } else {
         ogs_fatal("Unknown PFCP-Flags : [0x%llx]", (long long)pfcp_flags);

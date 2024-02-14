@@ -318,7 +318,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
 {
     ogs_pkbuf_t *pkbuf = NULL;
     smf_bearer_t *qos_flow = NULL;
-    ogs_pfcp_pdr_t *dl_pdr = NULL;
+    ogs_pfcp_pdr_t *pdr = NULL;
     int num_of_param, rv, i;
 
     ogs_nas_5gs_message_t message;
@@ -359,8 +359,11 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
                 &sess->qos_flow_to_modify_list, qos_flow, to_modify_node) {
             ogs_assert(i < OGS_MAX_NUM_OF_BEARER);
 
-            dl_pdr = qos_flow->dl_pdr;
-            ogs_assert(dl_pdr);
+            if (qos_flow->dl_pdr)
+                pdr = qos_flow->dl_pdr;
+            else
+                pdr = qos_flow->ul_pdr;
+            ogs_assert(pdr);
 
             qos_rule[i].identifier = qos_flow->qfi; /* Use QFI in Open5GS */
             qos_rule[i].code = qos_rule_code;
@@ -372,9 +375,9 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
             if (qos_rule_code != OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE &&
                 qos_rule_code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS &&
                 qos_rule_code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS) {
-                ogs_assert(dl_pdr->precedence > 0 && dl_pdr->precedence < 255);
+                ogs_assert(pdr->precedence > 0 && pdr->precedence < 255);
                 /* Use PCC Rule Precedence */
-                qos_rule[i].precedence = dl_pdr->precedence;
+                qos_rule[i].precedence = pdr->precedence;
 
                 qos_rule[i].flow.segregation = 0;
                 qos_rule[i].flow.identifier = qos_flow->qfi;
