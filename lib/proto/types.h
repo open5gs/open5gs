@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -459,9 +459,40 @@ typedef struct ogs_qos_s {
 int ogs_check_qos_conf(ogs_qos_t *qos);
 
 /**********************************
- * Flow  Structure               */
+ * TS29.212
+ * Ch 5.3.65 Flow-Direction AVP
+ *
+ * The Flow-Direction AVP (AVP code 1080) is of type Enumerated.
+ * It indicates the direction/directions that a filter is applicable,
+ * downlink only, uplink only or both down- and uplink (bidirectional).
+ *
+ *  UNSPECIFIED (0)
+ *    The corresponding filter applies for traffic to the UE (downlink),
+ *    but has no specific direction declared. The service data flow detection
+ *    shall apply the filter for uplink traffic as if the filter was
+ *    bidirectional. The PCRF shall not use the value UNSPECIFIED
+ *    in filters created by the network in NW-initiated procedures.
+ *    The PCRF shall only include the value UNSPECIFIED in filters
+ *    in UE-initiated procedures if the same value is received from
+ *    in the CCR request from the PCEF.
+ *
+ *  DOWNLINK (1)
+ *    The corresponding filter applies for traffic to the UE.
+ *
+ *  UPLINK (2)
+ *    The corresponding filter applies for traffic from the UE.
+ *
+ *  BIDIRECTIONAL (3)
+ *    The corresponding filter applies for traffic both to and from the UE.
+ *
+ *  NOTE: The corresponding filter data is unidirectional. The filter
+ *        for the opposite direction has the same parameters, but having
+ *        the source and destination address/port parameters swapped.
+ */
+#define OGS_FLOW_UNSPECIFIED      0
 #define OGS_FLOW_DOWNLINK_ONLY    1
 #define OGS_FLOW_UPLINK_ONLY      2
+#define OGS_FLOW_BIDIRECTIONAL    3
 typedef struct ogs_flow_s {
     uint8_t direction;
     char *description;
@@ -477,7 +508,11 @@ typedef struct ogs_flow_s {
     } while(0)
 
 /**********************************
- * PCC Rule Structure            */
+ * TS29.212
+ * Ch 5.3.2 Charging-Rule-Install AVP
+ *
+ * PCC Rule Structure
+ */
 typedef struct ogs_pcc_rule_s {
 #define OGS_PCC_RULE_TYPE_INSTALL               1
 #define OGS_PCC_RULE_TYPE_REMOVE                2
@@ -491,6 +526,7 @@ typedef struct ogs_pcc_rule_s {
 
     int flow_status;
     uint32_t precedence;
+    uint32_t rating_group;
 
     ogs_qos_t  qos;
 } ogs_pcc_rule_t;

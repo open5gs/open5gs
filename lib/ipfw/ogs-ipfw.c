@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -395,117 +395,167 @@ void ogs_pf_content_from_ipfw_rule(
      * Network support Local Address in TFTs.
      */
 
-    if (rule->ipv4_src && (direction == OGS_FLOW_DOWNLINK_ONLY)) {
-        content->component[j].type = OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
-        content->component[j].ipv4.addr = rule->ip.src.addr[0];
-        content->component[j].ipv4.mask = rule->ip.src.mask[0];
-        j++; len += 9;
-    }
-
-    if (rule->ipv4_src && (direction == OGS_FLOW_UPLINK_ONLY) &&
-        !no_ipv4v6_local_addr_in_packet_filter) {
-        content->component[j].type = OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
-        content->component[j].ipv4.addr = rule->ip.src.addr[0];
-        content->component[j].ipv4.mask = rule->ip.src.mask[0];
-        j++; len += 9;
-    }
-
-    if (rule->ipv4_dst && (direction == OGS_FLOW_DOWNLINK_ONLY) &&
-        !no_ipv4v6_local_addr_in_packet_filter) {
-        content->component[j].type = OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
-        content->component[j].ipv4.addr = rule->ip.dst.addr[0];
-        content->component[j].ipv4.mask = rule->ip.dst.mask[0];
-        j++; len += 9;
-    }
-
-    if (rule->ipv4_dst && (direction == OGS_FLOW_UPLINK_ONLY)) {
-        content->component[j].type = OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
-        content->component[j].ipv4.addr = rule->ip.dst.addr[0];
-        content->component[j].ipv4.mask = rule->ip.dst.mask[0];
-        j++; len += 9;
-    }
-
-    if (rule->ipv6_src && (direction == OGS_FLOW_DOWNLINK_ONLY)) {
-        if (no_ipv4v6_local_addr_in_packet_filter) {
+    if (rule->ipv4_src) {
+        switch (direction) {
+        case OGS_FLOW_DOWNLINK_ONLY:
+        case OGS_FLOW_BIDIRECTIONAL:
             content->component[j].type =
-                OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE;
-            memcpy(content->component[j].ipv6_mask.addr,
-                rule->ip.src.addr, sizeof rule->ip.src.addr);
-            memcpy(content->component[j].ipv6_mask.mask,
-                    rule->ip.src.mask, sizeof rule->ip.src.mask);
-            j++; len += 33;
-        } else {
-            content->component[j].type =
-                OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE;
-            memcpy(content->component[j].ipv6.addr,
-                rule->ip.src.addr, sizeof rule->ip.src.addr);
-            content->component[j].ipv6.prefixlen =
-                contigmask((uint8_t *)rule->ip.src.mask, 128);
-            j++; len += 18;
+                OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+            content->component[j].ipv4.addr = rule->ip.src.addr[0];
+            content->component[j].ipv4.mask = rule->ip.src.mask[0];
+            j++; len += 9;
+            break;
+        case OGS_FLOW_UPLINK_ONLY:
+            if (!no_ipv4v6_local_addr_in_packet_filter) {
+                content->component[j].type =
+                    OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
+                content->component[j].ipv4.addr = rule->ip.src.addr[0];
+                content->component[j].ipv4.mask = rule->ip.src.mask[0];
+                j++; len += 9;
+            }
+            break;
+        default:
+            ogs_fatal("Unsupported direction [%d]", direction);
+            ogs_assert_if_reached();
         }
     }
 
-    if (rule->ipv6_src && (direction == OGS_FLOW_UPLINK_ONLY)) {
-        if (!no_ipv4v6_local_addr_in_packet_filter) {
+    if (rule->ipv4_dst) {
+        switch (direction) {
+        case OGS_FLOW_DOWNLINK_ONLY:
+        case OGS_FLOW_BIDIRECTIONAL:
+            if (!no_ipv4v6_local_addr_in_packet_filter) {
+                content->component[j].type =
+                    OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
+                content->component[j].ipv4.addr = rule->ip.dst.addr[0];
+                content->component[j].ipv4.mask = rule->ip.dst.mask[0];
+                j++; len += 9;
+            }
+            break;
+        case OGS_FLOW_UPLINK_ONLY:
             content->component[j].type =
-                OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
-            memcpy(content->component[j].ipv6.addr,
-                    rule->ip.src.addr, sizeof rule->ip.src.addr);
-            content->component[j].ipv6.prefixlen =
-                contigmask((uint8_t *)rule->ip.src.mask, 128);
-            j++; len += 18;
+                OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+            content->component[j].ipv4.addr = rule->ip.dst.addr[0];
+            content->component[j].ipv4.mask = rule->ip.dst.mask[0];
+            j++; len += 9;
+            break;
+        default:
+            ogs_fatal("Unsupported direction [%d]", direction);
+            ogs_assert_if_reached();
         }
     }
 
-    if (rule->ipv6_dst && (direction == OGS_FLOW_DOWNLINK_ONLY)) {
-        if (!no_ipv4v6_local_addr_in_packet_filter) {
-            content->component[j].type =
-                OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
-            memcpy(content->component[j].ipv6.addr,
-                rule->ip.dst.addr, sizeof rule->ip.dst.addr);
-            content->component[j].ipv6.prefixlen =
-                contigmask((uint8_t *)rule->ip.dst.mask, 128);
-            j++; len += 18;
-        }
-    }
-
-    if (rule->ipv6_dst && (direction == OGS_FLOW_UPLINK_ONLY)) {
-        if (no_ipv4v6_local_addr_in_packet_filter) {
-            content->component[j].type =
+    if (rule->ipv6_src) {
+        switch (direction) {
+        case OGS_FLOW_DOWNLINK_ONLY:
+        case OGS_FLOW_BIDIRECTIONAL:
+            if (no_ipv4v6_local_addr_in_packet_filter) {
+                content->component[j].type =
                     OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE;
-            memcpy(content->component[j].ipv6_mask.addr,
+                memcpy(content->component[j].ipv6_mask.addr,
+                    rule->ip.src.addr, sizeof rule->ip.src.addr);
+                memcpy(content->component[j].ipv6_mask.mask,
+                        rule->ip.src.mask, sizeof rule->ip.src.mask);
+                j++; len += 33;
+            } else {
+                content->component[j].type =
+                    OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE;
+                memcpy(content->component[j].ipv6.addr,
+                    rule->ip.src.addr, sizeof rule->ip.src.addr);
+                content->component[j].ipv6.prefixlen =
+                    contigmask((uint8_t *)rule->ip.src.mask, 128);
+                j++; len += 18;
+            }
+            break;
+        case OGS_FLOW_UPLINK_ONLY:
+            if (!no_ipv4v6_local_addr_in_packet_filter) {
+                content->component[j].type =
+                    OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
+                memcpy(content->component[j].ipv6.addr,
+                        rule->ip.src.addr, sizeof rule->ip.src.addr);
+                content->component[j].ipv6.prefixlen =
+                    contigmask((uint8_t *)rule->ip.src.mask, 128);
+                j++; len += 18;
+            }
+            break;
+        default:
+            ogs_fatal("Unsupported direction [%d]", direction);
+            ogs_assert_if_reached();
+        }
+    }
+
+    if (rule->ipv6_dst) {
+        switch (direction) {
+        case OGS_FLOW_DOWNLINK_ONLY:
+        case OGS_FLOW_BIDIRECTIONAL:
+            if (!no_ipv4v6_local_addr_in_packet_filter) {
+                content->component[j].type =
+                    OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
+                memcpy(content->component[j].ipv6.addr,
                     rule->ip.dst.addr, sizeof rule->ip.dst.addr);
-            memcpy(content->component[j].ipv6_mask.mask,
-                    rule->ip.dst.mask, sizeof rule->ip.dst.mask);
-            j++; len += 33;
-        } else {
-            content->component[j].type =
-                OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE;
-            memcpy(content->component[j].ipv6.addr,
-                    rule->ip.dst.addr, sizeof rule->ip.dst.addr);
-            content->component[j].ipv6.prefixlen =
-                contigmask((uint8_t *)rule->ip.dst.mask, 128);
-            j++; len += 18;
+                content->component[j].ipv6.prefixlen =
+                    contigmask((uint8_t *)rule->ip.dst.mask, 128);
+                j++; len += 18;
+            }
+            break;
+        case OGS_FLOW_UPLINK_ONLY:
+            if (no_ipv4v6_local_addr_in_packet_filter) {
+                content->component[j].type =
+                        OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE;
+                memcpy(content->component[j].ipv6_mask.addr,
+                        rule->ip.dst.addr, sizeof rule->ip.dst.addr);
+                memcpy(content->component[j].ipv6_mask.mask,
+                        rule->ip.dst.mask, sizeof rule->ip.dst.mask);
+                j++; len += 33;
+            } else {
+                content->component[j].type =
+                    OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE;
+                memcpy(content->component[j].ipv6.addr,
+                        rule->ip.dst.addr, sizeof rule->ip.dst.addr);
+                content->component[j].ipv6.prefixlen =
+                    contigmask((uint8_t *)rule->ip.dst.mask, 128);
+                j++; len += 18;
+            }
+            break;
+        default:
+            ogs_fatal("Unsupported direction [%d]", direction);
+            ogs_assert_if_reached();
         }
     }
 
     if (rule->port.src.low) {
         if (rule->port.src.low == rule->port.src.high) {
-            if (direction == OGS_FLOW_DOWNLINK_ONLY)
+            switch (direction) {
+            case OGS_FLOW_DOWNLINK_ONLY:
+            case OGS_FLOW_BIDIRECTIONAL:
                 content->component[j].type =
                     OGS_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE;
-            else
+                break;
+            case OGS_FLOW_UPLINK_ONLY:
                 content->component[j].type =
                     OGS_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE;
+                break;
+            default:
+                ogs_fatal("Unsupported direction [%d]", direction);
+                ogs_assert_if_reached();
+            }
             content->component[j].port.low = rule->port.src.low;
             j++; len += 3;
         } else {
-            if (direction == OGS_FLOW_DOWNLINK_ONLY)
+            switch (direction) {
+            case OGS_FLOW_DOWNLINK_ONLY:
+            case OGS_FLOW_BIDIRECTIONAL:
                 content->component[j].type =
                     OGS_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE;
-            else
+                break;
+            case OGS_FLOW_UPLINK_ONLY:
                 content->component[j].type =
                     OGS_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE;
+                break;
+            default:
+                ogs_fatal("Unsupported direction [%d]", direction);
+                ogs_assert_if_reached();
+            }
             content->component[j].port.low = rule->port.src.low;
             content->component[j].port.high = rule->port.src.high;
             j++; len += 5;
@@ -514,21 +564,37 @@ void ogs_pf_content_from_ipfw_rule(
 
     if (rule->port.dst.low) {
         if (rule->port.dst.low == rule->port.dst.high) {
-            if (direction == OGS_FLOW_DOWNLINK_ONLY)
+            switch (direction) {
+            case OGS_FLOW_DOWNLINK_ONLY:
+            case OGS_FLOW_BIDIRECTIONAL:
                 content->component[j].type =
                     OGS_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE;
-            else
+                break;
+            case OGS_FLOW_UPLINK_ONLY:
                 content->component[j].type =
                     OGS_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE;
+                break;
+            default:
+                ogs_fatal("Unsupported direction [%d]", direction);
+                ogs_assert_if_reached();
+            }
             content->component[j].port.low = rule->port.dst.low;
             j++; len += 3;
         } else {
-            if (direction == OGS_FLOW_DOWNLINK_ONLY)
+            switch (direction) {
+            case OGS_FLOW_DOWNLINK_ONLY:
+            case OGS_FLOW_BIDIRECTIONAL:
                 content->component[j].type =
                     OGS_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE;
-            else
+                break;
+            case OGS_FLOW_UPLINK_ONLY:
                 content->component[j].type =
                     OGS_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE;
+                break;
+            default:
+                ogs_fatal("Unsupported direction [%d]", direction);
+                ogs_assert_if_reached();
+            }
             content->component[j].port.low = rule->port.dst.low;
             content->component[j].port.high = rule->port.dst.high;
             j++; len += 5;
@@ -538,4 +604,3 @@ void ogs_pf_content_from_ipfw_rule(
     content->num_of_component = j;
     content->length = len;
 }
-

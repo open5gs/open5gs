@@ -1,5 +1,5 @@
 /* Gx Interface, 3GPP TS 29.212 section 4
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * This file is part of Open5GS.
@@ -162,8 +162,11 @@ uint32_t smf_gx_handle_cca_initial_request(
             &ul_pdr->ue_ip_addr, &ul_pdr->ue_ip_addr_len));
 
     /* Set UE-to-CP Flow-Description and Outer-Header-Creation */
-    up2cp_pdr->flow_description[up2cp_pdr->num_of_flow++] =
+    up2cp_pdr->flow[up2cp_pdr->num_of_flow].fd = 1;
+    up2cp_pdr->flow[up2cp_pdr->num_of_flow].description =
         (char *)"permit out 58 from ff02::2/128 to assigned";
+    up2cp_pdr->num_of_flow++;
+
     ogs_assert(OGS_OK ==
         ogs_pfcp_ip_to_outer_header_creation(
             &ogs_gtp_self()->gtpu_ip,

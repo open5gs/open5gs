@@ -1,5 +1,5 @@
 /* Gx Interface, 3GPP TS 29.212 section 4
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -1569,6 +1569,9 @@ static int decode_pcc_rule_definition(
             break;
         case OGS_DIAM_GX_AVP_CODE_PRECEDENCE:
             pcc_rule->precedence = hdr->avp_value->i32;
+            break;
+        case OGS_DIAM_GX_AVP_CODE_RATING_GROUP:
+            pcc_rule->rating_group = hdr->avp_value->i32;
             break;
         default:
             ogs_error("Not implemented(%d)", hdr->avp_code);

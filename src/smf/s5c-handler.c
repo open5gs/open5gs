@@ -1242,7 +1242,7 @@ void smf_s5c_handle_bearer_resource_command(
  * Refer to lib/ipfw/ogs-ipfw.h
  * Issue #338
  *
- * <DOWNLINK>
+ * <DOWNLINK/BI-DIRECTIONAL>
  * TFT : Local <UE_IP> <UE_PORT> REMOTE <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
  * -->
  * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
@@ -1260,7 +1260,7 @@ void smf_s5c_handle_bearer_resource_command(
 /*
  * Issue #338
  *
- * <DOWNLINK>
+ * <DOWNLINK/BI-DIRECTIONAL>
  * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
  * -->
  * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
@@ -1311,7 +1311,7 @@ void smf_s5c_handle_bearer_resource_command(
  * Refer to lib/ipfw/ogs-ipfw.h
  * Issue #338
  *
- * <DOWNLINK>
+ * <DOWNLINK/BI-DIRECTIONAL>
  * TFT : Local <UE_IP> <UE_PORT> REMOTE <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
  * -->
  * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
@@ -1330,7 +1330,7 @@ void smf_s5c_handle_bearer_resource_command(
 /*
  * Issue #338
  *
- * <DOWNLINK>
+ * <DOWNLINK/BI-DIRECTIONAL>
  * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
  * -->
  * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
