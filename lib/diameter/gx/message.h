@@ -1,5 +1,5 @@
 /* Gx Interface, 3GPP TS 29.212 section 4
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -43,6 +43,7 @@ extern "C" {
 #define OGS_DIAM_GX_AVP_CODE_FLOW_STATUS                    (511)
 #define OGS_DIAM_GX_AVP_CODE_QOS_INFORMATION                (1016)
 #define OGS_DIAM_GX_AVP_CODE_PRECEDENCE                     (1010)
+#define OGS_DIAM_GX_AVP_CODE_RATING_GROUP                   (432)
 
 extern struct dict_object *ogs_diam_gx_application;
 

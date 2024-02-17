@@ -1466,6 +1466,9 @@ OpenAPI_pcc_rule_t *ogs_sbi_build_pcc_rule(
             else if (flow->direction == OGS_FLOW_DOWNLINK_ONLY)
                 FlowInformation->flow_direction =
                     OpenAPI_flow_direction_DOWNLINK;
+            else if (flow->direction == OGS_FLOW_BIDIRECTIONAL)
+                FlowInformation->flow_direction =
+                    OpenAPI_flow_direction_BIDIRECTIONAL;
             else {
                 ogs_fatal("Unsupported direction [%d]", flow->direction);
                 ogs_assert_if_reached();

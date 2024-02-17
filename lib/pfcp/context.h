@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -186,7 +186,21 @@ typedef struct ogs_pfcp_pdr_s {
     ogs_pfcp_qer_t          *qer;
 
     int                     num_of_flow;
-    char                    *flow_description[OGS_MAX_NUM_OF_FLOW_IN_PDR];
+    struct {
+        union {
+            struct {
+    ED6(uint8_t     spare1:3;,
+        uint8_t     bid:1;,
+        uint8_t     fl:1;,
+        uint8_t     spi:1;,
+        uint8_t     ttc:1;,
+        uint8_t     fd:1;)
+            };
+            uint8_t flags;
+        };
+        char *description;
+        uint32_t sdf_filter_id;
+    } flow[OGS_MAX_NUM_OF_FLOW_IN_PDR];;
 
     ogs_list_t              rule_list;      /* Rule List */
 

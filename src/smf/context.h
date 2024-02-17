@@ -161,6 +161,8 @@ ED3(uint8_t spare:2;,
 
     uint8_t precedence;             /* Only used in EPC */
 
+    uint32_t sdf_filter_id;         /* SDF Filter ID */
+
     uint8_t *identifier_node;       /* Pool-Node for Identifier */
     uint8_t *precedence_node;       /* Pool-Node for Precedence */
 
