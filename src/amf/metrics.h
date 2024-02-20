@@ -30,9 +30,6 @@ typedef enum amf_metric_type_global_s {
 } amf_metric_type_global_t;
 extern ogs_metrics_inst_t *amf_metrics_inst_global[_AMF_METR_GLOB_MAX];
 
-int amf_metrics_init_inst_global(void);
-int amf_metrics_free_inst_global(void);
-
 static inline void amf_metrics_inst_global_set(amf_metric_type_global_t t, int val)
 { ogs_metrics_inst_set(amf_metrics_inst_global[t], val); }
 static inline void amf_metrics_inst_global_add(amf_metric_type_global_t t, int val)

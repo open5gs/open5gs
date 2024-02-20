@@ -537,9 +537,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     NULL, NULL);
                             break;
                         }
-
-                        smf_metrics_inst_by_slice_add(NULL, NULL,
-                                SMF_METR_CTR_SM_PDUSESSIONCREATIONREQ, 1);
                     END
                     break;
 

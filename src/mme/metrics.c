@@ -22,16 +22,6 @@ static int mme_metrics_init_inst(ogs_metrics_inst_t **inst, ogs_metrics_spec_t *
     return OGS_OK;
 }
 
-static int mme_metrics_free_inst(ogs_metrics_inst_t **inst,
-        unsigned int len)
-{
-    unsigned int i;
-    for (i = 0; i < len; i++)
-        ogs_metrics_inst_free(inst[i]);
-    memset(inst, 0, sizeof(inst[0]) * len);
-    return OGS_OK;
-}
-
 static int mme_metrics_init_spec(ogs_metrics_context_t *ctx,
         ogs_metrics_spec_t **dst, mme_metrics_spec_def_t *src, unsigned int len)
 {
@@ -46,9 +36,9 @@ static int mme_metrics_init_spec(ogs_metrics_context_t *ctx,
 }
 
 /* GLOBAL */
-ogs_metrics_spec_t *mme_metrics_spec_global[_MME_METR_GLOB_MAX];
+static ogs_metrics_spec_t *mme_metrics_spec_global[_MME_METR_GLOB_MAX];
 ogs_metrics_inst_t *mme_metrics_inst_global[_MME_METR_GLOB_MAX];
-mme_metrics_spec_def_t mme_metrics_spec_def_global[_MME_METR_GLOB_MAX] = {
+static mme_metrics_spec_def_t mme_metrics_spec_def_global[_MME_METR_GLOB_MAX] = {
 /* Global Gauges: */
 [MME_METR_GLOB_GAUGE_ENB_UE] = {
     .type = OGS_METRICS_METRIC_TYPE_GAUGE,
@@ -70,10 +60,6 @@ int mme_metrics_init_inst_global(void)
 {
     return mme_metrics_init_inst(mme_metrics_inst_global, mme_metrics_spec_global,
                 _MME_METR_GLOB_MAX, 0, NULL);
-}
-int mme_metrics_free_inst_global(void)
-{
-    return mme_metrics_free_inst(mme_metrics_inst_global, _MME_METR_GLOB_MAX);
 }
 
 void mme_metrics_init(void)

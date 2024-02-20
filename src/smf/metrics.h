@@ -27,8 +27,6 @@ typedef enum smf_metric_type_global_s {
     _SMF_METR_GLOB_MAX,
 } smf_metric_type_global_t;
 extern ogs_metrics_inst_t *smf_metrics_inst_global[_SMF_METR_GLOB_MAX];
-int smf_metrics_init_inst_global(void);
-int smf_metrics_free_inst_global(void);
 
 static inline void smf_metrics_inst_global_set(smf_metric_type_global_t t, int val)
 { ogs_metrics_inst_set(smf_metrics_inst_global[t], val); }

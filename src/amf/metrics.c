@@ -23,16 +23,6 @@ static int amf_metrics_init_inst(ogs_metrics_inst_t **inst, ogs_metrics_spec_t *
     return OGS_OK;
 }
 
-static int amf_metrics_free_inst(ogs_metrics_inst_t **inst,
-        unsigned int len)
-{
-    unsigned int i;
-    for (i = 0; i < len; i++)
-        ogs_metrics_inst_free(inst[i]);
-    memset(inst, 0, sizeof(inst[0]) * len);
-    return OGS_OK;
-}
-
 static int amf_metrics_init_spec(ogs_metrics_context_t *ctx,
         ogs_metrics_spec_t **dst, amf_metrics_spec_def_t *src, unsigned int len)
 {
@@ -48,9 +38,9 @@ static int amf_metrics_init_spec(ogs_metrics_context_t *ctx,
 }
 
 /* GLOBAL */
-ogs_metrics_spec_t *amf_metrics_spec_global[_AMF_METR_GLOB_MAX];
+static ogs_metrics_spec_t *amf_metrics_spec_global[_AMF_METR_GLOB_MAX];
 ogs_metrics_inst_t *amf_metrics_inst_global[_AMF_METR_GLOB_MAX];
-amf_metrics_spec_def_t amf_metrics_spec_def_global[_AMF_METR_GLOB_MAX] = {
+static amf_metrics_spec_def_t amf_metrics_spec_def_global[_AMF_METR_GLOB_MAX] = {
 /* Global Gauges: */
 [AMF_METR_GLOB_GAUGE_RAN_UE] = {
     .type = OGS_METRICS_METRIC_TYPE_GAUGE,
@@ -151,18 +141,14 @@ amf_metrics_spec_def_t amf_metrics_spec_def_global[_AMF_METR_GLOB_MAX] = {
     },
 },
 };
-int amf_metrics_init_inst_global(void)
+static int amf_metrics_init_inst_global(void)
 {
     return amf_metrics_init_inst(amf_metrics_inst_global, amf_metrics_spec_global,
                 _AMF_METR_GLOB_MAX, 0, NULL);
 }
-int amf_metrics_free_inst_global(void)
-{
-    return amf_metrics_free_inst(amf_metrics_inst_global, _AMF_METR_GLOB_MAX);
-}
 
 /* BY SLICE */
-const char *labels_slice[] = {
+static const char *labels_slice[] = {
     "plmnid",
     "snssai"
 };
@@ -175,24 +161,22 @@ const char *labels_slice[] = {
         .num_labels = OGS_ARRAY_SIZE(labels_slice), \
         .labels = labels_slice, \
     },
-ogs_metrics_spec_t *amf_metrics_spec_by_slice[_AMF_METR_BY_SLICE_MAX];
-ogs_hash_t *metrics_hash_by_slice = NULL;   /* hash table for SLICE labels */
-amf_metrics_spec_def_t amf_metrics_spec_def_by_slice[_AMF_METR_BY_SLICE_MAX] = {
+static ogs_metrics_spec_t *amf_metrics_spec_by_slice[_AMF_METR_BY_SLICE_MAX];
+static ogs_hash_t *metrics_hash_by_slice = NULL;
+static amf_metrics_spec_def_t amf_metrics_spec_def_by_slice[_AMF_METR_BY_SLICE_MAX] = {
 /* Gauges: */
 AMF_METR_BY_SLICE_GAUGE_ENTRY(
     AMF_METR_GAUGE_RM_REGISTERED_SUB_NBR,
     "fivegs_amffunction_rm_registeredsubnbr",
     "Number of registered state subscribers per AMF")
 };
-void amf_metrics_init_by_slice(void);
-int amf_metrics_free_inst_by_slice(ogs_metrics_inst_t **inst);
 typedef struct amf_metric_key_by_slice_s {
     ogs_plmn_id_t               plmn_id;
     ogs_s_nssai_t               snssai;
     amf_metric_type_by_slice_t  t;
 } amf_metric_key_by_slice_t;
 
-void amf_metrics_init_by_slice(void)
+static void amf_metrics_init_by_slice(void)
 {
     metrics_hash_by_slice = ogs_hash_make();
     ogs_assert(metrics_hash_by_slice);
@@ -204,44 +188,31 @@ void amf_metrics_inst_by_slice_add(ogs_plmn_id_t *plmn,
     ogs_metrics_inst_t *metrics = NULL;
     amf_metric_key_by_slice_t *slice_key;
 
+    ogs_assert(plmn);
+    ogs_assert(snssai);
+
     slice_key = ogs_calloc(1, sizeof(*slice_key));
     ogs_assert(slice_key);
 
-    if (plmn) {
-        slice_key->plmn_id = *plmn;
-    }
-
-    if (snssai) {
-        slice_key->snssai = *snssai;
-    } else {
-        slice_key->snssai.sst = 0;
-        slice_key->snssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
-    }
-
+    slice_key->plmn_id = *plmn;
+    slice_key->snssai = *snssai;
     slice_key->t = t;
 
     metrics = ogs_hash_get(metrics_hash_by_slice,
             slice_key, sizeof(*slice_key));
 
     if (!metrics) {
-        char plmn_id[OGS_PLMNIDSTRLEN] = "";
-        char *s_nssai = NULL;
+        char plmn_id[OGS_PLMNIDSTRLEN];
+        char *s_nssai;
 
-        if (plmn) {
-            ogs_plmn_id_to_string(plmn, plmn_id);
-        }
-
-        if (snssai) {
-            s_nssai = ogs_sbi_s_nssai_to_string(snssai);
-        } else {
-            s_nssai = ogs_strdup("");
-        }
+        ogs_plmn_id_to_string(plmn, plmn_id);
+        s_nssai = ogs_sbi_s_nssai_to_string(snssai);
 
         metrics = ogs_metrics_inst_new(amf_metrics_spec_by_slice[t],
                 amf_metrics_spec_def_by_slice->num_labels,
                 (const char *[]){ plmn_id, s_nssai });
-
         ogs_assert(metrics);
+
         ogs_hash_set(metrics_hash_by_slice,
                 slice_key, sizeof(*slice_key), metrics);
 
@@ -254,13 +225,8 @@ void amf_metrics_inst_by_slice_add(ogs_plmn_id_t *plmn,
     ogs_metrics_inst_add(metrics, val);
 }
 
-int amf_metrics_free_inst_by_slice(ogs_metrics_inst_t **inst)
-{
-    return amf_metrics_free_inst(inst, _AMF_METR_BY_SLICE_MAX);
-}
-
 /* BY CAUSE */
-const char *labels_cause[] = {
+static const char *labels_cause[] = {
     "cause"
 };
 
@@ -272,9 +238,9 @@ const char *labels_cause[] = {
         .num_labels = OGS_ARRAY_SIZE(labels_cause), \
         .labels = labels_cause, \
     },
-ogs_metrics_spec_t *amf_metrics_spec_by_cause[_AMF_METR_BY_CAUSE_MAX];
-ogs_hash_t *metrics_hash_by_cause = NULL;   /* hash table for CAUSE labels */
-amf_metrics_spec_def_t amf_metrics_spec_def_by_cause[_AMF_METR_BY_CAUSE_MAX] = {
+static ogs_metrics_spec_t *amf_metrics_spec_by_cause[_AMF_METR_BY_CAUSE_MAX];
+static ogs_hash_t *metrics_hash_by_cause = NULL;
+static amf_metrics_spec_def_t amf_metrics_spec_def_by_cause[_AMF_METR_BY_CAUSE_MAX] = {
 /* Counters: */
 AMF_METR_BY_CAUSE_CTR_ENTRY(
     AMF_METR_CTR_RM_REG_INIT_FAIL,
@@ -297,14 +263,12 @@ AMF_METR_BY_CAUSE_CTR_ENTRY(
     "fivegs_amffunction_amf_authfail",
     "Number of authentication failure messages received by the AMF")
 };
-void amf_metrics_init_by_cause(void);
-int amf_metrics_free_inst_by_cause(ogs_metrics_inst_t **inst);
 typedef struct amf_metric_key_by_cause_s {
     uint8_t                     cause;
     amf_metric_type_by_cause_t  t;
 } amf_metric_key_by_cause_t;
 
-void amf_metrics_init_by_cause(void)
+static void amf_metrics_init_by_cause(void)
 {
     metrics_hash_by_cause = ogs_hash_make();
     ogs_assert(metrics_hash_by_cause);
@@ -341,11 +305,6 @@ void amf_metrics_inst_by_cause_add(uint8_t cause,
     }
 
     ogs_metrics_inst_add(metrics, val);
-}
-
-int amf_metrics_free_inst_by_cause(ogs_metrics_inst_t **inst)
-{
-    return amf_metrics_free_inst(inst, _AMF_METR_BY_CAUSE_MAX);
 }
 
 void amf_metrics_init(void)

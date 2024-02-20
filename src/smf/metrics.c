@@ -46,9 +46,9 @@ static int smf_metrics_init_spec(ogs_metrics_context_t *ctx,
 }
 
 /* GLOBAL */
-ogs_metrics_spec_t *smf_metrics_spec_global[_SMF_METR_GLOB_MAX];
+static ogs_metrics_spec_t *smf_metrics_spec_global[_SMF_METR_GLOB_MAX];
 ogs_metrics_inst_t *smf_metrics_inst_global[_SMF_METR_GLOB_MAX];
-smf_metrics_spec_def_t smf_metrics_spec_def_global[_SMF_METR_GLOB_MAX] = {
+static smf_metrics_spec_def_t smf_metrics_spec_def_global[_SMF_METR_GLOB_MAX] = {
 /* Global Counters: */
 [SMF_METR_GLOB_CTR_GTP_NEW_NODE_FAILED] = {
     .type = OGS_METRICS_METRIC_TYPE_COUNTER,
@@ -127,18 +127,16 @@ smf_metrics_spec_def_t smf_metrics_spec_def_global[_SMF_METR_GLOB_MAX] = {
     .description = "Active GTP peers",
 },
 };
-int smf_metrics_init_inst_global(void)
+
+static int smf_metrics_init_inst_global(void)
 {
     return smf_metrics_init_inst(smf_metrics_inst_global, smf_metrics_spec_global,
-                _SMF_METR_GLOB_MAX, 0, NULL);
-}
-int smf_metrics_free_inst_global(void)
-{
-    return smf_metrics_free_inst(smf_metrics_inst_global, _SMF_METR_GLOB_MAX);
+            _SMF_METR_GLOB_MAX, 0, NULL);
 }
 
+
 /* GTP NODE: */
-const char *labels_gtp_node[] = {
+static const char *labels_gtp_node[] = {
     "addr"
 };
 #define SMF_METR_GTP_NODE_CTR_ENTRY(_id, _name, _desc) \
@@ -149,8 +147,8 @@ const char *labels_gtp_node[] = {
         .num_labels = OGS_ARRAY_SIZE(labels_gtp_node), \
         .labels = labels_gtp_node, \
     },
-ogs_metrics_spec_t *smf_metrics_spec_gtp_node[_SMF_METR_GTP_NODE_MAX];
-smf_metrics_spec_def_t smf_metrics_spec_def_gtp_node[_SMF_METR_GTP_NODE_MAX] = {
+static ogs_metrics_spec_t *smf_metrics_spec_gtp_node[_SMF_METR_GTP_NODE_MAX];
+static smf_metrics_spec_def_t smf_metrics_spec_def_gtp_node[_SMF_METR_GTP_NODE_MAX] = {
 /* Global Counters: */
 SMF_METR_GTP_NODE_CTR_ENTRY(
     SMF_METR_GTP_NODE_CTR_GN_RX_PARSE_FAILED,
@@ -189,7 +187,7 @@ int smf_metrics_free_inst_gtp_node(ogs_metrics_inst_t **inst)
 }
 
 /* BY SLICE */
-const char *labels_slice[] = {
+static const char *labels_slice[] = {
     "plmnid",
     "snssai"
 };
@@ -210,9 +208,9 @@ const char *labels_slice[] = {
         .num_labels = OGS_ARRAY_SIZE(labels_slice), \
         .labels = labels_slice, \
     },
-ogs_metrics_spec_t *smf_metrics_spec_by_slice[_SMF_METR_BY_SLICE_MAX];
-ogs_hash_t *metrics_hash_by_slice = NULL;   /* hash table for SLICE labels */
-smf_metrics_spec_def_t smf_metrics_spec_def_by_slice[_SMF_METR_BY_SLICE_MAX] = {
+static ogs_metrics_spec_t *smf_metrics_spec_by_slice[_SMF_METR_BY_SLICE_MAX];
+static ogs_hash_t *metrics_hash_by_slice = NULL;
+static smf_metrics_spec_def_t smf_metrics_spec_def_by_slice[_SMF_METR_BY_SLICE_MAX] = {
 /* Gauges: */
 SMF_METR_BY_SLICE_GAUGE_ENTRY(
     SMF_METR_GAUGE_SM_SESSIONNBR,
@@ -227,15 +225,13 @@ SMF_METR_BY_SLICE_CTR_ENTRY(
     "fivegs_smffunction_sm_pdusessioncreationsucc",
     "Number of PDU sessions successfully created by the SMF")
 };
-void smf_metrics_init_by_slice(void);
-int smf_metrics_free_inst_by_slice(ogs_metrics_inst_t **inst);
 typedef struct smf_metric_key_by_slice_s {
     ogs_plmn_id_t               plmn_id;
     ogs_s_nssai_t               snssai;
     smf_metric_type_by_slice_t  t;
 } smf_metric_key_by_slice_t;
 
-void smf_metrics_init_by_slice(void)
+static void smf_metrics_init_by_slice(void)
 {
     metrics_hash_by_slice = ogs_hash_make();
     ogs_assert(metrics_hash_by_slice);
@@ -247,44 +243,31 @@ void smf_metrics_inst_by_slice_add(ogs_plmn_id_t *plmn,
     ogs_metrics_inst_t *metrics = NULL;
     smf_metric_key_by_slice_t *slice_key;
 
+    ogs_assert(plmn);
+    ogs_assert(snssai);
+
     slice_key = ogs_calloc(1, sizeof(*slice_key));
     ogs_assert(slice_key);
 
-    if (plmn) {
-        slice_key->plmn_id = *plmn;
-    }
-
-    if (snssai) {
-        slice_key->snssai = *snssai;
-    } else {
-        slice_key->snssai.sst = 0;
-        slice_key->snssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
-    }
-
+    slice_key->plmn_id = *plmn;
+    slice_key->snssai = *snssai;
     slice_key->t = t;
 
     metrics = ogs_hash_get(metrics_hash_by_slice,
             slice_key, sizeof(*slice_key));
 
     if (!metrics) {
-        char plmn_id[OGS_PLMNIDSTRLEN] = "";
-        char *s_nssai = NULL;
+        char plmn_id[OGS_PLMNIDSTRLEN];
+        char *s_nssai;
 
-        if (plmn) {
-            ogs_plmn_id_to_string(plmn, plmn_id);
-        }
-
-        if (snssai) {
-            s_nssai = ogs_sbi_s_nssai_to_string(snssai);
-        } else {
-            s_nssai = ogs_strdup("");
-        }
+        ogs_plmn_id_to_string(plmn, plmn_id);
+        s_nssai = ogs_sbi_s_nssai_to_string(snssai);
 
         metrics = ogs_metrics_inst_new(smf_metrics_spec_by_slice[t],
                 smf_metrics_spec_def_by_slice->num_labels,
                 (const char *[]){ plmn_id, s_nssai });
-
         ogs_assert(metrics);
+
         ogs_hash_set(metrics_hash_by_slice,
                 slice_key, sizeof(*slice_key), metrics);
 
@@ -297,13 +280,8 @@ void smf_metrics_inst_by_slice_add(ogs_plmn_id_t *plmn,
     ogs_metrics_inst_add(metrics, val);
 }
 
-int smf_metrics_free_inst_by_slice(ogs_metrics_inst_t **inst)
-{
-    return smf_metrics_free_inst(inst, _SMF_METR_BY_SLICE_MAX);
-}
-
 /* BY SLICE and 5QI */
-const char *labels_5qi[] = {
+static const char *labels_5qi[] = {
     "plmnid",
     "snssai",
     "fiveqi"
@@ -317,17 +295,15 @@ const char *labels_5qi[] = {
         .num_labels = OGS_ARRAY_SIZE(labels_5qi), \
         .labels = labels_5qi, \
     },
-ogs_metrics_spec_t *smf_metrics_spec_by_5qi[_SMF_METR_BY_5QI_MAX];
-ogs_hash_t *metrics_hash_by_5qi = NULL;   /* hash table for 5QI label */
-smf_metrics_spec_def_t smf_metrics_spec_def_by_5qi[_SMF_METR_BY_5QI_MAX] = {
+static ogs_metrics_spec_t *smf_metrics_spec_by_5qi[_SMF_METR_BY_5QI_MAX];
+static ogs_hash_t *metrics_hash_by_5qi = NULL;
+static smf_metrics_spec_def_t smf_metrics_spec_def_by_5qi[_SMF_METR_BY_5QI_MAX] = {
 /* Gauges: */
 SMF_METR_BY_5QI_GAUGE_ENTRY(
     SMF_METR_GAUGE_SM_QOSFLOWNBR,
     "fivegs_smffunction_sm_qos_flow_nbr",
     "Number of QoS flows at the SMF")
 };
-void smf_metrics_init_by_5qi(void);
-int smf_metrics_free_inst_by_5qi(ogs_metrics_inst_t **inst);
 typedef struct smf_metric_key_by_5qi_s {
     ogs_plmn_id_t               plmn_id;
     ogs_s_nssai_t               snssai;
@@ -335,7 +311,7 @@ typedef struct smf_metric_key_by_5qi_s {
     smf_metric_type_by_5qi_t    t;
 } smf_metric_key_by_5qi_t;
 
-void smf_metrics_init_by_5qi(void)
+static void smf_metrics_init_by_5qi(void)
 {
     metrics_hash_by_5qi = ogs_hash_make();
     ogs_assert(metrics_hash_by_5qi);
@@ -347,20 +323,14 @@ void smf_metrics_inst_by_5qi_add(ogs_plmn_id_t *plmn,
     ogs_metrics_inst_t *metrics = NULL;
     smf_metric_key_by_5qi_t *fiveqi_key;
 
+    ogs_assert(plmn);
+    ogs_assert(snssai);
+
     fiveqi_key = ogs_calloc(1, sizeof(*fiveqi_key));
     ogs_assert(fiveqi_key);
 
-    if (plmn) {
-        fiveqi_key->plmn_id = *plmn;
-    }
-
-    if (snssai) {
-        fiveqi_key->snssai = *snssai;
-    } else {
-        fiveqi_key->snssai.sst = 0;
-        fiveqi_key->snssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
-    }
-
+    fiveqi_key->plmn_id = *plmn;
+    fiveqi_key->snssai = *snssai;
     fiveqi_key->fiveqi = fiveqi;
     fiveqi_key->t = t;
 
@@ -368,21 +338,13 @@ void smf_metrics_inst_by_5qi_add(ogs_plmn_id_t *plmn,
             fiveqi_key, sizeof(*fiveqi_key));
 
     if (!metrics) {
-        char plmn_id[OGS_PLMNIDSTRLEN] = "";
-        char *s_nssai = NULL;
+        char plmn_id[OGS_PLMNIDSTRLEN];
         char fiveqi_str[4];
+        char *s_nssai;
 
-        if (plmn) {
-            ogs_plmn_id_to_string(plmn, plmn_id);
-        }
-
-        if (snssai) {
-            s_nssai = ogs_sbi_s_nssai_to_string(snssai);
-        } else {
-            s_nssai = ogs_strdup("");
-        }
-
+        ogs_plmn_id_to_string(plmn, plmn_id);
         ogs_snprintf(fiveqi_str, sizeof(fiveqi_str), "%d", fiveqi);
+        s_nssai = ogs_sbi_s_nssai_to_string(snssai);
 
         metrics = ogs_metrics_inst_new(smf_metrics_spec_by_5qi[t],
                 smf_metrics_spec_def_by_5qi->num_labels,
@@ -401,13 +363,9 @@ void smf_metrics_inst_by_5qi_add(ogs_plmn_id_t *plmn,
     ogs_metrics_inst_add(metrics, val);
 }
 
-int smf_metrics_free_inst_by_5qi(ogs_metrics_inst_t **inst)
-{
-    return smf_metrics_free_inst(inst, _SMF_METR_BY_5QI_MAX);
-}
 
 /* BY CAUSE */
-const char *labels_cause[] = {
+static const char *labels_cause[] = {
     "cause"
 };
 
@@ -419,9 +377,9 @@ const char *labels_cause[] = {
         .num_labels = OGS_ARRAY_SIZE(labels_cause), \
         .labels = labels_cause, \
     },
-ogs_metrics_spec_t *smf_metrics_spec_by_cause[_SMF_METR_BY_CAUSE_MAX];
-ogs_hash_t *metrics_hash_by_cause = NULL;   /* hash table for CAUSE labels */
-smf_metrics_spec_def_t smf_metrics_spec_def_by_cause[_SMF_METR_BY_CAUSE_MAX] = {
+static ogs_metrics_spec_t *smf_metrics_spec_by_cause[_SMF_METR_BY_CAUSE_MAX];
+static ogs_hash_t *metrics_hash_by_cause = NULL;
+static smf_metrics_spec_def_t smf_metrics_spec_def_by_cause[_SMF_METR_BY_CAUSE_MAX] = {
 /* Counters: */
 SMF_METR_BY_CAUSE_CTR_ENTRY(
     SMF_METR_CTR_SM_N4SESSIONESTABFAIL,
@@ -432,14 +390,12 @@ SMF_METR_BY_CAUSE_CTR_ENTRY(
     "fivegs_smffunction_sm_pdusessioncreationfail",
     "Number of PDU sessions failed to be created by the SMF")
 };
-void smf_metrics_init_by_cause(void);
-int smf_metrics_free_inst_by_cause(ogs_metrics_inst_t **inst);
 typedef struct smf_metric_key_by_cause_s {
     int                         cause;
     smf_metric_type_by_cause_t  t;
 } smf_metric_key_by_cause_t;
 
-void smf_metrics_init_by_cause(void)
+static void smf_metrics_init_by_cause(void)
 {
     metrics_hash_by_cause = ogs_hash_make();
     ogs_assert(metrics_hash_by_cause);
@@ -476,11 +432,6 @@ void smf_metrics_inst_by_cause_add(int cause,
     }
 
     ogs_metrics_inst_add(metrics, val);
-}
-
-int smf_metrics_free_inst_by_cause(ogs_metrics_inst_t **inst)
-{
-    return smf_metrics_free_inst(inst, _SMF_METR_BY_CAUSE_MAX);
 }
 
 void smf_metrics_init(void)
