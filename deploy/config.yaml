@@ -1,0 +1,34 @@
+logger:
+  level: info   # fatal|error|warn|info(default)|debug|trace
+
+global:
+  max:
+    ue: 1024 # A limit must be present, otherwise sgwc does not start
+
+gtp-proxy:
+  smf_address: 172.26.0.14
+  gtpc:
+    server:
+      - address: 172.22.20.37
+      # - address: {{ BACK_END_IP }}
+  pfcp:
+    server:
+      - address: 127.0.0.1
+    client:
+      sgwu:
+        - address: 127.0.0.2
+
+sgwu:
+  gtpu:
+    server:
+      - address: 172.22.20.37 # XXX: PWGs do not have a BE interface
+
+      # - address: {{ FRONT_END_IP }}
+      #   source_interface: 0 # Access
+
+      # - address: {{ BACK_END_IP }}
+      #   source_interface: 1 # Core
+
+  pfcp:
+    server:
+      - address: 127.0.0.2

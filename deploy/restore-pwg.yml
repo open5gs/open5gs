@@ -1,0 +1,15 @@
+---
+- name: Restore the original function of the target PWG
+  hosts: pgw_tankers
+  become: true  # Run tasks with sudo
+  gather_facts: false
+  tasks:
+    - name: Stopping the proxy PoC services
+      community.docker.docker_container_exec:
+        container: '{{ pgw_container }}'
+        command: 'supervisorctl stop gtp-proxy:'
+
+    - name: Starting the Expeto ran
+      community.docker.docker_container_exec:
+        container: '{{ pgw_container }}'
+        command: 'supervisorctl start ran'

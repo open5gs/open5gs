@@ -1,0 +1,79 @@
+---
+- name: Make a static build of Open5GS components
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Make a temporary directory on the tanker
+      ansible.builtin.file:
+        path: '{{ local_builddir }}'
+        state: directory
+        mode: '0755'
+
+    - name: Configure
+      ansible.builtin.command: 'meson setup --prefer-static --default-library=static -Dstatic=true {{ local_builddir }} ..'
+      changed_when: true
+      tags: build
+
+    - name: Build
+      ansible.builtin.command: 'ninja -C {{ local_builddir }} src/gtp-proxy/gtp-proxyd src/sgwu/open5gs-sgwud'
+      changed_when: true
+      tags: build
+
+- name: Install SGWC/SGWU onto the wireless tanker
+  hosts: pgw_tankers
+  become: true  # Run tasks with sudo
+  gather_facts: false
+  vars:
+    tmpdir: '/tmp/_deploy_ogs/'
+
+  tasks:
+    - name: Make a temporary directory on the tanker
+      ansible.builtin.file:
+        path: '{{ tmpdir }}'
+        state: directory
+        mode: '0755'
+
+    - name: Copy files to the tanker
+      ansible.builtin.copy:
+        src: '{{ item }}'
+        dest: '{{ tmpdir }}/'
+        mode: preserve
+      with_items:
+        - ./{{ local_builddir }}/src/gtp-proxy/gtp-proxyd
+        - ./{{ local_builddir }}/src/sgwu/open5gs-sgwud
+        - ./config.yaml
+        - ./supervisor.d/gtp-proxy.conf
+
+    - name: Create the target directory inside of the container
+      community.docker.docker_container_exec:
+        container: '{{ pgw_container }}'
+        command: 'mkdir -p /poc /poc/logs'
+
+    - name: Install into the container
+      community.docker.docker_container_copy_into:
+        container: '{{ pgw_container }}'
+        path: '{{ tmpdir }}/{{ item | basename }}'
+        container_path: '{{ item }}'
+      with_items:
+        - /poc/gtp-proxyd
+        - /poc/open5gs-sgwud
+        - /poc/config.yaml
+        - /etc/supervisor.d/gtp-proxy.conf
+
+    - name: Stop the Expeto ran
+      community.docker.docker_container_exec:
+        container: '{{ pgw_container }}'
+        command: 'supervisorctl stop ran'
+
+    - name: Reload the supervisord config
+      community.docker.docker_container_exec:
+        container: '{{ pgw_container }}'
+         # NOTE: This also starts newly added processes and groups. Conditional steps are needed if you
+         # want to avoid a quick restart on first deployment
+        command: 'supervisorctl update'
+
+    - name: Restart the service
+      community.docker.docker_container_exec:
+        container: '{{ pgw_container }}'
+        command: 'supervisorctl restart gtp-proxy:'
