@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,25 +17,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined(OGS_TEST_INSIDE) && !defined(OGS_TEST_COMPILATION)
-#error "This header cannot be included directly."
-#endif
-
-#ifndef TEST_COMMON_APPLICATION_H
-#define TEST_COMMON_APPLICATION_H
+#ifndef TEST_S8_BUILD_H
+#define TEST_S8_BUILD_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void test_app_run(int argc, const char *const argv[],
-        const char *name, void (*init)(const char * const argv[]));
-void test_child_terminate(void);
-ogs_thread_t *test_child_create(const char *name, const char *const argv[]);
-ogs_thread_t *test_child_create_ex(const char *name, const char* exe_prefix, const char *const argv[]);
+ogs_pkbuf_t *test_s8_build_create_session_request(
+        uint8_t type, test_sess_t *sess, bool handover_ind);
+ogs_pkbuf_t *test_s8_build_delete_session_request(
+        uint8_t type, test_sess_t *sess);
+
+ogs_pkbuf_t *test_s8_build_create_bearer_response(
+        uint8_t type, test_bearer_t *bearer);
+ogs_pkbuf_t *test_s8_build_delete_bearer_response(
+        uint8_t type, test_bearer_t *bearer);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* TEST_COMMON_APPLICATION_H */
+#endif /* TEST_S8_BUILD_H */

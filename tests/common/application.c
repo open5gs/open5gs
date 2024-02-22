@@ -114,6 +114,11 @@ static void child_main(void *data)
 
 ogs_thread_t *test_child_create(const char *name, const char *const argv[])
 {
+    return test_child_create_ex(name, "open5gs-", argv);
+}
+
+ogs_thread_t *test_child_create_ex(const char *name, const char* exe_prefix, const char *const argv[])
+{
     ogs_thread_t *child = NULL;
     const char *commandLine[OGS_ARG_MAX];
     int i = 0;
@@ -126,9 +131,9 @@ ogs_thread_t *test_child_create(const char *name, const char *const argv[])
     commandLine[i] = NULL;
 
     /* buildroot/src/mme/open5gs-mmed */
-    ogs_snprintf(command, sizeof command, "%s%s%s%sd",
+    ogs_snprintf(command, sizeof command, "%s%s%s%s%sd",
             MESON_BUILD_ROOT OGS_DIR_SEPARATOR_S "src" OGS_DIR_SEPARATOR_S,
-            name, OGS_DIR_SEPARATOR_S "open5gs-", name);
+            name, OGS_DIR_SEPARATOR_S, exe_prefix, name);
     commandLine[0] = command;
 
     child = ogs_thread_create(child_main, commandLine);

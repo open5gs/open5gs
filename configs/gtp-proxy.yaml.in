@@ -1,0 +1,138 @@
+db_uri: mongodb://localhost/open5gs
+
+logger:
+
+test:
+  serving:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+
+global:
+  parameter:
+    no_sepp: true
+
+gtp-proxy:
+  smf_address: 127.0.0.4
+  gtpc:
+    server:
+      - address: 127.100.0.3
+      - address: 127.0.0.3
+  pfcp:
+    server:
+      - address: 127.0.0.3
+    client:
+      sgwu:
+        - address: 127.0.0.6
+
+sgwu:
+  pfcp:
+    server:
+      - address: 127.0.0.6
+  gtpu:
+    server:
+      - address: 127.100.0.3
+        source_interface: 0 # Access
+      - address: 127.0.0.3
+        source_interface: 1 # Core
+
+smf:
+  sbi:
+    server:
+      no_tls: true
+    client:
+      no_tls: true
+  pfcp:
+    server:
+      - address: 127.0.0.4
+    client:
+      upf:
+        - address: 127.0.0.7
+  gtpc:
+    server:
+      - address: 127.0.0.4
+  gtpu:
+    server:
+      - address: 127.0.0.4
+  metrics:
+    server:
+      - address: 127.0.0.4
+        port: 9090
+  session:
+    - subnet: 10.45.0.1/16
+    - subnet: 2001:db8:cafe::1/48
+  dns:
+    - 8.8.8.8
+    - 8.8.4.4
+    - 2001:4860:4860::8888
+    - 2001:4860:4860::8844
+  mtu: 1400
+  freeDiameter:
+    identity: smf.localdomain
+    realm: localdomain
+    listen_on: 127.0.0.4
+    no_fwd: true
+    load_extension:
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
+        conf: 0x8888
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+    connect:
+      - identity: pcrf.localdomain
+        address: 127.0.0.9
+
+upf:
+  pfcp:
+    server:
+      - address: 127.0.0.7
+  gtpu:
+    server:
+      - address: 127.0.0.7
+  session:
+    - subnet: 10.45.0.1/16
+    - subnet: 2001:db8:cafe::1/48
+  metrics:
+    server:
+      - address: 127.0.0.7
+        port: 9090
+
+hss:
+  freeDiameter:
+    identity: hss.localdomain
+    realm: localdomain
+    listen_on: 127.0.0.8
+    no_fwd: true
+    load_extension:
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
+        conf: 0x8888
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+    connect:
+      - identity: mme.localdomain
+        address: 127.0.0.2
+pcrf:
+  freeDiameter:
+    identity: pcrf.localdomain
+    realm: localdomain
+    listen_on: 127.0.0.9
+    no_fwd: true
+    load_extension:
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
+        conf: 0x8888
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+    connect:
+      - identity: smf.localdomain
+        address: 127.0.0.4

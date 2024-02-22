@@ -39,6 +39,7 @@ example_conf = '''
     slice.yaml
     srsenb.yaml
     non3gpp.yaml
+    gtp-proxy.yaml
 '''.split()
 
 foreach file : example_conf

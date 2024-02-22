@@ -17,25 +17,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined(OGS_TEST_INSIDE) && !defined(OGS_TEST_COMPILATION)
-#error "This header cannot be included directly."
-#endif
+#ifndef TEST_NON3GPP_GTP_PATH_H
+#define TEST_NON3GPP_GTP_PATH_H
 
-#ifndef TEST_COMMON_APPLICATION_H
-#define TEST_COMMON_APPLICATION_H
+#include "test-common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void test_app_run(int argc, const char *const argv[],
-        const char *name, void (*init)(const char * const argv[]));
-void test_child_terminate(void);
-ogs_thread_t *test_child_create(const char *name, const char *const argv[]);
-ogs_thread_t *test_child_create_ex(const char *name, const char* exe_prefix, const char *const argv[]);
+ogs_socknode_t *test_sgw_server(uint16_t port);
+void test_sgw_close(ogs_socknode_t *node);
+
+ogs_gtp_node_t* test_gtpc_proxy_node_new(void);
+
+ogs_pkbuf_t *test_sgw_read(ogs_socknode_t *node, ogs_sockaddr_t* from);
+
+void test_s8_recv(test_sess_t *sess, ogs_pkbuf_t *pkbuf);
+
+int test_s8_send_create_session_request(test_sess_t *sess, bool handover_ind);
+int test_s8_send_delete_session_request(test_sess_t *sess);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* TEST_COMMON_APPLICATION_H */
+#endif /* TEST_NON3GPP_GTP_PATH_H */

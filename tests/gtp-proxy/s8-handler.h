@@ -17,25 +17,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined(OGS_TEST_INSIDE) && !defined(OGS_TEST_COMPILATION)
-#error "This header cannot be included directly."
-#endif
+#ifndef TEST_GTP_PROXY_S8_HANDLE_H
+#define TEST_GTP_PROXY_S8_HANDLE_H
 
-#ifndef TEST_COMMON_APPLICATION_H
-#define TEST_COMMON_APPLICATION_H
+#include "test-common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void test_app_run(int argc, const char *const argv[],
-        const char *name, void (*init)(const char * const argv[]));
-void test_child_terminate(void);
-ogs_thread_t *test_child_create(const char *name, const char *const argv[]);
-ogs_thread_t *test_child_create_ex(const char *name, const char* exe_prefix, const char *const argv[]);
+void test_s8_handle_create_session_response(
+        ogs_gtp_xact_t *xact, test_sess_t *sess,
+        ogs_gtp2_create_session_response_t *rsp);
+void test_s8_handle_delete_session_response(
+        ogs_gtp_xact_t *xact, test_sess_t *sess,
+        ogs_gtp2_delete_session_response_t *rsp);
+
+void test_s8_handle_create_bearer_request(
+        ogs_gtp_xact_t *xact, test_sess_t *sess,
+        ogs_gtp2_create_bearer_request_t *req);
+void test_s8_handle_delete_bearer_request(
+        ogs_gtp_xact_t *xact, test_sess_t *sess,
+        ogs_gtp2_delete_bearer_request_t *req);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* TEST_COMMON_APPLICATION_H */
+#endif /* TEST_GTP_PROXY_S8_HANDLE_H */
