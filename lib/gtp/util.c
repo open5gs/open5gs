@@ -65,7 +65,8 @@ int ogs_gtpu_parse_header(
          * then the value of the Next Extension Header Type shall be 0. */
 
         i = 0;
-        while (*(ext_h = (((uint8_t *)gtp_h) + len - 1))) {
+        while (*(ext_h = (((uint8_t *)gtp_h) + len - 1)) &&
+                i < OGS_GTP2_NUM_OF_EXTENSION_HEADER) {
         /*
          * The length of the Extension header shall be defined
          * in a variable length of 4 octets, i.e. m+1 = n*4 octets,
@@ -123,6 +124,11 @@ int ogs_gtpu_parse_header(
             }
 
             i++;
+        }
+
+        if (i >= OGS_GTP2_NUM_OF_EXTENSION_HEADER) {
+            ogs_error("The number of extension headers is limited to [%d]", i);
+            return -1;
         }
 
     } else if (gtp_h->flags & (OGS_GTPU_FLAGS_S|OGS_GTPU_FLAGS_PN)) {
