@@ -57,7 +57,7 @@ int s1ap_send_enb_configuration_update_failure(
         mme_enb_t *enb, S1AP_Cause_PR group, long cause);
 
 int s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue);
-int s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue);
+int s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue, bool include_ue_ambr);
 int s1ap_send_ue_context_release_command(
     enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause,
     uint8_t action, ogs_time_t duration);
