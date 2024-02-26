@@ -47,6 +47,8 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
     int len;
     uint8_t pco_buf[OGS_MAX_PCO_LEN];
     int16_t pco_len;
+    uint8_t apco_buf[OGS_MAX_PCO_LEN];
+    int16_t apco_len;
     uint8_t *epco_buf = NULL;
     int16_t epco_len;
 
@@ -143,6 +145,17 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
         rsp->protocol_configuration_options.presence = 1;
         rsp->protocol_configuration_options.data = pco_buf;
         rsp->protocol_configuration_options.len = pco_len;
+    }
+
+    /* APCO */
+    if (sess->gtp.ue_apco.presence &&
+            sess->gtp.ue_apco.len && sess->gtp.ue_apco.data) {
+        apco_len = smf_pco_build(
+                apco_buf, sess->gtp.ue_apco.data, sess->gtp.ue_apco.len);
+        ogs_assert(apco_len > 0);
+        rsp->additional_protocol_configuration_options.presence = 1;
+        rsp->additional_protocol_configuration_options.data = apco_buf;
+        rsp->additional_protocol_configuration_options.len = apco_len;
     }
 
     /* ePCO */

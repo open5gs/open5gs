@@ -378,6 +378,12 @@ uint8_t smf_s5c_handle_create_session_request(
                 &req->protocol_configuration_options);
     }
 
+    /* APCO */
+    if (req->additional_protocol_configuration_options.presence) {
+        OGS_TLV_STORE_DATA(&sess->gtp.ue_apco,
+                &req->additional_protocol_configuration_options);
+    }
+
     /* Set User Location Information */
     if (req->user_location_information.presence) {
         OGS_TLV_STORE_DATA(&sess->gtp.user_location_information,
@@ -451,6 +457,8 @@ uint8_t smf_s5c_handle_delete_session_request(
          */
         OGS_TLV_CLEAR_DATA(&sess->gtp.ue_pco);
     }
+
+    /* APCO not present in Session deletion procedure, hence no need to clear it here. */
 
     if (req->extended_protocol_configuration_options.presence) {
         OGS_TLV_STORE_DATA(&sess->gtp.ue_epco,
