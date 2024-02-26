@@ -228,6 +228,8 @@ typedef struct smf_sess_s {
         uint32_t gx_cca_init_err; /* Gx CCA RXed error code */
         bool gy_ccr_init_in_flight; /* Waiting for Gy CCA */
         uint32_t gy_cca_init_err; /* Gy CCA RXed error code */
+        bool s6b_aar_in_flight; /* Waiting for S6B AAR */
+        uint32_t s6b_aaa_err; /* S6B AAA RXed error code */
         bool gx_ccr_term_in_flight; /* Waiting for Gx CCA */
         uint32_t gx_cca_term_err; /* Gx CCA RXed error code */
         bool gy_ccr_term_in_flight; /* Waiting for Gy CCA */

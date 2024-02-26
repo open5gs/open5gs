@@ -1,4 +1,4 @@
-/*
+/* 3GPP TS 29.273 section 9
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
@@ -344,11 +344,11 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
     unsigned long dur;
     int error = 0;
     int new;
-    int result_code = 0;
-    int exp_result_code = 0;
 
     smf_sess_t *sess = NULL;
     ogs_gtp_xact_t *xact = NULL;
+    smf_event_t *e = NULL;
+    ogs_diam_s6b_message_t *s6b_message = NULL;
 
     ogs_debug("[AA-Answer]");
 
@@ -374,15 +374,20 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
     xact = sess_data->xact;
     ogs_assert(xact);
 
+    s6b_message = ogs_calloc(1, sizeof(ogs_diam_s6b_message_t));
+    ogs_assert(s6b_message);
+    /* Set Session Termination Command */
+    s6b_message->cmd_code = OGS_DIAM_S6B_CMD_AUTHENTICATION_AUTHORIZATION;
+
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
     ogs_assert(ret == 0);
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
-        result_code = hdr->avp_value->i32;
-        if (result_code != ER_DIAMETER_SUCCESS) {
-            ogs_error("Result Code: %d", result_code);
+        s6b_message->result_code = hdr->avp_value->i32;
+        if (s6b_message->result_code != ER_DIAMETER_SUCCESS) {
+            ogs_error("Result Code: %d", s6b_message->result_code);
             error++;
         }
     } else {
@@ -397,8 +402,8 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
             if (avpch1) {
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
                 ogs_assert(ret == 0);
-                exp_result_code = hdr->avp_value->i32;
-                ogs_error("Experimental Result Code: %d", exp_result_code);
+                s6b_message->result_code = hdr->avp_value->i32;
+                ogs_error("Experimental Result Code: %d", s6b_message->result_code);
             }
         } else {
             ogs_error("no Result-Code");
@@ -431,9 +436,22 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
         error++;
     }
 
-    if (!error) {
-        smf_gx_send_ccr(sess, xact,
-            OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
+    e = smf_event_new(SMF_EVT_S6B_MESSAGE);
+    ogs_assert(e);
+
+    if (error && s6b_message->result_code == ER_DIAMETER_SUCCESS)
+            s6b_message->result_code = error;
+
+    e->sess = sess;
+    e->gtp_xact = xact;
+    e->s6b_message = s6b_message;
+    ret = ogs_queue_push(ogs_app()->queue, e);
+    if (ret != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)ret);
+        ogs_free(s6b_message);
+        ogs_event_free(e);
+    } else {
+        ogs_pollset_notify(ogs_app()->pollset);
     }
 
     /* Free the message */

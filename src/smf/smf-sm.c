@@ -365,6 +365,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(sess);
 
         switch(s6b_message->cmd_code) {
+        case OGS_DIAM_S6B_CMD_AUTHENTICATION_AUTHORIZATION:
         case OGS_DIAM_S6B_CMD_SESSION_TERMINATION:
             ogs_fsm_dispatch(&sess->sm, e);
             break;
