@@ -4394,7 +4394,7 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
                     sess->mme_ue ? sess->mme_ue->imsi_bcd : "Unknown",
                     sess->mme_ue);
             }
-            MME_UE_LIST_CHECK;
+            MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
         }
 
         if (!sess) {
@@ -4408,7 +4408,7 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
             ogs_debug("[%s:%p]",
                 sess->mme_ue ? sess->mme_ue->imsi_bcd : "Unknown",
                 sess->mme_ue);
-            MME_UE_LIST_CHECK;
+            MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
         } else {
             sess->pti = pti;
             ogs_debug("[%s:%p]", mme_ue->imsi_bcd, mme_ue);
@@ -4418,7 +4418,7 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
             ogs_debug("[%s:%p]",
                 sess->mme_ue ? sess->mme_ue->imsi_bcd : "Unknown",
                 sess->mme_ue);
-            MME_UE_LIST_CHECK;
+            MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
         }
 
     } else {

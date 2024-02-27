@@ -89,6 +89,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
     ogs_assert(sess);
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
+    MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
@@ -183,7 +184,6 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             break;
         case OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
             ogs_debug("Activate default EPS bearer context accept");
-            MME_UE_LIST_CHECK;
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             /* Check if Initial Context Setup Response or 

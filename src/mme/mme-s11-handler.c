@@ -103,7 +103,6 @@ void mme_s11_handle_create_session_response(
     ogs_assert(rsp);
 
     ogs_debug("Create Session Response");
-    MME_UE_LIST_CHECK;
 
     /********************
      * Check Transaction
@@ -112,6 +111,8 @@ void mme_s11_handle_create_session_response(
     create_action = xact->create_action;
     sess = xact->data;
     ogs_assert(sess);
+
+    MME_UE_CHECK(OGS_LOG_DEBUG, sess->mme_ue);
     mme_ue = mme_ue_cycle(sess->mme_ue);
 
     rv = ogs_gtp_xact_commit(xact);
@@ -480,13 +481,14 @@ void mme_s11_handle_modify_bearer_response(
     ogs_assert(rsp);
 
     ogs_debug("Modify Bearer Response");
-    MME_UE_LIST_CHECK;
 
     /********************
      * Check Transaction
      ********************/
     ogs_assert(xact);
     modify_action = xact->modify_action;
+
+    MME_UE_CHECK(OGS_LOG_DEBUG, xact->data);
     mme_ue = mme_ue_cycle(xact->data);
 
     rv = ogs_gtp_xact_commit(xact);
@@ -592,7 +594,6 @@ void mme_s11_handle_delete_session_response(
     ogs_assert(rsp);
 
     ogs_debug("Delete Session Response");
-    MME_UE_LIST_CHECK;
 
     /********************
      * Check Transaction
@@ -602,6 +603,9 @@ void mme_s11_handle_delete_session_response(
     ogs_assert(action);
     sess = xact->data;
     ogs_assert(sess);
+
+    ogs_debug("delete_session_response - xact:%p, sess:%p", xact, sess);
+    MME_UE_CHECK(OGS_LOG_DEBUG, sess->mme_ue);
     mme_ue = mme_ue_cycle(sess->mme_ue);
 
     rv = ogs_gtp_xact_commit(xact);
@@ -1244,7 +1248,6 @@ void mme_s11_handle_release_access_bearers_response(
     ogs_assert(rsp);
 
     ogs_debug("Release Access Bearers Response");
-    MME_UE_LIST_CHECK;
 
     /********************
      * Check Transaction
@@ -1252,6 +1255,8 @@ void mme_s11_handle_release_access_bearers_response(
     ogs_assert(xact);
     action = xact->release_action;
     ogs_assert(action);
+
+    MME_UE_CHECK(OGS_LOG_DEBUG, xact->data);
     mme_ue = mme_ue_cycle(xact->data);
 
     rv = ogs_gtp_xact_commit(xact);

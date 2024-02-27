@@ -255,7 +255,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             mme_ue = mme_ue_find_by_message(&nas_message);
             if (!mme_ue) {
                 mme_ue = mme_ue_add(enb_ue);
-                MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
                 if (mme_ue == NULL) {
                     r = s1ap_send_ue_context_release_command(enb_ue,
                             S1AP_Cause_PR_misc,
@@ -267,6 +266,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                     return;
                 }
 
+                MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
                 ogs_assert(ECM_IDLE(mme_ue));
             } else {
                 /* Here, if the MME_UE Context is found,

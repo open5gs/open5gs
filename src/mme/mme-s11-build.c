@@ -479,14 +479,19 @@ ogs_pkbuf_t *mme_s11_build_delete_session_request(
 
     mme_bearer_t *bearer = NULL;
     mme_ue_t *mme_ue = NULL;
+    sgw_ue_t *sgw_ue = NULL;
 
     ogs_assert(sess);
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
+    sgw_ue = mme_ue->sgw_ue;
+    ogs_assert(sgw_ue);
     bearer = mme_default_bearer_in_sess(sess);
     ogs_assert(bearer);
 
     ogs_debug("Delete Session Request");
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+            mme_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
     memset(&gtp_message, 0, sizeof(ogs_gtp2_message_t));
 

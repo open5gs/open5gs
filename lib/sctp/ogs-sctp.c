@@ -43,14 +43,10 @@ int ogs_sctp_recvdata(ogs_sock_t *sock, void *msg, size_t len,
         } else if (flags & MSG_EOR) {
             break;
         } else {
-            if (ogs_socket_errno != OGS_EAGAIN) {
-                ogs_fatal("ogs_sctp_recvmsg(%d) failed(%d:%s-0x%x)",
-                        size, errno, strerror(errno), flags);
-                ogs_assert_if_reached();
-            } else {
-                ogs_error("ogs_sctp_recvmsg(%d) failed(%d:%s-0x%x)",
-                        size, errno, strerror(errno), flags);
-            }
+            ogs_fatal("ogs_sctp_recvmsg(%d) failed(%d:%s-0x%x)",
+                    size, errno, strerror(errno), flags);
+            ogs_fatal("Probably MME might be crashed");
+            ogs_assert_if_reached();
         }
     } while(1);
 
