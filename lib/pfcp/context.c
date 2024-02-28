@@ -154,7 +154,9 @@ static int ogs_pfcp_check_subnet_overlapping(void)
     ogs_list_for_each(&self.subnet_list, subnet){
         for (next_subnet = ogs_list_next(subnet); (next_subnet);
                 next_subnet = ogs_list_next(next_subnet)) {
-            if (strcmp(subnet->dnn, next_subnet->dnn) == 0 &&
+            if ((strlen(subnet->dnn) == 0 ||
+                 strlen(next_subnet->dnn) == 0 ||
+                (strcmp(subnet->dnn, next_subnet->dnn)) == 0) &&
                 subnet->gw.family == next_subnet->gw.family) {
                 uint32_t *addr1 = subnet->sub.sub;
                 uint32_t *addr2 = next_subnet->sub.sub;
