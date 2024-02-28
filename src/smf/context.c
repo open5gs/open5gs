@@ -1682,6 +1682,7 @@ void smf_sess_remove(smf_sess_t *sess)
     ogs_fsm_fini(&sess->sm, &e);
 
     OGS_TLV_CLEAR_DATA(&sess->gtp.ue_pco);
+    OGS_TLV_CLEAR_DATA(&sess->gtp.ue_apco);
     OGS_TLV_CLEAR_DATA(&sess->gtp.ue_epco);
     OGS_TLV_CLEAR_DATA(&sess->gtp.user_location_information);
     OGS_TLV_CLEAR_DATA(&sess->gtp.ue_timezone);

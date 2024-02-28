@@ -45,6 +45,8 @@ void test_s2b_handle_create_session_response(
 
         cause_value = cause->value;
         if (cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+        } else if (cause_value ==
+                OGS_GTP2_CAUSE_NEW_PDN_TYPE_DUE_TO_NETWORK_PREFERENCE) {
         } else {
             ogs_error("GTP Failed [CAUSE:%d]", cause_value);
             return;
