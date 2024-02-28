@@ -241,6 +241,19 @@ int upf_sess_remove(upf_sess_t *sess)
     upf_sess_set_ue_ipv4_framed_routes(sess, NULL);
     upf_sess_set_ue_ipv6_framed_routes(sess, NULL);
 
+    /* If we are removing a session before receiving a PFCP reply from SMF, we
+       must delete the active PFCP xacts in order to stop their timers */
+    if (sess->pfcp_node) {
+        ogs_pfcp_xact_t *xact = NULL, *next_xact = NULL;
+
+        ogs_list_for_each_safe(&sess->pfcp_node->local_list, next_xact, xact)
+            if (xact->data == sess)
+                ogs_pfcp_xact_delete(xact);
+        ogs_list_for_each_safe(&sess->pfcp_node->remote_list, next_xact, xact)
+            if (xact->data == sess)
+                ogs_pfcp_xact_delete(xact);
+    }
+
     ogs_pfcp_pool_final(&sess->pfcp);
 
     ogs_pool_free(&upf_n4_seid_pool, sess->upf_n4_seid_node);

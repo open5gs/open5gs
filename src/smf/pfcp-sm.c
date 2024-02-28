@@ -125,6 +125,10 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
             }
             ogs_fsm_dispatch(&sess->sm, e);
             break;
+        case SMF_TIMER_PFCP_NO_DELETION_RESPONSE:
+            sess = e->sess;
+            SMF_SESS_CLEAR(sess);
+            break;
         default:
             ogs_error("Unknown timer[%s:%d]",
                     smf_timer_get_name(e->h.timer_id), e->h.timer_id);
@@ -392,6 +396,10 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             }
             ogs_fsm_dispatch(&sess->sm, e);
             break;
+        case SMF_TIMER_PFCP_NO_DELETION_RESPONSE:
+            sess = e->sess;
+            SMF_SESS_CLEAR(sess);
+            break;
         default:
             ogs_error("Unknown timer[%s:%d]",
                     smf_timer_get_name(e->h.timer_id), e->h.timer_id);
@@ -399,9 +407,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
         }
         break;
     case SMF_EVT_N4_NO_HEARTBEAT:
-
-        /* 'node' context was removed in ogs_pfcp_xact_delete(xact)
-         * So, we should not use PFCP node here */
+        reselect_upf(node);
 
         ogs_warn("No Heartbeat from UPF [%s]:%d",
                     OGS_ADDR(addr, buf), OGS_PORT(addr));
@@ -548,7 +554,6 @@ static void node_timeout(ogs_pfcp_xact_t *xact, void *data)
     switch (type) {
     case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
         ogs_assert(data);
-        reselect_upf(data);
 
         e = smf_event_new(SMF_EVT_N4_NO_HEARTBEAT);
         e->pfcp_node = data;
