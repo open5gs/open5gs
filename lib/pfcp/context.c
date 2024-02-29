@@ -972,13 +972,14 @@ ogs_gtpu_resource_t *ogs_pfcp_find_gtpu_resource(ogs_list_t *list,
     return NULL;
 }
 
-int ogs_pfcp_setup_far_gtpu_node(ogs_pfcp_far_t *far)
+int ogs_pfcp_setup_far_gtpu_node(ogs_pfcp_far_t *far, ogs_sock_t* sock, ogs_sock_t* sock6)
 {
     int rv;
     ogs_ip_t ip;
     ogs_gtp_node_t *gnode = NULL;
 
     ogs_assert(far);
+    ogs_assert(sock || sock6);
 
     ogs_pfcp_outer_header_creation_to_ip(&far->outer_header_creation, &ip);
 
@@ -994,8 +995,7 @@ int ogs_pfcp_setup_far_gtpu_node(ogs_pfcp_far_t *far)
             return OGS_ERROR;
         }
 
-        rv = ogs_gtp_connect(
-                ogs_gtp_self()->gtpu_sock, ogs_gtp_self()->gtpu_sock6, gnode);
+        rv = ogs_gtp_connect(sock, sock6, gnode);
         if (rv != OGS_OK) {
             ogs_error("ogs_gtp_connect() failed");
             return rv;

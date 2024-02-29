@@ -510,6 +510,12 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                         info.assosi = 1;
                                         info.source_interface =
                                             atoi(source_interface);
+                                        if (node) {
+                                            node->pfcp_if = info.source_interface;
+                                        }
+                                        if (node6) {
+                                            node6->pfcp_if = info.source_interface;
+                                        }
                                     }
 
                                     ogs_gtpu_resource_add(

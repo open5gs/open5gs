@@ -21,12 +21,16 @@
 #include "gtp-path.h"
 #include "sxa-handler.h"
 
+static ogs_sock_t* sgwu_get_interface_socket(int family, uint8_t pfcp_iface);
+
 void sgwu_sxa_handle_session_establishment_request(
         sgwu_sess_t *sess, ogs_pfcp_xact_t *xact, 
         ogs_pfcp_session_establishment_request_t *req)
 {
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
+    ogs_sock_t* sock = NULL;
+    ogs_sock_t* sock6 = NULL;
     ogs_pfcp_pdr_t *created_pdr[OGS_MAX_NUM_OF_PDR];
     int num_of_created_pdr = 0;
     uint8_t cause_value = 0;
@@ -103,7 +107,10 @@ void sgwu_sxa_handle_session_establishment_request(
 
     /* Setup GTP Node */
     ogs_list_for_each(&sess->pfcp.far_list, far) {
-        if (OGS_ERROR == ogs_pfcp_setup_far_gtpu_node(far)) {
+        sock = sgwu_get_interface_socket(AF_INET, far->dst_if);
+        sock6 = sgwu_get_interface_socket(AF_INET6, far->dst_if);
+
+        if (OGS_ERROR == ogs_pfcp_setup_far_gtpu_node(far, sock, sock6)) {
             ogs_fatal("CHECK CONFIGURATION: sgwu.gtpu");
             ogs_fatal("ogs_pfcp_setup_far_gtpu_node() failed");
             goto cleanup;
@@ -153,6 +160,8 @@ void sgwu_sxa_handle_session_modification_request(
 {
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
+    ogs_sock_t* sock = NULL;
+    ogs_sock_t* sock6 = NULL;
     ogs_pfcp_pdr_t *created_pdr[OGS_MAX_NUM_OF_PDR];
     int num_of_created_pdr = 0;
     uint8_t cause_value = 0;
@@ -272,7 +281,10 @@ void sgwu_sxa_handle_session_modification_request(
 
     /* Setup GTP Node */
     ogs_list_for_each(&sess->pfcp.far_list, far) {
-        if (OGS_ERROR == ogs_pfcp_setup_far_gtpu_node(far)) {
+        sock = sgwu_get_interface_socket(AF_INET, far->dst_if);
+        sock6 = sgwu_get_interface_socket(AF_INET6, far->dst_if);
+
+        if (OGS_ERROR == ogs_pfcp_setup_far_gtpu_node(far, sock, sock6)) {
             ogs_fatal("CHECK CONFIGURATION: sgwu.gtpu");
             ogs_fatal("ogs_pfcp_setup_far_gtpu_node() failed");
             goto cleanup;
@@ -371,5 +383,14 @@ void sgwu_sxa_handle_session_report_response(
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
         ogs_error("Cause request not accepted[%d]", cause_value);
         return;
+    }
+}
+
+static ogs_sock_t* sgwu_get_interface_socket(int family, uint8_t pfcp_iface)
+{
+    if (family == AF_INET6) {
+        return pfcp_iface == OGS_PFCP_INTERFACE_CORE ? sgwu_self()->gtpu_core_sock6 : sgwu_self()->gtpu_access_sock6;
+    } else {
+        return pfcp_iface == OGS_PFCP_INTERFACE_CORE ? sgwu_self()->gtpu_core_sock : sgwu_self()->gtpu_access_sock;
     }
 }

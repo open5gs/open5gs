@@ -42,6 +42,9 @@ typedef struct ogs_socknode_s {
     ogs_poll_t *poll;
 
     ogs_sockopt_t *option;
+
+    // XXX An ugly hack to make SGWU distinguish access/core interfaces (defaulting to 0 -- Access)
+    uint8_t pfcp_if;
 } ogs_socknode_t;
 
 ogs_socknode_t *ogs_socknode_new(ogs_sockaddr_t *addr);

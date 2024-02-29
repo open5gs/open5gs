@@ -42,6 +42,11 @@ typedef struct sgwu_context_s {
     ogs_hash_t *sgwc_sxa_f_seid_hash;  /* hash table (SGWC-SXA-F-SEID) */
 
     ogs_list_t sess_list;
+
+    ogs_sock_t* gtpu_access_sock;  /* GTP-U socket on the Access side (IPv4) */
+    ogs_sock_t* gtpu_access_sock6; /* GTP-U socket on the Access side (IPv6) */
+    ogs_sock_t* gtpu_core_sock;    /* GTP-U socket on the Core side (IPv4) */
+    ogs_sock_t* gtpu_core_sock6;   /* GTP-U socket on the Core side (IPv6) */
 } sgwu_context_t;
 
 #define SGWU_SESS(pfcp_sess) ogs_container_of(pfcp_sess, sgwu_sess_t, pfcp)

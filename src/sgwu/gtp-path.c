@@ -318,14 +318,33 @@ int sgwu_gtp_open(void)
         sock = ogs_gtp_server(node);
         if (!sock) return OGS_ERROR;
 
-        if (sock->family == AF_INET)
+        if (sock->family == AF_INET) {
             ogs_gtp_self()->gtpu_sock = sock;
-        else if (sock->family == AF_INET6)
+            if (node->pfcp_if == OGS_PFCP_INTERFACE_CORE) {
+                sgwu_self()->gtpu_core_sock = sock;
+            } else {
+                sgwu_self()->gtpu_access_sock = sock;
+            }
+        } else if (sock->family == AF_INET6) {
             ogs_gtp_self()->gtpu_sock6 = sock;
+            if (node->pfcp_if == OGS_PFCP_INTERFACE_CORE) {
+                sgwu_self()->gtpu_core_sock6 = sock;
+            } else {
+                sgwu_self()->gtpu_access_sock6 = sock;
+            }
+        }
 
         node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, _gtpv1_u_recv_cb, sock);
         ogs_assert(node->poll);
+    }
+
+    if (!sgwu_self()->gtpu_core_sock) {
+        sgwu_self()->gtpu_core_sock = sgwu_self()->gtpu_access_sock;
+    }
+
+    if (!sgwu_self()->gtpu_core_sock6) {
+        sgwu_self()->gtpu_core_sock6 = sgwu_self()->gtpu_access_sock6;
     }
 
     OGS_SETUP_GTPU_SERVER;
