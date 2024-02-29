@@ -288,7 +288,7 @@ typedef struct test_esm_information_param_s {
 typedef struct test_ue_s {
     ogs_lnode_t     lnode;          /**< A node of list_t */
 
-    uint32_t ran_ue_ngap_id; /* gNB-UE-NGAP-ID received from gNB */
+    uint64_t ran_ue_ngap_id; /* gNB-UE-NGAP-ID received from gNB */
     uint64_t amf_ue_ngap_id; /* AMF-UE-NGAP-ID received from AMF */
     uint32_t enb_ue_s1ap_id; /* eNB-UE-S1AP-ID received from eNB */
     uint32_t mme_ue_s1ap_id; /* MME-UE-S1AP-ID received from MME */

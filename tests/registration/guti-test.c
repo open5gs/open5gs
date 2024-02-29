@@ -1233,7 +1233,7 @@ static void test4_issues2839_func(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     int i;
 
-    uint32_t ran_ue_ngap_id; /* gNB-UE-NGAP-ID received from gNB */
+    uint64_t ran_ue_ngap_id; /* gNB-UE-NGAP-ID received from gNB */
     uint64_t amf_ue_ngap_id; /* AMF-UE-NGAP-ID received from AMF */
 
     ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;

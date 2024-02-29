@@ -1548,10 +1548,15 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
         subnet = ogs_pfcp_find_subnet_by_dnn(AF_INET, sess->session.name);
         subnet6 = ogs_pfcp_find_subnet_by_dnn(AF_INET6, sess->session.name);
 
-        if (subnet != NULL && subnet6 == NULL)
+        if (subnet != NULL && subnet6 == NULL) {
             sess->session.session_type = OGS_PDU_SESSION_TYPE_IPV4;
-        else if (subnet == NULL && subnet6 != NULL)
+            ogs_error("[%s] No IPv6 subnet or set to /63 or /64, "
+                    "only IPv4 assigned", sess->session.name);
+        } else if (subnet == NULL && subnet6 != NULL) {
             sess->session.session_type = OGS_PDU_SESSION_TYPE_IPV6;
+            ogs_error("[%s] No IPv4 subnet or set to /31 or /32, "
+                    "only IPv6 assigned", sess->session.name);
+        }
     }
 
     sess->session.paa.session_type = sess->session.session_type;

@@ -1218,6 +1218,38 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
 
+    /* Receive Handover Preparation Failure */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send Handover Required */
+    sendbuf = test_s1ap_build_handover_required(
+            test_ue, S1AP_HandoverType_intralte,
+            S1AP_ENB_ID_PR_macroENB_ID, 0x43,
+            S1AP_Cause_PR_radioNetwork,
+            S1AP_CauseRadioNetwork_time_critical_handover);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Handover Request */
+    recvbuf = testenb_s1ap_read(s1ap2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send Handover Failure */
+    sendbuf = test_s1ap_build_handover_failure(test_ue,
+            S1AP_Cause_PR_radioNetwork, S1AP_CauseRadioNetwork_unspecified);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UE Context Release Command */
+    recvbuf = testenb_s1ap_read(s1ap2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
     /* Send UE Context Release Complete */
     sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);

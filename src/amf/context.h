@@ -164,8 +164,8 @@ struct ran_ue_s {
     uint32_t        index;
 
     /* UE identity */
-#define INVALID_UE_NGAP_ID      0xffffffff /* Initial value of ran_ue_ngap_id */
-    uint32_t        ran_ue_ngap_id; /* eNB-UE-NGAP-ID received from eNB */
+#define INVALID_UE_NGAP_ID 0xffffffffffffffffULL /* Initial value of ran_ue_ngap_id */
+    uint64_t        ran_ue_ngap_id; /* RAN-UE-NGAP-ID received from RAN */
     uint64_t        amf_ue_ngap_id; /* AMF-UE-NGAP-ID received from AMF */
 
     uint16_t        gnb_ostream_id; /* SCTP output stream id for eNB */
@@ -389,8 +389,9 @@ struct amf_ue_s {
         (__aMF)->ran_ue_holding = ran_ue_cycle((__aMF)->ran_ue); \
         if ((__aMF)->ran_ue_holding) { \
             ogs_warn("[%s] Holding NG Context", (__aMF)->suci); \
-            ogs_warn("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]", \
-                    (__aMF)->suci, (__aMF)->ran_ue_holding->ran_ue_ngap_id, \
+            ogs_warn("[%s]    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]", \
+                    (__aMF)->suci, \
+                    (long long)(__aMF)->ran_ue_holding->ran_ue_ngap_id, \
                     (long long)(__aMF)->ran_ue_holding->amf_ue_ngap_id); \
             \
             (__aMF)->ran_ue_holding->ue_ctx_rel_action = \
@@ -406,8 +407,9 @@ struct amf_ue_s {
         if (ran_ue_cycle((__aMF)->ran_ue_holding)) { \
             int r; \
             ogs_warn("[%s] Clear NG Context", (__aMF)->suci); \
-            ogs_warn("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]", \
-                    (__aMF)->suci, (__aMF)->ran_ue_holding->ran_ue_ngap_id, \
+            ogs_warn("[%s]    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]", \
+                    (__aMF)->suci, \
+                    (long long)(__aMF)->ran_ue_holding->ran_ue_ngap_id, \
                     (long long)(__aMF)->ran_ue_holding->amf_ue_ngap_id); \
             \
             r = ngap_send_ran_ue_context_release_command( \
@@ -723,11 +725,11 @@ int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id);
 int amf_gnb_sock_type(ogs_sock_t *sock);
 amf_gnb_t *amf_gnb_cycle(amf_gnb_t *gnb);
 
-ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id);
+ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint64_t ran_ue_ngap_id);
 void ran_ue_remove(ran_ue_t *ran_ue);
 void ran_ue_switch_to_gnb(ran_ue_t *ran_ue, amf_gnb_t *new_gnb);
 ran_ue_t *ran_ue_find_by_ran_ue_ngap_id(
-        amf_gnb_t *gnb, uint32_t ran_ue_ngap_id);
+        amf_gnb_t *gnb, uint64_t ran_ue_ngap_id);
 ran_ue_t *ran_ue_find(uint32_t index);
 ran_ue_t *ran_ue_find_by_amf_ue_ngap_id(uint64_t amf_ue_ngap_id);
 ran_ue_t *ran_ue_cycle(ran_ue_t *ran_ue);

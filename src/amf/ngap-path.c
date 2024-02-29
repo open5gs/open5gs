@@ -365,8 +365,9 @@ int ngap_send_ran_ue_context_release_command(
     }
 
     ogs_debug("UEContextReleaseCommand");
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)ran_ue->ran_ue_ngap_id,
+            (long long)ran_ue->amf_ue_ngap_id);
 
     ogs_assert(action != NGAP_UE_CTX_REL_INVALID_ACTION);
     ran_ue->ue_ctx_rel_action = action;
@@ -668,7 +669,7 @@ int ngap_send_downlink_ran_status_transfer(
 
 int ngap_send_error_indication(
         amf_gnb_t *gnb,
-        uint32_t *ran_ue_ngap_id,
+        uint64_t *ran_ue_ngap_id,
         uint64_t *amf_ue_ngap_id,
         NGAP_Cause_PR group, long cause)
 {

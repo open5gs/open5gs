@@ -1016,7 +1016,7 @@ static void test4_func(abts_case *tc, void *data)
     int i;
 
     /* for backup */
-    uint32_t ran_ue_ngap_id;
+    uint64_t ran_ue_ngap_id;
     uint64_t amf_ue_ngap_id;
 
     ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;

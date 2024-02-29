@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 ogs_pkbuf_t *ogs_ngap_build_error_indication(
-    uint32_t *ran_ue_ngap_id,
+    uint64_t *ran_ue_ngap_id,
     uint64_t *amf_ue_ngap_id,
     NGAP_Cause_PR group, long cause);
 
@@ -39,7 +39,7 @@ ogs_pkbuf_t *ogs_ngap_build_ng_reset(
 
 void ogs_ngap_build_part_of_ng_interface(
     NGAP_UE_associatedLogicalNG_connectionList_t *partOfNG_Interface,
-    uint32_t *ran_ue_ngap_id, uint64_t *amf_ue_ngap_id);
+    uint64_t *ran_ue_ngap_id, uint64_t *amf_ue_ngap_id);
 
 ogs_pkbuf_t *ogs_ngap_build_ng_reset_ack(
     NGAP_UE_associatedLogicalNG_connectionList_t *partOfNG_Interface);
