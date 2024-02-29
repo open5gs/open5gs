@@ -731,7 +731,43 @@ int s1ap_send_handover_request(
         return OGS_NOTFOUND;
     }
 
-    ogs_assert(source_ue->target_ue == NULL);
+    target_ue = enb_ue_cycle(source_ue->target_ue);
+    if (target_ue) {
+    /*
+     * Issue #3014
+     *
+     * 1. HandoverRequired
+     * 2. HandoverRequest
+     * 3. HandoverFailure
+     * 4. UEContextReleaseCommand
+     * 5. HandoverPreparationFailure
+     *
+     * If UEContextReleaseComplete is not received,
+     * the Source-UE will have the Target-UE.
+     *
+     * 6. HandoverRequired
+     *
+     * There may be cases where the Source UE has a Target UE
+     * from a previous HandoverRequired process. In this case,
+     * it is recommended to force the deletion of the Target UE information
+     * when receiving a new HandoverRequired.
+     *
+     * 7. HandoverRequest
+     * 8. HandoverFailure
+     * 9. UEContextReleaseCommand
+     * 10. UEContextReleaseComplete
+     * 11. HandoverPreparationFailure
+     *
+     * ... Crashed ...
+     */
+        ogs_warn("DELETE the previously used TARGET in SOURCE");
+        ogs_warn("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
+        ogs_warn("    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
+        enb_ue_source_deassociate_target(target_ue);
+        enb_ue_remove(target_ue);
+    }
 
     target_ue = enb_ue_add(target_enb, INVALID_UE_S1AP_ID);
     if (target_ue == NULL) {

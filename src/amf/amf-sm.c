@@ -847,8 +847,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             break;
         case AMF_TIMER_NG_HOLDING:
             ogs_warn("Implicit NG release");
-            ogs_warn("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-                  ran_ue->ran_ue_ngap_id,
+            ogs_warn("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+                  (long long)ran_ue->ran_ue_ngap_id,
                   (long long)ran_ue->amf_ue_ngap_id);
             ngap_handle_ue_context_release_action(ran_ue);
             break;

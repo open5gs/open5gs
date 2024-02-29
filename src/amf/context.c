@@ -1318,7 +1318,7 @@ amf_gnb_t *amf_gnb_cycle(amf_gnb_t *gnb)
 }
 
 /** ran_ue_context handling function */
-ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
+ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint64_t ran_ue_ngap_id)
 {
     ran_ue_t *ran_ue = NULL;
 
@@ -1397,7 +1397,7 @@ void ran_ue_switch_to_gnb(ran_ue_t *ran_ue, amf_gnb_t *new_gnb)
 }
 
 ran_ue_t *ran_ue_find_by_ran_ue_ngap_id(
-        amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
+        amf_gnb_t *gnb, uint64_t ran_ue_ngap_id)
 {
     ran_ue_t *ran_ue = NULL;
 
@@ -1978,8 +1978,9 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
             if (CM_CONNECTED(old_amf_ue)) {
                 /* Implcit NG release */
                 ogs_warn("[%s] Implicit NG release", suci);
-                ogs_warn("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-                        old_amf_ue->suci, old_amf_ue->ran_ue->ran_ue_ngap_id,
+                ogs_warn("[%s]    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+                        old_amf_ue->suci,
+                        (long long)old_amf_ue->ran_ue->ran_ue_ngap_id,
                         (long long)old_amf_ue->ran_ue->amf_ue_ngap_id);
                 ran_ue_remove(old_amf_ue->ran_ue);
             }

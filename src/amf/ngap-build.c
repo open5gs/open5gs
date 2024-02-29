@@ -361,8 +361,9 @@ ogs_pkbuf_t *ngap_build_downlink_nas_transport(
 
     NAS_PDU = &ie->value.choice.NAS_PDU;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)ran_ue->ran_ue_ngap_id,
+            (long long)ran_ue->amf_ue_ngap_id);
 
     asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
@@ -623,8 +624,9 @@ ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
 
     SecurityKey = &ie->value.choice.SecurityKey;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)ran_ue->ran_ue_ngap_id,
+            (long long)ran_ue->amf_ue_ngap_id);
 
     asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
@@ -858,8 +860,9 @@ ogs_pkbuf_t *ngap_build_ue_context_modification_request(amf_ue_t *amf_ue)
 
     SecurityKey = &ie->value.choice.SecurityKey;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)ran_ue->ran_ue_ngap_id,
+            (long long)ran_ue->amf_ue_ngap_id);
 
     asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
@@ -1091,8 +1094,9 @@ ogs_pkbuf_t *ngap_sess_build_initial_context_setup_request(
 
     SecurityKey = &ie->value.choice.SecurityKey;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)ran_ue->ran_ue_ngap_id,
+            (long long)ran_ue->amf_ue_ngap_id);
 
     asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
@@ -1335,8 +1339,9 @@ ogs_pkbuf_t *ngap_ue_build_pdu_session_resource_setup_request(
 
     RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)ran_ue->ran_ue_ngap_id,
+            (long long)ran_ue->amf_ue_ngap_id);
 
     asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
@@ -1511,8 +1516,9 @@ ogs_pkbuf_t *ngap_sess_build_pdu_session_resource_setup_request(
 
     PDUSessionList = &ie->value.choice.PDUSessionResourceSetupListSUReq;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)ran_ue->ran_ue_ngap_id,
+            (long long)ran_ue->amf_ue_ngap_id);
 
     asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
@@ -1653,8 +1659,9 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request(
 
     PDUSessionList = &ie->value.choice.PDUSessionResourceModifyListModReq;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)ran_ue->ran_ue_ngap_id,
+            (long long)ran_ue->amf_ue_ngap_id);
 
     asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
@@ -1743,8 +1750,9 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command(
 
     RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)ran_ue->ran_ue_ngap_id,
+            (long long)ran_ue->amf_ue_ngap_id);
 
     asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
@@ -1991,8 +1999,9 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
     ie->criticality = NGAP_Criticality_ignore;
     ie->value.present = NGAP_PathSwitchRequestAcknowledgeIEs__value_PR_PDUSessionResourceSwitchedList;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)ran_ue->ran_ue_ngap_id,
+            (long long)ran_ue->amf_ue_ngap_id);
 
     asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
@@ -2131,8 +2140,9 @@ ogs_pkbuf_t *ngap_build_handover_request(ran_ue_t *target_ue)
 
     AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            target_ue->ran_ue_ngap_id, (long long)target_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)target_ue->ran_ue_ngap_id,
+            (long long)target_ue->amf_ue_ngap_id);
 
     asn_uint642INTEGER(AMF_UE_NGAP_ID, target_ue->amf_ue_ngap_id);
 
@@ -2443,8 +2453,9 @@ ogs_pkbuf_t *ngap_build_handover_preparation_failure(
 
     RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            source_ue->ran_ue_ngap_id, (long long)source_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)source_ue->ran_ue_ngap_id,
+            (long long)source_ue->amf_ue_ngap_id);
     asn_uint642INTEGER(AMF_UE_NGAP_ID, source_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = source_ue->ran_ue_ngap_id;
 
@@ -2524,8 +2535,9 @@ ogs_pkbuf_t *ngap_build_handover_command(ran_ue_t *source_ue)
 
     RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            source_ue->ran_ue_ngap_id, (long long)source_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)source_ue->ran_ue_ngap_id,
+            (long long)source_ue->amf_ue_ngap_id);
 
     asn_uint642INTEGER(AMF_UE_NGAP_ID, source_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = source_ue->ran_ue_ngap_id;
@@ -2642,8 +2654,9 @@ ogs_pkbuf_t *ngap_build_handover_cancel_ack(ran_ue_t *source_ue)
 
     RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            source_ue->ran_ue_ngap_id, (long long)source_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)source_ue->ran_ue_ngap_id,
+            (long long)source_ue->amf_ue_ngap_id);
 
     asn_uint642INTEGER(AMF_UE_NGAP_ID, source_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = source_ue->ran_ue_ngap_id;
@@ -2707,8 +2720,9 @@ ogs_pkbuf_t *ngap_build_downlink_ran_status_transfer(
 
     RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            target_ue->ran_ue_ngap_id, (long long)target_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)target_ue->ran_ue_ngap_id,
+            (long long)target_ue->amf_ue_ngap_id);
 
     asn_uint642INTEGER(AMF_UE_NGAP_ID, target_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = target_ue->ran_ue_ngap_id;

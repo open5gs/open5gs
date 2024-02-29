@@ -35,7 +35,7 @@ static void ngap_message_test1(abts_case *tc, void *data)
     size_t struct_size;
     asn_dec_rval_t dec_ret = {0};
 
-    uint32_t ran_ue_ngap_id;
+    uint64_t ran_ue_ngap_id;
     uint64_t amf_ue_ngap_id;
 
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
@@ -185,7 +185,7 @@ static void ngap_message_test4(abts_case *tc, void *data)
 }
 
 static ogs_pkbuf_t *build_uplink_nas_transport(
-        uint32_t ran_ue_ngap_id, uint64_t amf_ue_ngap_id, ogs_pkbuf_t *gmmbuf)
+        uint64_t ran_ue_ngap_id, uint64_t amf_ue_ngap_id, ogs_pkbuf_t *gmmbuf)
 {
     const char *payload =
         "7e005c00 0d0199f9 07f0ff00 00000020"
