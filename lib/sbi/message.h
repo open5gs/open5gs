@@ -330,6 +330,7 @@ extern "C" {
 #define OGS_SBI_PARAM_PLMN_ID                       "plmn-id"
 #define OGS_SBI_PARAM_SINGLE_NSSAI                  "single-nssai"
 #define OGS_SBI_PARAM_SNSSAI                        "snssai"
+#define OGS_SBI_PARAM_GUAMI                         "guami"
 #define OGS_SBI_PARAM_SNSSAIS                       "snssais"
 #define OGS_SBI_PARAM_TAI                           "tai"
 #define OGS_SBI_PARAM_SLICE_INFO_REQUEST_FOR_PDU_SESSION \
@@ -421,6 +422,8 @@ typedef struct ogs_sbi_part_s {
 typedef struct ogs_sbi_discovery_option_s {
     char *target_nf_instance_id;
     char *requester_nf_instance_id;
+
+    ogs_guami_t *target_guami;
 
     int num_of_service_names;
     char *service_names[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE];

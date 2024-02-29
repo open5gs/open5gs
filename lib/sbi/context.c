@@ -1955,6 +1955,31 @@ bool ogs_sbi_discovery_option_is_matched(
         return false;
     }
 
+    if (discovery_option->target_guami &&
+        (requester_nf_type == OpenAPI_nf_type_AMF)) {
+        /* AMF is searching for AMF */
+
+        ogs_list_for_each(&nf_instance->nf_info_list, node) {
+            int i;
+            for (i = 0; i < node->amf.num_of_guami; i++) {
+                nf_instance_guami = &node->amf.guami[i];
+
+                if ((memcmp(&nf_instance_guami->amf_id,
+                        &discovery_option->target_guami->amf_id,
+                        sizeof(ogs_amf_id_t)) == 0) &&
+                    (memcmp(&nf_instance_guami->plmn_id,
+                        &discovery_option->target_guami->plmn_id,
+                        OGS_PLMN_ID_LEN) == 0)) {
+                    return true;
+                }
+            }
+        }
+
+        /* TODO - backup_info_amf_removal and backup_info_amf_failure */
+
+        return false;
+    }
+
     if (discovery_option->num_of_service_names) {
         if (ogs_sbi_discovery_option_service_names_is_matched(
                     nf_instance, requester_nf_type, discovery_option) == false)
