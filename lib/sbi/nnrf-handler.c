@@ -258,13 +258,6 @@ void ogs_nnrf_nfm_handle_nf_profile(
         if (SmfInfoMap && SmfInfoMap->value)
             handle_smf_info(nf_instance, SmfInfoMap->value);
     }
-
-    if (NFProfile->scp_info)
-        handle_scp_info(nf_instance, NFProfile->scp_info);
-    if (NFProfile->sepp_info)
-        handle_sepp_info(nf_instance, NFProfile->sepp_info);
-
-
     if (NFProfile->amf_info)
         handle_amf_info(nf_instance, NFProfile->amf_info);
 
@@ -273,6 +266,10 @@ void ogs_nnrf_nfm_handle_nf_profile(
         if (AmfInfoMap && AmfInfoMap->value)
             handle_amf_info(nf_instance, AmfInfoMap->value);
     }
+    if (NFProfile->scp_info)
+        handle_scp_info(nf_instance, NFProfile->scp_info);
+    if (NFProfile->sepp_info)
+        handle_sepp_info(nf_instance, NFProfile->sepp_info);
 }
 
 static void handle_nf_service(

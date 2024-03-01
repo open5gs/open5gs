@@ -286,8 +286,7 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
     int i;
     ogs_sbi_request_t *request = NULL;
     OpenAPI_nf_type_e nf_type = OpenAPI_nf_type_NULL;
-    OpenAPI_guami_t *TargetGuami;
-    cJSON *guamiJSON = NULL;
+
     char sender_timestamp[OGS_SBI_RFC7231_DATE_LEN];
     char *max_rsp_time = NULL;
 
@@ -396,29 +395,16 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
                     discovery_option->requester_nf_instance_id);
         }
         if (discovery_option->target_guami) {
-            TargetGuami = ogs_sbi_build_guami(discovery_option->target_guami);
-            ogs_assert(TargetGuami);
-
-            guamiJSON = OpenAPI_guami_convertToJSON(TargetGuami);
-            ogs_sbi_free_guami(TargetGuami);
-
-            if (!guamiJSON) {
-                ogs_error("OpenAPI_guami_convertToJSON() failed");
-                ogs_sbi_request_free(request);
-                return NULL;
+            char *v = ogs_sbi_discovery_option_build_guami(discovery_option);
+            if (v) {
+                ogs_sbi_header_set(request->http.params,
+                        OGS_SBI_PARAM_GUAMI, v);
+                ogs_free(v);
+            } else {
+                ogs_warn("build failed: service-names[%d:%s]",
+                            discovery_option->num_of_service_names,
+                            discovery_option->service_names[0]);
             }
-
-            char *guami = cJSON_Print(guamiJSON);
-            if (!guami) {
-                ogs_error("cJSON_Print() failed");
-                ogs_sbi_request_free(request);
-                cJSON_Delete(guamiJSON);
-                return NULL;
-            }
-
-            ogs_sbi_header_set(request->http.params, OGS_SBI_PARAM_GUAMI, guami);
-            ogs_free(guami);
-            cJSON_Delete(guamiJSON);
         }
         if (ogs_sbi_self()->discovery_config.no_service_names == false &&
             discovery_option->num_of_service_names) {
@@ -848,9 +834,14 @@ int ogs_sbi_parse_request(
                 ogs_sbi_discovery_option_parse_snssais(discovery_option, v);
                 discovery_option_presence = true;
             }
+        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_GUAMI)) {
+            char *v = ogs_hash_this_val(hi);
+            if (v) {
+                ogs_sbi_discovery_option_parse_guami(discovery_option, v);
+                discovery_option_presence = true;
+            }
         } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_DNN)) {
             char *v = ogs_hash_this_val(hi);
-
             if (v) {
                 ogs_sbi_discovery_option_set_dnn(discovery_option, v);
                 discovery_option_presence = true;
@@ -3177,6 +3168,71 @@ void ogs_sbi_discovery_option_parse_snssais(
         }
     }
     cJSON_Delete(item);
+
+    ogs_free(v);
+}
+
+char *ogs_sbi_discovery_option_build_guami(
+        ogs_sbi_discovery_option_t *discovery_option)
+{
+    OpenAPI_guami_t *Guami = NULL;
+    cJSON *guamiItem = NULL;
+    char *v = NULL;
+
+    ogs_assert(discovery_option);
+    ogs_assert(discovery_option->target_guami);
+
+    Guami = ogs_sbi_build_guami(discovery_option->target_guami);
+    ogs_assert(Guami);
+    guamiItem = OpenAPI_guami_convertToJSON(Guami);
+    ogs_assert(guamiItem);
+    ogs_sbi_free_guami(Guami);
+
+    v = cJSON_PrintUnformatted(guamiItem);
+    ogs_expect(v);
+    cJSON_Delete(guamiItem);
+
+    return v;
+}
+
+void ogs_sbi_discovery_option_parse_guami(
+        ogs_sbi_discovery_option_t *discovery_option, char *guami)
+{
+    OpenAPI_guami_t *Guami = NULL;
+    cJSON *guamItem = NULL;
+    char *v = NULL;
+
+    ogs_assert(discovery_option);
+    ogs_assert(guami);
+
+    v = ogs_sbi_url_decode(guami);
+    if (!v) {
+        ogs_error("ogs_sbi_url_decode() failed : guami[%s]", guami);
+        return;
+    }
+
+    guamItem = cJSON_Parse(v);
+    if (!guamItem) {
+        ogs_error("Cannot parse guami[%s]", guami);
+        ogs_free(v);
+        return;
+    }
+
+    Guami = OpenAPI_guami_parseFromJSON(guamItem);
+
+    if (Guami) {
+        ogs_guami_t *ogs_guami = NULL;
+
+        discovery_option->target_guami = ogs_malloc(sizeof(*ogs_guami));
+        ogs_assert(discovery_option->target_guami);
+
+        ogs_sbi_parse_guami(discovery_option->target_guami, Guami);
+        OpenAPI_guami_free(Guami);
+    } else {
+        ogs_error("OpenAPI_guami_parseFromJSON() failed : guami[%s]",
+                guami);
+    }
+    cJSON_Delete(guamItem);
 
     ogs_free(v);
 }

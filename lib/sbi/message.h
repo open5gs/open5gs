@@ -296,6 +296,8 @@ extern "C" {
     OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_REQUESTER_PLMN_LIST
 #define OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_FEATURES  \
     OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_REQUESTER_FEATURES
+#define OGS_SBI_CUSTOM_DISCOVERY_GUAMI  \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_GUAMI
 #define OGS_SBI_CUSTOM_PRODUCER_ID       \
     OGS_SBI_CUSTOM_3GPP_COMMON "Producer-Id"
 #define OGS_SBI_CUSTOM_OCI               \
@@ -424,8 +426,6 @@ typedef struct ogs_sbi_discovery_option_s {
     char *target_nf_instance_id;
     char *requester_nf_instance_id;
 
-    ogs_guami_t *target_guami;
-
     int num_of_service_names;
     char *service_names[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE];
 
@@ -434,6 +434,8 @@ typedef struct ogs_sbi_discovery_option_s {
     char *dnn;
     bool tai_presence;
     ogs_5gs_tai_t tai;
+
+    ogs_guami_t *target_guami;
 
     int num_of_target_plmn_list;
     ogs_plmn_id_t target_plmn_list[OGS_MAX_NUM_OF_PLMN];
@@ -646,6 +648,11 @@ char *ogs_sbi_discovery_option_build_snssais(
         ogs_sbi_discovery_option_t *discovery_option);
 void ogs_sbi_discovery_option_parse_snssais(
         ogs_sbi_discovery_option_t *discovery_option, char *snssais);
+
+char *ogs_sbi_discovery_option_build_guami(
+        ogs_sbi_discovery_option_t *discovery_option);
+void ogs_sbi_discovery_option_parse_guami(
+        ogs_sbi_discovery_option_t *discovery_option, char *guami);
 
 void ogs_sbi_discovery_option_set_tai(
         ogs_sbi_discovery_option_t *discovery_option, ogs_5gs_tai_t *tai);

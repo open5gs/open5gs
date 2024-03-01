@@ -1604,7 +1604,7 @@ static void amf_namf_comm_decode_ue_mm_context_list(
         int num_of_s_nssai = 0;
         int num_of_nssai_mapping = 0;
 
-        MmContext = node1->data;
+        MmContext = node->data;
 
         AllowedNssaiList = MmContext->allowed_nssai;
         NssaiMappingList = MmContext->nssai_mapping_list;
@@ -1680,6 +1680,8 @@ int amf_namf_comm_handle_ue_context_transfer_response(
 {
     OpenAPI_ue_context_t *UeContext = NULL;
 
+ogs_error("V funkciji amf_namf_comm_handle_ue_context_transfer_response");
+
     if (!recvmsg->UeContextTransferRspData) {
         ogs_error("No UeContextTransferRspData");
         return OGS_ERROR;
@@ -1738,9 +1740,7 @@ int amf_namf_comm_handle_ue_context_transfer_response(
     }
 
     if (UeContext->pcf_id) {
-        if (amf_ue->pcf_instance_id)
-            ogs_free(amf_ue->pcf_instance_id);
-        amf_ue->pcf_instance_id = ogs_strdup(UeContext->pcf_id);
+        /* TODO */
     }
 
     /* TODO UeContext->pcfAmPolicyUri */

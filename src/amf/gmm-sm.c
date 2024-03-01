@@ -64,6 +64,7 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 {
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
+    ran_ue_t *ran_ue = NULL;
 
     ogs_sbi_message_t *sbi_message = NULL;
     ogs_nas_5gs_message_t *nas_message = NULL;
@@ -556,9 +557,13 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
                 SWITCH(sbi_message->h.resource.component[2])
                     CASE(OGS_SBI_RESOURCE_NAME_TRANSFER)
+                        nas_message = e->nas.message;
+                        ogs_assert(nas_message);
+
+                        ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+                        ogs_assert(ran_ue);
 
                         h.type = e->nas.type;
-                        nas_message = e->nas.message;
 
                         if (sbi_message->res_status == OGS_SBI_HTTP_STATUS_OK) {
                             r = amf_namf_comm_handle_ue_context_transfer_response(sbi_message, amf_ue);
@@ -576,12 +581,20 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                         }
 
                         if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(amf_ue)) {
+
+                            /*
+                            * If the OLD RAN_UE is being maintained in AMF-UE Context,
+                            * it deletes the NG Context after exchanging
+                            * the UEContextReleaseCommand/Complete with the gNB
+                            */
+                            CLEAR_NG_CONTEXT(amf_ue);
+
                             gmm_cause = gmm_handle_registration_update(
                                     amf_ue, &nas_message->gmm.registration_request);
                             if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
                                 ogs_error("[%s] gmm_handle_registration_update() "
                                             "failed [%d]", amf_ue->suci, gmm_cause);
-                                r = nas_5gs_send_registration_reject(amf_ue, gmm_cause);
+                                r = nas_5gs_send_registration_reject(ran_ue, amf_ue, gmm_cause);
                                 ogs_expect(r == OGS_OK);
                                 ogs_assert(r != OGS_ERROR);
                                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -593,8 +606,8 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                                 if (amf_update_allowed_nssai(amf_ue) == false) {
                                     ogs_error("No Allowed-NSSAI");
                                     r = nas_5gs_send_gmm_reject(
-                                        amf_ue,
-                                        OGS_5GMM_CAUSE_NO_NETWORK_SLICES_AVAILABLE);
+                                            ran_ue, amf_ue,
+                                            OGS_5GMM_CAUSE_NO_NETWORK_SLICES_AVAILABLE);
                                     ogs_expect(r == OGS_OK);
                                     ogs_assert(r != OGS_ERROR);
                                     OGS_FSM_TRAN(s, gmm_state_exception);
@@ -1335,7 +1348,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 bool serving_guami = false;
                 int i;
 
-                /* Compare all serving guami-s with guami from UE's GUTI */
+                /* Compare all serving guamis with guami from UE's GUTI */
                 for (i = 0; i < amf_self()->num_of_served_guami; i++) {
                     if ((memcmp(&amf_self()->served_guami[i].amf_id,
                                 &amf_ue->current.guti.amf_id,
@@ -1343,6 +1356,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                         (memcmp(&amf_self()->served_guami[i].plmn_id,
                                 &amf_ue->current.guti.nas_plmn_id,
                                 OGS_PLMN_ID_LEN) == 0)) {
+
                         serving_guami = true;
                         break;
                     }

@@ -225,6 +225,9 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_SNSSAIS)) {
             if (val)
                 ogs_sbi_discovery_option_parse_snssais(discovery_option, val);
+        } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_GUAMI)) {
+            if (val)
+                ogs_sbi_discovery_option_parse_guami(discovery_option, val);
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_DNN)) {
             ogs_sbi_discovery_option_set_dnn(discovery_option, val);
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_TAI)) {

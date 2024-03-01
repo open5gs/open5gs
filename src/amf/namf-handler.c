@@ -1380,7 +1380,6 @@ int amf_namf_comm_handle_ue_context_transfer_request(
         UeContext.pei = amf_ue->pei;
     }
 
-
     if ((amf_ue->ue_ambr.uplink > 0) || (amf_ue->ue_ambr.downlink > 0)) {
         UeAmbr = ogs_malloc(sizeof(*UeAmbr));
         ogs_assert(UeAmbr);
@@ -1419,9 +1418,8 @@ int amf_namf_comm_handle_ue_context_transfer_request(
     encoded_gmm_capability = amf_namf_comm_base64_encode_5gmm_capability(amf_ue);
     UeContext._5g_mm_capability = encoded_gmm_capability;
 
-    if (amf_ue->pcf_instance_id) {
-        UeContext.pcf_id = amf_ue->pcf_instance_id;
-    }
+    UeContext.pcf_id = amf_ue->sbi.service_type_array[
+        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL].nf_instance->id;
 
     /* TODO UeContext.pcfAmPolicyUri */
     /* TODO UeContext.pcfUePolicyUri */
