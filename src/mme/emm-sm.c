@@ -504,7 +504,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
 
             if (emm_tau_request_ue_comes_from_gb_or_iu(&message->emm.tracking_area_update_request)) {
                 ogs_info("TAU request : UE comes from SGSN, attempt retrieving context");
-                guti_to_rai_ptmsi(&mme_ue->next.guti, &rai, NULL, NULL);
+                guti_to_rai_ptmsi(&mme_ue->next.guti, &rai, NULL);
                 sgsn = mme_sgsn_find_by_routing_address(&rai, 0xffff);
                 if (!sgsn) {
                     ogs_plmn_id_t plmn_id;

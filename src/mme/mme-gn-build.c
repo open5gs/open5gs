@@ -194,7 +194,6 @@ ogs_pkbuf_t *mme_gn_build_sgsn_context_request(
     ogs_gtp1_sgsn_context_request_t *req = NULL;
     ogs_nas_rai_t rai;
     mme_p_tmsi_t ptmsi;
-    uint32_t ptmsi_sig;
     ogs_gtp1_gsn_addr_t mme_gnc_gsnaddr, mme_gnc_alt_gsnaddr;
     int gsn_len;
     int rv;
@@ -206,11 +205,13 @@ ogs_pkbuf_t *mme_gn_build_sgsn_context_request(
     req = &gtp1_message.sgsn_context_request;
     memset(&gtp1_message, 0, sizeof(ogs_gtp1_message_t));
 
-    guti_to_rai_ptmsi(&mme_ue->next.guti, &rai, &ptmsi, &ptmsi_sig);
+    guti_to_rai_ptmsi(&mme_ue->next.guti, &rai, &ptmsi);
 
     req->imsi.presence = 0;
 
     req->routeing_area_identity.presence = 1;
+    /* Needs to be big-endian */
+    rai.lai.lac = htons(rai.lai.lac);
     req->routeing_area_identity.data = &rai;
     req->routeing_area_identity.len = sizeof(ogs_nas_rai_t);
 
@@ -218,9 +219,6 @@ ogs_pkbuf_t *mme_gn_build_sgsn_context_request(
 
     req->packet_tmsi.presence = 1;
     req->packet_tmsi.u32 = be32toh(ptmsi);
-
-    req->p_tmsi_signature.presence = 1;
-    req->p_tmsi_signature.u24 = ptmsi_sig;
 
     req->ms_validated.presence = 0;
 
