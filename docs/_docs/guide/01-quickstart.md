@@ -432,7 +432,7 @@ $ sudo systemctl restart open5gs-upfd
 #### Register Subscriber Information
 ---
 
-Connect to `http://localhost:3000` and login with **admin** account.
+Connect to `http://localhost:9999` and login with **admin** account.
 
 > Username : admin  
 > Password : 1423

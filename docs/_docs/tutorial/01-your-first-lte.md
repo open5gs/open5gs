@@ -229,7 +229,7 @@ K : 82E9053A1882085FF2C020359938DAE9
 OPc : BFD5771AAF4F6728E9BC6EF2C2533BDB  
 ```
 
-Connect to `http://localhost:3000` and login with **admin** account.
+Connect to `http://localhost:9999` and login with **admin** account.
 
 > Username : admin  
 > Password : 1423

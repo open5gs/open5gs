@@ -147,7 +147,7 @@ If there is a need to change the Core Network component configuration, then corr
 
 - Provision SIM details in open5gs HSS
 
-Open (http://<DOCKER_HOST_IP>:3000) in a web browser, where <DOCKER_HOST_IP> is the IP of the machine/VM running the open5gs containers. Login with following credentials
+Open (http://<DOCKER_HOST_IP>:9999) in a web browser, where <DOCKER_HOST_IP> is the IP of the machine/VM running the open5gs containers. Login with following credentials
 
 ```
 Username : admin
