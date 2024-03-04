@@ -654,14 +654,16 @@ typedef struct amf_sess_s {
             ogs_pkbuf_free((__sESS)->gsm_message.n1buf); \
         } \
         (__sESS)->gsm_message.n1buf = __n1Buf; \
-        ogs_assert((__sESS)->gsm_message.n1buf); \
+        \
         if ((__sESS)->gsm_message.n2buf) { \
             ogs_warn("[%s:%d] N2 message duplicated. Overwritten", \
                     ((__sESS)->amf_ue)->supi, (__sESS)->psi); \
             ogs_pkbuf_free((__sESS)->gsm_message.n2buf); \
         } \
         (__sESS)->gsm_message.n2buf = __n2Buf; \
+        \
         ogs_assert((__sESS)->gsm_message.n2buf); \
+        \
         (__sESS)->gsm_message.type = __tYPE; \
     } while(0);
 

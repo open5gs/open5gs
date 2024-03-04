@@ -21,12 +21,14 @@
 
 abts_suite *test_same_dnn(abts_suite *suite);
 abts_suite *test_different_dnn(abts_suite *suite);
+abts_suite *test_paging(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
 } alltests[] = {
     {test_same_dnn},
     {test_different_dnn},
+    {test_paging},
     {NULL},
 };
 
