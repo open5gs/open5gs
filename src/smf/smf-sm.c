@@ -870,8 +870,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                             NULL, strerror, NULL));
                 ogs_free(strerror);
-
-                OGS_FSM_TRAN(s, smf_gsm_state_exception);
                 break;
             }
 
