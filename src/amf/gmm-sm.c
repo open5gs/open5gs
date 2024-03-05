@@ -1365,7 +1365,17 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 ogs_error("gmm_handle_identity_response() "
                             "failed [%d] in type [%d]",
                             gmm_cause, amf_ue->nas.message_type);
-                r = nas_5gs_send_gmm_reject(ran_ue, amf_ue, gmm_cause);
+                if (amf_ue->nas.message_type ==
+                        OGS_NAS_5GS_REGISTRATION_REQUEST ||
+                    amf_ue->nas.message_type ==
+                        OGS_NAS_5GS_SERVICE_REQUEST)
+                    r = nas_5gs_send_gmm_reject(ran_ue, amf_ue, gmm_cause);
+                else
+                    r = ngap_send_error_indication2(
+                            ran_ue,
+                            NGAP_Cause_PR_protocol,
+                            NGAP_CauseProtocol_semantic_error);
+
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
