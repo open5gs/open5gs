@@ -787,7 +787,7 @@ int mme_gtp_send_bearer_resource_command(
  *************************/
 
 int mme_gtp1_send_sgsn_context_request(
-        mme_sgsn_t *sgsn, mme_ue_t *mme_ue)
+        mme_sgsn_t *sgsn, mme_ue_t *mme_ue, const ogs_nas_p_tmsi_signature_t *ptmsi_sig)
 {
     int rv;
     ogs_gtp1_header_t h;
@@ -800,7 +800,7 @@ int mme_gtp1_send_sgsn_context_request(
     h.type = OGS_GTP1_SGSN_CONTEXT_REQUEST_TYPE;
     h.teid = 0;
 
-    pkbuf = mme_gn_build_sgsn_context_request(mme_ue);
+    pkbuf = mme_gn_build_sgsn_context_request(mme_ue, ptmsi_sig);
     if (!pkbuf) {
         ogs_error("mme_gn_build_ran_information_relay() failed");
         return OGS_ERROR;

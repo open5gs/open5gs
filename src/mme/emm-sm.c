@@ -291,6 +291,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
     ogs_nas_eps_message_t *message = NULL;
     ogs_nas_rai_t rai;
     ogs_nas_security_header_type_t h;
+    ogs_nas_p_tmsi_signature_t *ptmsi_sig = NULL;
 
     ogs_assert(e);
 
@@ -517,7 +518,9 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     OGS_FSM_TRAN(s, &emm_state_exception);
                     break;
                 }
-                mme_gtp1_send_sgsn_context_request(sgsn, mme_ue);
+                if (message->emm.tracking_area_update_request.presencemask & OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_OLD_P_TMSI_SIGNATURE_TYPE)
+                    ptmsi_sig = &message->emm.tracking_area_update_request.old_p_tmsi_signature;
+                mme_gtp1_send_sgsn_context_request(sgsn, mme_ue, ptmsi_sig);
                 /* FIXME: use a specific FSM state here to state we are waiting for resolution from Gn? */
                 break;
             }

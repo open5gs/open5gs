@@ -56,7 +56,7 @@ int mme_gtp_send_bearer_resource_command(
         mme_bearer_t *bearer, ogs_nas_eps_message_t *nas_message);
 
 int mme_gtp1_send_sgsn_context_request(
-        mme_sgsn_t *sgsn, mme_ue_t *mme_ue);
+        mme_sgsn_t *sgsn, mme_ue_t *mme_ue, const ogs_nas_p_tmsi_signature_t *ptmsi_sig);
 
 int mme_gtp1_send_sgsn_context_response(
         mme_ue_t *mme_ue, uint8_t cause, ogs_gtp_xact_t *xact);
