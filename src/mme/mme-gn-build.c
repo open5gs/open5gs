@@ -188,7 +188,7 @@ static int sess_fill_pdp_context_decoded(mme_sess_t *sess, ogs_gtp1_pdp_context_
 
 /* 3GPP TS 29.060 7.5.3 SGSN Context Request */
 ogs_pkbuf_t *mme_gn_build_sgsn_context_request(
-                mme_ue_t *mme_ue)
+                mme_ue_t *mme_ue, const ogs_nas_p_tmsi_signature_t *ptmsi_sig)
 {
     ogs_gtp1_message_t gtp1_message;
     ogs_gtp1_sgsn_context_request_t *req = NULL;
@@ -219,6 +219,11 @@ ogs_pkbuf_t *mme_gn_build_sgsn_context_request(
 
     req->packet_tmsi.presence = 1;
     req->packet_tmsi.u32 = be32toh(ptmsi);
+
+    if (ptmsi_sig) {
+        req->p_tmsi_signature.presence = 1;
+        req->p_tmsi_signature.u24 = *ptmsi_sig >> 8;
+    }
 
     req->ms_validated.presence = 0;
 
