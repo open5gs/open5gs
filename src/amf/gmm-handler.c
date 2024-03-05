@@ -130,6 +130,12 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
         return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
     }
 
+    if (mobile_identity->length < OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE) {
+        ogs_error("The length of Mobile Identity(%d) is less then the min(%d)",
+            mobile_identity->length, OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE);
+        return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
+    }
+
     mobile_identity_header =
             (ogs_nas_5gs_mobile_identity_header_t *)mobile_identity->buffer;
 
@@ -883,6 +889,12 @@ ogs_nas_5gmm_cause_t gmm_handle_identity_response(amf_ue_t *amf_ue,
 
     if (!mobile_identity->length || !mobile_identity->buffer) {
         ogs_error("No Mobile Identity");
+        return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
+    }
+
+    if (mobile_identity->length < OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE) {
+        ogs_error("The length of Mobile Identity(%d) is less then the min(%d)",
+            mobile_identity->length, OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE);
         return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
     }
 
