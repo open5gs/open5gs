@@ -218,7 +218,7 @@ ogs_pkbuf_t *mme_gn_build_sgsn_context_request(
     req->temporary_logical_link_identifier.presence = 0;
 
     req->packet_tmsi.presence = 1;
-    req->packet_tmsi.u32 = be32toh(ptmsi);
+    req->packet_tmsi.u32 = ptmsi;
 
     if (ptmsi_sig) {
         req->p_tmsi_signature.presence = 1;
