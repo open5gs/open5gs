@@ -48,6 +48,26 @@ ogs_mongoc_mongoc_client_get_server_status (mongoc_client_t *client, /* IN */
     return ret;
 }
 
+static int db_uri_creds_from_env(mongoc_uri_t *uri)
+{
+    char *username;
+    char *password;
+
+    username = getenv("DB_USER");
+    password = getenv("DB_PASS");
+
+    if (username && password && strlen(username) && strlen(password)) {
+        if (!mongoc_uri_set_username(uri, username) ||
+            !mongoc_uri_set_password(uri, password)) {
+            ogs_error("Failed to set DB username and password from environment");
+            return OGS_ERROR;
+        }
+        ogs_info("Setting DB username and password from environment");
+    }
+
+    return OGS_OK;
+}
+
 static char *masked_db_uri(const char *db_uri)
 {
     char *tmp;
@@ -83,7 +103,7 @@ int ogs_mongoc_init(const char *db_uri)
     bson_error_t error;
     bson_iter_t iter;
 
-    const mongoc_uri_t *uri;
+    mongoc_uri_t *uri;
 
     if (!db_uri) {
         ogs_error("No DB_URI");
@@ -98,18 +118,22 @@ int ogs_mongoc_init(const char *db_uri)
 
     self.initialized = true;
 
-    self.client = mongoc_client_new(db_uri);
-    if (!self.client) {
+    uri = mongoc_uri_new(db_uri);
+    if (!uri) {
         ogs_error("Failed to parse DB URI [%s]", self.masked_db_uri);
         return OGS_ERROR;
     }
 
+    if (db_uri_creds_from_env(uri) != OGS_OK)
+        return OGS_ERROR;
+
+    self.client = mongoc_client_new_from_uri(uri);
+
+    ogs_assert(self.client);
+
 #if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 4
     mongoc_client_set_error_api(self.client, 2);
 #endif
-
-    uri = mongoc_client_get_uri(self.client);
-    ogs_assert(uri);
 
     self.name = mongoc_uri_get_database(uri);
     ogs_assert(self.name);
