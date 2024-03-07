@@ -279,6 +279,7 @@ static mme_sess_t *mme_ue_session_from_gtp1_pdp_ctx(mme_ue_t *mme_ue, const ogs_
     }
     sess->request_type.value = OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
 
+    /* NSAPI = EBI: 3GPP TS 23.401 5.2.1, TS 23.060 14.4A */
     bearer = mme_bearer_find_by_sess_ebi(sess, gtp1_pdp_ctx->nsapi);
     if (!bearer) {
         bearer = mme_default_bearer_in_sess(sess);

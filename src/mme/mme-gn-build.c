@@ -147,7 +147,7 @@ static int sess_fill_pdp_context_decoded(mme_sess_t *sess, ogs_gtp1_pdp_context_
         .asi = OGS_GTP1_PDPCTX_ACTIVITY_STATUS_IND_NO,
         .order = OGS_GTP1_PDPCTX_REORDERING_REQUIRED_NO,
         /* 3GPP TS 23.401 Annex D3.5.5 2b.:
-         * "The GTP equence numbers received from the old 3G-SGSN are only relevant if
+         * "The GTP sequence numbers received from the old 3G-SGSN are only relevant if
          * delivery order is required for the PDP context (QoS profile)."
          * NOTE 4: "The GTP and PDCP sequence numbers are not relevant" */
         .snd = 0,
@@ -165,7 +165,7 @@ static int sess_fill_pdp_context_decoded(mme_sess_t *sess, ogs_gtp1_pdp_context_
     ogs_cpystrn(pdpctx_dec->apn, sess->session->name, sizeof(pdpctx_dec->apn));
 
     ogs_list_for_each(&sess->bearer_list, bearer) {
-        pdpctx_dec->nsapi  = bearer->ebi;
+        pdpctx_dec->nsapi = bearer->ebi; /* 3GPP TS 23.401 5.2.1, TS 23.060 14.4 */
         pdpctx_dec->sapi = 3; /* FIXME. Using 3 = default for now. Maybe use 0 = UNASSIGNED ?*/
         build_qos_profile_from_session(&pdpctx_dec->qos_sub, sess, bearer);
         //FIXME: sort out where to get each one:
