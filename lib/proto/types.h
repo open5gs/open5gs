@@ -118,7 +118,9 @@ extern "C" {
 #define OGS_TIME_TO_BCD(x) \
     (((((x) % 10) << 4) & 0xf0) | (((x) / 10) & 0x0f))
 
+/* 3GPP TS 24.007 Table 11.6: */
 #define OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
+/* 3GPP TS 24.007 Table 11.2.3.1c.1: */
 #define OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED 0
 
 #define OGS_ACCESS_TYPE_3GPP 1
