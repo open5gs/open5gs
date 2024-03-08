@@ -225,7 +225,7 @@ static mme_sess_t *mme_ue_session_from_gtp1_pdp_ctx(mme_ue_t *mme_ue, const ogs_
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
     const ogs_gtp1_qos_profile_decoded_t *qos_pdec = &gtp1_pdp_ctx->qos_sub;
-    uint8_t pti = gtp1_pdp_ctx->trans_id;
+    uint8_t pti = 1; /* Default PTI : 1 */
     uint8_t qci = 0;
     ogs_session_t *ogs_sess;
 
