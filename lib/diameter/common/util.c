@@ -51,3 +51,37 @@ bool ogs_diam_app_connected(uint32_t app_id)
     else
         return false;
 }
+
+
+
+/* 
+ * Sets the realm from IMSI
+ *
+ * The realm is in the following format:
+ * EPC_DOMAIN="epc.mnc${MNC}.mcc${MCC}.3gppnetwork.org"
+ * e.g. "epc.mnc0{01}.mcc{001}.3gppnetwork.org"
+ * and IMSI is {001}{ 01}XXXXXXXX or and IMSI is {001}{001}XXXXXXXX 
+ *              MCC  MNC                          MCC  MNC
+ */
+DiamId_t ogs_set_realm_from_imsi_bcd(const char * imsi_bcd) {
+    DiamId_t realm = strdup(fd_g_config->cnf_diamrlm);
+     
+    /* Get the MCC part */
+    char * mcc = strstr(realm, "mcc");
+    if (mcc != NULL) {
+        strncpy(mcc + 3, imsi_bcd, 3);
+    }
+
+    /* Get the MNC part */
+    char * mnc = strstr(realm, "mnc");
+    if (mnc != NULL) {
+        //if MNC is 2 digit the last elemnt in imsi_bcd will be 0x00
+        if(imsi_bcd[OGS_MAX_IMSI_BCD_LEN])
+            strncpy(mnc + 4, imsi_bcd + 3, 3);
+        else
+            strncpy(mnc + 4, imsi_bcd + 3, 2);
+
+    }
+
+    return realm;
+}

@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "core-config-private.h": "c",
+        "mme-event.h": "c",
+        "ogs-proto.h": "c",
+        "mme-fd-path.h": "c",
+        "fd-path.h": "c",
+        "*.tcc": "c",
+        "cstdio": "c"
+    }
+}

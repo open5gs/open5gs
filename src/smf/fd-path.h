@@ -28,6 +28,7 @@ extern "C" {
 
 typedef struct gtp_xact_s gtp_xact_t;
 
+
 int smf_fd_init(void);
 void smf_fd_final(void);
 

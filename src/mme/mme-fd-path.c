@@ -666,6 +666,7 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
     return error;
 }
 
+
 /* MME Sends Authentication Information Request to HSS */
 void mme_s6a_send_air(mme_ue_t *mme_ue,
     ogs_nas_authentication_failure_parameter_t
@@ -722,10 +723,11 @@ void mme_s6a_send_air(mme_ue_t *mme_ue,
     ogs_assert(ret == 0);
 
     /* Set the Destination-Realm AVP */
+    DiamId_t dest_realm = ogs_set_realm_from_imsi_bcd(mme_ue->imsi_bcd);
     ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    val.os.data = (unsigned char *)(dest_realm);
+    val.os.len  = strlen(dest_realm);
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
@@ -1124,10 +1126,11 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     ogs_assert(ret == 0);
 
     /* Set the Destination-Realm AVP */
+    DiamId_t dest_realm = ogs_set_realm_from_imsi_bcd(mme_ue->imsi_bcd);
     ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    val.os.data = (unsigned char *)(dest_realm);
+    val.os.len  = strlen(dest_realm);
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
@@ -1280,10 +1283,11 @@ void mme_s6a_send_pur(mme_ue_t *mme_ue)
     ogs_assert(ret == 0);
 
     /* Set the Destination-Realm AVP */
+    DiamId_t dest_realm = ogs_set_realm_from_imsi_bcd(mme_ue->imsi_bcd);
     ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    val.os.data = (unsigned char *)(dest_realm);
+    val.os.len  = strlen(dest_realm);
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);

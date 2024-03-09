@@ -74,6 +74,7 @@ void ogs_diam_final(void);
 
 int ogs_diam_config_init(ogs_diam_config_t *fd_config);
 bool ogs_diam_app_connected(uint32_t app_id);
+DiamId_t ogs_set_realm_from_imsi_bcd(const char * imsi_bcd);
 
 int fd_avp_search_avp ( struct avp * groupedavp,
         struct dict_object * what, struct avp ** avp );

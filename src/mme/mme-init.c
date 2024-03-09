@@ -48,7 +48,7 @@ int mme_initialize(void)
 
     ogs_gtp_context_init(OGS_MAX_NUM_OF_GTPU_RESOURCE);
     mme_context_init();
-
+    
     rv = ogs_gtp_xact_init();
     if (rv != OGS_OK) return rv;
 
