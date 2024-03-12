@@ -29,7 +29,7 @@ extern "C" {
 void smf_bearer_binding(smf_sess_t *sess);
 int smf_gtp2_send_create_bearer_request(smf_bearer_t *bearer);
 
-void smf_qos_flow_binding(smf_sess_t *sess);
+void smf_qos_flow_binding(smf_sess_t *sess, bool default_rules_updated);
 
 #ifdef __cplusplus
 }

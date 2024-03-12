@@ -1508,6 +1508,40 @@ void ogs_sbi_free_pcc_rule(OpenAPI_pcc_rule_t *PccRule)
     ogs_free(PccRule);
 }
 
+void ogs_sbi_free_sess_rule(OpenAPI_session_rule_t *SessRule)
+{
+    ogs_assert(SessRule);
+    if (SessRule->auth_sess_ambr) {
+        if (SessRule->auth_sess_ambr->downlink)
+            ogs_free(SessRule->auth_sess_ambr->downlink);
+        if (SessRule->auth_sess_ambr->uplink)
+            ogs_free(SessRule->auth_sess_ambr->uplink);
+        ogs_free(SessRule->auth_sess_ambr);
+    }
+    if (SessRule->auth_def_qos) {
+        if (SessRule->auth_def_qos->arp)
+            ogs_free(SessRule->auth_def_qos->arp);
+        if (SessRule->auth_def_qos->maxbr_ul)
+            ogs_free(SessRule->auth_def_qos->maxbr_ul);
+        if (SessRule->auth_def_qos->maxbr_dl)
+            ogs_free(SessRule->auth_def_qos->maxbr_dl);
+        if (SessRule->auth_def_qos->gbr_ul)
+            ogs_free(SessRule->auth_def_qos->gbr_ul);
+        if (SessRule->auth_def_qos->gbr_dl)
+            ogs_free(SessRule->auth_def_qos->gbr_dl);
+        ogs_free(SessRule->auth_def_qos);
+    }
+    if (SessRule->sess_rule_id)
+        ogs_free(SessRule->sess_rule_id);
+    if (SessRule->ref_um_data)
+        ogs_free(SessRule->ref_um_data);
+    if (SessRule->ref_um_n3g_data)
+        ogs_free(SessRule->ref_um_n3g_data);
+    if (SessRule->ref_cond_data)
+        ogs_free(SessRule->ref_cond_data);
+    ogs_free(SessRule);
+}
+
 OpenAPI_qos_data_t *ogs_sbi_build_qos_data(ogs_pcc_rule_t *pcc_rule)
 {
     OpenAPI_qos_data_t *QosData = NULL;

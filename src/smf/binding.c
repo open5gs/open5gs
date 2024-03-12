@@ -465,7 +465,7 @@ int smf_gtp2_send_create_bearer_request(smf_bearer_t *bearer)
     return rv;
 }
 
-void smf_qos_flow_binding(smf_sess_t *sess)
+void smf_qos_flow_binding(smf_sess_t *sess, bool default_rules_updated)
 {
     int rv;
     int i, j;
@@ -477,6 +477,17 @@ void smf_qos_flow_binding(smf_sess_t *sess)
     pfcp_flags = OGS_PFCP_MODIFY_NETWORK_REQUESTED;
 
     ogs_list_init(&sess->qos_flow_to_modify_list);
+
+    if (default_rules_updated) {
+        smf_bearer_t *qos_flow = smf_default_bearer_in_sess(sess);
+        ogs_assert(qos_flow);
+        ogs_assert(qos_flow->qer);
+        qos_flow->qer->mbr.uplink = sess->session.ambr.uplink;
+        qos_flow->qer->mbr.downlink = sess->session.ambr.downlink;
+        pfcp_flags |= OGS_PFCP_MODIFY_QOS_MODIFY;
+        ogs_list_add(&sess->qos_flow_to_modify_list,
+                                &qos_flow->to_modify_node);
+    }
 
     for (i = 0; i < sess->policy.num_of_pcc_rule; i++) {
         smf_bearer_t *qos_flow = NULL;

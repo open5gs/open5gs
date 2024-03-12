@@ -37,7 +37,7 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
     switch (state) {
     case SMF_UE_REQUESTED_PDU_SESSION_ESTABLISHMENT:
         if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
-            smf_qos_flow_binding(sess);
+            smf_qos_flow_binding(sess, false);
         } else {
             ogs_error("[%s:%d] HTTP response error [%d]",
                 smf_ue->supi, sess->psi, recvmsg->res_status);

@@ -271,6 +271,110 @@ static void update_authorized_pcc_rule_and_qos(
     }
 }
 
+static bool update_default_session_rules(
+        smf_sess_t *sess, OpenAPI_sm_policy_decision_t *SmPolicyDecision)
+{
+    OpenAPI_lnode_t *node = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(SmPolicyDecision);
+
+    bool session_changed = false;
+    smf_bearer_t *qos_flow = smf_default_bearer_in_sess(sess);
+
+    if (SmPolicyDecision->sess_rules) {
+        OpenAPI_map_t *SessRuleMap = NULL;
+        OpenAPI_session_rule_t *SessionRule = NULL;
+
+        OpenAPI_ambr_t *AuthSessAmbr = NULL;
+        OpenAPI_authorized_default_qos_t *AuthDefQos = NULL;
+
+        OpenAPI_list_for_each(SmPolicyDecision->sess_rules, node) {
+            SessRuleMap = node->data;
+            if (!SessRuleMap) {
+                ogs_error("No SessRuleMap");
+                continue;
+            }
+
+            SessionRule = SessRuleMap->value;
+            if (!SessionRule) {
+                ogs_error("No SessionRule");
+                continue;
+            }
+
+            AuthSessAmbr = SessionRule->auth_sess_ambr;
+            if (AuthSessAmbr) {
+                if (AuthSessAmbr->uplink) {
+                    uint64_t uplink_ambr = ogs_sbi_bitrate_from_string(AuthSessAmbr->uplink);
+                    if (qos_flow && qos_flow->qos.mbr.uplink != uplink_ambr)
+                        session_changed = true;
+                    sess->session.ambr.uplink = uplink_ambr;
+                }
+                if (AuthSessAmbr->downlink) {
+                    uint64_t downlink_ambr = ogs_sbi_bitrate_from_string(AuthSessAmbr->uplink);
+                    if (qos_flow && qos_flow->qos.mbr.downlink != downlink_ambr)
+                        session_changed = true;
+                    sess->session.ambr.downlink = downlink_ambr;
+                }
+            }
+
+            AuthDefQos = SessionRule->auth_def_qos;
+            if (AuthDefQos) {
+                if (qos_flow && (qos_flow->qos.index != AuthDefQos->_5qi ||
+                    qos_flow->qos.arp.priority_level != AuthDefQos->priority_level))
+                    session_changed = true;
+                sess->session.qos.index = AuthDefQos->_5qi;
+                sess->session.qos.arp.priority_level =
+                    AuthDefQos->priority_level;
+
+                if (AuthDefQos->arp) {
+                    if (qos_flow && (qos_flow->qos.arp.priority_level !=
+                        AuthDefQos->arp->priority_level))
+                        session_changed = true;
+                    sess->session.qos.arp.priority_level = AuthDefQos->arp->priority_level;
+
+                    if (AuthDefQos->arp->preempt_cap ==
+                        OpenAPI_preemption_capability_NOT_PREEMPT) {
+                        if (qos_flow && (qos_flow->qos.arp.pre_emption_capability
+                        != OGS_5GC_PRE_EMPTION_DISABLED))
+                            session_changed = true;
+                        sess->session.qos.arp.pre_emption_capability =
+                            OGS_5GC_PRE_EMPTION_DISABLED;
+                    }
+                    else if (AuthDefQos->arp->preempt_cap ==
+                        OpenAPI_preemption_capability_MAY_PREEMPT) {
+                        if (qos_flow && (qos_flow->qos.arp.pre_emption_capability !=
+                            OGS_5GC_PRE_EMPTION_ENABLED))
+                            session_changed = true;
+                        sess->session.qos.arp.pre_emption_capability =
+                            OGS_5GC_PRE_EMPTION_ENABLED;
+                    }
+                    ogs_assert(sess->session.qos.arp.pre_emption_capability);
+
+                    if (AuthDefQos->arp->preempt_vuln ==
+                        OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE) {
+                        if (qos_flow && (qos_flow->qos.arp.pre_emption_vulnerability !=
+                            OGS_5GC_PRE_EMPTION_DISABLED))
+                            session_changed = true;
+                        sess->session.qos.arp.pre_emption_vulnerability =
+                            OGS_5GC_PRE_EMPTION_DISABLED;
+                    }
+                    else if (AuthDefQos->arp->preempt_vuln ==
+                        OpenAPI_preemption_vulnerability_PREEMPTABLE) {
+                        if (qos_flow && (qos_flow->qos.arp.pre_emption_vulnerability !=
+                            OGS_5GC_PRE_EMPTION_ENABLED))
+                            session_changed = true;
+                        sess->session.qos.arp.pre_emption_vulnerability =
+                            OGS_5GC_PRE_EMPTION_ENABLED;
+                    }
+                    ogs_assert(sess->session.qos.arp.pre_emption_vulnerability);
+                }
+            }
+        }
+    }
+    return session_changed;
+}
+
 bool smf_npcf_smpolicycontrol_handle_create(
         smf_sess_t *sess, int state, ogs_sbi_message_t *recvmsg)
 {
@@ -363,71 +467,8 @@ bool smf_npcf_smpolicycontrol_handle_create(
         }
     }
 
-    /* Update authorized session-AMBR */
-    if (SmPolicyDecision->sess_rules) {
-        OpenAPI_map_t *SessRuleMap = NULL;
-        OpenAPI_session_rule_t *SessionRule = NULL;
-
-        OpenAPI_ambr_t *AuthSessAmbr = NULL;
-        OpenAPI_authorized_default_qos_t *AuthDefQos = NULL;
-
-        OpenAPI_list_for_each(SmPolicyDecision->sess_rules, node) {
-            SessRuleMap = node->data;
-            if (!SessRuleMap) {
-                ogs_error("No SessRuleMap");
-                continue;
-            }
-
-            SessionRule = SessRuleMap->value;
-            if (!SessionRule) {
-                ogs_error("No SessionRule");
-                continue;
-            }
-
-
-            AuthSessAmbr = SessionRule->auth_sess_ambr;
-            if (AuthSessAmbr && trigger_results[
-                OpenAPI_policy_control_request_trigger_SE_AMBR_CH] == true) {
-                if (AuthSessAmbr->uplink)
-                    sess->session.ambr.uplink =
-                        ogs_sbi_bitrate_from_string(AuthSessAmbr->uplink);
-                if (AuthSessAmbr->downlink)
-                    sess->session.ambr.downlink =
-                        ogs_sbi_bitrate_from_string(AuthSessAmbr->downlink);
-            }
-
-            AuthDefQos = SessionRule->auth_def_qos;
-            if (AuthDefQos && trigger_results[
-                OpenAPI_policy_control_request_trigger_DEF_QOS_CH] == true) {
-                sess->session.qos.index = AuthDefQos->_5qi;
-                sess->session.qos.arp.priority_level =
-                    AuthDefQos->priority_level;
-                if (AuthDefQos->arp) {
-                    sess->session.qos.arp.priority_level =
-                            AuthDefQos->arp->priority_level;
-                    if (AuthDefQos->arp->preempt_cap ==
-                        OpenAPI_preemption_capability_NOT_PREEMPT)
-                        sess->session.qos.arp.pre_emption_capability =
-                            OGS_5GC_PRE_EMPTION_DISABLED;
-                    else if (AuthDefQos->arp->preempt_cap ==
-                        OpenAPI_preemption_capability_MAY_PREEMPT)
-                        sess->session.qos.arp.pre_emption_capability =
-                            OGS_5GC_PRE_EMPTION_ENABLED;
-                    ogs_assert(sess->session.qos.arp.pre_emption_capability);
-
-                    if (AuthDefQos->arp->preempt_vuln ==
-                        OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE)
-                        sess->session.qos.arp.pre_emption_vulnerability =
-                            OGS_5GC_PRE_EMPTION_DISABLED;
-                    else if (AuthDefQos->arp->preempt_vuln ==
-                        OpenAPI_preemption_vulnerability_PREEMPTABLE)
-                        sess->session.qos.arp.pre_emption_vulnerability =
-                            OGS_5GC_PRE_EMPTION_ENABLED;
-                    ogs_assert(sess->session.qos.arp.pre_emption_vulnerability);
-                }
-            }
-        }
-    }
+    /* Update default session rules */
+    update_default_session_rules(sess, SmPolicyDecision);
 
     /* Update authorized PCC rule & QoS */
     update_authorized_pcc_rule_and_qos(sess, SmPolicyDecision);
@@ -682,12 +723,15 @@ bool smf_npcf_smpolicycontrol_handle_update_notify(
         goto cleanup;
     }
 
+    /* Update default session rules */
+    bool default_rules_updated = update_default_session_rules(sess, SmPolicyDecision);
+
     /* Update authorized PCC rule & QoS */
     update_authorized_pcc_rule_and_qos(sess, SmPolicyDecision);
 
     ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 
-    smf_qos_flow_binding(sess);
+    smf_qos_flow_binding(sess, default_rules_updated);
 
     return true;
 
