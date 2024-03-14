@@ -856,9 +856,10 @@ int ogs_sbi_parse_request(
                     ogs_uint64_from_string(v);
                 discovery_option_presence = true;
             }
+        }
 
         /* URL Query Parameter */
-        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_NF_ID)) {
+        if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_NF_ID)) {
             message->param.nf_id = ogs_hash_this_val(hi);
         } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_NF_TYPE)) {
             message->param.nf_type =
