@@ -85,7 +85,7 @@ extern "C" {
 
 #define OGS_MAX_NUM_OF_ALGORITHM        8
 
-#define OGS_MAX_GUTI_LEN                28
+#define OGS_MAX_5G_GUTI_LEN             28
 
 #define OGS_MAX_NUM_OF_SERVED_GUMMEI    8   /* maxnoofRATs: 8 */
 #define OGS_MAX_NUM_OF_SERVED_GUAMI     256 /* maxnoofServedGUAMIs: 256 */

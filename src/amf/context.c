@@ -1980,12 +1980,12 @@ static bool amf_namf_comm_parse_guti(ogs_nas_5gs_guti_t *guti, char *ue_context_
     mcc_string[LENGTH_OF_MCC] = '\0';
     index += LENGTH_OF_MCC;
 
-    if (strlen(ue_context_id) == OGS_MAX_GUTI_LEN - 1) {
+    if (strlen(ue_context_id) == OGS_MAX_5G_GUTI_LEN - 1) {
         /* mnc is 2 characters long */
         mnc_string[MIN_LENGTH_OF_MNC] = '\0';
         strncpy(mnc_string, &ue_context_id[index], MIN_LENGTH_OF_MNC);
         index += MIN_LENGTH_OF_MNC;
-    } else if (strlen(ue_context_id) == OGS_MAX_GUTI_LEN) {
+    } else if (strlen(ue_context_id) == OGS_MAX_5G_GUTI_LEN) {
         /* mnc is 3 characters long */
         mnc_string[MAX_LENGTH_OF_MNC] = '\0';
         strncpy(mnc_string, &ue_context_id[index], MAX_LENGTH_OF_MNC);

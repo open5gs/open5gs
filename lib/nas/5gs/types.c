@@ -969,7 +969,7 @@ int ogs_nas_parse_qos_rules(
     return (int)(rule-first);
 }
 
-bool ogs_nas_guti_is_valid(ogs_nas_5gs_guti_t *guti)
+bool ogs_nas_5gs_guti_is_valid(ogs_nas_5gs_guti_t *guti)
 {
     if ((guti->amf_id.region !=0) &&
         (guti->amf_id.set2 !=0) &&

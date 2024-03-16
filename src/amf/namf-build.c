@@ -40,8 +40,8 @@ static char* ogs_guti_to_string(amf_ue_t *amf_ue)
 
     /* TS29.518 6.1.3.2.2 Guti pattern (27 or 28 characters):
     "5g-guti-[0-9]{5,6}[0-9a-fA-F]{14}" */
-    ogs_assert(strlen(guti) == (OGS_MAX_GUTI_LEN - 1) ||
-            (strlen(guti)) == OGS_MAX_GUTI_LEN);
+    ogs_assert(strlen(guti) == (OGS_MAX_5G_GUTI_LEN - 1) ||
+            (strlen(guti)) == OGS_MAX_5G_GUTI_LEN);
 
     ogs_free(amf_id);
     ogs_free(tmsi);

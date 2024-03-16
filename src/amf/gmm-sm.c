@@ -1329,7 +1329,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             /* Check if registration is done with GUTI  */
             if (mobile_identity_header && mobile_identity_header->type ==
                     OGS_NAS_5GS_MOBILE_IDENTITY_GUTI &&
-                    ogs_nas_guti_is_valid(&amf_ue->current.guti)) {
+                    ogs_nas_5gs_guti_is_valid(&amf_ue->current.guti)) {
 
                 /*
                 * TS 23.502

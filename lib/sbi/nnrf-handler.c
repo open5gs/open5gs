@@ -696,11 +696,9 @@ static void handle_amf_info(
                     GuamiAmfInfoItem->plmn_id->mnc &&
                     GuamiAmfInfoItem->plmn_id->mcc) {
 
-                ogs_guami_t guami;
-                memset(&guami, 0, sizeof(ogs_guami_t));
-
-                ogs_sbi_parse_guami(&guami, GuamiAmfInfoItem);
-                nf_info->amf.guami[nf_info->amf.num_of_guami] = guami;
+                ogs_sbi_parse_guami(
+                        &nf_info->amf.guami[nf_info->amf.num_of_guami],
+                        GuamiAmfInfoItem);
                 nf_info->amf.num_of_guami++;
             }
         }
