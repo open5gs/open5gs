@@ -30,13 +30,13 @@ int mme_fd_init(void);
 void mme_fd_final(void);
 
 /* MME Sends Authentication Information Request to HSS */
-void mme_s6a_send_air(mme_ue_t *mme_ue,
+void mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
     ogs_nas_authentication_failure_parameter_t
         *authentication_failure_parameter);
 /* MME Sends Update Location Request to HSS */
-void mme_s6a_send_ulr(mme_ue_t *mme_ue);
+void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue);
 /* MME Sends Purge UE Request to HSS */
-void mme_s6a_send_pur(mme_ue_t *mme_ue);
+void mme_s6a_send_pur(enb_ue_t *enb_ue, mme_ue_t *mme_ue);
 
 #ifdef __cplusplus
 }

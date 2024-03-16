@@ -124,7 +124,7 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     return;
 
 error:
-    r = nas_eps_send_attach_reject(mme_ue,
+    r = nas_eps_send_attach_reject(mme_ue->enb_ue, mme_ue,
             OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
             OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
     ogs_expect(r == OGS_OK);
@@ -210,7 +210,7 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                     ogs_plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
     }
 
-    r = nas_eps_send_attach_reject(mme_ue,
+    r = nas_eps_send_attach_reject(mme_ue->enb_ue, mme_ue,
             emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);

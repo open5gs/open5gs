@@ -165,6 +165,8 @@ void testemm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         testemm_handle_tau_accept(test_ue,
                 &message.emm.tracking_area_update_accept);
         break;
+    case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT:
+        break;
     case OGS_NAS_EPS_EMM_INFORMATION:
         break;
     case OGS_NAS_EPS_CS_SERVICE_NOTIFICATION:
