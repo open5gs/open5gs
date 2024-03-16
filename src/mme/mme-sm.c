@@ -566,6 +566,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             goto cleanup;
         }
 
+        enb_ue = enb_ue_cycle(e->enb_ue);
+        /*
+         * The 'enb_ue' context is not checked
+         * because the status is checked in the sending routine.
+         */
+
         switch (s6a_message->cmd_code) {
         case OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION:
             ogs_debug("OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION");
@@ -573,12 +579,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
                 ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
                         mme_ue->imsi_bcd, emm_cause);
-                enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-                if (!enb_ue) {
-                    ogs_error("S1 context has already been removed");
-                    break;
-                }
-                r = nas_eps_send_attach_reject(mme_ue, emm_cause,
+                r = nas_eps_send_attach_reject(
+                        enb_ue, mme_ue, emm_cause,
                         OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
@@ -594,21 +596,29 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("OGS_DIAM_S6A_CMD_CODE_UPDATE_LOCATION");
             emm_cause = mme_s6a_handle_ula(mme_ue, s6a_message);
             if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
-                ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
-                        mme_ue->imsi_bcd, emm_cause);
-                enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-                if (!enb_ue) {
-                    ogs_error("S1 context has already been removed");
-                    break;
-                }
-                r = nas_eps_send_attach_reject(mme_ue, emm_cause,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
+                if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
+                    ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
+                            mme_ue->imsi_bcd, emm_cause);
+                    r = nas_eps_send_attach_reject(
+                            enb_ue, mme_ue, emm_cause,
+                            OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
+                    ogs_info("[%s] TAU reject [OGS_NAS_EMM_CAUSE:%d]",
+                            mme_ue->imsi_bcd, emm_cause);
+                    r = nas_eps_send_tau_reject(
+                            enb_ue, mme_ue, emm_cause);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else
+                    ogs_error("Invalid Type[%d]", mme_ue->nas_eps.type);
 
                 r = s1ap_send_ue_context_release_command(enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                        mme_ue_cycle(enb_ue->mme_ue) ?
+                            S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE :
+                            S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             }

@@ -35,6 +35,7 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
 
 struct sess_state {
     mme_ue_t *mme_ue;
+    enb_ue_t *enb_ue;
     struct timespec ts; /* Time of sending the message */
 };
 
@@ -667,7 +668,7 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
 }
 
 /* MME Sends Authentication Information Request to HSS */
-void mme_s6a_send_air(mme_ue_t *mme_ue,
+void mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
     ogs_nas_authentication_failure_parameter_t
         *authentication_failure_parameter)
 {
@@ -683,7 +684,15 @@ void mme_s6a_send_air(mme_ue_t *mme_ue,
 
     uint8_t resync[OGS_AUTS_LEN + OGS_RAND_LEN];
 
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return;
+    }
+
+    if (!enb_ue_cycle(enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return;
+    }
 
     ogs_debug("[MME] Authentication-Information-Request");
 
@@ -695,6 +704,7 @@ void mme_s6a_send_air(mme_ue_t *mme_ue,
     ogs_assert(sess_data);
 
     sess_data->mme_ue = mme_ue;
+    sess_data->enb_ue = enb_ue;
 
     /* Create the request */
     ret = fd_msg_new(ogs_diam_s6a_cmd_air, MSGFL_ALLOC_ETEID, &req);
@@ -831,6 +841,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
 
     mme_event_t *e = NULL;
     mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     ogs_diam_s6a_message_t *s6a_message = NULL;
     ogs_diam_s6a_aia_message_t *aia_message = NULL;
     ogs_diam_e_utran_vector_t *e_utran_vector = NULL;
@@ -867,6 +878,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
 
     mme_ue = sess_data->mme_ue;
     ogs_assert(mme_ue);
+    enb_ue = sess_data->enb_ue;
+    ogs_assert(enb_ue);
 
     /* Set Authentication-Information Command */
     s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
@@ -1022,6 +1035,7 @@ out:
         e = mme_event_new(MME_EVENT_S6A_MESSAGE);
         ogs_assert(e);
         e->mme_ue = mme_ue;
+        e->enb_ue = enb_ue;
         e->s6a_message = s6a_message;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
@@ -1078,7 +1092,7 @@ out:
 }
 
 /* MME Sends Update Location Request to HSS */
-void mme_s6a_send_ulr(mme_ue_t *mme_ue)
+void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
 {
     int ret;
 
@@ -1089,7 +1103,15 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     struct session *session = NULL;
     ogs_nas_plmn_id_t nas_plmn_id;
 
-    ogs_assert(mme_ue);
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return;
+    }
+
+    if (!enb_ue_cycle(enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return;
+    }
 
     ogs_debug("[MME] Update-Location-Request");
 
@@ -1097,6 +1119,7 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     sess_data = ogs_calloc(1, sizeof(*sess_data));
     ogs_assert(sess_data);
     sess_data->mme_ue = mme_ue;
+    sess_data->enb_ue = enb_ue;
 
     /* Create the request */
     ret = fd_msg_new(ogs_diam_s6a_cmd_ulr, MSGFL_ALLOC_ETEID, &req);
@@ -1234,98 +1257,6 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 }
 
-/* MME Sends Purge UE Request to HSS */
-void mme_s6a_send_pur(mme_ue_t *mme_ue)
-{
-    int ret;
-
-    struct msg *req = NULL;
-    struct avp *avp;
-    union avp_value val;
-    struct sess_state *sess_data = NULL, *svg;
-    struct session *session = NULL;
-
-    ogs_assert(mme_ue);
-
-    ogs_debug("[MME] Purge-UE-Request");
-
-    /* Create the random value to store with the session */
-    sess_data = ogs_calloc(1, sizeof(*sess_data));
-    ogs_assert(sess_data);
-    sess_data->mme_ue = mme_ue;
-
-    /* Create the request */
-    ret = fd_msg_new(ogs_diam_s6a_cmd_pur, MSGFL_ALLOC_ETEID, &req);
-    ogs_assert(ret == 0);
-
-    /* Create a new session */
-    #define OGS_DIAM_S6A_APP_SID_OPT  "app_s6a"
-    ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_S6A_APP_SID_OPT, 
-            CONSTSTRLEN(OGS_DIAM_S6A_APP_SID_OPT));
-    ogs_assert(ret == 0);
-    ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
-    ogs_assert(ret == 0);
-
-    /* Set the Auth-Session-State AVP */
-    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
-    ogs_assert(ret == 0);
-    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
-
-    /* Set Origin-Host & Origin-Realm */
-    ret = fd_msg_add_origin(req, 0);
-    ogs_assert(ret == 0);
-
-    /* Set the Destination-Realm AVP */
-    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
-    ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
-
-    /* Set the User-Name AVP */
-    ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
-    ogs_assert(ret == 0);
-    val.os.data = (uint8_t *)mme_ue->imsi_bcd;
-    val.os.len  = strlen(mme_ue->imsi_bcd);
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
-
-    /* Set Vendor-Specific-Application-Id AVP */
-    ret = ogs_diam_message_vendor_specific_appid_set(
-            req, OGS_DIAM_S6A_APPLICATION_ID);
-    ogs_assert(ret == 0);
-
-    ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
-    ogs_assert(ret == 0);
-
-    /* Keep a pointer to the session data for debug purpose,
-     * in real life we would not need it */
-    svg = sess_data;
-
-    /* Store this value in the session */
-    ret = fd_sess_state_store(mme_s6a_reg, session, &sess_data);
-    ogs_assert(ret == 0);
-    ogs_assert(sess_data == 0);
-
-    /* Send the request */
-    ret = fd_msg_send(&req, mme_s6a_pua_cb, svg);
-    ogs_assert(ret == 0);
-
-    /* Increment the counter */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_sent++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
-}
-
 /* MME received Update Location Answer from HSS */
 static void mme_s6a_ula_cb(void *data, struct msg **msg)
 {
@@ -1342,6 +1273,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
 
     mme_event_t *e = NULL;
     mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     ogs_diam_s6a_message_t *s6a_message = NULL;
     ogs_diam_s6a_ula_message_t *ula_message = NULL;
     ogs_subscription_data_t *subscription_data = NULL;
@@ -1378,6 +1310,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
 
     mme_ue = sess_data->mme_ue;
     ogs_assert(mme_ue);
+    enb_ue = sess_data->enb_ue;
+    ogs_assert(enb_ue);
 
     /* Set Update-Location Command */
     s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
@@ -1519,6 +1453,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
         e = mme_event_new(MME_EVENT_S6A_MESSAGE);
         ogs_assert(e);
         e->mme_ue = mme_ue;
+        e->enb_ue = enb_ue;
         e->s6a_message = s6a_message;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
@@ -1579,6 +1514,107 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     return;
 }
 
+/* MME Sends Purge UE Request to HSS */
+void mme_s6a_send_pur(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
+{
+    int ret;
+
+    struct msg *req = NULL;
+    struct avp *avp;
+    union avp_value val;
+    struct sess_state *sess_data = NULL, *svg;
+    struct session *session = NULL;
+
+    if (!mme_ue_cycle(mme_ue)) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return;
+    }
+
+    if (!enb_ue_cycle(enb_ue)) {
+        ogs_error("S1 context has already been removed");
+        return;
+    }
+
+    ogs_debug("[MME] Purge-UE-Request");
+
+    /* Create the random value to store with the session */
+    sess_data = ogs_calloc(1, sizeof(*sess_data));
+    ogs_assert(sess_data);
+    sess_data->mme_ue = mme_ue;
+    sess_data->enb_ue = enb_ue;
+
+    /* Create the request */
+    ret = fd_msg_new(ogs_diam_s6a_cmd_pur, MSGFL_ALLOC_ETEID, &req);
+    ogs_assert(ret == 0);
+
+    /* Create a new session */
+    #define OGS_DIAM_S6A_APP_SID_OPT  "app_s6a"
+    ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_S6A_APP_SID_OPT,
+            CONSTSTRLEN(OGS_DIAM_S6A_APP_SID_OPT));
+    ogs_assert(ret == 0);
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
+    ogs_assert(ret == 0);
+
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set Origin-Host & Origin-Realm */
+    ret = fd_msg_add_origin(req, 0);
+    ogs_assert(ret == 0);
+
+    /* Set the Destination-Realm AVP */
+    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
+    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set the User-Name AVP */
+    ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = (uint8_t *)mme_ue->imsi_bcd;
+    val.os.len  = strlen(mme_ue->imsi_bcd);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            req, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
+
+    ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
+    ogs_assert(ret == 0);
+
+    /* Keep a pointer to the session data for debug purpose,
+     * in real life we would not need it */
+    svg = sess_data;
+
+    /* Store this value in the session */
+    ret = fd_sess_state_store(mme_s6a_reg, session, &sess_data);
+    ogs_assert(ret == 0);
+    ogs_assert(sess_data == 0);
+
+    /* Send the request */
+    ret = fd_msg_send(&req, mme_s6a_pua_cb, svg);
+    ogs_assert(ret == 0);
+
+    /* Increment the counter */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_diam_logger_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+}
+
 /* MME received Purge UE Answer from HSS */
 static void mme_s6a_pua_cb(void *data, struct msg **msg)
 {
@@ -1595,6 +1631,7 @@ static void mme_s6a_pua_cb(void *data, struct msg **msg)
 
     mme_event_t *e = NULL;
     mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     ogs_diam_s6a_message_t *s6a_message = NULL;
     ogs_diam_s6a_pua_message_t *pua_message = NULL;
 
@@ -1630,6 +1667,8 @@ static void mme_s6a_pua_cb(void *data, struct msg **msg)
 
     mme_ue = sess_data->mme_ue;
     ogs_assert(mme_ue);
+    enb_ue = sess_data->enb_ue;
+    ogs_assert(enb_ue);
 
     /* Set Purge-UE Command */
     s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
@@ -1727,6 +1766,7 @@ static void mme_s6a_pua_cb(void *data, struct msg **msg)
         e = mme_event_new(MME_EVENT_S6A_MESSAGE);
         ogs_assert(e);
         e->mme_ue = mme_ue;
+        e->enb_ue = enb_ue;
         e->s6a_message = s6a_message;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {

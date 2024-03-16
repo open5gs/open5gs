@@ -1440,7 +1440,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             amf_ue->explict_de_registered.n1_done = true;
 
             if (amf_ue->explict_de_registered.sbi_done == true) {
-                r = ngap_send_ran_ue_context_release_command(amf_ue->ran_ue,
+                r = ngap_send_ran_ue_context_release_command(ran_ue,
                         NGAP_Cause_PR_misc, NGAP_CauseMisc_om_intervention,
                         NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
                 ogs_expect(r == OGS_OK);

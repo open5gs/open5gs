@@ -47,6 +47,7 @@ void tests1ap_handle_downlink_nas_transport(
 
     S1AP_DownlinkNASTransport_IEs_t *ie = NULL;
     S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
     S1AP_NAS_PDU_t *NAS_PDU = NULL;
 
     ogs_assert(test_ue);
@@ -64,6 +65,9 @@ void tests1ap_handle_downlink_nas_transport(
         case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
             break;
+        case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+            ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+            break;
         case S1AP_ProtocolIE_ID_id_NAS_PDU:
             NAS_PDU = &ie->value.choice.NAS_PDU;
             break;
@@ -74,6 +78,8 @@ void tests1ap_handle_downlink_nas_transport(
 
     if (MME_UE_S1AP_ID)
         test_ue->mme_ue_s1ap_id = *MME_UE_S1AP_ID;
+    if (ENB_UE_S1AP_ID)
+        test_ue->enb_ue_s1ap_id = *ENB_UE_S1AP_ID;
 
     if (NAS_PDU)
         tests1ap_send_to_nas(test_ue, NAS_PDU);
@@ -91,6 +97,7 @@ void tests1ap_handle_initial_context_setup_request(
 
     S1AP_InitialContextSetupRequestIEs_t *ie = NULL;
     S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
     S1AP_NAS_PDU_t *NAS_PDU = NULL;
     S1AP_E_RABToBeSetupListCtxtSUReq_t *E_RABToBeSetupListCtxtSUReq = NULL;
 
@@ -109,6 +116,9 @@ void tests1ap_handle_initial_context_setup_request(
         case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
             MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
             break;
+        case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+            ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+            break;
         case S1AP_ProtocolIE_ID_id_E_RABToBeSetupListCtxtSUReq:
             E_RABToBeSetupListCtxtSUReq =
                 &ie->value.choice.E_RABToBeSetupListCtxtSUReq;
@@ -120,6 +130,8 @@ void tests1ap_handle_initial_context_setup_request(
 
     if (MME_UE_S1AP_ID)
         test_ue->mme_ue_s1ap_id = *MME_UE_S1AP_ID;
+    if (ENB_UE_S1AP_ID)
+        test_ue->enb_ue_s1ap_id = *ENB_UE_S1AP_ID;
 
     for (i = 0; i < E_RABToBeSetupListCtxtSUReq->list.count; i++) {
         S1AP_E_RABToBeSetupItemCtxtSUReqIEs_t *ie2 = NULL;

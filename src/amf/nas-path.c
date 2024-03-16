@@ -41,13 +41,12 @@ int nas_5gs_send_to_gnb(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
 }
 
 int nas_5gs_send_to_downlink_nas_transport(
-        ran_ue_t *ran_ue, amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
+        ran_ue_t *ran_ue, ogs_pkbuf_t *pkbuf)
 {
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
 
     ogs_assert(ran_ue_cycle(ran_ue));
-    ogs_assert(amf_ue_cycle(amf_ue));
     ogs_assert(pkbuf);
 
     ngapbuf = ngap_build_downlink_nas_transport(ran_ue, pkbuf, false, false);
@@ -211,7 +210,7 @@ int nas_5gs_send_registration_reject(
         return OGS_ERROR;
     }
 
-    rv = nas_5gs_send_to_downlink_nas_transport(ran_ue, amf_ue, gmmbuf);
+    rv = nas_5gs_send_to_downlink_nas_transport(ran_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);
 
     return rv;
@@ -290,8 +289,7 @@ int nas_5gs_send_service_accept(amf_ue_t *amf_ue)
             rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
             ogs_expect(rv == OGS_OK);
         } else {
-            rv = nas_5gs_send_to_downlink_nas_transport(
-                    amf_ue->ran_ue, amf_ue, gmmbuf);
+            rv = nas_5gs_send_to_downlink_nas_transport(amf_ue->ran_ue, gmmbuf);
             ogs_expect(rv == OGS_OK);
         }
     }
@@ -316,7 +314,7 @@ int nas_5gs_send_service_reject(
         return OGS_ERROR;
     }
 
-    rv = nas_5gs_send_to_downlink_nas_transport(ran_ue, amf_ue, gmmbuf);
+    rv = nas_5gs_send_to_downlink_nas_transport(ran_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);
 
     return rv;
@@ -351,8 +349,7 @@ int nas_5gs_send_de_registration_accept(amf_ue_t *amf_ue)
             return OGS_ERROR;
         }
 
-        rv = nas_5gs_send_to_downlink_nas_transport(
-                amf_ue->ran_ue, amf_ue, gmmbuf);
+        rv = nas_5gs_send_to_downlink_nas_transport(amf_ue->ran_ue, gmmbuf);
         if (rv != OGS_OK) {
             ogs_error("nas_5gs_send_to_downlink_nas_transport() failed");
             return rv;
@@ -410,8 +407,7 @@ int nas_5gs_send_de_registration_request(
     ogs_timer_start(amf_ue->t3522.timer,
             amf_timer_cfg(AMF_TIMER_T3522)->duration);
 
-    rv = nas_5gs_send_to_downlink_nas_transport(
-            amf_ue->ran_ue, amf_ue, gmmbuf);
+    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue->ran_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);
 
     return rv;
@@ -453,8 +449,7 @@ int nas_5gs_send_identity_request(amf_ue_t *amf_ue)
     ogs_timer_start(amf_ue->t3570.timer,
             amf_timer_cfg(AMF_TIMER_T3570)->duration);
 
-    rv = nas_5gs_send_to_downlink_nas_transport(
-            amf_ue->ran_ue, amf_ue, gmmbuf);
+    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue->ran_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);
 
     return rv;
@@ -498,7 +493,7 @@ int nas_5gs_send_authentication_request(amf_ue_t *amf_ue)
 
     amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_AMF_AUTH_REQ);
 
-    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue->ran_ue, amf_ue, gmmbuf);
+    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue->ran_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);
 
     return rv;
@@ -529,7 +524,7 @@ int nas_5gs_send_authentication_reject(amf_ue_t *amf_ue)
 
     amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_AMF_AUTH_REJECT);
 
-    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue->ran_ue, amf_ue, gmmbuf);
+    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue->ran_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);
 
     return rv;
@@ -571,7 +566,7 @@ int nas_5gs_send_security_mode_command(amf_ue_t *amf_ue)
     ogs_timer_start(amf_ue->t3560.timer,
             amf_timer_cfg(AMF_TIMER_T3560)->duration);
 
-    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue->ran_ue, amf_ue, gmmbuf);
+    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue->ran_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);
 
     return rv;
@@ -632,7 +627,7 @@ int nas_5gs_send_configuration_update_command(
 
     amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_MM_CONF_UPDATE);
 
-    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue->ran_ue, amf_ue, gmmbuf);
+    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue->ran_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);
 
     return rv;
@@ -887,7 +882,7 @@ int nas_5gs_send_gmm_status(amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t cause)
         return OGS_ERROR;
     }
 
-    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue->ran_ue, amf_ue, gmmbuf);
+    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue->ran_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);
 
     return rv;
@@ -1004,7 +999,7 @@ int nas_5gs_send_dl_nas_transport(ran_ue_t *ran_ue, amf_sess_t *sess,
         ogs_error("gmm_build_dl_nas_transport() failed");
         return OGS_ERROR;
     }
-    rv = nas_5gs_send_to_downlink_nas_transport(ran_ue, amf_ue, gmmbuf);
+    rv = nas_5gs_send_to_downlink_nas_transport(ran_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);
 
     return rv;

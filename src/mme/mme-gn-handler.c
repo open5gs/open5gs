@@ -344,7 +344,7 @@ int mme_gn_handle_sgsn_context_response(
 
     if (resp->cause.u8 != OGS_GTP1_CAUSE_REQUEST_ACCEPTED) {
         ogs_error("[Gn] Rx SGSN Context Response cause:%u", resp->cause.u8);
-        rv = nas_eps_send_tau_reject(mme_ue, emm_cause);
+        rv = nas_eps_send_tau_reject(mme_ue->enb_ue, mme_ue, emm_cause);
         return OGS_GTP1_CAUSE_SYSTEM_FAILURE;
     }
 
@@ -434,7 +434,7 @@ int mme_gn_handle_sgsn_context_response(
 nack_and_reject:
     rv = mme_gtp1_send_sgsn_context_ack(mme_ue, gtp1_cause, xact);
     ogs_info("[%s] TAU Reject [OGS_NAS_EMM_CAUSE:%d]", mme_ue->imsi_bcd, emm_cause);
-    rv = nas_eps_send_tau_reject(mme_ue, emm_cause);
+    rv = nas_eps_send_tau_reject(mme_ue->enb_ue, mme_ue, emm_cause);
     return OGS_GTP1_CAUSE_SYSTEM_FAILURE;
 }
 

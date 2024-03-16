@@ -160,7 +160,7 @@ void mme_s11_handle_create_session_response(
         if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
             ogs_error("[%s] Attach reject [Cause:%d]",
                     mme_ue->imsi_bcd, session_cause);
-            r = nas_eps_send_attach_reject(mme_ue,
+            r = nas_eps_send_attach_reject(mme_ue->enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_NETWORK_FAILURE,
                     OGS_NAS_ESM_CAUSE_NETWORK_FAILURE);
             ogs_expect(r == OGS_OK);
@@ -228,7 +228,7 @@ void mme_s11_handle_create_session_response(
         if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
             ogs_error("[%s] Attach reject [Cause:%d]",
                     mme_ue->imsi_bcd, session_cause);
-            r = nas_eps_send_attach_reject(mme_ue,
+            r = nas_eps_send_attach_reject(mme_ue->enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_NETWORK_FAILURE,
                     OGS_NAS_ESM_CAUSE_NETWORK_FAILURE);
             ogs_expect(r == OGS_OK);
@@ -236,7 +236,8 @@ void mme_s11_handle_create_session_response(
         } else if (create_action == OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE) {
             ogs_error("[%s] TAU reject [Cause:%d]",
                     mme_ue->imsi_bcd, session_cause);
-            r = nas_eps_send_tau_reject(mme_ue, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE);
+            r = nas_eps_send_tau_reject(mme_ue->enb_ue, mme_ue,
+                    OGS_NAS_EMM_CAUSE_NETWORK_FAILURE);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
         }
@@ -266,7 +267,7 @@ void mme_s11_handle_create_session_response(
                     mme_ue->imsi_bcd, bearer_cause);
             if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
                 ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
-                r = nas_eps_send_attach_reject(mme_ue,
+                r = nas_eps_send_attach_reject(mme_ue->enb_ue, mme_ue,
                         OGS_NAS_EMM_CAUSE_NETWORK_FAILURE,
                         OGS_NAS_ESM_CAUSE_NETWORK_FAILURE);
                 ogs_expect(r == OGS_OK);
@@ -286,7 +287,7 @@ void mme_s11_handle_create_session_response(
         ogs_error("[%s] GTP Cause [VALUE:%d]", mme_ue->imsi_bcd, session_cause);
         if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
             ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
-            r = nas_eps_send_attach_reject(mme_ue,
+            r = nas_eps_send_attach_reject(mme_ue->enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_NETWORK_FAILURE,
                     OGS_NAS_ESM_CAUSE_NETWORK_FAILURE);
             ogs_expect(r == OGS_OK);
@@ -441,7 +442,7 @@ void mme_s11_handle_create_session_response(
 
     } else if (create_action == OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE) {
         /* 3GPP TS 23.401 D.3.6 step 13, 14: */
-        mme_s6a_send_ulr(mme_ue);
+        mme_s6a_send_ulr(mme_ue->enb_ue, mme_ue);
     } else if (create_action == OGS_GTP_CREATE_IN_UPLINK_NAS_TRANSPORT) {
         ogs_assert(OGS_PDU_SESSION_TYPE_IS_VALID(session->paa.session_type));
         r = nas_eps_send_activate_default_bearer_context_request(
@@ -680,7 +681,7 @@ void mme_s11_handle_delete_session_response(
          * of the detach accept from UE */
     } else if (action == OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
-            mme_s6a_send_air(mme_ue, NULL);
+            mme_s6a_send_air(mme_ue->enb_ue, mme_ue, NULL);
         }
 
     } else if (action == OGS_GTP_DELETE_SEND_DETACH_ACCEPT) {
@@ -742,7 +743,7 @@ void mme_s11_handle_delete_session_response(
                     &mme_ue->pdn_connectivity_request);
             if (rv != OGS_OK) {
                 ogs_error("nas_eps_send_emm_to_esm() failed");
-                r = nas_eps_send_attach_reject(mme_ue,
+                r = nas_eps_send_attach_reject(mme_ue->enb_ue, mme_ue,
                         OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
                         OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
                 ogs_expect(r == OGS_OK);

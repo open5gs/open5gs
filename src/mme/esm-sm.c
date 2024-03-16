@@ -143,7 +143,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             h.type = e->nas_type;
             if (h.integrity_protected == 0) {
                 ogs_error("[%s] No Integrity Protected", mme_ue->imsi_bcd);
-                r = nas_eps_send_attach_reject(mme_ue,
+                r = nas_eps_send_attach_reject(mme_ue->enb_ue, mme_ue,
                         OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
                         OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
                 ogs_expect(r == OGS_OK);
@@ -160,7 +160,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
                 ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
-                r = nas_eps_send_attach_reject(mme_ue,
+                r = nas_eps_send_attach_reject(mme_ue->enb_ue, mme_ue,
                         OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
                         OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
                 ogs_expect(r == OGS_OK);
