@@ -18,6 +18,7 @@
  */
 
 #include "ogs-sbi.h"
+#include "contrib/multipart_parser.h"
 #include "core/abts.h"
 
 static void sbi_message_test1(abts_case *tc, void *data)
@@ -834,6 +835,192 @@ static void sbi_message_test9(abts_case *tc, void *data)
     ogs_free(decoded);
 }
 
+typedef struct multipart_parser_data_s {
+    int num_of_part;
+    struct {
+        char *content_type;
+        char *content_id;
+        char *content;
+        size_t content_length;
+    } part[OGS_SBI_MAX_NUM_OF_PART];
+
+    char *header_field;
+} multipart_parser_data_t;
+
+static int on_header_field(
+        multipart_parser *parser, const char *at, size_t length)
+{
+    return 0;
+}
+
+static int on_header_value(
+        multipart_parser *parser, const char *at, size_t length)
+{
+    return 0;
+}
+
+static int on_part_data(
+        multipart_parser *parser, const char *at, size_t length)
+{
+    return 0;
+}
+
+static int on_part_data_end(multipart_parser *parser)
+{
+    multipart_parser_data_t *data = NULL;
+
+    ogs_assert(parser);
+    data = multipart_parser_get_data(parser);
+    ogs_assert(data);
+
+    if (data->num_of_part < OGS_SBI_MAX_NUM_OF_PART) {
+        data->num_of_part++;
+    }
+
+    return 0;
+}
+static void sbi_message_test10(abts_case *tc, void *param)
+{
+#define TEST_SBI_MAX_MESSAGE 16
+    ogs_pkbuf_t *pkbuf = NULL;
+    const char *payload[TEST_SBI_MAX_MESSAGE] = {
+        /* No Preamble CRLF */
+        "2d2d3d2d42"
+        "5876585878326357 4276755951577237 45573477513d3d0d 0a436f6e74656e74"
+        "2d547970653a2061 70706c6963617469 6f6e2f6a736f6e0d 0a0d0a7b0a092273"
+        "757069223a092269 6d73692d32303630 3135353030303030 303030222c0a0922"
+        "706569223a092269 6d656973762d3433 3730383136313235 383136313531222c"
+        "0a09227064755365 7373696f6e496422 3a09312c0a092264 6e6e223a09226465"
+        "6d6f2e6e6f6b6961 2e6d6e633030312e 6d63633230362e67 707273222c0a0922"
+        "734e73736169223a 097b0a0909227373 74223a09312c0a09 09227364223a0922"
+        "616263646566220a 097d2c0a09227365 7276696e674e6649 64223a0922333037"
+        "63653332342d6434 32372d343165652d 393235392d353339 6262383833363465"
+        "32222c0a09226775 616d69223a097b0a 090922706c6d6e49 64223a097b0a0909"
+        "09226d6363223a09 22323036222c0a09 0909226d6e63223a 09223031220a0909"
+        "7d2c0a090922616d 664964223a092230 3230303430220a09 7d2c0a0922736572"
+        "76696e674e657477 6f726b223a097b0a 0909226d6363223a 0922323036222c0a"
+        "0909226d6e63223a 09223031220a097d 2c0a09226e31536d 4d7367223a097b0a"
+        "090922636f6e7465 6e744964223a0922 35676e61732d736d 220a097d2c0a0922"
+        "616e54797065223a 0922334750505f41 4343455353222c0a 0922726174547970"
+        "65223a09224e5222 2c0a092275654c6f 636174696f6e223a 097b0a0909226e72"
+        "4c6f636174696f6e 223a097b0a090909 22746169223a097b 0a0909090922706c"
+        "6d6e4964223a097b 0a0909090909226d 6363223a09223230 36222c0a09090909"
+        "09226d6e63223a09 223031220a090909 097d2c0a09090909 22746163223a0922"
+        "303030303032220a 0909097d2c0a0909 09226e636769223a 097b0a0909090922"
+        "706c6d6e4964223a 097b0a0909090909 226d6363223a0922 323036222c0a0909"
+        "090909226d6e6322 3a09223031220a09 0909097d2c0a0909 0909226e7243656c"
+        "6c4964223a092230 3030303030303130 220a0909097d2c0a 0909092275654c6f"
+        "636174696f6e5469 6d657374616d7022 3a0922323032342d 30322d3235543231"
+        "3a34363a35332e31 34383839305a220a 09097d0a097d2c0a 0922756554696d65"
+        "5a6f6e65223a0922 2b30303a3030222c 0a0922736d436f6e 7465787453746174"
+        "7573557269223a09 22687474703a2f2f 31302e35302e312e 323a383038302f6e"
+        "616d662d63616c6c 6261636b2f76312f 696d73692d323036 3031353530303030"
+        "303030302f736d2d 636f6e746578742d 7374617475732f31 222c0a0922706366"
+        "4964223a09226238 3666613934652d64 3432352d34316565 2d623030302d3133"
+        "6265303937343265 3539220a7d0d0a2d 2d3d2d4258765858 7832635742767559"
+        "5157723745573477 513d3d0d0a436f6e 74656e742d49643a 2035676e61732d73"
+        "6d0d0a436f6e7465 6e742d547970653a 206170706c696361 74696f6e2f766e64"
+        "2e336770702e3567 6e61730d0a0d0a2e 0101c1ffff91a128 01007b000780000a"
+        "00000d000d0a2d2d 3d2d425876585878 3263574276755951 5772374557347751"
+        "3d3d2d2d0d0a",
+
+        "0d0a" /* WITH Preamble CRLF */
+        "2d2d67"
+        "6330704a7130386a 55353334630d0a43 6f6e74656e742d54 7970653a20617070"
+        "6c69636174696f6e 2f6a736f6e0d0a0d 0a7b226e314d6573 73616765436f6e74"
+        "61696e6572223a7b 226e314d65737361 6765436c61737322 3a22534d222c226e"
+        "314d657373616765 436f6e74656e7422 3a7b22636f6e7465 6e744964223a226e"
+        "31436f6e74656e74 496431227d7d2c22 6e32496e666f436f 6e7461696e657222"
+        "3a7b226e32496e66 6f726d6174696f6e 436c617373223a22 534d222c22736d49"
+        "6e666f223a7b2270 647553657373696f 6e4964223a312c22 6e32496e666f436f"
+        "6e74656e74223a7b 226e676170496554 797065223a225044 555f5245535f5345"
+        "5455505f52455122 2c226e6761704461 7461223a7b22636f 6e74656e74496422"
+        "3a226e32436f6e74 656e74496431227d 7d2c22734e737361 69223a7b22737374"
+        "223a312c22736422 3a22414243444546 227d7d7d2c226c61 73744d7367496e64"
+        "69636174696f6e22 3a66616c73652c22 7064755365737369 6f6e4964223a312c"
+        "226e316e32466169 6c7572655478664e 6f74696655524922 3a22687474703a2f"
+        "2f312e312e312e31 3a36353532302f6e 616d662d636f6d6d 2f76312f75652d63"
+        "6f6e74657874732f 3030303135313230 222c22736d665265 616c6c6f63617469"
+        "6f6e496e64223a66 616c73657d0d0a2d 2d676330704a7130 386a55353334630d"
+        "0a436f6e74656e74 2d547970653a2061 70706c6963617469 6f6e2f766e642e33"
+        "6770702e35676e61 730d0a436f6e7465 6e742d49643a206e 31436f6e74656e74"
+        "4964310d0a0d0a2e 0101c21100090100 0631310101fe0106 0b00010b00012905"
+        "012b000801220401 abcdef7900060120 410101097b000f80 000d04d043fefe00"
+        "0d04d043ffff251e 0464656d6f056e6f 6b6961066d6e6330 3031066d63633230"
+        "3604677072730d0a 2d2d676330704a71 30386a5535333463 0d0a436f6e74656e"
+        "742d547970653a20 6170706c69636174 696f6e2f766e642e 336770702e6e6761"
+        "700d0a436f6e7465 6e742d49643a206e 32436f6e74656e74 4964310d0a0d0a00"
+        "00040082000a0c3b 9aca00303b9aca00 008b000a01f00101 0168003800000086"
+        "0001000088000700 010000091c000d0a 2d2d676330704a71 30386a5535333463"
+        "2d2d0d0a"
+        "",
+
+    };
+    uint16_t len[TEST_SBI_MAX_MESSAGE] = {
+        1163,
+        841,
+        0,
+    };
+    int num_of_part[TEST_SBI_MAX_MESSAGE] = {
+        2,
+        3,
+        0,
+    };
+    char hexbuf[OGS_HUGE_LEN];
+
+    char *boundary = NULL;
+    int i, num;
+
+    multipart_parser_settings settings;
+    multipart_parser_data_t data;
+
+    multipart_parser *parser = NULL;
+
+    for (num = 0; num < 2; num++) {
+        int preamble = 0;
+        pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+        ogs_assert(pkbuf);
+        ogs_pkbuf_put_data(pkbuf,
+            ogs_hex_from_string(payload[num], hexbuf, sizeof(hexbuf)), len[num]);
+
+        memset(&settings, 0, sizeof(settings));
+        settings.on_header_field = &on_header_field;
+        settings.on_header_value = &on_header_value;
+        settings.on_part_data = &on_part_data;
+        settings.on_part_data_end = &on_part_data_end;
+
+        if (pkbuf->data[0] == '\r' && pkbuf->data[1] == '\n')
+            preamble = 2;
+
+        for (i = preamble; i < (pkbuf->len-preamble); i++) {
+            if (pkbuf->data[i] == '\r' && pkbuf->data[i+1] == '\n')
+                break;
+        }
+
+        ogs_assert(i < pkbuf->len);
+
+        boundary = ogs_strndup((char *)pkbuf->data+preamble, i-preamble);
+        ogs_assert(boundary);
+
+        parser = multipart_parser_init(boundary, &settings);
+        ogs_assert(parser);
+
+        memset(&data, 0, sizeof(data));
+        multipart_parser_set_data(parser, &data);
+        multipart_parser_execute(parser,
+                (char *)pkbuf->data+preamble, pkbuf->len-preamble);
+
+        multipart_parser_free(parser);
+        ogs_free(boundary);
+
+        ogs_assert(data.num_of_part <= OGS_SBI_MAX_NUM_OF_PART);
+
+        ABTS_INT_EQUAL(tc, num_of_part[num], data.num_of_part);
+
+        ogs_pkbuf_free(pkbuf);
+    }
+}
+
 abts_suite *test_sbi_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -847,6 +1034,7 @@ abts_suite *test_sbi_message(abts_suite *suite)
     abts_run_test(suite, sbi_message_test7, NULL);
     abts_run_test(suite, sbi_message_test8, NULL);
     abts_run_test(suite, sbi_message_test9, NULL);
+    abts_run_test(suite, sbi_message_test10, NULL);
 
     return suite;
 }

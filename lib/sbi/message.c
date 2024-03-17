@@ -2627,7 +2627,7 @@ static int parse_multipart(
         ogs_sbi_message_t *message, ogs_sbi_http_message_t *http)
 {
     char *boundary = NULL;
-    int i;
+    int i, preamble;
 
     multipart_parser_settings settings;
     multipart_parser_data_t data;
@@ -2643,19 +2643,23 @@ static int parse_multipart(
     settings.on_part_data = &on_part_data;
     settings.on_part_data_end = &on_part_data_end;
 
-    for (i = 0; i < http->content_length; i++) {
+    preamble = 0;
+    if (http->content[0] == '\r' && http->content[1] == '\n')
+        preamble = 2;
+
+    for (i = preamble; i < (http->content_length-preamble); i++) {
         if (http->content[i] == '\r' && http->content[i+1] == '\n')
             break;
     }
 
-    if (i >= http->content_length) {
+    if (i >= (http->content_length-preamble)) {
         ogs_error("Invalid HTTP content [%d]", i);
         ogs_log_hexdump(OGS_LOG_ERROR,
                 (unsigned char *)http->content, http->content_length);
         return OGS_ERROR;
     }
 
-    boundary = ogs_strndup(http->content, i);
+    boundary = ogs_strndup(http->content+preamble, i-preamble);
     ogs_assert(boundary);
 
     parser = multipart_parser_init(boundary, &settings);
@@ -2663,7 +2667,8 @@ static int parse_multipart(
 
     memset(&data, 0, sizeof(data));
     multipart_parser_set_data(parser, &data);
-    multipart_parser_execute(parser, http->content, http->content_length);
+    multipart_parser_execute(parser,
+            http->content+preamble, http->content_length-preamble);
 
     multipart_parser_free(parser);
     ogs_free(boundary);
@@ -2787,6 +2792,10 @@ static bool build_multipart(
         return false;
     }
     last = p + OGS_MAX_SDU_LEN;
+
+#if SBI_MIME_PREAMBLE_CRLF /* Preamble CLRF */
+    p = ogs_slprintf(p, last, "\r\n");
+#endif
 
     /* First boundary */
     p = ogs_slprintf(p, last, "--%s\r\n", boundary);
