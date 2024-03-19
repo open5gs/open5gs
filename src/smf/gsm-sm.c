@@ -716,6 +716,9 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     ogs_pfcp_xact_t *pfcp_xact = NULL;
     ogs_pfcp_message_t *pfcp_message = NULL;
 
+    ogs_diam_gy_message_t *gy_message = NULL;
+    uint32_t diam_err;
+
     ogs_nas_5gs_message_t *nas_message = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
@@ -826,6 +829,24 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         default:
             ogs_error("cannot handle PFCP message type[%d]",
                     pfcp_message->h.type);
+        }
+        break;
+
+    case SMF_EVT_GY_MESSAGE:
+        gy_message = e->gy_message;
+        ogs_assert(gy_message);
+
+        switch(gy_message->cmd_code) {
+        case OGS_DIAM_GY_CMD_CODE_CREDIT_CONTROL:
+            switch (gy_message->cc_request_type) {
+            case OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST:
+                ogs_assert(e->pfcp_xact);
+                diam_err = smf_gy_handle_cca_update_request(sess, gy_message, e->pfcp_xact);
+                if (diam_err != ER_DIAMETER_SUCCESS)
+                    OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
+                break;
+            }
+            break;
         }
         break;
 
