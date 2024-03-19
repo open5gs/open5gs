@@ -241,7 +241,6 @@ uint32_t smf_gy_handle_cca_termination_request(
 {
     ogs_assert(sess);
     ogs_assert(gy_message);
-    ogs_assert(gtp_xact);
 
     ogs_debug("[SMF] Delete Session Response");
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
