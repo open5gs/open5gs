@@ -612,7 +612,6 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
     const char *service_context_id = "32251@3gpp.org";
     uint32_t timestamp, req_slot;
 
-    ogs_assert(xact);
     ogs_assert(sess);
 
     ogs_assert(sess->ipv4 || sess->ipv6);
