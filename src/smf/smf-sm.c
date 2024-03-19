@@ -328,23 +328,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         switch(gy_message->cmd_code) {
         case OGS_DIAM_GY_CMD_CODE_CREDIT_CONTROL:
-            switch(gy_message->cc_request_type) {
-            case OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST:
-                ogs_fsm_dispatch(&sess->sm, e);
-                break;
-            case OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST:
-                ogs_assert(e->pfcp_xact);
-                smf_gy_handle_cca_update_request(
-                        sess, gy_message, e->pfcp_xact);
-            break;
-            case OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST:
-                ogs_fsm_dispatch(&sess->sm, e);
-                break;
-            default:
-                ogs_error("Not implemented(%d)", gy_message->cc_request_type);
-                break;
-            }
-
+             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_DIAM_GY_CMD_RE_AUTH:
             smf_gy_handle_re_auth_request(sess, gy_message);

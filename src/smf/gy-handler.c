@@ -149,7 +149,7 @@ uint32_t smf_gy_handle_cca_initial_request(
     return ER_DIAMETER_SUCCESS;
 }
 
-void smf_gy_handle_cca_update_request(
+uint32_t smf_gy_handle_cca_update_request(
         smf_sess_t *sess, ogs_diam_gy_message_t *gy_message,
         ogs_pfcp_xact_t *pfcp_xact)
 {
@@ -175,10 +175,8 @@ void smf_gy_handle_cca_update_request(
     if (gy_message->result_code != ER_DIAMETER_SUCCESS) {
         ogs_warn("Gy CCA Update Diameter failure: res=%u err=%u",
             gy_message->result_code, *gy_message->err);
-        // TODO: generate new gtp_xact from sess here? */
-        //ogs_assert(OGS_OK ==
-        //    smf_epc_pfcp_send_session_deletion_request(sess, gtp_xact));
-        return;
+        return gy_message->err ? *gy_message->err :
+                                 ER_DIAMETER_AUTHENTICATION_REJECTED;
     }
 
     bearer = smf_default_bearer_in_sess(sess);
@@ -234,6 +232,7 @@ void smf_gy_handle_cca_update_request(
                 OGS_GTP1_CAUSE_REACTIACTION_REQUESTED);
         ogs_assert(rv == OGS_OK);
     }
+    return ER_DIAMETER_SUCCESS;
 }
 
 uint32_t smf_gy_handle_cca_termination_request(
