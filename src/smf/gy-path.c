@@ -1003,6 +1003,9 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
     /* Set Credit Control Command */
     gy_message->cmd_code = OGS_DIAM_GY_CMD_CODE_CREDIT_CONTROL;
 
+    /* Initialize some values: */
+    gy_message->cca.result_code = ER_DIAMETER_SUCCESS;
+
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
     ogs_assert(ret == 0);
@@ -1114,6 +1117,10 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
                 ogs_assert(ret == 0);
                 switch (hdr->avp_code) {
+                case AC_RESULT_CODE:
+                    gy_message->cca.result_code = hdr->avp_value->u32;
+                    gy_message->cca.err = &gy_message->cca.result_code;
+                    break;
                 case OGS_DIAM_GY_AVP_CODE_GRANTED_SERVICE_UNIT:
                     rv = decode_granted_service_unit(
                             &gy_message->cca.granted, avpch1, &error);
