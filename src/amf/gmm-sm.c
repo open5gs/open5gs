@@ -557,8 +557,6 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
                 SWITCH(sbi_message->h.resource.component[2])
                     CASE(OGS_SBI_RESOURCE_NAME_TRANSFER)
-                        nas_message = e->nas.message;
-                        ogs_assert(nas_message);
 
                         ran_ue = ran_ue_cycle(amf_ue->ran_ue);
                         ogs_assert(ran_ue);
@@ -580,80 +578,21 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                             break;
                         }
 
-                        if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(amf_ue)) {
+                        amf_sbi_send_release_all_sessions(
+                                amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
-                            /*
-                            * If the OLD RAN_UE is being maintained in AMF-UE Context,
-                            * it deletes the NG Context after exchanging
-                            * the UEContextReleaseCommand/Complete with the gNB
-                            */
-                            CLEAR_NG_CONTEXT(amf_ue);
-
-                            gmm_cause = gmm_handle_registration_update(
-                                    amf_ue, &nas_message->gmm.registration_request);
-                            if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
-                                ogs_error("[%s] gmm_handle_registration_update() "
-                                            "failed [%d]", amf_ue->suci, gmm_cause);
-                                r = nas_5gs_send_registration_reject(ran_ue, amf_ue, gmm_cause);
-                                ogs_expect(r == OGS_OK);
-                                ogs_assert(r != OGS_ERROR);
-                                OGS_FSM_TRAN(s, gmm_state_exception);
-                                break;
-                            }
-
-                            if (amf_sess_xact_count(amf_ue) == xact_count) {
-
-                                if (amf_update_allowed_nssai(amf_ue) == false) {
-                                    ogs_error("No Allowed-NSSAI");
-                                    r = nas_5gs_send_gmm_reject(
-                                            ran_ue, amf_ue,
-                                            OGS_5GMM_CAUSE_NO_NETWORK_SLICES_AVAILABLE);
-                                    ogs_expect(r == OGS_OK);
-                                    ogs_assert(r != OGS_ERROR);
-                                    OGS_FSM_TRAN(s, gmm_state_exception);
-                                    break;
-                                }
-
-                                if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
-                                    r = amf_ue_sbi_discover_and_send(
-                                            OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
-                                            NULL,
-                                            amf_npcf_am_policy_control_build_create,
-                                            amf_ue, 0, NULL);
-                                    ogs_expect(r == OGS_OK);
-                                    ogs_assert(r != OGS_ERROR);
-                                    OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
-                                    break;
-                                }
-
-                                CLEAR_AMF_UE_TIMER(amf_ue->t3550);
-                                r = nas_5gs_send_registration_accept(amf_ue);
-                                ogs_expect(r == OGS_OK);
-                                ogs_assert(r != OGS_ERROR);
-                            }
-
-                            if (amf_ue->next.m_tmsi)
-                                OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
-                            else
-                                OGS_FSM_TRAN(s, &gmm_state_registered);
-
-                        } else {
-
-                            amf_sbi_send_release_all_sessions(
-                                    amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
-
-                            if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
-                                amf_sess_xact_count(amf_ue) == xact_count) {
-                                r = amf_ue_sbi_discover_and_send(
-                                        OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-                                        amf_nausf_auth_build_authenticate,
-                                        amf_ue, 0, NULL);
-                                ogs_expect(r == OGS_OK);
-                                ogs_assert(r != OGS_ERROR);
-                            }
-
-                            OGS_FSM_TRAN(s, &gmm_state_authentication);
+                        if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
+                            amf_sess_xact_count(amf_ue) == xact_count) {
+                            r = amf_ue_sbi_discover_and_send(
+                                    OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
+                                    amf_nausf_auth_build_authenticate,
+                                    amf_ue, 0, NULL);
+                            ogs_expect(r == OGS_OK);
+                            ogs_assert(r != OGS_ERROR);
                         }
+
+                        OGS_FSM_TRAN(s, &gmm_state_authentication);
+
                         break;
 
                     DEFAULT
