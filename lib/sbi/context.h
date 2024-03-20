@@ -341,8 +341,8 @@ typedef struct ogs_sbi_sepp_info_s {
 } ogs_sbi_sepp_info_t;
 
 typedef struct ogs_sbi_amf_info_s {
-    int amf_set_id;
-    int amf_region_id;
+    uint8_t amf_set_id;
+    uint16_t amf_region_id;
 
     int num_of_guami;
     ogs_guami_t guami[OGS_MAX_NUM_OF_SERVED_GUAMI];
@@ -437,6 +437,8 @@ void ogs_sbi_nf_info_remove_all(ogs_list_t *list);
 ogs_sbi_nf_info_t *ogs_sbi_nf_info_find(
         ogs_list_t *list, OpenAPI_nf_type_e nf_type);
 
+bool ogs_sbi_check_amf_info_guami(
+        ogs_sbi_amf_info_t *amf_info, ogs_guami_t *guami);
 bool ogs_sbi_check_smf_info_slice(
         ogs_sbi_smf_info_t *smf_info, ogs_s_nssai_t *s_nssai, char *dnn);
 bool ogs_sbi_check_smf_info_tai(

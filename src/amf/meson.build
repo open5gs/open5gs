@@ -40,6 +40,7 @@ libamf_sources = files('''
     nnrf-build.c
     nnrf-handler.c
 
+    namf-build.c
     namf-handler.c
     sbi-path.c
 

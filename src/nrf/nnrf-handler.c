@@ -830,6 +830,13 @@ bool nrf_nnrf_handle_nf_discover(
                             &discovery_option->tai.plmn_id),
                         discovery_option->tai.tac.v);
         }
+        if (discovery_option->target_guami) {
+            ogs_debug("guami[PLMN_ID:%06x,AMF_ID:%x]",
+                        ogs_plmn_id_hexdump(
+                            &discovery_option->target_guami->plmn_id),
+                        ogs_amf_id_hexdump(
+                            &discovery_option->target_guami->amf_id));
+        }
         if (discovery_option->num_of_target_plmn_list) {
             for (i = 0; i < discovery_option->num_of_target_plmn_list; i++)
                 ogs_debug("[%d] target-plmn-list[MCC:%03d,MNC:%03d]", i,
