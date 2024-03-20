@@ -804,7 +804,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     break;
                 }
 
-                r = s1ap_send_ue_context_modification_request(mme_ue);
+                r = s1ap_send_ue_context_modification_request(mme_ue, false);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             } else {
