@@ -335,31 +335,27 @@ static void fill_multiple_services_credit_control_ccr(smf_sess_t *sess,
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
     ogs_assert(ret == 0);
-
     /* Multiple Services AVP add to req: */
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 }
 
-/* TS 32.299 7.2.192 Service-Information AVP for CCR */
-static void fill_service_information_ccr(smf_sess_t *sess,
-                                         uint32_t cc_request_type, struct msg *req)
+/* TS 32.299 7.2.158 PS-Information AVP for CCR */
+static void fill_ps_information(smf_sess_t *sess, uint32_t cc_request_type,
+                                struct avp *avp)
 {
 
     int ret;
     union avp_value val;
-    struct avp *avp;
     struct avp *avpch1, *avpch2, *avpch3;
     struct sockaddr_in sin;
     struct sockaddr_in6 sin6;
     char buf[OGS_PLMNIDSTRLEN];
     char digit;
 
-    /* Service-Information, TS 32.299 sec 7.2.192 */
-    ret = fd_msg_avp_new(ogs_diam_gy_service_information, 0, &avp);
-
     /* PS-Information, TS 32.299 sec 7.2.158 */
     ret = fd_msg_avp_new(ogs_diam_gy_ps_information, 0, &avpch1);
+    ogs_assert(ret == 0);
 
     /* 3GPP-Charging-Id, 3GPP TS 29.061 16.4.7.2 2 */
     ret = fd_msg_avp_new(ogs_diam_gy_3gpp_charging_id, 0, &avpch2);
@@ -585,9 +581,25 @@ static void fill_service_information_ccr(smf_sess_t *sess,
         ogs_assert(ret == 0);
     }
 
-    /* PS-Information AVP add to req: */
+    /* PS-Information AVP add to parent AVP (Service-Information): */
     ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
     ogs_assert(ret == 0);
+}
+
+/* TS 32.299 7.2.192 Service-Information AVP for CCR */
+static void fill_service_information_ccr(smf_sess_t *sess,
+                                         uint32_t cc_request_type, struct msg *req)
+{
+
+    int ret;
+    struct avp *avp;
+
+    /* Service-Information, TS 32.299 sec 7.2.192 */
+    ret = fd_msg_avp_new(ogs_diam_gy_service_information, 0, &avp);
+    ogs_assert(ret == 0);
+
+    /* PS-Information, TS 32.299 sec 7.2.158 */
+    fill_ps_information(sess, cc_request_type, avp);
 
     /* Service-Information AVP add to req: */
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
