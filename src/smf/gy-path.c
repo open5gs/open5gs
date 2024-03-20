@@ -198,7 +198,7 @@ static void fill_qos_information(smf_sess_t *sess, struct avp *parent_avp)
     union avp_value val;
     struct avp *avpch1, *avpch2, *avpch3;
 
-    ret = fd_msg_avp_new(ogs_diam_gx_qos_information, 0, &avpch1);
+    ret = fd_msg_avp_new(ogs_diam_gy_qos_information, 0, &avpch1);
     ogs_assert(ret == 0);
 
     /* QoS-Class-Identifier */
