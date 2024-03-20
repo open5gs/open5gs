@@ -325,16 +325,6 @@ static void fill_multiple_services_credit_control_ccr(smf_sess_t *sess,
     /* QoS-Information */
     fill_qos_information(sess, avp);
 
-    /* 3GPP-RAT-Type, TS 29.061 16.4.7.2 21 */
-    /* GGSN: TS 29.060 7.7.50, PGW: TS 29.274 8.17 */
-    ret = fd_msg_avp_new(ogs_diam_gy_3gpp_rat_type, 0, &avpch1);
-    ogs_assert(ret == 0);
-    val.os.data = (uint8_t*)&sess->gtp_rat_type;
-    val.os.len = 1;
-    ret = fd_msg_avp_setvalue (avpch1, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-    ogs_assert(ret == 0);
     /* Multiple Services AVP add to req: */
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
