@@ -552,6 +552,17 @@ static void fill_ps_information(smf_sess_t *sess, uint32_t cc_request_type,
     /* 3GPP-User-Location-Info, 3GPP TS 29.061 16.4.7.2 22 */
     smf_fd_msg_avp_add_3gpp_uli(sess, (struct msg *)avpch1);
 
+    /* 3GPP-RAT-Type, TS 29.061 16.4.7.2 21 */
+    /* GGSN: TS 29.060 7.7.50, PGW: TS 29.274 8.17 */
+    ret = fd_msg_avp_new(ogs_diam_gy_3gpp_rat_type, 0, &avpch2);
+    ogs_assert(ret == 0);
+    val.os.data = (uint8_t*)&sess->gtp_rat_type;
+    val.os.len = 1;
+    ret = fd_msg_avp_setvalue(avpch2, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    ogs_assert(ret == 0);
+
     if (sess->smf_ue->imeisv_len > 0) {
         /* User-Equipment-Info, 3GPP TS 32.299 7.1.17 */
         ret = fd_msg_avp_new(ogs_diam_gy_user_equipment_info, 0, &avpch2);
