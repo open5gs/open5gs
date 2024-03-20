@@ -67,9 +67,6 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
     ran_ue_t *ran_ue = NULL;
 
     ogs_sbi_message_t *sbi_message = NULL;
-    ogs_nas_5gs_message_t *nas_message = NULL;
-    ogs_nas_5gmm_cause_t gmm_cause;
-    ogs_nas_security_header_type_t h;
 
     int r, state = 0;
 
@@ -560,8 +557,6 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 
                         ran_ue = ran_ue_cycle(amf_ue->ran_ue);
                         ogs_assert(ran_ue);
-
-                        h.type = e->nas.type;
 
                         if (sbi_message->res_status == OGS_SBI_HTTP_STATUS_OK) {
                             r = amf_namf_comm_handle_ue_context_transfer_response(sbi_message, amf_ue);
