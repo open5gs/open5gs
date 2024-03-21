@@ -29,7 +29,7 @@
 #define OGS_LOG_DOMAIN __gmm_log_domain
 
 static ogs_nas_5gmm_cause_t gmm_handle_nas_message_container(
-        amf_ue_t *amf_ue, uint8_t message_type,
+        ran_ue_t *ran_ue, amf_ue_t *amf_ue, uint8_t message_type,
         ogs_nas_message_container_t *nas_message_container);
 
 static uint8_t gmm_cause_from_access_control(ogs_plmn_id_t *plmn_id);
@@ -339,7 +339,8 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
     return OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
 }
 
-ogs_nas_5gmm_cause_t gmm_handle_registration_update(amf_ue_t *amf_ue,
+ogs_nas_5gmm_cause_t gmm_handle_registration_update(
+        ran_ue_t *ran_ue, amf_ue_t *amf_ue,
         ogs_nas_5gs_registration_request_t *registration_request)
 {
     amf_sess_t *sess = NULL;
@@ -352,6 +353,7 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_update(amf_ue_t *amf_ue,
     ogs_nas_5gs_update_type_t *update_type = NULL;
 
     ogs_assert(amf_ue);
+    ogs_assert(ran_ue);
     ogs_assert(registration_request);
 
     last_visited_registered_tai =
@@ -376,7 +378,7 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_update(amf_ue_t *amf_ue,
         OGS_NAS_5GS_REGISTRATION_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT) {
 
         return gmm_handle_nas_message_container(
-                amf_ue, OGS_NAS_5GS_REGISTRATION_REQUEST,
+                ran_ue, amf_ue, OGS_NAS_5GS_REGISTRATION_REQUEST,
                 &registration_request->nas_message_container);
     }
 
@@ -472,7 +474,7 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_update(amf_ue_t *amf_ue,
             if ((psimask & (1 << sess->psi)) == 0) {
                 if (SESSION_CONTEXT_IN_SMF(sess))
                     amf_sbi_send_release_session(
-                        sess, AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT);
+                        ran_ue, sess, AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT);
             }
         }
     }
@@ -491,7 +493,8 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_update(amf_ue_t *amf_ue,
             if (psimask & (1 << sess->psi)) {
                 if (SESSION_CONTEXT_IN_SMF(sess))
                     amf_sbi_send_activating_session(
-                            sess, AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST);
+                            ran_ue, sess,
+                            AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST);
             }
         }
     }
@@ -653,7 +656,8 @@ ogs_nas_5gmm_cause_t gmm_handle_service_request(amf_ue_t *amf_ue,
     return OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
 }
 
-ogs_nas_5gmm_cause_t gmm_handle_service_update(amf_ue_t *amf_ue,
+ogs_nas_5gmm_cause_t gmm_handle_service_update(
+        ran_ue_t *ran_ue, amf_ue_t *amf_ue,
         ogs_nas_5gs_service_request_t *service_request)
 {
     amf_sess_t *sess = NULL;
@@ -665,6 +669,8 @@ ogs_nas_5gmm_cause_t gmm_handle_service_update(amf_ue_t *amf_ue,
     ogs_nas_allowed_pdu_session_status_t *allowed_pdu_session_status = NULL;
 
     ogs_assert(amf_ue);
+    ogs_assert(ran_ue);
+    ogs_assert(service_request);
 
     uplink_data_status = &service_request->uplink_data_status;
     ogs_assert(uplink_data_status);
@@ -677,7 +683,7 @@ ogs_nas_5gmm_cause_t gmm_handle_service_update(amf_ue_t *amf_ue,
         OGS_NAS_5GS_SERVICE_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT) {
 
         return gmm_handle_nas_message_container(
-                amf_ue, OGS_NAS_5GS_SERVICE_REQUEST,
+                ran_ue, amf_ue, OGS_NAS_5GS_SERVICE_REQUEST,
                 &service_request->nas_message_container);
     }
 
@@ -712,7 +718,7 @@ ogs_nas_5gmm_cause_t gmm_handle_service_update(amf_ue_t *amf_ue,
             if ((psimask & (1 << sess->psi)) == 0) {
                 if (SESSION_CONTEXT_IN_SMF(sess))
                     amf_sbi_send_release_session(
-                        sess, AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT);
+                        ran_ue, sess, AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT);
             }
         }
     }
@@ -739,7 +745,8 @@ ogs_nas_5gmm_cause_t gmm_handle_service_update(amf_ue_t *amf_ue,
             if (psimask & (1 << sess->psi)) {
                 if (SESSION_CONTEXT_IN_SMF(sess))
                     amf_sbi_send_activating_session(
-                            sess, AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST);
+                            ran_ue, sess,
+                            AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST);
             }
         }
     }
@@ -757,9 +764,12 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
         ogs_nas_5gs_deregistration_request_from_ue_t *deregistration_request)
 {
     int r, state, xact_count = 0;
+    ran_ue_t *ran_ue = NULL;
     ogs_nas_de_registration_type_t *de_registration_type = NULL;
 
     ogs_assert(amf_ue);
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    ogs_assert(ran_ue);
     ogs_assert(deregistration_request);
 
     de_registration_type = &deregistration_request->de_registration_type;
@@ -790,7 +800,7 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
     xact_count = amf_sess_xact_count(amf_ue);
 
     state = AMF_UE_INITIATED_DE_REGISTERED;
-    amf_sbi_send_release_all_sessions(amf_ue, state);
+    amf_sbi_send_release_all_sessions(ran_ue, amf_ue, state);
 
     if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
         amf_sess_xact_count(amf_ue) == xact_count) {
@@ -884,6 +894,7 @@ ogs_nas_5gmm_cause_t gmm_handle_identity_response(amf_ue_t *amf_ue,
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
+    ogs_assert(identity_response);
 
     mobile_identity = &identity_response->mobile_identity;
 
@@ -940,12 +951,15 @@ ogs_nas_5gmm_cause_t gmm_handle_identity_response(amf_ue_t *amf_ue,
 }
 
 ogs_nas_5gmm_cause_t gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
-    ogs_nas_5gs_security_mode_complete_t *security_mode_complete)
+        ogs_nas_5gs_security_mode_complete_t *security_mode_complete)
 {
+    ran_ue_t *ran_ue = NULL;
     ogs_nas_5gs_mobile_identity_t *imeisv = NULL;
     ogs_nas_mobile_identity_imeisv_t *mobile_identity_imeisv = NULL;
 
     ogs_assert(amf_ue);
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    ogs_assert(ran_ue);
     ogs_assert(security_mode_complete);
 
     /*
@@ -1021,7 +1035,7 @@ ogs_nas_5gmm_cause_t gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
         OGS_NAS_5GS_SECURITY_MODE_COMPLETE_NAS_MESSAGE_CONTAINER_PRESENT) {
 
         return gmm_handle_nas_message_container(
-                amf_ue, OGS_NAS_5GS_SECURITY_MODE_COMPLETE,
+                ran_ue, amf_ue, OGS_NAS_5GS_SECURITY_MODE_COMPLETE,
                 &security_mode_complete->nas_message_container);
     }
 
@@ -1316,14 +1330,15 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION,
                             discovery_option,
                             amf_nsmf_pdusession_build_create_sm_context,
-                            sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL);
+                            ran_ue, sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
                 } else {
                     r = amf_sess_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NNSSF_NSSELECTION,
                             discovery_option,
-                            amf_nnssf_nsselection_build_get, sess, 0, NULL);
+                            amf_nnssf_nsselection_build_get,
+                            ran_ue, sess, 0, NULL);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
                 }
@@ -1337,7 +1352,8 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                 r = amf_sess_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         amf_nsmf_pdusession_build_update_sm_context,
-                        sess, AMF_UPDATE_SM_CONTEXT_DUPLICATED_PDU_SESSION_ID,
+                        ran_ue, sess,
+                        AMF_UPDATE_SM_CONTEXT_DUPLICATED_PDU_SESSION_ID,
                         &param);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
@@ -1366,7 +1382,8 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                 r = amf_sess_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         amf_nsmf_pdusession_build_update_sm_context,
-                        sess, AMF_UPDATE_SM_CONTEXT_N1_RELEASED, &param);
+                        ran_ue, sess,
+                        AMF_UPDATE_SM_CONTEXT_N1_RELEASED, &param);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             } else {
@@ -1374,7 +1391,7 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                 r = amf_sess_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         amf_nsmf_pdusession_build_update_sm_context,
-                        sess, AMF_UPDATE_SM_CONTEXT_MODIFIED, &param);
+                        ran_ue, sess, AMF_UPDATE_SM_CONTEXT_MODIFIED, &param);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             }
@@ -1440,7 +1457,7 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
 }
 
 static ogs_nas_5gmm_cause_t gmm_handle_nas_message_container(
-        amf_ue_t *amf_ue, uint8_t message_type,
+        ran_ue_t *ran_ue, amf_ue_t *amf_ue, uint8_t message_type,
         ogs_nas_message_container_t *nas_message_container)
 {
     int gmm_cause;
@@ -1449,6 +1466,7 @@ static ogs_nas_5gmm_cause_t gmm_handle_nas_message_container(
     ogs_nas_5gs_message_t nas_message;
 
     ogs_assert(amf_ue);
+    ogs_assert(ran_ue);
     ogs_assert(nas_message_container);
 
     if (!nas_message_container->buffer || !nas_message_container->length) {
@@ -1505,12 +1523,12 @@ static ogs_nas_5gmm_cause_t gmm_handle_nas_message_container(
         case OGS_NAS_5GS_REGISTRATION_REQUEST:
             ogs_debug("Registration request in NAS message container");
             gmm_cause = gmm_handle_registration_update(
-                    amf_ue, &nas_message.gmm.registration_request);
+                    ran_ue, amf_ue, &nas_message.gmm.registration_request);
             break;
         case OGS_NAS_5GS_SERVICE_REQUEST:
             ogs_debug("Service request in NAS message container");
             gmm_cause = gmm_handle_service_update(
-                    amf_ue, &nas_message.gmm.service_request);
+                    ran_ue, amf_ue, &nas_message.gmm.service_request);
             break;
         default:
             ogs_error("Unknown message [%d]", nas_message.gmm.h.message_type);

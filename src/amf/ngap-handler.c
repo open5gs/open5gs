@@ -1018,7 +1018,7 @@ void ngap_handle_initial_context_setup_response(
         r = amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
-                sess, AMF_UPDATE_SM_CONTEXT_ACTIVATED, &param);
+                ran_ue, sess, AMF_UPDATE_SM_CONTEXT_ACTIVATED, &param);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
 
@@ -1248,7 +1248,7 @@ void ngap_handle_initial_context_setup_failure(
         amf_ue->deactivation.cause = NGAP_CauseNas_normal_release;
 
         amf_sbi_send_deactivate_all_sessions(
-                amf_ue, AMF_UPDATE_SM_CONTEXT_DEACTIVATED,
+                ran_ue, amf_ue, AMF_UPDATE_SM_CONTEXT_DEACTIVATED,
                 Cause->present, (int)Cause->choice.radioNetwork);
 
         new_xact_count = amf_sess_xact_count(amf_ue);
@@ -1552,7 +1552,7 @@ void ngap_handle_ue_context_release_request(
 
         if (!PDUSessionList) {
             amf_sbi_send_deactivate_all_sessions(
-                    amf_ue, AMF_UPDATE_SM_CONTEXT_DEACTIVATED,
+                    ran_ue, amf_ue, AMF_UPDATE_SM_CONTEXT_DEACTIVATED,
                     Cause->present, (int)Cause->choice.radioNetwork);
         } else {
             for (i = 0; i < PDUSessionList->list.count; i++) {
@@ -1584,7 +1584,7 @@ void ngap_handle_ue_context_release_request(
                         PDUSessionItem->pDUSessionID);
                 if (SESSION_CONTEXT_IN_SMF(sess)) {
                     amf_sbi_send_deactivate_session(
-                            sess, AMF_UPDATE_SM_CONTEXT_DEACTIVATED,
+                            ran_ue, sess, AMF_UPDATE_SM_CONTEXT_DEACTIVATED,
                             Cause->present, (int)Cause->choice.radioNetwork);
                 }
             }
@@ -2002,7 +2002,7 @@ void ngap_handle_pdu_session_resource_setup_response(
             r = amf_sess_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                     amf_nsmf_pdusession_build_update_sm_context,
-                    sess, AMF_UPDATE_SM_CONTEXT_ACTIVATED, &param);
+                    ran_ue, sess, AMF_UPDATE_SM_CONTEXT_ACTIVATED, &param);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
 
@@ -2128,7 +2128,7 @@ void ngap_handle_pdu_session_resource_setup_response(
             r = amf_sess_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                     amf_nsmf_pdusession_build_update_sm_context,
-                    sess, AMF_UPDATE_SM_CONTEXT_SETUP_FAIL, &param);
+                    ran_ue, sess, AMF_UPDATE_SM_CONTEXT_SETUP_FAIL, &param);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
 
@@ -2321,7 +2321,7 @@ void ngap_handle_pdu_session_resource_modify_response(
         r = amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
-                sess, AMF_UPDATE_SM_CONTEXT_MODIFIED, &param);
+                ran_ue, sess, AMF_UPDATE_SM_CONTEXT_MODIFIED, &param);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
 
@@ -2508,7 +2508,7 @@ void ngap_handle_pdu_session_resource_release_response(
         r = amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
-                sess, AMF_UPDATE_SM_CONTEXT_N2_RELEASED, &param);
+                ran_ue, sess, AMF_UPDATE_SM_CONTEXT_N2_RELEASED, &param);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
 
@@ -2977,7 +2977,8 @@ void ngap_handle_path_switch_request(
         r = amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
-                sess, AMF_UPDATE_SM_CONTEXT_PATH_SWITCH_REQUEST, &param);
+                ran_ue, sess,
+                AMF_UPDATE_SM_CONTEXT_PATH_SWITCH_REQUEST, &param);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
 
@@ -3366,7 +3367,8 @@ void ngap_handle_handover_required(
         r = amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
-                sess, AMF_UPDATE_SM_CONTEXT_HANDOVER_REQUIRED, &param);
+                source_ue, sess,
+                AMF_UPDATE_SM_CONTEXT_HANDOVER_REQUIRED, &param);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
 
@@ -3607,7 +3609,8 @@ void ngap_handle_handover_request_ack(
         r = amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
-                sess, AMF_UPDATE_SM_CONTEXT_HANDOVER_REQ_ACK, &param);
+                target_ue, sess,
+                AMF_UPDATE_SM_CONTEXT_HANDOVER_REQ_ACK, &param);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
 
@@ -3879,7 +3882,7 @@ void ngap_handle_handover_cancel(
         r = amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
-                sess, AMF_UPDATE_SM_CONTEXT_HANDOVER_CANCEL, &param);
+                source_ue, sess, AMF_UPDATE_SM_CONTEXT_HANDOVER_CANCEL, &param);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     }
@@ -4188,7 +4191,7 @@ void ngap_handle_handover_notification(
         r = amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
-                sess, AMF_UPDATE_SM_CONTEXT_HANDOVER_NOTIFY, &param);
+                source_ue, sess, AMF_UPDATE_SM_CONTEXT_HANDOVER_NOTIFY, &param);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     }
@@ -4604,7 +4607,7 @@ void ngap_handle_ng_reset(
                 old_xact_count = amf_sess_xact_count(amf_ue);
 
                 amf_sbi_send_deactivate_all_sessions(
-                    amf_ue, AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL,
+                    ran_ue, amf_ue, AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL,
                     NGAP_Cause_PR_radioNetwork,
                     NGAP_CauseRadioNetwork_failure_in_radio_interface_procedure);
 

@@ -64,7 +64,6 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 {
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
-    ran_ue_t *ran_ue = NULL;
 
     ogs_sbi_message_t *sbi_message = NULL;
 
@@ -302,7 +301,7 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                             AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED) {
 
                         int xact_count = amf_sess_xact_count(amf_ue);
-                        amf_sbi_send_release_all_sessions(amf_ue, state);
+                        amf_sbi_send_release_all_sessions(NULL, amf_ue, state);
 
                         if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                             amf_sess_xact_count(amf_ue) == xact_count) {
@@ -555,9 +554,6 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                 SWITCH(sbi_message->h.resource.component[2])
                     CASE(OGS_SBI_RESOURCE_NAME_TRANSFER)
 
-                        ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-                        ogs_assert(ran_ue);
-
                         if (sbi_message->res_status == OGS_SBI_HTTP_STATUS_OK) {
                             r = amf_namf_comm_handle_ue_context_transfer_response(sbi_message, amf_ue);
                             ogs_expect(r == OGS_OK);
@@ -574,7 +570,8 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                         }
 
                         amf_sbi_send_release_all_sessions(
-                                amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                                amf_ue->ran_ue, amf_ue,
+                                AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
                         if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                             amf_sess_xact_count(amf_ue) == xact_count) {
@@ -887,7 +884,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                             AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED) {
 
                         int xact_count = amf_sess_xact_count(amf_ue);
-                        amf_sbi_send_release_all_sessions(amf_ue, state);
+                        amf_sbi_send_release_all_sessions(NULL, amf_ue, state);
 
                         if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                             amf_sess_xact_count(amf_ue) == xact_count) {
@@ -1058,7 +1055,8 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
 
                             } else {
 
-                                amf_sbi_send_release_all_sessions(amf_ue, state);
+                                amf_sbi_send_release_all_sessions(
+                                        NULL, amf_ue, state);
 
                                 if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                                     amf_sess_xact_count(amf_ue) == xact_count) {
@@ -1333,7 +1331,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 CLEAR_NG_CONTEXT(amf_ue);
 
                 gmm_cause = gmm_handle_registration_update(
-                        amf_ue, &nas_message->gmm.registration_request);
+                        ran_ue, amf_ue, &nas_message->gmm.registration_request);
                 if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
                     ogs_error("[%s] gmm_handle_registration_update() "
                                 "failed [%d]", amf_ue->suci, gmm_cause);
@@ -1392,7 +1390,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             } else {
 
                 amf_sbi_send_release_all_sessions(
-                        amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                        ran_ue, amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
                 if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                     amf_sess_xact_count(amf_ue) == xact_count) {
@@ -1462,7 +1460,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             CLEAR_NG_CONTEXT(amf_ue);
 
             gmm_cause = gmm_handle_service_update(
-                    amf_ue, &nas_message->gmm.service_request);
+                    ran_ue, amf_ue, &nas_message->gmm.service_request);
             if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
                 ogs_error("[%s] gmm_handle_service_update() failed [%d]",
                             amf_ue->suci, gmm_cause);
@@ -1513,7 +1511,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             }
 
             amf_sbi_send_release_all_sessions(
-                    amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                    ran_ue, amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
             if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                 amf_sess_xact_count(amf_ue) == xact_count) {
@@ -2417,7 +2415,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             }
 
             amf_sbi_send_release_all_sessions(
-                    amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                    ran_ue, amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
             if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                 amf_sess_xact_count(amf_ue) == xact_count) {
@@ -2552,7 +2550,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         xact_count = amf_sess_xact_count(amf_ue);
 
         amf_sbi_send_release_all_sessions(
-                amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                amf_ue->ran_ue, amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
         if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
             amf_sess_xact_count(amf_ue) == xact_count) {
@@ -2613,7 +2611,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                 CLEAR_NG_CONTEXT(amf_ue);
 
                 gmm_cause = gmm_handle_registration_update(
-                        amf_ue, &nas_message->gmm.registration_request);
+                        ran_ue, amf_ue, &nas_message->gmm.registration_request);
                 if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
                     ogs_error("[%s] gmm_handle_registration_update() "
                                 "failed [%d]", amf_ue->suci, gmm_cause);
@@ -2664,7 +2662,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
             } else {
 
                 amf_sbi_send_release_all_sessions(
-                        amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                        ran_ue, amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
                 if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                     amf_sess_xact_count(amf_ue) == xact_count) {

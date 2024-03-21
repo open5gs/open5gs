@@ -121,7 +121,7 @@ int amf_nnssf_nsselection_handle_get(
         r = amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, discovery_option,
                 amf_nsmf_pdusession_build_create_sm_context,
-                sess, AMF_CREATE_SM_CONTEXT_NO_STATE, &param);
+                ran_ue, sess, AMF_CREATE_SM_CONTEXT_NO_STATE, &param);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     } else {
@@ -163,7 +163,8 @@ int amf_nnssf_nsselection_handle_get(
         ogs_freeaddrinfo(addr6);
 
         r = amf_sess_sbi_discover_by_nsi(
-                sess, OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, discovery_option);
+                ran_ue, sess,
+                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, discovery_option);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     }
