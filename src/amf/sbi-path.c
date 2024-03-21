@@ -158,30 +158,24 @@ int amf_sess_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data),
-        amf_sess_t *sess, int state, void *data)
+        ran_ue_t *ran_ue, amf_sess_t *sess, int state, void *data)
 {
     int r;
     int rv;
     ogs_sbi_xact_t *xact = NULL;
 
-    amf_ue_t *amf_ue = NULL;
-
     ogs_assert(service_type);
     ogs_assert(sess);
     ogs_assert(build);
 
-    amf_ue = amf_ue_cycle(sess->amf_ue);
-    if (!amf_ue) {
-        ogs_error("UE(amf_ue) Context has already been removed");
-        return OGS_NOTFOUND;
-    }
-
-    sess->ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-    if (!sess->ran_ue) {
-        ogs_error("[%s] RAN-NG Context has already been removed",
-                    amf_ue->supi);
-        return OGS_NOTFOUND;
-    }
+    if (ran_ue) {
+        sess->ran_ue = ran_ue_cycle(ran_ue);
+        if (!sess->ran_ue) {
+            ogs_error("NG context has already been removed");
+            return OGS_NOTFOUND;
+        }
+    } else
+        sess->ran_ue = NULL;
 
     xact = ogs_sbi_xact_add(
             &sess->sbi, service_type, discovery_option,
@@ -221,6 +215,7 @@ static int client_discover_cb(
     OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
     amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
 
     xact = data;
@@ -253,14 +248,30 @@ static int client_discover_cb(
     }
 
     ogs_assert(sess->sbi.type == OGS_SBI_OBJ_SESS_TYPE);
-    amf_ue = sess->amf_ue;
-    ogs_assert(amf_ue);
+    amf_ue = amf_ue_cycle(sess->amf_ue);
+    if (!amf_ue) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        ogs_sbi_xact_remove(xact);
+        if (response)
+            ogs_sbi_response_free(response);
+        return OGS_ERROR;
+    }
+    ran_ue = ran_ue_cycle(sess->ran_ue);
+    if (!ran_ue) {
+        ogs_error("[%s] NG context has already been removed", amf_ue->supi);
+        ogs_sbi_xact_remove(xact);
+        if (response)
+            ogs_sbi_response_free(response);
+        return OGS_ERROR;
+    }
 
     if (status != OGS_OK) {
         ogs_log_message(
                 status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
                 "client_discover_cb() failed [%d]", status);
         ogs_sbi_xact_remove(xact);
+        if (response)
+            ogs_sbi_response_free(response);
         return OGS_ERROR;
     }
 
@@ -269,7 +280,7 @@ static int client_discover_cb(
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
         ogs_error("cannot parse HTTP response");
-        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
+        r = nas_5gs_send_back_gsm_message(ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -279,7 +290,7 @@ static int client_discover_cb(
 
     if (message.res_status != OGS_SBI_HTTP_STATUS_OK) {
         ogs_error("NF-Discover failed [%d]", message.res_status);
-        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
+        r = nas_5gs_send_back_gsm_message(ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -289,7 +300,7 @@ static int client_discover_cb(
 
     if (!message.SearchResult) {
         ogs_error("No SearchResult");
-        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
+        r = nas_5gs_send_back_gsm_message(ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -306,7 +317,7 @@ static int client_discover_cb(
         ogs_error("[%s:%d] (NF discover) No [%s]",
                     amf_ue->supi, sess->psi,
                     ogs_sbi_service_type_to_name(service_type));
-        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
+        r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                 OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                 AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
@@ -318,7 +329,7 @@ static int client_discover_cb(
     r = amf_sess_sbi_discover_and_send(
             service_type, NULL,
             amf_nsmf_pdusession_build_create_sm_context,
-            sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL);
+            ran_ue, sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 
@@ -339,14 +350,12 @@ cleanup:
 }
 
 int amf_sess_sbi_discover_by_nsi(
-        amf_sess_t *sess,
+        ran_ue_t *ran_ue, amf_sess_t *sess,
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option)
 {
     ogs_sbi_xact_t *xact = NULL;
     ogs_sbi_client_t *client = NULL;
-
-    amf_ue_t *amf_ue = NULL;
 
     ogs_assert(sess);
     client = sess->nssf.nrf.client;
@@ -356,18 +365,14 @@ int amf_sess_sbi_discover_by_nsi(
     ogs_warn("Try to discover [%s]",
                 ogs_sbi_service_type_to_name(service_type));
 
-    amf_ue = amf_ue_cycle(sess->amf_ue);
-    if (!amf_ue) {
-        ogs_error("UE(amf_ue) Context has already been removed");
-        return OGS_NOTFOUND;
-    }
-
-    sess->ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-    if (!sess->ran_ue) {
-        ogs_error("[%s] RAN-NG Context has already been removed",
-                    amf_ue->supi);
-        return OGS_NOTFOUND;
-    }
+    if (ran_ue) {
+        sess->ran_ue = ran_ue_cycle(ran_ue);
+        if (!sess->ran_ue) {
+            ogs_error("NG context has already been removed");
+            return OGS_NOTFOUND;
+        }
+    } else
+        sess->ran_ue = NULL;
 
     xact = ogs_sbi_xact_add(
             &sess->sbi, service_type, discovery_option, NULL, NULL, NULL);
@@ -388,7 +393,8 @@ int amf_sess_sbi_discover_by_nsi(
             client, client_discover_cb, xact->request, xact) == true ? OGS_OK : OGS_ERROR;
 }
 
-void amf_sbi_send_activating_session(amf_sess_t *sess, int state)
+void amf_sbi_send_activating_session(
+        ran_ue_t *ran_ue, amf_sess_t *sess, int state)
 {
     amf_nsmf_pdusession_sm_context_param_t param;
     int r;
@@ -400,13 +406,14 @@ void amf_sbi_send_activating_session(amf_sess_t *sess, int state)
 
     r = amf_sess_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
-            amf_nsmf_pdusession_build_update_sm_context, sess, state, &param);
+            amf_nsmf_pdusession_build_update_sm_context,
+            ran_ue, sess, state, &param);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 }
 
 void amf_sbi_send_deactivate_session(
-        amf_sess_t *sess, int state, int group, int cause)
+        ran_ue_t *ran_ue, amf_sess_t *sess, int state, int group, int cause)
 {
     amf_nsmf_pdusession_sm_context_param_t param;
     int r;
@@ -422,13 +429,14 @@ void amf_sbi_send_deactivate_session(
 
     r = amf_sess_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
-            amf_nsmf_pdusession_build_update_sm_context, sess, state, &param);
+            amf_nsmf_pdusession_build_update_sm_context,
+            ran_ue, sess, state, &param);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 }
 
 void amf_sbi_send_deactivate_all_sessions(
-        amf_ue_t *amf_ue, int state, int group, int cause)
+        ran_ue_t *ran_ue, amf_ue_t *amf_ue, int state, int group, int cause)
 {
     amf_sess_t *sess = NULL;
 
@@ -436,7 +444,7 @@ void amf_sbi_send_deactivate_all_sessions(
 
     ogs_list_for_each(&amf_ue->sess_list, sess) {
         if (SESSION_CONTEXT_IN_SMF(sess))
-            amf_sbi_send_deactivate_session(sess, state, group, cause);
+            amf_sbi_send_deactivate_session(ran_ue, sess, state, group, cause);
     }
 }
 
@@ -448,13 +456,13 @@ void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state)
     ogs_list_for_each_safe(&gnb->ran_ue_list, ran_ue_next, ran_ue) {
         int old_xact_count = 0, new_xact_count = 0;
 
-        amf_ue = ran_ue->amf_ue;
+        amf_ue = amf_ue_cycle(ran_ue->amf_ue);
 
         if (amf_ue) {
             old_xact_count = amf_sess_xact_count(amf_ue);
 
             amf_sbi_send_deactivate_all_sessions(
-                amf_ue, state, NGAP_Cause_PR_radioNetwork,
+                ran_ue, amf_ue, state, NGAP_Cause_PR_radioNetwork,
                 NGAP_CauseRadioNetwork_failure_in_radio_interface_procedure);
 
             new_xact_count = amf_sess_xact_count(amf_ue);
@@ -482,7 +490,8 @@ void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state)
     }
 }
 
-void amf_sbi_send_release_session(amf_sess_t *sess, int state)
+void amf_sbi_send_release_session(
+        ran_ue_t *ran_ue, amf_sess_t *sess, int state)
 {
     int r;
 
@@ -490,7 +499,8 @@ void amf_sbi_send_release_session(amf_sess_t *sess, int state)
 
     r = amf_sess_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
-            amf_nsmf_pdusession_build_release_sm_context, sess, state, NULL);
+            amf_nsmf_pdusession_build_release_sm_context,
+            ran_ue, sess, state, NULL);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 
@@ -498,7 +508,8 @@ void amf_sbi_send_release_session(amf_sess_t *sess, int state)
     CLEAR_SM_CONTEXT_REF(sess);
 }
 
-void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue, int state)
+void amf_sbi_send_release_all_sessions(
+        ran_ue_t *ran_ue, amf_ue_t *amf_ue, int state)
 {
     amf_sess_t *sess = NULL;
 
@@ -506,7 +517,7 @@ void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue, int state)
 
     ogs_list_for_each(&amf_ue->sess_list, sess) {
         if (SESSION_CONTEXT_IN_SMF(sess))
-            amf_sbi_send_release_session(sess, state);
+            amf_sbi_send_release_session(ran_ue, sess, state);
     }
 }
 
