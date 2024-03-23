@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -504,7 +504,9 @@ void smf_s5c_handle_modify_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(gtp_xact,
+                sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sess ? sess->sgw_s5c_teid : 0,
                 OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -1186,7 +1188,9 @@ void smf_s5c_handle_bearer_resource_command(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(xact,
+                sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sess ? sess->sgw_s5c_teid : 0,
                 OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE, cause_value);
         return;
     }
@@ -1211,7 +1215,9 @@ void smf_s5c_handle_bearer_resource_command(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(xact,
+                sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sess ? sess->sgw_s5c_teid : 0,
                 OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE, cause_value);
         return;
     }
@@ -1240,8 +1246,10 @@ void smf_s5c_handle_bearer_resource_command(
             pf = smf_pf_find_by_id(bearer, tft.pf[i].identifier+1);
             if (pf) {
                 if (reconfigure_packet_filter(pf, &tft, i) < 0) {
-                    ogs_gtp2_send_error_message(
-                        xact, sess ? sess->sgw_s5c_teid : 0,
+                    ogs_gtp2_send_error_message(xact,
+                        sess ? OGS_GTP2_TEID_PRESENCE :
+                            OGS_GTP2_TEID_NO_PRESENCE,
+                        sess ? sess->sgw_s5c_teid : 0,
                         OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
                         OGS_GTP2_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER);
                     return;
@@ -1309,8 +1317,9 @@ void smf_s5c_handle_bearer_resource_command(
             ogs_assert(pf);
 
             if (reconfigure_packet_filter(pf, &tft, i) < 0) {
-                ogs_gtp2_send_error_message(
-                    xact, sess ? sess->sgw_s5c_teid : 0,
+                ogs_gtp2_send_error_message(xact,
+                    sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                    sess ? sess->sgw_s5c_teid : 0,
                     OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
                     OGS_GTP2_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER);
                 return;
@@ -1396,7 +1405,9 @@ void smf_s5c_handle_bearer_resource_command(
 
     if (tft_update == 0 && tft_delete == 0 && qos_update == 0) {
         /* No modification */
-        ogs_gtp2_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(xact,
+                sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sess ? sess->sgw_s5c_teid : 0,
                 OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
                 OGS_GTP2_CAUSE_SERVICE_NOT_SUPPORTED);
         return;
@@ -1422,6 +1433,7 @@ void smf_s5c_handle_bearer_resource_command(
     } else {
         memset(&h, 0, sizeof(ogs_gtp2_header_t));
         h.teid = sess->sgw_s5c_teid;
+        h.teid_presence = OGS_GTP2_TEID_PRESENCE;
         h.type = OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE;
 
         pkbuf = smf_s5c_build_update_bearer_request(

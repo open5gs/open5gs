@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -127,17 +127,4 @@ int ogs_gtp_sendto(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf)
     }
 
     return OGS_OK;
-}
-
-void ogs_gtp_send_error_message(
-        ogs_gtp_xact_t *xact, uint32_t teid, uint8_t type, uint8_t cause_value)
-{
-    switch (xact->gtp_version) {
-    case 1:
-        ogs_gtp1_send_error_message(xact, teid, type, cause_value);
-        break;
-    case 2:
-        ogs_gtp2_send_error_message(xact, teid, type, cause_value);
-        break;
-    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -353,6 +353,7 @@ int smf_pfcp_send_modify_list(
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
+    h.seid_presence = OGS_PFCP_SEID_PRESENCE;
     h.seid = sess->upf_n4_seid;
 
     n4buf = (*modify_list)(h.type, sess, xact);
@@ -430,6 +431,7 @@ int smf_5gc_pfcp_send_session_establishment_request(
  *   over N4 towards another SMF or another PFCP entity in the SMF
  *   as specified in clause 5.22.2 and clause 5.22.3.
  */
+    h.seid_presence = OGS_PFCP_SEID_PRESENCE;
     h.seid = sess->upf_n4_seid;
 
     n4buf = smf_n4_build_session_establishment_request(h.type, sess, xact);
@@ -532,6 +534,7 @@ int smf_5gc_pfcp_send_session_deletion_request(
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_DELETION_REQUEST_TYPE;
+    h.seid_presence = OGS_PFCP_SEID_PRESENCE;
     h.seid = sess->upf_n4_seid;
 
     n4buf = smf_n4_build_session_deletion_request(h.type, sess);
@@ -605,6 +608,7 @@ int smf_epc_pfcp_send_session_establishment_request(
  *   over N4 towards another SMF or another PFCP entity in the SMF
  *   as specified in clause 5.22.2 and clause 5.22.3.
  */
+    h.seid_presence = OGS_PFCP_SEID_PRESENCE;
     h.seid = sess->upf_n4_seid;
 
     n4buf = smf_n4_build_session_establishment_request(h.type, sess, xact);
@@ -748,6 +752,7 @@ int smf_epc_pfcp_send_session_deletion_request(
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_DELETION_REQUEST_TYPE;
+    h.seid_presence = OGS_PFCP_SEID_PRESENCE;
     h.seid = sess->upf_n4_seid;
 
     n4buf = smf_n4_build_session_deletion_request(h.type, sess);
@@ -846,6 +851,7 @@ int smf_pfcp_send_session_report_response(
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE;
+    h.seid_presence = OGS_PFCP_SEID_PRESENCE;
     h.seid = sess->upf_n4_seid;
 
     sxabuf = ogs_pfcp_build_session_report_response(h.type, cause);

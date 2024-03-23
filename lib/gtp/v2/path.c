@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -160,8 +160,8 @@ ogs_pkbuf_t *ogs_gtp2_handle_echo_req(ogs_pkbuf_t *pkb)
     return pkb_resp;
 }
 
-void ogs_gtp2_send_error_message(
-        ogs_gtp_xact_t *xact, uint32_t teid, uint8_t type, uint8_t cause_value)
+void ogs_gtp2_send_error_message(ogs_gtp_xact_t *xact,
+        int teid_presence, uint32_t teid, uint8_t type, uint8_t cause_value)
 {
     int rv;
     ogs_gtp2_message_t errmsg;
@@ -170,6 +170,7 @@ void ogs_gtp2_send_error_message(
     ogs_pkbuf_t *pkbuf = NULL;
 
     memset(&errmsg, 0, sizeof(ogs_gtp2_message_t));
+    errmsg.h.teid_presence = teid_presence;
     errmsg.h.teid = teid;
     errmsg.h.type = type;
 
@@ -257,7 +258,7 @@ void ogs_gtp2_send_echo_request(
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_ECHO_REQUEST_TYPE;
-    h.teid = 0;
+    h.teid_presence = OGS_GTP2_TEID_NO_PRESENCE;
 
     pkbuf = ogs_gtp2_build_echo_request(h.type, recovery, features);
     if (!pkbuf) {
@@ -284,7 +285,7 @@ void ogs_gtp2_send_echo_response(ogs_gtp_xact_t *xact,
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_ECHO_RESPONSE_TYPE;
-    h.teid = 0;
+    h.teid_presence = OGS_GTP2_TEID_NO_PRESENCE;
 
     pkbuf = ogs_gtp2_build_echo_response(h.type, recovery, features);
     if (!pkbuf) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -45,7 +45,8 @@ void sgwu_sxa_handle_session_establishment_request(
 
     if (!sess) {
         ogs_error("No Context");
-        ogs_pfcp_send_error_message(xact, 0,
+        ogs_pfcp_send_error_message(xact,
+                OGS_PFCP_SEID_NO_PRESENCE, 0,
                 OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE,
                 OGS_PFCP_CAUSE_MANDATORY_IE_MISSING, 0);
         return;
@@ -142,7 +143,9 @@ void sgwu_sxa_handle_session_establishment_request(
 
 cleanup:
     ogs_pfcp_sess_clear(&sess->pfcp);
-    ogs_pfcp_send_error_message(xact, sess ? sess->sgwu_sxa_seid : 0,
+    ogs_pfcp_send_error_message(xact,
+            sess ? OGS_PFCP_SEID_PRESENCE : OGS_PFCP_SEID_NO_PRESENCE,
+            sess ? sess->sgwu_sxa_seid : 0,
             OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE,
             cause_value, offending_ie_value);
 }
@@ -168,7 +171,8 @@ void sgwu_sxa_handle_session_modification_request(
 
     if (!sess) {
         ogs_error("No Context");
-        ogs_pfcp_send_error_message(xact, 0,
+        ogs_pfcp_send_error_message(xact,
+                OGS_PFCP_SEID_NO_PRESENCE, 0,
                 OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE,
                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
         return;
@@ -309,7 +313,9 @@ void sgwu_sxa_handle_session_modification_request(
 
 cleanup:
     ogs_pfcp_sess_clear(&sess->pfcp);
-    ogs_pfcp_send_error_message(xact, sess ? sess->sgwu_sxa_seid : 0,
+    ogs_pfcp_send_error_message(xact,
+            sess ? OGS_PFCP_SEID_PRESENCE : OGS_PFCP_SEID_NO_PRESENCE,
+            sess ? sess->sgwu_sxa_seid : 0,
             OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE,
             cause_value, offending_ie_value);
 }
@@ -325,7 +331,8 @@ void sgwu_sxa_handle_session_deletion_request(
 
     if (!sess) {
         ogs_error("No Context");
-        ogs_pfcp_send_error_message(xact, 0,
+        ogs_pfcp_send_error_message(xact,
+                OGS_PFCP_SEID_NO_PRESENCE, 0,
                 OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE,
                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
         return;

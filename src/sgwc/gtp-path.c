@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -182,6 +182,7 @@ int sgwc_gtp_send_create_session_response(
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE;
+    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sgwc_ue->mme_s11_teid;
 
     pkbuf = sgwc_s11_build_create_session_response(h.type, sess);
@@ -229,6 +230,7 @@ int sgwc_gtp_send_downlink_data_notification(
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_TYPE;
+    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sgwc_ue->mme_s11_teid;
 
     pkbuf = sgwc_s11_build_downlink_data_notification(cause_value, bearer);
