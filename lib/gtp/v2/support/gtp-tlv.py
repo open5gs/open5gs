@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -60,7 +60,7 @@ def write_file(f, string):
 def output_header_to_file(f):
     now = datetime.datetime.now()
     f.write("""/*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -461,6 +461,9 @@ typedef struct ogs_gtp2_header_s {
         struct {
 #define OGS_GTP2_VERSION_0 0
 #define OGS_GTP2_VERSION_1 1
+
+#define OGS_GTP2_TEID_NO_PRESENCE 0
+#define OGS_GTP2_TEID_PRESENCE 1
         ED4(uint8_t version:3;,
             uint8_t piggybacked:1;,
             uint8_t teid_presence:1;,

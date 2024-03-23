@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -140,7 +140,7 @@ int ogs_pfcp_send_heartbeat_request(ogs_pfcp_node_t *node,
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_HEARTBEAT_REQUEST_TYPE;
-    h.seid = 0;
+    h.seid_presence = OGS_PFCP_SEID_NO_PRESENCE;
 
     xact = ogs_pfcp_xact_local_create(node, cb, node);
     if (!xact) {
@@ -176,7 +176,7 @@ int ogs_pfcp_send_heartbeat_response(ogs_pfcp_xact_t *xact)
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_HEARTBEAT_RESPONSE_TYPE;
-    h.seid = 0;
+    h.seid_presence = OGS_PFCP_SEID_NO_PRESENCE;
 
     pkbuf = ogs_pfcp_build_heartbeat_response(h.type);
     if (!pkbuf) {
@@ -217,7 +217,7 @@ int ogs_pfcp_cp_send_association_setup_request(ogs_pfcp_node_t *node,
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE;
-    h.seid = 0;
+    h.seid_presence = OGS_PFCP_SEID_NO_PRESENCE;
 
     xact = ogs_pfcp_xact_local_create(node, cb, node);
     if (!xact) {
@@ -254,7 +254,7 @@ int ogs_pfcp_cp_send_association_setup_response(ogs_pfcp_xact_t *xact,
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE;
-    h.seid = 0;
+    h.seid_presence = OGS_PFCP_SEID_NO_PRESENCE;
 
     pkbuf = ogs_pfcp_cp_build_association_setup_response(h.type, cause);
     if (!pkbuf) {
@@ -286,7 +286,7 @@ int ogs_pfcp_up_send_association_setup_request(ogs_pfcp_node_t *node,
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE;
-    h.seid = 0;
+    h.seid_presence = OGS_PFCP_SEID_NO_PRESENCE;
 
     xact = ogs_pfcp_xact_local_create(node, cb, node);
     if (!xact) {
@@ -323,7 +323,7 @@ int ogs_pfcp_up_send_association_setup_response(ogs_pfcp_xact_t *xact,
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE;
-    h.seid = 0;
+    h.seid_presence = OGS_PFCP_SEID_NO_PRESENCE;
 
     pkbuf = ogs_pfcp_up_build_association_setup_response(h.type, cause);
     if (!pkbuf) {
@@ -468,7 +468,7 @@ void ogs_pfcp_send_buffered_packet(ogs_pfcp_pdr_t *pdr)
 }
 
 void ogs_pfcp_send_error_message(
-    ogs_pfcp_xact_t *xact, uint64_t seid, uint8_t type,
+    ogs_pfcp_xact_t *xact, int seid_presence, uint64_t seid, uint8_t type,
     uint8_t cause_value, uint16_t offending_ie_value)
 {
     int rv;
@@ -480,6 +480,7 @@ void ogs_pfcp_send_error_message(
     ogs_assert(xact);
 
     memset(&errmsg, 0, sizeof(ogs_pfcp_message_t));
+    errmsg.h.seid_presence = seid_presence;
     errmsg.h.seid = seid;
     errmsg.h.type = type;
 

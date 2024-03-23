@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -444,6 +444,7 @@ int smf_gtp2_send_create_session_response(
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE;
+    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sess->sgw_s5c_teid;
 
     pkbuf = smf_s5c_build_create_session_response(h.type, sess);
@@ -478,6 +479,7 @@ int smf_gtp2_send_modify_bearer_response(
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE;
+    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sess->sgw_s5c_teid;
 
     pkbuf = smf_s5c_build_modify_bearer_response(
@@ -511,6 +513,7 @@ int smf_gtp2_send_delete_session_response(
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE;
+    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sess->sgw_s5c_teid;
 
     pkbuf = smf_s5c_build_delete_session_response(h.type, sess);
@@ -548,6 +551,7 @@ int smf_gtp2_send_delete_bearer_request(
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_DELETE_BEARER_REQUEST_TYPE;
+    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sess->sgw_s5c_teid;
 
     pkbuf = smf_s5c_build_delete_bearer_request(

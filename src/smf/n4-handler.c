@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -971,6 +971,7 @@ void smf_epc_n4_handle_session_modification_response(
 
             memset(&h, 0, sizeof(ogs_gtp2_header_t));
             h.teid = sess->sgw_s5c_teid;
+            h.teid_presence = OGS_GTP2_TEID_PRESENCE;
             h.type = OGS_GTP2_DELETE_BEARER_REQUEST_TYPE;
 
             pkbuf = smf_s5c_build_delete_bearer_request(
@@ -1182,7 +1183,8 @@ void smf_n4_handle_session_report_request(
     }
 
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
-        ogs_pfcp_send_error_message(pfcp_xact, 0,
+        ogs_pfcp_send_error_message(pfcp_xact,
+                OGS_PFCP_SEID_NO_PRESENCE, 0,
                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                 cause_value, 0);
         return;
@@ -1222,7 +1224,8 @@ void smf_n4_handle_session_report_request(
                     if (paging_policy_indication_value) {
                         ogs_warn("Not implement - "
                                 "Paging Policy Indication Value");
-                        ogs_pfcp_send_error_message(pfcp_xact, 0,
+                        ogs_pfcp_send_error_message(pfcp_xact,
+                                OGS_PFCP_SEID_NO_PRESENCE, 0,
                                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                                 OGS_PFCP_CAUSE_SERVICE_NOT_SUPPORTED, 0);
                         return;
@@ -1232,7 +1235,8 @@ void smf_n4_handle_session_report_request(
                         qos_flow = smf_qos_flow_find_by_qfi(sess, qfi);
                         if (!qos_flow) {
                             ogs_error("Cannot find the QoS Flow[%d]", qfi);
-                            ogs_pfcp_send_error_message(pfcp_xact, 0,
+                            ogs_pfcp_send_error_message(pfcp_xact,
+                                OGS_PFCP_SEID_NO_PRESENCE, 0,
                                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
                             return;
@@ -1257,7 +1261,8 @@ void smf_n4_handle_session_report_request(
 
         if (!pdr) {
             ogs_error("No Context");
-            ogs_pfcp_send_error_message(pfcp_xact, 0,
+            ogs_pfcp_send_error_message(pfcp_xact,
+                    OGS_PFCP_SEID_NO_PRESENCE, 0,
                     OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                     OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
             return;

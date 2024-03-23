@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -86,7 +86,7 @@ int ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr);
 void ogs_pfcp_send_buffered_packet(ogs_pfcp_pdr_t *pdr);
 
 void ogs_pfcp_send_error_message(
-    ogs_pfcp_xact_t *xact, uint64_t seid, uint8_t type,
+    ogs_pfcp_xact_t *xact, int seid_presence, uint64_t seid, uint8_t type,
     uint8_t cause_value, uint16_t offending_ie_value);
 
 #ifdef __cplusplus

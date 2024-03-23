@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -71,9 +71,6 @@ int ogs_gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, ogs_gtp_node_t *gnode);
 
 int ogs_gtp_send(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf);
 int ogs_gtp_sendto(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf);
-
-void ogs_gtp_send_error_message(
-        ogs_gtp_xact_t *xact, uint32_t teid, uint8_t type, uint8_t cause_value);
 
 #ifdef __cplusplus
 }

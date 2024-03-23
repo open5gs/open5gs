@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024444 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -122,8 +122,9 @@ void sgwc_s5c_handle_create_session_response(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp_send_error_message(
-                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+        ogs_gtp2_send_error_message(s11_xact,
+                sgwc_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                 OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -160,8 +161,9 @@ void sgwc_s5c_handle_create_session_response(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp_send_error_message(
-                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+        ogs_gtp2_send_error_message(s11_xact,
+                sgwc_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                 OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -185,8 +187,10 @@ void sgwc_s5c_handle_create_session_response(
         bearer_cause = cause->value;
         if (bearer_cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
             ogs_error("GTP Bearer Cause [VALUE:%d]", bearer_cause);
-            ogs_gtp_send_error_message(
-                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+            ogs_gtp2_send_error_message(s11_xact,
+                    sgwc_ue ? OGS_GTP2_TEID_PRESENCE :
+                        OGS_GTP2_TEID_NO_PRESENCE,
+                    sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                     OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, bearer_cause);
             return;
         }
@@ -199,8 +203,9 @@ void sgwc_s5c_handle_create_session_response(
         session_cause !=
             OGS_GTP2_CAUSE_NEW_PDN_TYPE_DUE_TO_SINGLE_ADDRESS_BEARER_ONLY) {
         ogs_error("GTP Cause [VALUE:%d]", session_cause);
-        ogs_gtp_send_error_message(
-                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+        ogs_gtp2_send_error_message(s11_xact,
+                sgwc_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                 OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, session_cause);
         return;
     }
@@ -233,8 +238,10 @@ void sgwc_s5c_handle_create_session_response(
         bearer = sgwc_bearer_find_by_sess_ebi(sess,
                     rsp->bearer_contexts_created[i].eps_bearer_id.u8);
         if (!bearer) {
-            ogs_gtp_send_error_message(
-                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+            ogs_gtp2_send_error_message(s11_xact,
+                    sgwc_ue ? OGS_GTP2_TEID_PRESENCE :
+                        OGS_GTP2_TEID_NO_PRESENCE,
+                    sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                     OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
                     OGS_GTP2_CAUSE_MANDATORY_IE_MISSING);
             return;
@@ -253,8 +260,10 @@ void sgwc_s5c_handle_create_session_response(
 
         rv = ogs_gtp2_f_teid_to_ip(pgw_s5u_teid, &ul_tunnel->remote_ip);
         if (rv != OGS_OK) {
-            ogs_gtp_send_error_message(
-                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+            ogs_gtp2_send_error_message(s11_xact,
+                    sgwc_ue ? OGS_GTP2_TEID_PRESENCE :
+                        OGS_GTP2_TEID_NO_PRESENCE,
+                    sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                     OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
                     OGS_GTP2_CAUSE_MANDATORY_IE_MISSING);
             return;
@@ -354,13 +363,15 @@ void sgwc_s5c_handle_modify_bearer_response(
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         if (modify_action == OGS_GTP_MODIFY_IN_PATH_SWITCH_REQUEST)
-            ogs_gtp_send_error_message(
-                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                    OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
+            ogs_gtp2_send_error_message(s11_xact,
+                sgwc_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
         else
-            ogs_gtp_send_error_message(
-                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                    OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE, cause_value);
+            ogs_gtp2_send_error_message(s11_xact,
+                sgwc_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
 
@@ -376,13 +387,15 @@ void sgwc_s5c_handle_modify_bearer_response(
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         if (modify_action == OGS_GTP_MODIFY_IN_PATH_SWITCH_REQUEST)
-            ogs_gtp_send_error_message(
-                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                    OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
+            ogs_gtp2_send_error_message(s11_xact,
+                sgwc_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
         else
-            ogs_gtp_send_error_message(
-                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                    OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE, cause_value);
+            ogs_gtp2_send_error_message(s11_xact,
+                sgwc_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
 
@@ -394,13 +407,15 @@ void sgwc_s5c_handle_modify_bearer_response(
     if (session_cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         ogs_error("GTP Cause [VALUE:%d]", session_cause);
         if (modify_action == OGS_GTP_MODIFY_IN_PATH_SWITCH_REQUEST)
-            ogs_gtp_send_error_message(
-                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                    OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, session_cause);
+            ogs_gtp2_send_error_message(s11_xact,
+                sgwc_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, session_cause);
         else
-            ogs_gtp_send_error_message(
-                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                    OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE, session_cause);
+            ogs_gtp2_send_error_message(s11_xact,
+                sgwc_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE, session_cause);
         return;
     }
 
@@ -420,6 +435,7 @@ void sgwc_s5c_handle_modify_bearer_response(
             sgwc_gtp_send_create_session_response(sess, s11_xact));
     } else {
         message->h.type = OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE;
+        message->h.teid_presence = OGS_GTP2_TEID_PRESENCE;
         message->h.teid = sgwc_ue->mme_s11_teid;
 
         pkbuf = ogs_gtp2_build_msg(message);
@@ -493,8 +509,9 @@ void sgwc_s5c_handle_delete_session_response(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp_send_error_message(
-                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+        ogs_gtp2_send_error_message(s11_xact,
+                sgwc_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                 OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -573,7 +590,9 @@ void sgwc_s5c_handle_create_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(s5c_xact,
+                sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sess ? sess->pgw_s5c_teid : 0,
                 OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -601,7 +620,9 @@ void sgwc_s5c_handle_create_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(s5c_xact,
+                sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sess ? sess->pgw_s5c_teid : 0,
                 OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -631,7 +652,9 @@ void sgwc_s5c_handle_create_bearer_request(
 
     rv = ogs_gtp2_f_teid_to_ip(pgw_s5u_teid, &ul_tunnel->remote_ip);
     if (rv != OGS_OK) {
-        ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(s5c_xact,
+                sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sess ? sess->pgw_s5c_teid : 0,
                 OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE,
                 OGS_GTP2_CAUSE_MANDATORY_IE_MISSING);
         return;
@@ -709,7 +732,9 @@ void sgwc_s5c_handle_update_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(s5c_xact,
+                sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sess ? sess->pgw_s5c_teid : 0,
                 OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -729,6 +754,7 @@ void sgwc_s5c_handle_update_bearer_request(
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     message->h.type = OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE;
+    message->h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     message->h.teid = sgwc_ue->mme_s11_teid;
 
     pkbuf = ogs_gtp2_build_msg(message);
@@ -850,7 +876,9 @@ void sgwc_s5c_handle_delete_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(s5c_xact,
+                sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                sess ? sess->pgw_s5c_teid : 0,
                 OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -870,6 +898,7 @@ void sgwc_s5c_handle_delete_bearer_request(
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     message->h.type = OGS_GTP2_DELETE_BEARER_REQUEST_TYPE;
+    message->h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     message->h.teid = sgwc_ue->mme_s11_teid;
 
     pkbuf = ogs_gtp2_build_msg(message);
@@ -970,6 +999,8 @@ void sgwc_s5c_handle_bearer_resource_failure_indication(
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
-    ogs_gtp_send_error_message(s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+    ogs_gtp2_send_error_message(s11_xact,
+            sgwc_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+            sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
             OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE, cause_value);
 }

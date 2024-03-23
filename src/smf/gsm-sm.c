@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
-
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -74,7 +73,9 @@ static void send_gtp_create_err_msg(const smf_sess_t *sess,
         ogs_gtp1_send_error_message(gtp_xact, sess->sgw_s5c_teid,
             OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE, gtp_cause);
     else
-        ogs_gtp2_send_error_message(gtp_xact, sess->sgw_s5c_teid,
+        ogs_gtp2_send_error_message(gtp_xact,
+            sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+            sess->sgw_s5c_teid,
             OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, gtp_cause);
 }
 
@@ -85,7 +86,9 @@ static void send_gtp_delete_err_msg(const smf_sess_t *sess,
         ogs_gtp1_send_error_message(gtp_xact, sess->sgw_s5c_teid,
             OGS_GTP1_DELETE_PDP_CONTEXT_RESPONSE_TYPE, gtp_cause);
     else
-        ogs_gtp2_send_error_message(gtp_xact, sess->sgw_s5c_teid,
+        ogs_gtp2_send_error_message(gtp_xact,
+            sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+            sess->sgw_s5c_teid,
             OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE, gtp_cause);
 }
 
@@ -775,8 +778,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             sess, e->gtp_xact,
                             &gtp2_message->delete_session_request);
             if (gtp2_cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-                ogs_gtp2_send_error_message(e->gtp_xact, sess->sgw_s5c_teid,
-                        OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE, gtp2_cause);
+                ogs_gtp2_send_error_message(e->gtp_xact,
+                    sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
+                    sess->sgw_s5c_teid,
+                    OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE, gtp2_cause);
                 return;
             }
             OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);

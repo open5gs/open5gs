@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -251,7 +251,7 @@ int ogs_pfcp_xact_update_tx(ogs_pfcp_xact_t *xact,
         return OGS_ERROR;
     }
 
-    if (hdesc->type >= OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE) {
+    if (hdesc->seid_presence) {
         pfcp_hlen = OGS_PFCP_HEADER_LEN;
     } else {
         pfcp_hlen = OGS_PFCP_HEADER_LEN - OGS_PFCP_SEID_LEN;
@@ -264,7 +264,7 @@ int ogs_pfcp_xact_update_tx(ogs_pfcp_xact_t *xact,
     h->version = OGS_PFCP_VERSION;
     h->type = hdesc->type;
 
-    if (h->type >= OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE) {
+    if (hdesc->seid_presence) {
         h->seid_presence = 1;
         h->seid = htobe64(hdesc->seid);
         h->sqn = OGS_PFCP_XID_TO_SQN(xact->xid);

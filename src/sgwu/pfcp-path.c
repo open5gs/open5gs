@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -180,6 +180,7 @@ int sgwu_pfcp_send_session_establishment_response(
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE;
+    h.seid_presence = OGS_PFCP_SEID_PRESENCE;
     h.seid = sess->sgwc_sxa_f_seid.seid;
 
     sxabuf = sgwu_sxa_build_session_establishment_response(
@@ -213,6 +214,7 @@ int sgwu_pfcp_send_session_modification_response(
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE;
+    h.seid_presence = OGS_PFCP_SEID_PRESENCE;
     h.seid = sess->sgwc_sxa_f_seid.seid;
 
     sxabuf = sgwu_sxa_build_session_modification_response(
@@ -245,6 +247,7 @@ int sgwu_pfcp_send_session_deletion_response(ogs_pfcp_xact_t *xact,
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE;
+    h.seid_presence = OGS_PFCP_SEID_PRESENCE;
     h.seid = sess->sgwc_sxa_f_seid.seid;
 
     sxabuf = sgwu_sxa_build_session_deletion_response(h.type, sess);
@@ -295,6 +298,7 @@ int sgwu_pfcp_send_session_report_request(
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_REPORT_REQUEST_TYPE;
+    h.seid_presence = OGS_PFCP_SEID_PRESENCE;
     h.seid = sess->sgwc_sxa_f_seid.seid;
 
     xact = ogs_pfcp_xact_local_create(sess->pfcp_node, sess_timeout, sess);
