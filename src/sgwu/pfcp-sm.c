@@ -318,10 +318,6 @@ void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
         }
         break;
     case SGWU_EVT_SXA_NO_HEARTBEAT:
-
-        /* 'node' context was removed in ogs_pfcp_xact_delete(xact)
-         * So, we should not use PFCP node here */
-
         ogs_warn("No Heartbeat from SGW-C [%s]:%d",
                     OGS_ADDR(addr, buf), OGS_PORT(addr));
         OGS_FSM_TRAN(s, sgwu_pfcp_state_will_associate);
