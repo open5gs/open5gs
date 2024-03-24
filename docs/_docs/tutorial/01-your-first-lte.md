@@ -191,7 +191,7 @@ $ echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.
 
 # Run Update and Install
 $ sudo apt update
-$ sudo apt install nodejs -y
+$ sudo apt install nodejs npm -y
 
 # Install the WebUI of Open5GS
 $ curl -fsSL https://open5gs.org/open5gs/assets/webui/install | sudo -E bash -
@@ -334,7 +334,7 @@ Change back to the srsRAN source directory and copy the main config example as w
 ```bash
 $ cp srsenb/enb.conf.example srsenb/enb.conf
 $ cp srsenb/rr.conf.example srsenb/rr.conf
-$ cp srsenb/drb.conf.example srsenb/drb.conf
+$ cp srsenb/rb.conf.example srsenb/drb.conf
 $ cp srsenb/sib.conf.example srsenb/sib.conf
 ```
 
