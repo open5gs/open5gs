@@ -117,13 +117,20 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
             ogs_pfcp_cp_send_association_setup_request(node, node_timeout);
             break;
         case SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE:
-            sess = e->sess;
-            sess = smf_sess_cycle(sess);
+            sess = smf_sess_cycle(e->sess);
             if (!sess) {
                 ogs_warn("Session has already been removed");
                 break;
             }
             ogs_fsm_dispatch(&sess->sm, e);
+            break;
+        case SMF_TIMER_PFCP_NO_DELETION_RESPONSE:
+            sess = smf_sess_cycle(e->sess);
+            if (!sess) {
+                ogs_warn("Session has already been removed");
+                break;
+            }
+            SMF_SESS_CLEAR(sess);
             break;
         default:
             ogs_error("Unknown timer[%s:%d]",
@@ -386,13 +393,20 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                 ogs_pfcp_send_heartbeat_request(node, node_timeout));
             break;
         case SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE:
-            sess = e->sess;
-            sess = smf_sess_cycle(sess);
+            sess = smf_sess_cycle(e->sess);
             if (!sess) {
                 ogs_warn("Session has already been removed");
                 break;
             }
             ogs_fsm_dispatch(&sess->sm, e);
+            break;
+        case SMF_TIMER_PFCP_NO_DELETION_RESPONSE:
+            sess = smf_sess_cycle(e->sess);
+            if (!sess) {
+                ogs_warn("Session has already been removed");
+                break;
+            }
+            SMF_SESS_CLEAR(sess);
             break;
         default:
             ogs_error("Unknown timer[%s:%d]",
@@ -401,12 +415,19 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
         }
         break;
     case SMF_EVT_N4_NO_HEARTBEAT:
-
-        /* 'node' context was removed in ogs_pfcp_xact_delete(xact)
-         * So, we should not use PFCP node here */
-
         ogs_warn("No Heartbeat from UPF [%s]:%d",
                     OGS_ADDR(addr, buf), OGS_PORT(addr));
+
+        /*
+         * reselect_upf() should not be executed on node_timeout
+         * because the timer cannot be deleted in the timer expiration function.
+         *
+         * Note that reselct_upf contains SMF_SESS_CLEAR.
+         */
+        node = e->pfcp_node;
+        ogs_assert(node);
+        reselect_upf(node);
+
         OGS_FSM_TRAN(s, smf_pfcp_state_will_associate);
         break;
     default:
@@ -550,7 +571,6 @@ static void node_timeout(ogs_pfcp_xact_t *xact, void *data)
     switch (type) {
     case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
         ogs_assert(data);
-        reselect_upf(data);
 
         e = smf_event_new(SMF_EVT_N4_NO_HEARTBEAT);
         e->pfcp_node = data;

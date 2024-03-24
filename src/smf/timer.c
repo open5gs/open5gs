@@ -42,6 +42,8 @@ const char *smf_timer_get_name(int timer_id)
         return "SMF_TIMER_PFCP_NO_HEARTBEAT";
     case SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE:
         return "SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE";
+    case SMF_TIMER_PFCP_NO_DELETION_RESPONSE:
+        return "SMF_TIMER_PFCP_NO_DELETION_RESPONSE";
     default: 
        break;
     }
