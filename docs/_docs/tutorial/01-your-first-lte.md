@@ -334,7 +334,7 @@ Change back to the srsRAN source directory and copy the main config example as w
 ```bash
 $ cp srsenb/enb.conf.example srsenb/enb.conf
 $ cp srsenb/rr.conf.example srsenb/rr.conf
-$ cp srsenb/drb.conf.example srsenb/drb.conf
+$ cp srsenb/rb.conf.example srsenb/rb.conf
 $ cp srsenb/sib.conf.example srsenb/sib.conf
 ```
 

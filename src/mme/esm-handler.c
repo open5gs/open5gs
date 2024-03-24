@@ -236,13 +236,17 @@ int esm_handle_information_response(mme_sess_t *sess,
             mme_csmap_t *csmap = mme_csmap_find_by_tai(&mme_ue->tai);
             mme_ue->csmap = csmap;
 
-            if (csmap) {
-                ogs_assert(OGS_OK ==
-                    sgsap_send_location_update_request(mme_ue));
-            } else {
+            if (!csmap ||
+                mme_ue->network_access_mode ==
+                    OGS_NETWORK_ACCESS_MODE_ONLY_PACKET ||
+                mme_ue->nas_eps.attach.value ==
+                    OGS_NAS_ATTACH_TYPE_EPS_ATTACH) {
                 r = nas_eps_send_attach_accept(mme_ue);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
+            } else {
+                ogs_assert(OGS_OK ==
+                    sgsap_send_location_update_request(mme_ue));
             }
         } else {
             ogs_assert(OGS_OK ==
