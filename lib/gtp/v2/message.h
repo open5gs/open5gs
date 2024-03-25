@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2024-03-23 07:21:22.438775 by acetcom
+ * Created on: 2023-08-26 16:35:12.642445 by acetcom
  * from 29274-h70.docx
  ******************************************************************************/
 
@@ -44,9 +44,6 @@ typedef struct ogs_gtp2_header_s {
         struct {
 #define OGS_GTP2_VERSION_0 0
 #define OGS_GTP2_VERSION_1 1
-
-#define OGS_GTP2_TEID_NO_PRESENCE 0
-#define OGS_GTP2_TEID_PRESENCE 1
         ED4(uint8_t version:3;,
             uint8_t piggybacked:1;,
             uint8_t teid_presence:1;,

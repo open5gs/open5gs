@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
- * Copyright (C) 2023-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -408,7 +407,7 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
         return OGS_ERROR;
     }
 
-    if (hdesc->teid_presence) {
+    if (hdesc->type > OGS_GTP2_VERSION_NOT_SUPPORTED_INDICATION_TYPE) {
         gtp_hlen = OGS_GTPV2C_HEADER_LEN;
     } else {
         gtp_hlen = OGS_GTPV2C_HEADER_LEN - OGS_GTP2_TEID_LEN;
@@ -421,12 +420,12 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
     h->version = 2;
     h->type = hdesc->type;
 
-    if (hdesc->teid_presence) {
-        h->teid_presence = OGS_GTP2_TEID_PRESENCE;
+    if (hdesc->type > OGS_GTP2_VERSION_NOT_SUPPORTED_INDICATION_TYPE) {
+        h->teid_presence = 1;
         h->teid = htobe32(hdesc->teid);
         h->sqn = OGS_GTP2_XID_TO_SQN(xact->xid);
     } else {
-        h->teid_presence = OGS_GTP2_TEID_NO_PRESENCE;
+        h->teid_presence = 0;
         h->sqn_only = OGS_GTP2_XID_TO_SQN(xact->xid);
     }
     h->length = htobe16(pkbuf->len - 4);

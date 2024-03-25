@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -254,7 +254,6 @@ int mme_gtp_send_create_session_request(mme_sess_t *sess, int create_action)
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_CREATE_SESSION_REQUEST_TYPE;
-    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = mme_s11_build_create_session_request(h.type, sess, create_action);
@@ -294,7 +293,6 @@ int mme_gtp_send_modify_bearer_request(
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE;
-    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = mme_s11_build_modify_bearer_request(h.type, mme_ue, uli_presence);
@@ -334,7 +332,6 @@ int mme_gtp_send_delete_session_request(
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_DELETE_SESSION_REQUEST_TYPE;
-    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sgw_ue->sgw_s11_teid;
 
     s11buf = mme_s11_build_delete_session_request(h.type, sess, action);
@@ -403,7 +400,6 @@ int mme_gtp_send_create_bearer_response(
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE;
-    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = mme_s11_build_create_bearer_response(h.type, bearer, cause_value);
@@ -449,7 +445,6 @@ int mme_gtp_send_update_bearer_response(
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE;
-    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = mme_s11_build_update_bearer_response(h.type, bearer, cause_value);
@@ -495,7 +490,6 @@ int mme_gtp_send_delete_bearer_response(
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE;
-    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = mme_s11_build_delete_bearer_response(h.type, bearer, cause_value);
@@ -531,7 +525,6 @@ int mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue, int action)
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_RELEASE_ACCESS_BEARERS_REQUEST_TYPE;
-    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = mme_s11_build_release_access_bearers_request(h.type);
@@ -629,7 +622,6 @@ int mme_gtp_send_downlink_data_notification_ack(
     /* Build Downlink data notification ack */
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE;
-    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sgw_ue->sgw_s11_teid;
 
     s11buf = mme_s11_build_downlink_data_notification_ack(h.type, cause_value);
@@ -665,7 +657,6 @@ int mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE;
-    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = mme_s11_build_create_indirect_data_forwarding_tunnel_request(
@@ -705,7 +696,6 @@ int mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE;
-    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_TLV_MAX_HEADROOM);
@@ -748,7 +738,6 @@ int mme_gtp_send_bearer_resource_command(
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE;
-    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sgw_ue->sgw_s11_teid;
 
     pkbuf = mme_s11_build_bearer_resource_command(h.type, bearer, nas_message);

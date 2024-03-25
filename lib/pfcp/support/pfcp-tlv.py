@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -54,7 +54,7 @@ def write_file(f, string):
 def output_header_to_file(f):
     now = datetime.datetime.now()
     f.write("""/*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -541,8 +541,6 @@ extern "C" {
 typedef struct ogs_pfcp_header_s {
     union {
         struct {
-#define OGS_PFCP_SEID_NO_PRESENCE 0
-#define OGS_PFCP_SEID_PRESENCE 1
         ED4(uint8_t version:3;,
             uint8_t spare1:3;,
             uint8_t mp:1;,

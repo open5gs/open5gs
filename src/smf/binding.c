@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -363,7 +363,6 @@ void smf_bearer_binding(smf_sess_t *sess)
 
                 memset(&h, 0, sizeof(ogs_gtp2_header_t));
                 h.type = OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE;
-                h.teid_presence = OGS_GTP2_TEID_PRESENCE;
                 h.teid = sess->sgw_s5c_teid;
 
                 pkbuf = smf_s5c_build_update_bearer_request(
@@ -440,7 +439,6 @@ int smf_gtp2_send_create_bearer_request(smf_bearer_t *bearer)
     ogs_assert(sess);
 
     h.type = OGS_GTP2_CREATE_BEARER_REQUEST_TYPE;
-    h.teid_presence = OGS_GTP2_TEID_PRESENCE;
     h.teid = sess->sgw_s5c_teid;
 
     memset(&tft, 0, sizeof tft);

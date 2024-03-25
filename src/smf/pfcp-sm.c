@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -324,8 +324,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                         OGS_GTP1_CREATE_PDP_CONTEXT_RESPONSE_TYPE,
                         OGS_GTP1_CAUSE_CONTEXT_NOT_FOUND);
                 else
-                    ogs_gtp2_send_error_message(gtp_xact,
-                        OGS_GTP2_TEID_NO_PRESENCE, 0,
+                    ogs_gtp2_send_error_message(gtp_xact, 0,
                         OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
                         OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
                 break;
@@ -360,8 +359,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                         OGS_GTP1_DELETE_PDP_CONTEXT_RESPONSE_TYPE,
                         OGS_GTP1_CAUSE_CONTEXT_NOT_FOUND);
                 else
-                    ogs_gtp2_send_error_message(gtp_xact,
-                        OGS_GTP2_TEID_NO_PRESENCE, 0,
+                    ogs_gtp2_send_error_message(gtp_xact, 0,
                         OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE,
                         OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
                 break;

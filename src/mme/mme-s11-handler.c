@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -823,9 +823,7 @@ void mme_s11_handle_create_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact,
-                sgw_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
-                sgw_ue ? sgw_ue->sgw_s11_teid : 0,
+        ogs_gtp2_send_error_message(xact, sgw_ue ? sgw_ue->sgw_s11_teid : 0,
                 OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -861,9 +859,7 @@ void mme_s11_handle_create_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact,
-                sgw_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
-                sgw_ue ? sgw_ue->sgw_s11_teid : 0,
+        ogs_gtp2_send_error_message(xact, sgw_ue ? sgw_ue->sgw_s11_teid : 0,
                 OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -1019,9 +1015,7 @@ void mme_s11_handle_update_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact,
-                sgw_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
-                sgw_ue ? sgw_ue->sgw_s11_teid : 0,
+        ogs_gtp2_send_error_message(xact, sgw_ue ? sgw_ue->sgw_s11_teid : 0,
                 OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -1192,9 +1186,7 @@ void mme_s11_handle_delete_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact,
-                sgw_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
-                sgw_ue ? sgw_ue->sgw_s11_teid : 0,
+        ogs_gtp2_send_error_message(xact, sgw_ue ? sgw_ue->sgw_s11_teid : 0,
                 OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE,
                 OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
         return;
@@ -1451,9 +1443,7 @@ void mme_s11_handle_downlink_data_notification(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact,
-                sgw_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
-                sgw_ue ? sgw_ue->sgw_s11_teid : 0,
+        ogs_gtp2_send_error_message(xact, sgw_ue ? sgw_ue->sgw_s11_teid : 0,
                 OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE,
                 OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
         return;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -245,9 +245,8 @@ void sgwc_sxa_handle_session_establishment_response(
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         if (sess) sgwc_ue = sess->sgwc_ue;
-        ogs_gtp2_send_error_message(s11_xact,
-                sgwc_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
-                sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+        ogs_gtp_send_error_message(
+                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                 OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -270,11 +269,10 @@ void sgwc_sxa_handle_session_establishment_response(
 
         if (dl_tunnel->local_addr == NULL && dl_tunnel->local_addr6 == NULL) {
             ogs_error("No UP F-TEID");
-            ogs_gtp2_send_error_message(s11_xact,
-                sgwc_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
-                sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
-                OGS_GTP2_CAUSE_GRE_KEY_NOT_FOUND);
+            ogs_gtp_send_error_message(
+                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                    OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
+                    OGS_GTP2_CAUSE_GRE_KEY_NOT_FOUND);
             return;
         }
 
@@ -349,7 +347,6 @@ void sgwc_sxa_handle_session_establishment_response(
         memset(&send_message, 0, sizeof(ogs_gtp2_message_t));
 
         send_message.h.type = OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE;
-        send_message.h.teid_presence = OGS_GTP2_TEID_PRESENCE;
         send_message.h.teid = sess->pgw_s5c_teid;
 
         /* Send Control Plane(DL) : SGW-S5C */
@@ -399,7 +396,6 @@ void sgwc_sxa_handle_session_establishment_response(
 
         /* Create Session Request */
         recv_message->h.type = OGS_GTP2_CREATE_SESSION_REQUEST_TYPE;
-        recv_message->h.teid_presence = OGS_GTP2_TEID_PRESENCE;
         recv_message->h.teid = sess->pgw_s5c_teid;
 
         /* Send Control Plane(DL) : SGW-S5C */
@@ -585,10 +581,9 @@ void sgwc_sxa_handle_session_modification_response(
             s5c_xact = pfcp_xact->assoc_xact;
 
             if (s5c_xact) {
-                ogs_gtp2_send_error_message(s5c_xact,
-                    sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
-                    sess ? sess->pgw_s5c_teid : 0,
-                    OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE, cause_value);
+                ogs_gtp_send_error_message(
+                        s5c_xact, sess ? sess->pgw_s5c_teid : 0,
+                        OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE, cause_value);
             }
 
             sgwc_bearer_remove(bearer);
@@ -596,9 +591,8 @@ void sgwc_sxa_handle_session_modification_response(
             s5c_xact = pfcp_xact->assoc_xact;
             ogs_assert(s5c_xact);
 
-            ogs_gtp2_send_error_message(s5c_xact,
-                    sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
-                    sess ? sess->pgw_s5c_teid : 0,
+            ogs_gtp_send_error_message(
+                    s5c_xact, sess ? sess->pgw_s5c_teid : 0,
                     OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE, cause_value);
 
 
@@ -607,20 +601,16 @@ void sgwc_sxa_handle_session_modification_response(
                 s11_xact = pfcp_xact->assoc_xact;
                 ogs_assert(s11_xact);
 
-                ogs_gtp2_send_error_message(s11_xact,
-                        sgwc_ue ? OGS_GTP2_TEID_PRESENCE :
-                            OGS_GTP2_TEID_NO_PRESENCE,
-                        sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                ogs_gtp_send_error_message(
+                        s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                         OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
 
             } else if (flags & OGS_PFCP_MODIFY_DL_ONLY) {
                 s11_xact = pfcp_xact->assoc_xact;
                 ogs_assert(s11_xact);
 
-                ogs_gtp2_send_error_message(s11_xact,
-                        sgwc_ue ? OGS_GTP2_TEID_PRESENCE :
-                            OGS_GTP2_TEID_NO_PRESENCE,
-                        sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                ogs_gtp_send_error_message(
+                        s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                         OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE, cause_value);
             } else {
                 ogs_fatal("Invalid modify_flags[0x%llx]", (long long)flags);
@@ -630,10 +620,9 @@ void sgwc_sxa_handle_session_modification_response(
             s11_xact = pfcp_xact->assoc_xact;
             ogs_assert(s11_xact);
 
-            ogs_gtp2_send_error_message(s11_xact,
-                sgwc_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE,
-                sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE, cause_value);
+            ogs_gtp_send_error_message(
+                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                    OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE, cause_value);
         }
 
         ogs_pfcp_xact_commit(pfcp_xact);
@@ -705,7 +694,6 @@ void sgwc_sxa_handle_session_modification_response(
 
                 send_message.h.type =
                 OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE;
-                send_message.h.teid_presence = OGS_GTP2_TEID_PRESENCE;
                 send_message.h.teid = sgwc_ue->mme_s11_teid;
 
                 pkbuf = ogs_gtp2_build_msg(&send_message);
@@ -732,7 +720,6 @@ void sgwc_sxa_handle_session_modification_response(
             if (s5c_xact) {
                 ogs_assert(recv_message);
                 recv_message->h.type = OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE;
-                recv_message->h.teid_presence = OGS_GTP2_TEID_PRESENCE;
                 recv_message->h.teid = sess->pgw_s5c_teid;
 
                 pkbuf = ogs_gtp2_build_msg(recv_message);
@@ -782,7 +769,6 @@ void sgwc_sxa_handle_session_modification_response(
             gtp_req->bearer_contexts.s1_u_enodeb_f_teid.len = len;
 
             recv_message->h.type = OGS_GTP2_CREATE_BEARER_REQUEST_TYPE;
-            recv_message->h.teid_presence = OGS_GTP2_TEID_PRESENCE;
             recv_message->h.teid = sgwc_ue->mme_s11_teid;
 
             pkbuf = ogs_gtp2_build_msg(recv_message);
@@ -850,7 +836,6 @@ void sgwc_sxa_handle_session_modification_response(
             gtp_rsp->bearer_contexts.s5_s8_u_pgw_f_teid.len = len;
 
             recv_message->h.type = OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE;
-            recv_message->h.teid_presence = OGS_GTP2_TEID_PRESENCE;
             recv_message->h.teid = sess->pgw_s5c_teid;
 
             pkbuf = ogs_gtp2_build_msg(recv_message);
@@ -977,7 +962,6 @@ void sgwc_sxa_handle_session_modification_response(
 
                 send_message.h.type =
                 OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE;
-                send_message.h.teid_presence = OGS_GTP2_TEID_PRESENCE;
                 send_message.h.teid = sgwc_ue->mme_s11_teid;
 
                 pkbuf = ogs_gtp2_build_msg(&send_message);
@@ -1062,7 +1046,6 @@ void sgwc_sxa_handle_session_modification_response(
             }
 
             recv_message->h.type = OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE;
-            recv_message->h.teid_presence = OGS_GTP2_TEID_PRESENCE;
             recv_message->h.teid = sgwc_ue->mme_s11_teid;
 
             pkbuf = ogs_gtp2_build_msg(recv_message);
@@ -1100,7 +1083,6 @@ void sgwc_sxa_handle_session_modification_response(
 
                 if (indication && indication->handover_indication) {
                     recv_message->h.type = OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE;
-                    recv_message->h.teid_presence = OGS_GTP2_TEID_PRESENCE;
                     recv_message->h.teid = sess->pgw_s5c_teid;
 
                     pkbuf = ogs_gtp2_build_msg(recv_message);
@@ -1186,7 +1168,6 @@ void sgwc_sxa_handle_session_modification_response(
                     }
 
                     send_message.h.type = OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE;
-                    send_message.h.teid_presence = OGS_GTP2_TEID_PRESENCE;
                     send_message.h.teid = sgwc_ue->mme_s11_teid;
 
                     pkbuf = ogs_gtp2_build_msg(&send_message);
@@ -1252,7 +1233,6 @@ void sgwc_sxa_handle_session_modification_response(
 
                 send_message.h.type =
                     OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE;
-                send_message.h.teid_presence = OGS_GTP2_TEID_PRESENCE;
                 send_message.h.teid = sgwc_ue->mme_s11_teid;
 
                 pkbuf = ogs_gtp2_build_msg(&send_message);
@@ -1284,7 +1264,6 @@ void sgwc_sxa_handle_session_deletion_response(
 {
     int rv;
     uint8_t cause_value = 0;
-    int teid_presence = OGS_GTP2_TEID_NO_PRESENCE;
     uint32_t teid = 0;
 
     sgwc_ue_t *sgwc_ue = NULL;
@@ -1336,8 +1315,6 @@ void sgwc_sxa_handle_session_deletion_response(
          * 2. SMF sends Delete Session Response to SGW/MME.
          */
         if (sess) sgwc_ue = sess->sgwc_ue;
-        teid_presence =
-            sgwc_ue ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE;
         teid = sgwc_ue ? sgwc_ue->mme_s11_teid : 0;
         break;
     case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
@@ -1354,8 +1331,6 @@ void sgwc_sxa_handle_session_deletion_response(
          * - Bearer Resource Command
          * - Delete Bearer Request/Response with DEDICATED BEARER.
          */
-        teid_presence =
-            sess ? OGS_GTP2_TEID_PRESENCE : OGS_GTP2_TEID_NO_PRESENCE;
         teid = sess ? sess->pgw_s5c_teid : 0;
         break;
     default:
@@ -1365,8 +1340,8 @@ void sgwc_sxa_handle_session_deletion_response(
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         if (gtp_xact) {
-            ogs_gtp2_send_error_message(gtp_xact,
-                    teid_presence, teid, gtp_message->h.type, cause_value);
+            ogs_gtp_send_error_message(
+                    gtp_xact, teid, gtp_message->h.type, cause_value);
         }
         return;
     }
@@ -1383,7 +1358,6 @@ void sgwc_sxa_handle_session_deletion_response(
          * If gtp_message->h.type == OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE
          * Then gtp_xact is S5C-XACT
          */
-        gtp_message->h.teid_presence = OGS_GTP2_TEID_PRESENCE;
         gtp_message->h.teid = teid;
 
         pkbuf = ogs_gtp2_build_msg(gtp_message);
@@ -1445,8 +1419,7 @@ void sgwc_sxa_handle_session_report_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_pfcp_send_error_message(pfcp_xact,
-                OGS_PFCP_SEID_NO_PRESENCE, 0,
+        ogs_pfcp_send_error_message(pfcp_xact, 0,
                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                 cause_value, 0);
         return;
@@ -1458,9 +1431,7 @@ void sgwc_sxa_handle_session_report_request(
 
     if (!sgwc_ue->gnode) {
         ogs_error("No SGWC-UE GTP Node");
-        ogs_pfcp_send_error_message(pfcp_xact,
-                sess ? OGS_PFCP_SEID_PRESENCE : OGS_PFCP_SEID_NO_PRESENCE,
-                sess ? sess->sgwu_sxa_seid : 0,
+        ogs_pfcp_send_error_message(pfcp_xact, sess ? sess->sgwu_sxa_seid : 0,
                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
         return;
