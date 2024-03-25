@@ -184,13 +184,12 @@ static int sess_fill_pdp_context_decoded(mme_sess_t *sess, ogs_gtp1_pdp_context_
 
 /* 3GPP TS 29.060 7.5.3 SGSN Context Request */
 ogs_pkbuf_t *mme_gn_build_sgsn_context_request(
-                mme_ue_t *mme_ue)
+                mme_ue_t *mme_ue, const ogs_nas_p_tmsi_signature_t *ptmsi_sig)
 {
     ogs_gtp1_message_t gtp1_message;
     ogs_gtp1_sgsn_context_request_t *req = NULL;
     ogs_nas_rai_t rai;
     mme_p_tmsi_t ptmsi;
-    uint32_t ptmsi_sig;
     ogs_gtp1_gsn_addr_t mme_gnc_gsnaddr, mme_gnc_alt_gsnaddr;
     int gsn_len;
     int rv;
@@ -202,7 +201,7 @@ ogs_pkbuf_t *mme_gn_build_sgsn_context_request(
     req = &gtp1_message.sgsn_context_request;
     memset(&gtp1_message, 0, sizeof(ogs_gtp1_message_t));
 
-    guti_to_rai_ptmsi(&mme_ue->next.guti, &rai, &ptmsi, &ptmsi_sig);
+    guti_to_rai_ptmsi(&mme_ue->next.guti, &rai, &ptmsi);
 
     req->imsi.presence = 0;
 
@@ -213,10 +212,12 @@ ogs_pkbuf_t *mme_gn_build_sgsn_context_request(
     req->temporary_logical_link_identifier.presence = 0;
 
     req->packet_tmsi.presence = 1;
-    req->packet_tmsi.u32 = be32toh(ptmsi);
+    req->packet_tmsi.u32 = ptmsi;
 
-    req->p_tmsi_signature.presence = 1;
-    req->p_tmsi_signature.u24 = ptmsi_sig;
+    if (ptmsi_sig) {
+        req->p_tmsi_signature.presence = 1;
+        req->p_tmsi_signature.u24 = *ptmsi_sig;
+    }
 
     req->ms_validated.presence = 0;
 

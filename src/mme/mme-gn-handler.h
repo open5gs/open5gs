@@ -45,7 +45,7 @@ void mme_gn_handle_ran_information_relay(
         ogs_gtp_xact_t *xact, ogs_gtp1_ran_information_relay_t *req);
 
 void guti_to_rai_ptmsi(const ogs_nas_eps_guti_t *nas_guti, ogs_nas_rai_t *rai,
-        mme_p_tmsi_t *ptmsi, uint32_t *ptmsi_sig);
+        mme_p_tmsi_t *ptmsi);
 
 #ifdef __cplusplus
 }

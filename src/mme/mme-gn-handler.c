@@ -69,22 +69,20 @@ static int decode_global_enb_id(S1AP_Global_ENB_ID_t *glob_enb_id, const uint8_t
     return OGS_OK;
 }
 
-/* 3GPP TS 23.003 2.8.2.1 Mapping from GUTI to RAI, P-TMSI and P-TMSI signature */
-void guti_to_rai_ptmsi(const ogs_nas_eps_guti_t *nas_guti, ogs_nas_rai_t *rai, mme_p_tmsi_t *ptmsi, uint32_t *ptmsi_sig)
+/* 3GPP TS 23.003 2.8.2.2 Mapping RAI and P-TMSI from GUTI (in the MME) */
+void guti_to_rai_ptmsi(const ogs_nas_eps_guti_t *nas_guti, ogs_nas_rai_t *rai, mme_p_tmsi_t *ptmsi)
 {
     rai->lai.nas_plmn_id = nas_guti->nas_plmn_id;
-    rai->lai.lac = nas_guti->mme_gid;
-    rai->rac = nas_guti->mme_code;
+    rai->lai.lac = htons(nas_guti->mme_gid);
+    rai->rac = (nas_guti->m_tmsi >> 16) & 0xff;
     if (ptmsi)
         *ptmsi = 0xC0000000 |
                 (nas_guti->m_tmsi & 0x3f000000) |
                 (nas_guti->mme_code & 0x0ff) << 16 |
                 (nas_guti->m_tmsi & 0x0000ffff);
-    if (ptmsi_sig)
-        *ptmsi_sig = (nas_guti->m_tmsi & 0x00ff0000);
 }
 
-/* 3GPP TS 23.003 2.8.2.2 Mapping from RAI and P-TMSI to GUTI */
+/* 3GPP TS 23.003 2.8.2.1 Mapping GUTI from RAI, P-TMSI and P-TMSI signature (in the MME) */
 static void rai_ptmsi_to_guti(const ogs_nas_rai_t *rai, mme_p_tmsi_t ptmsi, uint32_t ptmsi_sig, ogs_nas_eps_guti_t *nas_guti)
 {
     nas_guti->nas_plmn_id = rai->lai.nas_plmn_id;
