@@ -124,7 +124,6 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
     ogs_assert(session->name);
     bearer = mme_default_bearer_in_sess(sess);
     ogs_assert(bearer);
-    ogs_assert(mme_bearer_next(bearer) == NULL);
 
     ogs_debug("Activate default bearer context request");
     ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",

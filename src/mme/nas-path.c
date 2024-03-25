@@ -106,7 +106,6 @@ int nas_eps_send_attach_accept(mme_ue_t *mme_ue)
 {
     int rv;
     mme_sess_t *sess = NULL;
-    mme_bearer_t *bearer = NULL;
     ogs_pkbuf_t *s1apbuf = NULL;
     ogs_pkbuf_t *esmbuf = NULL, *emmbuf = NULL;
 
@@ -124,12 +123,6 @@ int nas_eps_send_attach_accept(mme_ue_t *mme_ue)
     ogs_assert(sess);
     if (mme_sess_next(sess)) {
         ogs_error("There should only be one SESSION");
-        return OGS_ERROR;
-    }
-    bearer = mme_default_bearer_in_sess(sess);
-    ogs_assert(bearer);
-    if (mme_bearer_next(bearer)) {
-        ogs_error("There should only be one BEARER");
         return OGS_ERROR;
     }
 
