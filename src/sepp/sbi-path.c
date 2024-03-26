@@ -422,7 +422,7 @@ static int response_handler(
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                "response_handler() failed", NULL));
+                "response_handler() failed", NULL, NULL));
 
         sepp_assoc_remove(assoc);
 

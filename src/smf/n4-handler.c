@@ -705,7 +705,7 @@ int smf_5gc_n4_handle_session_deletion_response(
             ogs_assert(stream);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(
-                    stream, status, NULL, strerror, NULL));
+                    stream, status, NULL, strerror, NULL, NULL));
         } else if (trigger == OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED) {
             /* No stream - Nothing */
         } else {

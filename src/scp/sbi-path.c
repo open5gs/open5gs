@@ -631,7 +631,7 @@ static int response_handler(
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                "response_handler() failed", NULL));
+                "response_handler() failed", NULL, NULL));
 
         scp_assoc_remove(assoc);
 
@@ -700,7 +700,7 @@ static int nf_discover_handler(
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                "nf_discover_handler() failed", NULL));
+                "nf_discover_handler() failed", NULL, NULL));
 
         scp_assoc_remove(assoc);
         return OGS_ERROR;
@@ -787,7 +787,8 @@ cleanup:
 
     ogs_assert(true ==
         ogs_sbi_server_send_error(
-            stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL));
+            stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL,
+            NULL));
 
     ogs_free(strerror);
 
@@ -829,7 +830,7 @@ static int sepp_discover_handler(
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                "sepp_discover_handler() failed", NULL));
+                "sepp_discover_handler() failed", NULL, NULL));
 
         scp_assoc_remove(assoc);
         return OGS_ERROR;
@@ -881,7 +882,8 @@ cleanup:
 
     ogs_assert(true ==
         ogs_sbi_server_send_error(
-            stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL));
+            stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL,
+            NULL));
 
     ogs_free(strerror);
 

@@ -95,7 +95,7 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        message, "[%s] No SUPI", ausf_ue->suci));
+                        message, "[%s] No SUPI", ausf_ue->suci, NULL));
                 OGS_FSM_TRAN(s, ausf_ue_state_exception);
                 break;
             }
@@ -114,7 +114,7 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        message, "[%s] No SUPI", ausf_ue->suci));
+                        message, "[%s] No SUPI", ausf_ue->suci, NULL));
                 OGS_FSM_TRAN(s, ausf_ue_state_exception);
                 break;
             }
@@ -133,7 +133,8 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_FORBIDDEN, message,
-                    "Invalid HTTP method", message->h.method));
+                    "Invalid HTTP method", message->h.method,
+                    NULL));
         END
 
         break;
@@ -162,7 +163,8 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(
                         stream, message->res_status,
-                        NULL, "HTTP response error", ausf_ue->suci));
+                        NULL, "HTTP response error", ausf_ue->suci,
+                        message->ProblemDetails->cause));
                 break;
             }
 
