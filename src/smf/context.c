@@ -2485,8 +2485,12 @@ void smf_bearer_remove_all(smf_sess_t *sess)
     smf_bearer_t *bearer = NULL, *next_bearer = NULL;
 
     ogs_assert(sess);
-    ogs_list_for_each_safe(&sess->bearer_list, next_bearer, bearer)
+    ogs_list_for_each_safe(&sess->bearer_list, next_bearer, bearer) {
+        smf_metrics_inst_by_5qi_add(&sess->serving_plmn_id,
+                &sess->s_nssai, sess->session.qos.index,
+                SMF_METR_GAUGE_SM_QOSFLOWNBR, -1);
         smf_bearer_remove(bearer);
+    }
 }
 
 smf_bearer_t *smf_bearer_find_by_pgw_s5u_teid(
