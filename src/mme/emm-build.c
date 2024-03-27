@@ -211,15 +211,19 @@ ogs_pkbuf_t *emm_build_attach_accept(
         ogs_assert(mme_ue->csmap);
         ogs_assert(mme_ue->p_tmsi);
 
+#if 0
         attach_accept->presencemask |=
             OGS_NAS_EPS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT;
+#endif
         lai->nas_plmn_id = mme_ue->csmap->lai.nas_plmn_id;
         lai->lac = mme_ue->csmap->lai.lac;
         ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
                 ogs_plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
 
+#if 0
         attach_accept->presencemask |=
             OGS_NAS_EPS_ATTACH_ACCEPT_MS_IDENTITY_PRESENT;
+#endif
         ms_identity->length = 5;
         tmsi->spare = 0xf;
         tmsi->odd_even = 0;
