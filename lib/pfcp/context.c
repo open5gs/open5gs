@@ -1144,6 +1144,7 @@ void ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
     int i = 0;
 
     ogs_assert(pdr);
+    ogs_assert(!pdr->f_teid.ch);
     ogs_assert(pdr->f_teid.teid > 0 &&
             pdr->f_teid.teid <= ogs_pfcp_pdr_teid_pool.size);
 
