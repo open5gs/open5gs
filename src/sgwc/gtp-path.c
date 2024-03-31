@@ -129,6 +129,8 @@ int sgwc_gtp_open(void)
     }
 
     OGS_SETUP_GTPC_SERVER;
+    ogs_assert(ogs_gtp_self()->gtpc_sock || ogs_gtp_self()->gtpc_sock6);
+    ogs_assert(ogs_gtp_self()->gtpc_addr || ogs_gtp_self()->gtpc_addr6);
 
     return OGS_OK;
 }
