@@ -42,7 +42,7 @@ int ogs_dbi_msisdn_data(
                 "{", "imsi", BCON_UTF8(imsi_or_msisdn_bcd), "}",
                 "{", "msisdn", BCON_UTF8(imsi_or_msisdn_bcd), "}",
             "]");
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 5
+#if MONGOC_CHECK_VERSION(1, 5, 0)
     cursor = mongoc_collection_find_with_opts(
             ogs_mongoc()->collection.subscriber, query, NULL, NULL);
 #else
@@ -138,7 +138,7 @@ int ogs_dbi_ims_data(char *supi, ogs_ims_data_t *ims_data)
     ogs_assert(supi_id);
 
     query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 5
+#if MONGOC_CHECK_VERSION(1, 5, 0)
     cursor = mongoc_collection_find_with_opts(
             ogs_mongoc()->collection.subscriber, query, NULL, NULL);
 #else

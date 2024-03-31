@@ -32,7 +32,7 @@ void hss_state_initial(ogs_fsm_t *s, hss_event_t *e)
 
     ogs_assert(s);
 
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
+#if MONGOC_CHECK_VERSION(1, 9, 0)
     if (hss_self()->use_mongodb_change_stream) {
         ogs_dbi_collection_watch_init();
 
