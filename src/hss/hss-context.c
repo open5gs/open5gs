@@ -331,7 +331,7 @@ int hss_context_parse_config(void)
                             self.sms_over_ims =
                                 ogs_yaml_iter_value(&hss_iter);
                 } else if (!strcmp(hss_key, "use_mongodb_change_stream")) {
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
+#if MONGOC_CHECK_VERSION(1, 9, 0)
                     self.use_mongodb_change_stream =
                         ogs_yaml_iter_bool(&hss_iter);
 #else
@@ -1201,7 +1201,7 @@ int hss_db_poll_change_stream(void)
 
 static int poll_change_stream(void)
 {
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
+#if MONGOC_CHECK_VERSION(1, 9, 0)
     int rv;
 
     const bson_t *document;

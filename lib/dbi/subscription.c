@@ -44,7 +44,7 @@ int ogs_dbi_auth_info(char *supi, ogs_dbi_auth_info_t *auth_info)
     ogs_assert(supi_id);
 
     query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 5
+#if MONGOC_CHECK_VERSION(1, 5, 0)
     cursor = mongoc_collection_find_with_opts(
             ogs_mongoc()->collection.subscriber, query, NULL, NULL);
 #else
@@ -326,7 +326,7 @@ int ogs_dbi_subscription_data(char *supi,
     ogs_assert(supi_id);
 
     query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 5
+#if MONGOC_CHECK_VERSION(1, 5, 0)
     cursor = mongoc_collection_find_with_opts(
             ogs_mongoc()->collection.subscriber, query, NULL, NULL);
 #else
