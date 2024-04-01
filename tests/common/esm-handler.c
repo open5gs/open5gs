@@ -19,6 +19,38 @@
 
 #include "test-common.h"
 
+void testesm_handle_esm_information_request(
+        test_ue_t *test_ue, ogs_nas_eps_message_t *message)
+{
+    test_sess_t *sess = NULL;
+
+    ogs_assert(test_ue);
+    ogs_assert(message);
+
+    ogs_assert(message->esm.h.procedure_transaction_identity !=
+            OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
+
+    sess = test_sess_find_by_pti(
+            test_ue, message->esm.h.procedure_transaction_identity);
+    ogs_assert(sess);
+}
+
+void testesm_handle_pdn_connectivity_reject(
+        test_ue_t *test_ue, ogs_nas_eps_message_t *message)
+{
+    test_sess_t *sess = NULL;
+
+    ogs_assert(test_ue);
+    ogs_assert(message);
+
+    ogs_assert(message->esm.h.procedure_transaction_identity !=
+            OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
+
+    sess = test_sess_find_by_pti(
+            test_ue, message->esm.h.procedure_transaction_identity);
+    ogs_assert(sess);
+}
+
 void testesm_handle_activate_default_eps_bearer_context_request(
         test_ue_t *test_ue, ogs_nas_eps_message_t *message)
 {
@@ -43,6 +75,9 @@ void testesm_handle_activate_default_eps_bearer_context_request(
     sess = test_sess_find_by_apn(
             test_ue, access_point_name->apn, OGS_GTP2_RAT_TYPE_EUTRAN);
     ogs_assert(sess);
+
+    ogs_assert(sess->pti == message->esm.h.procedure_transaction_identity);
+
     bearer = test_bearer_find_by_sess_ebi(
             sess, message->esm.h.eps_bearer_identity);
     if (!bearer)
@@ -96,11 +131,33 @@ void testesm_handle_activate_dedicated_eps_bearer_context_request(
     sess = bearer->sess;
     ogs_assert(sess);
 
+    ogs_assert(sess->pti == message->esm.h.procedure_transaction_identity);
+
     bearer = test_bearer_find_by_sess_ebi(
             sess, message->esm.h.eps_bearer_identity);
     if (!bearer)
         bearer = test_bearer_add(sess, message->esm.h.eps_bearer_identity);
     ogs_assert(bearer);
+}
+
+void testesm_handle_modify_eps_bearer_context_request(
+        test_ue_t *test_ue, ogs_nas_eps_message_t *message)
+{
+    test_sess_t *sess = NULL;
+    test_bearer_t *bearer = NULL;
+    uint8_t ebi;
+
+    ogs_assert(message);
+
+    ebi = message->esm.h.eps_bearer_identity;
+    ogs_assert(ebi);
+
+    bearer = test_bearer_find_by_ue_ebi(test_ue, ebi);
+    ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
+
+    ogs_assert(sess->pti == message->esm.h.procedure_transaction_identity);
 }
 
 void testesm_handle_deactivate_eps_bearer_context_request(
@@ -117,4 +174,40 @@ void testesm_handle_deactivate_eps_bearer_context_request(
 
     bearer = test_bearer_find_by_ue_ebi(test_ue, ebi);
     ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
+
+    ogs_assert(sess->pti == message->esm.h.procedure_transaction_identity);
+}
+
+void testesm_handle_bearer_resource_allocation(
+        test_ue_t *test_ue, ogs_nas_eps_message_t *message)
+{
+    test_sess_t *sess = NULL;
+
+    ogs_assert(test_ue);
+    ogs_assert(message);
+
+    ogs_assert(message->esm.h.procedure_transaction_identity !=
+            OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
+
+    sess = test_sess_find_by_pti(
+            test_ue, message->esm.h.procedure_transaction_identity);
+    ogs_assert(sess);
+}
+
+void testesm_handle_bearer_resource_modification(
+        test_ue_t *test_ue, ogs_nas_eps_message_t *message)
+{
+    test_sess_t *sess = NULL;
+
+    ogs_assert(test_ue);
+    ogs_assert(message);
+
+    ogs_assert(message->esm.h.procedure_transaction_identity !=
+            OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
+
+    sess = test_sess_find_by_pti(
+            test_ue, message->esm.h.procedure_transaction_identity);
+    ogs_assert(sess);
 }

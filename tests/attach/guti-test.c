@@ -225,6 +225,8 @@ static void test1_func(abts_case *tc, void *data)
 #endif
 
     /* Send Attach Request */
+    sess->pti = 1;
+
     memset(&sess->pdn_connectivity_param,
             0, sizeof(sess->pdn_connectivity_param));
     sess->pdn_connectivity_param.eit = 1;
@@ -364,6 +366,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send Attach Request - INVALID GUTI */
     test_ue->nas_eps_guti.m_tmsi = 0x1234;
+    sess->pti = 1;
 
     memset(&sess->pdn_connectivity_param,
             0, sizeof(sess->pdn_connectivity_param));
@@ -618,6 +621,8 @@ static void test2_func(abts_case *tc, void *data)
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send Attach Request - No Integrity */
+    sess->pti = 1;
+
     sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
@@ -751,6 +756,8 @@ static void test2_func(abts_case *tc, void *data)
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send Attach Request */
+    sess->pti = 1;
+
     memset(&sess->pdn_connectivity_param,
             0, sizeof(sess->pdn_connectivity_param));
     sess->pdn_connectivity_param.eit = 1;
@@ -1507,6 +1514,8 @@ static void test4_func(abts_case *tc, void *data)
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send Attach Request */
+    sess->pti = 1;
+
     memset(&sess->pdn_connectivity_param,
             0, sizeof(sess->pdn_connectivity_param));
     sess->pdn_connectivity_param.eit = 1;

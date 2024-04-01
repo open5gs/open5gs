@@ -4287,7 +4287,8 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
     }
 
     if (pti == OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED) {
-        ogs_error("Both PTI[%d] and EBI[%d] are 0", pti, ebi);
+        ogs_error("ESM message type: %d, Both PTI[%d] and EBI[%d] are 0",
+                message->esm.h.message_type, pti, ebi);
         r = nas_eps_send_attach_reject(mme_ue->enb_ue, mme_ue,
                 OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
                 OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
@@ -4373,6 +4374,9 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
             sess = mme_sess_find_by_apn(mme_ue,
                     pdn_connectivity_request->access_point_name.apn);
             if (sess && create_action != OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
+
+                sess->pti = pti;
+
                 r = nas_eps_send_pdn_connectivity_reject(
                         sess,
                         OGS_NAS_ESM_CAUSE_MULTIPLE_PDN_CONNECTIONS_FOR_A_GIVEN_APN_NOT_ALLOWED,

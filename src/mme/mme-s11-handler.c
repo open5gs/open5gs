@@ -793,7 +793,7 @@ void mme_s11_handle_create_bearer_request(
     ogs_assert(xact);
     ogs_assert(req);
 
-    ogs_debug("Create Bearer Response");
+    ogs_debug("Create Bearer Request");
 
     /***********************
      * Check MME-UE Context
@@ -877,12 +877,25 @@ void mme_s11_handle_create_bearer_request(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
+    /*
+     * DEPRECATED : Issues #3072
+     *
+     * PTI 0 is set here to prevent a InitialContextSetupRequest message
+     * with a PTI of 0 from being created when the Create Bearer Request occurs
+     * and InitialContextSetupRequest occurs.
+     *
+     * If you implement the creation of a dedicated bearer
+     * in the ESM procedure reqeusted by the UE,
+     * you will need to refactor the part that sets the PTI.
+     */
+#if 0
     /* Set PTI */
     sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
     if (req->procedure_transaction_id.presence) {
         sess->pti = req->procedure_transaction_id.u8;
         ogs_debug("    PTI[%d]", sess->pti);
     }
+#endif
 
     /* Data Plane(UL) : SGW-S1U */
     sgw_s1u_teid = req->bearer_contexts.s1_u_enodeb_f_teid.data;
