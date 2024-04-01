@@ -513,6 +513,7 @@ void test_sess_remove_all(test_ue_t *test_ue);
 
 test_sess_t *test_sess_find_by_apn(
         test_ue_t *test_ue, char *apn, uint8_t rat_type);
+test_sess_t *test_sess_find_by_pti(test_ue_t *test_ue, uint8_t pti);
 test_sess_t *test_sess_find_by_psi(test_ue_t *test_ue, uint8_t psi);
 
 test_bearer_t *test_bearer_add(test_sess_t *sess, uint8_t ebi);

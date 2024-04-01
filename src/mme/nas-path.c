@@ -106,7 +106,6 @@ int nas_eps_send_attach_accept(mme_ue_t *mme_ue)
 {
     int rv;
     mme_sess_t *sess = NULL;
-    mme_bearer_t *bearer = NULL;
     ogs_pkbuf_t *s1apbuf = NULL;
     ogs_pkbuf_t *esmbuf = NULL, *emmbuf = NULL;
 
@@ -122,10 +121,10 @@ int nas_eps_send_attach_accept(mme_ue_t *mme_ue)
 
     sess = mme_sess_first(mme_ue);
     ogs_assert(sess);
-    ogs_assert(mme_sess_next(sess) == NULL);
-    bearer = mme_default_bearer_in_sess(sess);
-    ogs_assert(bearer);
-    ogs_assert(mme_bearer_next(bearer) == NULL);
+    if (mme_sess_next(sess)) {
+        ogs_error("There should only be one SESSION");
+        return OGS_ERROR;
+    }
 
     ogs_debug("[%s] Attach accept", mme_ue->imsi_bcd);
 
