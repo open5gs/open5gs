@@ -37,7 +37,7 @@ typedef struct ogs_mongoc_s {
     void *client;
     void *database;
 
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
+#if MONGOC_CHECK_VERSION(1, 9, 0)
     mongoc_change_stream_t *stream;
 #endif
 

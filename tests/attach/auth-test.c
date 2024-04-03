@@ -196,6 +196,8 @@ static void test1_func(abts_case *tc, void *data)
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send Attach Request */
+    sess->pti = 1;
+
     sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
@@ -269,6 +271,8 @@ static void test1_func(abts_case *tc, void *data)
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send Attach Request - No Integrity */
+    sess->pti = 1;
+
     sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =

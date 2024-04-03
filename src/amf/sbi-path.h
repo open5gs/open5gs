@@ -74,23 +74,26 @@ int amf_sess_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data),
-        amf_sess_t *sess, int state, void *data);
+        ran_ue_t *ran_ue, amf_sess_t *sess, int state, void *data);
 
 int amf_sess_sbi_discover_by_nsi(
-        amf_sess_t *sess,
+        ran_ue_t *ran_ue, amf_sess_t *sess,
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option);
 
-void amf_sbi_send_activating_session(amf_sess_t *sess, int state);
+void amf_sbi_send_activating_session(
+        ran_ue_t *ran_ue, amf_sess_t *sess, int state);
 
 void amf_sbi_send_deactivate_session(
-        amf_sess_t *sess, int state, int group, int cause);
+        ran_ue_t *ran_ue, amf_sess_t *sess, int state, int group, int cause);
 void amf_sbi_send_deactivate_all_sessions(
-        amf_ue_t *amf_ue, int state, int group, int cause);
+        ran_ue_t *ran_ue, amf_ue_t *amf_ue, int state, int group, int cause);
 void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state);
 
-void amf_sbi_send_release_session(amf_sess_t *sess, int state);
-void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue, int state);
+void amf_sbi_send_release_session(
+        ran_ue_t *ran_ue, amf_sess_t *sess, int state);
+void amf_sbi_send_release_all_sessions(
+        ran_ue_t *ran_ue, amf_ue_t *amf_ue, int state);
 
 bool amf_sbi_send_n1_n2_failure_notify(
         amf_sess_t *sess, OpenAPI_n1_n2_message_transfer_cause_e cause);

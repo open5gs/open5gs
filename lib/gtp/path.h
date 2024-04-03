@@ -35,16 +35,12 @@ extern "C" {
         ogs_gtp_self()->gtpc_sock6 = \
             ogs_socknode_sock_first(&ogs_gtp_self()->gtpc_list6); \
         \
-        ogs_assert(ogs_gtp_self()->gtpc_sock || ogs_gtp_self()->gtpc_sock6); \
-        \
         if (ogs_gtp_self()->gtpc_sock) \
             ogs_gtp_self()->gtpc_addr = \
                 &ogs_gtp_self()->gtpc_sock->local_addr; \
         if (ogs_gtp_self()->gtpc_sock6) \
             ogs_gtp_self()->gtpc_addr6 = \
                 &ogs_gtp_self()->gtpc_sock6->local_addr; \
-        \
-        ogs_assert(ogs_gtp_self()->gtpc_addr || ogs_gtp_self()->gtpc_addr6); \
         \
     } while(0)
 

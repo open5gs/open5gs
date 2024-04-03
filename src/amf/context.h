@@ -749,6 +749,7 @@ void amf_ue_fsm_fini(amf_ue_t *amf_ue);
 amf_ue_t *amf_ue_find_by_guti(ogs_nas_5gs_guti_t *nas_guti);
 amf_ue_t *amf_ue_find_by_suci(char *suci);
 amf_ue_t *amf_ue_find_by_supi(char *supi);
+amf_ue_t *amf_ue_find_by_ue_context_id(char *ue_context_id);
 
 amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message);
 void amf_ue_set_suci(amf_ue_t *amf_ue,

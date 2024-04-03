@@ -1295,6 +1295,18 @@ test_sess_t *test_sess_find_by_apn(
     return NULL;
 }
 
+test_sess_t *test_sess_find_by_pti(test_ue_t *test_ue, uint8_t pti)
+{
+    test_sess_t *sess = NULL;
+
+    ogs_assert(test_ue);
+
+    ogs_list_for_each(&test_ue->sess_list, sess)
+        if (sess->pti == pti) return sess;
+
+    return NULL;
+}
+
 test_sess_t *test_sess_find_by_psi(test_ue_t *test_ue, uint8_t psi)
 {
     test_sess_t *sess = NULL;

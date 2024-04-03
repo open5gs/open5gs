@@ -203,6 +203,8 @@ int mme_gtp_open(void)
     }
 
     OGS_SETUP_GTPC_SERVER;
+    ogs_assert(ogs_gtp_self()->gtpc_sock || ogs_gtp_self()->gtpc_sock6);
+    ogs_assert(ogs_gtp_self()->gtpc_addr || ogs_gtp_self()->gtpc_addr6);
 
     mme_self()->pgw_addr = mme_pgw_addr_find_by_apn_enb(
             &mme_self()->pgw_list, AF_INET, NULL);

@@ -187,6 +187,8 @@ typedef struct ogs_diam_gy_message_s {
             uint32_t time_threshold;
             uint32_t volume_threshold;
             ogs_diam_gy_service_unit_t granted;
+            uint32_t result_code;
+            uint32_t *err;
         } cca;
     };
 } ogs_diam_gy_message_t;

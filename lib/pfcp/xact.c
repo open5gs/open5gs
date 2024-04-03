@@ -161,11 +161,6 @@ static ogs_pfcp_xact_t *ogs_pfcp_xact_remote_create(
     return xact;
 }
 
-ogs_pfcp_xact_t *ogs_pfcp_xact_cycle(ogs_pfcp_xact_t *xact)
-{
-    return ogs_pool_cycle(&pool, xact);
-}
-
 void ogs_pfcp_xact_delete_all(ogs_pfcp_node_t *node)
 {
     ogs_pfcp_xact_t *xact = NULL, *next_xact = NULL;

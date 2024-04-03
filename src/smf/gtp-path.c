@@ -251,6 +251,9 @@ int smf_gtp_open(void)
     }
 
     OGS_SETUP_GTPC_SERVER;
+    /* If we only use 5G, we don't need GTP-C, so there is no check routine. */
+    if (!ogs_gtp_self()->gtpc_sock  && !ogs_gtp_self()->gtpc_sock6)
+        ogs_warn("No GTP-C configuration");
 
     ogs_list_for_each(&ogs_gtp_self()->gtpu_list, node) {
         sock = ogs_gtp_server(node);

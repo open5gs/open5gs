@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,35 +17,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SMF_TIMER_H
-#define SMF_TIMER_H
-
-#include "ogs-proto.h"
+#ifndef AMF_NAMF_BUILD_H
+#define AMF_NAMF_BUILD_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* forward declaration */
-typedef enum {
-    SMF_TIMER_BASE = OGS_MAX_NUM_OF_PROTO_TIMER,
+#include "context.h"
 
-    SMF_TIMER_PFCP_ASSOCIATION,
-    SMF_TIMER_PFCP_NO_HEARTBEAT,
-    SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE,
-    SMF_TIMER_PFCP_NO_DELETION_RESPONSE,
-
-    MAX_NUM_OF_SMF_TIMER,
-
-} smf_timer_e;
-
-const char *smf_timer_get_name(int timer_id);
-
-void smf_timer_pfcp_association(void *data);
-void smf_timer_pfcp_no_heartbeat(void *data);
+ogs_sbi_request_t *amf_namf_comm_build_ue_context_transfer(
+        amf_ue_t *amf_ue, void *data);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SMF_TIMER_H */
+#endif /* AMF_NAMF_BUILD_H */

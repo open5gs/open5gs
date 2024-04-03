@@ -4,6 +4,8 @@
 
 #include <string.h>
 
+#include "ogs-core.h"
+
 #define NUM_ECC_DIGITS (ECC_BYTES/8)
 #define MAX_TRIES 16
 
@@ -82,6 +84,7 @@ static int getRandomNumber(uint64_t *p_vli)
     HCRYPTPROV l_prov;
     if(!CryptAcquireContext(&l_prov, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
     {
+        ogs_error("CryptAcquireContext() failed");
         return 0;
     }
 
@@ -107,9 +110,11 @@ static int getRandomNumber(uint64_t *p_vli)
     int l_fd = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
     if(l_fd == -1)
     {
+        ogs_error("open(/dev/urandom) failed");
         l_fd = open("/dev/random", O_RDONLY | O_CLOEXEC);
         if(l_fd == -1)
         {
+            ogs_error("open(/dev/random) failed");
             return 0;
         }
     }
@@ -122,6 +127,7 @@ static int getRandomNumber(uint64_t *p_vli)
         if(l_read <= 0)
         { // read failed
             close(l_fd);
+            ogs_error("read() failed");
             return 0;
         }
         l_left -= l_read;
@@ -1073,6 +1079,7 @@ int ecc_make_key(uint8_t p_publicKey[ECC_BYTES+1], uint8_t p_privateKey[ECC_BYTE
     {
         if(!getRandomNumber(l_private) || (l_tries++ >= MAX_TRIES))
         {
+            ogs_error("getRandomNumber() failed [%d]", l_tries);
             return 0;
         }
         if(vli_isZero(l_private))
@@ -1096,6 +1103,45 @@ int ecc_make_key(uint8_t p_publicKey[ECC_BYTES+1], uint8_t p_privateKey[ECC_BYTE
     return 1;
 }
 
+#define CURVE_A_32 {0xFFFFFFFFFFFFFFFCull, 0x00000000FFFFFFFFull, 0x0000000000000000ull, 0xFFFFFFFF00000001ull}
+
+static int ecdh_validate_pubkey(EccPoint l_public, uint64_t l_private[NUM_ECC_DIGITS]) {
+    uint64_t left[NUM_ECC_DIGITS];
+    uint64_t right[NUM_ECC_DIGITS];
+    uint64_t curve_a[NUM_ECC_DIGITS] = CURVE_A_32;
+    /*
+     * To ensure l_public is a valid point on the curve, we need to check:
+     * y^2 % p == (x^3 + a * x + b) % p)
+     */
+
+    /* Compute y^2 % p and store in `left` */
+    vli_modSquare_fast(left, l_public.y);
+
+    /* Compute x^3 and store in `right` */
+    vli_modSquare_fast(right, l_public.x);
+    vli_modMult_fast(right, right, l_public.x);
+
+    /* Compute a * x and store in `curve_a` */
+    vli_modMult_fast(curve_a, curve_a, l_public.x);
+    /* Store ((a * x) + b) % p in `curve_a */
+    vli_modAdd(curve_a, curve_a, curve_b, curve_p);
+
+    /*
+     * Combine x^3 and ((a * x) + b) to make (x^3 + a * x + b) % p);
+     * store in `right`
+     */
+    vli_modAdd(right, right, curve_a, curve_p);
+
+    int i;
+    for (i = 0; i < NUM_ECC_DIGITS; i++) {
+        if (left[i] != right[i]) {
+            return 0; // y^2 % p != (x^3 + a * x + b) % p)
+        }
+    }
+
+    return 1;
+}
+
 int ecdh_shared_secret(const uint8_t p_publicKey[ECC_BYTES+1], const uint8_t p_privateKey[ECC_BYTES], uint8_t p_secret[ECC_BYTES])
 {
     EccPoint l_public;
@@ -1104,12 +1150,23 @@ int ecdh_shared_secret(const uint8_t p_publicKey[ECC_BYTES+1], const uint8_t p_p
     
     if(!getRandomNumber(l_random))
     {
+        ogs_error("getRandomNumber() failed");
         return 0;
     }
     
     ecc_point_decompress(&l_public, p_publicKey);
     ecc_bytes2native(l_private, p_privateKey);
     
+    /*
+     * Validate received public key `p_publicKey` is a valid point
+     * on curve P-256
+     */
+    if (!ecdh_validate_pubkey(l_public, l_private))
+    {
+        ogs_error("ecdh_validate_pubkey() failed");
+        return 0;
+    }
+
     EccPoint l_product;
     EccPoint_mult(&l_product, &l_public, l_private, l_random);
     
@@ -1202,6 +1259,7 @@ int ecdsa_sign(const uint8_t p_privateKey[ECC_BYTES], const uint8_t p_hash[ECC_B
     {
         if(!getRandomNumber(k) || (l_tries++ >= MAX_TRIES))
         {
+            ogs_error("getRandomNumber() failed [%d]", l_tries);
             return 0;
         }
         if(vli_isZero(k))
@@ -1256,11 +1314,13 @@ int ecdsa_verify(const uint8_t p_publicKey[ECC_BYTES+1], const uint8_t p_hash[EC
     
     if(vli_isZero(l_r) || vli_isZero(l_s))
     { /* r, s must not be 0. */
+        ogs_error("r, s must not be 0");
         return 0;
     }
     
     if(vli_cmp(curve_n, l_r) != 1 || vli_cmp(curve_n, l_s) != 1)
     { /* r, s must be < n. */
+        ogs_error("r, s must be < n");
         return 0;
     }
 

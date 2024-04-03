@@ -178,6 +178,12 @@ uint32_t smf_gy_handle_cca_update_request(
         return gy_message->err ? *gy_message->err :
                                  ER_DIAMETER_AUTHENTICATION_REJECTED;
     }
+    if (gy_message->cca.result_code != ER_DIAMETER_SUCCESS) {
+        ogs_warn("Gy CCA Update Diameter Multiple-Services-Credit-Control Result-Code=%u",
+            gy_message->cca.result_code);
+        return gy_message->cca.err ? *gy_message->cca.err :
+                                     ER_DIAMETER_AUTHENTICATION_REJECTED;
+    }
 
     bearer = smf_default_bearer_in_sess(sess);
     ogs_assert(bearer);

@@ -427,17 +427,20 @@ void mme_s11_handle_create_session_response(
         mme_csmap_t *csmap = mme_csmap_find_by_tai(&mme_ue->tai);
         mme_ue->csmap = csmap;
 
-        if (csmap) {
-            ogs_assert(OGS_PDU_SESSION_TYPE_IS_VALID(
-                        session->paa.session_type));
-            ogs_assert(OGS_OK ==
-                sgsap_send_location_update_request(mme_ue));
-        } else {
+        if (!csmap ||
+            mme_ue->network_access_mode ==
+                OGS_NETWORK_ACCESS_MODE_ONLY_PACKET ||
+            mme_ue->nas_eps.attach.value ==
+                OGS_NAS_ATTACH_TYPE_EPS_ATTACH) {
             ogs_assert(OGS_PDU_SESSION_TYPE_IS_VALID(
                         session->paa.session_type));
             r = nas_eps_send_attach_accept(mme_ue);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
+        } else {
+            ogs_assert(OGS_PDU_SESSION_TYPE_IS_VALID(
+                        session->paa.session_type));
+            ogs_assert(OGS_OK == sgsap_send_location_update_request(mme_ue));
         }
 
     } else if (create_action == OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE) {
@@ -790,7 +793,7 @@ void mme_s11_handle_create_bearer_request(
     ogs_assert(xact);
     ogs_assert(req);
 
-    ogs_debug("Create Bearer Response");
+    ogs_debug("Create Bearer Request");
 
     /***********************
      * Check MME-UE Context
@@ -874,12 +877,25 @@ void mme_s11_handle_create_bearer_request(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
+    /*
+     * DEPRECATED : Issues #3072
+     *
+     * PTI 0 is set here to prevent a InitialContextSetupRequest message
+     * with a PTI of 0 from being created when the Create Bearer Request occurs
+     * and InitialContextSetupRequest occurs.
+     *
+     * If you implement the creation of a dedicated bearer
+     * in the ESM procedure reqeusted by the UE,
+     * you will need to refactor the part that sets the PTI.
+     */
+#if 0
     /* Set PTI */
     sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
     if (req->procedure_transaction_id.presence) {
         sess->pti = req->procedure_transaction_id.u8;
         ogs_debug("    PTI[%d]", sess->pti);
     }
+#endif
 
     /* Data Plane(UL) : SGW-S1U */
     sgw_s1u_teid = req->bearer_contexts.s1_u_enodeb_f_teid.data;

@@ -124,7 +124,6 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
     ogs_assert(session->name);
     bearer = mme_default_bearer_in_sess(sess);
     ogs_assert(bearer);
-    ogs_assert(mme_bearer_next(bearer) == NULL);
 
     ogs_debug("Activate default bearer context request");
     ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
@@ -254,6 +253,7 @@ ogs_pkbuf_t *esm_build_activate_dedicated_bearer_context_request(
         mme_bearer_t *bearer)
 {
     mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
     mme_bearer_t *linked_bearer = NULL;
 
     ogs_nas_eps_message_t message;
@@ -269,6 +269,8 @@ ogs_pkbuf_t *esm_build_activate_dedicated_bearer_context_request(
         &activate_dedicated_eps_bearer_context_request->tft;
     
     ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
     linked_bearer = mme_linked_bearer(bearer); 
@@ -284,7 +286,21 @@ ogs_pkbuf_t *esm_build_activate_dedicated_bearer_context_request(
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.esm.h.eps_bearer_identity = bearer->ebi;
     message.esm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM;
-    message.esm.h.procedure_transaction_identity = 0;
+
+    /*
+     * Issue #3072
+     *
+     * PTI 0 is set here to prevent a InitialContextSetupRequest message
+     * with a PTI of 0 from being created when the Create Bearer Request occurs
+     * and InitialContextSetupRequest occurs.
+     *
+     * If you implement the creation of a dedicated bearer
+     * in the ESM procedure reqeusted by the UE,
+     * you will need to refactor the part that sets the PTI.
+     */
+    message.esm.h.procedure_transaction_identity =
+        sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+
     message.esm.h.message_type =
         OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST;
 

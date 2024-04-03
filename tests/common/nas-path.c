@@ -196,8 +196,10 @@ void testesm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
     test_ue->esm_message_type = message.esm.h.message_type;
     switch (message.esm.h.message_type) {
     case OGS_NAS_EPS_ESM_INFORMATION_REQUEST:
+        testesm_handle_esm_information_request(test_ue, &message);
         break;
     case OGS_NAS_EPS_PDN_CONNECTIVITY_REJECT:
+        testesm_handle_pdn_connectivity_reject(test_ue, &message);
         break;
     case OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST:
         testesm_handle_activate_default_eps_bearer_context_request(
@@ -208,13 +210,16 @@ void testesm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
                 test_ue, &message);
         break;
     case OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST:
+        testesm_handle_modify_eps_bearer_context_request(test_ue, &message);
         break;
     case OGS_NAS_EPS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST:
         testesm_handle_deactivate_eps_bearer_context_request(test_ue, &message);
         break;
     case OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REJECT:
+        testesm_handle_bearer_resource_allocation(test_ue, &message);
         break;
     case OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REJECT:
+        testesm_handle_bearer_resource_modification(test_ue, &message);
         break;
     default:
         ogs_error("Unknown message[%d]", message.esm.h.message_type);
