@@ -198,7 +198,7 @@ bool smf_namf_comm_handle_n1_n2_message_transfer_failure_notify(
         ogs_error("No N1N2MsgTxfrFailureNotification");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No N1N2MsgTxfrFailureNotification", NULL));
+                recvmsg, "No N1N2MsgTxfrFailureNotification", NULL, NULL));
         return false;
     }
 
@@ -206,7 +206,7 @@ bool smf_namf_comm_handle_n1_n2_message_transfer_failure_notify(
         ogs_error("No Cause");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No Cause", NULL));
+                recvmsg, "No Cause", NULL, NULL));
         return false;
     }
 
@@ -214,7 +214,7 @@ bool smf_namf_comm_handle_n1_n2_message_transfer_failure_notify(
         ogs_error("No n1n2MsgDataUri");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No n1n2MsgDataUri", NULL));
+                recvmsg, "No n1n2MsgDataUri", NULL, NULL));
         return false;
     }
 
@@ -225,7 +225,7 @@ bool smf_namf_comm_handle_n1_n2_message_transfer_failure_notify(
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
                 recvmsg, N1N2MsgTxfrFailureNotification->n1n2_msg_data_uri,
-                NULL));
+                NULL, NULL));
         return false;
     }
 

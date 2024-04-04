@@ -174,7 +174,7 @@ int pcf_ue_sbi_discover_and_send(
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", pcf_ue->supi));
+                "Cannot discover", pcf_ue->supi, NULL));
         return r;
     }
 
@@ -217,7 +217,7 @@ int pcf_sess_sbi_discover_and_send(
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", NULL));
+                "Cannot discover", NULL, NULL));
         return r;
     }
 

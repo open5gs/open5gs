@@ -51,7 +51,8 @@ bool pcf_npcf_am_policy_control_handle_create(pcf_ue_t *pcf_ue,
         ogs_error("[%s] No PolicyAssociationRequest", pcf_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "[%s] No PolicyAssociationRequest", pcf_ue->supi));
+                message, "[%s] No PolicyAssociationRequest", pcf_ue->supi,
+                NULL));
         return false;
     }
 
@@ -59,7 +60,7 @@ bool pcf_npcf_am_policy_control_handle_create(pcf_ue_t *pcf_ue,
         ogs_error("[%s] No notificationUri", pcf_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No notificationUri", pcf_ue->supi));
+                message, "No notificationUri", pcf_ue->supi, NULL));
         return false;
     }
 
@@ -67,7 +68,7 @@ bool pcf_npcf_am_policy_control_handle_create(pcf_ue_t *pcf_ue,
         ogs_error("[%s] No supi", pcf_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No supi", pcf_ue->supi));
+                message, "No supi", pcf_ue->supi, NULL));
         return false;
     }
 
@@ -75,7 +76,7 @@ bool pcf_npcf_am_policy_control_handle_create(pcf_ue_t *pcf_ue,
         ogs_error("[%s] No suppFeat", pcf_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No suppFeat", pcf_ue->supi));
+                message, "No suppFeat", pcf_ue->supi, NULL));
         return false;
     }
 
@@ -86,7 +87,7 @@ bool pcf_npcf_am_policy_control_handle_create(pcf_ue_t *pcf_ue,
                 pcf_ue->supi, PolicyAssociationRequest->notification_uri);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "[%s] Invalid URI", pcf_ue->supi));
+                message, "[%s] Invalid URI", pcf_ue->supi, NULL));
         return false;
     }
 
@@ -546,8 +547,21 @@ cleanup:
     ogs_assert(status);
     ogs_assert(strerror);
     ogs_error("%s", strerror);
+    /*
+     * TS29.512
+     * 4.2.2.2 SM Policy Association establishment 
+     *
+     * If the PCF is, due to incomplete, erroneous or missing
+     * information (e.g. QoS, RAT type, subscriber information)
+     * not able to provision a policy decision as response to
+     * the request for PCC rules by the SMF, the PCF may reject
+     * the request and include in an HTTP "400 Bad Request"
+     * response message the "cause" attribute of the ProblemDetails
+     * data structure set to "ERROR_INITIAL_PARAMETERS". 
+     */
     ogs_assert(true ==
-        ogs_sbi_server_send_error(stream, status, message, strerror, NULL));
+            ogs_sbi_server_send_error(stream, status, message,
+                    strerror, NULL, "ERROR_INITIAL_PARAMETERS"));
     ogs_free(strerror);
 
     return false;
@@ -605,7 +619,8 @@ cleanup:
     ogs_assert(strerror);
     ogs_error("%s", strerror);
     ogs_assert(true ==
-        ogs_sbi_server_send_error(stream, status, message, strerror, NULL));
+        ogs_sbi_server_send_error(stream, status, message, strerror, NULL,
+                NULL));
     ogs_free(strerror);
 
     return false;
@@ -1071,7 +1086,8 @@ cleanup:
     ogs_assert(strerror);
     ogs_error("%s", strerror);
     ogs_assert(true ==
-        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL,
+                NULL));
     ogs_free(strerror);
 
     OpenAPI_list_for_each(PccRuleList, node) {
@@ -1483,7 +1499,8 @@ cleanup:
     ogs_assert(strerror);
     ogs_error("%s", strerror);
     ogs_assert(true ==
-        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror,
+                NULL, NULL));
     ogs_free(strerror);
 
     OpenAPI_list_for_each(PccRuleList, node) {

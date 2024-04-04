@@ -50,7 +50,7 @@ bool udr_nudr_dr_handle_subscription_authentication(
         ogs_error("No SUPI");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No SUPI", NULL));
+                recvmsg, "No SUPI", NULL, NULL));
         return false;
     }
 
@@ -59,7 +59,7 @@ bool udr_nudr_dr_handle_subscription_authentication(
         ogs_error("[%s] Unknown SUPI Type", supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_FORBIDDEN,
-                recvmsg, "Unknwon SUPI Type", supi));
+                recvmsg, "Unknwon SUPI Type", supi, NULL));
         return false;
     }
 
@@ -68,7 +68,7 @@ bool udr_nudr_dr_handle_subscription_authentication(
         ogs_warn("[%s] Cannot find SUPI in DB", supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                recvmsg, "Cannot find SUPI Type", supi));
+                recvmsg, "Cannot find SUPI Type", supi, NULL));
         return false;
     }
 
@@ -128,7 +128,7 @@ bool udr_nudr_dr_handle_subscription_authentication(
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        recvmsg, "No PatchItemList Array", NULL));
+                        recvmsg, "No PatchItemList Array", NULL, NULL));
                 return false;
             }
 
@@ -146,7 +146,7 @@ bool udr_nudr_dr_handle_subscription_authentication(
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        recvmsg, "No PatchItemList", NULL));
+                        recvmsg, "No PatchItemList", NULL, NULL));
                 return false;
             }
 
@@ -160,7 +160,7 @@ bool udr_nudr_dr_handle_subscription_authentication(
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                        recvmsg, "Cannot update SQN", supi));
+                        recvmsg, "Cannot update SQN", supi, NULL));
                 return false;
             }
 
@@ -170,7 +170,7 @@ bool udr_nudr_dr_handle_subscription_authentication(
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                        recvmsg, "Cannot increment SQN", supi));
+                        recvmsg, "Cannot increment SQN", supi, NULL));
                 return false;
             }
 
@@ -187,8 +187,9 @@ bool udr_nudr_dr_handle_subscription_authentication(
             ogs_error("Invalid HTTP method [%s]", recvmsg->h.method);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED,
-                    recvmsg, "Invalid HTTP method", recvmsg->h.method));
+                    OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED,
+                    recvmsg, "Invalid HTTP method", recvmsg->h.method,
+                    NULL));
         END
         break;
 
@@ -205,7 +206,7 @@ bool udr_nudr_dr_handle_subscription_authentication(
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(
                         stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        recvmsg, "No AuthEvent", supi));
+                        recvmsg, "No AuthEvent", supi, NULL));
                 return false;
             }
 
@@ -216,7 +217,7 @@ bool udr_nudr_dr_handle_subscription_authentication(
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                        recvmsg, "Cannot increment SQN", supi));
+                        recvmsg, "Cannot increment SQN", supi, NULL));
                 return false;
             }
 
@@ -231,8 +232,9 @@ bool udr_nudr_dr_handle_subscription_authentication(
             ogs_error("Invalid HTTP method [%s]", recvmsg->h.method);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED,
-                    recvmsg, "Invalid HTTP method", recvmsg->h.method));
+                    OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED,
+                    recvmsg, "Invalid HTTP method", recvmsg->h.method,
+                    NULL));
         END
         break;
 
@@ -241,9 +243,9 @@ bool udr_nudr_dr_handle_subscription_authentication(
                 recvmsg->h.resource.component[3]);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED,
+                OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED,
                 recvmsg, "Unknown resource name",
-                recvmsg->h.resource.component[3]));
+                recvmsg->h.resource.component[3], NULL));
     END
 
     return false;
@@ -265,7 +267,7 @@ bool udr_nudr_dr_handle_subscription_context(
         ogs_error("No SUPI");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No SUPI", NULL));
+                recvmsg, "No SUPI", NULL, NULL));
         return false;
     }
 
@@ -274,7 +276,7 @@ bool udr_nudr_dr_handle_subscription_context(
         ogs_error("[%s] Unknown SUPI Type", supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_FORBIDDEN,
-                recvmsg, "Unknwon SUPI Type", supi));
+                recvmsg, "Unknwon SUPI Type", supi, NULL));
         return false;
     }
 
@@ -290,7 +292,7 @@ bool udr_nudr_dr_handle_subscription_context(
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(
                         stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        recvmsg, "No Amf3GppAccessRegistration", supi));
+                        recvmsg, "No Amf3GppAccessRegistration", supi, NULL));
                 return false;
             }
 
@@ -336,7 +338,7 @@ bool udr_nudr_dr_handle_subscription_context(
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(
                         stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        recvmsg, "No PatchItemList", supi));
+                        recvmsg, "No PatchItemList", supi, NULL));
                 return false;
             }
 
@@ -355,8 +357,9 @@ bool udr_nudr_dr_handle_subscription_context(
             ogs_error("Invalid HTTP method [%s]", recvmsg->h.method);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED,
-                    recvmsg, "Invalid HTTP method", recvmsg->h.method));
+                    OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED,
+                    recvmsg, "Invalid HTTP method", recvmsg->h.method,
+                    NULL));
         END
         break;
     CASE(OGS_SBI_RESOURCE_NAME_SMF_REGISTRATIONS)
@@ -370,7 +373,7 @@ bool udr_nudr_dr_handle_subscription_context(
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(
                         stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        recvmsg, "No SmfRegistration", supi));
+                        recvmsg, "No SmfRegistration", supi, NULL));
                 return false;
             }
 
@@ -397,8 +400,9 @@ bool udr_nudr_dr_handle_subscription_context(
             ogs_error("Invalid HTTP method [%s]", recvmsg->h.method);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED,
-                    recvmsg, "Invalid HTTP method", recvmsg->h.method));
+                    OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED,
+                    recvmsg, "Invalid HTTP method", recvmsg->h.method,
+                    NULL));
         END
         break;
 
@@ -407,9 +411,9 @@ bool udr_nudr_dr_handle_subscription_context(
                 recvmsg->h.resource.component[3]);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED,
+                OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED,
                 recvmsg, "Unknown resource name",
-                recvmsg->h.resource.component[3]));
+                recvmsg->h.resource.component[3], NULL));
     END
 
     return false;
@@ -1029,7 +1033,7 @@ bool udr_nudr_dr_handle_subscription_provisioned(
     DEFAULT
         strerror = ogs_msprintf("Invalid resource name [%s]",
                 recvmsg->h.resource.component[3]);
-        status = OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED;
+        status = OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED;
         goto cleanup;
     END
 
@@ -1042,7 +1046,8 @@ cleanup:
     ogs_assert(status);
     ogs_error("%s", strerror);
     ogs_assert(true ==
-        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL,
+                NULL));
     ogs_free(strerror);
 
     ogs_subscription_data_free(&subscription_data);
@@ -1263,7 +1268,7 @@ bool udr_nudr_dr_handle_policy_data(
             DEFAULT
                 strerror = ogs_msprintf("Invalid resource name [%s]",
                         recvmsg->h.resource.component[3]);
-                status = OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED;
+                status = OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED;
                 goto cleanup;
             END
 
@@ -1272,7 +1277,7 @@ bool udr_nudr_dr_handle_policy_data(
         DEFAULT
             strerror = ogs_msprintf("Invalid HTTP method [%s]",
                     recvmsg->h.method);
-            status = OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED;
+            status = OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED;
             goto cleanup;
         END
 
@@ -1281,7 +1286,7 @@ bool udr_nudr_dr_handle_policy_data(
     DEFAULT
         strerror = ogs_msprintf("Invalid resource name [%s]",
                 recvmsg->h.resource.component[1]);
-        status = OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED;
+        status = OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED;
         goto cleanup;
     END
 
@@ -1294,7 +1299,8 @@ cleanup:
     ogs_assert(status);
     ogs_error("%s", strerror);
     ogs_assert(true ==
-        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror,
+                NULL, NULL));
     ogs_free(strerror);
 
     ogs_subscription_data_free(&subscription_data);

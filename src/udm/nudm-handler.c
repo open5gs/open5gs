@@ -37,7 +37,8 @@ bool udm_nudm_ueau_handle_get(
         ogs_error("[%s] No AuthenticationInfoRequest", udm_ue->suci);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No AuthenticationInfoRequest", udm_ue->suci));
+                recvmsg, "No AuthenticationInfoRequest", udm_ue->suci,
+                NULL));
         return false;
     }
 
@@ -45,7 +46,7 @@ bool udm_nudm_ueau_handle_get(
         ogs_error("[%s] No servingNetworkName", udm_ue->suci);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No servingNetworkName", udm_ue->suci));
+                recvmsg, "No servingNetworkName", udm_ue->suci, NULL));
         return false;
     }
 
@@ -53,7 +54,7 @@ bool udm_nudm_ueau_handle_get(
         ogs_error("[%s] No ausfInstanceId", udm_ue->suci);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No ausfInstanceId", udm_ue->suci));
+                recvmsg, "No ausfInstanceId", udm_ue->suci, NULL));
         return false;
     }
 
@@ -90,7 +91,7 @@ bool udm_nudm_ueau_handle_get(
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    recvmsg, "No RAND", udm_ue->suci));
+                    recvmsg, "No RAND", udm_ue->suci, NULL));
             return false;
         }
 
@@ -99,7 +100,7 @@ bool udm_nudm_ueau_handle_get(
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    recvmsg, "No AUTS", udm_ue->suci));
+                    recvmsg, "No AUTS", udm_ue->suci, NULL));
             return false;
         }
 
@@ -118,7 +119,7 @@ bool udm_nudm_ueau_handle_get(
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    recvmsg, "Invalid RAND", udm_ue->suci));
+                    recvmsg, "Invalid RAND", udm_ue->suci, NULL));
             return false;
         }
 
@@ -133,7 +134,7 @@ bool udm_nudm_ueau_handle_get(
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_UNAUTHORIZED,
-                    recvmsg, "Re-sync MAC failed", udm_ue->suci));
+                    recvmsg, "Re-sync MAC failed", udm_ue->suci, NULL));
             return false;
 
         }
@@ -187,7 +188,7 @@ bool udm_nudm_ueau_handle_result_confirmation_inform(
         ogs_error("[%s] No AuthEvent", udm_ue->suci);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No AuthEvent", udm_ue->suci));
+                message, "No AuthEvent", udm_ue->suci, NULL));
         return false;
     }
 
@@ -195,7 +196,7 @@ bool udm_nudm_ueau_handle_result_confirmation_inform(
         ogs_error("[%s] No nfInstanceId", udm_ue->suci);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No nfInstanceId", udm_ue->suci));
+                message, "No nfInstanceId", udm_ue->suci, NULL));
         return false;
     }
 
@@ -203,7 +204,7 @@ bool udm_nudm_ueau_handle_result_confirmation_inform(
         ogs_error("[%s] No success", udm_ue->suci);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No success", udm_ue->suci));
+                message, "No success", udm_ue->suci, NULL));
         return false;
     }
 
@@ -211,7 +212,7 @@ bool udm_nudm_ueau_handle_result_confirmation_inform(
         ogs_error("[%s] No timeStamp", udm_ue->suci);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No timeStamp", udm_ue->suci));
+                message, "No timeStamp", udm_ue->suci, NULL));
         return false;
     }
 
@@ -219,7 +220,7 @@ bool udm_nudm_ueau_handle_result_confirmation_inform(
         ogs_error("[%s] No authType", udm_ue->suci);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No authType", udm_ue->suci));
+                message, "No authType", udm_ue->suci, NULL));
         return false;
     }
 
@@ -227,7 +228,7 @@ bool udm_nudm_ueau_handle_result_confirmation_inform(
         ogs_error("[%s] No servingNetworkName", udm_ue->suci);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No servingNetworkName", udm_ue->suci));
+                message, "No servingNetworkName", udm_ue->suci, NULL));
         return false;
     }
 
@@ -259,7 +260,8 @@ bool udm_nudm_uecm_handle_amf_registration(
         ogs_error("[%s] No Amf3GppAccessRegistration", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No Amf3GppAccessRegistration", udm_ue->supi));
+                message, "No Amf3GppAccessRegistration", udm_ue->supi,
+                NULL));
         return false;
     }
 
@@ -267,7 +269,7 @@ bool udm_nudm_uecm_handle_amf_registration(
         ogs_error("[%s] No amfInstanceId", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No amfInstanceId", udm_ue->supi));
+                message, "No amfInstanceId", udm_ue->supi, NULL));
         return false;
     }
 
@@ -275,7 +277,7 @@ bool udm_nudm_uecm_handle_amf_registration(
         ogs_error("[%s] No dregCallbackUri", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No dregCallbackUri", udm_ue->supi));
+                message, "No dregCallbackUri", udm_ue->supi, NULL));
         return false;
     }
 
@@ -284,7 +286,7 @@ bool udm_nudm_uecm_handle_amf_registration(
         ogs_error("[%s] No Guami", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No Guami", udm_ue->supi));
+                message, "No Guami", udm_ue->supi, NULL));
         return false;
     }
 
@@ -292,7 +294,7 @@ bool udm_nudm_uecm_handle_amf_registration(
         ogs_error("[%s] No Guami.AmfId", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No Guami.AmfId", udm_ue->supi));
+                message, "No Guami.AmfId", udm_ue->supi, NULL));
         return false;
     }
 
@@ -300,7 +302,7 @@ bool udm_nudm_uecm_handle_amf_registration(
         ogs_error("[%s] No PlmnId", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No PlmnId", udm_ue->supi));
+                message, "No PlmnId", udm_ue->supi, NULL));
         return false;
     }
 
@@ -308,7 +310,7 @@ bool udm_nudm_uecm_handle_amf_registration(
         ogs_error("[%s] No PlmnId.Mnc", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No PlmnId.Mnc", udm_ue->supi));
+                message, "No PlmnId.Mnc", udm_ue->supi, NULL));
         return false;
     }
 
@@ -316,7 +318,7 @@ bool udm_nudm_uecm_handle_amf_registration(
         ogs_error("[%s] No PlmnId.Mcc", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No PlmnId.Mcc", udm_ue->supi));
+                message, "No PlmnId.Mcc", udm_ue->supi, NULL));
         return false;
     }
 
@@ -324,7 +326,7 @@ bool udm_nudm_uecm_handle_amf_registration(
         ogs_error("[%s] No RatType", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No RatType", udm_ue->supi));
+                message, "No RatType", udm_ue->supi, NULL));
         return false;
     }
 
@@ -371,7 +373,8 @@ bool udm_nudm_uecm_handle_amf_registration_update(
         ogs_error("[%s] No Amf3GppAccessRegistrationModification", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No Amf3GppAccessRegistrationModification", udm_ue->supi));
+                message, "No Amf3GppAccessRegistrationModification", udm_ue->supi,
+                NULL));
         return false;
     }
 
@@ -380,7 +383,7 @@ bool udm_nudm_uecm_handle_amf_registration_update(
         ogs_error("[%s] No Guami", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No Guami", udm_ue->supi));
+                message, "No Guami", udm_ue->supi, NULL));
         return false;
     }
 
@@ -388,7 +391,7 @@ bool udm_nudm_uecm_handle_amf_registration_update(
         ogs_error("[%s] No Guami.AmfId", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No Guami.AmfId", udm_ue->supi));
+                message, "No Guami.AmfId", udm_ue->supi, NULL));
         return false;
     }
 
@@ -396,7 +399,7 @@ bool udm_nudm_uecm_handle_amf_registration_update(
         ogs_error("[%s] No PlmnId", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No PlmnId", udm_ue->supi));
+                message, "No PlmnId", udm_ue->supi, NULL));
         return false;
     }
 
@@ -404,7 +407,7 @@ bool udm_nudm_uecm_handle_amf_registration_update(
         ogs_error("[%s] No PlmnId.Mnc", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No PlmnId.Mnc", udm_ue->supi));
+                message, "No PlmnId.Mnc", udm_ue->supi, NULL));
         return false;
     }
 
@@ -412,7 +415,7 @@ bool udm_nudm_uecm_handle_amf_registration_update(
         ogs_error("[%s] No PlmnId.Mcc", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No PlmnId.Mcc", udm_ue->supi));
+                message, "No PlmnId.Mcc", udm_ue->supi, NULL));
         return false;
     }
 
@@ -424,9 +427,25 @@ bool udm_nudm_uecm_handle_amf_registration_update(
     ogs_sbi_parse_guami(&recv_guami, Guami);
     if (memcmp(&recv_guami, &udm_ue->guami, sizeof(recv_guami)) != 0) {
         ogs_error("[%s] Guami mismatch", udm_ue->supi);
+        /*
+         * TS29.503
+         * 6.2.7.3 Application Errors
+         *
+         * Protocol and application errors common to several 5GC SBI API
+         * specifications for which the NF shall include in the HTTP
+         * response a payload body ("ProblemDetails" data structure or
+         * application specific error data structure) with the "cause"
+         * attribute indicating corresponding error are listed in table
+         * 5.2.7.2-1.
+         * Application Error: INVALID_GUAMI
+         * HTTP status code: 403 Forbidden
+         * Description: The AMF is not allowed to modify the registration
+         * information stored in the UDM, as it is not the registered AMF.  
+         */
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_FORBIDDEN,
-                message, "Guami mismatch", udm_ue->supi));
+                message, "Guami mismatch", udm_ue->supi,
+                "INVALID_GUAMI"));
         return false;
     }
 
@@ -480,7 +499,7 @@ bool udm_nudm_uecm_handle_smf_registration(
         ogs_error("[%s:%d] No SmfRegistration", udm_ue->supi, sess->psi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No SmfRegistration", udm_ue->supi));
+                message, "No SmfRegistration", udm_ue->supi, NULL));
         return false;
     }
 
@@ -488,7 +507,7 @@ bool udm_nudm_uecm_handle_smf_registration(
         ogs_error("[%s:%d] No smfInstanceId", udm_ue->supi, sess->psi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No smfInstanceId", udm_ue->supi));
+                message, "No smfInstanceId", udm_ue->supi, NULL));
         return false;
     }
 
@@ -496,7 +515,7 @@ bool udm_nudm_uecm_handle_smf_registration(
         ogs_error("[%s:%d] No pduSessionId", udm_ue->supi, sess->psi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No pduSessionId", udm_ue->supi));
+                message, "No pduSessionId", udm_ue->supi, NULL));
         return false;
     }
 
@@ -504,7 +523,7 @@ bool udm_nudm_uecm_handle_smf_registration(
         ogs_error("[%s:%d] No singleNssai", udm_ue->supi, sess->psi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No singleNssai", udm_ue->supi));
+                message, "No singleNssai", udm_ue->supi, NULL));
         return false;
     }
 
@@ -512,7 +531,7 @@ bool udm_nudm_uecm_handle_smf_registration(
         ogs_error("[%s:%d] No dnn", udm_ue->supi, sess->psi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No dnn", udm_ue->supi));
+                message, "No dnn", udm_ue->supi, NULL));
         return false;
     }
 
@@ -521,7 +540,7 @@ bool udm_nudm_uecm_handle_smf_registration(
         ogs_error("[%s:%d] No plmnId", udm_ue->supi, sess->psi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No plmnId", udm_ue->supi));
+                message, "No plmnId", udm_ue->supi, NULL));
         return false;
     }
 
@@ -612,7 +631,7 @@ bool udm_nudm_sdm_handle_subscription_create(
         ogs_error("[%s] No SDMSubscription", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No SDMSubscription", udm_ue->supi));
+                recvmsg, "No SDMSubscription", udm_ue->supi, NULL));
         return false;
     }
 
@@ -620,7 +639,7 @@ bool udm_nudm_sdm_handle_subscription_create(
         ogs_error("[%s] No nfInstanceId", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No nfInstanceId", udm_ue->supi));
+                recvmsg, "No nfInstanceId", udm_ue->supi, NULL));
         return false;
     }
 
@@ -628,7 +647,7 @@ bool udm_nudm_sdm_handle_subscription_create(
         ogs_error("[%s] No callbackReference", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No callbackReference", udm_ue->supi));
+                recvmsg, "No callbackReference", udm_ue->supi, NULL));
         return false;
     }
 
@@ -637,7 +656,7 @@ bool udm_nudm_sdm_handle_subscription_create(
         ogs_error("[%s] No monitoredResourceUris", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No monitoredResourceUris", udm_ue->supi));
+                recvmsg, "No monitoredResourceUris", udm_ue->supi, NULL));
         return false;
     }
 
@@ -689,7 +708,7 @@ bool udm_nudm_sdm_handle_subscription_delete(
         ogs_error("[%s] No subscriptionID", udm_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No subscriptionID", udm_ue->supi));
+                recvmsg, "No subscriptionID", udm_ue->supi, NULL));
         return false;
     }
     sdm_subscription = udm_sdm_subscription_find_by_id(
@@ -703,7 +722,8 @@ bool udm_nudm_sdm_handle_subscription_delete(
         ogs_assert(true ==
             ogs_sbi_server_send_error(
                 stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                recvmsg, "Subscription Not found", recvmsg->h.method));
+                recvmsg, "Subscription Not found", recvmsg->h.method,
+                NULL));
         return false;
     }
 

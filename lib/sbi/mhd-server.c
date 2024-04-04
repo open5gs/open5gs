@@ -576,7 +576,7 @@ suspend:
         ogs_assert(true ==
                 ogs_sbi_server_send_error((ogs_sbi_stream_t *)sbi_sess,
                     OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                    "server callback error", NULL));
+                    "server callback error", NULL, NULL));
 
         return MHD_YES;
     }
