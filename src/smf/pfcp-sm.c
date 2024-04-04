@@ -370,8 +370,14 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
         case OGS_PFCP_SESSION_REPORT_REQUEST_TYPE:
             if (!message->h.seid_presence) ogs_error("No SEID");
 
-            smf_n4_handle_session_report_request(
-                sess, xact, &message->pfcp_session_report_request);
+            if (!sess) {
+                    ogs_error("No Session");
+                    ogs_pfcp_send_error_message(xact, 0,
+                        OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
+                        OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
+                    break;
+            }
+            ogs_fsm_dispatch(&sess->sm, e);
             break;
 
         default:

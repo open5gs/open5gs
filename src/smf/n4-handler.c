@@ -1147,7 +1147,9 @@ uint8_t smf_epc_n4_handle_session_deletion_response(
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
 
-void smf_n4_handle_session_report_request(
+/* Returns OGS_PFCP_CAUSE_REQUEST_ACCEPTED on success,
+ * other cause value on failure */
+uint8_t smf_n4_handle_session_report_request(
         smf_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
         ogs_pfcp_session_report_request_t *pfcp_req)
 {
@@ -1185,7 +1187,7 @@ void smf_n4_handle_session_report_request(
         ogs_pfcp_send_error_message(pfcp_xact, 0,
                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                 cause_value, 0);
-        return;
+        return cause_value;
     }
 
     ogs_assert(sess);
@@ -1225,7 +1227,7 @@ void smf_n4_handle_session_report_request(
                         ogs_pfcp_send_error_message(pfcp_xact, 0,
                                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                                 OGS_PFCP_CAUSE_SERVICE_NOT_SUPPORTED, 0);
-                        return;
+                        return OGS_PFCP_CAUSE_SERVICE_NOT_SUPPORTED;
                     }
 
                     if (qfi) {
@@ -1235,7 +1237,7 @@ void smf_n4_handle_session_report_request(
                             ogs_pfcp_send_error_message(pfcp_xact, 0,
                                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
-                            return;
+                            return OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
                         }
                     }
                 } else {
@@ -1260,7 +1262,7 @@ void smf_n4_handle_session_report_request(
             ogs_pfcp_send_error_message(pfcp_xact, 0,
                     OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                     OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
-            return;
+            return OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
         }
 
         switch (sess->up_cnx_state) {
@@ -1332,14 +1334,21 @@ void smf_n4_handle_session_report_request(
             sess->gy.reporting_reason =
                 smf_pfcp_urr_usage_report_trigger2diam_gy_reporting_reason(&rep_trig);
         }
-        switch(smf_use_gy_iface()) {
+        switch (smf_use_gy_iface()) {
         case 1:
-            smf_gy_send_ccr(sess, pfcp_xact,
-                    OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST);
+            if (!sess->gy.final_unit) {
+                smf_gy_send_ccr(sess, pfcp_xact,
+                        OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST);
+            } else {
+                ogs_debug("[%s:%s] Rx PFCP report after Gy Final Unit Indication",
+                          smf_ue->imsi_bcd, sess->session.name);
+                /* This effectively triggers session release: */
+                cause_value = OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE;
+            }
             break;
         case -1:
             ogs_error("No Gy Diameter Peer");
-            /* TODO: terminate connection */
+            cause_value = OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE;
             break;
         /* default: continue below */
         }
@@ -1379,4 +1388,5 @@ void smf_n4_handle_session_report_request(
                     0));
         }
     }
+    return cause_value;
 }

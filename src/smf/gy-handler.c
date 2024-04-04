@@ -164,6 +164,7 @@ uint32_t smf_gy_handle_cca_initial_request(
     /* Configure based on what we received from OCS: */
     urr_update_time(sess, bearer->urr, gy_message);
     urr_update_volume(sess, bearer->urr, gy_message);
+    sess->gy.final_unit = gy_message->cca.final.cc_final_action_present;
 
     /* Associate acconting URR each direction PDR: */
     ogs_pfcp_pdr_associate_urr(bearer->ul_pdr, bearer->urr);
@@ -221,6 +222,7 @@ uint32_t smf_gy_handle_cca_update_request(
 
     urr_update_time(sess, urr, gy_message);
     urr_update_volume(sess, urr, gy_message);
+    sess->gy.final_unit = gy_message->cca.final.cc_final_action_present;
     /* Associate accounting URR each direction PDR: */
     ogs_pfcp_pdr_associate_urr(bearer->ul_pdr, urr);
     ogs_pfcp_pdr_associate_urr(bearer->dl_pdr, urr);

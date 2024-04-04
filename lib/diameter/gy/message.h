@@ -40,8 +40,10 @@ extern "C" {
 #define OGS_DIAM_GY_AVP_CODE_CC_REQUEST_TYPE                (416)
 #define OGS_DIAM_GY_AVP_CODE_CC_TIME                        (420)
 #define OGS_DIAM_GY_AVP_CODE_CC_TOTAL_OCTETS                (421)
+#define OGS_DIAM_GY_AVP_CODE_FINAL_UNIT_INDICATION          (430)
 #define OGS_DIAM_GY_AVP_CODE_GRANTED_SERVICE_UNIT           (431)
 #define OGS_DIAM_GY_AVP_CODE_VALIDITY_TIME                  (448)
+#define OGS_DIAM_GY_AVP_CODE_FINAL_UNIT_ACTION              (449)
 #define OGS_DIAM_GY_AVP_CODE_MULTIPLE_SERVICES_CREDIT_CONTROL (456)
 #define OGS_DIAM_GY_AVP_CODE_SUPPORTED_FEATURES             (628)
 #define OGS_DIAM_GY_AVP_CODE_TIME_QUOTA_THRESHOLD           (868)
@@ -155,6 +157,14 @@ typedef struct ogs_diam_gy_service_unit_s {
     uint64_t cc_output_octets;
 } ogs_diam_gy_service_unit_t;
 
+typedef struct gs_diam_gy_final_unit_s {
+    bool cc_final_action_present;
+#define OGS_DIAM_GY_FINAL_UNIT_ACTION_TERMINATE                 0
+#define OGS_DIAM_GY_FINAL_UNIT_ACTION_REDIRECT                  1
+#define OGS_DIAM_GY_FINAL_UNIT_ACTION_REDIRECT_ACCESS           2
+    int32_t cc_final_action;
+} ogs_diam_gy_final_unit_t;
+
 typedef struct ogs_diam_gy_message_s {
 #define OGS_DIAM_GY_CMD_CODE_CREDIT_CONTROL                         272
 #define OGS_DIAM_GY_CMD_RE_AUTH                                     258
@@ -187,6 +197,7 @@ typedef struct ogs_diam_gy_message_s {
             uint32_t time_threshold;
             uint32_t volume_threshold;
             ogs_diam_gy_service_unit_t granted;
+            ogs_diam_gy_final_unit_t final;
             uint32_t result_code;
             uint32_t *err;
         } cca;
