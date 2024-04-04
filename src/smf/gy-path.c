@@ -48,6 +48,8 @@ static ogs_thread_mutex_t sess_state_mutex;
 
 static int decode_granted_service_unit(
         ogs_diam_gy_service_unit_t *su, struct avp *avpch1, int *perror);
+static int decode_final_unit_indication(
+        ogs_diam_gy_final_unit_t *fu, struct avp *avpch1, int *perror);
 static void smf_gy_cca_cb(void *data, struct msg **msg);
 
 static __inline__ struct sess_state *new_state(os0_t sid)
@@ -1149,6 +1151,11 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
                 case OGS_DIAM_GY_AVP_CODE_VOLUME_QUOTA_THRESHOLD:
                     gy_message->cca.volume_threshold = hdr->avp_value->u32;
                     break;
+                case OGS_DIAM_GY_AVP_CODE_FINAL_UNIT_INDICATION:
+                    rv = decode_final_unit_indication(
+                            &gy_message->cca.final, avpch1, &error);
+                    ogs_assert(rv == OGS_OK);
+                    break;
                 default:
                     ogs_warn("Not supported(%d)", hdr->avp_code);
                     break;
@@ -1452,6 +1459,45 @@ static int decode_granted_service_unit(
             su->cc_output_octets_present = true;
             su->cc_output_octets = hdr->avp_value->u64;
             break;
+        default:
+            ogs_error("Not implemented(%d)", hdr->avp_code);
+            break;
+        }
+        fd_msg_browse(avpch2, MSG_BRW_NEXT, &avpch2, NULL);
+    }
+
+    if (perror)
+        *perror = error;
+
+    return OGS_OK;
+}
+
+static int decode_final_unit_indication(
+        ogs_diam_gy_final_unit_t *fu, struct avp *avpch1, int *perror)
+{
+    int ret = 0, error = 0;
+    struct avp *avpch2;
+    struct avp_hdr *hdr;
+
+    ogs_assert(fu);
+    ogs_assert(avpch1);
+    memset(fu, 0, sizeof(*fu));
+
+    ret = fd_msg_browse(avpch1, MSG_BRW_FIRST_CHILD, &avpch2, NULL);
+    ogs_assert(ret == 0);
+    while (avpch2) {
+        ret = fd_msg_avp_hdr(avpch2, &hdr);
+        ogs_assert(ret == 0);
+        switch (hdr->avp_code) {
+        case OGS_DIAM_GY_AVP_CODE_FINAL_UNIT_ACTION:
+            fu->cc_final_action_present = true;
+            fu->cc_final_action = hdr->avp_value->i32;
+            break;
+        /* TODO:
+        case OGS_DIAM_GY_AVP_CODE_REDIRECT_SERVER:
+        case OGS_DIAM_GY_AVP_CODE_FILTER_ID:
+        case OGS_DIAM_GY_AVP_CODE_RESTRICTION_FILTER_RULE:
+        */
         default:
             ogs_error("Not implemented(%d)", hdr->avp_code);
             break;

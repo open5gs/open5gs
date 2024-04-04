@@ -357,6 +357,9 @@ typedef struct smf_sess_s {
         uint64_t dl_octets;
         ogs_time_t duration;
         uint32_t reporting_reason; /* OGS_DIAM_GY_REPORTING_REASON_* */
+        /* Whether Gy Final-Unit-Indication was received.
+         * Triggers session release upon Rx of next PFCP Report Req */
+        bool final_unit;
         /* Snapshot of measurement when last report was sent: */
         struct {
             uint64_t ul_octets;

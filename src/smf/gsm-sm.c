@@ -727,6 +727,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
     ogs_pfcp_xact_t *pfcp_xact = NULL;
     ogs_pfcp_message_t *pfcp_message = NULL;
+    uint8_t pfcp_cause;
 
     ogs_diam_gy_message_t *gy_message = NULL;
     uint32_t diam_err;
@@ -836,6 +837,14 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         case OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE:
             ogs_error("EPC Session Released by Error Indication");
             OGS_FSM_TRAN(s, smf_gsm_state_epc_session_will_release);
+            break;
+
+        case OGS_PFCP_SESSION_REPORT_REQUEST_TYPE:
+            pfcp_cause = smf_n4_handle_session_report_request(sess, pfcp_xact,
+                            &pfcp_message->pfcp_session_report_request);
+            if (pfcp_cause != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+               OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
+            }
             break;
 
         default:
