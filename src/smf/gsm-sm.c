@@ -337,6 +337,7 @@ void smf_gsm_state_wait_epc_auth_initial(ogs_fsm_t *s, smf_event_t *e)
     ogs_diam_gy_message_t *gy_message = NULL;
     ogs_diam_gx_message_t *gx_message = NULL;
     uint32_t diam_err;
+    bool need_gy_terminate = false;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -392,7 +393,7 @@ void smf_gsm_state_wait_epc_auth_initial(ogs_fsm_t *s, smf_event_t *e)
             case OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST:
                 ogs_assert(e->gtp_xact);
                 diam_err = smf_gy_handle_cca_initial_request(sess,
-                                gy_message, e->gtp_xact);
+                                gy_message, e->gtp_xact, &need_gy_terminate);
                 sess->sm_data.gy_ccr_init_in_flight = false;
                 sess->sm_data.gy_cca_init_err = diam_err;
                 goto test_can_proceed;
@@ -422,8 +423,16 @@ test_can_proceed:
                 smf_epc_pfcp_send_session_establishment_request(
                     sess, e->gtp_xact, 0));
         } else {
-            /* FIXME: tear down Gx/Gy session
-             * if its sm_data.*init_err == ER_DIAMETER_SUCCESS */
+            /* Tear down Gx/Gy session if its sm_data.*init_err == ER_DIAMETER_SUCCESS */
+            if (sess->sm_data.gx_cca_init_err == ER_DIAMETER_SUCCESS) {
+                sess->sm_data.gx_ccr_term_in_flight = true;
+                smf_gx_send_ccr(sess, e->gtp_xact, OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
+            }
+            if (smf_use_gy_iface() == 1 &&
+                (sess->sm_data.gy_cca_init_err == ER_DIAMETER_SUCCESS || need_gy_terminate)) {
+                sess->sm_data.gy_ccr_term_in_flight = true;
+                smf_gy_send_ccr(sess, e->gtp_xact, OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST);
+            }
             uint8_t gtp_cause = gtp_cause_from_diameter(
                                     e->gtp_xact->gtp_version, diam_err, NULL);
             send_gtp_create_err_msg(sess, e->gtp_xact, gtp_cause);

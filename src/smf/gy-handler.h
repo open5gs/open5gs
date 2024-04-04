@@ -29,7 +29,8 @@ extern "C" {
 
 uint32_t smf_gy_handle_cca_initial_request(
         smf_sess_t *sess, ogs_diam_gy_message_t *gy_message,
-        ogs_gtp_xact_t *gtp_xact);
+        ogs_gtp_xact_t *gtp_xact,
+        bool *need_termination);
 uint32_t smf_gy_handle_cca_update_request(
         smf_sess_t *sess, ogs_diam_gy_message_t *gy_message,
         ogs_pfcp_xact_t *pfcp_xact);
