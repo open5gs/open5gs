@@ -816,6 +816,7 @@ static void upf_sess_urr_acc_validity_time_setup(upf_sess_t *sess, ogs_pfcp_urr_
     ogs_timer_start(urr_acc->t_validity_time,
             ogs_time_from_sec(urr->quota_validity_time));
 }
+
 static void upf_sess_urr_acc_time_quota_setup(upf_sess_t *sess, ogs_pfcp_urr_t *urr)
 {
     upf_sess_urr_acc_t *urr_acc = &sess->urr_acc[urr->id];
@@ -827,6 +828,7 @@ static void upf_sess_urr_acc_time_quota_setup(upf_sess_t *sess, ogs_pfcp_urr_t *
                                         upf_sess_urr_acc_timers_cb, urr);
     ogs_timer_start(urr_acc->t_time_quota, ogs_time_from_sec(urr->time_quota));
 }
+
 static void upf_sess_urr_acc_time_threshold_setup(upf_sess_t *sess, ogs_pfcp_urr_t *urr)
 {
     upf_sess_urr_acc_t *urr_acc = &sess->urr_acc[urr->id];
