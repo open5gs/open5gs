@@ -47,12 +47,14 @@ static void urr_update_volume(smf_sess_t *sess, ogs_pfcp_urr_t *urr, ogs_diam_gy
         urr->vol_quota.total_volume = 0;
     }
 
-    /* Volume Threshold */
-    if (gy_message->cca.volume_threshold) {
+    /* Volume Threshold, requires Volume Quota for calculations */
+    if (gy_message->cca.volume_threshold &&
+        gy_message->cca.granted.cc_total_octets >= gy_message->cca.volume_threshold) {
         ogs_debug("Adding Volume Threshold total_octets=%" PRIu32, gy_message->cca.volume_threshold);
         urr->rep_triggers.volume_threshold = 1;
         urr->vol_threshold.tovol = 1;
-        urr->vol_threshold.total_volume = gy_message->cca.volume_threshold;
+        urr->vol_threshold.total_volume = (gy_message->cca.granted.cc_total_octets -
+                                           gy_message->cca.volume_threshold);
     } else {
         urr->rep_triggers.volume_threshold = 0;
         urr->vol_threshold.tovol = 0;
@@ -94,6 +96,7 @@ static void urr_update_time(smf_sess_t *sess, ogs_pfcp_urr_t *urr, ogs_diam_gy_m
         urr->meas_method &= ~OGS_PFCP_MEASUREMENT_METHOD_DURATION;
     }
 
+    /* Time Quota */
     if (time_quota) {
         ogs_debug("Adding Time Quota secs=%" PRIu32, time_quota);
         urr->rep_triggers.time_quota = 1;
@@ -103,10 +106,12 @@ static void urr_update_time(smf_sess_t *sess, ogs_pfcp_urr_t *urr, ogs_diam_gy_m
         urr->time_quota = 0;
     }
 
-    if (gy_message->cca.time_threshold) {
+    /* Time Threshold, requires Time Quota for calculations */
+    if (gy_message->cca.time_threshold &&
+        time_quota >= gy_message->cca.time_threshold) {
         ogs_debug("Adding Time Threshold secs=%" PRIu32, gy_message->cca.time_threshold);
         urr->rep_triggers.time_threshold = 1;
-        urr->time_threshold = gy_message->cca.time_threshold;
+        urr->time_threshold = (time_quota - gy_message->cca.time_threshold);
     } else {
         urr->rep_triggers.time_threshold = 0;
         urr->time_threshold = 0;
