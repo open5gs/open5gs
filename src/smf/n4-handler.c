@@ -144,7 +144,7 @@ static int sbi_status_from_pfcp(uint8_t pfcp_cause)
  * other cause value on failure */
 uint8_t smf_5gc_n4_handle_session_establishment_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_establishment_response_t *rsp)
+        ogs_pfcp_message_t *pfcp_message)
 {
     int i;
 
@@ -156,8 +156,12 @@ uint8_t smf_5gc_n4_handle_session_establishment_response(
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
 
+    ogs_pfcp_session_establishment_response_t *rsp = NULL;
+
     ogs_assert(sess);
     ogs_assert(xact);
+    ogs_assert(pfcp_message);
+    rsp = &pfcp_message->pfcp_session_establishment_response;
     ogs_assert(rsp);
 
     ogs_debug("Session Establishment Response [5gc]");
@@ -240,18 +244,22 @@ uint8_t smf_5gc_n4_handle_session_establishment_response(
 
 void smf_5gc_n4_handle_session_modification_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_modification_response_t *rsp)
+        ogs_pfcp_message_t *pfcp_message)
 {
     int status = 0;
     uint64_t flags = 0;
     ogs_sbi_stream_t *stream = NULL;
     smf_bearer_t *qos_flow = NULL;
 
+    ogs_pfcp_session_modification_response_t *rsp = NULL;
+
     OGS_LIST(pdr_to_create_list);
 
     ogs_debug("Session Modification Response [5gc]");
 
     ogs_assert(xact);
+    ogs_assert(pfcp_message);
+    rsp = &pfcp_message->pfcp_session_modification_response;
     ogs_assert(rsp);
 
     flags = xact->modify_flags;
@@ -665,12 +673,16 @@ void smf_5gc_n4_handle_session_modification_response(
 
 int smf_5gc_n4_handle_session_deletion_response(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, int trigger,
-        ogs_pfcp_session_deletion_response_t *rsp)
+        ogs_pfcp_message_t *pfcp_message)
 {
     int status = 0;
 
+    ogs_pfcp_session_deletion_response_t *rsp = NULL;
+
     ogs_debug("Session Deletion Response [5gc]");
 
+    ogs_assert(pfcp_message);
+    rsp = &pfcp_message->pfcp_session_deletion_response;
     ogs_assert(rsp);
     ogs_assert(trigger);
 
@@ -725,7 +737,7 @@ int smf_5gc_n4_handle_session_deletion_response(
  * other cause value on failure */
 uint8_t smf_epc_n4_handle_session_establishment_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_establishment_response_t *rsp)
+        ogs_pfcp_message_t *pfcp_message)
 {
     uint8_t cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
@@ -733,8 +745,12 @@ uint8_t smf_epc_n4_handle_session_establishment_response(
 
     ogs_pfcp_f_seid_t *up_f_seid = NULL;
 
+    ogs_pfcp_session_establishment_response_t *rsp = NULL;
+
     ogs_assert(sess);
     ogs_assert(xact);
+    ogs_assert(pfcp_message);
+    rsp = &pfcp_message->pfcp_session_establishment_response;
     ogs_assert(rsp);
 
     ogs_debug("Session Establishment Response [epc]");
@@ -828,7 +844,7 @@ uint8_t smf_epc_n4_handle_session_establishment_response(
 void smf_epc_n4_handle_session_modification_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_gtp2_message_t *recv_message,
-        ogs_pfcp_session_modification_response_t *rsp)
+        ogs_pfcp_message_t *pfcp_message)
 {
     int i;
 
@@ -844,9 +860,13 @@ void smf_epc_n4_handle_session_modification_response(
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
 
+    ogs_pfcp_session_modification_response_t *rsp = NULL;
+
     OGS_LIST(pdr_to_create_list);
 
     ogs_assert(xact);
+    ogs_assert(pfcp_message);
+    rsp = &pfcp_message->pfcp_session_modification_response;
     ogs_assert(rsp);
 
     ogs_debug("Session Modification Response [epc]");
@@ -1093,13 +1113,17 @@ void smf_epc_n4_handle_session_modification_response(
 
 uint8_t smf_epc_n4_handle_session_deletion_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_deletion_response_t *rsp)
+        ogs_pfcp_message_t *pfcp_message)
 {
     smf_bearer_t *bearer = NULL;
     unsigned int i;
 
+    ogs_pfcp_session_deletion_response_t *rsp = NULL;
+
     ogs_assert(sess);
     ogs_assert(xact);
+    ogs_assert(pfcp_message);
+    rsp = &pfcp_message->pfcp_session_deletion_response;
     ogs_assert(rsp);
 
     ogs_debug("Session Deletion Response [epc]");
@@ -1149,7 +1173,7 @@ uint8_t smf_epc_n4_handle_session_deletion_response(
 
 void smf_n4_handle_session_report_request(
         smf_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
-        ogs_pfcp_session_report_request_t *pfcp_req)
+        ogs_pfcp_message_t *pfcp_message)
 {
     smf_ue_t *smf_ue = NULL;
     smf_bearer_t *qos_flow = NULL;
@@ -1162,9 +1186,13 @@ void smf_n4_handle_session_report_request(
     uint16_t pdr_id = 0;
     unsigned int i;
 
+    ogs_pfcp_session_report_request_t *pfcp_req = NULL;
+
     smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_SM_N4SESSIONREPORT);
 
     ogs_assert(pfcp_xact);
+    ogs_assert(pfcp_message);
+    pfcp_req = &pfcp_message->pfcp_session_report_request;
     ogs_assert(pfcp_req);
 
     ogs_debug("Session Report Request");
@@ -1182,7 +1210,8 @@ void smf_n4_handle_session_report_request(
     }
 
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
-        ogs_pfcp_send_error_message(pfcp_xact, 0,
+        ogs_pfcp_send_error_message(pfcp_xact,
+                sess ? sess->upf_n4_seid : pfcp_message->h.seid,
                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                 cause_value, 0);
         return;
@@ -1222,7 +1251,8 @@ void smf_n4_handle_session_report_request(
                     if (paging_policy_indication_value) {
                         ogs_warn("Not implement - "
                                 "Paging Policy Indication Value");
-                        ogs_pfcp_send_error_message(pfcp_xact, 0,
+                        ogs_pfcp_send_error_message(pfcp_xact,
+                                sess ? sess->upf_n4_seid : pfcp_message->h.seid,
                                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                                 OGS_PFCP_CAUSE_SERVICE_NOT_SUPPORTED, 0);
                         return;
@@ -1232,7 +1262,8 @@ void smf_n4_handle_session_report_request(
                         qos_flow = smf_qos_flow_find_by_qfi(sess, qfi);
                         if (!qos_flow) {
                             ogs_error("Cannot find the QoS Flow[%d]", qfi);
-                            ogs_pfcp_send_error_message(pfcp_xact, 0,
+                            ogs_pfcp_send_error_message(pfcp_xact,
+                                sess ? sess->upf_n4_seid : pfcp_message->h.seid,
                                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
                             return;
@@ -1257,7 +1288,8 @@ void smf_n4_handle_session_report_request(
 
         if (!pdr) {
             ogs_error("No Context");
-            ogs_pfcp_send_error_message(pfcp_xact, 0,
+            ogs_pfcp_send_error_message(pfcp_xact,
+                    sess ? sess->upf_n4_seid : pfcp_message->h.seid,
                     OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                     OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
             return;

@@ -305,8 +305,7 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
                 sess->sgwu_sxa_seid = be64toh(up_f_seid->seid);
             } else {
                 sgwc_sxa_handle_session_establishment_response(
-                    sess, xact, e->gtp_message,
-                    &message->pfcp_session_establishment_response);
+                    sess, xact, e->gtp_message, message);
             }
             break;
 
@@ -314,23 +313,20 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
             if (!message->h.seid_presence) ogs_error("No SEID");
 
             sgwc_sxa_handle_session_modification_response(
-                sess, xact, e->gtp_message,
-                &message->pfcp_session_modification_response);
+                sess, xact, e->gtp_message, message);
             break;
 
         case OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE:
             if (!message->h.seid_presence) ogs_error("No SEID");
 
             sgwc_sxa_handle_session_deletion_response(
-                sess, xact, e->gtp_message,
-                &message->pfcp_session_deletion_response);
+                sess, xact, e->gtp_message, message);
             break;
 
         case OGS_PFCP_SESSION_REPORT_REQUEST_TYPE:
             if (!message->h.seid_presence) ogs_error("No SEID");
 
-            sgwc_sxa_handle_session_report_request(
-                sess, xact, &message->pfcp_session_report_request);
+            sgwc_sxa_handle_session_report_request(sess, xact, message);
             break;
 
         default:

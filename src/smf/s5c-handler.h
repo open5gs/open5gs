@@ -33,25 +33,25 @@ void smf_s5c_handle_echo_response(
 
 uint8_t smf_s5c_handle_create_session_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp2_create_session_request_t *req);
+        ogs_gtp2_message_t *gtp2_message);
 uint8_t smf_s5c_handle_delete_session_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp2_delete_session_request_t *req);
+        ogs_gtp2_message_t *gtp2_message);
 void smf_s5c_handle_modify_bearer_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_pkbuf_t *gtpbuf, ogs_gtp2_modify_bearer_request_t *req);
+        ogs_pkbuf_t *gtpbuf, ogs_gtp2_message_t *gtp2_message);
 void smf_s5c_handle_create_bearer_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp2_create_bearer_response_t *rsp);
+        ogs_gtp2_message_t *gtp2_message);
 void smf_s5c_handle_update_bearer_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp2_update_bearer_response_t *rsp);
+        ogs_gtp2_message_t *gtp2_message);
 bool smf_s5c_handle_delete_bearer_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp2_delete_bearer_response_t *rsp);
+        ogs_gtp2_message_t *gtp2_message);
 void smf_s5c_handle_bearer_resource_command(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp2_bearer_resource_command_t *cmd);
+        ogs_gtp2_message_t *gtp2_message);
 
 #ifdef __cplusplus
 }

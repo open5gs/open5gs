@@ -144,7 +144,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             }
             if (!sess) {
                 ogs_error("No Session");
-                ogs_gtp2_send_error_message(gtp_xact, 0,
+                ogs_gtp2_send_error_message(gtp_xact, gtp2_message.h.teid,
                         OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
                         OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
                 break;
@@ -158,7 +158,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             smf_metrics_inst_gtp_node_inc(smf_gnode->metrics, SMF_METR_GTP_NODE_CTR_S5C_RX_DELETESESSIONREQ);
             if (!sess) {
                 ogs_error("No Session");
-                ogs_gtp2_send_error_message(gtp_xact, 0,
+                ogs_gtp2_send_error_message(gtp_xact, gtp2_message.h.teid,
                         OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE,
                         OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
                 break;
@@ -169,17 +169,17 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
             if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             smf_s5c_handle_modify_bearer_request(
-                sess, gtp_xact, recvbuf, &gtp2_message.modify_bearer_request);
+                sess, gtp_xact, recvbuf, &gtp2_message);
             break;
         case OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE:
             if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             smf_s5c_handle_create_bearer_response(
-                sess, gtp_xact, &gtp2_message.create_bearer_response);
+                sess, gtp_xact, &gtp2_message);
             break;
         case OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE:
             if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             smf_s5c_handle_update_bearer_response(
-                sess, gtp_xact, &gtp2_message.update_bearer_response);
+                sess, gtp_xact, &gtp2_message);
             break;
         case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
             if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
@@ -194,7 +194,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
             if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             smf_s5c_handle_bearer_resource_command(
-                sess, gtp_xact, &gtp2_message.bearer_resource_command);
+                sess, gtp_xact, &gtp2_message);
             break;
         default:
             ogs_warn("Not implemented(type:%d)", gtp2_message.h.type);

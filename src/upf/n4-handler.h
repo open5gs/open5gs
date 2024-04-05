@@ -27,18 +27,14 @@ extern "C" {
 #endif
 
 void upf_n4_handle_session_establishment_request(
-        upf_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_establishment_request_t *req);
+        upf_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message);
 void upf_n4_handle_session_modification_request(
-        upf_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_modification_request_t *req);
+        upf_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message);
 void upf_n4_handle_session_deletion_request(
-        upf_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_deletion_request_t *req);
+        upf_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message);
 
 void upf_n4_handle_session_report_response(
-        upf_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_report_response_t *rsp);
+        upf_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message);
 
 #ifdef __cplusplus
 }

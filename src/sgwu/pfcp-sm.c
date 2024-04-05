@@ -280,20 +280,16 @@ void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
             sess = sgwu_sess_add_by_message(message);
             if (sess)
                 OGS_SETUP_PFCP_NODE(sess, node);
-            sgwu_sxa_handle_session_establishment_request(
-                sess, xact, &message->pfcp_session_establishment_request);
+            sgwu_sxa_handle_session_establishment_request(sess, xact, message);
             break;
         case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
-            sgwu_sxa_handle_session_modification_request(
-                sess, xact, &message->pfcp_session_modification_request);
+            sgwu_sxa_handle_session_modification_request(sess, xact, message);
             break;
         case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:
-            sgwu_sxa_handle_session_deletion_request(
-                sess, xact, &message->pfcp_session_deletion_request);
+            sgwu_sxa_handle_session_deletion_request(sess, xact, message);
             break;
         case OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE:
-            sgwu_sxa_handle_session_report_response(
-                sess, xact, &message->pfcp_session_report_response);
+            sgwu_sxa_handle_session_report_response(sess, xact, message);
             break;
         default:
             ogs_error("Not implemented PFCP message type[%d]",

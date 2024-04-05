@@ -233,7 +233,7 @@ MME-frDi  = 127.0.0.2 :3868 for S6a
 SGWC-gtpc = 127.0.0.3 :2123 for S11
 SGWC-pfcp = 127.0.0.3 :8805 for Sxa
 
-SMF-gtpc  = 127.0.0.4 :2123 for S5c, N11
+SMF-gtpc  = 127.0.0.4 :2123 for S5c
 SMF-gtpu  = 127.0.0.4 :2152 for N4u (Sxu)
 SMF-pfcp  = 127.0.0.4 :8805 for N4 (Sxb)
 SMF-frDi  = 127.0.0.4 :3868 for Gx auth

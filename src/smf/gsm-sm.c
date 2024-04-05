@@ -218,8 +218,7 @@ void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
         switch(gtp2_message->h.type) {
         case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
             gtp2_cause = smf_s5c_handle_create_session_request(sess,
-                            e->gtp_xact,
-                            &e->gtp2_message->create_session_request);
+                            e->gtp_xact, gtp2_message);
             if (gtp2_cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
                 send_gtp_create_err_msg(sess, e->gtp_xact, gtp2_cause);
                 return;
@@ -621,8 +620,7 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
                 ogs_assert(gtp_xact);
 
                 pfcp_cause = smf_epc_n4_handle_session_establishment_response(
-                        sess, pfcp_xact,
-                        &pfcp_message->pfcp_session_establishment_response);
+                        sess, pfcp_xact, pfcp_message);
                 if (pfcp_cause != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
                     /* FIXME: tear down Gy and Gx */
                     gtp_cause = gtp_cause_from_pfcp(
@@ -671,8 +669,7 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
                 smf_bearer_binding(sess);
             } else {
                 pfcp_cause = smf_5gc_n4_handle_session_establishment_response(
-                        sess, pfcp_xact,
-                        &pfcp_message->pfcp_session_establishment_response);
+                        sess, pfcp_xact, pfcp_message);
                 if (pfcp_cause != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
                     OGS_FSM_TRAN(s, smf_gsm_state_5gc_n1_n2_reject);
                     return;
@@ -784,8 +781,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         switch(gtp2_message->h.type) {
         case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
             gtp2_cause = smf_s5c_handle_delete_session_request(
-                            sess, e->gtp_xact,
-                            &gtp2_message->delete_session_request);
+                            sess, e->gtp_xact, gtp2_message);
             if (gtp2_cause != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
                 ogs_gtp2_send_error_message(e->gtp_xact, sess->sgw_s5c_teid,
                         OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE, gtp2_cause);
@@ -795,7 +791,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
         case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
             release = smf_s5c_handle_delete_bearer_response(
-                sess, e->gtp_xact, &e->gtp2_message->delete_bearer_response);
+                sess, e->gtp_xact, gtp2_message);
             if (release) {
                 e->gtp_xact = NULL;
                 OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
@@ -1310,8 +1306,7 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                 gtp_xact = pfcp_xact->assoc_xact;
 
                 pfcp_cause = smf_epc_n4_handle_session_deletion_response(
-                            sess, pfcp_xact,
-                            &pfcp_message->pfcp_session_deletion_response);
+                            sess, pfcp_xact, pfcp_message);
                 if (pfcp_cause != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
                     /* FIXME: tear down Gy and Gx */
                     ogs_assert(gtp_xact);
@@ -1334,8 +1329,7 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                 ogs_pfcp_xact_commit(pfcp_xact);
 
                 status = smf_5gc_n4_handle_session_deletion_response(
-                            sess, stream, trigger,
-                            &pfcp_message->pfcp_session_deletion_response);
+                            sess, stream, trigger, pfcp_message);
                 if (status != OGS_SBI_HTTP_STATUS_OK) {
                     ogs_error(
                         "[%d] smf_5gc_n4_handle_session_deletion_response() "

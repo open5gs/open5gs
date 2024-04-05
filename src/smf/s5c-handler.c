@@ -70,7 +70,7 @@ void smf_s5c_handle_echo_response(
 
 uint8_t smf_s5c_handle_create_session_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp2_create_session_request_t *req)
+        ogs_gtp2_message_t *gtp2_message)
 {
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
@@ -89,8 +89,11 @@ uint8_t smf_s5c_handle_create_session_request(
     ogs_gtp2_ambr_t *ambr = NULL;
     uint16_t decoded = 0;
 
+    ogs_gtp2_create_session_request_t *req = NULL;
+
     ogs_assert(sess);
     ogs_assert(xact);
+    req = &gtp2_message->create_session_request;
     ogs_assert(req);
 
     ogs_debug("Create Session Request");
@@ -104,7 +107,18 @@ uint8_t smf_s5c_handle_create_session_request(
     if (req->sender_f_teid_for_control_plane.presence == 0) {
         ogs_error("No TEID");
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
+    } else {
+        /* Control Plane(DL) : SGW-S5C */
+        sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
+        ogs_assert(sgw_s5c_teid);
+        sess->sgw_s5c_teid = be32toh(sgw_s5c_teid->teid);
+        rv = ogs_gtp2_f_teid_to_ip(sgw_s5c_teid, &sess->sgw_s5c_ip);
+        ogs_assert(rv == OGS_OK);
+
+        ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
+                sess->sgw_s5c_teid, sess->smf_n4_teid);
     }
+
     if (req->bearer_contexts_to_be_created[0].presence == 0) {
         ogs_error("No Bearer");
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
@@ -278,16 +292,6 @@ uint8_t smf_s5c_handle_create_session_request(
         sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
         sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
-    /* Control Plane(DL) : SGW-S5C */
-    sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
-    ogs_assert(sgw_s5c_teid);
-    sess->sgw_s5c_teid = be32toh(sgw_s5c_teid->teid);
-    rv = ogs_gtp2_f_teid_to_ip(sgw_s5c_teid, &sess->sgw_s5c_ip);
-    ogs_assert(rv == OGS_OK);
-
-    ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
-            sess->sgw_s5c_teid, sess->smf_n4_teid);
-
     /* Remove all previous bearer */
     smf_bearer_remove_all(sess);
 
@@ -422,11 +426,14 @@ uint8_t smf_s5c_handle_create_session_request(
 
 uint8_t smf_s5c_handle_delete_session_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp2_delete_session_request_t *req)
+        ogs_gtp2_message_t *gtp2_message)
 {
+    ogs_gtp2_delete_session_request_t *req = NULL;
+
     ogs_debug("Delete Session Request");
 
     ogs_assert(xact);
+    req = &gtp2_message->delete_session_request;
     ogs_assert(req);
 
     if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
@@ -479,7 +486,7 @@ uint8_t smf_s5c_handle_delete_session_request(
 
 void smf_s5c_handle_modify_bearer_request(
         smf_sess_t *sess, ogs_gtp_xact_t *gtp_xact,
-        ogs_pkbuf_t *gtpbuf, ogs_gtp2_modify_bearer_request_t *req)
+        ogs_pkbuf_t *gtpbuf, ogs_gtp2_message_t *gtp2_message)
 {
     int rv, i;
     uint8_t cause_value = 0;
@@ -488,9 +495,13 @@ void smf_s5c_handle_modify_bearer_request(
     smf_ue_t *smf_ue = NULL;
     smf_bearer_t *bearer = NULL;
 
+    ogs_gtp2_modify_bearer_request_t *req = NULL;
+
     ogs_debug("Modify Bearer Request");
 
     ogs_assert(gtp_xact);
+    ogs_assert(gtp2_message);
+    req = &gtp2_message->modify_bearer_request;
     ogs_assert(req);
 
     /************************
@@ -504,7 +515,8 @@ void smf_s5c_handle_modify_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(gtp_xact,
+                sess ? sess->sgw_s5c_teid : gtp2_message->h.teid,
                 OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -648,7 +660,7 @@ void smf_s5c_handle_modify_bearer_request(
 
 void smf_s5c_handle_create_bearer_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp2_create_bearer_response_t *rsp)
+        ogs_gtp2_message_t *gtp2_message)
 {
     int rv;
     uint8_t cause_value;
@@ -657,7 +669,10 @@ void smf_s5c_handle_create_bearer_response(
     smf_bearer_t *bearer = NULL;
     ogs_pfcp_far_t *dl_far = NULL;
 
+    ogs_gtp2_create_bearer_response_t *rsp = NULL;
+
     ogs_assert(sess);
+    rsp = &gtp2_message->create_bearer_response;
     ogs_assert(rsp);
 
     ogs_debug("Create Bearer Response");
@@ -822,7 +837,7 @@ void smf_s5c_handle_create_bearer_response(
 
 void smf_s5c_handle_update_bearer_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp2_update_bearer_response_t *rsp)
+        ogs_gtp2_message_t *gtp2_message)
 {
     int rv;
     uint8_t cause_value;
@@ -831,7 +846,10 @@ void smf_s5c_handle_update_bearer_response(
     uint64_t pfcp_flags = 0;
     smf_bearer_t *bearer = NULL;
 
+    ogs_gtp2_update_bearer_response_t *rsp = NULL;
+
     ogs_assert(sess);
+    rsp = &gtp2_message->update_bearer_response;
     ogs_assert(rsp);
 
     ogs_debug("Update Bearer Response");
@@ -929,13 +947,16 @@ void smf_s5c_handle_update_bearer_response(
 /* return true if entire session must be released */
 bool smf_s5c_handle_delete_bearer_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp2_delete_bearer_response_t *rsp)
+        ogs_gtp2_message_t *gtp2_message)
 {
     int rv;
     uint8_t cause_value;
     smf_bearer_t *bearer = NULL;
 
+    ogs_gtp2_delete_bearer_response_t *rsp = NULL;
+
     ogs_assert(sess);
+    rsp = &gtp2_message->delete_bearer_response;
     ogs_assert(rsp);
 
     ogs_debug("Delete Bearer Response");
@@ -1132,7 +1153,7 @@ static int reconfigure_packet_filter(smf_pf_t *pf, ogs_gtp2_tft_t *tft, int i)
 
 void smf_s5c_handle_bearer_resource_command(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp2_bearer_resource_command_t *cmd)
+        ogs_gtp2_message_t *gtp2_message)
 {
     int rv;
     uint8_t cause_value = 0;
@@ -1151,7 +1172,11 @@ void smf_s5c_handle_bearer_resource_command(
     int qos_update = 0;
     int tft_delete = 0;
 
+    ogs_gtp2_bearer_resource_command_t *cmd = NULL;
+
     ogs_assert(xact);
+    ogs_assert(gtp2_message);
+    cmd = &gtp2_message->bearer_resource_command;
     ogs_assert(cmd);
 
     ogs_debug("Bearer Resource Command");
@@ -1186,7 +1211,8 @@ void smf_s5c_handle_bearer_resource_command(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(xact,
+                sess ? sess->sgw_s5c_teid : gtp2_message->h.teid,
                 OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE, cause_value);
         return;
     }
@@ -1211,7 +1237,8 @@ void smf_s5c_handle_bearer_resource_command(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(xact,
+                sess ? sess->sgw_s5c_teid : gtp2_message->h.teid,
                 OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE, cause_value);
         return;
     }
@@ -1241,7 +1268,7 @@ void smf_s5c_handle_bearer_resource_command(
             if (pf) {
                 if (reconfigure_packet_filter(pf, &tft, i) < 0) {
                     ogs_gtp2_send_error_message(
-                        xact, sess ? sess->sgw_s5c_teid : 0,
+                        xact, sess ? sess->sgw_s5c_teid : gtp2_message->h.teid,
                         OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
                         OGS_GTP2_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER);
                     return;
@@ -1310,7 +1337,7 @@ void smf_s5c_handle_bearer_resource_command(
 
             if (reconfigure_packet_filter(pf, &tft, i) < 0) {
                 ogs_gtp2_send_error_message(
-                    xact, sess ? sess->sgw_s5c_teid : 0,
+                    xact, sess ? sess->sgw_s5c_teid : gtp2_message->h.teid,
                     OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
                     OGS_GTP2_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER);
                 return;
@@ -1396,7 +1423,8 @@ void smf_s5c_handle_bearer_resource_command(
 
     if (tft_update == 0 && tft_delete == 0 && qos_update == 0) {
         /* No modification */
-        ogs_gtp2_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(xact,
+                sess ? sess->sgw_s5c_teid : gtp2_message->h.teid,
                 OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
                 OGS_GTP2_CAUSE_SERVICE_NOT_SUPPORTED);
         return;

@@ -79,7 +79,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
     ogs_gtp_node_t *gnode = NULL;
     ogs_gtp_xact_t *xact = NULL;
-    ogs_gtp2_message_t gtp_message;
+    ogs_gtp2_message_t gtp2_message;
     ogs_gtp1_message_t gtp1_message;
 
     mme_vlr_t *vlr = NULL;
@@ -650,7 +650,7 @@ cleanup:
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
 
-        if (ogs_gtp2_parse_msg(&gtp_message, pkbuf) != OGS_OK) {
+        if (ogs_gtp2_parse_msg(&gtp2_message, pkbuf) != OGS_OK) {
             ogs_error("ogs_gtp2_parse_msg() failed");
             ogs_pkbuf_free(pkbuf);
             break;
@@ -659,7 +659,7 @@ cleanup:
         gnode = e->gnode;
         ogs_assert(gnode);
 
-        rv = ogs_gtp_xact_receive(gnode, &gtp_message.h, &xact);
+        rv = ogs_gtp_xact_receive(gnode, &gtp2_message.h, &xact);
         if (rv != OGS_OK) {
             ogs_pkbuf_free(pkbuf);
             break;
@@ -694,9 +694,9 @@ cleanup:
          *   However in this case, the cause code shall not be set to
          *   "Context not found".
          */
-        if (gtp_message.h.teid_presence && gtp_message.h.teid != 0) {
+        if (gtp2_message.h.teid_presence && gtp2_message.h.teid != 0) {
             /* Cause is not "Context not found" */
-            mme_ue = mme_ue_find_by_s11_local_teid(gtp_message.h.teid);
+            mme_ue = mme_ue_find_by_s11_local_teid(gtp2_message.h.teid);
         } else if (xact->local_teid) { /* rx no TEID or TEID=0 */
             /* 3GPP TS 29.274 5.5.2: we receive TEID=0 under some
              * conditions, such as cause "Session context not found". In those
@@ -706,69 +706,60 @@ cleanup:
             mme_ue = mme_ue_find_by_s11_local_teid(xact->local_teid);
         }
 
-        switch (gtp_message.h.type) {
+        switch (gtp2_message.h.type) {
         case OGS_GTP2_ECHO_REQUEST_TYPE:
-            mme_s11_handle_echo_request(xact, &gtp_message.echo_request);
+            mme_s11_handle_echo_request(xact, &gtp2_message);
             break;
         case OGS_GTP2_ECHO_RESPONSE_TYPE:
-            mme_s11_handle_echo_response(xact, &gtp_message.echo_response);
+            mme_s11_handle_echo_response(xact, &gtp2_message);
             break;
         case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
-            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
-            mme_s11_handle_create_session_response(
-                xact, mme_ue, &gtp_message.create_session_response);
+            if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
+            mme_s11_handle_create_session_response(xact, mme_ue, &gtp2_message);
             break;
         case OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE:
-            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
-            mme_s11_handle_modify_bearer_response(
-                xact, mme_ue, &gtp_message.modify_bearer_response);
+            if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
+            mme_s11_handle_modify_bearer_response(xact, mme_ue, &gtp2_message);
             break;
         case OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE:
-            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
-            mme_s11_handle_delete_session_response(
-                xact, mme_ue, &gtp_message.delete_session_response);
+            if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
+            mme_s11_handle_delete_session_response(xact, mme_ue, &gtp2_message);
             break;
         case OGS_GTP2_CREATE_BEARER_REQUEST_TYPE:
-            mme_s11_handle_create_bearer_request(
-                xact, mme_ue, &gtp_message.create_bearer_request);
+            mme_s11_handle_create_bearer_request(xact, mme_ue, &gtp2_message);
             break;
         case OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE:
-            mme_s11_handle_update_bearer_request(
-                xact, mme_ue, &gtp_message.update_bearer_request);
+            mme_s11_handle_update_bearer_request(xact, mme_ue, &gtp2_message);
             break;
         case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
-            mme_s11_handle_delete_bearer_request(
-                xact, mme_ue, &gtp_message.delete_bearer_request);
+            mme_s11_handle_delete_bearer_request(xact, mme_ue, &gtp2_message);
             break;
         case OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
-            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
+            if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             mme_s11_handle_release_access_bearers_response(
-                xact, mme_ue, &gtp_message.release_access_bearers_response);
+                xact, mme_ue, &gtp2_message);
             break;
         case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_TYPE:
             mme_s11_handle_downlink_data_notification(
-                xact, mme_ue, &gtp_message.downlink_data_notification);
+                xact, mme_ue, &gtp2_message);
             break;
         case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
-            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
+            if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
-                xact, mme_ue,
-                &gtp_message.create_indirect_data_forwarding_tunnel_response);
+                xact, mme_ue, &gtp2_message);
             break;
         case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
-            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
+            if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
-                xact, mme_ue,
-                &gtp_message.delete_indirect_data_forwarding_tunnel_response);
+                xact, mme_ue, &gtp2_message);
             break;
         case OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
-            if (!gtp_message.h.teid_presence) ogs_error("No TEID");
+            if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             mme_s11_handle_bearer_resource_failure_indication(
-                xact, mme_ue,
-                &gtp_message.bearer_resource_failure_indication);
+                xact, mme_ue, &gtp2_message);
             break;
         default:
-            ogs_warn("Not implemented(type:%d)", gtp_message.h.type);
+            ogs_warn("Not implemented(type:%d)", gtp2_message.h.type);
             break;
         }
         ogs_pkbuf_free(pkbuf);

@@ -573,7 +573,8 @@ void sgwc_s5c_handle_create_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
+        ogs_gtp_send_error_message(s5c_xact,
+                sess ? sess->pgw_s5c_teid : message->h.teid,
                 OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -601,7 +602,8 @@ void sgwc_s5c_handle_create_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
+        ogs_gtp_send_error_message(s5c_xact,
+                sess ? sess->pgw_s5c_teid : message->h.teid,
                 OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -631,7 +633,8 @@ void sgwc_s5c_handle_create_bearer_request(
 
     rv = ogs_gtp2_f_teid_to_ip(pgw_s5u_teid, &ul_tunnel->remote_ip);
     if (rv != OGS_OK) {
-        ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
+        ogs_gtp_send_error_message(s5c_xact,
+                sess ? sess->pgw_s5c_teid : message->h.teid,
                 OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE,
                 OGS_GTP2_CAUSE_MANDATORY_IE_MISSING);
         return;
@@ -709,7 +712,8 @@ void sgwc_s5c_handle_update_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
+        ogs_gtp_send_error_message(s5c_xact,
+                sess ? sess->pgw_s5c_teid : message->h.teid,
                 OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -850,7 +854,8 @@ void sgwc_s5c_handle_delete_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
+        ogs_gtp_send_error_message(s5c_xact,
+                sess ? sess->pgw_s5c_teid : message->h.teid,
                 OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }

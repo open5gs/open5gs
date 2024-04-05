@@ -27,18 +27,14 @@ extern "C" {
 #endif
 
 void sgwu_sxa_handle_session_establishment_request(
-        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_establishment_request_t *req);
+        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message);
 void sgwu_sxa_handle_session_modification_request(
-        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_modification_request_t *req);
+        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message);
 void sgwu_sxa_handle_session_deletion_request(
-        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_deletion_request_t *req);
+        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message);
 
 void sgwu_sxa_handle_session_report_response(
-        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_report_response_t *rsp);
+        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message);
 
 #ifdef __cplusplus
 }

@@ -127,7 +127,7 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
 void sgwc_sxa_handle_session_establishment_response(
         sgwc_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
         ogs_gtp2_message_t *recv_message,
-        ogs_pfcp_session_establishment_response_t *pfcp_rsp)
+        ogs_pfcp_message_t *pfcp_message)
 {
     int rv;
     uint8_t cause_value = 0;
@@ -155,17 +155,22 @@ void sgwc_sxa_handle_session_establishment_response(
 
     ogs_gtp2_indication_t *indication = NULL;
 
+    ogs_pfcp_session_establishment_response_t *pfcp_rsp = NULL;
+
     ogs_debug("Session Establishment Response");
 
     ogs_assert(pfcp_xact);
-    ogs_assert(pfcp_rsp);
     ogs_assert(recv_message);
+    ogs_assert(pfcp_message);
 
     create_session_request = &recv_message->create_session_request;
     ogs_assert(create_session_request);
 
     s11_xact = pfcp_xact->assoc_xact;
     ogs_assert(s11_xact);
+
+    pfcp_rsp = &pfcp_message->pfcp_session_establishment_response;
+    ogs_assert(pfcp_rsp);
 
     ogs_pfcp_xact_commit(pfcp_xact);
 
@@ -246,7 +251,8 @@ void sgwc_sxa_handle_session_establishment_response(
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         if (sess) sgwc_ue = sess->sgwc_ue;
         ogs_gtp_send_error_message(
-                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                s11_xact,
+                sgwc_ue ? sgwc_ue->mme_s11_teid : recv_message->h.teid,
                 OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -270,7 +276,8 @@ void sgwc_sxa_handle_session_establishment_response(
         if (dl_tunnel->local_addr == NULL && dl_tunnel->local_addr6 == NULL) {
             ogs_error("No UP F-TEID");
             ogs_gtp_send_error_message(
-                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                    s11_xact,
+                    sgwc_ue ? sgwc_ue->mme_s11_teid : recv_message->h.teid,
                     OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
                     OGS_GTP2_CAUSE_GRE_KEY_NOT_FOUND);
             return;
@@ -444,7 +451,7 @@ void sgwc_sxa_handle_session_establishment_response(
 void sgwc_sxa_handle_session_modification_response(
         sgwc_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
         ogs_gtp2_message_t *recv_message,
-        ogs_pfcp_session_modification_response_t *pfcp_rsp)
+        ogs_pfcp_message_t *pfcp_message)
 {
     int i, rv, len = 0;
     uint8_t cause_value = 0;
@@ -463,13 +470,18 @@ void sgwc_sxa_handle_session_modification_response(
 
     ogs_gtp2_cause_t cause;
 
+    ogs_pfcp_session_modification_response_t *pfcp_rsp = NULL;
+
     ogs_debug("Session Modification Response");
 
     ogs_assert(pfcp_xact);
-    ogs_assert(pfcp_rsp);
+    ogs_assert(pfcp_message);
 
     flags = pfcp_xact->modify_flags;
     ogs_assert(flags);
+
+    pfcp_rsp = &pfcp_message->pfcp_session_modification_response;
+    ogs_assert(pfcp_rsp);
 
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
@@ -597,12 +609,15 @@ void sgwc_sxa_handle_session_modification_response(
 
 
         } else if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
+            ogs_assert(recv_message);
+
             if (flags & OGS_PFCP_MODIFY_UL_ONLY) {
                 s11_xact = pfcp_xact->assoc_xact;
                 ogs_assert(s11_xact);
 
                 ogs_gtp_send_error_message(
-                        s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                        s11_xact,
+                        sgwc_ue ? sgwc_ue->mme_s11_teid : recv_message->h.teid,
                         OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE, cause_value);
 
             } else if (flags & OGS_PFCP_MODIFY_DL_ONLY) {
@@ -610,19 +625,26 @@ void sgwc_sxa_handle_session_modification_response(
                 ogs_assert(s11_xact);
 
                 ogs_gtp_send_error_message(
-                        s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                        s11_xact,
+                        sgwc_ue ? sgwc_ue->mme_s11_teid : recv_message->h.teid,
                         OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE, cause_value);
             } else {
                 ogs_fatal("Invalid modify_flags[0x%llx]", (long long)flags);
                 ogs_assert_if_reached();
             }
         } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
-            s11_xact = pfcp_xact->assoc_xact;
-            ogs_assert(s11_xact);
+            if (flags & OGS_PFCP_MODIFY_ERROR_INDICATION) {
+            } else {
+                ogs_assert(recv_message);
 
-            ogs_gtp_send_error_message(
-                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                    OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE, cause_value);
+                s11_xact = pfcp_xact->assoc_xact;
+                ogs_assert(s11_xact);
+
+                ogs_gtp_send_error_message(
+                        s11_xact,
+                        sgwc_ue ? sgwc_ue->mme_s11_teid : recv_message->h.teid,
+                        OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE, cause_value);
+            }
         }
 
         ogs_pfcp_xact_commit(pfcp_xact);
@@ -989,6 +1011,7 @@ void sgwc_sxa_handle_session_modification_response(
 
         s11_xact = pfcp_xact->assoc_xact;
         ogs_assert(s11_xact);
+        ogs_assert(recv_message);
 
         ogs_list_copy(&bearer_to_modify_list,
                 &pfcp_xact->bearer_to_modify_list);
@@ -1002,7 +1025,6 @@ void sgwc_sxa_handle_session_modification_response(
             ogs_gtp2_f_teid_t sgw_s1u_teid[OGS_BEARER_PER_UE];
             int sgw_s1u_len[OGS_BEARER_PER_UE];
 
-            ogs_assert(recv_message);
             gtp_rsp = &recv_message->create_session_response;
             ogs_assert(gtp_rsp);
 
@@ -1071,7 +1093,6 @@ void sgwc_sxa_handle_session_modification_response(
 
                 ogs_gtp2_indication_t *indication = NULL;
 
-                ogs_assert(recv_message);
                 gtp_req = &recv_message->modify_bearer_request;
                 ogs_assert(gtp_req);
 
@@ -1210,6 +1231,7 @@ void sgwc_sxa_handle_session_modification_response(
         } else {
             s11_xact = pfcp_xact->assoc_xact;
             ogs_assert(s11_xact);
+            ogs_assert(recv_message);
 
             ogs_pfcp_xact_commit(pfcp_xact);
 
@@ -1260,7 +1282,7 @@ void sgwc_sxa_handle_session_modification_response(
 void sgwc_sxa_handle_session_deletion_response(
         sgwc_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
         ogs_gtp2_message_t *gtp_message,
-        ogs_pfcp_session_deletion_response_t *pfcp_rsp)
+        ogs_pfcp_message_t *pfcp_message)
 {
     int rv;
     uint8_t cause_value = 0;
@@ -1271,9 +1293,14 @@ void sgwc_sxa_handle_session_deletion_response(
     ogs_gtp_xact_t *gtp_xact = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
+    ogs_pfcp_session_deletion_response_t *pfcp_rsp = NULL;
+
     ogs_debug("Session Deletion Response");
 
     ogs_assert(pfcp_xact);
+    ogs_assert(pfcp_message);
+
+    pfcp_rsp = &pfcp_message->pfcp_session_deletion_response;
     ogs_assert(pfcp_rsp);
 
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
@@ -1315,7 +1342,7 @@ void sgwc_sxa_handle_session_deletion_response(
          * 2. SMF sends Delete Session Response to SGW/MME.
          */
         if (sess) sgwc_ue = sess->sgwc_ue;
-        teid = sgwc_ue ? sgwc_ue->mme_s11_teid : 0;
+        teid = sgwc_ue ? sgwc_ue->mme_s11_teid : gtp_message->h.teid;
         break;
     case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
         /*
@@ -1385,7 +1412,7 @@ cleanup:
 
 void sgwc_sxa_handle_session_report_request(
         sgwc_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
-        ogs_pfcp_session_report_request_t *pfcp_req)
+        ogs_pfcp_message_t *pfcp_message)
 {
     sgwc_ue_t *sgwc_ue = NULL;
     sgwc_bearer_t *bearer = NULL;
@@ -1396,9 +1423,14 @@ void sgwc_sxa_handle_session_report_request(
     uint8_t cause_value = 0;
     uint16_t pdr_id = 0;
 
+    ogs_pfcp_session_report_request_t *pfcp_req = NULL;
+
     ogs_debug("Session Report Request");
 
     ogs_assert(pfcp_xact);
+    ogs_assert(pfcp_message);
+
+    pfcp_req = &pfcp_message->pfcp_session_report_request;
     ogs_assert(pfcp_req);
 
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
@@ -1419,7 +1451,8 @@ void sgwc_sxa_handle_session_report_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_pfcp_send_error_message(pfcp_xact, 0,
+        ogs_pfcp_send_error_message(
+                pfcp_xact, sess ? sess->sgwu_sxa_seid : pfcp_message->h.seid,
                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                 cause_value, 0);
         return;
@@ -1431,7 +1464,8 @@ void sgwc_sxa_handle_session_report_request(
 
     if (!sgwc_ue->gnode) {
         ogs_error("No SGWC-UE GTP Node");
-        ogs_pfcp_send_error_message(pfcp_xact, sess ? sess->sgwu_sxa_seid : 0,
+        ogs_pfcp_send_error_message(
+                pfcp_xact, sess ? sess->sgwu_sxa_seid : pfcp_message->h.seid,
                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
         return;

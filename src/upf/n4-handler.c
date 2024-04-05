@@ -44,8 +44,7 @@ static void upf_n4_handle_create_urr(upf_sess_t *sess, ogs_pfcp_tlv_create_urr_t
 }
 
 void upf_n4_handle_session_establishment_request(
-        upf_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_establishment_request_t *req)
+        upf_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message)
 {
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
@@ -58,9 +57,13 @@ void upf_n4_handle_session_establishment_request(
     ogs_pfcp_sereq_flags_t sereq_flags;
     bool restoration_indication = false;
 
+    ogs_pfcp_session_establishment_request_t *req = NULL;
+
     upf_metrics_inst_global_inc(UPF_METR_GLOB_CTR_SM_N4SESSIONESTABREQ);
 
     ogs_assert(xact);
+    ogs_assert(message);
+    req = &message->pfcp_session_establishment_request;
     ogs_assert(req);
 
     ogs_debug("Session Establishment Request");
@@ -69,7 +72,8 @@ void upf_n4_handle_session_establishment_request(
 
     if (!sess) {
         ogs_error("No Context");
-        ogs_pfcp_send_error_message(xact, 0,
+        ogs_pfcp_send_error_message(
+                xact, sess ? sess->smf_n4_f_seid.seid : message->h.seid,
                 OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE,
                 OGS_PFCP_CAUSE_MANDATORY_IE_MISSING, 0);
         upf_metrics_inst_by_cause_add(OGS_PFCP_CAUSE_MANDATORY_IE_MISSING,
@@ -214,14 +218,14 @@ cleanup:
     upf_metrics_inst_by_cause_add(cause_value,
             UPF_METR_CTR_SM_N4SESSIONESTABFAIL, 1);
     ogs_pfcp_sess_clear(&sess->pfcp);
-    ogs_pfcp_send_error_message(xact, sess ? sess->smf_n4_f_seid.seid : 0,
+    ogs_pfcp_send_error_message(
+            xact, sess ? sess->smf_n4_f_seid.seid : message->h.seid,
             OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE,
             cause_value, offending_ie_value);
 }
 
 void upf_n4_handle_session_modification_request(
-        upf_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_modification_request_t *req)
+        upf_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message)
 {
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
@@ -231,7 +235,11 @@ void upf_n4_handle_session_modification_request(
     uint8_t offending_ie_value = 0;
     int i;
 
+    ogs_pfcp_session_modification_request_t *req = NULL;
+
     ogs_assert(xact);
+    ogs_assert(message);
+    req = &message->pfcp_session_modification_request;
     ogs_assert(req);
 
     ogs_debug("Session Modification Request");
@@ -240,7 +248,8 @@ void upf_n4_handle_session_modification_request(
 
     if (!sess) {
         ogs_error("No Context");
-        ogs_pfcp_send_error_message(xact, 0,
+        ogs_pfcp_send_error_message(
+                xact, sess ? sess->smf_n4_f_seid.seid : message->h.seid,
                 OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE,
                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
         return;
@@ -413,25 +422,30 @@ void upf_n4_handle_session_modification_request(
 
 cleanup:
     ogs_pfcp_sess_clear(&sess->pfcp);
-    ogs_pfcp_send_error_message(xact, sess ? sess->smf_n4_f_seid.seid : 0,
+    ogs_pfcp_send_error_message(
+            xact, sess ? sess->smf_n4_f_seid.seid : message->h.seid,
             OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE,
             cause_value, offending_ie_value);
 }
 
 void upf_n4_handle_session_deletion_request(
-        upf_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_deletion_request_t *req)
+        upf_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message)
 {
     ogs_pfcp_qer_t *qer = NULL;
 
+    ogs_pfcp_session_deletion_request_t *req = NULL;
+
     ogs_assert(xact);
+    ogs_assert(message);
+    req = &message->pfcp_session_deletion_request;
     ogs_assert(req);
 
     ogs_debug("Session Deletion Request");
 
     if (!sess) {
         ogs_error("No Context");
-        ogs_pfcp_send_error_message(xact, 0,
+        ogs_pfcp_send_error_message(xact,
+                sess ? sess->smf_n4_f_seid.seid : message->h.seid,
                 OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE,
                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
         return;
@@ -446,12 +460,15 @@ void upf_n4_handle_session_deletion_request(
 }
 
 void upf_n4_handle_session_report_response(
-        upf_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_report_response_t *rsp)
+        upf_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message)
 {
     uint8_t cause_value = 0;
 
+    ogs_pfcp_session_report_response_t *rsp = NULL;
+
     ogs_assert(xact);
+    ogs_assert(message);
+    rsp = &message->pfcp_session_report_response;
     ogs_assert(rsp);
 
     ogs_pfcp_xact_commit(xact);

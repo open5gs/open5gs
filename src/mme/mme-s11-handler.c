@@ -60,9 +60,13 @@ static uint8_t esm_cause_from_gtp(uint8_t gtp_cause)
 }
 
 void mme_s11_handle_echo_request(
-        ogs_gtp_xact_t *xact, ogs_gtp2_echo_request_t *req)
+        ogs_gtp_xact_t *xact, ogs_gtp2_message_t *gtp2_message)
 {
+    ogs_gtp2_echo_request_t *req = NULL;
+
     ogs_assert(xact);
+    ogs_assert(gtp2_message);
+    req = &gtp2_message->echo_request;
     ogs_assert(req);
 
     ogs_debug("Receiving Echo Request");
@@ -72,14 +76,14 @@ void mme_s11_handle_echo_request(
 }
 
 void mme_s11_handle_echo_response(
-        ogs_gtp_xact_t *xact, ogs_gtp2_echo_response_t *rsp)
+        ogs_gtp_xact_t *xact, ogs_gtp2_message_t *gtp2_message)
 {
     /* Not Implemented */
 }
 
 void mme_s11_handle_create_session_response(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
-        ogs_gtp2_create_session_response_t *rsp)
+        ogs_gtp2_message_t *gtp2_message)
 {
     int i, r, rv;
     uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
@@ -100,6 +104,10 @@ void mme_s11_handle_create_session_response(
     uint16_t decoded = 0;
     int create_action = 0;
 
+    ogs_gtp2_create_session_response_t *rsp = NULL;
+
+    ogs_assert(gtp2_message);
+    rsp = &gtp2_message->create_session_response;
     ogs_assert(rsp);
 
     ogs_debug("Create Session Response");
@@ -472,7 +480,7 @@ void mme_s11_handle_create_session_response(
 
 void mme_s11_handle_modify_bearer_response(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
-        ogs_gtp2_modify_bearer_response_t *rsp)
+        ogs_gtp2_message_t *gtp2_message)
 {
     int r, rv;
     uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
@@ -482,6 +490,10 @@ void mme_s11_handle_modify_bearer_response(
     mme_ue_t *mme_ue = NULL;
     sgw_ue_t *sgw_ue = NULL;
 
+    ogs_gtp2_modify_bearer_response_t *rsp = NULL;
+
+    ogs_assert(gtp2_message);
+    rsp = &gtp2_message->modify_bearer_response;
     ogs_assert(rsp);
 
     ogs_debug("Modify Bearer Response");
@@ -586,7 +598,7 @@ void mme_s11_handle_modify_bearer_response(
 
 void mme_s11_handle_delete_session_response(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
-        ogs_gtp2_delete_session_response_t *rsp)
+        ogs_gtp2_message_t *gtp2_message)
 {
     int r, rv;
     uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
@@ -595,6 +607,10 @@ void mme_s11_handle_delete_session_response(
     mme_sess_t *sess = NULL;
     mme_ue_t *mme_ue = NULL;
 
+    ogs_gtp2_delete_session_response_t *rsp = NULL;
+
+    ogs_assert(gtp2_message);
+    rsp = &gtp2_message->delete_session_response;
     ogs_assert(rsp);
 
     ogs_debug("Delete Session Response");
@@ -778,7 +794,7 @@ void mme_s11_handle_delete_session_response(
 
 void mme_s11_handle_create_bearer_request(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
-        ogs_gtp2_create_bearer_request_t *req)
+        ogs_gtp2_message_t *gtp2_message)
 {
     int r;
     uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
@@ -790,7 +806,11 @@ void mme_s11_handle_create_bearer_request(
     ogs_gtp2_f_teid_t *pgw_s5u_teid = NULL;
     ogs_gtp2_bearer_qos_t bearer_qos;
 
+    ogs_gtp2_create_bearer_request_t *req = NULL;
+
     ogs_assert(xact);
+    ogs_assert(gtp2_message);
+    req = &gtp2_message->create_bearer_request;
     ogs_assert(req);
 
     ogs_debug("Create Bearer Request");
@@ -823,7 +843,8 @@ void mme_s11_handle_create_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact, sgw_ue ? sgw_ue->sgw_s11_teid : 0,
+        ogs_gtp2_send_error_message(xact,
+                sgw_ue ? sgw_ue->sgw_s11_teid : gtp2_message->h.teid,
                 OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -859,7 +880,8 @@ void mme_s11_handle_create_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact, sgw_ue ? sgw_ue->sgw_s11_teid : 0,
+        ogs_gtp2_send_error_message(xact,
+                sgw_ue ? sgw_ue->sgw_s11_teid : gtp2_message->h.teid,
                 OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -982,7 +1004,7 @@ void mme_s11_handle_create_bearer_request(
 
 void mme_s11_handle_update_bearer_request(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
-        ogs_gtp2_update_bearer_request_t *req)
+        ogs_gtp2_message_t *gtp2_message)
 {
     int r;
     uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
@@ -991,7 +1013,11 @@ void mme_s11_handle_update_bearer_request(
     sgw_ue_t *sgw_ue = NULL;
     ogs_gtp2_bearer_qos_t bearer_qos;
 
+    ogs_gtp2_update_bearer_request_t *req = NULL;
+
     ogs_assert(xact);
+    ogs_assert(gtp2_message);
+    req = &gtp2_message->update_bearer_request;
     ogs_assert(req);
 
     ogs_debug("Update Bearer Request");
@@ -1028,7 +1054,8 @@ void mme_s11_handle_update_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact, sgw_ue ? sgw_ue->sgw_s11_teid : 0,
+        ogs_gtp2_send_error_message(xact,
+                sgw_ue ? sgw_ue->sgw_s11_teid : gtp2_message->h.teid,
                 OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -1129,7 +1156,7 @@ void mme_s11_handle_update_bearer_request(
 
 void mme_s11_handle_delete_bearer_request(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
-        ogs_gtp2_delete_bearer_request_t *req)
+        ogs_gtp2_message_t *gtp2_message)
 {
     int r;
     uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
@@ -1138,7 +1165,11 @@ void mme_s11_handle_delete_bearer_request(
     mme_sess_t *sess = NULL;
     sgw_ue_t *sgw_ue = NULL;
 
+    ogs_gtp2_delete_bearer_request_t *req = NULL;
+
     ogs_assert(xact);
+    ogs_assert(gtp2_message);
+    req = &gtp2_message->delete_bearer_request;
     ogs_assert(req);
 
     ogs_debug("Delete Bearer Request");
@@ -1199,7 +1230,8 @@ void mme_s11_handle_delete_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact, sgw_ue ? sgw_ue->sgw_s11_teid : 0,
+        ogs_gtp2_send_error_message(xact,
+                sgw_ue ? sgw_ue->sgw_s11_teid : gtp2_message->h.teid,
                 OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE,
                 OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
         return;
@@ -1250,7 +1282,7 @@ void mme_s11_handle_delete_bearer_request(
 
 void mme_s11_handle_release_access_bearers_response(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
-        ogs_gtp2_release_access_bearers_response_t *rsp)
+        ogs_gtp2_message_t *gtp2_message)
 {
     int r, rv;
     uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
@@ -1262,6 +1294,10 @@ void mme_s11_handle_release_access_bearers_response(
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
 
+    ogs_gtp2_release_access_bearers_response_t *rsp = NULL;
+
+    ogs_assert(gtp2_message);
+    rsp = &gtp2_message->release_access_bearers_response;
     ogs_assert(rsp);
 
     ogs_debug("Release Access Bearers Response");
@@ -1415,7 +1451,7 @@ void mme_s11_handle_release_access_bearers_response(
 
 void mme_s11_handle_downlink_data_notification(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
-        ogs_gtp2_downlink_data_notification_t *noti)
+        ogs_gtp2_message_t *gtp2_message)
 {
     uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
     int r;
@@ -1423,7 +1459,11 @@ void mme_s11_handle_downlink_data_notification(
     mme_bearer_t *bearer = NULL;
     sgw_ue_t *sgw_ue = NULL;
 
+    ogs_gtp2_downlink_data_notification_t *noti = NULL;
+
     ogs_assert(xact);
+    ogs_assert(gtp2_message);
+    noti = &gtp2_message->downlink_data_notification;
     ogs_assert(noti);
 
     ogs_debug("Downlink Data Notification");
@@ -1456,7 +1496,8 @@ void mme_s11_handle_downlink_data_notification(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact, sgw_ue ? sgw_ue->sgw_s11_teid : 0,
+        ogs_gtp2_send_error_message(xact,
+                sgw_ue ? sgw_ue->sgw_s11_teid : gtp2_message->h.teid,
                 OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE,
                 OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
         return;
@@ -1558,7 +1599,7 @@ void mme_s11_handle_downlink_data_notification(
 
 void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
-        ogs_gtp2_create_indirect_data_forwarding_tunnel_response_t *rsp)
+        ogs_gtp2_message_t *gtp2_message)
 {
     int i, r, rv;
     uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
@@ -1570,6 +1611,10 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
 
     ogs_gtp2_f_teid_t *teid = NULL;
 
+    ogs_gtp2_create_indirect_data_forwarding_tunnel_response_t *rsp = NULL;
+
+    ogs_assert(gtp2_message);
+    rsp = &gtp2_message->create_indirect_data_forwarding_tunnel_response;
     ogs_assert(rsp);
 
     ogs_debug("Create Indirect Data Forwarding Tunnel Response");
@@ -1694,7 +1739,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
 
 void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
-        ogs_gtp2_delete_indirect_data_forwarding_tunnel_response_t *rsp)
+        ogs_gtp2_message_t *gtp2_message)
 {
     int r, rv;
     uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
@@ -1703,6 +1748,10 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
     mme_ue_t *mme_ue = NULL;
     sgw_ue_t *sgw_ue = NULL;
 
+    ogs_gtp2_delete_indirect_data_forwarding_tunnel_response_t *rsp = NULL;
+
+    ogs_assert(gtp2_message);
+    rsp = &gtp2_message->delete_indirect_data_forwarding_tunnel_response;
     ogs_assert(rsp);
 
     ogs_debug("Delete Indirect Data Forwarding Tunnel Response");
@@ -1804,7 +1853,7 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
 
 void mme_s11_handle_bearer_resource_failure_indication(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue_from_teid,
-        ogs_gtp2_bearer_resource_failure_indication_t *ind)
+        ogs_gtp2_message_t *gtp2_message)
 {
     int r, rv;
     uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
@@ -1813,6 +1862,12 @@ void mme_s11_handle_bearer_resource_failure_indication(
     mme_sess_t *sess = NULL;
     mme_ue_t *mme_ue = NULL;
     sgw_ue_t *sgw_ue = NULL;
+
+    ogs_gtp2_bearer_resource_failure_indication_t *ind = NULL;
+
+    ogs_assert(gtp2_message);
+    ind = &gtp2_message->bearer_resource_failure_indication;
+    ogs_assert(ind);
 
     ogs_debug("Bearer Resource Failure Indication");
 

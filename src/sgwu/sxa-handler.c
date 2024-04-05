@@ -22,8 +22,7 @@
 #include "sxa-handler.h"
 
 void sgwu_sxa_handle_session_establishment_request(
-        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact, 
-        ogs_pfcp_session_establishment_request_t *req)
+        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message)
 {
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
@@ -36,7 +35,11 @@ void sgwu_sxa_handle_session_establishment_request(
     ogs_pfcp_sereq_flags_t sereq_flags;
     bool restoration_indication = false;
 
+    ogs_pfcp_session_establishment_request_t *req = NULL;
+
     ogs_assert(xact);
+    ogs_assert(message);
+    req = &message->pfcp_session_establishment_request;
     ogs_assert(req);
 
     ogs_debug("Session Establishment Request");
@@ -45,7 +48,8 @@ void sgwu_sxa_handle_session_establishment_request(
 
     if (!sess) {
         ogs_error("No Context");
-        ogs_pfcp_send_error_message(xact, 0,
+        ogs_pfcp_send_error_message(
+                xact, sess ? sess->sgwc_sxa_f_seid.seid : message->h.seid,
                 OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE,
                 OGS_PFCP_CAUSE_MANDATORY_IE_MISSING, 0);
         return;
@@ -142,14 +146,14 @@ void sgwu_sxa_handle_session_establishment_request(
 
 cleanup:
     ogs_pfcp_sess_clear(&sess->pfcp);
-    ogs_pfcp_send_error_message(xact, sess ? sess->sgwu_sxa_seid : 0,
+    ogs_pfcp_send_error_message(
+            xact, sess ? sess->sgwc_sxa_f_seid.seid : message->h.seid,
             OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE,
             cause_value, offending_ie_value);
 }
 
 void sgwu_sxa_handle_session_modification_request(
-        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact, 
-        ogs_pfcp_session_modification_request_t *req)
+        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message)
 {
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
@@ -159,7 +163,11 @@ void sgwu_sxa_handle_session_modification_request(
     uint8_t offending_ie_value = 0;
     int i;
 
+    ogs_pfcp_session_modification_request_t *req = NULL;
+
     ogs_assert(xact);
+    ogs_assert(message);
+    req = &message->pfcp_session_modification_request;
     ogs_assert(req);
 
     ogs_debug("Session Modification Request");
@@ -168,7 +176,8 @@ void sgwu_sxa_handle_session_modification_request(
 
     if (!sess) {
         ogs_error("No Context");
-        ogs_pfcp_send_error_message(xact, 0,
+        ogs_pfcp_send_error_message(
+                xact, sess ? sess->sgwc_sxa_f_seid.seid : message->h.seid,
                 OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE,
                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
         return;
@@ -309,23 +318,28 @@ void sgwu_sxa_handle_session_modification_request(
 
 cleanup:
     ogs_pfcp_sess_clear(&sess->pfcp);
-    ogs_pfcp_send_error_message(xact, sess ? sess->sgwu_sxa_seid : 0,
+    ogs_pfcp_send_error_message(
+            xact, sess ? sess->sgwc_sxa_f_seid.seid : message->h.seid,
             OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE,
             cause_value, offending_ie_value);
 }
 
 void sgwu_sxa_handle_session_deletion_request(
-        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_deletion_request_t *req)
+        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message)
 {
+    ogs_pfcp_session_deletion_request_t *req = NULL;
+
     ogs_assert(xact);
+    ogs_assert(message);
+    req = &message->pfcp_session_deletion_request;
     ogs_assert(req);
 
     ogs_debug("Session Deletion Request");
 
     if (!sess) {
         ogs_error("No Context");
-        ogs_pfcp_send_error_message(xact, 0,
+        ogs_pfcp_send_error_message(
+                xact, sess ? sess->sgwc_sxa_f_seid.seid : message->h.seid,
                 OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE,
                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
         return;
@@ -339,12 +353,15 @@ void sgwu_sxa_handle_session_deletion_request(
 }
 
 void sgwu_sxa_handle_session_report_response(
-        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_session_report_response_t *rsp)
+        sgwu_sess_t *sess, ogs_pfcp_xact_t *xact, ogs_pfcp_message_t *message)
 {
     uint8_t cause_value = 0;
 
+    ogs_pfcp_session_report_response_t *rsp = NULL;
+
     ogs_assert(xact);
+    ogs_assert(message);
+    rsp = &message->pfcp_session_report_response;
     ogs_assert(rsp);
 
     ogs_pfcp_xact_commit(xact);
