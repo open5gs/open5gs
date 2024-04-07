@@ -50,6 +50,14 @@ static void pfcp_sess_timeout(ogs_pfcp_xact_t *xact, void *data)
     }
 }
 
+static ogs_inline uint32_t get_sender_f_teid(
+        smf_sess_t *sess, ogs_gtp2_sender_f_teid_t *sender_f_teid)
+{
+    return sess ? sess->sgw_s5c_teid :
+                sender_f_teid && sender_f_teid->teid_presence == true ?
+                    sender_f_teid->teid : 0;
+}
+
 void smf_s5c_handle_echo_request(
         ogs_gtp_xact_t *xact, ogs_gtp2_echo_request_t *req)
 {
@@ -507,10 +515,8 @@ void smf_s5c_handle_modify_bearer_request(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(gtp_xact,
-                sess ? sess->sgw_s5c_teid :
-                    sender_f_teid->teid_presence == true ?
-                        sender_f_teid->teid : 0,
+        ogs_gtp2_send_error_message(
+                gtp_xact, get_sender_f_teid(sess, sender_f_teid),
                 OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE, cause_value);
         return;
     }
@@ -1194,10 +1200,8 @@ void smf_s5c_handle_bearer_resource_command(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact,
-                sess ? sess->sgw_s5c_teid :
-                    sender_f_teid->teid_presence == true ?
-                        sender_f_teid->teid : 0,
+        ogs_gtp2_send_error_message(
+                xact, get_sender_f_teid(sess, sender_f_teid),
                 OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE, cause_value);
         return;
     }
@@ -1222,7 +1226,8 @@ void smf_s5c_handle_bearer_resource_command(
     }
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp2_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(
+                xact, get_sender_f_teid(sess, sender_f_teid),
                 OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE, cause_value);
         return;
     }
@@ -1252,7 +1257,7 @@ void smf_s5c_handle_bearer_resource_command(
             if (pf) {
                 if (reconfigure_packet_filter(pf, &tft, i) < 0) {
                     ogs_gtp2_send_error_message(
-                        xact, sess ? sess->sgw_s5c_teid : 0,
+                        xact, get_sender_f_teid(sess, sender_f_teid),
                         OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
                         OGS_GTP2_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER);
                     return;
@@ -1321,7 +1326,7 @@ void smf_s5c_handle_bearer_resource_command(
 
             if (reconfigure_packet_filter(pf, &tft, i) < 0) {
                 ogs_gtp2_send_error_message(
-                    xact, sess ? sess->sgw_s5c_teid : 0,
+                    xact, get_sender_f_teid(sess, sender_f_teid),
                     OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
                     OGS_GTP2_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER);
                 return;
@@ -1407,7 +1412,8 @@ void smf_s5c_handle_bearer_resource_command(
 
     if (tft_update == 0 && tft_delete == 0 && qos_update == 0) {
         /* No modification */
-        ogs_gtp2_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
+        ogs_gtp2_send_error_message(
+                xact, get_sender_f_teid(sess, sender_f_teid),
                 OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
                 OGS_GTP2_CAUSE_SERVICE_NOT_SUPPORTED);
         return;
