@@ -799,9 +799,23 @@ void sgwc_s11_handle_create_bearer_response(
 
     /* Find the Tunnel by SGW-S1U-TEID */
     ul_tunnel = sgwc_tunnel_find_by_teid(sgwc_ue, be32toh(sgw_s1u_teid->teid));
-    ogs_assert(ul_tunnel);
+    if (!ul_tunnel) {
+        ogs_error("No UL-tunnel [EBI:%d, TEID:0x%x]",
+                bearer->ebi, be32toh(sgw_s1u_teid->teid));
+        ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
+                OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE,
+                OGS_GTP2_CAUSE_GRE_KEY_NOT_FOUND);
+        return;
+    }
     dl_tunnel = sgwc_dl_tunnel_in_bearer(bearer);
-    ogs_assert(dl_tunnel);
+    if (!dl_tunnel) {
+        ogs_error("No DL-tunnel [EBI:%d, TEID:0x%x]",
+                bearer->ebi, be32toh(sgw_s1u_teid->teid));
+        ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
+                OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE,
+                OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
+        return;
+    }
 
     /* Set EBI */
     bearer->ebi = rsp->bearer_contexts.eps_bearer_id.u8;

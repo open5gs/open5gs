@@ -142,7 +142,7 @@ void sgwu_sxa_handle_session_establishment_request(
 
 cleanup:
     ogs_pfcp_sess_clear(&sess->pfcp);
-    ogs_pfcp_send_error_message(xact, sess ? sess->sgwu_sxa_seid : 0,
+    ogs_pfcp_send_error_message(xact, sess ? sess->sgwc_sxa_f_seid.seid : 0,
             OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE,
             cause_value, offending_ie_value);
 }
@@ -309,7 +309,7 @@ void sgwu_sxa_handle_session_modification_request(
 
 cleanup:
     ogs_pfcp_sess_clear(&sess->pfcp);
-    ogs_pfcp_send_error_message(xact, sess ? sess->sgwu_sxa_seid : 0,
+    ogs_pfcp_send_error_message(xact, sess ? sess->sgwc_sxa_f_seid.seid : 0,
             OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE,
             cause_value, offending_ie_value);
 }
