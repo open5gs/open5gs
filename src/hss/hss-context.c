@@ -337,8 +337,6 @@ int hss_context_parse_config(void)
 #else
                     self.use_mongodb_change_stream = false;
 #endif
-                } else if (!strcmp(hss_key, "metrics")) {
-                    /* handle config in metrics library */
                 } else
                     ogs_warn("unknown key `%s`", hss_key);
             }
@@ -521,7 +519,6 @@ static hss_imsi_t *imsi_add(char *id)
     ogs_hash_set(self.imsi_hash, imsi->id, strlen(imsi->id), imsi);
 
     ogs_list_add(&self.imsi_list, imsi);
-    hss_metrics_inst_global_inc(HSS_METR_GLOB_GAUGE_IMSI);
 
     return imsi;
 }
@@ -531,7 +528,6 @@ static void imsi_remove(hss_imsi_t *imsi)
     ogs_assert(imsi);
 
     ogs_list_remove(&self.imsi_list, imsi);
-    hss_metrics_inst_global_dec(HSS_METR_GLOB_GAUGE_IMSI);
 
     ogs_assert(imsi->id);
     ogs_hash_set(self.imsi_hash, imsi->id, strlen(imsi->id), NULL);
@@ -573,7 +569,6 @@ static hss_impi_t *impi_add(char *id)
     ogs_hash_set(self.impi_hash, impi->id, strlen(impi->id), impi);
 
     ogs_list_add(&self.impi_list, impi);
-    hss_metrics_inst_global_inc(HSS_METR_GLOB_GAUGE_IMPI);
 
     return impi;
 }
@@ -583,7 +578,6 @@ static void impi_remove(hss_impi_t *impi)
     ogs_assert(impi);
 
     ogs_list_remove(&self.impi_list, impi);
-    hss_metrics_inst_global_dec(HSS_METR_GLOB_GAUGE_IMPI);
 
     impu_remove_all(impi);
 
@@ -639,9 +633,7 @@ static hss_impu_t *impu_add(hss_impi_t *impi, char *id)
     ogs_hash_set(self.impu_hash, impu->id, strlen(impu->id), impu);
 
     impu->impi = impi;
-
     ogs_list_add(&impi->impu_list, impu);
-    hss_metrics_inst_global_inc(HSS_METR_GLOB_GAUGE_IMPU);
 
     return impu;
 }
@@ -655,7 +647,6 @@ static void impu_remove(hss_impu_t *impu)
     ogs_assert(impi);
 
     ogs_list_remove(&impi->impu_list, impu);
-    hss_metrics_inst_global_dec(HSS_METR_GLOB_GAUGE_IMPU);
 
     ogs_assert(impu->id);
     ogs_hash_set(self.impu_hash, impu->id, strlen(impu->id), NULL);

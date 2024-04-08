@@ -22,7 +22,6 @@ libhss_sources = files('''
     hss-event.h
     hss-timer.h
     hss-sm.h
-    metrics.h
 
     hss-init.c
     hss-context.c
@@ -35,14 +34,11 @@ libhss_sources = files('''
     hss-swx-path.c
 
     hss-fd-path.c
-
-    metrics.c
 '''.split())
 
 libhss = static_library('hss',
     sources : libhss_sources,
-    dependencies : [libmetrics_dep,
-                    libapp_dep,
+    dependencies : [libapp_dep,
                     libcrypt_dep,
                     libdbi_dep,
                     libdiameter_s6a_dep,
@@ -52,8 +48,7 @@ libhss = static_library('hss',
 
 libhss_dep = declare_dependency(
     link_with : libhss,
-    dependencies : [libmetrics_dep,
-                    libapp_dep,
+    dependencies : [libapp_dep,
                     libcrypt_dep,
                     libdbi_dep,
                     libdiameter_s6a_dep,
