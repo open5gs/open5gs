@@ -33,7 +33,7 @@ struct ogs_diam_logger_t {
 #define FD_MODE_SERVER   0x1
 #define FD_MODE_CLIENT   0x2
     int mode;        /* default FD_MODE_SERVER | FD_MODE_CLIENT */
-    
+
     int duration; /* default 10 */
     struct fd_stats {
         unsigned long long nb_echoed; /* server */
@@ -56,7 +56,7 @@ struct ogs_diam_logger_t* ogs_diam_logger_self(void);
 int ogs_diam_logger_stats_start(void);
 
 typedef void (*ogs_diam_logger_user_handler)(
-    enum fd_hook_type type, struct msg *msg, struct peer_hdr *peer, 
+    enum fd_hook_type type, struct msg *msg, struct peer_hdr *peer,
     void *other, struct fd_hook_permsgdata *pmd, void *regdata);
 
 void ogs_diam_logger_register(ogs_diam_logger_user_handler instance);
