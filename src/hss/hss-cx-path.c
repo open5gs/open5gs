@@ -34,7 +34,7 @@ static struct disp_hdl *hdl_cx_sar = NULL;
 static struct disp_hdl *hdl_cx_lir = NULL;
 
 /* Default callback for the application. */
-static int hss_ogs_diam_cx_fb_cb(struct msg **msg, struct avp *avp, 
+static int hss_ogs_diam_cx_fb_cb(struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
     /* This CB should never be called */
@@ -44,7 +44,7 @@ static int hss_ogs_diam_cx_fb_cb(struct msg **msg, struct avp *avp,
 }
 
 /* Callback for incoming User-Authorization-Request messages */
-static int hss_ogs_diam_cx_uar_cb( struct msg **msg, struct avp *avp, 
+static int hss_ogs_diam_cx_uar_cb( struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
     int rv, ret;

@@ -27,8 +27,8 @@ static pthread_t fd_stats_th = (pthread_t)NULL;
 
 static ogs_diam_logger_user_handler user_handler = NULL;
 
-static void ogs_diam_logger_cb(enum fd_hook_type type, struct msg * msg, 
-    struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd, 
+static void ogs_diam_logger_cb(enum fd_hook_type type, struct msg * msg,
+    struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd,
     void * regdata);
 static void * diam_stats_worker(void * arg);
 
@@ -41,7 +41,7 @@ int ogs_diam_logger_init(int mode)
     self.mode = mode;
     self.duration = 60;       /* 60 seconds */
 
-    CHECK_FCT( fd_hook_register( 
+    CHECK_FCT( fd_hook_register(
             mask_peers, ogs_diam_logger_cb, NULL, NULL, &logger_hdl) );
 
     CHECK_POSIX( pthread_mutex_init(&self.stats_lock, NULL) );
@@ -81,8 +81,8 @@ void ogs_diam_logger_unregister(void)
 }
 
 /* The callback called when messages are received and sent */
-static void ogs_diam_logger_cb(enum fd_hook_type type, struct msg * msg, 
-    struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd, 
+static void ogs_diam_logger_cb(enum fd_hook_type type, struct msg * msg,
+    struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd,
     void * regdata)
 {
     const char * peer_name = peer ? peer->info.pi_diamid : "<unknown peer>";
@@ -117,7 +117,7 @@ static void ogs_diam_logger_cb(enum fd_hook_type type, struct msg * msg,
 }
 
 /* Function to display statistics periodically */
-static void * diam_stats_worker(void * arg) 
+static void * diam_stats_worker(void * arg)
 {
     struct timespec start, now;
     struct fd_stats copy;
@@ -146,7 +146,7 @@ static void * diam_stats_worker(void * arg)
                     (int)(now.tv_sec - start.tv_sec),
                     (long)(now.tv_nsec - start.tv_nsec) / 1000);
         }
-        else 
+        else
         {
             ogs_trace(" Executing for: %d.%06ld sec",
                     (int)(now.tv_sec - 1 - start.tv_sec),
@@ -154,7 +154,7 @@ static void * diam_stats_worker(void * arg)
         }
 
         if (self.mode & FD_MODE_SERVER) {
-            ogs_trace(" Server: %llu message(s) echoed", 
+            ogs_trace(" Server: %llu message(s) echoed",
                     copy.nb_echoed);
         }
         if (self.mode & FD_MODE_CLIENT) {
@@ -162,11 +162,11 @@ static void * diam_stats_worker(void * arg)
             ogs_trace("   %llu message(s) sent", copy.nb_sent);
             ogs_trace("   %llu error(s) received", copy.nb_errs);
             ogs_trace("   %llu answer(s) received", copy.nb_recv);
-            ogs_trace("     fastest: %ld.%06ld sec.", 
+            ogs_trace("     fastest: %ld.%06ld sec.",
                     copy.shortest / 1000000, copy.shortest % 1000000);
-            ogs_trace("     slowest: %ld.%06ld sec.", 
+            ogs_trace("     slowest: %ld.%06ld sec.",
                     copy.longest / 1000000, copy.longest % 1000000);
-            ogs_trace("     Average: %ld.%06ld sec.", 
+            ogs_trace("     Average: %ld.%06ld sec.",
                     copy.avg / 1000000, copy.avg % 1000000);
         }
         ogs_trace("-------------------------------------");
