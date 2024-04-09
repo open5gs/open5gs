@@ -390,6 +390,16 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
 
         switch (message->emm.h.message_type) {
         case OGS_NAS_EPS_IDENTITY_RESPONSE:
+            if (mme_ue->nas_eps.type == 0) {
+                ogs_warn("No Received NAS message");
+                r = s1ap_send_error_indication2(mme_ue,
+                    S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+                OGS_FSM_TRAN(s, emm_state_exception);
+                break;
+            }
+
             ogs_info("Identity response");
             CLEAR_MME_UE_TIMER(mme_ue->t3470);
 

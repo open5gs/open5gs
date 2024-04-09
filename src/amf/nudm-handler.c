@@ -199,6 +199,7 @@ int amf_nudm_sdm_handle_provisioned(
                             continue;
                         }
 
+                        ogs_assert(amf_ue->num_of_slice);
                         slice = ogs_slice_find_by_s_nssai(
                                     amf_ue->slice, amf_ue->num_of_slice,
                                     &s_nssai);

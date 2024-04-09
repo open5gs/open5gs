@@ -223,6 +223,10 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
 
         if (security_header_type.ciphered) {
             /* decrypt NAS message */
+            if (pkbuf->len == 0) {
+                ogs_error("Cannot decrypt Malformed NAS Message");
+                return OGS_ERROR;
+            }
             ogs_nas_encrypt(mme_ue->selected_enc_algorithm,
                 mme_ue->knas_enc, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
                 OGS_NAS_SECURITY_UPLINK_DIRECTION, pkbuf);

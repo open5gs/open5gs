@@ -727,6 +727,7 @@ bool udr_nudr_dr_handle_subscription_provisioned(
             goto cleanup;
         };
 
+        ogs_assert(subscription_data.num_of_slice);
         slice_data = ogs_slice_find_by_s_nssai(
                 subscription_data.slice, subscription_data.num_of_slice,
                 &recvmsg->param.s_nssai);
@@ -1136,6 +1137,7 @@ bool udr_nudr_dr_handle_policy_data(
                     goto cleanup;
                 }
 
+                ogs_assert(subscription_data.num_of_slice);
                 slice_data = ogs_slice_find_by_s_nssai(
                         subscription_data.slice, subscription_data.num_of_slice,
                         &recvmsg->param.s_nssai);
