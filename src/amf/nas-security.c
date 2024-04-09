@@ -178,6 +178,10 @@ int nas_5gs_security_decode(amf_ue_t *amf_ue,
 
         if (security_header_type.ciphered) {
             /* decrypt NAS message */
+            if (pkbuf->len == 0) {
+                ogs_error("Cannot decrypt Malformed NAS Message");
+                return OGS_ERROR;
+            }
             ogs_nas_encrypt(amf_ue->selected_enc_algorithm,
                 amf_ue->knas_enc, amf_ue->ul_count.i32,
                 amf_ue->nas.access_type,
