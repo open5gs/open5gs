@@ -340,6 +340,28 @@ void ogs_log_set_mask_level(const char *_mask, ogs_log_level_e level)
     }
 }
 
+void ogs_log_set_timestamp(ogs_log_ts_e ts_default, ogs_log_ts_e ts_file)
+{
+    ogs_log_t *log;
+
+    if (ts_default == OGS_LOG_TS_UNSET)
+        ts_default = OGS_LOG_TS_ENABLED;
+
+    if (ts_file == OGS_LOG_TS_UNSET)
+        ts_file = ts_default;
+
+    ogs_list_for_each(&log_list, log) {
+        switch (log->type) {
+            case OGS_LOG_FILE_TYPE:
+                log->print.timestamp = (ts_file == OGS_LOG_TS_ENABLED);
+                break;
+            default:
+                log->print.timestamp = (ts_default == OGS_LOG_TS_ENABLED);
+                break;
+        }
+    }
+}
+
 static ogs_log_level_e ogs_log_level_from_string(const char *string)
 {
     ogs_log_level_e level = OGS_ERROR;

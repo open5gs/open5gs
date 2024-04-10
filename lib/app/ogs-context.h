@@ -37,9 +37,14 @@ typedef struct ogs_app_context_s {
     const char *db_uri;
 
     struct {
+        ogs_log_ts_e timestamp;
+    } logger_default;
+
+    struct {
         const char *file;
         const char *level;
         const char *domain;
+        ogs_log_ts_e timestamp;
     } logger;
 
     ogs_queue_t *queue;

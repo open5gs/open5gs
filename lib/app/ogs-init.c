@@ -114,6 +114,9 @@ int ogs_app_initialize(
             ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
+    ogs_log_set_timestamp(ogs_app()->logger_default.timestamp,
+                          ogs_app()->logger.timestamp);
+
     /**************************************************************************
      * Stage 5 : Setup Database Module
      */
@@ -254,6 +257,57 @@ static int context_validation(void)
     return OGS_OK;
 }
 
+static void parse_config_logger_file(ogs_yaml_iter_t *logger_iter,
+                                     const char *logger_key)
+{
+    ogs_yaml_iter_t iter;
+
+    /* Legacy format:
+     *   logger:
+     *     file: /var/log/open5gs/mme.log */
+    if (!strcmp(logger_key, "file") && ogs_yaml_iter_has_value(logger_iter)) {
+        ogs_app()->logger.file = ogs_yaml_iter_value(logger_iter);
+
+        ogs_warn("Please change the configuration file as below.");
+        ogs_log_print(OGS_LOG_WARN, "\n<OLD Format>\n");
+        ogs_log_print(OGS_LOG_WARN, "logger:\n");
+        ogs_log_print(OGS_LOG_WARN, "  file: %s\n", ogs_app()->logger.file);
+        ogs_log_print(OGS_LOG_WARN, "\n<NEW Format>\n");
+        ogs_log_print(OGS_LOG_WARN, "logger:\n");
+        ogs_log_print(OGS_LOG_WARN, "  file:\n");
+        ogs_log_print(OGS_LOG_WARN, "    path: %s\n", ogs_app()->logger.file);
+        ogs_log_print(OGS_LOG_WARN, "\n\n\n");
+        return;
+    }
+
+    /* Current format:
+     *   logger:
+     *     default:
+     *       timestamp: false
+     *     file:
+     *       path: /var/log/open5gs/mme.log
+     *       timestamp: true */
+    ogs_yaml_iter_recurse(logger_iter, &iter);
+    while (ogs_yaml_iter_next(&iter)) {
+        const char *key = ogs_yaml_iter_key(&iter);
+        ogs_assert(key);
+        if (!strcmp(key, "timestamp")) {
+            ogs_log_ts_e ts = ogs_yaml_iter_bool(&iter)
+                              ? OGS_LOG_TS_ENABLED
+                              : OGS_LOG_TS_DISABLED;
+            if (!strcmp(logger_key, "default")) {
+                ogs_app()->logger_default.timestamp = ts;
+            } else if (!strcmp(logger_key, "file")) {
+                ogs_app()->logger.timestamp = ts;
+            }
+        } else if (!strcmp(key, "path")) {
+            if (!strcmp(logger_key, "file")) {
+                ogs_app()->logger.file = ogs_yaml_iter_value(&iter);
+            }
+        }
+    }
+}
+
 static int parse_config(void)
 {
     int rv;
@@ -278,9 +332,8 @@ static int parse_config(void)
             while (ogs_yaml_iter_next(&logger_iter)) {
                 const char *logger_key = ogs_yaml_iter_key(&logger_iter);
                 ogs_assert(logger_key);
-                if (!strcmp(logger_key, "file")) {
-                    ogs_app()->logger.file = ogs_yaml_iter_value(&logger_iter);
-                } else if (!strcmp(logger_key, "level")) {
+                parse_config_logger_file(&logger_iter, logger_key);
+                if (!strcmp(logger_key, "level")) {
                     ogs_app()->logger.level =
                         ogs_yaml_iter_value(&logger_iter);
                 } else if (!strcmp(logger_key, "domain")) {
