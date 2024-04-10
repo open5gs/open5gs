@@ -59,6 +59,7 @@ void ogs_yaml_iter_recurse(ogs_yaml_iter_t *parent, ogs_yaml_iter_t *iter);
 int ogs_yaml_iter_type(ogs_yaml_iter_t *iter);
 const char *ogs_yaml_iter_key(ogs_yaml_iter_t *iter);
 const char *ogs_yaml_iter_value(ogs_yaml_iter_t *iter);
+int ogs_yaml_iter_has_value(ogs_yaml_iter_t *iter);
 int ogs_yaml_iter_bool(ogs_yaml_iter_t *iter);
 
 #ifdef __cplusplus
