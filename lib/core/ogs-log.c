@@ -340,6 +340,15 @@ void ogs_log_set_mask_level(const char *_mask, ogs_log_level_e level)
     }
 }
 
+void ogs_log_set_timestamp(bool enable)
+{
+    ogs_log_t *log;
+
+    ogs_list_for_each(&log_list, log) {
+        log->print.timestamp = enable;
+    }
+}
+
 static ogs_log_level_e ogs_log_level_from_string(const char *string)
 {
     ogs_log_level_e level = OGS_ERROR;

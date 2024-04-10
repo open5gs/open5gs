@@ -114,6 +114,9 @@ int ogs_app_initialize(
             ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
+    if (ogs_app()->logger.no_timestamp)
+        ogs_log_set_timestamp(false);
+
     /**************************************************************************
      * Stage 5 : Setup Database Module
      */
@@ -286,6 +289,9 @@ static int parse_config(void)
                 } else if (!strcmp(logger_key, "domain")) {
                     ogs_app()->logger.domain =
                         ogs_yaml_iter_value(&logger_iter);
+                } else if (!strcmp(logger_key, "no_timestamp")) {
+                    ogs_app()->logger.no_timestamp =
+                        ogs_yaml_iter_bool(&logger_iter);
                 }
             }
         } else if (!strcmp(root_key, "global")) {

@@ -40,6 +40,7 @@ typedef struct ogs_app_context_s {
         const char *file;
         const char *level;
         const char *domain;
+        bool no_timestamp;
     } logger;
 
     ogs_queue_t *queue;
