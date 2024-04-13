@@ -491,7 +491,7 @@ ogs_pfcp_dev_t *ogs_pfcp_dev_find_by_ifname(const char *ifname);
 
 ogs_pfcp_subnet_t *ogs_pfcp_subnet_add(
         const char *ipstr, const char *mask_or_numbits,
-        const char *dnn, const char *ifname);
+        const char *gateway, const char *dnn, const char *ifname);
 ogs_pfcp_subnet_t *ogs_pfcp_subnet_next(ogs_pfcp_subnet_t *subnet);
 void ogs_pfcp_subnet_remove(ogs_pfcp_subnet_t *subnet);
 void ogs_pfcp_subnet_remove_all(void);

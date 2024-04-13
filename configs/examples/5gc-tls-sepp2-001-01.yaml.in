@@ -113,8 +113,9 @@ smf:
       - address: 127.0.2.4
         port: 9090
   session:
-    - subnet: 10.46.0.1/16
-    - subnet: 2001:db8:babe::1/48
+    - subnet: 10.46.0.0/16
+      gateway: 10.46.0.1
+    - subnet: 2001:db8:babe::/48
   dns:
     - 8.8.8.8
     - 8.8.4.4
@@ -208,9 +209,10 @@ upf:
     server:
       - address: 127.0.2.7
   session:
-    - subnet: 10.46.0.1/16
+    - subnet: 10.46.0.0/16
+      gateway: 10.46.0.1
       dev: ogstun2
-    - subnet: 2001:db8:babe::1/48
+    - subnet: 2001:db8:babe::/48
       dev: ogstun2
   metrics:
     server:

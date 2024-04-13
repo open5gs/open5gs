@@ -112,8 +112,9 @@ smf:
       - address: 127.0.1.4
         port: 9090
   session:
-    - subnet: 10.45.0.1/16
-    - subnet: 2001:db8:cafe::1/48
+    - subnet: 10.45.0.0/16
+      gateway: 10.45.0.1
+    - subnet: 2001:db8:cafe::/48
   dns:
     - 8.8.8.8
     - 8.8.4.4
@@ -207,8 +208,9 @@ upf:
     server:
       - address: 127.0.1.7
   session:
-    - subnet: 10.45.0.1/16
-    - subnet: 2001:db8:cafe::1/48
+    - subnet: 10.45.0.0/16
+      gateway: 10.45.0.1
+    - subnet: 2001:db8:cafe::/48
   metrics:
     server:
       - address: 127.0.1.7
