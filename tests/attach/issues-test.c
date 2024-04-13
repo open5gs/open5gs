@@ -1862,6 +1862,7 @@ static void issues_2287_v264_func(abts_case *tc, void *data)
     test_ue_remove_all();
 }
 
+#if 0 /* Deprecated to resolve issue #3131 */
 static void pull_3122_v270_func(abts_case *tc, void *data)
 {
     int rv;
@@ -1973,6 +1974,7 @@ static void pull_3122_v270_func(abts_case *tc, void *data)
 
     test_ue_remove(test_ue);
 }
+#endif
 
 abts_suite *test_issues(abts_suite *suite)
 {
@@ -1981,7 +1983,9 @@ abts_suite *test_issues(abts_suite *suite)
     abts_run_test(suite, issues_1431_func, NULL);
     abts_run_test(suite, issues_2287_v263_func, NULL);
     abts_run_test(suite, issues_2287_v264_func, NULL);
+#if 0 /* Deprecated to resolve issue #3131 */
     abts_run_test(suite, pull_3122_v270_func, NULL);
+#endif
 
     return suite;
 }

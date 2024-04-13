@@ -354,6 +354,7 @@ static void test1_func(abts_case *tc, void *data)
     test_ue_remove(test_ue);
 }
 
+#if 0 /* Deprecated to resolve issue #3131 */
 static void pull_3122_v270_func(abts_case *tc, void *data)
 {
     int rv;
@@ -469,13 +470,16 @@ static void pull_3122_v270_func(abts_case *tc, void *data)
     /* Clear Test UE Context */
     test_ue_remove(test_ue);
 }
+#endif
 
 abts_suite *test_identity(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, test1_func, NULL);
+#if 0 /* Deprecated to resolve issue #3131 */
     abts_run_test(suite, pull_3122_v270_func, NULL);
+#endif
 
     return suite;
 }
