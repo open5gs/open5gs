@@ -200,6 +200,7 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
     default:
         ogs_error("Not implemented(security header type:0x%x)",
                 sh->security_header_type);
+        ran_ue_remove(ran_ue);
         return OGS_ERROR;
     }
 
@@ -207,12 +208,39 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
         if (nas_5gs_security_decode(ran_ue->amf_ue,
                 security_header_type, nasbuf) != OGS_OK) {
             ogs_error("nas_eps_security_decode failed()");
+            ran_ue_remove(ran_ue);
             return OGS_ERROR;
         }
     }
 
     h = (ogs_nas_5gmm_header_t *)nasbuf->data;
     ogs_assert(h);
+    if (procedureCode == NGAP_ProcedureCode_id_InitialUEMessage) {
+        if (h->extended_protocol_discriminator !=
+                OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM) {
+
+            ogs_error("Invalid extended_protocol_discriminator [%d]",
+                    h->extended_protocol_discriminator);
+
+            ogs_pkbuf_free(nasbuf);
+            ran_ue_remove(ran_ue);
+
+            return OGS_ERROR;
+        }
+
+        if (h->message_type != OGS_NAS_5GS_REGISTRATION_REQUEST &&
+            h->message_type != OGS_NAS_5GS_SERVICE_REQUEST &&
+            h->message_type != OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE) {
+
+            ogs_error("Invalid 5GMM message type [%d]", h->message_type);
+
+            ogs_pkbuf_free(nasbuf);
+            ran_ue_remove(ran_ue);
+
+            return OGS_ERROR;
+        }
+    }
+
     if (h->extended_protocol_discriminator ==
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM) {
         e = amf_event_new(AMF_EVENT_5GMM_MESSAGE);
@@ -247,7 +275,10 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
     } else {
         ogs_error("Unknown NAS Protocol discriminator 0x%02x",
                   h->extended_protocol_discriminator);
+
         ogs_pkbuf_free(nasbuf);
+        ran_ue_remove(ran_ue);
+
         return OGS_ERROR;
     }
 }
