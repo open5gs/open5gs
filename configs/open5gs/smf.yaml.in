@@ -34,8 +34,9 @@ smf:
       - address: 127.0.0.4
         port: 9090
   session:
-    - subnet: 10.45.0.1/16
-    - subnet: 2001:db8:cafe::1/48
+    - subnet: 10.45.0.0/16
+      gateway: 10.45.0.1
+    - subnet: 2001:db8:cafe::/48
   dns:
     - 8.8.8.8
     - 8.8.4.4
@@ -327,23 +328,26 @@ smf:
 #  o Specific DNN/APN(e.g 'ims') uses 10.46.0.1/16, 2001:db8:babe::1/48
 #   (If the UE has unknown DNN/APN(not internet/ims), SMF/UPF will crash.)
 #  session:
-#    - subnet: 10.45.0.1/16
+#    - subnet: 10.45.0.0/16
+#      gateway: 10.45.0.1
 #      dnn: internet
-#    - subnet: 2001:db8:cafe::1/48
+#    - subnet: 2001:db8:cafe::/48
 #      dnn: internet
-#    - subnet: 10.46.0.1/16
+#    - subnet: 10.46.0.0/16
+#      gateway: 10.46.0.1
 #      dnn: ims
-#    - subnet: 2001:db8:babe::1/48
+#    - subnet: 2001:db8:babe::/48
 #      dnn: ims
 #
 #  o Pool Range
 #  session:
-#    - subnet: 10.45.0.1/16
+#    - subnet: 10.45.0.0/16
+#      gateway: 10.45.0.1
 #      range:
 #        - 10.45.0.100-10.45.0.200
 #        - 10.45.1.100-
 #        - -10.45.0.200
-#    - subnet: 2001:db8:cafe::1/48
+#    - subnet: 2001:db8:cafe::/48
 #      range:
 #        - 2001:db8:cafe:a0::0-2001:db8:cafe:b0::0
 #        - 2001:db8:cafe:c0::0-2001:db8:cafe:d0::0
