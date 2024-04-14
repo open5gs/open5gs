@@ -2208,9 +2208,7 @@ ogs_pfcp_subnet_t *ogs_pfcp_subnet_add(
             ogs_log_print(OGS_LOG_WARN, "  session:\n");
             ogs_log_print(OGS_LOG_WARN, "    - subnet: %s/%s\n",
                     subnet_string ? subnet_string : "Unknown", mask_or_numbits);
-            if (subnet->family == AF_INET)
-                ogs_log_print(OGS_LOG_WARN, "      gateway: %s", ipstr);
-            ogs_log_print(OGS_LOG_WARN, "\n\n\n");
+            ogs_log_print(OGS_LOG_WARN, "      gateway: %s\n\n\n", ipstr);
 
             ogs_free(subnet_string);
         }

@@ -116,6 +116,7 @@ smf:
     - subnet: 10.46.0.0/16
       gateway: 10.46.0.1
     - subnet: 2001:db8:babe::/48
+      gateway: 2001:db8:babe::1
   dns:
     - 8.8.8.8
     - 8.8.4.4
@@ -213,6 +214,7 @@ upf:
       gateway: 10.46.0.1
       dev: ogstun2
     - subnet: 2001:db8:babe::/48
+      gateway: 2001:db8:babe::1
       dev: ogstun2
   metrics:
     server:
