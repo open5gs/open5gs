@@ -2748,3 +2748,75 @@ ogs_pkbuf_t *ngap_build_downlink_ran_status_transfer(
 
     return ogs_ngap_encode(&pdu);
 }
+
+ogs_pkbuf_t *ngap_build_amf_status_indication(void)
+{
+    int i;
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_AMFStatusIndication_t *AMFStatusIndication = NULL;
+
+    NGAP_AMFStatusIndicationIEs_t *ie = NULL;    
+    NGAP_UnavailableGUAMIList_t *UnavailableGUAMIList = NULL;
+
+    ogs_debug("Build AMF Status Indication");
+    ogs_log_print(OGS_LOG_NONE, "In ngap_build_amf_status_indication()\n");
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+            NGAP_ProcedureCode_id_AMFStatusIndication;
+    initiatingMessage->criticality = NGAP_Criticality_ignore;
+    initiatingMessage->value.present =
+            NGAP_InitiatingMessage__value_PR_AMFStatusIndication;
+
+    AMFStatusIndication =
+            &initiatingMessage->value.choice.AMFStatusIndication;
+
+    ie = CALLOC(1, sizeof(NGAP_AMFStatusIndicationIEs_t));
+    ASN_SEQUENCE_ADD(&AMFStatusIndication->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_UnavailableGUAMIList;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_AMFStatusIndicationIEs__value_PR_UnavailableGUAMIList;
+
+    UnavailableGUAMIList = &ie->value.choice.UnavailableGUAMIList;
+
+    for (i = 0; i < amf_self()->num_of_served_guami; i++) {
+        NGAP_UnavailableGUAMIItem_t *UnavailableGUAMIItem = NULL;
+        NGAP_GUAMI_t *gUAMI = NULL;
+        NGAP_PLMNIdentity_t *pLMNIdentity = NULL;
+        NGAP_AMFRegionID_t *aMFRegionID = NULL;
+        NGAP_AMFSetID_t *aMFSetID = NULL;
+        NGAP_AMFPointer_t *aMFPointer = NULL;
+
+        UnavailableGUAMIItem = (NGAP_UnavailableGUAMIItem_t *)
+                CALLOC(1, sizeof(NGAP_UnavailableGUAMIItem_t));
+        gUAMI = &UnavailableGUAMIItem->gUAMI;
+        pLMNIdentity = &gUAMI->pLMNIdentity;
+        aMFRegionID = &gUAMI->aMFRegionID;
+        aMFSetID = &gUAMI->aMFSetID;
+        aMFPointer = &gUAMI->aMFPointer;
+
+        ogs_asn_buffer_to_OCTET_STRING(
+                &amf_self()->served_guami[i].plmn_id,
+                OGS_PLMN_ID_LEN, pLMNIdentity);
+        ogs_ngap_uint8_to_AMFRegionID(
+                ogs_amf_region_id(&amf_self()->served_guami[i].amf_id),
+                aMFRegionID);
+        ogs_ngap_uint16_to_AMFSetID(
+                ogs_amf_set_id(&amf_self()->served_guami[i].amf_id),
+                aMFSetID);
+        ogs_ngap_uint8_to_AMFPointer(
+                ogs_amf_pointer(&amf_self()->served_guami[i].amf_id),
+                aMFPointer);
+
+        ASN_SEQUENCE_ADD(&UnavailableGUAMIList->list, UnavailableGUAMIItem);
+    }
+
+    return ogs_ngap_encode(&pdu);
+}

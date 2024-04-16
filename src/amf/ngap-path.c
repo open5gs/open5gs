@@ -767,3 +767,34 @@ int ngap_send_ng_reset_ack(
 
     return rv;
 }
+
+int ngap_send_amf_status_indication(amf_ue_t *amf_ue)
+{
+    int rv;
+    ran_ue_t *ran_ue;
+    ogs_pkbuf_t *ngap_buffer;
+
+    ogs_debug("AMF Status Indication");
+
+    if (!amf_ue_cycle(amf_ue)) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    if (!ran_ue) {
+        ogs_error("NG context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    ngap_buffer = ngap_build_amf_status_indication();
+    if (!ngap_buffer) {
+        ogs_error("ngap_build_amf_status_indication() failed");
+        return OGS_ERROR;
+    }
+
+    rv = ngap_send_to_ran_ue(ran_ue, ngap_buffer);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
