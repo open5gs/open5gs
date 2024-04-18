@@ -322,7 +322,7 @@ bool ausf_nudm_ueau_handle_result_confirmation_inform(ausf_ue_t *ausf_ue,
 
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    recvmsg, "Invalid URI", ausf_ue->suci));
+                    recvmsg, "Invalid URI", ausf_ue->suci, NULL));
 
         return false;
     }
