@@ -87,11 +87,11 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate_delete(
     ogs_sbi_request_t *request = NULL;
 
     ogs_assert(amf_ue);
-    ogs_assert(amf_ue->confirmation_url_for_5g_aka);
+    ogs_assert(amf_ue->confirmation_for_5g_aka.resource_uri);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
-    message.h.uri = amf_ue->confirmation_url_for_5g_aka;
+    message.h.uri = amf_ue->confirmation_for_5g_aka.resource_uri;
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
@@ -110,11 +110,11 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate_confirmation(
     OpenAPI_confirmation_data_t *ConfirmationData = NULL;
 
     ogs_assert(amf_ue);
-    ogs_assert(amf_ue->confirmation_url_for_5g_aka);
+    ogs_assert(amf_ue->confirmation_for_5g_aka.resource_uri);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PUT;
-    message.h.uri = amf_ue->confirmation_url_for_5g_aka;
+    message.h.uri = amf_ue->confirmation_for_5g_aka.resource_uri;
 
     ConfirmationData = ogs_calloc(1, sizeof(*ConfirmationData));
     if (!ConfirmationData) {

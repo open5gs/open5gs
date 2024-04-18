@@ -286,6 +286,7 @@ typedef struct ogs_sbi_subscription_data_s {
     OpenAPI_nf_type_e req_nf_type;          /* reqNfType */
     OpenAPI_nf_status_e nf_status;
     char *notification_uri;
+    char *resource_uri;
 
     struct {
         OpenAPI_nf_type_e nf_type;          /* nfType */
@@ -295,7 +296,7 @@ typedef struct ogs_sbi_subscription_data_s {
     uint64_t requester_features;
     uint64_t nrf_supported_features;
 
-    void *client;                           /* only used in SERVER */
+    void *client;
 } ogs_sbi_subscription_data_t;
 
 typedef struct ogs_sbi_smf_info_s {
@@ -515,6 +516,8 @@ void ogs_sbi_subscription_spec_remove(
 void ogs_sbi_subscription_spec_remove_all(void);
 
 ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_add(void);
+void ogs_sbi_subscription_data_set_resource_uri(
+        ogs_sbi_subscription_data_t *subscription_data, char *resource_uri);
 void ogs_sbi_subscription_data_set_id(
         ogs_sbi_subscription_data_t *subscription_data, char *id);
 void ogs_sbi_subscription_data_remove(

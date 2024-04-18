@@ -313,6 +313,11 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
         ogs_free(fqdn);
         ogs_freeaddrinfo(addr);
         ogs_freeaddrinfo(addr6);
+
+        if (!client) {
+            ogs_fatal("No Client : [%s]", request->h.uri);
+            ogs_assert_if_reached();
+        }
     }
 
     if (scp_client) {

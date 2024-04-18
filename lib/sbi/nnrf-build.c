@@ -1712,11 +1712,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_update(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PATCH;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
-    message.h.api.version = (char *)OGS_SBI_API_V1;
-    message.h.resource.component[0] =
-        (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS;
-    message.h.resource.component[1] = subscription_data->id;
+    message.h.uri = subscription_data->resource_uri;
 
     message.http.content_type = (char *)OGS_SBI_CONTENT_PATCH_TYPE;
 
@@ -1771,11 +1767,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_unsubscribe(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
-    message.h.api.version = (char *)OGS_SBI_API_V1;
-    message.h.resource.component[0] =
-        (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS;
-    message.h.resource.component[1] = subscription_data->id;
+    message.h.uri = subscription_data->resource_uri;
 
     message.http.custom.callback =
         (char *)OGS_SBI_CALLBACK_NNRF_NFMANAGEMENT_NF_STATUS_NOTIFY;

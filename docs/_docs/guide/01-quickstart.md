@@ -453,7 +453,7 @@ index 87c251b9d..599032b8a 100644
      path: /var/log/open5gs/mme.log
 +    timestamp: true
  #  level: info   # fatal|error|warn|info(default)|debug|trace
- 
+
  global:
 ```
 

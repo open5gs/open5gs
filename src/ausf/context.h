@@ -52,7 +52,25 @@ struct ausf_ue_s {
     char *serving_network_name;
 
     OpenAPI_auth_type_e auth_type;
-    char *auth_events_url;
+#define AUTH_EVENT_CLEAR(__aUSF) \
+    do { \
+        ogs_assert((__aUSF)); \
+        if ((__aUSF)->auth_event.resource_uri) \
+            ogs_free((__aUSF)->auth_event.resource_uri); \
+        (__aUSF)->auth_event.resource_uri = NULL; \
+    } while(0)
+#define AUTH_EVENT_STORE(__aUSF, __rESOURCE_URI) \
+    do { \
+        ogs_assert((__aUSF)); \
+        ogs_assert((__rESOURCE_URI)); \
+        AUTH_EVENT_CLEAR(__aUSF); \
+        (__aUSF)->auth_event.resource_uri = ogs_strdup(__rESOURCE_URI); \
+        ogs_assert((__aUSF)->auth_event.resource_uri); \
+    } while(0)
+    struct {
+        char *resource_uri;
+        ogs_sbi_client_t *client;
+    } auth_event;
     OpenAPI_auth_result_e auth_result;
 
     uint8_t rand[OGS_RAND_LEN];

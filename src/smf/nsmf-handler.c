@@ -756,7 +756,7 @@ bool smf_nsmf_handle_update_sm_context(
             ogs_assert(true ==
                     ogs_sbi_server_send_response(stream, response));
 
-        } else if (sess->policy_association_id) {
+        } else if (PCF_SM_POLICY_ASSOCIATED(sess)) {
             smf_npcf_smpolicycontrol_param_t param;
 
             memset(&param, 0, sizeof(param));
@@ -862,7 +862,7 @@ bool smf_nsmf_handle_release_sm_context(
             SmContextReleaseData->_5g_mm_cause_value;
     }
 
-    if (sess->policy_association_id) {
+    if (PCF_SM_POLICY_ASSOCIATED(sess)) {
         r = smf_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
                 smf_npcf_smpolicycontrol_build_delete,

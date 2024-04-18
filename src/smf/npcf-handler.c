@@ -296,6 +296,13 @@ bool smf_npcf_smpolicycontrol_handle_create(
     ogs_sbi_message_t message;
     ogs_sbi_header_t header;
 
+    bool rc;
+    ogs_sbi_client_t *client = NULL;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+
     ogs_assert(sess);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
@@ -331,10 +338,39 @@ bool smf_npcf_smpolicycontrol_handle_create(
         return false;
     }
 
-    if (sess->policy_association_id)
-        ogs_free(sess->policy_association_id);
-    sess->policy_association_id = ogs_strdup(message.h.resource.component[1]);
-    ogs_assert(sess->policy_association_id);
+    rc = ogs_sbi_getaddr_from_uri(
+            &scheme, &fqdn, &fqdn_port, &addr, &addr6, header.uri);
+    if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
+        ogs_error("[%s:%d] Invalid URI [%s]",
+                smf_ue->supi, sess->psi, header.uri);
+        ogs_sbi_header_free(&header);
+        return OGS_ERROR;
+    }
+
+    client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
+    if (!client) {
+        ogs_debug("[%s:%d] ogs_sbi_client_add()", smf_ue->supi, sess->psi);
+        client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
+        if (!client) {
+            ogs_error("[%s:%d] ogs_sbi_client_add() failed",
+                    smf_ue->supi, sess->psi);
+
+            ogs_sbi_header_free(&header);
+            ogs_free(fqdn);
+            ogs_freeaddrinfo(addr);
+            ogs_freeaddrinfo(addr6);
+
+            return OGS_ERROR;
+        }
+    }
+
+    OGS_SBI_SETUP_CLIENT(&sess->policy_association, client);
+
+    ogs_free(fqdn);
+    ogs_freeaddrinfo(addr);
+    ogs_freeaddrinfo(addr6);
+
+    PCF_SM_POLICY_STORE(sess, header.uri, message.h.resource.component[1]);
 
     ogs_sbi_header_free(&header);
 
@@ -719,7 +755,7 @@ bool smf_npcf_smpolicycontrol_handle_terminate_notify(
 
     ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 
-    if (sess->policy_association_id) {
+    if (PCF_SM_POLICY_ASSOCIATED(sess)) {
         memset(&param, 0, sizeof(param));
         r = smf_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,

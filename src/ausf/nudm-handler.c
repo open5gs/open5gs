@@ -244,8 +244,7 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
 
     sendmsg.UeAuthenticationCtx = &UeAuthenticationCtx;
 
-    response = ogs_sbi_build_response(&sendmsg,
-        OGS_SBI_HTTP_STATUS_CREATED);
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
@@ -286,6 +285,13 @@ bool ausf_nudm_ueau_handle_result_confirmation_inform(ausf_ue_t *ausf_ue,
     OpenAPI_confirmation_data_response_t ConfirmationDataResponse;
     OpenAPI_auth_event_t *AuthEvent = NULL;
 
+    bool rc;
+    ogs_sbi_client_t *client = NULL;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+
     ogs_assert(ausf_ue);
     ogs_assert(stream);
 
@@ -308,10 +314,33 @@ bool ausf_nudm_ueau_handle_result_confirmation_inform(ausf_ue_t *ausf_ue,
         return false;
     }
 
-    if (ausf_ue->auth_events_url)
-        ogs_free(ausf_ue->auth_events_url);
-    ausf_ue->auth_events_url = ogs_strdup(recvmsg->http.location);
-    ogs_assert(ausf_ue->auth_events_url);
+    rc = ogs_sbi_getaddr_from_uri(
+            &scheme, &fqdn, &fqdn_port, &addr, &addr6, recvmsg->http.location);
+    if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
+        ogs_error("[%s] Invalid URI [%s]",
+                ausf_ue->suci, recvmsg->http.location);
+
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "Invalid URI", ausf_ue->suci));
+
+        return false;
+    }
+
+    client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
+    if (!client) {
+        ogs_debug("[%s] ogs_sbi_client_add()", ausf_ue->suci);
+        client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
+        ogs_assert(client);
+    }
+
+    OGS_SBI_SETUP_CLIENT(&ausf_ue->auth_event, client);
+
+    ogs_free(fqdn);
+    ogs_freeaddrinfo(addr);
+    ogs_freeaddrinfo(addr6);
+
+    AUTH_EVENT_STORE(ausf_ue, recvmsg->http.location);
 
     memset(&ConfirmationDataResponse, 0, sizeof(ConfirmationDataResponse));
 

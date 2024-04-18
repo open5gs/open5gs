@@ -2493,12 +2493,26 @@ ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_add(void)
     return subscription_data;
 }
 
+void ogs_sbi_subscription_data_set_resource_uri(
+        ogs_sbi_subscription_data_t *subscription_data, char *resource_uri)
+{
+    ogs_assert(subscription_data);
+    ogs_assert(resource_uri);
+
+    if (subscription_data->resource_uri)
+        ogs_free(subscription_data->resource_uri);
+    subscription_data->resource_uri = ogs_strdup(resource_uri);
+    ogs_assert(subscription_data->resource_uri);
+}
+
 void ogs_sbi_subscription_data_set_id(
         ogs_sbi_subscription_data_t *subscription_data, char *id)
 {
     ogs_assert(subscription_data);
     ogs_assert(id);
 
+    if (subscription_data->id)
+        ogs_free(subscription_data->id);
     subscription_data->id = ogs_strdup(id);
     ogs_assert(subscription_data->id);
 }
@@ -2515,6 +2529,9 @@ void ogs_sbi_subscription_data_remove(
 
     if (subscription_data->notification_uri)
         ogs_free(subscription_data->notification_uri);
+
+    if (subscription_data->resource_uri)
+        ogs_free(subscription_data->resource_uri);
 
     if (subscription_data->req_nf_instance_id)
         ogs_free(subscription_data->req_nf_instance_id);

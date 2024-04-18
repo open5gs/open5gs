@@ -284,7 +284,34 @@ typedef struct smf_sess_s {
 
     /* PCF sends the RESPONSE
      * of [POST] /npcf-smpolocycontrol/v1/policies */
-    char *policy_association_id;
+#define PCF_SM_POLICY_ASSOCIATED(__sESS) \
+    ((__sESS) && ((__sESS)->policy_association.id))
+#define PCF_SM_POLICY_CLEAR(__sESS) \
+    do { \
+        ogs_assert((__sESS)); \
+        if ((__sESS)->policy_association.resource_uri) \
+            ogs_free((__sESS)->policy_association.resource_uri); \
+        (__sESS)->policy_association.resource_uri = NULL; \
+        if ((__sESS)->policy_association.id) \
+            ogs_free((__sESS)->policy_association.id); \
+        (__sESS)->policy_association.id = NULL; \
+    } while(0)
+#define PCF_SM_POLICY_STORE(__sESS, __rESOURCE_URI, __iD) \
+    do { \
+        ogs_assert((__sESS)); \
+        ogs_assert((__rESOURCE_URI)); \
+        ogs_assert((__iD)); \
+        PCF_SM_POLICY_CLEAR(__sESS); \
+        (__sESS)->policy_association.resource_uri = ogs_strdup(__rESOURCE_URI); \
+        ogs_assert((__sESS)->policy_association.resource_uri); \
+        (__sESS)->policy_association.id = ogs_strdup(__iD); \
+        ogs_assert((__sESS)->policy_association.id); \
+    } while(0)
+    struct {
+        char *resource_uri;
+        char *id;
+        ogs_sbi_client_t *client;
+    } policy_association;
 
     OpenAPI_up_cnx_state_e up_cnx_state;
 

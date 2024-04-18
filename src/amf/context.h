@@ -290,13 +290,33 @@ struct amf_ue_s {
     /* PCF sends the RESPONSE
      * of [POST] /npcf-am-polocy-control/v1/policies */
 #define PCF_AM_POLICY_ASSOCIATED(__aMF) \
-    ((__aMF) && ((__aMF)->policy_association_id))
-
+    ((__aMF) && ((__aMF)->policy_association.id))
 #define PCF_AM_POLICY_CLEAR(__aMF) \
-    OGS_MEM_CLEAR((__aMF)->policy_association_id);
-#define PCF_AM_POLICY_STORE(__aMF, __iD) \
-    OGS_STRING_DUP((__aMF)->policy_association_id, __iD);
-    char *policy_association_id;
+    do { \
+        ogs_assert((__aMF)); \
+        if ((__aMF)->policy_association.resource_uri) \
+            ogs_free((__aMF)->policy_association.resource_uri); \
+        (__aMF)->policy_association.resource_uri = NULL; \
+        if ((__aMF)->policy_association.id) \
+            ogs_free((__aMF)->policy_association.id); \
+        (__aMF)->policy_association.id = NULL; \
+    } while(0)
+#define PCF_AM_POLICY_STORE(__aMF, __rESOURCE_URI, __iD) \
+    do { \
+        ogs_assert((__aMF)); \
+        ogs_assert((__rESOURCE_URI)); \
+        ogs_assert((__iD)); \
+        PCF_AM_POLICY_CLEAR(__aMF); \
+        (__aMF)->policy_association.resource_uri = ogs_strdup(__rESOURCE_URI); \
+        ogs_assert((__aMF)->policy_association.resource_uri); \
+        (__aMF)->policy_association.id = ogs_strdup(__iD); \
+        ogs_assert((__aMF)->policy_association.id); \
+    } while(0)
+    struct {
+        char *resource_uri;
+        char *id;
+        ogs_sbi_client_t *client;
+    } policy_association;
 
     /* 5GMM Capability */
     struct {
@@ -322,7 +342,27 @@ struct amf_ue_s {
     /* Security Context */
     ogs_nas_ue_security_capability_t ue_security_capability;
     ogs_nas_ue_network_capability_t ue_network_capability;
-    char            *confirmation_url_for_5g_aka;
+#define CHECK_5G_AKA_CONFIRMATION(__aMF) \
+    ((__aMF) && ((__aMF)->confirmation_for_5g_aka.resource_uri))
+#define STORE_5G_AKA_CONFIRMATION(__aMF, __rESOURCE_URI) \
+    do { \
+        ogs_assert((__aMF)); \
+        CLEAR_5G_AKA_CONFIRMATION(__aMF); \
+        (__aMF)->confirmation_for_5g_aka.resource_uri = \
+            ogs_strdup(__rESOURCE_URI); \
+        ogs_assert((__aMF)->confirmation_for_5g_aka.resource_uri); \
+    } while(0)
+#define CLEAR_5G_AKA_CONFIRMATION(__aMF) \
+    do { \
+        ogs_assert((__aMF)); \
+        if ((__aMF)->confirmation_for_5g_aka.resource_uri) \
+            ogs_free((__aMF)->confirmation_for_5g_aka.resource_uri); \
+        (__aMF)->confirmation_for_5g_aka.resource_uri = NULL; \
+    } while(0)
+    struct {
+        char *resource_uri;
+        ogs_sbi_client_t *client;
+    } confirmation_for_5g_aka;
     uint8_t         rand[OGS_RAND_LEN];
     uint8_t         autn[OGS_AUTN_LEN];
     uint8_t         xres_star[OGS_MAX_RES_LEN];
@@ -468,8 +508,34 @@ struct amf_ue_s {
 
     /* SubscriptionId of Subscription to Data Change Notification to UDM */
 #define UDM_SDM_SUBSCRIBED(__aMF) \
-    ((__aMF) && ((__aMF)->data_change_subscription_id))
-    char *data_change_subscription_id;
+    ((__aMF) && ((__aMF)->data_change_subscription.id))
+#define UDM_SDM_CLEAR(__aMF) \
+    do { \
+        ogs_assert((__aMF)); \
+        if ((__aMF)->data_change_subscription.resource_uri) \
+            ogs_free((__aMF)->data_change_subscription.resource_uri); \
+        (__aMF)->data_change_subscription.resource_uri = NULL; \
+        if ((__aMF)->data_change_subscription.id) \
+            ogs_free((__aMF)->data_change_subscription.id); \
+        (__aMF)->data_change_subscription.id = NULL; \
+    } while(0)
+#define UDM_SDM_STORE(__aMF, __rESOURCE_URI, __iD) \
+    do { \
+        ogs_assert((__aMF)); \
+        ogs_assert((__rESOURCE_URI)); \
+        ogs_assert((__iD)); \
+        UDM_SDM_CLEAR(__aMF); \
+        (__aMF)->data_change_subscription.resource_uri = \
+            ogs_strdup(__rESOURCE_URI); \
+        ogs_assert((__aMF)->data_change_subscription.resource_uri); \
+        (__aMF)->data_change_subscription.id = ogs_strdup(__iD); \
+        ogs_assert((__aMF)->data_change_subscription.id); \
+    } while(0)
+    struct {
+        char *resource_uri;
+        char *id;
+        ogs_sbi_client_t *client;
+    } data_change_subscription;
 
     struct {
         /*
@@ -499,18 +565,37 @@ typedef struct amf_sess_s {
     uint8_t pti;            /* Procedure Trasaction Identity */
 
 #define SESSION_CONTEXT_IN_SMF(__sESS)  \
-    ((__sESS) && (__sESS)->sm_context_ref)
-#define CLEAR_SM_CONTEXT_REF(__sESS) \
+    ((__sESS) && (__sESS)->sm_context.ref)
+#define STORE_SESSION_CONTEXT(__sESS, __rESOURCE_URI, __rEF) \
     do { \
         ogs_assert(__sESS); \
-        ogs_assert((__sESS)->sm_context_ref); \
-        ogs_free((__sESS)->sm_context_ref); \
-        (__sESS)->sm_context_ref = NULL; \
+        ogs_assert(__rESOURCE_URI); \
+        ogs_assert(__rEF); \
+        CLEAR_SESSION_CONTEXT(__sESS); \
+        (__sESS)->sm_context.resource_uri = ogs_strdup(__rESOURCE_URI); \
+        ogs_assert((__sESS)->sm_context.resource_uri); \
+        (__sESS)->sm_context.ref = ogs_strdup(__rEF); \
+        ogs_assert((__sESS)->sm_context.ref); \
+    } while(0);
+#define CLEAR_SESSION_CONTEXT(__sESS) \
+    do { \
+        ogs_assert(__sESS); \
+        if ((__sESS)->sm_context.ref) \
+            ogs_free((__sESS)->sm_context.ref); \
+        (__sESS)->sm_context.ref = NULL; \
+        if ((__sESS)->sm_context.resource_uri) \
+            ogs_free((__sESS)->sm_context.resource_uri); \
+        (__sESS)->sm_context.resource_uri = NULL; \
     } while(0);
 
     /* SMF sends the RESPONSE
      * of [POST] /nsmf-pdusession/v1/sm-contexts */
-    char *sm_context_ref;
+    struct {
+        char *resource_uri;
+        char *ref;
+        ogs_sbi_client_t *client;
+    } sm_context;
+
     bool pdu_session_release_complete_received;
     bool pdu_session_resource_release_response_received;
 

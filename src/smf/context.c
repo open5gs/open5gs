@@ -1729,8 +1729,9 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->namf.client)
         ogs_sbi_client_remove(sess->namf.client);
 
-    if (sess->policy_association_id)
-        ogs_free(sess->policy_association_id);
+    PCF_SM_POLICY_CLEAR(sess);
+    if (sess->policy_association.client)
+        ogs_sbi_client_remove(sess->policy_association.client);
 
     if (sess->session.name)
         ogs_free(sess->session.name);
