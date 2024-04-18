@@ -428,6 +428,34 @@ $ sudo systemctl restart open5gs-amfd
 $ sudo systemctl restart open5gs-upfd
 ```
 
+#### Configure logging
+
+The Open5GS components log to `/var/log/open5gs/*.log` and to `stderr` by
+default.
+
+##### Avoid duplicate timestamps in journalctl
+
+Open5GS adds timestamps to each log line in the log file, and on `stderr`. If
+you run Open5GS with systemd and prefer looking at the logs with `journalctl`,
+then each line will have two timestamps. To fix this, disable the timestamp for
+`stderr` with the following configuration change:
+
+```diff
+diff --git a/configs/open5gs/mme.yaml.in b/configs/open5gs/mme.yaml.in
+index 87c251b9d..599032b8a 100644
+--- a/configs/open5gs/mme.yaml.in
++++ b/configs/open5gs/mme.yaml.in
+@@ -1,6 +1,9 @@
+ logger:
++  default:
++    timestamp: false
+   file:
+     path: /var/log/open5gs/mme.log
++    timestamp: true
+ #  level: info   # fatal|error|warn|info(default)|debug|trace
+ 
+ global:
+```
 
 #### Register Subscriber Information
 ---
