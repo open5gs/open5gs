@@ -1,5 +1,6 @@
 logger:
-  file: @localstatedir@/log/open5gs/sepp2.log
+  file:
+    path: @localstatedir@/log/open5gs/sepp2.log
 #  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
