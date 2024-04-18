@@ -1,6 +1,7 @@
 db_uri: mongodb://localhost/open5gs
 logger:
-  file: @localstatedir@/log/open5gs/hss.log
+  file:
+    path: @localstatedir@/log/open5gs/hss.log
 #  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:

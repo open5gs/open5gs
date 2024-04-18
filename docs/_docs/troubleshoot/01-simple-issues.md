@@ -169,7 +169,8 @@ index a70143f08..e0dba560c 100644
 +++ b/configs/open5gs/amf.yaml.in
 @@ -1,6 +1,6 @@
  logger:
-     file: @localstatedir@/log/open5gs/amf.log
+     file:
+       path: @localstatedir@/log/open5gs/amf.log
 -#    level: info   # fatal|error|warn|info(default)|debug|trace
 +    level: debug
 

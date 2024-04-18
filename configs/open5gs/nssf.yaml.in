@@ -1,5 +1,6 @@
 logger:
-  file: @localstatedir@/log/open5gs/nssf.log
+  file:
+    path: @localstatedir@/log/open5gs/nssf.log
 #  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
