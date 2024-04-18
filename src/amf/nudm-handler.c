@@ -246,7 +246,7 @@ int amf_nudm_sdm_handle_provisioned(
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
-        if (amf_ue->data_change_subscription_id) {
+        if (UDM_SDM_SUBSCRIBED(amf_ue)) {
             /* we already have a SDM subscription to UDM; continue without
              * subscribing again */
             r = amf_ue_sbi_discover_and_send(
@@ -272,6 +272,13 @@ int amf_nudm_sdm_handle_provisioned(
         ogs_sbi_message_t message;
         ogs_sbi_header_t header;
 
+        bool rc;
+        ogs_sbi_client_t *client = NULL;
+        OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
+        char *fqdn = NULL;
+        uint16_t fqdn_port = 0;
+        ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+
         if (!recvmsg->http.location) {
             ogs_error("[%s] No http.location", amf_ue->supi);
             r = nas_5gs_send_gmm_reject_from_sbi(
@@ -288,10 +295,12 @@ int amf_nudm_sdm_handle_provisioned(
         if (rv != OGS_OK) {
             ogs_error("[%s] Cannot parse http.location [%s]",
                 amf_ue->supi, recvmsg->http.location);
+
             r = nas_5gs_send_gmm_reject_from_sbi(
                     amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
+
             return OGS_ERROR;
         }
 
@@ -304,13 +313,52 @@ int amf_nudm_sdm_handle_provisioned(
                     amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
+
             return OGS_ERROR;
         }
 
-        if (amf_ue->data_change_subscription_id)
-            ogs_free(amf_ue->data_change_subscription_id);
-        amf_ue->data_change_subscription_id =
-            ogs_strdup(message.h.resource.component[2]);
+        rc = ogs_sbi_getaddr_from_uri(
+                &scheme, &fqdn, &fqdn_port, &addr, &addr6, header.uri);
+        if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
+            ogs_error("[%s] Invalid URI [%s]", amf_ue->supi, header.uri);
+
+            ogs_sbi_header_free(&header);
+            r = nas_5gs_send_gmm_reject_from_sbi(
+                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+
+            return OGS_ERROR;
+        }
+
+        client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
+        if (!client) {
+            ogs_debug("[%s] ogs_sbi_client_add()", amf_ue->supi);
+            client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
+            if (!client) {
+                ogs_error("[%s] ogs_sbi_client_add() failed", amf_ue->supi);
+
+                ogs_sbi_header_free(&header);
+                r = nas_5gs_send_gmm_reject_from_sbi(
+                        amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+
+                ogs_free(fqdn);
+                ogs_freeaddrinfo(addr);
+                ogs_freeaddrinfo(addr6);
+
+                return OGS_ERROR;
+            }
+        }
+
+        OGS_SBI_SETUP_CLIENT(&amf_ue->policy_association, client);
+
+        ogs_free(fqdn);
+        ogs_freeaddrinfo(addr);
+        ogs_freeaddrinfo(addr6);
+
+        UDM_SDM_STORE(amf_ue, header.uri, message.h.resource.component[2]);
 
         ogs_sbi_header_free(&header);
 

@@ -52,8 +52,39 @@ typedef struct af_sess_s {
 
     uint64_t policyauthorization_features;
 
-    char *af_app_session_id;
-    char *pcf_app_session_id;
+#define PCF_APP_SESSION_ASSOCIATED(__sESS) \
+    ((__sESS) && ((__sESS)->app_session.pcf_id))
+#define PCF_APP_SESSION_CLEAR(__sESS) \
+    do { \
+        ogs_assert((__sESS)); \
+        if ((__sESS)->app_session.pcf.resource_uri) \
+            ogs_free((__sESS)->app_session.pcf.resource_uri); \
+        (__sESS)->app_session.pcf.resource_uri = NULL; \
+        if ((__sESS)->app_session.pcf.id) \
+            ogs_free((__sESS)->app_session.pcf.id); \
+        (__sESS)->app_session.pcf.id = NULL; \
+    } while(0)
+#define PCF_APP_SESSION_STORE(__sESS, __rESOURCE_URI, __iD) \
+    do { \
+        ogs_assert((__sESS)); \
+        ogs_assert((__rESOURCE_URI)); \
+        ogs_assert((__iD)); \
+        PCF_APP_SESSION_CLEAR(__sESS); \
+        (__sESS)->app_session.pcf.resource_uri = ogs_strdup(__rESOURCE_URI); \
+        ogs_assert((__sESS)->app_session.pcf.resource_uri); \
+        (__sESS)->app_session.pcf.id = ogs_strdup(__iD); \
+        ogs_assert((__sESS)->app_session.pcf.id); \
+    } while(0)
+    struct {
+        struct {
+            char *id;
+        } af;
+        struct {
+            char *resource_uri;
+            char *id;
+            ogs_sbi_client_t *client;
+        } pcf;
+    } app_session;
 
     char *ipv4addr;
     char *ipv6addr;
@@ -91,11 +122,8 @@ af_sess_t *af_sess_add_by_ue_address(ogs_ip_t *ue_address);
 void af_sess_remove(af_sess_t *sess);
 void af_sess_remove_all(void);
 
-bool af_sess_set_pcf_app_session_id(af_sess_t *sess, char *pcf_app_session_id);
-
 af_sess_t *af_sess_find(uint32_t index);
 af_sess_t *af_sess_find_by_af_app_session_id(char *af_app_session_id);
-af_sess_t *af_sess_find_by_pcf_app_session_id(char *pcf_app_session_id);
 
 void af_sess_associate_pcf_client(af_sess_t *sess);
 

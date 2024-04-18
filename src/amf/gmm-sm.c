@@ -274,9 +274,7 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                     ogs_warn("[%s] Ignore SBI message", amf_ue->suci);
                     break;
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                    if (amf_ue->confirmation_url_for_5g_aka)
-                        ogs_free(amf_ue->confirmation_url_for_5g_aka);
-                    amf_ue->confirmation_url_for_5g_aka = NULL;
+                    CLEAR_5G_AKA_CONFIRMATION(amf_ue);
 
                     if (state == AMF_RELEASE_SM_CONTEXT_NO_STATE ||
                         state == AMF_UE_INITIATED_DE_REGISTERED) {
@@ -378,10 +376,7 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                      */
                     if (state == AMF_RELEASE_SM_CONTEXT_NO_STATE ||
                         state == AMF_UE_INITIATED_DE_REGISTERED) {
-                        if (amf_ue->data_change_subscription_id) {
-                            ogs_free(amf_ue->data_change_subscription_id);
-                            amf_ue->data_change_subscription_id = NULL;
-                        }
+                        UDM_SDM_CLEAR(amf_ue);
 
                         r = amf_ue_sbi_discover_and_send(
                                 OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
@@ -447,7 +442,7 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                         if (state == AMF_RELEASE_SM_CONTEXT_NO_STATE ||
                             state == AMF_UE_INITIATED_DE_REGISTERED) {
 
-                            if (amf_ue->confirmation_url_for_5g_aka) {
+                            if (CHECK_5G_AKA_CONFIRMATION(amf_ue)) {
                                 r = amf_ue_sbi_discover_and_send(
                                     OGS_SBI_SERVICE_TYPE_NAUSF_AUTH,
                                     NULL,
@@ -857,9 +852,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                     ogs_warn("[%s] Ignore SBI message", amf_ue->suci);
                     break;
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                    if (amf_ue->confirmation_url_for_5g_aka)
-                        ogs_free(amf_ue->confirmation_url_for_5g_aka);
-                    amf_ue->confirmation_url_for_5g_aka = NULL;
+                    CLEAR_5G_AKA_CONFIRMATION(amf_ue);
 
                     if (state == AMF_RELEASE_SM_CONTEXT_NO_STATE ||
                         state == AMF_UE_INITIATED_DE_REGISTERED) {
@@ -967,10 +960,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                             AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED ||
                         state ==
                             AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED) {
-                        if (amf_ue->data_change_subscription_id) {
-                            ogs_free(amf_ue->data_change_subscription_id);
-                            amf_ue->data_change_subscription_id = NULL;
-                        }
+                        UDM_SDM_CLEAR(amf_ue);
 
                         r = amf_ue_sbi_discover_and_send(
                                 OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
@@ -1044,7 +1034,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                             state ==
                                 AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED) {
 
-                            if (amf_ue->confirmation_url_for_5g_aka) {
+                            if (amf_ue->confirmation_for_5g_aka.resource_uri) {
                                 r = amf_ue_sbi_discover_and_send(
                                         OGS_SBI_SERVICE_TYPE_NAUSF_AUTH,
                                         NULL,

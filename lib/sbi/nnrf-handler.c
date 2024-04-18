@@ -824,6 +824,17 @@ void ogs_nnrf_nfm_handle_nf_status_subscribe(
 {
     OpenAPI_subscription_data_t *SubscriptionData = NULL;
 
+    int rv;
+    ogs_sbi_message_t message;
+    ogs_sbi_header_t header;
+
+    bool rc;
+    ogs_sbi_client_t *client = NULL;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+
     ogs_assert(recvmsg);
     ogs_assert(subscription_data);
 
@@ -833,44 +844,62 @@ void ogs_nnrf_nfm_handle_nf_status_subscribe(
         return;
     }
 
-    if (recvmsg->http.location) {
-        int rv;
-        ogs_sbi_message_t message;
-        ogs_sbi_header_t header;
-
-        memset(&header, 0, sizeof(header));
-        header.uri = recvmsg->http.location;
-
-        rv = ogs_sbi_parse_header(&message, &header);
-        if (rv != OGS_OK) {
-            ogs_error("Cannot parse http.location [%s]",
-                recvmsg->http.location);
-            return;
-        }
-
-        if (!message.h.resource.component[1]) {
-            ogs_error("No Subscription ID [%s]", recvmsg->http.location);
-            ogs_sbi_header_free(&header);
-            return;
-        }
-
-        ogs_sbi_subscription_data_set_id(
-                subscription_data, message.h.resource.component[1]);
-
-        ogs_sbi_header_free(&header);
-
-    } else if (SubscriptionData->subscription_id) {
-        /*
-         * For compatibility with v2.5.x and lower versions
-         *
-         * Deprecated : It will be removed soon.
-         */
-        ogs_sbi_subscription_data_set_id(
-            subscription_data, SubscriptionData->subscription_id);
-    } else {
-        ogs_error("No Subscription ID");
+    if (!recvmsg->http.location) {
+        ogs_error("No http.location");
         return;
     }
+
+    memset(&header, 0, sizeof(header));
+    header.uri = recvmsg->http.location;
+
+    rv = ogs_sbi_parse_header(&message, &header);
+    if (rv != OGS_OK) {
+        ogs_error("Cannot parse http.location [%s]",
+            recvmsg->http.location);
+        return;
+    }
+
+    if (!message.h.resource.component[1]) {
+        ogs_error("No Subscription ID [%s]", recvmsg->http.location);
+        ogs_sbi_header_free(&header);
+        return;
+    }
+
+    rc = ogs_sbi_getaddr_from_uri(
+            &scheme, &fqdn, &fqdn_port, &addr, &addr6, header.uri);
+    if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
+        ogs_error("Invalid URI [%s]", header.uri);
+        ogs_sbi_header_free(&header);
+        return;
+    }
+
+    client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
+    if (!client) {
+        ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
+        client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
+        if (!client) {
+            ogs_error("%s: ogs_sbi_client_add() failed", OGS_FUNC);
+
+            ogs_sbi_header_free(&header);
+            ogs_free(fqdn);
+            ogs_freeaddrinfo(addr);
+            ogs_freeaddrinfo(addr6);
+
+            return;
+        }
+    }
+    OGS_SBI_SETUP_CLIENT(subscription_data, client);
+
+    ogs_free(fqdn);
+    ogs_freeaddrinfo(addr);
+    ogs_freeaddrinfo(addr6);
+
+    ogs_sbi_subscription_data_set_resource_uri(
+            subscription_data, header.uri);
+    ogs_sbi_subscription_data_set_id(
+            subscription_data, message.h.resource.component[1]);
+
+    ogs_sbi_header_free(&header);
 
     /* SBI Features */
     if (SubscriptionData->nrf_supported_features) {

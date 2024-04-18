@@ -184,8 +184,9 @@ void ausf_ue_remove(ausf_ue_t *ausf_ue)
         ogs_free(ausf_ue->supi);
     }
 
-    if (ausf_ue->auth_events_url)
-        ogs_free(ausf_ue->auth_events_url);
+    AUTH_EVENT_CLEAR(ausf_ue);
+    if (ausf_ue->auth_event.client)
+        ogs_sbi_client_remove(ausf_ue->auth_event.client);
 
     if (ausf_ue->serving_network_name)
         ogs_free(ausf_ue->serving_network_name);

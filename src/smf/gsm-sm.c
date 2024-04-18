@@ -944,9 +944,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 } else {
                     SWITCH(sbi_message->h.resource.component[2])
                     CASE(OGS_SBI_RESOURCE_NAME_DELETE)
-                        if (sess->policy_association_id)
-                            ogs_free(sess->policy_association_id);
-                        sess->policy_association_id = NULL;
+                        PCF_SM_POLICY_CLEAR(sess);
 
                         if (sbi_message->res_status !=
                                 OGS_SBI_HTTP_STATUS_NO_CONTENT) {
@@ -1085,7 +1083,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
-            if (sess->policy_association_id) {
+            if (PCF_SM_POLICY_ASSOCIATED(sess)) {
                 smf_npcf_smpolicycontrol_param_t param;
 
                 memset(&param, 0, sizeof(param));
@@ -1822,7 +1820,7 @@ void smf_gsm_state_5gc_n1_n2_reject(ogs_fsm_t *s, smf_event_t *e)
 
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
-        if (sess->policy_association_id) {
+        if (PCF_SM_POLICY_ASSOCIATED(sess)) {
             smf_npcf_smpolicycontrol_param_t param;
             int r = 0;
 
@@ -1864,9 +1862,7 @@ void smf_gsm_state_5gc_n1_n2_reject(ogs_fsm_t *s, smf_event_t *e)
                 } else {
                     SWITCH(sbi_message->h.resource.component[2])
                     CASE(OGS_SBI_RESOURCE_NAME_DELETE)
-                        if (sess->policy_association_id)
-                            ogs_free(sess->policy_association_id);
-                        sess->policy_association_id = NULL;
+                        PCF_SM_POLICY_CLEAR(sess);
 
                         if (sbi_message->res_status !=
                                 OGS_SBI_HTTP_STATUS_NO_CONTENT) {

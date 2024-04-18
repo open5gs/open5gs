@@ -495,8 +495,9 @@ void pcf_sess_remove(pcf_sess_t *sess)
     ogs_assert(sess->sm_policy_id);
     ogs_free(sess->sm_policy_id);
 
-    if (sess->binding_id)
-        ogs_free(sess->binding_id);
+    PCF_BINDING_CLEAR(sess);
+    if (sess->binding.client)
+        ogs_sbi_client_remove(sess->binding.client);
 
     if (sess->dnn)
         ogs_free(sess->dnn);

@@ -81,7 +81,34 @@ struct pcf_sess_s {
 
     /* BSF sends the RESPONSE
      * of [POST] /nbsf-management/v1/PcfBindings */
-    char *binding_id;
+#define PCF_BINDING_ASSOCIATED(__sESS) \
+    ((__sESS) && ((__sESS)->binding.id))
+#define PCF_BINDING_CLEAR(__sESS) \
+    do { \
+        ogs_assert((__sESS)); \
+        if ((__sESS)->binding.resource_uri) \
+            ogs_free((__sESS)->binding.resource_uri); \
+        (__sESS)->binding.resource_uri = NULL; \
+        if ((__sESS)->binding.id) \
+            ogs_free((__sESS)->binding.id); \
+        (__sESS)->binding.id = NULL; \
+    } while(0)
+#define PCF_BINDING_STORE(__sESS, __rESOURCE_URI, __iD) \
+    do { \
+        ogs_assert((__sESS)); \
+        ogs_assert((__rESOURCE_URI)); \
+        ogs_assert((__iD)); \
+        PCF_BINDING_CLEAR(__sESS); \
+        (__sESS)->binding.resource_uri = ogs_strdup(__rESOURCE_URI); \
+        ogs_assert((__sESS)->binding.resource_uri); \
+        (__sESS)->binding.id = ogs_strdup(__iD); \
+        ogs_assert((__sESS)->binding.id); \
+    } while(0)
+    struct {
+        char *resource_uri;
+        char *id;
+        ogs_sbi_client_t *client;
+    } binding;
 
     uint8_t psi; /* PDU Session Identity */
 

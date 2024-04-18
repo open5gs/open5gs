@@ -35,6 +35,13 @@ int amf_npcf_am_policy_control_handle_create(
     ogs_sbi_message_t message;
     ogs_sbi_header_t header;
 
+    bool rc;
+    ogs_sbi_client_t *client = NULL;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+
     if (recvmsg->res_status != OGS_SBI_HTTP_STATUS_CREATED) {
         ogs_error("[%s] HTTP response error [%d]",
                 amf_ue->supi, recvmsg->res_status);
@@ -98,11 +105,52 @@ int amf_npcf_am_policy_control_handle_create(
         return OGS_ERROR;
     }
 
+    rc = ogs_sbi_getaddr_from_uri(
+            &scheme, &fqdn, &fqdn_port, &addr, &addr6, header.uri);
+    if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
+        ogs_error("[%s] Invalid URI [%s]", amf_ue->supi, header.uri);
+
+        ogs_sbi_header_free(&header);
+        r = nas_5gs_send_gmm_reject_from_sbi(
+                amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+
+        return OGS_ERROR;
+    }
+
+    client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
+    if (!client) {
+        ogs_debug("[%s] ogs_sbi_client_add()", amf_ue->supi);
+        client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
+        if (!client) {
+            ogs_error("[%s] ogs_sbi_client_add() failed", amf_ue->supi);
+
+            ogs_sbi_header_free(&header);
+            r = nas_5gs_send_gmm_reject_from_sbi(
+                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+
+            ogs_free(fqdn);
+            ogs_freeaddrinfo(addr);
+            ogs_freeaddrinfo(addr6);
+
+            return OGS_ERROR;
+        }
+    }
+
+    OGS_SBI_SETUP_CLIENT(&amf_ue->policy_association, client);
+
+    ogs_free(fqdn);
+    ogs_freeaddrinfo(addr);
+    ogs_freeaddrinfo(addr6);
+
+    PCF_AM_POLICY_STORE(amf_ue, header.uri, message.h.resource.component[1]);
+
     /* SBI Features */
     supported_features = ogs_uint64_from_string(PolicyAssociation->supp_feat);
     amf_ue->am_policy_control_features &= supported_features;
-
-    PCF_AM_POLICY_STORE(amf_ue, message.h.resource.component[1]);
 
     OpenAPI_list_for_each(PolicyAssociation->triggers, node) {
         if (node->data) {

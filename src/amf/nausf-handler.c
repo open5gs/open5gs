@@ -30,8 +30,20 @@ int amf_nausf_auth_handle_authenticate(
     OpenAPI_map_t *LinksValueScheme = NULL;
     OpenAPI_lnode_t *node = NULL;
 
+    bool rc;
+    ogs_sbi_client_t *client = NULL;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+
     ogs_assert(amf_ue);
     ogs_assert(message);
+
+    if (!message->http.location) {
+        ogs_error("[%s] No http.location", amf_ue->suci);
+        return OGS_ERROR;
+    }
 
     UeAuthenticationCtx = message->UeAuthenticationCtx;
     if (!UeAuthenticationCtx) {
@@ -92,11 +104,36 @@ int amf_nausf_auth_handle_authenticate(
         return OGS_ERROR;
     }
 
-    if (amf_ue->confirmation_url_for_5g_aka)
-        ogs_free(amf_ue->confirmation_url_for_5g_aka);
-    amf_ue->confirmation_url_for_5g_aka =
-        ogs_strdup(LinksValueSchemeValue->href);
-    ogs_assert(amf_ue->confirmation_url_for_5g_aka);
+    rc = ogs_sbi_getaddr_from_uri(
+            &scheme, &fqdn, &fqdn_port, &addr, &addr6, message->http.location);
+    if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
+        ogs_error("[%s] Invalid URI [%s]",
+                amf_ue->suci, message->http.location);
+        return OGS_ERROR;
+    }
+
+    client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
+    if (!client) {
+        ogs_debug("[%s] ogs_sbi_client_add()", amf_ue->suci);
+        client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
+        if (!client) {
+            ogs_error("[%s] ogs_sbi_client_add() failed", amf_ue->suci);
+
+            ogs_free(fqdn);
+            ogs_freeaddrinfo(addr);
+            ogs_freeaddrinfo(addr6);
+
+            return OGS_ERROR;
+        }
+    }
+
+    OGS_SBI_SETUP_CLIENT(&amf_ue->confirmation_for_5g_aka, client);
+
+    ogs_free(fqdn);
+    ogs_freeaddrinfo(addr);
+    ogs_freeaddrinfo(addr6);
+
+    STORE_5G_AKA_CONFIRMATION(amf_ue, message->http.location);
 
     ogs_ascii_to_hex(AV5G_AKA->rand, strlen(AV5G_AKA->rand),
         amf_ue->rand, sizeof(amf_ue->rand));

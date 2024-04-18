@@ -1676,13 +1676,17 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     /* Clear SubscribedInfo */
     amf_clear_subscribed_info(amf_ue);
 
-    if (amf_ue->policy_association_id)
-        ogs_free(amf_ue->policy_association_id);
-    if (amf_ue->data_change_subscription_id)
-        ogs_free(amf_ue->data_change_subscription_id);
+    PCF_AM_POLICY_CLEAR(amf_ue);
+    if (amf_ue->policy_association.client)
+        ogs_sbi_client_remove(amf_ue->policy_association.client);
 
-    if (amf_ue->confirmation_url_for_5g_aka)
-        ogs_free(amf_ue->confirmation_url_for_5g_aka);
+    UDM_SDM_CLEAR(amf_ue);
+    if (amf_ue->data_change_subscription.client)
+        ogs_sbi_client_remove(amf_ue->data_change_subscription.client);
+
+    CLEAR_5G_AKA_CONFIRMATION(amf_ue);
+    if (amf_ue->confirmation_for_5g_aka.client)
+        ogs_sbi_client_remove(amf_ue->confirmation_for_5g_aka.client);
 
     /* Free UeRadioCapability */
     OGS_ASN_CLEAR_DATA(&amf_ue->ueRadioCapability);
@@ -2249,8 +2253,10 @@ void amf_sess_remove(amf_sess_t *sess)
                 ogs_list_count(&sess->sbi.xact_list));
     ogs_sbi_object_free(&sess->sbi);
 
-    if (sess->sm_context_ref)
-        ogs_free(sess->sm_context_ref);
+    CLEAR_SESSION_CONTEXT(sess);
+
+    if (sess->sm_context.client)
+        ogs_sbi_client_remove(sess->sm_context.client);
 
     if (sess->payload_container)
         ogs_pkbuf_free(sess->payload_container);

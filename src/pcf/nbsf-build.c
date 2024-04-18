@@ -189,15 +189,11 @@ ogs_sbi_request_t *pcf_nbsf_management_build_de_register(
     ogs_assert(sess);
     pcf_ue = sess->pcf_ue;
     ogs_assert(pcf_ue);
-    ogs_assert(sess->binding_id);
+    ogs_assert(sess->binding.resource_uri);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT;
-    message.h.api.version = (char *)OGS_SBI_API_V1;
-    message.h.resource.component[0] =
-        (char *)OGS_SBI_RESOURCE_NAME_PCF_BINDINGS;
-    message.h.resource.component[1] = sess->binding_id;
+    message.h.uri = sess->binding.resource_uri;
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);

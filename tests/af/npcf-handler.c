@@ -28,6 +28,13 @@ void af_npcf_policyauthorization_handle_create(
     ogs_sbi_message_t message;
     ogs_sbi_header_t header;
 
+    bool rc;
+    ogs_sbi_client_t *client = NULL;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+
     OpenAPI_app_session_context_t *AppSessionContext = NULL;
     OpenAPI_app_session_context_req_data_t *AscReqData = NULL;
 
@@ -83,10 +90,34 @@ void af_npcf_policyauthorization_handle_create(
         goto cleanup;
     }
 
+    rc = ogs_sbi_getaddr_from_uri(
+            &scheme, &fqdn, &fqdn_port, &addr, &addr6, header.uri);
+    if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
+        ogs_error("[%s:%s] Invalid URI [%s]",
+                sess->ipv4addr ? sess->ipv4addr : "Unknown",
+                sess->ipv6addr ? sess->ipv6addr : "Unknown",
+                header.uri);
+        goto cleanup;
+    }
+
+    client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
+    if (!client) {
+        ogs_debug("[%s:%s] ogs_sbi_client_add()",
+                sess->ipv4addr ? sess->ipv4addr : "Unknown",
+                sess->ipv6addr ? sess->ipv6addr : "Unknown");
+        client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
+        ogs_assert(client);
+    }
+    OGS_SBI_SETUP_CLIENT(&sess->app_session.pcf, client);
+
+    ogs_free(fqdn);
+    ogs_freeaddrinfo(addr);
+    ogs_freeaddrinfo(addr6);
+
+    PCF_APP_SESSION_STORE(sess, header.uri, message.h.resource.component[1]);
+
     supported_features = ogs_uint64_from_string(AscReqData->supp_feat);
     sess->policyauthorization_features &= supported_features;
-
-    af_sess_set_pcf_app_session_id(sess, message.h.resource.component[1]);
 
 cleanup:
     ogs_sbi_header_free(&header);

@@ -255,16 +255,11 @@ ogs_sbi_request_t *amf_nudm_sdm_build_subscription_delete(
 
     ogs_assert(amf_ue);
     ogs_assert(amf_ue->supi);
-    ogs_assert(amf_ue->data_change_subscription_id);
+    ogs_assert(amf_ue->data_change_subscription.resource_uri);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_SDM;
-    message.h.api.version = (char *)OGS_SBI_API_V2;
-    message.h.resource.component[0] = amf_ue->supi;
-    message.h.resource.component[1] =
-            (char *)OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS;
-    message.h.resource.component[2] = amf_ue->data_change_subscription_id;
+    message.h.uri = amf_ue->data_change_subscription.resource_uri;
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);

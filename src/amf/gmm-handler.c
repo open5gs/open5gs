@@ -1283,9 +1283,11 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
             sess->s_nssai.sd.v = selected_slice->s_nssai.sd.v;
 
             ogs_info("UE SUPI[%s] DNN[%s] S_NSSAI[SST:%d SD:0x%x] "
-                    "smContextRef [%s]",
+                    "smContextRef[%s] smContextResourceURI[%s]",
                 amf_ue->supi, sess->dnn, sess->s_nssai.sst, sess->s_nssai.sd.v,
-                sess->sm_context_ref ? sess->sm_context_ref : "NULL");
+                sess->sm_context.ref ? sess->sm_context.ref : "NULL",
+                sess->sm_context.resource_uri ?
+                    sess->sm_context.resource_uri : "NULL");
 
             if (!SESSION_CONTEXT_IN_SMF(sess)) {
                 ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -1435,7 +1437,7 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                 sess->pdu_session_release_complete_received = true;
                 if (sess->pdu_session_resource_release_response_received ==
                         true)
-                    CLEAR_SM_CONTEXT_REF(sess);
+                    CLEAR_SESSION_CONTEXT(sess);
                 break;
             default:
                 break;
@@ -1676,7 +1678,7 @@ static void amf_namf_comm_decode_ue_session_context_list(
         sess = amf_sess_add(amf_ue, PduSessionContext->pdu_session_id);
         ogs_assert(sess);
 
-        sess->sm_context_ref = PduSessionContext->sm_context_ref;
+        sess->sm_context.ref = PduSessionContext->sm_context_ref;
 
         if (PduSessionContext->s_nssai) {
             memset(&sess->s_nssai, 0, sizeof(sess->s_nssai));

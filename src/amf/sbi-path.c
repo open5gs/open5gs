@@ -505,7 +505,7 @@ void amf_sbi_send_release_session(
     ogs_assert(r != OGS_ERROR);
 
     /* Prevent to invoke SMF for this session */
-    CLEAR_SM_CONTEXT_REF(sess);
+    CLEAR_SESSION_CONTEXT(sess);
 }
 
 void amf_sbi_send_release_all_sessions(
