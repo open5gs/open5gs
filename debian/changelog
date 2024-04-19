@@ -1,3 +1,33 @@
+open5gs (2.7.1) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 19 Apr 2024 21:21:46 +0900
+
+open5gs (2.7.1~mantic) mantic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 19 Apr 2024 21:18:53 +0900
+
+open5gs (2.7.1~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 19 Apr 2024 21:16:21 +0900
+
+open5gs (2.7.1~jammy) jammy; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 19 Apr 2024 21:11:30 +0900
+
+open5gs (2.7.1~focal) focal; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 19 Apr 2024 21:08:46 +0900
+
 open5gs (2.7.0) unstable; urgency=medium
 
   * 5G Roaming with SEPP
