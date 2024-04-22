@@ -195,12 +195,14 @@ void mme_s11_handle_create_session_response(
 
     }
 
-    if (create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST) {
-
+    switch (create_action) {
+    case OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST:
         /* No need PAA in PathSwitchRequest */
-
-    } else {
-
+        break;
+    case OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE:
+        /* No need PAA in 2G->4G mobility, it was already provided by SGSN peer */
+        break;
+    default:
         if (rsp->pdn_address_allocation.presence) {
             ogs_paa_t paa;
 
