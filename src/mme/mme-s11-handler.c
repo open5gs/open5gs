@@ -197,7 +197,7 @@ void mme_s11_handle_create_session_response(
 
     if (create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST) {
 
-        /* No need S5C TEID in PathSwitchRequest */
+        /* No need PAA in PathSwitchRequest */
 
     } else {
 
