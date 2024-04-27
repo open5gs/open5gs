@@ -75,8 +75,10 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [srsRAN with eUPF(eBPF/XDP UPF)](https://github.com/s5uishida/open5gs_epc_srsran_eupf_sample_config)
  
 - @gradiant helm charts
-  - [Open5GS EPC and SRS LTE in kubernetes](https://gradiant.github.io/openverso-charts/open5gs-srslte.html)
-  - [Open5GS NGC and UERANSIM in kubernetes](https://gradiant.github.io/openverso-charts/open5gs-ueransim-gnb.html)
-  - [Open5GS NGC and OpenAirInterface GNB with ettus USRP in kubernetes](https://gradiant.github.io/openverso-charts/open5gs-oaignb.html)
-  - [Open5GS EPC and SRS ENB with ettus USRP in kubernetes](https://gradiant.github.io/openverso-charts/open5gs-srsenb.html)
-  - [Open5GS with Service Communication Proxy in kubernetes](https://gradiant.github.io/openverso-charts/open5gs-scp.html)
+  - [Open5GS and srsRAN-5G in kubernetes](https://gradiant.github.io/5g-charts/open5gs-srsran-5g-zmq.html)
+  - [Open5GS and srsLTE in kubernetes](https://gradiant.github.io/5g-charts/open5gs-srslte.html)
+  - [Open5GS and UERANSIM](https://gradiant.github.io/5g-charts/open5gs-ueransim-gnb.html)
+  - [Open5GS and PacketRusher](https://gradiant.github.io/5g-charts/open5gs-packetrusher.html)
+  - [Open5GS and OAI-GNB](https://gradiant.github.io/5g-charts/open5gs-oaignb.html)
+  - [Open5GS and srsenb](https://gradiant.github.io/5g-charts/open5gs-srsenb.html)
+  - [Open5GS with SCP(Service Communication Proxy](https://gradiant.github.io/5g-charts/open5gs-scp.html)
