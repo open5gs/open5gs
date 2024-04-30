@@ -180,7 +180,8 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
-    memcpy(&visited_plmn_id, hdr->avp_value->os.data, hdr->avp_value->os.len);
+    memcpy(&visited_plmn_id, hdr->avp_value->os.data,
+            ogs_min(hdr->avp_value->os.len, sizeof(visited_plmn_id)));
 
     milenage_generate(opc, auth_info.amf, auth_info.k,
         ogs_uint64_to_buffer(auth_info.sqn, OGS_SQN_LEN, sqn), auth_info.rand,
@@ -910,7 +911,8 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
-    memcpy(&visited_plmn_id, hdr->avp_value->os.data, hdr->avp_value->os.len);
+    memcpy(&visited_plmn_id, hdr->avp_value->os.data,
+            ogs_min(hdr->avp_value->os.len, sizeof(visited_plmn_id)));
 
     ret = fd_msg_search_avp(qry, ogs_diam_s6a_ulr_flags, &avp);
     ogs_assert(ret == 0);
