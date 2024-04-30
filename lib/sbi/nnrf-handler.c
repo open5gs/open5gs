@@ -54,6 +54,15 @@ void ogs_nnrf_nfm_handle_nf_register(
         OpenAPI_list_for_each(NFProfile->plmn_list, node) {
             OpenAPI_plmn_id_t *PlmnId = node->data;
             if (PlmnId) {
+                if (ogs_local_conf()->num_of_serving_plmn_id >=
+                        OGS_ARRAY_SIZE(ogs_local_conf()->serving_plmn_id)) {
+                    ogs_error("OVERFLOW NFProfile->plmn_list [%d:%d:%d]",
+                            ogs_local_conf()->num_of_serving_plmn_id,
+                            OGS_MAX_NUM_OF_PLMN,
+                            (int)OGS_ARRAY_SIZE(
+                                ogs_local_conf()->serving_plmn_id));
+                    break;
+                }
                 ogs_sbi_parse_plmn_id(
                     &ogs_local_conf()->serving_plmn_id[
                         ogs_local_conf()->num_of_serving_plmn_id], PlmnId);
@@ -96,6 +105,13 @@ void ogs_nnrf_nfm_handle_nf_profile(
     OpenAPI_list_for_each(NFProfile->plmn_list, node) {
         OpenAPI_plmn_id_t *PlmnId = node->data;
         if (PlmnId) {
+            if (nf_instance->num_of_plmn_id >=
+                    OGS_ARRAY_SIZE(nf_instance->plmn_id)) {
+                ogs_error("OVERFLOW NFProfile->plmn_list [%d:%d:%d]",
+                        nf_instance->num_of_plmn_id, OGS_MAX_NUM_OF_PLMN,
+                        (int)OGS_ARRAY_SIZE(nf_instance->plmn_id));
+                break;
+            }
             ogs_sbi_parse_plmn_id(
                 &nf_instance->plmn_id[nf_instance->num_of_plmn_id], PlmnId);
             nf_instance->num_of_plmn_id++;
@@ -467,8 +483,12 @@ static void handle_smf_info(
         TaiRangeItem = node->data;
         if (TaiRangeItem && TaiRangeItem->plmn_id &&
                 TaiRangeItem->tac_range_list) {
-            ogs_assert(nf_info->smf.num_of_nr_tai_range <
-                    OGS_MAX_NUM_OF_TAI);
+
+            if (nf_info->smf.num_of_nr_tai_range >= OGS_MAX_NUM_OF_TAI) {
+                ogs_error("OVERFLOW TaiRangeItem [%d:%d]",
+                        nf_info->smf.num_of_nr_tai_range, OGS_MAX_NUM_OF_TAI);
+                break;
+            }
 
             ogs_sbi_parse_plmn_id(
                 &nf_info->smf.nr_tai_range
@@ -709,7 +729,13 @@ static void handle_amf_info(
         TaiItem = node->data;
         if (TaiItem && TaiItem->plmn_id && TaiItem->tac) {
             ogs_5gs_tai_t *nr_tai = NULL;
-            ogs_assert(nf_info->amf.num_of_nr_tai < OGS_MAX_NUM_OF_TAI);
+
+            if (nf_info->amf.num_of_nr_tai >= OGS_MAX_NUM_OF_TAI) {
+                ogs_error("OVERFLOW TaiItem [%d:%d]",
+                        nf_info->amf.num_of_nr_tai, OGS_MAX_NUM_OF_TAI);
+                break;
+            }
+
             nr_tai = &nf_info->amf.nr_tai[nf_info->amf.num_of_nr_tai];
             ogs_assert(nr_tai);
             ogs_sbi_parse_plmn_id(&nr_tai->plmn_id, TaiItem->plmn_id);
@@ -725,6 +751,12 @@ static void handle_amf_info(
                 TaiRangeItem->tac_range_list) {
             ogs_assert(nf_info->amf.num_of_nr_tai_range <
                     OGS_MAX_NUM_OF_TAI);
+
+            if (nf_info->amf.num_of_nr_tai_range >= OGS_MAX_NUM_OF_TAI) {
+                ogs_error("OVERFLOW TaiRangeItem [%d:%d]",
+                        nf_info->amf.num_of_nr_tai_range, OGS_MAX_NUM_OF_TAI);
+                break;
+            }
 
             ogs_sbi_parse_plmn_id(
                 &nf_info->amf.nr_tai_range
