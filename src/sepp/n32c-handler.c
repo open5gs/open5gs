@@ -118,6 +118,14 @@ bool sepp_n32c_handshake_handle_security_capability_request(
     OpenAPI_list_for_each(SecNegotiateReqData->plmn_id_list, node) {
         OpenAPI_plmn_id_t *PlmnId = node->data;
         if (PlmnId) {
+            if (sepp_node->num_of_plmn_id >=
+                    OGS_ARRAY_SIZE(sepp_node->plmn_id)) {
+                ogs_error("OVERFLOW SecNegotiateReqData->plmn_id_list "
+                        "[%d:%d:%d]",
+                        sepp_node->num_of_plmn_id, OGS_MAX_NUM_OF_PLMN,
+                        (int)OGS_ARRAY_SIZE(sepp_node->plmn_id));
+                break;
+            }
             ogs_sbi_parse_plmn_id(
                 &sepp_node->plmn_id[sepp_node->num_of_plmn_id], PlmnId);
             sepp_node->num_of_plmn_id++;
@@ -185,6 +193,14 @@ bool sepp_n32c_handshake_handle_security_capability_response(
     OpenAPI_list_for_each(SecNegotiateRspData->plmn_id_list, node) {
         OpenAPI_plmn_id_t *PlmnId = node->data;
         if (PlmnId) {
+            if (sepp_node->num_of_plmn_id >=
+                    OGS_ARRAY_SIZE(sepp_node->plmn_id)) {
+                ogs_error("OVERFLOW SecNegotiateRspData->plmn_id_list "
+                        "[%d:%d:%d]",
+                        sepp_node->num_of_plmn_id, OGS_MAX_NUM_OF_PLMN,
+                        (int)OGS_ARRAY_SIZE(sepp_node->plmn_id));
+                break;
+            }
             ogs_sbi_parse_plmn_id(
                 &sepp_node->plmn_id[sepp_node->num_of_plmn_id], PlmnId);
             sepp_node->num_of_plmn_id++;
