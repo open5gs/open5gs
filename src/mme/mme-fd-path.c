@@ -80,9 +80,9 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
         ret = fd_msg_avp_hdr(avpch1, &hdr);
         ogs_assert(ret == 0);
         if (hdr->avp_value->os.data && hdr->avp_value->os.len) {
-            mme_ue->msisdn_len = hdr->avp_value->os.len;
-            memcpy(mme_ue->msisdn, hdr->avp_value->os.data,
-                    ogs_min(mme_ue->msisdn_len, OGS_MAX_MSISDN_LEN));
+            mme_ue->msisdn_len =
+                ogs_min(hdr->avp_value->os.len, OGS_MAX_MSISDN_LEN);
+            memcpy(mme_ue->msisdn, hdr->avp_value->os.data, mme_ue->msisdn_len);
             ogs_buffer_to_bcd(mme_ue->msisdn,
                     mme_ue->msisdn_len, mme_ue->msisdn_bcd);
             *subdatamask = (*subdatamask | OGS_DIAM_S6A_SUBDATA_MSISDN);
@@ -103,9 +103,10 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
         ret = fd_msg_avp_hdr(avpch1, &hdr);
         ogs_assert(ret == 0);
         if (hdr->avp_value->os.data && hdr->avp_value->os.len) {
-            mme_ue->a_msisdn_len = hdr->avp_value->os.len;
+            mme_ue->a_msisdn_len =
+                ogs_min(hdr->avp_value->os.len, OGS_MAX_MSISDN_LEN);
             memcpy(mme_ue->a_msisdn, hdr->avp_value->os.data,
-                    ogs_min(mme_ue->a_msisdn_len, OGS_MAX_MSISDN_LEN));
+                    mme_ue->a_msisdn_len);
             ogs_buffer_to_bcd(mme_ue->a_msisdn,
                     mme_ue->a_msisdn_len, mme_ue->a_msisdn_bcd);
             *subdatamask = (*subdatamask | OGS_DIAM_S6A_SUBDATA_A_MSISDN);
@@ -986,9 +987,11 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     if (avp) {
         ret = fd_msg_avp_hdr(avp_xres, &hdr);
         ogs_assert(ret == 0);
+        e_utran_vector->xres_len =
+            ogs_min(hdr->avp_value->os.len,
+                    OGS_ARRAY_SIZE(e_utran_vector->xres));
         memcpy(e_utran_vector->xres,
-                hdr->avp_value->os.data, hdr->avp_value->os.len);
-        e_utran_vector->xres_len = hdr->avp_value->os.len;
+                hdr->avp_value->os.data, e_utran_vector->xres_len);
     } else {
         ogs_error("no_XRES");
         error++;
@@ -999,8 +1002,9 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     if (avp) {
         ret = fd_msg_avp_hdr(avp_kasme, &hdr);
         ogs_assert(ret == 0);
-        memcpy(e_utran_vector->kasme,
-                hdr->avp_value->os.data, hdr->avp_value->os.len);
+        memcpy(e_utran_vector->kasme, hdr->avp_value->os.data,
+                ogs_min(hdr->avp_value->os.len,
+                    OGS_ARRAY_SIZE(e_utran_vector->kasme)));
     } else {
         ogs_error("no_KASME");
         error++;
@@ -1010,8 +1014,9 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     ret = fd_avp_search_avp(avp_e_utran_vector, ogs_diam_s6a_rand, &avp_rand);
     if (avp) {
         ret = fd_msg_avp_hdr(avp_rand, &hdr);
-        memcpy(e_utran_vector->rand,
-                hdr->avp_value->os.data, hdr->avp_value->os.len);
+        memcpy(e_utran_vector->rand, hdr->avp_value->os.data,
+                ogs_min(hdr->avp_value->os.len,
+                    OGS_ARRAY_SIZE(e_utran_vector->rand)));
     } else {
         ogs_error("no_RAND");
         error++;
@@ -1022,8 +1027,9 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     if (avp) {
         ret = fd_msg_avp_hdr(avp_autn, &hdr);
         ogs_assert(ret == 0);
-        memcpy(e_utran_vector->autn,
-                hdr->avp_value->os.data, hdr->avp_value->os.len);
+        memcpy(e_utran_vector->autn, hdr->avp_value->os.data,
+                ogs_min(hdr->avp_value->os.len,
+                    OGS_ARRAY_SIZE(e_utran_vector->autn)));
     } else {
         ogs_error("no_AUTN");
         error++;
