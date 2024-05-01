@@ -4,7 +4,7 @@ on: [push, pull_request]
 jobs:
   macos-latest:
     name: Build and Test on MacOS Latest
-    runs-on: macos-latest
+#    runs-on: macos-latest
     steps:
 #    - name: Install MongoDB with Package Manager
 #      run: |
