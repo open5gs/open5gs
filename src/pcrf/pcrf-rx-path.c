@@ -229,6 +229,16 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
             break;
         /* Gwt Media-Component-Description */
         case OGS_DIAM_RX_AVP_CODE_MEDIA_COMPONENT_DESCRIPTION:
+            if (rx_message.ims_data.num_of_media_component >=
+                    OGS_ARRAY_SIZE(rx_message.ims_data.media_component)) {
+                ogs_error("OVERFLOW rx_message.ims_data.num_of_media_component "
+                        "[%d:%d:%d]",
+                        rx_message.ims_data.num_of_media_component,
+                        OGS_MAX_NUM_OF_MEDIA_COMPONENT,
+                        (int)OGS_ARRAY_SIZE(
+                            rx_message.ims_data.media_component));
+                break;
+            }
             media_component = &rx_message.ims_data.
                     media_component[rx_message.ims_data.num_of_media_component];
 
@@ -271,6 +281,15 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                     media_component->flow_status = hdr->avp_value->i32;
                     break;
                 case OGS_DIAM_RX_AVP_CODE_MEDIA_SUB_COMPONENT:
+                    if (media_component->num_of_sub >=
+                            OGS_ARRAY_SIZE(media_component->sub)) {
+                        ogs_error("OVERFLOW media_component->num_of_sub "
+                                "[%d:%d:%d]",
+                                media_component->num_of_sub,
+                                OGS_MAX_NUM_OF_MEDIA_SUB_COMPONENT,
+                                (int)OGS_ARRAY_SIZE(media_component->sub));
+                        break;
+                    }
                     sub = &media_component->sub[media_component->num_of_sub];
 
                     ret = fd_msg_browse(avpch2, MSG_BRW_FIRST_CHILD,
@@ -300,8 +319,14 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                             }
                             break;
                         case OGS_DIAM_RX_AVP_CODE_FLOW_DESCRIPTION:
-                            ogs_assert(sub->num_of_flow <
-                                    OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT);
+                            if (sub->num_of_flow >= OGS_ARRAY_SIZE(sub->flow)) {
+                                ogs_error(
+                                    "OVERFLOW sub->num_of_flow [%d:%d:%d]",
+                                    sub->num_of_flow,
+                                    OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT,
+                                    (int)OGS_ARRAY_SIZE(sub->flow));
+                                break;
+                            }
                             flow = &sub->flow[sub->num_of_flow];
                             flow->description = ogs_strndup(
                                     (char*)hdr->avp_value->os.data,
