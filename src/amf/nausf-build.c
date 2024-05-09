@@ -45,6 +45,13 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate(
                                     OGS_SBI_CONTENT_PROBLEM_TYPE);
 
     memset(&AuthenticationInfo, 0, sizeof(AuthenticationInfo));
+    ogs_assert(amf_ue->suci || amf_ue->supi);
+
+    if (amf_ue->suci) {
+        AuthenticationInfo.supi_or_suci = amf_ue->suci;
+    } else {
+        AuthenticationInfo.supi_or_suci = amf_ue->supi;
+    }
 
     if (amf_ue->suci)
         AuthenticationInfo.supi_or_suci = amf_ue->suci;

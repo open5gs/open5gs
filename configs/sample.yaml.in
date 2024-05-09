@@ -189,50 +189,6 @@ amf:
     t3512:
       value: 540     # 9 mintues * 60 = 540 seconds
 
-# amf #2
-amf:
-  sbi:
-    server:
-      - address: 127.0.0.50
-        port: 7777
-    client:
-      scp:
-        - uri: http://127.0.0.200:7777
-  ngap:
-    server:
-      - address: 127.0.0.50
-  metrics:
-    server:
-      - address: 127.0.0.50
-        port: 9090
-  guami:
-    - plmn_id:
-        mcc: 999
-        mnc: 70
-      amf_id:
-        region: 2
-        set: 1
-  tai:
-    - plmn_id:
-        mcc: 999
-        mnc: 70
-      tac: 1
-  plmn_support:
-    - plmn_id:
-        mcc: 999
-        mnc: 70
-      s_nssai:
-        - sst: 1
-  security:
-    integrity_order : [ NIA2, NIA1, NIA0 ]
-    ciphering_order : [ NEA0, NEA1, NEA2 ]
-  network_name:
-    full: Open5GS
-  amf_name: open5gs-amf1
-  time:
-    t3512:
-      value: 540     # 9 mintues * 60 = 540 seconds
-
 sgwu:
   pfcp:
     server:
