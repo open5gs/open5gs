@@ -47,12 +47,7 @@ static void initialize(const char *const argv[])
     ogs_assert(rv == OGS_OK);
     test_5gc_init();
 
-// matej uredi
-
-ogs_error("MAtej pred boštjanovo funkcijo");
-
     rv = app_initialize(argv);
-//    rv = app_initialize_transfer(argv);
     ogs_assert(rv == OGS_OK);
 }
 
@@ -62,9 +57,6 @@ int main(int argc, const char *const argv[])
     abts_suite *suite = NULL;
 
     atexit(terminate);
-
-    // matej uredi
-    //test_app_run_transfer(argc, argv, "transfer.yaml", initialize);
     test_app_run(argc, argv, "transfer.yaml", initialize);
 
     for (i = 0; alltests[i].func; i++)

@@ -36,6 +36,7 @@ static ogs_thread_t *pcf_thread = NULL;
 static ogs_thread_t *nssf_thread = NULL;
 static ogs_thread_t *bsf_thread = NULL;
 static ogs_thread_t *udr_thread = NULL;
+static ogs_thread_t *old_amf_thread = NULL;
 
 int app_initialize(const char *const argv[])
 {
@@ -103,7 +104,7 @@ int app_initialize(const char *const argv[])
      */
     ogs_msleep(5000);
 
-    return OGS_OK;;
+    return OGS_OK;
 }
 
 void app_terminate(void)
@@ -130,6 +131,8 @@ void app_terminate(void)
     if (sepp_thread) ogs_thread_destroy(sepp_thread);
     if (scp_thread) ogs_thread_destroy(scp_thread);
     if (nrf_thread) ogs_thread_destroy(nrf_thread);
+
+    if (old_amf_thread) ogs_thread_destroy(old_amf_thread);
 }
 
 void test_app_init(void)

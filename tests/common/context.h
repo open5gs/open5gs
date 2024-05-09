@@ -48,7 +48,9 @@ typedef struct test_context_s {
     ogs_list_t      ngap_list;      /* AMF NGAP IPv4 Server List */
     ogs_list_t      ngap_list6;     /* AMF NGAP IPv6 Server List */
     ogs_sockaddr_t  *ngap_addr;     /* AMF NGAP IPv4 Address */
+    ogs_sockaddr_t  *ngap2_addr;    /* OLD AMF NGAP IPv4 Address */
     ogs_sockaddr_t  *ngap_addr6;    /* AMF NGAP IPv6 Address */
+    ogs_sockaddr_t  *ngap2_addr6;   /* OLD AMF NGAP IPv6 Address */
 
     uint16_t        s1ap_port;      /* Default S1AP Port */
     ogs_list_t      s1ap_list;      /* MME S1AP IPv4 Server List */
