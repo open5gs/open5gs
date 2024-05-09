@@ -104,9 +104,19 @@ static int test_context_validation(void)
     if (snode) test_self()->s1ap_addr6 = snode->addr;
 
     snode = ogs_list_first(&test_self()->ngap_list);
-    if (snode) test_self()->ngap_addr = snode->addr;
+
+    if (snode) {
+        test_self()->ngap_addr = snode->addr;
+        snode = ogs_list_next(snode);
+    }
+    if (snode) test_self()->ngap2_addr = snode->addr;
+
     snode = ogs_list_first(&test_self()->ngap_list6);
-    if (snode) test_self()->ngap_addr6 = snode->addr;
+    if (snode) {
+        test_self()->ngap_addr6 = snode->addr;
+        snode = ogs_list_next(snode);
+    }
+    if (snode) test_self()->ngap2_addr6 = snode->addr;
 
     if (test_self()->e_served_tai[index].list2.num) {
         memcpy(&test_self()->e_tai,
@@ -175,6 +185,7 @@ int test_context_parse_config(void)
     while (ogs_yaml_iter_next(&root_iter)) {
         const char *root_key = ogs_yaml_iter_key(&root_iter);
         ogs_assert(root_key);
+
         if (!strcmp(root_key, "amf")) {
             ogs_yaml_iter_t amf_iter;
             ogs_yaml_iter_recurse(&root_iter, &amf_iter);

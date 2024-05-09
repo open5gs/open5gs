@@ -65,7 +65,7 @@ static void test1_func(abts_case *tc, void *data)
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     /* gNB connects to AMF */
-    ngap = testngap_client(AF_INET);
+    ngap = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap);
 
     /* gNB connects to UPF */
@@ -426,7 +426,7 @@ static void test2_func(abts_case *tc, void *data)
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     /* gNB connects to AMF */
-    ngap = testngap_client(AF_INET);
+    ngap = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap);
 
     /* gNB connects to UPF */
@@ -787,7 +787,7 @@ static void test3_func(abts_case *tc, void *data)
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     /* gNB connects to AMF */
-    ngap = testngap_client(AF_INET);
+    ngap = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap);
 
     /* gNB connects to UPF */
@@ -1045,7 +1045,7 @@ static void test4_issues2842_func(abts_case *tc, void *data)
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     /* gNB connects to AMF */
-    ngap = testngap_client(AF_INET);
+    ngap = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap);
 
     /* gNB connects to UPF */
@@ -1409,7 +1409,7 @@ static void test5_func(abts_case *tc, void *data)
     ogs_pkbuf_t *recvbuf;
     ogs_ngap_message_t message;
 
-    ngap = testngap_client(AF_INET);
+    ngap = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap);
 
     sendbuf = testngap_build_ng_setup_request(0x4000, 22);

@@ -259,6 +259,8 @@ struct amf_ue_s {
     /* UE identity */
 #define AMF_UE_HAVE_SUCI(__aMF) \
     ((__aMF) && ((__aMF)->suci))
+#define AMF_UE_HAVE_SUPI(__aMF) \
+    ((__aMF) && ((__aMF)->supi))
     char            *suci; /* TS33.501 : SUCI */
     char            *supi; /* TS33.501 : SUPI */
     ogs_nas_5gs_mobile_identity_suci_t nas_mobile_identity_suci;
@@ -280,7 +282,11 @@ struct amf_ue_s {
         ogs_nas_5gs_guti_t guti;
     } current, next;
 
+    /* UE context transfer and Registration status update */
     ogs_nas_5gs_guti_t old_guti;
+    OpenAPI_ue_context_transfer_status_e transfer_status;
+    bool send_registration_status_update;
+    OpenAPI_list_t *to_release_session_list;
 
     /* UE Info */
     ogs_guami_t     *guami;
@@ -996,6 +1002,7 @@ void amf_clear_subscribed_info(amf_ue_t *amf_ue);
 bool amf_update_allowed_nssai(amf_ue_t *amf_ue);
 bool amf_ue_is_rat_restricted(amf_ue_t *amf_ue);
 int amf_instance_get_load(void);
+void amf_ue_save_to_release_session_list(amf_ue_t *amf_ue);
 
 #ifdef __cplusplus
 }

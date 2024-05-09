@@ -70,10 +70,10 @@ static void failure_func(abts_case *tc, void *data)
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     /* Two gNB connects to AMF */
-    ngap1 = testngap_client(AF_INET);
+    ngap1 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap1);
 
-    ngap2 = testngap_client(AF_INET);
+    ngap2 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap2);
 
     /* Two gNB connects to UPF */
@@ -501,10 +501,10 @@ static void direct_complete_func(abts_case *tc, void *data)
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     /* Two gNB connects to AMF */
-    ngap1 = testngap_client(AF_INET);
+    ngap1 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap1);
 
-    ngap2 = testngap_client(AF_INET);
+    ngap2 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap2);
 
     /* Two gNB connects to UPF */
@@ -1115,10 +1115,10 @@ static void direct_cancel_func(abts_case *tc, void *data)
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     /* Two gNB connects to AMF */
-    ngap1 = testngap_client(AF_INET);
+    ngap1 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap1);
 
-    ngap2 = testngap_client(AF_INET);
+    ngap2 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap2);
 
     /* Two gNB connects to UPF */
@@ -1529,10 +1529,10 @@ static void indirect_complete_func(abts_case *tc, void *data)
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     /* Two gNB connects to AMF */
-    ngap1 = testngap_client(AF_INET);
+    ngap1 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap1);
 
-    ngap2 = testngap_client(AF_INET);
+    ngap2 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap2);
 
     /* Two gNB connects to UPF */
@@ -2182,10 +2182,10 @@ static void indirect_cancel_func(abts_case *tc, void *data)
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     /* Two gNB connects to AMF */
-    ngap1 = testngap_client(AF_INET);
+    ngap1 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap1);
 
-    ngap2 = testngap_client(AF_INET);
+    ngap2 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap2);
 
     /* Two gNB connects to UPF */
