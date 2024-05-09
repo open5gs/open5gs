@@ -125,6 +125,7 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_UE_CONTEXTS           "ue-contexts"
 #define OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES        "n1-n2-messages"
 #define OGS_SBI_RESOURCE_NAME_TRANSFER              "transfer"
+#define OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE       "transfer-update"
 
 #define OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS     "sm-context-status"
 #define OGS_SBI_RESOURCE_NAME_AM_POLICY_NOTIFY      "am-policy-notify"
@@ -550,6 +551,8 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_sec_negotiate_rsp_data_t *SecNegotiateRspData;
     OpenAPI_ue_context_transfer_req_data_t *UeContextTransferReqData;
     OpenAPI_ue_context_transfer_rsp_data_t *UeContextTransferRspData;
+    OpenAPI_ue_reg_status_update_req_data_t *UeRegStatusUpdateReqData;
+    OpenAPI_ue_reg_status_update_rsp_data_t *UeRegStatusUpdateRspData;
 
     ogs_sbi_links_t *links;
 

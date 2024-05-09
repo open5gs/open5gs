@@ -193,6 +193,10 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_ue_context_transfer_req_data_free(message->UeContextTransferReqData);
     if (message->UeContextTransferRspData)
         OpenAPI_ue_context_transfer_rsp_data_free(message->UeContextTransferRspData);
+    if (message->UeRegStatusUpdateReqData)
+        OpenAPI_ue_reg_status_update_req_data_free(message->UeRegStatusUpdateReqData);
+    if (message->UeRegStatusUpdateRspData)
+        OpenAPI_ue_reg_status_update_rsp_data_free(message->UeRegStatusUpdateRspData);
 
     /* HTTP Part */
     for (i = 0; i < message->num_of_part; i++) {
@@ -1370,6 +1374,14 @@ static char *build_json(ogs_sbi_message_t *message)
         item = OpenAPI_ue_context_transfer_rsp_data_convertToJSON(
                 message->UeContextTransferRspData);
         ogs_assert(item);
+    } else if (message->UeRegStatusUpdateReqData) {
+        item = OpenAPI_ue_reg_status_update_req_data_convertToJSON(
+                message->UeRegStatusUpdateReqData);
+        ogs_assert(item);
+    } else if (message->UeRegStatusUpdateRspData) {
+        item = OpenAPI_ue_reg_status_update_rsp_data_convertToJSON(
+                message->UeRegStatusUpdateRspData);
+        ogs_assert(item);
     }
 
     if (item) {
@@ -2124,6 +2136,27 @@ static int parse_json(ogs_sbi_message_t *message,
                         message->UeContextTransferRspData =
                             OpenAPI_ue_context_transfer_rsp_data_parseFromJSON(item);
                         if (!message->UeContextTransferRspData) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else {
+                        ogs_error("HTTP ERROR Status : %d",
+                            message->res_status);
+                    }
+                    break;
+                
+                CASE(OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE)
+                    if (message->res_status == 0) {
+                        message->UeRegStatusUpdateReqData =
+                            OpenAPI_ue_reg_status_update_req_data_parseFromJSON(item);
+                        if (!message->UeRegStatusUpdateReqData) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                        message->UeRegStatusUpdateRspData =
+                            OpenAPI_ue_reg_status_update_rsp_data_parseFromJSON(item);
+                        if (!message->UeRegStatusUpdateRspData) {
                             rv = OGS_ERROR;
                             ogs_error("JSON parse error");
                         }
