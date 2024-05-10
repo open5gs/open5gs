@@ -181,28 +181,20 @@ void mme_s11_handle_create_session_response(
         cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
     }
 
-    if (create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST) {
-
-        /* No need S5C TEID in PathSwitchRequest */
-
-    } else {
-
+    switch (create_action) {
+    case OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST:
+        /* No need for PAA or S5C TEID in PathSwitchRequest */
+        break;
+    case OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE:
+        /* No need for PAA or S5C TEID in 2G->4G mobility, it was already provided by SGSN peer */
+        break;
+    default:
         if (rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.presence == 0) {
             ogs_error("[%s] No S5C TEID [Cause:%d]",
                     mme_ue->imsi_bcd, session_cause);
             cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
         }
 
-    }
-
-    switch (create_action) {
-    case OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST:
-        /* No need PAA in PathSwitchRequest */
-        break;
-    case OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE:
-        /* No need PAA in 2G->4G mobility, it was already provided by SGSN peer */
-        break;
-    default:
         if (rsp->pdn_address_allocation.presence) {
             ogs_paa_t paa;
 
