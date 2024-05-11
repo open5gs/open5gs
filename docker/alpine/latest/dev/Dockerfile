@@ -13,7 +13,7 @@ RUN apk update && \
         sudo
 
 ARG username=acetcom
-RUN adduser -u 1000 acetcom -D && \
+RUN adduser -u 2000 acetcom -D && \
     echo "${username} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${username} && \
     chmod 0440 /etc/sudoers.d/${username}
 
