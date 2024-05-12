@@ -1417,7 +1417,7 @@ int amf_namf_comm_handle_ue_context_transfer_request(
     UeContext._5g_mm_capability = encoded_gmm_capability;
 
     UeContext.pcf_id = amf_ue->sbi.service_type_array[
-        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL].nf_instance->id;
+        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL].nf_instance_id;
 
     /* TODO UeContext.pcfAmPolicyUri */
     /* TODO UeContext.pcfUePolicyUri */

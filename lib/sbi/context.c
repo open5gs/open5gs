@@ -1085,8 +1085,6 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void)
     ogs_assert(nf_instance);
     memset(nf_instance, 0, sizeof(ogs_sbi_nf_instance_t));
 
-    OGS_OBJECT_REF(nf_instance);
-
     nf_instance->time.heartbeat_interval =
             ogs_local_conf()->time.nf_instance.heartbeat_interval;
 
@@ -1096,10 +1094,10 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void)
 
     ogs_list_add(&ogs_sbi_self()->nf_instance_list, nf_instance);
 
-    ogs_debug("[%s] NFInstance added with Ref [%s:%d]",
+    ogs_debug("[%s] NFInstance added with Ref [%s]",
             nf_instance->nf_type ?
                 OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
-            nf_instance->id, nf_instance->reference_count);
+            nf_instance->id);
 
     return nf_instance;
 }
@@ -1196,20 +1194,10 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_assert(nf_instance);
 
-    ogs_debug("[%s] NFInstance UnRef [%s:%d]",
+    ogs_debug("[%s] NFInstance removed [%s]",
             nf_instance->nf_type ?
                 OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
-            nf_instance->id, nf_instance->reference_count);
-
-    if (OGS_OBJECT_IS_REF(nf_instance)) {
-        OGS_OBJECT_UNREF(nf_instance);
-        return;
-    }
-
-    ogs_debug("[%s] NFInstance removed [%s:%d]",
-            nf_instance->nf_type ?
-                OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
-            nf_instance->id, nf_instance->reference_count);
+            nf_instance->id);
 
     ogs_list_remove(&ogs_sbi_self()->nf_instance_list, nf_instance);
 
@@ -1243,7 +1231,19 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find(char *id)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
-    ogs_assert(id);
+    /*
+     * This is related to Issue #3093.
+     *
+     * We want to be able to use 'ogs_sbi_nf_instance_id_find(char *id)'
+     * even if the 'id' is NULL as in the use case below.
+     *
+     * ogs_sbi_nf_instance_find(
+     *    sess->sbi.service_type_array[service_type].nf_instance_id));
+     *
+     * To do so, we changed the 'assert(id)' to 'if (!id) return NULL',
+     * as shown below.
+     */
+    if (!id) return NULL;
 
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
         if (nf_instance->id && strcmp(nf_instance->id, id) == 0)
@@ -2202,10 +2202,10 @@ void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance)
     client = nf_instance_find_client(nf_instance);
     ogs_assert(client);
 
-    ogs_debug("[%s] NFInstance associated [%s:%d]",
+    ogs_debug("[%s] NFInstance associated [%s]",
             nf_instance->nf_type ?
                 OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
-            nf_instance->id, nf_instance->reference_count);
+            nf_instance->id);
 
     OGS_SBI_SETUP_CLIENT(nf_instance, client);
 
@@ -2273,16 +2273,12 @@ void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object)
         ogs_error("SBI running [%d]", ogs_list_count(&sbi_object->xact_list));
 
     for (i = 0; i < OGS_SBI_MAX_NUM_OF_SERVICE_TYPE; i++) {
-        ogs_sbi_nf_instance_t *nf_instance =
-            sbi_object->service_type_array[i].nf_instance;
-        if (nf_instance)
-            ogs_sbi_nf_instance_remove(nf_instance);
+        if (sbi_object->service_type_array[i].nf_instance_id)
+            ogs_free(sbi_object->service_type_array[i].nf_instance_id);
     }
     for (i = 0; i < OGS_SBI_MAX_NUM_OF_NF_TYPE; i++) {
-        ogs_sbi_nf_instance_t *nf_instance =
-            sbi_object->nf_type_array[i].nf_instance;
-        if (nf_instance)
-            ogs_sbi_nf_instance_remove(nf_instance);
+        if (sbi_object->nf_type_array[i].nf_instance_id)
+            ogs_free(sbi_object->nf_type_array[i].nf_instance_id);
     }
 }
 

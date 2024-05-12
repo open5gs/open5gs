@@ -112,10 +112,8 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                     break;
 
                 DEFAULT
-                    if (message.h.resource.component[1]) {
-                        nf_instance = ogs_sbi_nf_instance_find(
-                                message.h.resource.component[1]);
-                    }
+                    nf_instance = ogs_sbi_nf_instance_find(
+                            message.h.resource.component[1]);
 
                     if (!nf_instance) {
                         SWITCH(message.h.method)
@@ -165,9 +163,7 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                         ogs_fsm_dispatch(&nf_instance->sm, e);
                         if (OGS_FSM_CHECK(&nf_instance->sm,
                                     nrf_nf_state_de_registered)) {
-                            ogs_info("[%s:%d] NF de-registered",
-                                    nf_instance->id,
-                                    nf_instance->reference_count);
+                            ogs_info("[%s] NF de-registered", nf_instance->id);
                             nrf_nf_fsm_fini(nf_instance);
                             ogs_sbi_nf_instance_remove(nf_instance);
                         } else if (OGS_FSM_CHECK(&nf_instance->sm,

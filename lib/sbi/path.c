@@ -208,22 +208,22 @@ static int client_discover_cb(
 
             ogs_sbi_nf_fsm_init(nf_instance);
 
-            ogs_info("[%s] (SCP-discover) NF registered [%s:%d]",
+            ogs_info("[%s] (SCP-discover) NF registered [%s]",
                     nf_instance->nf_type ?
                         OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
-                    nf_instance->id, nf_instance->reference_count);
+                    nf_instance->id);
         } else {
-            ogs_warn("[%s] (SCP-discover) NF has already been added [%s:%d]",
+            ogs_warn("[%s] (SCP-discover) NF has already been added [%s]",
                     nf_instance->nf_type ?
                         OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
-                    nf_instance->id, nf_instance->reference_count);
+                    nf_instance->id);
 
             ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
             ogs_sbi_nf_fsm_tran(nf_instance, ogs_sbi_nf_state_registered);
         }
 
-        OGS_SBI_SETUP_NF_INSTANCE(
-                sbi_object->service_type_array[service_type], nf_instance);
+        OGS_SBI_SETUP_NF_INSTANCE_ID(
+                sbi_object->service_type_array[service_type], nf_instance->id);
     }
 
     e = ogs_event_new(OGS_EVENT_SBI_CLIENT);
@@ -281,13 +281,15 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
     }
 
     /* Target NF-Instance */
-    nf_instance = sbi_object->service_type_array[service_type].nf_instance;
+    nf_instance = ogs_sbi_nf_instance_find(
+            sbi_object->service_type_array[service_type].nf_instance_id);
     if (!nf_instance) {
         nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
                         target_nf_type, requester_nf_type, discovery_option);
-        if (nf_instance)
-            OGS_SBI_SETUP_NF_INSTANCE(
-                    sbi_object->service_type_array[service_type], nf_instance);
+        if (nf_instance) {
+            OGS_SBI_SETUP_NF_INSTANCE_ID(
+                    sbi_object->service_type_array[service_type], nf_instance->id);
+        }
     }
 
     /* Target Client */

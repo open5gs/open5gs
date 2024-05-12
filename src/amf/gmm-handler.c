@@ -1305,8 +1305,9 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                 ogs_sbi_discovery_option_set_tai(
                         discovery_option, &amf_ue->nr_tai);
 
-                nf_instance = sess->sbi.
-                    service_type_array[service_type].nf_instance;
+                nf_instance = ogs_sbi_nf_instance_find(
+                        sess->sbi.service_type_array[service_type].
+                        nf_instance_id);
                 if (!nf_instance) {
                     OpenAPI_nf_type_e requester_nf_type =
                                 NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);
@@ -1317,8 +1318,9 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION,
                             requester_nf_type,
                             discovery_option);
-                    nf_instance = sess->sbi.
-                        service_type_array[service_type].nf_instance;
+                    nf_instance = ogs_sbi_nf_instance_find(
+                            sess->sbi.service_type_array[service_type].
+                            nf_instance_id);
 
                     if (!nf_instance)
                         ogs_info("No SMF Instance");

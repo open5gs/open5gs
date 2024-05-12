@@ -84,8 +84,8 @@ void pcf_nnrf_handle_nf_discover(
         return;
     }
 
-    OGS_SBI_SETUP_NF_INSTANCE(
-            sbi_object->service_type_array[service_type], nf_instance);
+    OGS_SBI_SETUP_NF_INSTANCE_ID(
+            sbi_object->service_type_array[service_type], nf_instance->id);
 
     switch (service_type) {
     case OGS_SBI_SERVICE_TYPE_NPCF_POLICYAUTHORIZATION:

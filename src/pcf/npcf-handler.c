@@ -505,7 +505,8 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
 
         service_type = OGS_SBI_SERVICE_TYPE_NPCF_POLICYAUTHORIZATION;
 
-        nf_instance = sess->sbi.service_type_array[service_type].nf_instance;
+        nf_instance = ogs_sbi_nf_instance_find(
+                sess->sbi.service_type_array[service_type].nf_instance_id);
         if (!nf_instance) {
             OpenAPI_nf_type_e requester_nf_type =
                         NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);
@@ -513,9 +514,9 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
             nf_instance = ogs_sbi_nf_instance_find_by_service_type(
                             service_type, requester_nf_type);
             if (nf_instance)
-                OGS_SBI_SETUP_NF_INSTANCE(
+                OGS_SBI_SETUP_NF_INSTANCE_ID(
                         sess->sbi.service_type_array[service_type],
-                        nf_instance);
+                        nf_instance->id);
         }
 
         if (nf_instance) {
