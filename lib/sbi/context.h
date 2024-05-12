@@ -175,7 +175,6 @@ typedef struct ogs_sbi_nf_instance_s {
 #define NF_INSTANCE_CLIENT(__nFInstance) \
     ((__nFInstance) ? ((__nFInstance)->client) : NULL)
     void *client;                       /* only used in CLIENT */
-    unsigned int reference_count;       /* reference count for memory free */
 } ogs_sbi_nf_instance_t;
 
 typedef enum {
@@ -193,7 +192,7 @@ typedef struct ogs_sbi_object_s {
     ogs_sbi_obj_type_e type;
 
     struct {
-        ogs_sbi_nf_instance_t *nf_instance;
+        char *nf_instance_id;
     } nf_type_array[OGS_SBI_MAX_NUM_OF_NF_TYPE],
       service_type_array[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE];
 
@@ -459,19 +458,16 @@ void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
 
 int ogs_sbi_default_client_port(OpenAPI_uri_scheme_e scheme);
 
-#define OGS_SBI_SETUP_NF_INSTANCE(__cTX, __nFInstance) \
+#define OGS_SBI_SETUP_NF_INSTANCE_ID(__cTX, __nFInstanceId) \
     do { \
-        ogs_assert(__nFInstance); \
+        ogs_assert(__nFInstanceId); \
         \
-        if ((__cTX).nf_instance) { \
-            ogs_warn("NF Instance [%s] updated [%s]", \
-                    OpenAPI_nf_type_ToString((__nFInstance)->nf_type), \
-                    (__nFInstance)->id); \
-            ogs_sbi_nf_instance_remove((__cTX).nf_instance); \
+        if ((__cTX).nf_instance_id) { \
+            ogs_warn("NF Instance(ID) updated [%s]", (__nFInstanceId)); \
+            ogs_free((__cTX).nf_instance_id); \
         } \
         \
-        OGS_OBJECT_REF(__nFInstance); \
-        ((__cTX).nf_instance) = (__nFInstance); \
+        ((__cTX).nf_instance_id) = ogs_strdup(__nFInstanceId); \
     } while(0)
 
 bool ogs_sbi_discovery_param_is_matched(

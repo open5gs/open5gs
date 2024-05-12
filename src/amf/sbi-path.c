@@ -313,7 +313,7 @@ static int client_discover_cb(
     amf_sbi_select_nf(&sess->sbi,
             service_type, requester_nf_type, discovery_option);
 
-    if (!sess->sbi.service_type_array[service_type].nf_instance) {
+    if (!sess->sbi.service_type_array[service_type].nf_instance_id) {
         ogs_error("[%s:%d] (NF discover) No [%s]",
                     amf_ue->supi, sess->psi,
                     ogs_sbi_service_type_to_name(service_type));
