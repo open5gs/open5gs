@@ -1248,7 +1248,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             mobile_identity_header =
                     (ogs_nas_5gs_mobile_identity_header_t *)mobile_identity->buffer;
 
-            /* Check if registration is done with GUTI  */
+            /* Check if registration is done with GUTI */
             if (mobile_identity_header && mobile_identity_header->type ==
                     OGS_NAS_5GS_MOBILE_IDENTITY_GUTI &&
                     ogs_nas_5gs_guti_is_valid(&amf_ue->current.guti)) {
@@ -1267,25 +1267,11 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 */
 
                 int state = e->h.sbi.state;
-                bool serving_guami = false;
-                int i;
 
-                /* Compare all serving guamis with guami from UE's GUTI */
-                for (i = 0; i < amf_self()->num_of_served_guami; i++) {
-                    if ((memcmp(&amf_self()->served_guami[i].amf_id,
-                                &amf_ue->current.guti.amf_id,
-                                sizeof(ogs_amf_id_t)) == 0) &&
-                        (memcmp(&amf_self()->served_guami[i].plmn_id,
-                                &amf_ue->current.guti.nas_plmn_id,
-                                OGS_PLMN_ID_LEN) == 0)) {
-
-                        serving_guami = true;
-                        break;
-                    }
-                }
-                if (!serving_guami) {
+                if (!amf_ue_check_serving_guami(amf_ue)) {
                     /* Guami from UE is not this AMF's serving guami - send UEContextTransfer */
                     ogs_sbi_discovery_option_t *discovery_option = NULL;
+                    ogs_nas_5gs_mobile_identity_guti_t *mobile_identity_guti = NULL;
 
                     discovery_option = ogs_sbi_discovery_option_new();
                     ogs_assert(discovery_option);
@@ -1299,6 +1285,12 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                             amf_ue, state, nas_message);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
+
+                    /* Save old_amf - 5G GUTI from old AMF - for the time of registration */
+                    mobile_identity_guti =
+                            (ogs_nas_5gs_mobile_identity_guti_t *)mobile_identity->buffer;
+                    ogs_assert(mobile_identity_guti);
+                    amf_ue_save_old_amf_guti(amf_ue, mobile_identity_guti);
                     break;
                 }
             }
@@ -1928,6 +1920,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
     ran_ue_t *ran_ue = NULL;
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
+    ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -2005,6 +1998,35 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(s, gmm_state_exception);
+                break;
+            }
+
+            if (amf_ue->old_amf.m_tmsi) {
+                /*
+                 * Registration was done with GUTI when the UE was
+                 * previously registered to another AMF (Old AMF)
+                 * and guami from UE is not this AMF's serving guami -
+                 * send RegistrationStatusUpdate
+                 */
+                ogs_sbi_discovery_option_t *discovery_option = NULL;
+
+                int state = e->h.sbi.state;
+                discovery_option = ogs_sbi_discovery_option_new();
+                ogs_assert(discovery_option);
+                discovery_option->target_guami = ogs_malloc(sizeof(ogs_guami_t ));
+                ogs_assert(discovery_option->target_guami);
+
+                memcpy(&discovery_option->target_guami->amf_id,
+                        &amf_ue->old_amf.guti.amf_id, sizeof(ogs_amf_id_t));
+                ogs_nas_to_plmn_id(&discovery_option->target_guami->plmn_id,
+                        &amf_ue->old_amf.guti.nas_plmn_id);
+
+                r = amf_ue_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NAMF_COMM, discovery_option,
+                        amf_namf_comm_build_registration_status_update,
+                        amf_ue, state, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
                 break;
             }
 
@@ -2088,6 +2110,68 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             break;
         }
         break;
+    case OGS_EVENT_SBI_CLIENT:
+        sbi_message = e->h.sbi.message;
+        ogs_assert(sbi_message);
+
+        SWITCH(sbi_message->h.service.name)
+        CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
+                SWITCH(sbi_message->h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE)
+                    if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
+                        ogs_error("[%s] HTTP response error [%d]",
+                                amf_ue->supi, sbi_message->res_status);
+                    }
+                    r = amf_namf_comm_handle_registration_status_update_response(sbi_message, amf_ue);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+
+                    /* Continue with registration */
+                    ogs_kdf_kgnb_and_kn3iwf(
+                            amf_ue->kamf, amf_ue->ul_count.i32,
+                            amf_ue->nas.access_type, amf_ue->kgnb);
+                    ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->kgnb, amf_ue->nh);
+                    amf_ue->nhcc = 1;
+
+                    r = amf_ue_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
+                            amf_nudm_uecm_build_registration, amf_ue, 0, NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+
+                    if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST) {
+                        OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
+                    } else if (amf_ue->nas.message_type ==
+                                OGS_NAS_5GS_SERVICE_REQUEST) {
+                        OGS_FSM_TRAN(s, &gmm_state_registered);
+                    } else {
+                        ogs_fatal("Invalid OGS_NAS_5GS[%d]", amf_ue->nas.message_type);
+                        ogs_assert_if_reached();
+                    }
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid resource name [%s]",
+                            sbi_message->h.resource.component[2]);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        DEFAULT
+            ogs_error("Invalid service name [%s]", sbi_message->h.service.name);
+            ogs_assert_if_reached();
+        END
+        break;
+
     case AMF_EVENT_5GMM_TIMER:
         switch (e->h.timer_id) {
         case AMF_TIMER_T3560:
@@ -2517,6 +2601,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
     ran_ue_t *ran_ue = NULL;
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
+    ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -2538,6 +2623,38 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
         AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
+
+        if (amf_ue->old_amf.m_tmsi) {
+            /*
+             * Registration was done with GUTI when the UE was
+             * previously registered to another AMF (Old AMF)
+             * and guami from UE is not this AMF's serving guami -
+             * send RegistrationStatusUpdate
+             */
+            ogs_sbi_discovery_option_t *discovery_option = NULL;
+
+            int state = e->h.sbi.state;
+            discovery_option = ogs_sbi_discovery_option_new();
+            ogs_assert(discovery_option);
+            discovery_option->target_guami = ogs_malloc(sizeof(ogs_guami_t ));
+            ogs_assert(discovery_option->target_guami);
+
+            memcpy(&discovery_option->target_guami->amf_id,
+                    &amf_ue->old_amf.guti.amf_id, sizeof(ogs_amf_id_t));
+            ogs_nas_to_plmn_id(&discovery_option->target_guami->plmn_id,
+                    &amf_ue->old_amf.guti.nas_plmn_id);
+
+            amf_ue->transfer_status =
+                    OpenAPI_ue_context_transfer_status_NOT_TRANSFERRED;
+
+            r = amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NAMF_COMM, discovery_option,
+                    amf_namf_comm_build_registration_status_update,
+                    amf_ue, state, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            break;
+        }
 
         xact_count = amf_sess_xact_count(amf_ue);
 
@@ -2673,6 +2790,62 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         default:
             ogs_error("Unknown message [%d]", nas_message->gmm.h.message_type);
         }
+        break;
+    case OGS_EVENT_SBI_CLIENT:
+        sbi_message = e->h.sbi.message;
+        ogs_assert(sbi_message);
+
+        ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+        ogs_assert(ran_ue);
+
+        SWITCH(sbi_message->h.service.name)
+        CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
+                SWITCH(sbi_message->h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE)
+                    if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
+                        ogs_error("[%s] HTTP response error [%d]",
+                                amf_ue->supi, sbi_message->res_status);
+                    }
+                    r = amf_namf_comm_handle_registration_status_update_response(sbi_message, amf_ue);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+
+                    /* Continue with release command */
+                    xact_count = amf_sess_xact_count(amf_ue);
+                    amf_sbi_send_release_all_sessions(
+                            ran_ue, amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+
+                    if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
+                        amf_sess_xact_count(amf_ue) == xact_count) {
+                        r = ngap_send_amf_ue_context_release_command(amf_ue,
+                                NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+                                NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                    }
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid resource name [%s]",
+                            sbi_message->h.resource.component[2]);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        DEFAULT
+            ogs_error("Invalid service name [%s]", sbi_message->h.service.name);
+            ogs_assert_if_reached();
+
+        END
         break;
 
     default:

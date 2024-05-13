@@ -98,3 +98,63 @@ ogs_sbi_request_t *amf_namf_comm_build_ue_context_transfer(
 
     return request;
 }
+
+ogs_sbi_request_t *amf_namf_comm_build_registration_status_update(
+        amf_ue_t *amf_ue, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    OpenAPI_ue_reg_status_update_req_data_t UeRegStatusUpdateReqData;
+    char *ue_context_id = NULL;
+
+    ogs_assert(amf_ue);
+
+    ue_context_id = ogs_guti_to_string(amf_ue);
+    ogs_assert(ue_context_id);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_COMM;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+    message.h.resource.component[0] =
+            (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXTS;
+    message.h.resource.component[1] = ue_context_id;
+    message.h.resource.component[2] =
+            (char *)OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE;
+    message.UeRegStatusUpdateReqData = &UeRegStatusUpdateReqData;
+
+    memset(&UeRegStatusUpdateReqData, 0, sizeof(UeRegStatusUpdateReqData));
+
+    UeRegStatusUpdateReqData.transfer_status = amf_ue->transfer_status;
+    /*
+     * TS 29.518
+     * 5.2.2.2.2 Registration Status Update
+     * If any network slice(s) become no longer available and there are PDU
+     * Session(s) associated with them, the target AMF shall include these
+     * PDU session(s) in the toReleaseSessionList attribute in the payload.
+     */
+    if (amf_ue->transfer_status ==
+            OpenAPI_ue_context_transfer_status_TRANSFERRED &&
+            amf_ue->to_release_session_list) {
+        UeRegStatusUpdateReqData.to_release_session_list =
+                amf_ue->to_release_session_list;
+    }
+
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+    if (ue_context_id)
+        ogs_free(ue_context_id);
+
+    amf_ue_clear_to_release_session_list(amf_ue);
+
+    /* Delete 5G GUTI from old AMF */
+    if (amf_ue->old_amf.m_tmsi) {
+        ogs_hash_set(amf_self()->guti_ue_hash,
+                &amf_ue->old_amf.guti, sizeof(ogs_nas_5gs_guti_t), NULL);
+        ogs_assert(amf_m_tmsi_free(amf_ue->old_amf.m_tmsi) == OGS_OK);
+    }
+
+    return request;
+}

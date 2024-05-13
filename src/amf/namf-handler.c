@@ -1172,13 +1172,13 @@ static OpenAPI_list_t *amf_namf_comm_encode_ue_session_context_list(amf_ue_t *am
         ogs_assert(sNSSAI);
 
         PduSessionContext->pdu_session_id = sess->psi;
-        PduSessionContext->sm_context_ref = sess->sm_context.ref;
+        PduSessionContext->sm_context_ref = ogs_strdup(sess->sm_context.ref);
 
         sNSSAI->sst = sess->s_nssai.sst;
         sNSSAI->sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
         PduSessionContext->s_nssai = sNSSAI;
 
-        PduSessionContext->dnn = sess->dnn;
+        PduSessionContext->dnn = ogs_strdup(sess->dnn);
         PduSessionContext->access_type = (OpenAPI_access_type_e)amf_ue->nas.access_type;
 
         OpenAPI_list_add(PduSessionList, PduSessionContext);
@@ -1359,7 +1359,7 @@ int amf_namf_comm_handle_ue_context_transfer_request(
     amf_ue = amf_ue_find_by_ue_context_id(ue_context_id);
     if (!amf_ue) {
         status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
-        strerror = ogs_msprintf("CONTEXT_NOT_FOUND");
+        strerror = ogs_msprintf("Context not found");
         goto cleanup;
     }
 
@@ -1466,6 +1466,114 @@ cleanup:
 
     ogs_assert(true ==
         ogs_sbi_server_send_error(stream, status, NULL, strerror, NULL, NULL));
+    ogs_free(strerror);
+
+    return OGS_ERROR;
+}
+
+int amf_namf_comm_handle_registration_status_update_request(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg) {
+
+    ogs_sbi_response_t *response = NULL;
+    ogs_sbi_message_t sendmsg;
+    amf_ue_t *amf_ue = NULL;
+    amf_sess_t *sess = NULL;
+
+    OpenAPI_ue_reg_status_update_req_data_t *UeRegStatusUpdateReqData = recvmsg->UeRegStatusUpdateReqData;
+    OpenAPI_ue_reg_status_update_rsp_data_t UeRegStatusUpdateRspData;
+
+    int status = 0;
+    char *strerror = NULL;
+    char *ue_context_id = NULL;
+
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    ue_context_id = recvmsg->h.resource.component[1];
+
+    if (!ue_context_id) {
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        strerror = ogs_msprintf("No UE context ID");
+        goto cleanup;
+    }
+    amf_ue = amf_ue_find_by_ue_context_id(ue_context_id);
+    if (!amf_ue) {
+        status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
+        strerror = ogs_msprintf("Context not found");
+        goto cleanup;
+    }
+
+    memset(&UeRegStatusUpdateRspData, 0, sizeof(UeRegStatusUpdateRspData));
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    sendmsg.UeRegStatusUpdateRspData = &UeRegStatusUpdateRspData;
+
+    if (UeRegStatusUpdateReqData->transfer_status ==
+            OpenAPI_ue_context_transfer_status_TRANSFERRED) {
+        /*
+         * TS 29.518
+         * 5.2.2.2.2 Registration Status Update
+         * Once the update is received, the source AMF shall:
+         *  -   remove the individual ueContext resource and release any PDU session(s) in the
+         *      toReleaseSessionList attribute, if the transferStatus attribute included in the
+         *      POST request body is set to "TRANSFERRED" and if the source AMF transferred the
+         *      complete UE Context including all MM contexts and PDU Session Contexts.
+         */
+        UeRegStatusUpdateRspData.reg_status_transfer_complete = 1;
+
+        if (UeRegStatusUpdateReqData->to_release_session_list) {
+            OpenAPI_lnode_t *node = NULL;
+            OpenAPI_list_for_each(UeRegStatusUpdateReqData->to_release_session_list, node) {
+                uint8_t psi = *(uint8_t *)node->data;
+                sess = amf_sess_find_by_psi(amf_ue, psi);
+                if (SESSION_CONTEXT_IN_SMF(sess)) {
+                    amf_sbi_send_release_session(amf_ue->ran_ue, sess, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                } else {
+                    ogs_error("[%s] No Session Context PSI[%d]",
+                            amf_ue->supi, psi);
+                    UeRegStatusUpdateRspData.reg_status_transfer_complete = 0;
+                }
+            }
+        }
+
+        /* Clear UE context */
+        CLEAR_NG_CONTEXT(amf_ue);
+        AMF_UE_CLEAR_PAGING_INFO(amf_ue);
+        AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
+        AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
+        CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
+        OGS_ASN_CLEAR_DATA(&amf_ue->ueRadioCapability);
+
+    } else if (UeRegStatusUpdateReqData->transfer_status ==
+            OpenAPI_ue_context_transfer_status_NOT_TRANSFERRED) {
+       /*
+        * TS 23.502
+        * 4.2.2.2.2
+        * If the authentication/security procedure fails, then the Registration shall be rejected and
+        * the new AMF invokes the Namf_Communication_RegistrationStatusUpdate service operation with
+        * a reject indication towards the old AMF. The old AMF continues as if the UE context transfer
+        * service operation was never received.
+        */
+        UeRegStatusUpdateRspData.reg_status_transfer_complete = 0;
+
+    } else {
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        strerror = ogs_msprintf("Transfer status not supported: [%d]",
+                UeRegStatusUpdateReqData->transfer_status);
+        goto cleanup;
+    }
+
+    status = OGS_SBI_HTTP_STATUS_OK;
+    response = ogs_sbi_build_response(&sendmsg, status);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    return OGS_OK;
+
+cleanup:
+    ogs_assert(strerror);
+    ogs_error("%s", strerror);
+
+    ogs_assert(true == ogs_sbi_server_send_error(stream, status, NULL, strerror, NULL, NULL));
     ogs_free(strerror);
 
     return OGS_ERROR;
