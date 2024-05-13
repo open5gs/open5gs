@@ -287,6 +287,16 @@ struct amf_ue_s {
         ogs_nas_rejected_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
     } rejected_nssai;
 
+    /* UE context transfer and Registration status update */
+    OpenAPI_ue_context_transfer_status_e transfer_status;
+
+    OpenAPI_list_t *to_release_session_list;
+
+    struct {
+        amf_m_tmsi_t *m_tmsi;
+        ogs_nas_5gs_guti_t guti;
+    } old_amf;
+
     /* PCF sends the RESPONSE
      * of [POST] /npcf-am-polocy-control/v1/policies */
 #define PCF_AM_POLICY_ASSOCIATED(__aMF) \
@@ -968,6 +978,11 @@ void amf_clear_subscribed_info(amf_ue_t *amf_ue);
 bool amf_update_allowed_nssai(amf_ue_t *amf_ue);
 bool amf_ue_is_rat_restricted(amf_ue_t *amf_ue);
 int amf_instance_get_load(void);
+bool amf_ue_check_serving_guami(amf_ue_t *amf_ue);
+void amf_ue_save_old_amf_guti(amf_ue_t *amf_ue,
+        ogs_nas_5gs_mobile_identity_guti_t *mobile_identity_guti);
+void amf_ue_create_to_release_session_list(amf_ue_t *amf_ue);
+void amf_ue_clear_to_release_session_list(amf_ue_t *amf_ue);
 
 #ifdef __cplusplus
 }

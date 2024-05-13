@@ -1501,7 +1501,7 @@ void amf_ue_confirm_guti(amf_ue_t *amf_ue)
      * by performing the generic UE configuration update procedure.
      */
 
-    /* Copying from Current to Next Guti */
+    /* Copying from Next to Current Guti */
     amf_ue->current.m_tmsi = amf_ue->next.m_tmsi;
     memcpy(&amf_ue->current.guti,
             &amf_ue->next.guti, sizeof(ogs_nas_5gs_guti_t));
@@ -1656,6 +1656,12 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     if (amf_ue->next.m_tmsi) {
         ogs_assert(amf_m_tmsi_free(amf_ue->next.m_tmsi) == OGS_OK);
     }
+    if (amf_ue->old_amf.m_tmsi) {
+        ogs_hash_set(self.guti_ue_hash,
+                &amf_ue->old_amf.guti, sizeof(ogs_nas_5gs_guti_t), NULL);
+        ogs_assert(amf_m_tmsi_free(amf_ue->old_amf.m_tmsi) == OGS_OK);
+
+    }
     if (amf_ue->suci) {
         ogs_hash_set(self.suci_hash, amf_ue->suci, strlen(amf_ue->suci), NULL);
         ogs_free(amf_ue->suci);
@@ -1672,6 +1678,9 @@ void amf_ue_remove(amf_ue_t *amf_ue)
         ogs_assert(amf_ue->msisdn[i]);
         ogs_free(amf_ue->msisdn[i]);
     }
+
+    /* Clear sessions for RegistrationStatusUpdate */
+    amf_ue_clear_to_release_session_list(amf_ue);
 
     /* Clear SubscribedInfo */
     amf_clear_subscribed_info(amf_ue);
@@ -2990,4 +2999,101 @@ bool amf_ue_is_rat_restricted(amf_ue_t *amf_ue)
         }
     }
     return false;
+}
+
+bool amf_ue_check_serving_guami(amf_ue_t *amf_ue)
+{
+    bool serving_guami = false;
+    int i;
+
+    /* Compare all serving guamis with guami from UE's GUTI */
+    for (i = 0; i < amf_self()->num_of_served_guami; i++) {
+        if ((memcmp(&amf_self()->served_guami[i].amf_id,
+                    &amf_ue->current.guti.amf_id,
+                    sizeof(ogs_amf_id_t)) == 0) &&
+            (memcmp(&amf_self()->served_guami[i].plmn_id,
+                    &amf_ue->current.guti.nas_plmn_id,
+                    OGS_PLMN_ID_LEN) == 0)) {
+
+            serving_guami = true;
+            break;
+        }
+    }
+    return serving_guami;
+}
+
+void amf_ue_save_old_amf_guti(amf_ue_t *amf_ue,
+        ogs_nas_5gs_mobile_identity_guti_t *mobile_identity_guti)
+{
+    ogs_assert(amf_ue);
+    ogs_assert(mobile_identity_guti);
+
+    if (amf_ue->old_amf.m_tmsi) {
+        /* We need to remove GUTI from old AMF in hash table */
+        ogs_hash_set(amf_self()->guti_ue_hash,
+                &amf_ue->old_amf.guti, sizeof(ogs_nas_5gs_guti_t), NULL);
+        ogs_assert(amf_m_tmsi_free(amf_ue->old_amf.m_tmsi) == OGS_OK);
+    }
+
+    ogs_pool_alloc(&m_tmsi_pool, &amf_ue->old_amf.m_tmsi);
+    ogs_assert(amf_ue->old_amf.m_tmsi);
+
+    memcpy(&amf_ue->old_amf.guti.nas_plmn_id,
+            &mobile_identity_guti->nas_plmn_id, sizeof(ogs_nas_plmn_id_t));
+    memcpy(&amf_ue->old_amf.guti.amf_id,
+            &mobile_identity_guti->amf_id, sizeof(ogs_amf_id_t));
+    memcpy(amf_ue->old_amf.m_tmsi,
+            &mobile_identity_guti->m_tmsi, sizeof(uint32_t));
+    amf_ue->old_amf.guti.m_tmsi = be32toh(mobile_identity_guti->m_tmsi);
+
+    /* Hashing old_amf GUTI */
+    ogs_hash_set(amf_self()->guti_ue_hash,
+            &amf_ue->old_amf.guti, sizeof(ogs_nas_5gs_guti_t), amf_ue);
+}
+
+void amf_ue_create_to_release_session_list(amf_ue_t *amf_ue)
+{
+    amf_sess_t *sess = NULL;
+
+    amf_ue->to_release_session_list = OpenAPI_list_create();
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        bool supported_s_nssai = false;
+        int i;
+        for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
+            int j;
+            for (j = 0; j < amf_self()->plmn_support[i].num_of_s_nssai; j++) {
+                if (memcmp(&sess->s_nssai,
+                        &amf_self()->plmn_support[i].s_nssai[j],
+                        sizeof(ogs_s_nssai_t)) == 0) {
+                    supported_s_nssai = true;
+                    break;
+                }
+            }
+            if (supported_s_nssai)
+                break;
+        }
+        if (!supported_s_nssai) {
+            double *psi = ogs_calloc(1, sizeof(*psi));
+            ogs_assert(psi);
+            *psi = (double)sess->psi;
+            OpenAPI_list_add(amf_ue->to_release_session_list, psi);
+        }
+    }
+    if (amf_ue->to_release_session_list->count == 0) {
+        OpenAPI_list_free(amf_ue->to_release_session_list);
+        amf_ue->to_release_session_list = NULL;
+    }
+}
+
+void amf_ue_clear_to_release_session_list(amf_ue_t *amf_ue)
+{
+    OpenAPI_lnode_t *node = NULL;
+
+    if (amf_ue->to_release_session_list) {
+        OpenAPI_list_for_each(amf_ue->to_release_session_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(amf_ue->to_release_session_list);
+        amf_ue->to_release_session_list = NULL;
+    }
 }
