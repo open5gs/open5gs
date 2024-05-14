@@ -133,7 +133,7 @@ int amf_nausf_auth_handle_authenticate(
     ogs_freeaddrinfo(addr);
     ogs_freeaddrinfo(addr6);
 
-    STORE_5G_AKA_CONFIRMATION(amf_ue, message->http.location);
+    STORE_5G_AKA_CONFIRMATION(amf_ue, LinksValueSchemeValue->href);
 
     ogs_ascii_to_hex(AV5G_AKA->rand, strlen(AV5G_AKA->rand),
         amf_ue->rand, sizeof(amf_ue->rand));
