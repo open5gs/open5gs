@@ -2338,9 +2338,8 @@ void amf_sbi_select_nf(
         nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
                         target_nf_type, requester_nf_type, discovery_option);
         if (nf_instance)
-            OGS_SBI_SETUP_NF_INSTANCE_ID(
-                    sbi_object->service_type_array[service_type],
-                    nf_instance->id);
+            OGS_SBI_SETUP_NF_INSTANCE(
+                    sbi_object->service_type_array[service_type], nf_instance);
         break;
     case OGS_SBI_OBJ_SESS_TYPE:
         sess = (amf_sess_t *)sbi_object;
@@ -2353,9 +2352,8 @@ void amf_sbi_select_nf(
                         false)
                 continue;
 
-            OGS_SBI_SETUP_NF_INSTANCE_ID(
-                    sbi_object->service_type_array[service_type],
-                    nf_instance->id);
+            OGS_SBI_SETUP_NF_INSTANCE(
+                    sbi_object->service_type_array[service_type], nf_instance);
             break;
         }
         break;

@@ -112,8 +112,10 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                     break;
 
                 DEFAULT
-                    nf_instance = ogs_sbi_nf_instance_find(
-                            message.h.resource.component[1]);
+                    if (message.h.resource.component[1]) {
+                        nf_instance = ogs_sbi_nf_instance_find(
+                                message.h.resource.component[1]);
+                    }
 
                     if (!nf_instance) {
                         SWITCH(message.h.method)

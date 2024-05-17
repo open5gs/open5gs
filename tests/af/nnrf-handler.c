@@ -62,8 +62,8 @@ void af_nnrf_handle_nf_discover(
         return;
     }
 
-    OGS_SBI_SETUP_NF_INSTANCE_ID(
-            sbi_object->service_type_array[service_type], nf_instance->id);
+    OGS_SBI_SETUP_NF_INSTANCE(
+            sbi_object->service_type_array[service_type], nf_instance);
 
     ogs_expect(true == af_sbi_send_request(nf_instance, xact));
 }

@@ -1231,19 +1231,7 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find(char *id)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
-    /*
-     * This is related to Issue #3093.
-     *
-     * We want to be able to use 'ogs_sbi_nf_instance_id_find(char *id)'
-     * even if the 'id' is NULL as in the use case below.
-     *
-     * ogs_sbi_nf_instance_find(
-     *    sess->sbi.service_type_array[service_type].nf_instance_id));
-     *
-     * To do so, we changed the 'assert(id)' to 'if (!id) return NULL',
-     * as shown below.
-     */
-    if (!id) return NULL;
+    ogs_assert(id);
 
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
         if (nf_instance->id && strcmp(nf_instance->id, id) == 0)
@@ -2130,9 +2118,6 @@ bool ogs_sbi_discovery_param_is_matched(
     if (NF_INSTANCE_EXCLUDED_FROM_DISCOVERY(nf_instance))
         return false;
 
-    if (!OGS_FSM_CHECK(&nf_instance->sm, ogs_sbi_nf_state_registered))
-        return false;
-
     if (nf_instance->nf_type != target_nf_type)
         return false;
 
@@ -2260,26 +2245,15 @@ ogs_sbi_client_t *ogs_sbi_client_find_by_service_type(
             return nf_service->client;
     }
 
-    return nf_instance->client;
+    return NULL;
 }
 
 void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object)
 {
-    int i;
-
     ogs_assert(sbi_object);
 
     if (ogs_list_count(&sbi_object->xact_list))
         ogs_error("SBI running [%d]", ogs_list_count(&sbi_object->xact_list));
-
-    for (i = 0; i < OGS_SBI_MAX_NUM_OF_SERVICE_TYPE; i++) {
-        if (sbi_object->service_type_array[i].nf_instance_id)
-            ogs_free(sbi_object->service_type_array[i].nf_instance_id);
-    }
-    for (i = 0; i < OGS_SBI_MAX_NUM_OF_NF_TYPE; i++) {
-        if (sbi_object->nf_type_array[i].nf_instance_id)
-            ogs_free(sbi_object->nf_type_array[i].nf_instance_id);
-    }
 }
 
 ogs_sbi_xact_t *ogs_sbi_xact_add(

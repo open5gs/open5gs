@@ -192,7 +192,17 @@ typedef struct ogs_sbi_object_s {
     ogs_sbi_obj_type_e type;
 
     struct {
-        char *nf_instance_id;
+        ogs_sbi_nf_instance_t *nf_instance;
+
+        /*
+         * Search.Result stored in nf_instance->time.validity_duration;
+         *
+         * validity_timeout = nf_instance->validity->timeout =
+         *     ogs_get_monotonic_time() + nf_instance->time.validity_duration;
+         *
+         * if no validityPeriod in SearchResult, validity_timeout is 0.
+         */
+        ogs_time_t validity_timeout;
     } nf_type_array[OGS_SBI_MAX_NUM_OF_NF_TYPE],
       service_type_array[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE];
 
@@ -458,17 +468,49 @@ void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
 
 int ogs_sbi_default_client_port(OpenAPI_uri_scheme_e scheme);
 
-#define OGS_SBI_SETUP_NF_INSTANCE_ID(__cTX, __nFInstanceId) \
+#define OGS_SBI_SETUP_NF_INSTANCE(__cTX, __nFInstance) \
     do { \
-        ogs_assert(__nFInstanceId); \
+        ogs_assert(__nFInstance); \
+        ogs_assert((__nFInstance)->id); \
+        ogs_assert((__nFInstance)->t_validity); \
         \
-        if ((__cTX).nf_instance_id) { \
-            ogs_warn("NF Instance(ID) updated [%s]", (__nFInstanceId)); \
-            ogs_free((__cTX).nf_instance_id); \
+        if ((__cTX).nf_instance) { \
+            ogs_warn("[%s] NF Instance updated [type:%s validity:%ds]", \
+                    ((__cTX).nf_instance)->id, \
+                    OpenAPI_nf_type_ToString(((__cTX).nf_instance)->nf_type), \
+                    ((__cTX).nf_instance)->time.validity_duration); \
         } \
         \
-        ((__cTX).nf_instance_id) = ogs_strdup(__nFInstanceId); \
+        ((__cTX).nf_instance) = __nFInstance; \
+        if ((__nFInstance)->time.validity_duration) { \
+            ((__cTX).validity_timeout) = (__nFInstance)->t_validity->timeout; \
+        } else { \
+            ((__cTX).validity_timeout) = 0; \
+        } \
+        ogs_info("[%s] NF Instance setup [type:%s validity:%ds]", \
+                (__nFInstance)->id, \
+                OpenAPI_nf_type_ToString((__nFInstance)->nf_type), \
+                (__nFInstance)->time.validity_duration); \
     } while(0)
+
+/*
+ * Search.Result stored in nf_instance->time.validity_duration;
+ *
+ * validity_timeout = nf_instance->validity->timeout =
+ *     ogs_get_monotonic_time() + nf_instance->time.validity_duration;
+ *
+ * if no validityPeriod in SearchResult, validity_timeout is 0.
+ */
+#define OGS_SBI_GET_NF_INSTANCE(__cTX) \
+    ((__cTX).validity_timeout == 0 || \
+     (__cTX).validity_timeout > ogs_get_monotonic_time() ? \
+        ((__cTX).nf_instance) : NULL)
+
+#define OGS_SBI_NF_INSTANCE_VALID(__nFInstance) \
+    (((__nFInstance) && ((__nFInstance)->t_validity) && \
+     ((__nFInstance)->time.validity_duration == 0 || \
+      (__nFInstance)->t_validity->timeout > ogs_get_monotonic_time())) ? \
+         true : false)
 
 bool ogs_sbi_discovery_param_is_matched(
         ogs_sbi_nf_instance_t *nf_instance,
