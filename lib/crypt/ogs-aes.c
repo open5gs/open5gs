@@ -951,12 +951,12 @@ void ogs_aes_encrypt(const uint32_t *rk, int nrounds, const uint8_t plaintext[16
         t3 = Te0[s3 >> 24] ^ Te1[(s0 >> 16) & 0xff] ^ Te2[(s1 >>  8) & 0xff] ^ Te3[s2 & 0xff] ^ rk[55];
       }
     }
-    rk += nrounds << 2;
+    rk += (uint32_t) nrounds << 2;
   #else  /* !FULL_UNROLL */
     /*
     * nrounds - 1 full rounds:
     */
-    r = nrounds >> 1;
+    r = (uint32_t) nrounds >> 1;
     for (;;)
     {
       t0 =
@@ -1134,12 +1134,12 @@ void ogs_aes_decrypt(const uint32_t *rk, int nrounds, const uint8_t ciphertext[1
         t3 = Td0[s3 >> 24] ^ Td1[(s2 >> 16) & 0xff] ^ Td2[(s1 >>  8) & 0xff] ^ Td3[s0 & 0xff] ^ rk[55];
       }
     }
-    rk += nrounds << 2;
+    rk += (uint32_t) nrounds << 2;
   #else  /* !FULL_UNROLL */
     /*
     * nrounds - 1 full rounds:
     */
-    r = nrounds >> 1;
+    r = (uint32_t) nrounds >> 1;
     for (;;)
     {
       t0 =

@@ -311,7 +311,7 @@ upf_sess_t *upf_sess_find_by_ipv4(uint32_t addr)
         if (i == nbits)
             break;
 
-        if ((1 << bit) & be32toh(addr))
+        if (((uint32_t) 1 << bit) & be32toh(addr))
             trie = trie->right;
         else
             trie = trie->left;
@@ -344,7 +344,7 @@ upf_sess_t *upf_sess_find_by_ipv6(uint32_t *addr6)
         if (i == OGS_IPV6_128_PREFIX_LEN)
             break;
 
-        if ((1 << bit) & be32toh(addr6[part]))
+        if (((uint32_t) 1 << bit) & be32toh(addr6[part]))
             trie = trie->right;
         else
             trie = trie->left;
@@ -515,7 +515,7 @@ static void free_framed_route_from_trie(ogs_ipsubnet_t *route)
         to_free_tries[i] = trie;
 
         if (i == nbits ||
-            ((1 << bit) & be32toh(route->mask[part])) == 0) {
+            (((uint32_t) 1 << bit) & be32toh(route->mask[part])) == 0) {
             (*trie)->sess = NULL;
             if ((*trie)->left || (*trie)->right)
                 free_from = i + 1;
@@ -523,7 +523,7 @@ static void free_framed_route_from_trie(ogs_ipsubnet_t *route)
             break;
         }
 
-        if ((1 << bit) & be32toh(route->sub[part])) {
+        if (((uint32_t) 1 << bit) & be32toh(route->sub[part])) {
             if ((*trie)->left || (*trie)->sess)
                 free_from = i + 1;
             trie = &(*trie)->right;
@@ -558,12 +558,12 @@ static void add_framed_route_to_trie(ogs_ipsubnet_t *route, upf_sess_t *sess)
             *trie = ogs_calloc(1, sizeof(**trie));
 
         if (i == nbits ||
-            ((1 << bit) & be32toh(route->mask[part])) == 0) {
+            (((uint32_t) 1 << bit) & be32toh(route->mask[part])) == 0) {
             (*trie)->sess = sess;
             break;
         }
 
-        if ((1 << bit) & be32toh(route->sub[part])) {
+        if (((uint32_t) 1 << bit) & be32toh(route->sub[part])) {
             trie = &(*trie)->right;
         } else {
             trie = &(*trie)->left;

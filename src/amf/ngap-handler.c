@@ -209,16 +209,6 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
             i++) {
         NGAP_SupportedTAItem_t *SupportedTAItem = NULL;
 
-        if (gnb->num_of_supported_ta_list >=
-                OGS_ARRAY_SIZE(gnb->supported_ta_list)) {
-            ogs_error("OVERFLOW GNB->num_of_supported_ta_list "
-                    "[%d:%d:%d]",
-                    gnb->num_of_supported_ta_list,
-                    OGS_MAX_NUM_OF_SUPPORTED_TA,
-                    (int)OGS_ARRAY_SIZE(gnb->supported_ta_list));
-            break;
-        }
-
         SupportedTAItem = (NGAP_SupportedTAItem_t *)
                 SupportedTAList->list.array[i];
         if (!SupportedTAItem) {
@@ -244,17 +234,6 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 
             NGAP_BroadcastPLMNItem_t *BroadcastPLMNItem = NULL;
             NGAP_PLMNIdentity_t *pLMNIdentity = NULL;
-
-            if (gnb->supported_ta_list[i].num_of_bplmn_list >=
-                    OGS_ARRAY_SIZE(gnb->supported_ta_list[i].bplmn_list)) {
-                ogs_error("OVERFLOW GNB->supported_ta_list.num_of_bplmn_list "
-                        "[%d:%d:%d]",
-                        gnb->supported_ta_list[i].num_of_bplmn_list,
-                        OGS_MAX_NUM_OF_BPLMN,
-                        (int)OGS_ARRAY_SIZE(
-                            gnb->supported_ta_list[i].bplmn_list));
-                break;
-            }
 
             BroadcastPLMNItem = (NGAP_BroadcastPLMNItem_t *)
                     SupportedTAItem->broadcastPLMNList.list.array[j];
@@ -288,19 +267,6 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                             k++) {
                 NGAP_SliceSupportItem_t *SliceSupportItem = NULL;
                 NGAP_S_NSSAI_t *s_NSSAI = NULL;
-
-                if (gnb->supported_ta_list[i].bplmn_list[j].num_of_s_nssai >=
-                        OGS_ARRAY_SIZE(
-                            gnb->supported_ta_list[i].bplmn_list[j].s_nssai)) {
-                    ogs_error("OVERFLOW GNB->supported_ta_list."
-                            "bplmn_list.num_of_s_nssai [%d:%d:%d]",
-                            gnb->supported_ta_list[i].bplmn_list[j].
-                                num_of_s_nssai,
-                            OGS_MAX_NUM_OF_SLICE_SUPPORT,
-                            (int)OGS_ARRAY_SIZE(gnb->
-                                supported_ta_list[i].bplmn_list[j].s_nssai));
-                    break;
-                }
 
                 SliceSupportItem = (NGAP_SliceSupportItem_t *)
                         BroadcastPLMNItem->tAISliceSupportList.list.array[k];
@@ -1040,7 +1006,7 @@ void ngap_handle_initial_context_setup_response(
 
         ogs_debug("    SUPI[%s] PSI[%d] OLD ACTIVATED[0x%x]",
                 amf_ue->supi, sess->psi, ran_ue->psimask.activated);
-        ran_ue->psimask.activated |= ((1 << sess->psi));
+        ran_ue->psimask.activated |= (((uint16_t) 1 << sess->psi));
         ogs_debug("    NEW ACTIVATED[0x%x]", ran_ue->psimask.activated);
 
         memset(&param, 0, sizeof(param));
@@ -2024,7 +1990,7 @@ void ngap_handle_pdu_session_resource_setup_response(
 
             ogs_debug("    SUPI[%s] PSI[%d] OLD ACTIVATED[0x%x]",
                     amf_ue->supi, sess->psi, ran_ue->psimask.activated);
-            ran_ue->psimask.activated |= ((1 << sess->psi));
+            ran_ue->psimask.activated |= (((uint16_t) 1 << sess->psi));
             ogs_debug("    NEW ACTIVATED[0x%x]", ran_ue->psimask.activated);
 
             memset(&param, 0, sizeof(param));
@@ -4306,16 +4272,6 @@ void ngap_handle_ran_configuration_update(
                     i++) {
             NGAP_SupportedTAItem_t *SupportedTAItem = NULL;
 
-            if (gnb->num_of_supported_ta_list >=
-                    OGS_ARRAY_SIZE(gnb->supported_ta_list)) {
-                ogs_error("OVERFLOW GNB->num_of_supported_ta_list "
-                        "[%d:%d:%d]",
-                        gnb->num_of_supported_ta_list,
-                        OGS_MAX_NUM_OF_SUPPORTED_TA,
-                        (int)OGS_ARRAY_SIZE(gnb->supported_ta_list));
-                break;
-            }
-
             SupportedTAItem = (NGAP_SupportedTAItem_t *)
                     SupportedTAList->list.array[i];
             if (!SupportedTAItem) {
@@ -4342,17 +4298,6 @@ void ngap_handle_ran_configuration_update(
 
                 NGAP_BroadcastPLMNItem_t *BroadcastPLMNItem = NULL;
                 NGAP_PLMNIdentity_t *pLMNIdentity = NULL;
-
-                if (gnb->supported_ta_list[i].num_of_bplmn_list >=
-                        OGS_ARRAY_SIZE(gnb->supported_ta_list[i].bplmn_list)) {
-                    ogs_error("OVERFLOW GNB->supported_ta_list."
-                            "num_of_bplm_list [%d:%d:%d]",
-                            gnb->supported_ta_list[i].num_of_bplmn_list,
-                            OGS_MAX_NUM_OF_BPLMN,
-                            (int)OGS_ARRAY_SIZE(
-                                gnb->supported_ta_list[i].bplmn_list));
-                    break;
-                }
 
                 BroadcastPLMNItem = (NGAP_BroadcastPLMNItem_t *)
                         SupportedTAItem->broadcastPLMNList.list.array[j];
@@ -4387,21 +4332,6 @@ void ngap_handle_ran_configuration_update(
                                 k++) {
                     NGAP_SliceSupportItem_t *SliceSupportItem = NULL;
                     NGAP_S_NSSAI_t *s_NSSAI = NULL;
-
-                    if (gnb->supported_ta_list[i].
-                            bplmn_list[j].num_of_s_nssai >=
-                            OGS_ARRAY_SIZE(gnb->supported_ta_list[i].
-                                bplmn_list[j].s_nssai)) {
-                        ogs_error("OVERFLOW GNB->num_of_supported_ta_list."
-                                "bplmn_list.num_of_s_nssai"
-                                "[%d:%d:%d]",
-                                gnb->supported_ta_list[i].bplmn_list[j].
-                                    num_of_s_nssai,
-                                OGS_MAX_NUM_OF_SLICE_SUPPORT,
-                                (int)OGS_ARRAY_SIZE(gnb->supported_ta_list[i].
-                                    bplmn_list[j].s_nssai));
-                        break;
-                    }
 
                     SliceSupportItem = (NGAP_SliceSupportItem_t *)
                         BroadcastPLMNItem->tAISliceSupportList.list.array[k];

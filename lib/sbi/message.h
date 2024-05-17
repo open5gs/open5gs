@@ -153,9 +153,9 @@ extern "C" {
 
 
 #define OGS_SBI_FEATURES_IS_SET(__fEATURES, __n) \
-    (__fEATURES & (1 << ((__n)-1)))
+    (__fEATURES & ((uint64_t) 1 << ((__n)-1)))
 #define OGS_SBI_FEATURES_SET(__fEATURES, __n) \
-    __fEATURES |= (1 << ((__n)-1))
+    __fEATURES |= ((uint64_t) 1 << ((__n)-1))
 
 #define OGS_SBI_NNRF_NFM_SERVICE_MAP 1
 #define OGS_SBI_NNRF_NFM_EMPTY_OBJECTS_NRF_INFO 2

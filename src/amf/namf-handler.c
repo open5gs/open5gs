@@ -1333,8 +1333,6 @@ int amf_namf_comm_handle_ue_context_transfer_request(
 
     OpenAPI_ue_context_transfer_rsp_data_t UeContextTransferRspData;
 
-    ogs_sbi_nf_instance_t *pcf_nf_instance = NULL;
-
     char *ue_context_id = NULL;
     char *encoded_gmm_capability = NULL;
     int status = OGS_SBI_HTTP_STATUS_OK;
@@ -1418,14 +1416,8 @@ int amf_namf_comm_handle_ue_context_transfer_request(
     encoded_gmm_capability = amf_namf_comm_base64_encode_5gmm_capability(amf_ue);
     UeContext._5g_mm_capability = encoded_gmm_capability;
 
-    pcf_nf_instance = OGS_SBI_GET_NF_INSTANCE(
-            amf_ue->sbi.service_type_array[
-            OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL]);
-    if (pcf_nf_instance) {
-        UeContext.pcf_id = pcf_nf_instance->id;
-    } else {
-        ogs_warn("No PCF NF Instnace");
-    }
+    UeContext.pcf_id = amf_ue->sbi.service_type_array[
+        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL].nf_instance->id;
 
     /* TODO UeContext.pcfAmPolicyUri */
     /* TODO UeContext.pcfUePolicyUri */

@@ -165,7 +165,9 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                         ogs_fsm_dispatch(&nf_instance->sm, e);
                         if (OGS_FSM_CHECK(&nf_instance->sm,
                                     nrf_nf_state_de_registered)) {
-                            ogs_info("[%s] NF de-registered", nf_instance->id);
+                            ogs_info("[%s:%d] NF de-registered",
+                                    nf_instance->id,
+                                    nf_instance->reference_count);
                             nrf_nf_fsm_fini(nf_instance);
                             ogs_sbi_nf_instance_remove(nf_instance);
                         } else if (OGS_FSM_CHECK(&nf_instance->sm,

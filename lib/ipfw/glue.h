@@ -94,9 +94,9 @@ static inline const char *xyz(const char *s) {
 	const char *ret = strrchr(s, '/');
 	if (ret) s = ret + 1;
 	gettimeofday(&t, NULL);
-	buf[sizeof(buf) - 1] = '\0';
 	snprintf(buf, sizeof(buf), "[%4d.%06d] %s",
 		(int)(t.tv_sec % 1000), (int)(t.tv_usec), s);
+	buf[sizeof(buf) - 1] = '\0';
 	return buf;
 }
 

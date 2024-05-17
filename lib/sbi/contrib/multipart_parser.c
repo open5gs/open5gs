@@ -83,6 +83,8 @@ multipart_parser* multipart_parser_init
                                strlen(boundary) +
                                strlen(boundary) + 9);
 
+  ogs_assert (p);
+
   strcpy(p->multipart_boundary, boundary);
   p->boundary_length = strlen(boundary);
   

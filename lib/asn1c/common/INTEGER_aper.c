@@ -60,7 +60,7 @@ INTEGER_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
                 intmax_t value = 0;
 
                 for (i = 1; ; i++) {
-                    int upper = 1 << i;
+                    int upper = ((unsigned int) 1 << i);
                     if (upper >= max_range_bytes)
                         break;
                 }
@@ -258,7 +258,7 @@ INTEGER_encode_aper(const asn_TYPE_descriptor_t *td,
                                   (((ct->range_bits % 8) > 0) ? 1 : 0);
 
             for (i = 1; ; i++) {
-                int upper = 1 << i;
+                int upper = ((unsigned int) 1 << i);
                 if (upper >= max_range_bytes)
                     break;
             }

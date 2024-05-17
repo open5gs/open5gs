@@ -240,10 +240,10 @@ print_flowset_parms(struct dn_fs *fs, char *prefix)
 		sprintf(red,
 		    "\n\t %cRED w_q %f min_th %d max_th %d max_p %f",
 		    (fs->flags & DN_IS_GENTLE_RED) ? 'G' : ' ',
-		    1.0 * fs->w_q / (double)(1 << SCALE_RED),
+		    1.0 * fs->w_q / (double)((int)1 << SCALE_RED),
 		    fs->min_th,
 		    fs->max_th,
-		    1.0 * fs->max_p / (double)(1 << SCALE_RED));
+		    1.0 * fs->max_p / (double)((int)1 << SCALE_RED));
 		if (fs->flags & DN_IS_ECN)
 #if 0 /* modifed by acetcom */
 			strncat(red, " (ecn)", 6);
@@ -674,7 +674,7 @@ load_extra_delays(const char *filename, struct dn_profile *p,
 		} else if (!strcasecmp(name, ED_TOK_NAME)) {
 		    if (profile_name[0] != '\0')
 			errx(ED_EFMT("duplicated token: %s"), name);
-		    strncpy(profile_name, arg, sizeof(profile_name) - 1);
+		    strncpy(profile_name, arg, sizeof(profile_name));
 		    profile_name[sizeof(profile_name)-1] = '\0';
 		    do_points = 0;
 		} else if (!strcasecmp(name, ED_TOK_DELAY)) {
@@ -747,6 +747,7 @@ load_extra_delays(const char *filename, struct dn_profile *p,
 	p->samples_no = samples;
 	p->loss_level = loss * samples;
 	strncpy(p->name, profile_name, sizeof(p->name));
+	p->name[sizeof(p->name)-1] = '\0';
 }
 
 /*
@@ -997,7 +998,7 @@ ipfw_config_pipe(int ac, char **av)
 			    if (*av[0] == '/') {
 				    a = strtoul(av[0]+1, &end, 0);
 				    if (pa6 == NULL)
-					    a = (a == 32) ? ~0 : (1 << a) - 1;
+					    a = (a == 32) ? ~0 : ((uint32_t) 1 << a) - 1;
 			    } else
 				    a = strtoul(av[0], &end, 0);
 			    if (p32 != NULL)
@@ -1044,7 +1045,7 @@ end_mask:
 			    double w_q = strtod(end, NULL);
 			    if (w_q > 1 || w_q <= 0)
 				errx(EX_DATAERR, "0 < w_q <= 1");
-			    fs->w_q = (int) (w_q * (1 << SCALE_RED));
+			    fs->w_q = (int) (w_q * ((int) 1 << SCALE_RED));
 			}
 			if ((end = strsep(&av[0], "/"))) {
 			    fs->min_th = strtoul(end, &end, 0);
@@ -1060,7 +1061,7 @@ end_mask:
 			    double max_p = strtod(end, NULL);
 			    if (max_p > 1 || max_p < 0)
 				errx(EX_DATAERR, "0 <= max_p <= 1");
-			    fs->max_p = (int)(max_p * (1 << SCALE_RED));
+			    fs->max_p = (int)(max_p * ((int) 1 << SCALE_RED));
 			}
 			ac--; av++;
 			break;

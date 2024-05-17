@@ -471,7 +471,7 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_update(
         psimask |= pdu_session_status->psi >> 8;
 
         ogs_list_for_each(&amf_ue->sess_list, sess) {
-            if ((psimask & (1 << sess->psi)) == 0) {
+            if ((psimask & ((uint16_t) 1 << sess->psi)) == 0) {
                 if (SESSION_CONTEXT_IN_SMF(sess))
                     amf_sbi_send_release_session(
                         ran_ue, sess, AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT);
@@ -490,7 +490,7 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_update(
         psimask |= uplink_data_status->psi >> 8;
 
         ogs_list_for_each(&amf_ue->sess_list, sess) {
-            if (psimask & (1 << sess->psi)) {
+            if (psimask & ((uint16_t) 1 << sess->psi)) {
                 if (SESSION_CONTEXT_IN_SMF(sess))
                     amf_sbi_send_activating_session(
                             ran_ue, sess,
@@ -715,7 +715,7 @@ ogs_nas_5gmm_cause_t gmm_handle_service_update(
         psimask |= pdu_session_status->psi >> 8;
 
         ogs_list_for_each(&amf_ue->sess_list, sess) {
-            if ((psimask & (1 << sess->psi)) == 0) {
+            if ((psimask & ((uint16_t) 1 << sess->psi)) == 0) {
                 if (SESSION_CONTEXT_IN_SMF(sess))
                     amf_sbi_send_release_session(
                         ran_ue, sess, AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT);
@@ -742,7 +742,7 @@ ogs_nas_5gmm_cause_t gmm_handle_service_update(
         psimask |= uplink_data_status->psi >> 8;
 
         ogs_list_for_each(&amf_ue->sess_list, sess) {
-            if (psimask & (1 << sess->psi)) {
+            if (psimask & ((uint16_t) 1 << sess->psi)) {
                 if (SESSION_CONTEXT_IN_SMF(sess))
                     amf_sbi_send_activating_session(
                             ran_ue, sess,
@@ -1305,8 +1305,8 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                 ogs_sbi_discovery_option_set_tai(
                         discovery_option, &amf_ue->nr_tai);
 
-                nf_instance = OGS_SBI_GET_NF_INSTANCE(
-                        sess->sbi.service_type_array[service_type]);
+                nf_instance = sess->sbi.
+                    service_type_array[service_type].nf_instance;
                 if (!nf_instance) {
                     OpenAPI_nf_type_e requester_nf_type =
                                 NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);
@@ -1317,8 +1317,8 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION,
                             requester_nf_type,
                             discovery_option);
-                    nf_instance = OGS_SBI_GET_NF_INSTANCE(
-                            sess->sbi.service_type_array[service_type]);
+                    nf_instance = sess->sbi.
+                        service_type_array[service_type].nf_instance;
 
                     if (!nf_instance)
                         ogs_info("No SMF Instance");

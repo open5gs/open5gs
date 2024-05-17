@@ -34,14 +34,14 @@ int nrf_initialize(void)
     ogs_sbi_context_init(OpenAPI_nf_type_NRF);
     nrf_context_init();
 
-    rv = ogs_log_config_domain(
-            ogs_app()->logger.domain, ogs_app()->logger.level);
-    if (rv != OGS_OK) return rv;
-
     rv = ogs_sbi_context_parse_config(APP_NAME, NULL, NULL);
     if (rv != OGS_OK) return rv;
 
     rv = nrf_context_parse_config();
+    if (rv != OGS_OK) return rv;
+
+    rv = ogs_log_config_domain(
+            ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
     rv = nrf_sbi_open();

@@ -331,7 +331,7 @@ void zuc_eea3(u8* CK, u32 COUNT, u32 BEARER, u32 DIRECTION,
 	   this is an addition to the C reference code, which did not handle it */
 	if (lastbits)
         i--;
-		C[i] &= 0x100 - (1<<lastbits);
+		C[i] &= 0x100 - ((uint8_t) 1<<lastbits);
 	
 	ogs_free(z);
 }

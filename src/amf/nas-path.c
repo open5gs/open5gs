@@ -812,7 +812,7 @@ int nas_send_pdu_session_release_command(amf_sess_t *sess,
      * - In this case, we should use the DownlinkNASTransport.
      *   instead of PDUSessionResourceReleaseCommand
      */
-    if (ran_ue->psimask.activated & (1 << sess->psi)) {
+    if (ran_ue->psimask.activated & ((uint16_t) 1 << sess->psi)) {
         ngapbuf = ngap_build_pdu_session_resource_release_command(
                 sess, gmmbuf, n2smbuf);
         if (!ngapbuf) {

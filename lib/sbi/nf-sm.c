@@ -32,6 +32,19 @@ void ogs_sbi_nf_fsm_init(ogs_sbi_nf_instance_t *nf_instance)
             ogs_sbi_nf_state_initial, ogs_sbi_nf_state_final, &e);
 }
 
+void ogs_sbi_nf_fsm_tran(ogs_sbi_nf_instance_t *nf_instance, void *state)
+{
+    ogs_event_t e;
+
+    ogs_assert(nf_instance);
+    ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
+
+    memset(&e, 0, sizeof(e));
+    e.sbi.data = nf_instance;
+
+    ogs_fsm_tran(&nf_instance->sm, state, &e);
+}
+
 void ogs_sbi_nf_fsm_fini(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_event_t e;
@@ -294,7 +307,7 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
             break;
 
         case OGS_TIMER_NF_INSTANCE_NO_HEARTBEAT:
-            ogs_error("[%s] No heartbeat [type:%s]",
+            ogs_error("[%s:%s] No heartbeat",
                     NF_INSTANCE_ID(ogs_sbi_self()->nf_instance),
                     OpenAPI_nf_type_ToString(
                         NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance)));
@@ -305,24 +318,22 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
             ogs_assert(!NF_INSTANCE_TYPE_IS_NRF(nf_instance));
             ogs_assert(nf_instance->id);
 
-            ogs_info("[%s] NF expired [type:%s]",
-                    nf_instance->id,
-                    OpenAPI_nf_type_ToString(nf_instance->nf_type));
+            ogs_info("[%s] NF expired", nf_instance->id);
             OGS_FSM_TRAN(s, &ogs_sbi_nf_state_de_registered);
             break;
 
         default:
-            ogs_error("[%s] Unknown timer [type:%s timer:%s:%d]",
-                    nf_instance->id ? nf_instance->id : "Undefined",
+            ogs_error("[%s:%s] Unknown timer[%s:%d]",
                     OpenAPI_nf_type_ToString(nf_instance->nf_type),
+                    nf_instance->id ? nf_instance->id : "Undefined",
                     ogs_timer_get_name(e->timer_id), e->timer_id);
         }
         break;
 
     default:
-        ogs_error("[%s] Unknown event [type:%s event:%s]",
-                nf_instance->id ? nf_instance->id : "Undefined",
+        ogs_error("[%s:%s] Unknown event %s",
                 OpenAPI_nf_type_ToString(nf_instance->nf_type),
+                nf_instance->id ? nf_instance->id : "Undefined",
                 ogs_event_get_name(e));
         break;
     }
@@ -342,20 +353,19 @@ void ogs_sbi_nf_state_de_registered(ogs_fsm_t *s, ogs_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        ogs_info("[%s] NF de-registered [type:%s]",
-                nf_instance->id,
-                OpenAPI_nf_type_ToString(nf_instance->nf_type));
-        ogs_sbi_nf_fsm_fini(nf_instance);
-        ogs_sbi_nf_instance_remove(nf_instance);
+        if (NF_INSTANCE_TYPE_IS_NRF(nf_instance)) {
+            ogs_info("[%s] NF de-registered",
+                    NF_INSTANCE_ID(ogs_sbi_self()->nf_instance));
+        }
         break;
 
     case OGS_FSM_EXIT_SIG:
         break;
 
     default:
-        ogs_error("[%s] Unknown event [type:%s event:%s]",
-                nf_instance->id ? nf_instance->id : "Undefined",
+        ogs_error("[%s:%s] Unknown event %s",
                 OpenAPI_nf_type_ToString(nf_instance->nf_type),
+                nf_instance->id ? nf_instance->id : "Undefined",
                 ogs_event_get_name(e));
         break;
     }
@@ -399,9 +409,9 @@ void ogs_sbi_nf_state_exception(ogs_fsm_t *s, ogs_event_t *e)
             break;
 
         default:
-            ogs_error("[%s] Unknown timer[type:%s timer:%s:%d]",
-                    nf_instance->id ? nf_instance->id : "Undefined",
+            ogs_error("[%s:%s] Unknown timer[%s:%d]",
                     OpenAPI_nf_type_ToString(nf_instance->nf_type),
+                    nf_instance->id ? nf_instance->id : "Undefined",
                     ogs_timer_get_name(e->timer_id), e->timer_id);
         }
         break;
@@ -427,9 +437,9 @@ void ogs_sbi_nf_state_exception(ogs_fsm_t *s, ogs_event_t *e)
         break;
 
     default:
-        ogs_error("[%s] Unknown event [type:%s event:%s]",
-                nf_instance->id ? nf_instance->id : "Undefined",
+        ogs_error("[%s:%s] Unknown event %s",
                 OpenAPI_nf_type_ToString(nf_instance->nf_type),
+                nf_instance->id ? nf_instance->id : "Undefined",
                 ogs_event_get_name(e));
         break;
     }

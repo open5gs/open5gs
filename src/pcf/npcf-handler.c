@@ -505,8 +505,7 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
 
         service_type = OGS_SBI_SERVICE_TYPE_NPCF_POLICYAUTHORIZATION;
 
-        nf_instance = OGS_SBI_GET_NF_INSTANCE(
-                sess->sbi.service_type_array[service_type]);
+        nf_instance = sess->sbi.service_type_array[service_type].nf_instance;
         if (!nf_instance) {
             OpenAPI_nf_type_e requester_nf_type =
                         NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);
@@ -753,15 +752,6 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         if (MediaComponentMap) {
             MediaComponent = MediaComponentMap->value;
             if (MediaComponent) {
-                if (ims_data.num_of_media_component >=
-                        OGS_ARRAY_SIZE(ims_data.media_component)) {
-                    ogs_error("OVERFLOW ims_data.num_of_media_component "
-                            "[%d:%d:%d]",
-                            ims_data.num_of_media_component,
-                            OGS_MAX_NUM_OF_MEDIA_COMPONENT,
-                            (int)OGS_ARRAY_SIZE(ims_data.media_component));
-                    break;
-                }
                 media_component = &ims_data.
                     media_component[ims_data.num_of_media_component];
                 media_component->media_component_number =
@@ -789,15 +779,6 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
 
                 SubComponentList = MediaComponent->med_sub_comps;
                 OpenAPI_list_for_each(SubComponentList, node2) {
-                    if (media_component->num_of_sub >=
-                            OGS_ARRAY_SIZE(media_component->sub)) {
-                        ogs_error("OVERFLOW media_component->num_of_sub "
-                                "[%d:%d:%d]",
-                                media_component->num_of_sub,
-                                OGS_MAX_NUM_OF_MEDIA_SUB_COMPONENT,
-                                (int)OGS_ARRAY_SIZE(media_component->sub));
-                        break;
-                    }
                     sub = &media_component->sub[media_component->num_of_sub];
 
                     SubComponentMap = node2->data;
@@ -811,15 +792,8 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
                             OpenAPI_list_for_each(fDescList, node3) {
                                 ogs_flow_t *flow = NULL;
 
-                                if (sub->num_of_flow >=
-                                        OGS_ARRAY_SIZE(sub->flow)) {
-                                    ogs_error(
-                                        "OVERFLOW sub->num_of_flow [%d:%d:%d]",
-                                        sub->num_of_flow,
-                                        OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT,
-                                        (int)OGS_ARRAY_SIZE(sub->flow));
-                                    break;
-                                }
+                                ogs_assert(sub->num_of_flow <
+                                    OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT);
                                 flow = &sub->flow[sub->num_of_flow];
                                 if (node3->data) {
                                     flow->description = ogs_strdup(node3->data);
@@ -1226,15 +1200,6 @@ bool pcf_npcf_policyauthorization_handle_update(
         if (MediaComponentMap) {
             MediaComponent = MediaComponentMap->value;
             if (MediaComponent) {
-                if (ims_data.num_of_media_component >=
-                        OGS_ARRAY_SIZE(ims_data.media_component)) {
-                    ogs_error("OVERFLOW ims_data.num_of_media_component "
-                            "[%d:%d:%d]",
-                            ims_data.num_of_media_component,
-                            OGS_MAX_NUM_OF_MEDIA_COMPONENT,
-                            (int)OGS_ARRAY_SIZE(ims_data.media_component));
-                    break;
-                }
                 media_component = &ims_data.
                     media_component[ims_data.num_of_media_component];
 
@@ -1263,15 +1228,6 @@ bool pcf_npcf_policyauthorization_handle_update(
 
                 SubComponentList = MediaComponent->med_sub_comps;
                 OpenAPI_list_for_each(SubComponentList, node2) {
-                    if (media_component->num_of_sub >=
-                            OGS_ARRAY_SIZE(media_component->sub)) {
-                        ogs_error("OVERFLOW media_component->num_of_sub "
-                                "[%d:%d:%d]",
-                                media_component->num_of_sub,
-                                OGS_MAX_NUM_OF_MEDIA_SUB_COMPONENT,
-                                (int)OGS_ARRAY_SIZE(media_component->sub));
-                        break;
-                    }
                     sub = &media_component->sub[media_component->num_of_sub];
 
                     SubComponentMap = node2->data;
@@ -1285,15 +1241,8 @@ bool pcf_npcf_policyauthorization_handle_update(
                             OpenAPI_list_for_each(fDescList, node3) {
                                 ogs_flow_t *flow = NULL;
 
-                                if (sub->num_of_flow >=
-                                        OGS_ARRAY_SIZE(sub->flow)) {
-                                    ogs_error(
-                                        "OVERFLOW sub->num_of_flow [%d:%d:%d]",
-                                        sub->num_of_flow,
-                                        OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT,
-                                        (int)OGS_ARRAY_SIZE(sub->flow));
-                                    break;
-                                }
+                                ogs_assert(sub->num_of_flow <
+                                    OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT);
                                 flow = &sub->flow[sub->num_of_flow];
                                 if (node3->data) {
                                     flow->description = ogs_strdup(node3->data);

@@ -432,7 +432,7 @@ void snow_3g_f8(u8 *key, u32 count, u32 bearer, u32 dir, u8 *data, u32 length)
 	/* zero last bits of data in case its length is not byte-aligned 
 	   this is an addition to the C reference code, which did not handle it */
 	if (lastbits)
-		data[length/8] &= 256 - (1<<lastbits);
+		data[length/8] &= 256 - ((uint8_t) 1<<lastbits);
 }
 /* End of f8.c */
 
@@ -501,7 +501,7 @@ u64 MUL64(u64 V, u64 P, u64 c)
  */
 u8 mask8bit(int n)
 {
-	return 0xFF ^ ((1<<(8-n)) - 1);
+	return 0xFF ^ (((uint8_t) 1<<(8-n)) - 1);
 }
 
 /* f9.
