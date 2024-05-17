@@ -226,7 +226,7 @@ sgwc_ue_t *sgwc_ue_add(uint8_t *imsi, int imsi_len)
             &sgwc_ue->sgw_s11_teid, sizeof(sgwc_ue->sgw_s11_teid), sgwc_ue);
 
     /* Set IMSI */
-    sgwc_ue->imsi_len = imsi_len;
+    sgwc_ue->imsi_len = ogs_min(imsi_len, OGS_MAX_IMSI_LEN);
     memcpy(sgwc_ue->imsi, imsi, sgwc_ue->imsi_len);
     ogs_buffer_to_bcd(sgwc_ue->imsi, sgwc_ue->imsi_len, sgwc_ue->imsi_bcd);
 

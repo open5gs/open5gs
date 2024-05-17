@@ -410,16 +410,15 @@ uint8_t smf_s5c_handle_create_session_request(
 
     /* Set MSISDN */
     if (req->msisdn.presence && req->msisdn.len && req->msisdn.data) {
-        smf_ue->msisdn_len = req->msisdn.len;
-        memcpy(smf_ue->msisdn, req->msisdn.data,
-                ogs_min(smf_ue->msisdn_len, OGS_MAX_MSISDN_LEN));
+        smf_ue->msisdn_len = ogs_min(req->msisdn.len, OGS_MAX_MSISDN_LEN);
+        memcpy(smf_ue->msisdn, req->msisdn.data, smf_ue->msisdn_len);
         ogs_buffer_to_bcd(smf_ue->msisdn,
                 smf_ue->msisdn_len, smf_ue->msisdn_bcd);
     }
 
     /* Set IMEI(SV) */
     if (req->me_identity.presence && req->me_identity.len > 0) {
-        smf_ue->imeisv_len = req->me_identity.len;
+        smf_ue->imeisv_len = ogs_min(req->me_identity.len, OGS_MAX_IMEISV_LEN);
         memcpy(smf_ue->imeisv,
             (uint8_t*)req->me_identity.data, smf_ue->imeisv_len);
         ogs_buffer_to_bcd(
