@@ -36,6 +36,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     OpenAPI_snssai_t hplmnSnssai;
     OpenAPI_ref_to_binary_data_t n1SmMsg;
     OpenAPI_user_location_t ueLocation;
+    ogs_sbi_nf_instance_t *pcf_nf_instance = NULL;
 
     ogs_assert(sess);
     amf_ue = sess->amf_ue;
@@ -189,12 +190,14 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
         goto end;
     }
 
-    SmContextCreateData.pcf_id = amf_ue->sbi.service_type_array[
-        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL].nf_instance_id;
-    if (!SmContextCreateData.pcf_id) {
+    pcf_nf_instance = OGS_SBI_GET_NF_INSTANCE(
+            amf_ue->sbi.service_type_array[
+            OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL]);
+    if (!pcf_nf_instance) {
         ogs_error("No pcf_nf_instance");
         goto end;
     }
+    SmContextCreateData.pcf_id = pcf_nf_instance->id;
 
     message.SmContextCreateData = &SmContextCreateData;
 

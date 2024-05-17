@@ -214,16 +214,17 @@ static int client_discover_cb(
                     nf_instance->id);
         } else {
             ogs_warn("[%s] (SCP-discover) NF has already been added [%s]",
-                    nf_instance->nf_type ?
-                        OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
+                    OpenAPI_nf_type_ToString(nf_instance->nf_type),
                     nf_instance->id);
-
-            ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
-            ogs_sbi_nf_fsm_tran(nf_instance, ogs_sbi_nf_state_registered);
+            if (!OGS_FSM_CHECK(&nf_instance->sm, ogs_sbi_nf_state_registered)) {
+                ogs_error("[%s] (SCP-discover) NF invalid state [%s]",
+                        OpenAPI_nf_type_ToString(nf_instance->nf_type),
+                        nf_instance->id);
+            }
         }
 
-        OGS_SBI_SETUP_NF_INSTANCE_ID(
-                sbi_object->service_type_array[service_type], nf_instance->id);
+        OGS_SBI_SETUP_NF_INSTANCE(
+                sbi_object->service_type_array[service_type], nf_instance);
     }
 
     e = ogs_event_new(OGS_EVENT_SBI_CLIENT);
@@ -281,15 +282,14 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
     }
 
     /* Target NF-Instance */
-    nf_instance = ogs_sbi_nf_instance_find(
-            sbi_object->service_type_array[service_type].nf_instance_id);
+    nf_instance = OGS_SBI_GET_NF_INSTANCE(
+            sbi_object->service_type_array[service_type]);
     if (!nf_instance) {
         nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
                         target_nf_type, requester_nf_type, discovery_option);
-        if (nf_instance) {
-            OGS_SBI_SETUP_NF_INSTANCE_ID(
-                    sbi_object->service_type_array[service_type], nf_instance->id);
-        }
+        if (nf_instance)
+            OGS_SBI_SETUP_NF_INSTANCE(
+                    sbi_object->service_type_array[service_type], nf_instance);
     }
 
     /* Target Client */

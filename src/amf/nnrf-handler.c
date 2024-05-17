@@ -57,8 +57,8 @@ void amf_nnrf_handle_nf_discover(
     amf_sbi_select_nf(sbi_object,
             service_type, requester_nf_type, discovery_option);
 
-    nf_instance = ogs_sbi_nf_instance_find(
-            sbi_object->service_type_array[service_type].nf_instance_id);
+    nf_instance = OGS_SBI_GET_NF_INSTANCE(
+            sbi_object->service_type_array[service_type]);
 
     if (!nf_instance) {
         amf_ue_t *amf_ue = NULL;
