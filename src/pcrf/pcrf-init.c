@@ -32,11 +32,11 @@ int pcrf_initialize(void)
 
     pcrf_context_init();
 
-    rv = pcrf_context_parse_config();
-    if (rv != OGS_OK) return rv;
-
     rv = ogs_log_config_domain(
             ogs_app()->logger.domain, ogs_app()->logger.level);
+    if (rv != OGS_OK) return rv;
+
+    rv = pcrf_context_parse_config();
     if (rv != OGS_OK) return rv;
 
     if (ogs_app()->db_uri) {

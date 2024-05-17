@@ -37,6 +37,10 @@ int af_initialize(void)
     ogs_sbi_context_init(OpenAPI_nf_type_AF);
     af_context_init();
 
+    rv = ogs_log_config_domain(
+            ogs_app()->logger.domain, ogs_app()->logger.level);
+    if (rv != OGS_OK) return rv;
+
     no_scp = ogs_global_conf()->parameter.no_scp;
     no_nrf = ogs_global_conf()->parameter.no_nrf;
 
@@ -50,10 +54,6 @@ int af_initialize(void)
     ogs_global_conf()->parameter.no_nrf = no_nrf;
 
     rv = af_context_parse_config();
-    if (rv != OGS_OK) return rv;
-
-    rv = ogs_log_config_domain(
-            ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
     rv = af_sbi_open();

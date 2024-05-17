@@ -47,6 +47,10 @@ int sgwc_initialize(void)
     rv = ogs_pfcp_xact_init();
     if (rv != OGS_OK) return rv;
 
+    rv = ogs_log_config_domain(
+            ogs_app()->logger.domain, ogs_app()->logger.level);
+    if (rv != OGS_OK) return rv;
+
     rv = ogs_gtp_context_parse_config(APP_NAME, "sgwu");
     if (rv != OGS_OK) return rv;
 
@@ -54,10 +58,6 @@ int sgwc_initialize(void)
     if (rv != OGS_OK) return rv;
 
     rv = sgwc_context_parse_config();
-    if (rv != OGS_OK) return rv;
-
-    rv = ogs_log_config_domain(
-            ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
     rv = sgwc_gtp_open();
