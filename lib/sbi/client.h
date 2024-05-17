@@ -57,19 +57,6 @@ extern "C" {
         OGS_OBJECT_REF(__pClient); \
         ((__cTX)->client) = (__pClient); \
         ogs_debug("CLIENT Ref [%d]", (__pClient)->reference_count); \
-        if ((__pClient)->fqdn) { \
-            ogs_info("NF EndPoint(fqdn) setup [%s:%d]", \
-                    (__pClient)->fqdn, (__pClient)->fqdn_port); \
-        } \
-        if ((__pClient)->addr) { \
-            ogs_info("NF EndPoint(addr) setup [%s:%d]", \
-                OGS_ADDR((__pClient)->addr, buf), OGS_PORT((__pClient)->addr)); \
-        } \
-        if ((__pClient)->addr6) { \
-            ogs_info("NF EndPoint(addr6) setup [%s:%d]", \
-                OGS_ADDR((__pClient)->addr6, buf), \
-                OGS_PORT((__pClient)->addr6)); \
-        } \
     } while(0)
 
 typedef int (*ogs_sbi_client_cb_f)(

@@ -178,7 +178,7 @@ OCTET_STRING_fromBuf(OCTET_STRING_t *st, const char *str, int len) {
 
 	/* Determine the original string size, if not explicitly given */
 	if(len < 0)
-		len = strlen(str);
+		len = (int) strlen(str);
 
 	/* Allocate and fill the memory */
 	buf = MALLOC(len + 1);

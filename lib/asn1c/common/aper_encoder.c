@@ -82,7 +82,7 @@ _aper_encode_flush_outp(asn_per_outp_t *po) {
 	buf = po->buffer + (po->nboff >> 3);
 	/* Make sure we account for the last, partially filled */
 	if(po->nboff & 0x07) {
-		buf[0] &= 0xff << (8 - (po->nboff & 0x07));
+		buf[0] &= ((uint8_t) 0xff << (8 - (po->nboff & 0x07)));
 		buf++;
 	}
 

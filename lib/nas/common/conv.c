@@ -24,6 +24,8 @@ void ogs_nas_imeisv_to_bcd(
 {
     int bcd_len;
 
+    ogs_assert(imeisv && imeisv_len);
+
     bcd[0] = '0' + imeisv->digit1;
     bcd[1] = '0' + imeisv->digit2;
     bcd[2] = '0' + imeisv->digit3;

@@ -146,7 +146,7 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
     }
 
     /* APN/DNN */
-    len = ogs_fqdn_build(apn_dnn, sess->session.name, strlen(sess->session.name));
+    len = ogs_fqdn_build(apn_dnn, sess->session.name, (uint32_t) strlen(sess->session.name));
     req->apn_dnn.presence = 1;
     req->apn_dnn.len = len;
     req->apn_dnn.data = apn_dnn;

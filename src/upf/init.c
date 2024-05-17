@@ -47,10 +47,6 @@ int upf_initialize(void)
     rv = ogs_pfcp_xact_init();
     if (rv != OGS_OK) return rv;
 
-    rv = ogs_log_config_domain(
-            ogs_app()->logger.domain, ogs_app()->logger.level);
-    if (rv != OGS_OK) return rv;
-
     rv = ogs_gtp_context_parse_config(APP_NAME, "smf");
     if (rv != OGS_OK) return rv;
 
@@ -61,6 +57,10 @@ int upf_initialize(void)
     if (rv != OGS_OK) return rv;
 
     rv = upf_context_parse_config();
+    if (rv != OGS_OK) return rv;
+
+    rv = ogs_log_config_domain(
+            ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
     rv = ogs_pfcp_ue_pool_generate();

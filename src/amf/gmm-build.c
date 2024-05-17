@@ -721,7 +721,7 @@ static uint16_t get_pdu_session_status(amf_ue_t *amf_ue)
     ogs_assert(amf_ue);
 
     ogs_list_for_each(&amf_ue->sess_list, sess) {
-        psimask |= (1 << sess->psi);
+        psimask |= ((uint16_t) 1 << sess->psi);
     }
 
     status |= (psimask << 8);
@@ -741,7 +741,7 @@ static uint16_t get_pdu_session_reactivation_result(amf_ue_t *amf_ue)
 
     ogs_list_for_each(&amf_ue->sess_list, sess) {
         if (!SESSION_CONTEXT_IN_SMF(sess))
-            psimask |= (1 << sess->psi);
+            psimask |= ((uint16_t) 1 << sess->psi);
     }
 
     status |= (psimask << 8);

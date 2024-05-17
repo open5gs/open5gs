@@ -408,8 +408,8 @@ static int local_conf_prepare(void)
      *  Heartbeat Interval(e.g: 10 seconds) + No Heartbeat Margin(1 second) */
     local_conf.time.nf_instance.no_heartbeat_margin = 1;
 
-    /* 30 seconds */
-    local_conf.time.nf_instance.validity_duration = 30;
+    /* 3600 seconds = 1 hour */
+    local_conf.time.nf_instance.validity_duration = 3600;
 
     /* 86400 seconds = 1 day */
     local_conf.time.subscription.validity_duration = 86400;

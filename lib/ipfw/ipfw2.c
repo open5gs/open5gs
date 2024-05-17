@@ -1022,9 +1022,9 @@ fill_dscp(ipfw_insn *cmd, char *av, int cblen)
 		}
 
 		if (code > 32)
-			*high |= 1 << (code - 32);
+			*high |= (uint32_t) 1 << (code - 32);
 		else
-			*low |= 1 << code;
+			*low |= (uint32_t) 1 << code;
 
 		s = a;
 	}
@@ -1093,10 +1093,10 @@ contigmask(uint8_t *p, int len)
 	int i, n;
 
 	for (i=0; i<len ; i++)
-		if ( (p[i/8] & (1 << (7 - (i%8)))) == 0) /* first bit unset */
+		if ( (p[i/8] & ((uint8_t) 1 << (7 - (i%8)))) == 0) /* first bit unset */
 			break;
 	for (n=i+1; n < len; n++)
-		if ( (p[n/8] & (1 << (7 - (n%8)))) != 0)
+		if ( (p[n/8] & ((uint8_t) 1 << (7 - (n%8)))) != 0)
 			return -1; /* mask not contiguous */
 	return i;
 }
@@ -1193,9 +1193,9 @@ print_ip(struct buf_pr *bp, struct format_opts *fo, ipfw_insn_ip *cmd,
 		 * range, otherwise only print the initial bit and rescan.
 		 */
 		for (i=0; i < cmd->o.arg1; i++)
-			if (map[i/32] & (1<<(i & 31))) {
+			if (map[i/32] & ((uint32_t) 1 << (i & 31))) {
 				for (j=i+1; j < cmd->o.arg1; j++)
-					if (!(map[ j/32] & (1<<(j & 31))))
+					if (!(map[ j/32] & ((uint32_t)  1 << (j & 31))))
 						break;
 				bprintf(bp, "%c%d", comma, i+x);
 				if (j>i+2) { /* range has at least 3 elements */
@@ -1275,7 +1275,7 @@ fill_icmptypes(ipfw_insn_u32 *cmd, char *av)
 		if (type > 31)
 			errx(EX_DATAERR, "ICMP type out of range");
 
-		cmd->d[0] |= 1 << type;
+		cmd->d[0] |= (uint32_t) 1 << type;
 	}
 	cmd->o.opcode = O_ICMPTYPE;
 	cmd->o.len |= F_INSN_SIZE(ipfw_insn_u32);
@@ -1289,7 +1289,7 @@ print_icmptypes(struct buf_pr *bp, ipfw_insn_u32 *cmd)
 
 	bprintf(bp, " icmptypes");
 	for (i = 0; i < 32; i++) {
-		if ( (cmd->d[0] & (1 << (i))) == 0)
+		if ( (cmd->d[0] & ((uint32_t) 1 << (i))) == 0)
 			continue;
 		bprintf(bp, "%c%d", sep, i);
 		sep = ',';
@@ -1309,7 +1309,7 @@ print_dscp(struct buf_pr *bp, ipfw_insn_u32 *cmd)
 	c = 0;
 	v = cmd->d;
 	while (i < 64) {
-		if (*v & (1 << i)) {
+		if (*v & ((uint32_t) 1 << i)) {
 			if ((code = match_value(f_ipdscp, i)) != NULL)
 				bprintf(bp, "%c%s", sep, code);
 			else
@@ -1384,7 +1384,7 @@ show_static_rule(struct cmdline_opts *co, struct format_opts *fo,
 	int or_block = 0;	/* we are in an or block */
 	uint32_t uval;
 
-	if ((fo->set_mask & (1 << rule->set)) == 0) {
+	if ((fo->set_mask & ((uint32_t) 1 << rule->set)) == 0) {
 		/* disabled mask */
 		if (!co->show_sets)
 			return;
@@ -2157,13 +2157,13 @@ ipfw_sets_handler(char *av[])
 			err(EX_OSERR, "requesting config failed");
 
 		for (i = 0, msg = "disable"; i < RESVD_SET; i++)
-			if ((cfg->set_mask & (1<<i)) == 0) {
+			if ((cfg->set_mask & ((uint32_t) 1 << i)) == 0) {
 				printf("%s %d", msg, i);
 				msg = "";
 			}
 		msg = (cfg->set_mask != (uint32_t)-1) ? " enable" : "enable";
 		for (i = 0; i < RESVD_SET; i++)
-			if ((cfg->set_mask & (1<<i)) != 0) {
+			if ((cfg->set_mask & ((uint32_t) 1 << i)) != 0) {
 				printf("%s %d", msg, i);
 				msg = "";
 			}
@@ -2218,7 +2218,7 @@ ipfw_sets_handler(char *av[])
 				if (i < 0 || i > RESVD_SET)
 					errx(EX_DATAERR,
 					    "invalid set number %d\n", i);
-				masks[which] |= (1<<i);
+				masks[which] |= ((uint32_t) 1 << i);
 			} else if (_substrcmp(*av, "disable") == 0)
 				which = 0;
 			else if (_substrcmp(*av, "enable") == 0)
@@ -2888,7 +2888,7 @@ fill_ip(ipfw_insn_ip *cmd, char *av, int cblen, struct tidx *tstate)
 			errx(EX_DATAERR, "address set cannot be in a list");
 		if (i < 24 || i > 31)
 			errx(EX_DATAERR, "invalid set with mask %d\n", i);
-		cmd->o.arg1 = 1<<(32-i);	/* map length		*/
+		cmd->o.arg1 = (uint32_t) 1 << (32-i);	/* map length		*/
 		d[0] = ntohl(d[0]);		/* base addr in host format */
 		cmd->o.opcode = O_IP_DST_SET;	/* default */
 		cmd->o.len |= F_INSN_SIZE(ipfw_insn_u32) + (cmd->o.arg1+31)/32;
@@ -2929,7 +2929,7 @@ fill_ip(ipfw_insn_ip *cmd, char *av, int cblen, struct tidx *tstate)
 				errx(EX_DATAERR, "double '-' in range");
 			}
 			for (; i <= a; i++)
-			    map[i/32] |= 1<<(i & 31);
+			    map[i/32] |= (uint32_t) 1 << (i & 31);
 			i = -1;
 			if (*s == '-')
 			    i = a;

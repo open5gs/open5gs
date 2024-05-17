@@ -157,7 +157,7 @@ fill_icmp6types(ipfw_insn_icmp6 *cmd, char *av, int cblen)
 	    */
 	   if (type > ICMP6_MAXTYPE)
 	       errx(EX_DATAERR, "ICMP6 type out of range");
-	   cmd->d[type / 32] |= ( 1 << (type % 32));
+	   cmd->d[type / 32] |= ((uint32_t) 1 << (type % 32));
        }
        cmd->o.opcode = O_ICMP6TYPE;
        cmd->o.len |= F_INSN_SIZE(ipfw_insn_icmp6);
@@ -173,7 +173,7 @@ print_icmp6types(struct buf_pr *bp, ipfw_insn_u32 *cmd)
        bprintf(bp, " ip6 icmp6types");
        for (i = 0; i < 7; i++)
 	       for (j=0; j < 32; ++j) {
-		       if ( (cmd->d[i] & (1 << (j))) == 0)
+		       if ( (cmd->d[i] & ((uint32_t) 1 << (j))) == 0)
 			       continue;
 		       bprintf(bp, "%c%d", sep, (i*32 + j));
 		       sep = ',';

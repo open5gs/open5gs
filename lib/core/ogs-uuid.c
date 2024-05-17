@@ -121,7 +121,7 @@ void ogs_uuid_get(ogs_uuid_t *uuid)
 {
     uint64_t timestamp;
     unsigned char *d = NULL;
-    int version = 4;
+    uint8_t version = 4;
 
     ogs_assert(uuid);
     d = uuid->data;

@@ -230,7 +230,7 @@ asn_put_few_bits(asn_bit_outp_t *po, uint32_t bits, int obits) {
 	 * Now, due to sizeof(tmpspace), we are guaranteed large enough space.
 	 */
 	buf = po->buffer;
-	omsk = ~((1 << (8 - po->nboff)) - 1);
+	omsk = ~(((uint32_t) 1 << (8 - po->nboff)) - 1);
 	off = (po->nboff + obits);
 
 	/* Clear data of debris before meaningful bits */

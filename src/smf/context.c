@@ -1049,7 +1049,7 @@ smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len)
     if ((smf_ue = smf_ue_add()) == NULL)
         return NULL;;
 
-    smf_ue->imsi_len = ogs_min(imsi_len, OGS_MAX_IMSI_LEN);
+    smf_ue->imsi_len = imsi_len;
     memcpy(smf_ue->imsi, imsi, smf_ue->imsi_len);
     ogs_buffer_to_bcd(smf_ue->imsi, smf_ue->imsi_len, smf_ue->imsi_bcd);
     ogs_hash_set(self.imsi_hash, smf_ue->imsi, smf_ue->imsi_len, smf_ue);

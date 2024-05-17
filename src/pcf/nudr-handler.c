@@ -215,8 +215,7 @@ bool pcf_nudr_dr_handle_query_sm_data(
 
         service_type = OGS_SBI_SERVICE_TYPE_NPCF_POLICYAUTHORIZATION;
 
-        nf_instance = OGS_SBI_GET_NF_INSTANCE(
-                sess->sbi.service_type_array[service_type]);
+        nf_instance = sess->sbi.service_type_array[service_type].nf_instance;
         if (!nf_instance) {
             OpenAPI_nf_type_e requester_nf_type =
                         NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);

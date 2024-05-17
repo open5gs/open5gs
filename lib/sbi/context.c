@@ -1085,6 +1085,8 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void)
     ogs_assert(nf_instance);
     memset(nf_instance, 0, sizeof(ogs_sbi_nf_instance_t));
 
+    OGS_OBJECT_REF(nf_instance);
+
     nf_instance->time.heartbeat_interval =
             ogs_local_conf()->time.nf_instance.heartbeat_interval;
 
@@ -1094,10 +1096,10 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void)
 
     ogs_list_add(&ogs_sbi_self()->nf_instance_list, nf_instance);
 
-    ogs_debug("[%s] NFInstance added with Ref [%s]",
+    ogs_debug("[%s] NFInstance added with Ref [%s:%d]",
             nf_instance->nf_type ?
                 OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
-            nf_instance->id);
+            nf_instance->id, nf_instance->reference_count);
 
     return nf_instance;
 }
@@ -1194,10 +1196,20 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_assert(nf_instance);
 
-    ogs_debug("[%s] NFInstance removed [%s]",
+    ogs_debug("[%s] NFInstance UnRef [%s:%d]",
             nf_instance->nf_type ?
                 OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
-            nf_instance->id);
+            nf_instance->id, nf_instance->reference_count);
+
+    if (OGS_OBJECT_IS_REF(nf_instance)) {
+        OGS_OBJECT_UNREF(nf_instance);
+        return;
+    }
+
+    ogs_debug("[%s] NFInstance removed [%s:%d]",
+            nf_instance->nf_type ?
+                OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
+            nf_instance->id, nf_instance->reference_count);
 
     ogs_list_remove(&ogs_sbi_self()->nf_instance_list, nf_instance);
 
@@ -2118,6 +2130,9 @@ bool ogs_sbi_discovery_param_is_matched(
     if (NF_INSTANCE_EXCLUDED_FROM_DISCOVERY(nf_instance))
         return false;
 
+    if (!OGS_FSM_CHECK(&nf_instance->sm, ogs_sbi_nf_state_registered))
+        return false;
+
     if (nf_instance->nf_type != target_nf_type)
         return false;
 
@@ -2187,10 +2202,10 @@ void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance)
     client = nf_instance_find_client(nf_instance);
     ogs_assert(client);
 
-    ogs_debug("[%s] NFInstance associated [%s]",
+    ogs_debug("[%s] NFInstance associated [%s:%d]",
             nf_instance->nf_type ?
                 OpenAPI_nf_type_ToString(nf_instance->nf_type) : "NULL",
-            nf_instance->id);
+            nf_instance->id, nf_instance->reference_count);
 
     OGS_SBI_SETUP_CLIENT(nf_instance, client);
 
@@ -2245,15 +2260,30 @@ ogs_sbi_client_t *ogs_sbi_client_find_by_service_type(
             return nf_service->client;
     }
 
-    return NULL;
+    return nf_instance->client;
 }
 
 void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object)
 {
+    int i;
+
     ogs_assert(sbi_object);
 
     if (ogs_list_count(&sbi_object->xact_list))
         ogs_error("SBI running [%d]", ogs_list_count(&sbi_object->xact_list));
+
+    for (i = 0; i < OGS_SBI_MAX_NUM_OF_SERVICE_TYPE; i++) {
+        ogs_sbi_nf_instance_t *nf_instance =
+            sbi_object->service_type_array[i].nf_instance;
+        if (nf_instance)
+            ogs_sbi_nf_instance_remove(nf_instance);
+    }
+    for (i = 0; i < OGS_SBI_MAX_NUM_OF_NF_TYPE; i++) {
+        ogs_sbi_nf_instance_t *nf_instance =
+            sbi_object->nf_type_array[i].nf_instance;
+        if (nf_instance)
+            ogs_sbi_nf_instance_remove(nf_instance);
+    }
 }
 
 ogs_sbi_xact_t *ogs_sbi_xact_add(

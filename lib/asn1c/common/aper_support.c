@@ -130,7 +130,7 @@ aper_get_constrained_whole_number(asn_per_data_t *pd, long lb, long ub) {
 	if (range <= 255) {
 		int bitfield_size = 8;
 		for (bitfield_size = 8; bitfield_size >= 2; bitfield_size--)
-			if ((range - 1) & (1 << (bitfield_size-1)))
+			if ((range - 1) & ((long) 1 << (bitfield_size-1)))
 				break;
 		value = per_get_few_bits(pd, bitfield_size);
 		if (value < 0 || value >= range)
@@ -269,7 +269,7 @@ aper_put_nsnnwn(asn_per_outp_t *po, int number) {
 	} else { /* number > 64K */
 		int i;
 		for (i = 3; ; i++) {
-			int bits = 1 << (8 * i);
+			int bits = (int) 1 << (8 * i);
 			if (number < bits)
 				break;
 		}
@@ -318,7 +318,7 @@ aper_put_constrained_whole_number(asn_per_outp_t *po, long lb, long ub, long num
 	if (range <= 255) {
 		int bitfield_size = 8;
 		for (bitfield_size = 8; bitfield_size >= 2; bitfield_size--)
-			if ((range - 1) & (1 << (bitfield_size-1)))
+			if ((range - 1) & ((long) 1 << (bitfield_size-1)))
 				break;
 		return per_put_few_bits(po, value, bitfield_size);
 	}
@@ -342,7 +342,7 @@ aper_put_constrained_whole_number(asn_per_outp_t *po, long lb, long ub, long num
 	/* and so length determinant is stored as X.691 2002 10.9.3.3 */
 	/* number of bytes to store the range */
 	for (range_len = 3; ; range_len++) {
-		int bits = 1 << (8 * range_len);
+		int bits = (int) 1 << (8 * range_len);
 		if (range - 1 < bits)
 			break;
 	}

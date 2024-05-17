@@ -78,7 +78,7 @@ BIT_STRING_decode_oer(const asn_codec_ctx_t *opt_codec_ctx,
         st->buf = buf;
         st->size = expected_length;
         if(expected_length > 0) {
-            buf[expected_length - 1] &= (0xff << st->bits_unused);
+            buf[expected_length - 1] &= ((uint8_t) 0xff << st->bits_unused);
         }
 
         rval.consumed += expected_length;
@@ -134,7 +134,7 @@ BIT_STRING_encode_oer(const asn_TYPE_descriptor_t *td,
     }
 
     if(st->bits_unused) {
-        if(st->buf[st->size - 1] & (0xff << st->bits_unused)) {
+        if(st->buf[st->size - 1] & ((uint8_t) 0xff << st->bits_unused)) {
             fix_last_byte = 1;
         }
     }
@@ -144,7 +144,7 @@ BIT_STRING_encode_oer(const asn_TYPE_descriptor_t *td,
     }
 
     if(fix_last_byte) {
-        uint8_t b = st->buf[st->size - 1] & (0xff << st->bits_unused);
+        uint8_t b = st->buf[st->size - 1] & ((uint8_t) 0xff << st->bits_unused);
         if(cb(&b, 1, app_key) < 0) {
             ASN__ENCODE_FAILED;
         }

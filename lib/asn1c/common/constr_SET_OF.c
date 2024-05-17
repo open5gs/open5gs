@@ -94,7 +94,7 @@ static int _el_addbytes(const void *buffer, size_t size, void *el_buf_ptr) {
 
 static void assert_unused_bits(const struct _el_buffer* p) {
     if(p->length) {
-        assert((p->buf[p->length-1] & ~(0xff << p->bits_unused)) == 0);
+        assert((p->buf[p->length-1] & ~((uint8_t) 0xff << p->bits_unused)) == 0);
     } else {
         assert(p->bits_unused == 0);
     }

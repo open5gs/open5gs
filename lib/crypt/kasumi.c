@@ -338,7 +338,7 @@ void kasumi_f8(u8 *key, u32 count, u32 bearer, u32 dir, u8 *data, int length)
 	if (lastbits)
 		data-- ;
 #endif
-		*data &= 256 - (1<<lastbits) ;
+		*data &= 256 - ((uint8_t) 1<<lastbits) ;
 }
 
 /*-----------------------------------------------------------

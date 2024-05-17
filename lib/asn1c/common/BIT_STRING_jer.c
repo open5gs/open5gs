@@ -44,7 +44,7 @@ BIT_STRING_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr,
 
     if(buf == end) {
         int ubits = st->bits_unused;
-        uint8_t v = *buf & (0xff << ubits);
+        uint8_t v = *buf & ((uint8_t) 0xff << ubits);
         *p++ = h2c[v >> 4];
         *p++ = h2c[v & 0x0F];
         ASN__CALLBACK(scratch, p - scratch);

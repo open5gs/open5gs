@@ -116,7 +116,7 @@ BIT_STRING_random_fill(const asn_TYPE_descriptor_t *td, void **sptr,
     st->bits_unused = (8 - (rnd_bits & 0x7)) & 0x7;
     if(st->bits_unused) {
         assert(st->size > 0);
-        st->buf[st->size-1] &= 0xff << st->bits_unused;
+        st->buf[st->size-1] &= ((uint8_t) 0xff << st->bits_unused);
     }
 
     result_ok.length = st->size;
