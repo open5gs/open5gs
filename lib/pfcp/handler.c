@@ -94,6 +94,7 @@ bool ogs_pfcp_cp_handle_association_setup_request(
         ogs_pfcp_association_setup_request_t *req)
 {
     int i;
+    int16_t decoded;
 
     ogs_assert(xact);
     ogs_assert(node);
@@ -112,8 +113,11 @@ bool ogs_pfcp_cp_handle_association_setup_request(
         if (message->presence == 0)
             break;
 
-        ogs_pfcp_parse_user_plane_ip_resource_info(&info, message);
-        ogs_gtpu_resource_add(&node->gtpu_resource_list, &info);
+        decoded = ogs_pfcp_parse_user_plane_ip_resource_info(&info, message);
+        if (message->len == decoded)
+            ogs_gtpu_resource_add(&node->gtpu_resource_list, &info);
+        else
+            ogs_error("Invalid User Plane IP Resource Info");
     }
 
     if (req->up_function_features.presence) {
@@ -143,6 +147,7 @@ bool ogs_pfcp_cp_handle_association_setup_response(
         ogs_pfcp_association_setup_response_t *rsp)
 {
     int i;
+    int16_t decoded;
 
     ogs_assert(xact);
     ogs_pfcp_xact_commit(xact);
@@ -160,8 +165,11 @@ bool ogs_pfcp_cp_handle_association_setup_response(
         if (message->presence == 0)
             break;
 
-        ogs_pfcp_parse_user_plane_ip_resource_info(&info, message);
-        ogs_gtpu_resource_add(&node->gtpu_resource_list, &info);
+        decoded = ogs_pfcp_parse_user_plane_ip_resource_info(&info, message);
+        if (message->len == decoded)
+            ogs_gtpu_resource_add(&node->gtpu_resource_list, &info);
+        else
+            ogs_error("Invalid User Plane IP Resource Info");
     }
 
     if (rsp->up_function_features.presence) {
