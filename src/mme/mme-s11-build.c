@@ -171,9 +171,13 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     req->selection_mode.u8 =
         OGS_GTP2_SELECTION_MODE_MS_OR_NETWORK_PROVIDED_APN;
 
+    ogs_debug("sess->request_type.type = %d", sess->request_type.type);
+
     ogs_assert(sess->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4 ||
             sess->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV6 ||
             sess->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4V6);
+
+    ogs_debug("session->session_type = %d", session->session_type);
 
     if (session->session_type == OGS_PDU_SESSION_TYPE_IPV4 ||
         session->session_type == OGS_PDU_SESSION_TYPE_IPV6 ||
@@ -185,25 +189,12 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
             ogs_assert_if_reached();
         }
     } else {
-        ogs_fatal("Invalid PDN_TYPE[%d]", session->session_type);
-        ogs_assert_if_reached();
+        ogs_error("Invalid PDN-TYPE[%d]", session->session_type);
+        return NULL;
     }
     req->pdn_type.presence = 1;
 
-    /* If we started with both addrs (IPV4V6) but the above code
-     * (pdn_type & sess->request_type) truncates us down to just one,
-     * we need to change position of addresses in struct. */
-    if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4 &&
-        session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        uint32_t addr = session->paa.both.addr;
-        session->paa.addr = addr;
-    }
-    if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV6 &&
-        session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        uint8_t addr[16];
-        memcpy(&addr, session->paa.both.addr6, OGS_IPV6_LEN);
-        memcpy(session->paa.addr6, &addr, OGS_IPV6_LEN);
-    }
+    ogs_debug("req->pdn_type.u8 = %d", req->pdn_type.u8);
 
     memset(&indication, 0, sizeof(ogs_gtp2_indication_t));
     req->indication_flags.presence = 1;
@@ -224,15 +215,23 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
         indication.operation_indication = 1;
 
     session->paa.session_type = req->pdn_type.u8;
+    ogs_debug("session->paa.session_type = %d", session->paa.session_type);
     req->pdn_address_allocation.data = &session->paa;
-    if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4)
+    if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4) {
         req->pdn_address_allocation.len = OGS_PAA_IPV4_LEN;
-    else if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV6)
+        session->paa.addr = session->ue_ip.addr;
+    } else if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV6) {
         req->pdn_address_allocation.len = OGS_PAA_IPV6_LEN;
-    else if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4V6)
+        memcpy(session->paa.addr6, session->ue_ip.addr6, OGS_IPV6_LEN);
+    } else if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4V6) {
         req->pdn_address_allocation.len = OGS_PAA_IPV4V6_LEN;
-    else
-        ogs_assert_if_reached();
+        session->paa.both.addr = session->ue_ip.addr;
+        memcpy(session->paa.both.addr6, session->ue_ip.addr6, OGS_IPV6_LEN);
+    } else {
+        ogs_error("Invalid PDN-TYPE[%d:%d:%d]", req->pdn_type.u8,
+                session->session_type, sess->request_type.type);
+        return NULL;
+    }
     req->pdn_address_allocation.presence = 1;
 
     req->maximum_apn_restriction.presence = 1;

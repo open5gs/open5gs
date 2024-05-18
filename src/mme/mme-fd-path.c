@@ -379,34 +379,27 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
                         ogs_assert(ret == 0);
 
                         if (addr.ogs_sa_family == AF_INET) {
+                            session->ue_ip.addr = addr.sin.sin_addr.s_addr;
                             if (session->session_type ==
                                     OGS_PDU_SESSION_TYPE_IPV4) {
-                                session->paa.addr =
-                                    addr.sin.sin_addr.s_addr;
                             } else if (session->session_type ==
                                     OGS_PDU_SESSION_TYPE_IPV4V6) {
-                                session->paa.both.addr =
-                                    addr.sin.sin_addr.s_addr;
                             } else {
                                 ogs_error("Warning: Received a static IPv4 "
-                                    "address but PDN-Type does not include "
-                                    "IPv4. Ignoring...");
+                                    "address but PDN-Type[%d] does not include "
+                                    "IPv4. Ignoring...", session->session_type);
                             }
                         } else if (addr.ogs_sa_family == AF_INET6) {
+                            memcpy(session->ue_ip.addr6,
+                                    addr.sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
                             if (session->session_type ==
                                     OGS_PDU_SESSION_TYPE_IPV6) {
-                                memcpy(session->paa.addr6,
-                                    addr.sin6.sin6_addr.s6_addr,
-                                    OGS_IPV6_LEN);
                             } else if (session->session_type ==
                                     OGS_PDU_SESSION_TYPE_IPV4V6) {
-                                memcpy(session->paa.both.addr6,
-                                    addr.sin6.sin6_addr.s6_addr,
-                                    OGS_IPV6_LEN);
                             } else {
                                 ogs_error("Warning: Received a static IPv6 "
-                                    "address but PDN-Type does not include "
-                                    "IPv6. Ignoring...");
+                                    "address but PDN-Type[%d] does not include "
+                                    "IPv6. Ignoring...", session->session_type);
                             }
                         } else {
                             ogs_error("Invalid family[%d]",

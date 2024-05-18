@@ -195,18 +195,7 @@ void mme_s11_handle_create_session_response(
             cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
         }
 
-        if (rsp->pdn_address_allocation.presence) {
-            ogs_paa_t paa;
-
-            memcpy(&paa, rsp->pdn_address_allocation.data,
-                    rsp->pdn_address_allocation.len);
-
-            if (!OGS_PDU_SESSION_TYPE_IS_VALID(paa.session_type)) {
-                ogs_error("[%s] Unknown PDN Type [Session:%u, Cause:%d]",
-                        mme_ue->imsi_bcd, paa.session_type, session_cause);
-                cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
-            }
-        } else {
+        if (rsp->pdn_address_allocation.presence == 0) {
             ogs_error("[%s] No PDN Address Allocation [Cause:%d]",
                     mme_ue->imsi_bcd, session_cause);
             cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
@@ -380,9 +369,23 @@ void mme_s11_handle_create_session_response(
     if (rsp->pdn_address_allocation.presence) {
         memcpy(&session->paa, rsp->pdn_address_allocation.data,
                 rsp->pdn_address_allocation.len);
+        /*
+         * Issue #3209
+         *
+         * The Session-Type in the Subscriber DB should not be changed
+         * in case the UE can change the PDN-Type for the APN.
+         * (e.g IPv4v6 -> IPv4 -> IPv4v6)
+         *
+         * For resolving this problem,
+         * session->session_type and session->ue_ip should not be modified.
+         *
+         * Therefore, the code below will be deleted.
+         */
+#if 0 /* WILL BE DELETED */
         session->session_type = session->paa.session_type;
         ogs_assert(OGS_OK ==
                 ogs_paa_to_ip(&session->paa, &session->ue_ip));
+#endif
     }
 
     /* ePCO */
@@ -426,14 +429,10 @@ void mme_s11_handle_create_session_response(
                 OGS_NETWORK_ACCESS_MODE_ONLY_PACKET ||
             mme_ue->nas_eps.attach.value ==
                 OGS_NAS_ATTACH_TYPE_EPS_ATTACH) {
-            ogs_assert(OGS_PDU_SESSION_TYPE_IS_VALID(
-                        session->paa.session_type));
             r = nas_eps_send_attach_accept(mme_ue);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
         } else {
-            ogs_assert(OGS_PDU_SESSION_TYPE_IS_VALID(
-                        session->paa.session_type));
             ogs_assert(OGS_OK == sgsap_send_location_update_request(mme_ue));
         }
 
@@ -441,7 +440,6 @@ void mme_s11_handle_create_session_response(
         /* 3GPP TS 23.401 D.3.6 step 13, 14: */
         mme_s6a_send_ulr(mme_ue->enb_ue, mme_ue);
     } else if (create_action == OGS_GTP_CREATE_IN_UPLINK_NAS_TRANSPORT) {
-        ogs_assert(OGS_PDU_SESSION_TYPE_IS_VALID(session->paa.session_type));
         r = nas_eps_send_activate_default_bearer_context_request(
                 bearer, create_action);
         ogs_expect(r == OGS_OK);
