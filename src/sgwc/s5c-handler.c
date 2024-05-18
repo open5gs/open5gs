@@ -137,19 +137,7 @@ void sgwc_s5c_handle_create_session_response(
         ogs_error("No GTP TEID [Cause:%d]", session_cause);
         cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
     }
-    if (rsp->pdn_address_allocation.presence) {
-        ogs_paa_t paa;
-
-        memcpy(&paa, rsp->pdn_address_allocation.data,
-                ogs_min(sizeof(paa), rsp->pdn_address_allocation.len));
-
-        if (!OGS_PDU_SESSION_TYPE_IS_VALID(paa.session_type)) {
-            ogs_error("Unknown PDN Type %u, Cause:%d",
-                    paa.session_type, session_cause);
-            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
-        }
-
-    } else {
+    if (rsp->pdn_address_allocation.presence == 0) {
         ogs_error("No PDN Address Allocation [Cause:%d]", session_cause);
         cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
     }

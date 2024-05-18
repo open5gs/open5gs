@@ -355,8 +355,8 @@ static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue,
                 ogs_free(mme_ue->session[i].name);
             break;
         }
-        memcpy(&mme_ue->session[i].paa, &slice_data->session[i].paa,
-                sizeof(mme_ue->session[i].paa));
+        memcpy(&mme_ue->session[i].ue_ip, &slice_data->session[i].ue_ip,
+                sizeof(mme_ue->session[i].ue_ip));
 
         memcpy(&mme_ue->session[i].qos, &slice_data->session[i].qos,
                 sizeof(mme_ue->session[i].qos));

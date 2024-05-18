@@ -231,8 +231,7 @@ int esm_handle_information_response(mme_sess_t *sess,
             ogs_assert_if_reached();
         }
 
-        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue) &&
-            OGS_PDU_SESSION_TYPE_IS_VALID(sess->session->paa.session_type)) {
+        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
             mme_csmap_t *csmap = mme_csmap_find_by_tai(&mme_ue->tai);
             mme_ue->csmap = csmap;
 

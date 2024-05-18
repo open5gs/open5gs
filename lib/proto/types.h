@@ -379,11 +379,6 @@ ED2(uint8_t spare:4;,
 typedef struct ogs_paa_s {
 ED2(uint8_t spare:5;,
 /* 8.34 PDN Type  */
-#define OGS_PDU_SESSION_TYPE_IS_VALID(x) \
-        ((x) == OGS_PDU_SESSION_TYPE_IPV4 || \
-         (x) == OGS_PDU_SESSION_TYPE_IPV6 || \
-         (x) == OGS_PDU_SESSION_TYPE_IPV4V6) \
-
     uint8_t session_type:3;)
     union {
         /* PDU_SESSION_TYPE_IPV4 */

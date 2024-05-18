@@ -20,7 +20,7 @@
 #include "test-common.h"
 
 ogs_pkbuf_t *testesm_build_pdn_connectivity_request(
-        test_sess_t *sess, bool integrity_protected)
+        test_sess_t *sess, bool integrity_protected, uint8_t pdn_type)
 {
     ogs_nas_eps_message_t message;
     ogs_nas_eps_pdn_connectivity_request_t *pdn_connectivity_request =
@@ -72,7 +72,7 @@ ogs_pkbuf_t *testesm_build_pdn_connectivity_request(
 
     message.esm.h.message_type = OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST;
 
-    request_type->type = OGS_NAS_EPS_PDN_TYPE_IPV4V6;
+    request_type->type = pdn_type;
     request_type->value = sess->pdn_connectivity_param.request_type;
     ogs_assert(request_type->value);
 
