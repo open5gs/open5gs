@@ -149,14 +149,22 @@ int16_t ogs_pfcp_parse_user_plane_ip_resource_info(
     size++;
 
     if (info->teidri) {
-        ogs_assert(size + sizeof(info->teid_range) <= octet->len);
+        if (size + sizeof(info->teid_range) > octet->len) {
+            ogs_error("size[%d]+sizeof(info->teid_range)[%d] > IE Length[%d]",
+                    size, (int)sizeof(info->teid_range), octet->len);
+            return 0;
+        }
         memcpy(&info->teid_range, (unsigned char *)octet->data + size,
                 sizeof(info->teid_range));
         size += sizeof(info->teid_range);
     }
 
     if (info->v4) {
-        ogs_assert(size + sizeof(info->addr) <= octet->len);
+        if (size + sizeof(info->addr) > octet->len) {
+            ogs_error("size[%d]+sizeof(info->addr)[%d] > IE Length[%d]",
+                    size, (int)sizeof(info->addr), octet->len);
+            return 0;
+        }
         memcpy(&info->addr,
                 (unsigned char *)octet->data + size,
                 sizeof(info->addr));
@@ -164,14 +172,28 @@ int16_t ogs_pfcp_parse_user_plane_ip_resource_info(
     }
 
     if (info->v6) {
-        ogs_assert(size + OGS_IPV6_LEN <= octet->len);
+        if (size + OGS_IPV6_LEN > octet->len) {
+            ogs_error("size[%d]+OGS_IPV6_LEN[%d] > IE Length[%d]",
+                    size, (int)OGS_IPV6_LEN, octet->len);
+            return 0;
+        }
         memcpy(&info->addr6, (unsigned char *)octet->data + size, OGS_IPV6_LEN);
         size += OGS_IPV6_LEN;
     }
 
     if (info->assoni) {
         int len = octet->len - size;
+        if (len <= 0) {
+            ogs_error("len[%d] octect->len[%d] size[%d]", len, octet->len, size);
+            return 0;
+        }
+
         if (info->assosi) len--;
+        if (len <= 0) {
+            ogs_error("info->assosi[%d] len[%d] octect->len[%d] size[%d]",
+                    info->assosi, len, octet->len, size);
+            return 0;
+        }
 
         if (ogs_fqdn_parse(info->network_instance, (char *)octet->data + size,
             ogs_min(len, OGS_MAX_APN_LEN)) <= 0) {
@@ -182,14 +204,19 @@ int16_t ogs_pfcp_parse_user_plane_ip_resource_info(
     }
 
     if (info->assosi) {
-        ogs_assert(size + sizeof(info->source_interface) <=
-                octet->len);
+        if (size + sizeof(info->source_interface) > octet->len) {
+            ogs_error("size[%d]+sizeof(info->source_interface)[%d] > "
+                    "IE Length[%d]",
+                    size, (int)sizeof(info->source_interface), octet->len);
+            return 0;
+        }
         memcpy(&info->source_interface, (unsigned char *)octet->data + size,
                 sizeof(info->source_interface));
         size += sizeof(info->source_interface);
     }
 
-    ogs_assert(size == octet->len);
+    if (size != octet->len)
+        ogs_error("Mismatch IE Length[%d] != Decoded[%d]", octet->len, size);
 
     return size;
 }
