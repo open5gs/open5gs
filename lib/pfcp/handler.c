@@ -1329,6 +1329,7 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_create_urr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_create_urr_t *message,
         uint8_t *cause_value, uint8_t *offending_ie_value)
 {
+    int16_t decoded;
     ogs_pfcp_urr_t *urr = NULL;
 
     ogs_assert(message);
@@ -1377,12 +1378,26 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_create_urr(ogs_pfcp_sess_t *sess,
 
     if (message->volume_threshold.presence &&
         (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_VOLUME)) {
-        ogs_pfcp_parse_volume(&urr->vol_threshold, &message->volume_threshold);
+        decoded = ogs_pfcp_parse_volume(
+                &urr->vol_threshold, &message->volume_threshold);
+        if (message->volume_threshold.len != decoded) {
+            ogs_error("Invalid Volume Threshold");
+            *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+            *offending_ie_value = OGS_PFCP_VOLUME_THRESHOLD_TYPE;
+            return NULL;
+        }
     }
 
     if (message->volume_quota.presence &&
         (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_VOLUME)) {
-        ogs_pfcp_parse_volume(&urr->vol_quota, &message->volume_quota);
+        decoded = ogs_pfcp_parse_volume(
+                &urr->vol_quota, &message->volume_quota);
+        if (message->volume_quota.len != decoded) {
+            ogs_error("Invalid Volume Quota");
+            *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+            *offending_ie_value = OGS_PFCP_VOLUME_QUOTA_TYPE;
+            return NULL;
+        }
     }
 
     if (message->event_threshold.presence &&
@@ -1431,6 +1446,7 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_update_urr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_update_urr_t *message,
         uint8_t *cause_value, uint8_t *offending_ie_value)
 {
+    int16_t decoded;
     ogs_pfcp_urr_t *urr = NULL;
 
     ogs_assert(message);
@@ -1469,12 +1485,26 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_update_urr(ogs_pfcp_sess_t *sess,
 
     if (message->volume_threshold.presence &&
         (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_VOLUME)) {
-        ogs_pfcp_parse_volume(&urr->vol_threshold, &message->volume_threshold);
+        decoded = ogs_pfcp_parse_volume(
+                &urr->vol_threshold, &message->volume_threshold);
+        if (message->volume_threshold.len != decoded) {
+            ogs_error("Invalid Volume Threshold");
+            *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+            *offending_ie_value = OGS_PFCP_VOLUME_THRESHOLD_TYPE;
+            return NULL;
+        }
     }
 
     if (message->volume_quota.presence &&
         (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_VOLUME)) {
-        ogs_pfcp_parse_volume(&urr->vol_quota, &message->volume_quota);
+        decoded = ogs_pfcp_parse_volume(
+                &urr->vol_quota, &message->volume_quota);
+        if (message->volume_quota.len != decoded) {
+            ogs_error("Invalid Volume Quota");
+            *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+            *offending_ie_value = OGS_PFCP_VOLUME_QUOTA_TYPE;
+            return NULL;
+        }
     }
 
     if (message->event_threshold.presence &&

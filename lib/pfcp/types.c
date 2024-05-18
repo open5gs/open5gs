@@ -542,25 +542,44 @@ int16_t ogs_pfcp_parse_volume(
     size += sizeof(volume->flags);
 
     if (volume->tovol) {
+        if (size + sizeof(volume->total_volume) > octet->len) {
+            ogs_error("size[%d]+sizeof(volume->total_volume)[%d] "
+                    "> IE Length[%d]",
+                    size, (int)sizeof(volume->total_volume), octet->len);
+            return 0;
+        }
         memcpy(&volume->total_volume, (unsigned char *)octet->data + size,
                 sizeof(volume->total_volume));
         volume->total_volume = be64toh(volume->total_volume);
         size += sizeof(volume->total_volume);
     }
     if (volume->ulvol) {
+        if (size + sizeof(volume->uplink_volume) > octet->len) {
+            ogs_error("size[%d]+sizeof(volume->uplink_volume)[%d] "
+                    "> IE Length[%d]",
+                    size, (int)sizeof(volume->uplink_volume), octet->len);
+            return 0;
+        }
         memcpy(&volume->uplink_volume, (unsigned char *)octet->data + size,
                 sizeof(volume->uplink_volume));
         volume->uplink_volume = be64toh(volume->uplink_volume);
         size += sizeof(volume->uplink_volume);
     }
     if (volume->dlvol) {
+        if (size + sizeof(volume->downlink_volume) > octet->len) {
+            ogs_error("size[%d]+sizeof(volume->downlink_volume)[%d] "
+                    "> IE Length[%d]",
+                    size, (int)sizeof(volume->downlink_volume), octet->len);
+            return 0;
+        }
         memcpy(&volume->downlink_volume, (unsigned char *)octet->data + size,
                 sizeof(volume->downlink_volume));
         volume->downlink_volume = be64toh(volume->downlink_volume);
         size += sizeof(volume->downlink_volume);
     }
 
-    ogs_assert(size == octet->len);
+    if (size != octet->len)
+        ogs_error("Mismatch IE Length[%d] != Decoded[%d]", octet->len, size);
 
     return size;
 }
