@@ -252,6 +252,10 @@ sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message)
         ogs_error("No CP F-SEID");
         return NULL;
     }
+    if (f_seid->ipv4 == 0 && f_seid->ipv6 == 0) {
+        ogs_error("No IPv4 or IPv6");
+        return NULL;
+    }
     f_seid->seid = be64toh(f_seid->seid);
 
     sess = sgwu_sess_find_by_sgwc_sxa_f_seid(f_seid);
