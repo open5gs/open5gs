@@ -1278,7 +1278,14 @@ smf_sess_t *smf_sess_add_by_gtp1_message(ogs_gtp1_message_t *message)
     if (req->access_point_name.presence == 0) {
         ogs_error("No APN");
         return NULL;
+    } else {
+        if (ogs_fqdn_parse(apn, req->access_point_name.data,
+            ogs_min(req->access_point_name.len, OGS_MAX_APN_LEN)) <= 0) {
+            ogs_error("Invalid APN");
+            return NULL;
+        }
     }
+
     if (req->sgsn_address_for_signalling.presence == 0) {
         ogs_error("No SGSN Address for signalling");
         return NULL;
@@ -1293,12 +1300,6 @@ smf_sess_t *smf_sess_add_by_gtp1_message(ogs_gtp1_message_t *message)
     }
     if (req->rat_type.presence == 0) {
         ogs_error("No RAT Type");
-        return NULL;
-    }
-
-    if ((ogs_fqdn_parse(apn, req->access_point_name.data,
-            ogs_min(req->access_point_name.len, OGS_MAX_APN_LEN+1))) <= 0) {
-        ogs_error("No APN");
         return NULL;
     }
 
@@ -1349,14 +1350,17 @@ smf_sess_t *smf_sess_add_by_gtp2_message(ogs_gtp2_message_t *message)
     if (req->access_point_name.presence == 0) {
         ogs_error("No APN");
         return NULL;
+    } else {
+        if (ogs_fqdn_parse(apn, req->access_point_name.data,
+            ogs_min(req->access_point_name.len, OGS_MAX_APN_LEN)) <= 0) {
+            ogs_error("Invalid APN");
+            return NULL;
+        }
     }
     if (req->rat_type.presence == 0) {
         ogs_error("No RAT Type");
         return NULL;
     }
-
-    ogs_assert(0 < ogs_fqdn_parse(apn, req->access_point_name.data,
-            ogs_min(req->access_point_name.len, OGS_MAX_APN_LEN)));
 
     ogs_trace("smf_sess_add_by_message() [APN:%s]", apn);
 

@@ -173,9 +173,11 @@ int16_t ogs_pfcp_parse_user_plane_ip_resource_info(
         int len = octet->len - size;
         if (info->assosi) len--;
 
-        ogs_assert(0 < ogs_fqdn_parse(
-                    info->network_instance, (char *)octet->data + size,
-                    ogs_min(len, OGS_MAX_APN_LEN)));
+        if (ogs_fqdn_parse(info->network_instance, (char *)octet->data + size,
+            ogs_min(len, OGS_MAX_APN_LEN)) <= 0) {
+            ogs_error("Invalid info->network_instance");
+            info->network_instance[0] = 0;
+        }
         size += len;
     }
 

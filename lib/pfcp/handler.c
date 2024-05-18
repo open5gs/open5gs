@@ -518,12 +518,13 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
     if (message->pdi.network_instance.presence) {
         char dnn[OGS_MAX_DNN_LEN+1];
 
-        ogs_assert(0 < ogs_fqdn_parse(dnn,
-            message->pdi.network_instance.data,
-            ogs_min(message->pdi.network_instance.len, OGS_MAX_DNN_LEN)));
-
-        pdr->dnn = ogs_strdup(dnn);
-        ogs_assert(pdr->dnn);
+        if (ogs_fqdn_parse(dnn, message->pdi.network_instance.data,
+            ogs_min(message->pdi.network_instance.len, OGS_MAX_DNN_LEN)) > 0) {
+            pdr->dnn = ogs_strdup(dnn);
+            ogs_assert(pdr->dnn);
+        } else {
+            ogs_error("Invalid pdi.network_instance");
+        }
     }
 
     pdr->chid = false;
@@ -855,14 +856,16 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
         if (message->pdi.network_instance.presence) {
             char dnn[OGS_MAX_DNN_LEN+1];
 
-            ogs_assert(0 < ogs_fqdn_parse(dnn,
-                message->pdi.network_instance.data,
-                ogs_min(message->pdi.network_instance.len, OGS_MAX_DNN_LEN)));
-
-            if (pdr->dnn)
-                ogs_free(pdr->dnn);
-            pdr->dnn = ogs_strdup(dnn);
-            ogs_assert(pdr->dnn);
+            if (ogs_fqdn_parse(dnn, message->pdi.network_instance.data,
+                ogs_min(message->pdi.network_instance.len,
+                    OGS_MAX_DNN_LEN)) > 0) {
+                if (pdr->dnn)
+                    ogs_free(pdr->dnn);
+                pdr->dnn = ogs_strdup(dnn);
+                ogs_assert(pdr->dnn);
+            } else {
+                ogs_error("Invalid pdi.network_instance");
+            }
         }
 
         if (message->pdi.local_f_teid.presence) {
@@ -964,13 +967,15 @@ ogs_pfcp_far_t *ogs_pfcp_handle_create_far(ogs_pfcp_sess_t *sess,
         if (message->forwarding_parameters.network_instance.presence) {
             char dnn[OGS_MAX_DNN_LEN+1];
 
-            ogs_assert(0 < ogs_fqdn_parse(dnn,
+            if (ogs_fqdn_parse(dnn,
                 message->forwarding_parameters.network_instance.data,
-                    ogs_min(message->forwarding_parameters.network_instance.len,
-                        OGS_MAX_DNN_LEN)));
-
-            far->dnn = ogs_strdup(dnn);
-            ogs_assert(far->dnn);
+                ogs_min(message->forwarding_parameters.network_instance.len,
+                    OGS_MAX_DNN_LEN)) > 0) {
+                far->dnn = ogs_strdup(dnn);
+                ogs_assert(far->dnn);
+            } else {
+                ogs_error("Invalid forwarding_parameters.network_instance");
+            }
         }
 
         if (message->forwarding_parameters.outer_header_creation.presence) {
@@ -1069,15 +1074,18 @@ ogs_pfcp_far_t *ogs_pfcp_handle_update_far(ogs_pfcp_sess_t *sess,
         if (message->update_forwarding_parameters.network_instance.presence) {
             char dnn[OGS_MAX_DNN_LEN+1];
 
-            ogs_assert(0 < ogs_fqdn_parse(dnn,
+            if (ogs_fqdn_parse(dnn,
                 message->update_forwarding_parameters.network_instance.data,
-                    ogs_min(message->update_forwarding_parameters.
-                        network_instance.len, OGS_MAX_DNN_LEN)));
-
-            if (far->dnn)
-                ogs_free(far->dnn);
-            far->dnn = ogs_strdup(dnn);
-            ogs_assert(far->dnn);
+                ogs_min(message->update_forwarding_parameters.
+                    network_instance.len, OGS_MAX_DNN_LEN)) > 0) {
+                if (far->dnn)
+                    ogs_free(far->dnn);
+                far->dnn = ogs_strdup(dnn);
+                ogs_assert(far->dnn);
+            } else {
+                ogs_error("Invalid "
+                        "update_forwarding_parameters.network_instance");
+            }
         }
 
         if (message->update_forwarding_parameters.
