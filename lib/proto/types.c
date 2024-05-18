@@ -419,8 +419,8 @@ int ogs_fqdn_parse(char *dst, const char *src, int length)
     while (i+1 < length) {
         len = src[i++];
         if ((j + len + 1) > length) {
-            ogs_error("Invalid FQDN encoding[len:%d] + 1 > length[%d]",
-                    len, length);
+            ogs_error("Invalid FQDN encoding[j:%d+len:%d] + 1 > length[%d]",
+                    j, len, length);
             ogs_log_hexdump(OGS_LOG_ERROR, (unsigned char *)src, length);
             return 0;
         }

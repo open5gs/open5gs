@@ -107,8 +107,12 @@ void upf_n4_handle_session_establishment_request(
     if (req->apn_dnn.presence) {
         char apn_dnn[OGS_MAX_DNN_LEN+1];
 
-        ogs_assert(0 < ogs_fqdn_parse(apn_dnn, req->apn_dnn.data,
-                ogs_min(req->apn_dnn.len, OGS_MAX_DNN_LEN)));
+        if (ogs_fqdn_parse(apn_dnn, req->apn_dnn.data,
+            ogs_min(req->apn_dnn.len, OGS_MAX_DNN_LEN)) <= 0) {
+            ogs_error("Invalid APN");
+            cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+            goto cleanup;
+        }
 
         if (sess->apn_dnn)
             ogs_free(sess->apn_dnn);

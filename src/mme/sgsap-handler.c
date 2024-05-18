@@ -332,9 +332,11 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
             nas_mobile_identity_imsi_len = iter->length;
             break;
         case SGSAP_IE_VLR_NAME_TYPE:
-            ogs_assert(0 < ogs_fqdn_parse(
-                    vlr_name, iter->value,
-                    ogs_min(iter->length, SGSAP_IE_VLR_NAME_LEN)));
+            if (ogs_fqdn_parse(vlr_name, iter->value,
+                ogs_min(iter->length, SGSAP_IE_VLR_NAME_LEN)) <= 0) {
+                ogs_error("Invalid VLR-Name");
+                return;
+            }
             break;
         case SGSAP_IE_LAI_TYPE:
             lai = iter->value;
