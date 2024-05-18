@@ -311,18 +311,32 @@ int16_t ogs_pfcp_parse_sdf_filter(
 
     memset(filter, 0, sizeof(ogs_pfcp_sdf_filter_t));
 
-    ogs_assert(size + sizeof(filter->flags) <= octet->len);
+    if (size + sizeof(filter->flags) > octet->len) {
+        ogs_error("size[%d]+sizeof(filter->flags)[%d] > IE Length[%d]",
+                size, (int)sizeof(filter->flags), octet->len);
+        return 0;
+    }
     memcpy(&filter->flags,
             (unsigned char *)octet->data + size, sizeof(filter->flags));
     size++;
 
-    ogs_assert(size + sizeof(filter->spare2) <= octet->len);
+    if (size + sizeof(filter->spare2) > octet->len) {
+        ogs_error("size[%d]+sizeof(filter->spare2)[%d] > IE Length[%d]",
+                size, (int)sizeof(filter->spare2), octet->len);
+        return 0;
+    }
     memcpy(&filter->spare2,
             (unsigned char *)octet->data + size, sizeof(filter->flags));
     size++;
 
     if (filter->fd) {
-        ogs_assert(size + sizeof(filter->flow_description_len) <= octet->len);
+        if (size + sizeof(filter->flow_description_len) > octet->len) {
+            ogs_error("size[%d]+sizeof(filter->flow_description_len)[%d] "
+                    "> IE Length[%d]",
+                    size, (int)sizeof(filter->flow_description_len),
+                    octet->len);
+            return 0;
+        }
         memcpy(&filter->flow_description_len,
                 (unsigned char *)octet->data + size,
                 sizeof(filter->flow_description_len));
@@ -334,7 +348,12 @@ int16_t ogs_pfcp_parse_sdf_filter(
     }
 
     if (filter->ttc) {
-        ogs_assert(size + sizeof(filter->tos_traffic_class) <= octet->len);
+        if (size + sizeof(filter->tos_traffic_class) > octet->len) {
+            ogs_error("size[%d]+sizeof(filter->tos_traffic_class)[%d] "
+                    "> IE Length[%d]",
+                    size, (int)sizeof(filter->tos_traffic_class), octet->len);
+            return 0;
+        }
         memcpy(&filter->tos_traffic_class,
                 (unsigned char *)octet->data + size,
                 sizeof(filter->tos_traffic_class));
@@ -343,8 +362,13 @@ int16_t ogs_pfcp_parse_sdf_filter(
     }
 
     if (filter->spi) {
-        ogs_assert(size + sizeof(filter->security_parameter_index) <=
-                octet->len);
+        if (size + sizeof(filter->security_parameter_index) > octet->len) {
+            ogs_error("size[%d]+sizeof(filter->security_parameter_index)[%d] "
+                    "> IE Length[%d]",
+                    size, (int)sizeof(filter->security_parameter_index),
+                    octet->len);
+            return 0;
+        }
         memcpy(&filter->security_parameter_index,
                 (unsigned char *)octet->data + size,
                 sizeof(filter->security_parameter_index));
@@ -355,7 +379,11 @@ int16_t ogs_pfcp_parse_sdf_filter(
 
     if (filter->fl) {
         int bit24_len = 3;
-        ogs_assert(size + bit24_len <= octet->len);
+        if (size + bit24_len > octet->len) {
+            ogs_error("size[%d]+bit24_len[%d] > IE Length[%d]",
+                    size, bit24_len, octet->len);
+            return 0;
+        }
         memcpy(&filter->flow_label,
                 (unsigned char *)octet->data + size, bit24_len);
         filter->flow_label = be32toh(filter->flow_label);
@@ -363,14 +391,20 @@ int16_t ogs_pfcp_parse_sdf_filter(
     }
 
     if (filter->bid) {
-        ogs_assert(size + sizeof(filter->sdf_filter_id) <= octet->len);
+        if (size + sizeof(filter->sdf_filter_id) > octet->len) {
+            ogs_error("size[%d]+sizeof(filter->sdf_filter_id)[%d]"
+                    "> IE Length[%d]",
+                    size, (int)sizeof(filter->sdf_filter_id), octet->len);
+            return 0;
+        }
         memcpy(&filter->sdf_filter_id, (unsigned char *)octet->data + size,
                 sizeof(filter->sdf_filter_id));
         filter->sdf_filter_id = be32toh(filter->sdf_filter_id);
         size += sizeof(filter->sdf_filter_id);
     }
 
-    ogs_assert(size == octet->len);
+    if (size != octet->len)
+        ogs_error("Mismatch IE Length[%d] != Decoded[%d]", octet->len, size);
 
     return size;
 }

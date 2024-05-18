@@ -432,7 +432,10 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
 
         len = ogs_pfcp_parse_sdf_filter(
                 &sdf_filter, &message->pdi.sdf_filter[i]);
-        ogs_assert(message->pdi.sdf_filter[i].len == len);
+        if (message->pdi.sdf_filter[i].len != len) {
+            ogs_error("Invalid SDF Filter");
+            break;
+        }
 
         /* Check Previous SDF Filter ID */
         if (sdf_filter.bid) {
@@ -774,7 +777,10 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
 
             len = ogs_pfcp_parse_sdf_filter(
                     &sdf_filter, &message->pdi.sdf_filter[i]);
-            ogs_assert(message->pdi.sdf_filter[i].len == len);
+            if (message->pdi.sdf_filter[i].len != len) {
+                ogs_error("Invalid SDF Filter");
+                break;
+            }
 
             /* Check Previous SDF Filter ID */
             if (sdf_filter.bid) {
