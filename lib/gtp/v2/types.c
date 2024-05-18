@@ -629,7 +629,11 @@ int16_t ogs_gtp2_parse_uli(ogs_gtp2_uli_t *uli, ogs_tlv_octet_t *octet)
     size++;
 
     if (uli->flags.cgi) {
-        ogs_assert(size + sizeof(uli->cgi) <= octet->len);
+        if (size + sizeof(uli->cgi) > octet->len) {
+            ogs_error("size[%d]+sizeof(uli->cgi)[%d] > IE Length[%d]",
+                    size, (int)sizeof(uli->cgi), octet->len);
+            return 0;
+        }
         memcpy(&uli->cgi,
                 (unsigned char *)octet->data + size, sizeof(uli->cgi));
         uli->cgi.lac = be16toh(uli->cgi.lac);
@@ -637,7 +641,11 @@ int16_t ogs_gtp2_parse_uli(ogs_gtp2_uli_t *uli, ogs_tlv_octet_t *octet)
         size += sizeof(uli->cgi);
     }
     if (uli->flags.sai) {
-        ogs_assert(size + sizeof(uli->sai) <= octet->len);
+        if (size + sizeof(uli->sai) > octet->len) {
+            ogs_error("size[%d]+sizeof(uli->sai)[%d] > IE Length[%d]",
+                    size, (int)sizeof(uli->sai), octet->len);
+            return 0;
+        }
         memcpy(&uli->sai,
                 (unsigned char *)octet->data + size, sizeof(uli->sai));
         uli->sai.lac = be16toh(uli->sai.lac);
@@ -645,7 +653,11 @@ int16_t ogs_gtp2_parse_uli(ogs_gtp2_uli_t *uli, ogs_tlv_octet_t *octet)
         size += sizeof(uli->sai);
     }
     if (uli->flags.rai) {
-        ogs_assert(size + sizeof(uli->rai) <= octet->len);
+        if (size + sizeof(uli->rai) > octet->len) {
+            ogs_error("size[%d]+sizeof(uli->lai)[%d] > IE Length[%d]",
+                    size, (int)sizeof(uli->lai), octet->len);
+            return 0;
+        }
         memcpy(&uli->rai,
                 (unsigned char *)octet->data + size, sizeof(uli->rai));
         uli->rai.lac = be16toh(uli->rai.lac);
@@ -653,28 +665,44 @@ int16_t ogs_gtp2_parse_uli(ogs_gtp2_uli_t *uli, ogs_tlv_octet_t *octet)
         size += sizeof(uli->rai);
     }
     if (uli->flags.tai) {
-        ogs_assert(size + sizeof(uli->tai) <= octet->len);
+        if (size + sizeof(uli->tai) > octet->len) {
+            ogs_error("size[%d]+sizeof(uli->tai)[%d] > IE Length[%d]",
+                    size, (int)sizeof(uli->tai), octet->len);
+            return 0;
+        }
         memcpy(&uli->tai,
                 (unsigned char *)octet->data + size, sizeof(uli->tai));
         uli->tai.tac = be16toh(uli->tai.tac);
         size += sizeof(uli->tai);
     }
     if (uli->flags.e_cgi) {
-        ogs_assert(size + sizeof(uli->e_cgi) <= octet->len);
+        if (size + sizeof(uli->e_cgi) > octet->len) {
+            ogs_error("size[%d]+sizeof(uli->e_cgi)[%d] > IE Length[%d]",
+                    size, (int)sizeof(uli->e_cgi), octet->len);
+            return 0;
+        }
         memcpy(&uli->e_cgi,
                 (unsigned char *)octet->data + size, sizeof(uli->e_cgi));
         uli->e_cgi.cell_id = be32toh(uli->e_cgi.cell_id);
         size += sizeof(uli->e_cgi);
     }
     if (uli->flags.lai) {
-        ogs_assert(size + sizeof(uli->lai) <= octet->len);
+        if (size + sizeof(uli->lai) > octet->len) {
+            ogs_error("size[%d]+sizeof(uli->lai)[%d] > IE Length[%d]",
+                    size, (int)sizeof(uli->lai), octet->len);
+            return 0;
+        }
         memcpy(&uli->lai,
                 (unsigned char *)octet->data + size, sizeof(uli->lai));
         uli->lai.lac = be16toh(uli->lai.lac);
         size += sizeof(uli->lai);
     }
     if (uli->flags.enodeb_id) {
-        ogs_assert(size + sizeof(uli->enodeb_id) <= octet->len);
+        if (size + sizeof(uli->enodeb_id) > octet->len) {
+            ogs_error("size[%d]+sizeof(uli->enodeb_id)[%d] > IE Length[%d]",
+                    size, (int)sizeof(uli->enodeb_id), octet->len);
+            return 0;
+        }
         memcpy(&uli->enodeb_id,
                 (unsigned char *)octet->data + size, sizeof(uli->enodeb_id));
         uli->enodeb_id.enodeb_id = be16toh(uli->enodeb_id.enodeb_id);
@@ -684,7 +712,8 @@ int16_t ogs_gtp2_parse_uli(ogs_gtp2_uli_t *uli, ogs_tlv_octet_t *octet)
         ogs_error("Extended Macro eNodeB ID in ULI not implemented! see 3GPP TS 29.274 8.21.8");
     }
 
-    ogs_assert(size == octet->len);
+    if (size != octet->len)
+        ogs_error("Mismatch IE Length[%d] != Decoded[%d]", octet->len, size);
 
     return size;
 }
