@@ -381,9 +381,11 @@ void mme_s11_handle_create_session_response(
          *
          * Therefore, the code below will be deleted.
          */
-        sess->pdp_type_num = session->paa.session_type;
+#if 0 /* WILL BE DELETED */
+        session->session_type = session->paa.session_type;
         ogs_assert(OGS_OK ==
-                ogs_paa_to_ip(&session->paa, &sess->pdp_address));
+                ogs_paa_to_ip(&session->paa, &session->ue_ip));
+#endif
     }
 
     /* ePCO */
