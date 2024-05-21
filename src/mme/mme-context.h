@@ -760,6 +760,9 @@ typedef struct mme_sess_s {
 
     ogs_session_t   *session;
 
+    uint8_t         pdp_type_num;
+    ogs_ip_t        pdp_address;
+
     /* Save Protocol Configuration Options from UE */
     struct {
         uint8_t length;

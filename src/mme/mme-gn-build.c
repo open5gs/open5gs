@@ -156,8 +156,8 @@ static int sess_fill_pdp_context_decoded(mme_sess_t *sess, ogs_gtp1_pdp_context_
         .receive_npdu_nr = 0,
         .ul_teic = sess->pgw_s5c_teid,
         .pdp_type_org = OGS_PDP_EUA_ORG_IETF,
-        .pdp_type_num = {sess->session->session_type, },
-        .pdp_address = {sess->session->ue_ip, },
+        .pdp_type_num = {sess->pdp_type_num, },
+        .pdp_address = {sess->pdp_address, },
         .ggsn_address_c = sess->pgw_s5c_ip,
         .trans_id = sess->pti,
     };
