@@ -1,11 +1,17 @@
 #!/bin/sh
 
 SYSTEM=`uname`;
-
 if [ "$SYSTEM" = "Linux" ]; then
     if ! grep "ogstun" /proc/net/dev > /dev/null; then
         ip tuntap add name ogstun mode tun
     fi
+    # Uncomment the following lines if you want to use multiple tunnels
+    # if ! grep "ogstun2" /proc/net/dev > /dev/null; then
+    #     ip tuntap add name ogstun2 mode tun
+    # fi
+    #     if ! grep "ogstun3" /proc/net/dev > /dev/null; then
+    #     ip tuntap add name ogstun3 mode tun
+    # fi    
     if test "x`sysctl -n net.ipv6.conf.ogstun.disable_ipv6`" = x1; then
         echo "net.ipv6.conf.ogstun.disable_ipv6=0" > /etc/sysctl.d/30-open5gs.conf
         sysctl -p /etc/sysctl.d/30-open5gs.conf
@@ -23,6 +29,9 @@ if [ "$SYSTEM" = "Linux" ]; then
     ip addr del 2001:db8:face::1/48 dev ogstun3 2> /dev/null
     ip addr add 2001:db8:face::1/48 dev ogstun3
     ip link set ogstun up
+    # Uncomment the following lines if you want to use multiple tunnels
+    # ip link set ogstun2 up
+    # ip link set ogstun3 up
 else
     sysctl -w net.inet.ip.forwarding=1
     sysctl -w net.inet6.ip6.forwarding=1
