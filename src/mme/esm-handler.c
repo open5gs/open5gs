@@ -57,7 +57,8 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
         return OGS_ERROR;
     }
 
-    memcpy(&sess->request_type, &req->request_type, sizeof(sess->request_type));
+    memcpy(&sess->ue_request_type,
+            &req->request_type, sizeof(sess->ue_request_type));
 
     security_protected_required = 0;
     if (req->presencemask &
@@ -89,10 +90,10 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
             sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV6 ||
             sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
             uint8_t derived_pdn_type =
-                (sess->session->session_type & sess->request_type.type);
+                (sess->session->session_type & sess->ue_request_type.type);
             if (derived_pdn_type == 0) {
                 ogs_error("Cannot derived PDN Type [UE:%d,HSS:%d]",
-                    sess->request_type.type, sess->session->session_type);
+                    sess->ue_request_type.type, sess->session->session_type);
                 r = nas_eps_send_pdn_connectivity_reject(
                         sess, OGS_NAS_ESM_CAUSE_UNKNOWN_PDN_TYPE,
                         create_action);
@@ -215,10 +216,10 @@ int esm_handle_information_response(mme_sess_t *sess,
             sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV6 ||
             sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
             uint8_t derived_pdn_type =
-                (sess->session->session_type & sess->request_type.type);
+                (sess->session->session_type & sess->ue_request_type.type);
             if (derived_pdn_type == 0) {
                 ogs_error("Cannot derived PDN Type [UE:%d,HSS:%d]",
-                    sess->request_type.type, sess->session->session_type);
+                    sess->ue_request_type.type, sess->session->session_type);
                 r = nas_eps_send_pdn_connectivity_reject(
                         sess, OGS_NAS_ESM_CAUSE_UNKNOWN_PDN_TYPE,
                         OGS_GTP_CREATE_IN_ATTACH_REQUEST);

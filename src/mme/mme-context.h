@@ -750,7 +750,7 @@ typedef struct mme_sess_s {
     ogs_ip_t        pgw_s5c_ip;
 
     /* PDN Connectivity Request */
-    ogs_nas_request_type_t request_type;
+    ogs_nas_request_type_t ue_request_type;
 
     /* mme_bearer_first(sess) : Default Bearer Context */
     ogs_list_t      bearer_list;
@@ -759,6 +759,9 @@ typedef struct mme_sess_s {
     mme_ue_t        *mme_ue;
 
     ogs_session_t   *session;
+
+    /* PDN Address Allocation (PAA) */
+    ogs_paa_t       paa;
 
     /* Save Protocol Configuration Options from UE */
     struct {

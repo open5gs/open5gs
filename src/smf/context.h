@@ -349,6 +349,9 @@ typedef struct smf_sess_s {
     uint8_t ue_session_type;
     uint8_t ue_ssc_mode;
 
+    /* PDN Address Allocation (PAA) */
+    ogs_paa_t paa;
+
     /* DNN */
     char *full_dnn;
 

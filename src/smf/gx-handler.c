@@ -153,12 +153,12 @@ uint32_t smf_gx_handle_cca_initial_request(
 
     /* Set UE IP Address to the Default DL PDR */
     ogs_assert(OGS_OK ==
-        ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
+        ogs_pfcp_paa_to_ue_ip_addr(&sess->paa,
             &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len));
     dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
 
     ogs_assert(OGS_OK ==
-        ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
+        ogs_pfcp_paa_to_ue_ip_addr(&sess->paa,
             &ul_pdr->ue_ip_addr, &ul_pdr->ue_ip_addr_len));
 
     /* Set UE-to-CP Flow-Description and Outer-Header-Creation */

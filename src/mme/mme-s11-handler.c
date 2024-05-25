@@ -367,7 +367,7 @@ void mme_s11_handle_create_session_response(
 
     /* PDN Addresss Allocation */
     if (rsp->pdn_address_allocation.presence) {
-        memcpy(&session->paa, rsp->pdn_address_allocation.data,
+        memcpy(&sess->paa, rsp->pdn_address_allocation.data,
                 rsp->pdn_address_allocation.len);
         /*
          * Issue #3209
@@ -382,9 +382,8 @@ void mme_s11_handle_create_session_response(
          * Therefore, the code below will be deleted.
          */
 #if 0 /* WILL BE DELETED */
-        session->session_type = session->paa.session_type;
-        ogs_assert(OGS_OK ==
-                ogs_paa_to_ip(&session->paa, &session->ue_ip));
+        session->session_type = sess->paa.session_type;
+        ogs_assert(OGS_OK == ogs_paa_to_ip(&sess->paa, &session->ue_ip));
 #endif
     }
 

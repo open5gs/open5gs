@@ -171,26 +171,58 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     req->selection_mode.u8 =
         OGS_GTP2_SELECTION_MODE_MS_OR_NETWORK_PROVIDED_APN;
 
-    ogs_debug("sess->request_type.type = %d", sess->request_type.type);
+    ogs_debug("sess->ue_request_type.type = %d", sess->ue_request_type.type);
 
-    ogs_assert(sess->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4 ||
-            sess->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV6 ||
-            sess->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4V6);
+    ogs_assert(sess->ue_request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4 ||
+            sess->ue_request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV6 ||
+            sess->ue_request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4V6);
 
+    ogs_debug("create_action %d", create_action);
     ogs_debug("session->session_type = %d", session->session_type);
 
-    if (session->session_type == OGS_PDU_SESSION_TYPE_IPV4 ||
-        session->session_type == OGS_PDU_SESSION_TYPE_IPV6 ||
-        session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        req->pdn_type.u8 = (session->session_type & sess->request_type.type);
-        if (req->pdn_type.u8 == 0) {
-            ogs_fatal("Cannot derive PDN Type [UE:%d,HSS:%d]",
-                sess->request_type.type, session->session_type);
-            ogs_assert_if_reached();
-        }
+    /*
+     * 3GPP TS 23.401
+     * Ch 5.3.3 Tracking Area Update procedures
+     *
+     * The Tracking Area Update Procedure differs
+     * from the Attach Procedure in 5.3.2
+     * in the point at which HSS and ULR/ULA are performed.
+     *
+     * <Attach Procedure>
+     * 1. Security-mode complete
+     * 2. Update Location Request/Answer
+     * 3. Create Session Request/Response
+     *
+     * <Tracking Area Update Procedure>
+     * 1. Security-mode complete
+     * 2. Create Session Request/Response
+     * 3. Update Location Request/Answer
+     *
+     * When TAU creates a Create Session Request message,
+     * there is no session type information in the Subscriber DB
+     * that is received from HSS in the Update Location.
+     *
+     * Therefore, as shown below, TAU does not reflect the Session Type
+     * but creates PDN Type by reflecting the information
+     * in the Request Type as it is.
+     */
+    if (create_action == OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE) {
+        req->pdn_type.u8 = sess->ue_request_type.type;
     } else {
-        ogs_error("Invalid PDN-TYPE[%d]", session->session_type);
-        return NULL;
+        if (session->session_type == OGS_PDU_SESSION_TYPE_IPV4 ||
+            session->session_type == OGS_PDU_SESSION_TYPE_IPV6 ||
+            session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+            req->pdn_type.u8 =
+                (session->session_type & sess->ue_request_type.type);
+            if (req->pdn_type.u8 == 0) {
+                ogs_fatal("Cannot derive PDN Type [UE:%d,HSS:%d]",
+                    sess->ue_request_type.type, session->session_type);
+                ogs_assert_if_reached();
+            }
+        } else {
+            ogs_error("Invalid PDN-TYPE[%d]", session->session_type);
+            return NULL;
+        }
     }
     req->pdn_type.presence = 1;
 
@@ -207,29 +239,29 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4V6)
         indication.dual_address_bearer_flag = 1;
 
-    if (sess->request_type.value == OGS_NAS_EPS_REQUEST_TYPE_HANDOVER)
+    if (sess->ue_request_type.value == OGS_NAS_EPS_REQUEST_TYPE_HANDOVER)
         indication.handover_indication = 1;
 
     if (create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST ||
         create_action == OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE)
         indication.operation_indication = 1;
 
-    session->paa.session_type = req->pdn_type.u8;
-    ogs_debug("session->paa.session_type = %d", session->paa.session_type);
-    req->pdn_address_allocation.data = &session->paa;
+    sess->paa.session_type = req->pdn_type.u8;
+    ogs_debug("sess->paa.session_type = %d", sess->paa.session_type);
+    req->pdn_address_allocation.data = &sess->paa;
     if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4) {
         req->pdn_address_allocation.len = OGS_PAA_IPV4_LEN;
-        session->paa.addr = session->ue_ip.addr;
+        sess->paa.addr = session->ue_ip.addr;
     } else if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV6) {
         req->pdn_address_allocation.len = OGS_PAA_IPV6_LEN;
-        memcpy(session->paa.addr6, session->ue_ip.addr6, OGS_IPV6_LEN);
+        memcpy(sess->paa.addr6, session->ue_ip.addr6, OGS_IPV6_LEN);
     } else if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4V6) {
         req->pdn_address_allocation.len = OGS_PAA_IPV4V6_LEN;
-        session->paa.both.addr = session->ue_ip.addr;
-        memcpy(session->paa.both.addr6, session->ue_ip.addr6, OGS_IPV6_LEN);
+        sess->paa.both.addr = session->ue_ip.addr;
+        memcpy(sess->paa.both.addr6, session->ue_ip.addr6, OGS_IPV6_LEN);
     } else {
         ogs_error("Invalid PDN-TYPE[%d:%d:%d]", req->pdn_type.u8,
-                session->session_type, sess->request_type.type);
+                session->session_type, sess->ue_request_type.type);
         return NULL;
     }
     req->pdn_address_allocation.presence = 1;
@@ -419,7 +451,7 @@ ogs_pkbuf_t *mme_s11_build_modify_bearer_request(
         mme_sess_t *sess = bearer->sess;
         ogs_assert(sess);
 
-        if (sess->request_type.value == OGS_NAS_EPS_REQUEST_TYPE_HANDOVER) {
+        if (sess->ue_request_type.value == OGS_NAS_EPS_REQUEST_TYPE_HANDOVER) {
             indication.handover_indication = 1;
             req->indication_flags.presence = 1;
             req->indication_flags.data = &indication;

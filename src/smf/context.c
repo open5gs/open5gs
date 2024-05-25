@@ -1563,7 +1563,7 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
         }
     }
 
-    sess->session.paa.session_type = sess->session.session_type;
+    sess->paa.session_type = sess->session.session_type;
     ogs_assert(sess->session.session_type);
 
     if (sess->ipv4) {
@@ -1584,7 +1584,7 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
             ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
             return cause_value;
         }
-        sess->session.paa.addr = sess->ipv4->addr[0];
+        sess->paa.addr = sess->ipv4->addr[0];
         ogs_hash_set(smf_self()->ipv4_hash,
                 sess->ipv4->addr, OGS_IPV4_LEN, sess);
     } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
@@ -1598,8 +1598,8 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
         subnet6 = sess->ipv6->subnet;
         ogs_assert(subnet6);
 
-        sess->session.paa.len = OGS_IPV6_DEFAULT_PREFIX_LEN >> 3;
-        memcpy(sess->session.paa.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
+        sess->paa.len = OGS_IPV6_DEFAULT_PREFIX_LEN >> 3;
+        memcpy(sess->paa.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
         ogs_hash_set(smf_self()->ipv6_hash,
                 sess->ipv6->addr, OGS_IPV6_DEFAULT_PREFIX_LEN >> 3, sess);
     } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
@@ -1626,9 +1626,9 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
         subnet6 = sess->ipv6->subnet;
         ogs_assert(subnet6);
 
-        sess->session.paa.both.addr = sess->ipv4->addr[0];
-        sess->session.paa.both.len = OGS_IPV6_DEFAULT_PREFIX_LEN >> 3;
-        memcpy(sess->session.paa.both.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
+        sess->paa.both.addr = sess->ipv4->addr[0];
+        sess->paa.both.len = OGS_IPV6_DEFAULT_PREFIX_LEN >> 3;
+        memcpy(sess->paa.both.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
         ogs_hash_set(smf_self()->ipv4_hash,
                 sess->ipv4->addr, OGS_IPV4_LEN, sess);
         ogs_hash_set(smf_self()->ipv6_hash,

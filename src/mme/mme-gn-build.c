@@ -157,14 +157,14 @@ static int sess_fill_pdp_context_decoded(mme_sess_t *sess, ogs_gtp1_pdp_context_
         .receive_npdu_nr = 0,
         .ul_teic = sess->pgw_s5c_teid,
         .pdp_type_org = OGS_PDP_EUA_ORG_IETF,
-        .pdp_type_num = {sess->session->paa.session_type, },
+        .pdp_type_num = {sess->paa.session_type, },
         .ggsn_address_c = sess->pgw_s5c_ip,
         .trans_id = sess->pti,
     };
 
     ogs_cpystrn(pdpctx_dec->apn, sess->session->name, sizeof(pdpctx_dec->apn));
 
-    rv = ogs_paa_to_ip(&sess->session->paa, &pdpctx_dec->pdp_address[0]);
+    rv = ogs_paa_to_ip(&sess->paa, &pdpctx_dec->pdp_address[0]);
     if (rv != OGS_OK)
         return rv;
 

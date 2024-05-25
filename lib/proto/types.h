@@ -603,7 +603,6 @@ typedef struct ogs_session_s {
     ogs_qos_t qos;
     ogs_bitrate_t ambr; /* APN-AMBR */
 
-    ogs_paa_t paa;
     ogs_ip_t ue_ip;
     char **ipv4_framed_routes;
     char **ipv6_framed_routes;
