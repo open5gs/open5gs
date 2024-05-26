@@ -1980,31 +1980,26 @@ static bool amf_namf_comm_parse_guti(ogs_nas_5gs_guti_t *guti, char *ue_context_
 
     short index = 8; /* start parsing guti after "5g-guti-" */
 
-    strncpy(mcc_string, &ue_context_id[index], LENGTH_OF_MCC);
-    mcc_string[LENGTH_OF_MCC] = '\0';
+    ogs_cpystrn(mcc_string, &ue_context_id[index], LENGTH_OF_MCC+1);
     index += LENGTH_OF_MCC;
 
     if (strlen(ue_context_id) == OGS_MAX_5G_GUTI_LEN - 1) {
         /* mnc is 2 characters long */
-        mnc_string[MIN_LENGTH_OF_MNC] = '\0';
-        strncpy(mnc_string, &ue_context_id[index], MIN_LENGTH_OF_MNC);
+        ogs_cpystrn(mnc_string, &ue_context_id[index], MIN_LENGTH_OF_MNC+1);
         index += MIN_LENGTH_OF_MNC;
     } else if (strlen(ue_context_id) == OGS_MAX_5G_GUTI_LEN) {
         /* mnc is 3 characters long */
-        mnc_string[MAX_LENGTH_OF_MNC] = '\0';
-        strncpy(mnc_string, &ue_context_id[index], MAX_LENGTH_OF_MNC);
+        ogs_cpystrn(mnc_string, &ue_context_id[index], MAX_LENGTH_OF_MNC+1);
         index += MAX_LENGTH_OF_MNC;
     } else {
         ogs_error("Invalid Ue context id");
         return false;
     }
 
-    strncpy(amf_id_string, &ue_context_id[index], LENGTH_OF_AMF_ID);
-    amf_id_string[LENGTH_OF_AMF_ID] = '\0';
+    ogs_cpystrn(amf_id_string, &ue_context_id[index], LENGTH_OF_AMF_ID+1);
     index += LENGTH_OF_AMF_ID;
 
-    strncpy(tmsi_string, &ue_context_id[index], LENGTH_OF_TMSI);
-    tmsi_string[LENGTH_OF_TMSI] = '\0';
+    ogs_cpystrn(tmsi_string, &ue_context_id[index], LENGTH_OF_TMSI+1);
 
     memset(&Plmn_id, 0, sizeof(Plmn_id));
     Plmn_id.mcc = mcc_string;

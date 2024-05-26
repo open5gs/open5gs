@@ -1983,9 +1983,9 @@ bool ogs_sbi_discovery_option_is_matched(
         switch (nf_info->nf_type) {
         case OpenAPI_nf_type_AMF:
             if (requester_nf_type == OpenAPI_nf_type_AMF &&
-                discovery_option->target_guami &&
+                discovery_option->guami_presence &&
                 ogs_sbi_check_amf_info_guami(&nf_info->amf,
-                    discovery_option->target_guami) == false)
+                    &discovery_option->guami) == false)
                 return false;
             break;
         case OpenAPI_nf_type_SMF:

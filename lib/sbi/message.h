@@ -435,7 +435,8 @@ typedef struct ogs_sbi_discovery_option_s {
     bool tai_presence;
     ogs_5gs_tai_t tai;
 
-    ogs_guami_t *target_guami;
+    bool guami_presence;
+    ogs_guami_t guami;
 
     int num_of_target_plmn_list;
     ogs_plmn_id_t target_plmn_list[OGS_MAX_NUM_OF_PLMN];
@@ -649,6 +650,8 @@ char *ogs_sbi_discovery_option_build_snssais(
 void ogs_sbi_discovery_option_parse_snssais(
         ogs_sbi_discovery_option_t *discovery_option, char *snssais);
 
+void ogs_sbi_discovery_option_set_guami(
+        ogs_sbi_discovery_option_t *discovery_option, ogs_guami_t *guami);
 char *ogs_sbi_discovery_option_build_guami(
         ogs_sbi_discovery_option_t *discovery_option);
 void ogs_sbi_discovery_option_parse_guami(

@@ -125,7 +125,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             CASE(OGS_SBI_HTTP_METHOD_POST)
                 if (message.AuthenticationInfo &&
                     message.AuthenticationInfo->supi_or_suci) {
-                    ausf_ue = ausf_ue_find_by_suci(
+                    ausf_ue = ausf_ue_find_by_suci_or_supi(
                             message.AuthenticationInfo->supi_or_suci);
                     if (!ausf_ue) {
                         ausf_ue = ausf_ue_add(

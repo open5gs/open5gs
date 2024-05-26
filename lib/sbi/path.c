@@ -284,9 +284,14 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
     /* Target NF-Instance */
     nf_instance = OGS_SBI_GET_NF_INSTANCE(
             sbi_object->service_type_array[service_type]);
+    ogs_debug("OGS_SBI_GET_NF_INSTANCE [nf_instance:%p,service_name:%s]",
+            nf_instance, ogs_sbi_service_type_to_name(service_type));
     if (!nf_instance) {
         nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
                         target_nf_type, requester_nf_type, discovery_option);
+        ogs_debug("ogs_sbi_nf_instance_find_by_discovery_param() "
+                "[nf_instance:%p,service_name:%s]",
+                nf_instance, ogs_sbi_service_type_to_name(service_type));
         if (nf_instance)
             OGS_SBI_SETUP_NF_INSTANCE(
                     sbi_object->service_type_array[service_type], nf_instance);
@@ -337,6 +342,7 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
             apiroot = ogs_sbi_client_apiroot(client);
             ogs_assert(apiroot);
 
+            ogs_debug("apiroot [%s]", apiroot);
             ogs_sbi_header_set(request->http.headers,
                     OGS_SBI_CUSTOM_TARGET_APIROOT, apiroot);
 
@@ -355,6 +361,8 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
              */
             if (discovery_option &&
                 discovery_option->target_nf_instance_id) {
+                ogs_debug("target_nf_instance_id [%s]",
+                        discovery_option->target_nf_instance_id);
                 ogs_sbi_header_set(request->http.headers,
                         OGS_SBI_CUSTOM_DISCOVERY_TARGET_NF_INSTANCE_ID,
                         discovery_option->target_nf_instance_id);
@@ -362,6 +370,7 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
                 ogs_sbi_header_set(request->http.headers,
                         OGS_SBI_CUSTOM_DISCOVERY_TARGET_NF_INSTANCE_ID,
                         nf_instance->id);
+                ogs_debug("nf_instance->id [%s]", nf_instance->id);
             }
 
             if (discovery_option && discovery_option->num_of_snssais) {
@@ -373,6 +382,7 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
                 if (v) {
                     char *encoded = ogs_sbi_url_encode(v);
                     ogs_expect(encoded);
+                    ogs_debug("snssai [%s]", v);
 
                     if (encoded) {
             /*
@@ -399,6 +409,7 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
             }
 
             if (discovery_option && discovery_option->dnn) {
+                ogs_debug("dnn [%s]", discovery_option->dnn);
                 ogs_sbi_header_set(request->http.headers,
                         OGS_SBI_CUSTOM_DISCOVERY_DNN, discovery_option->dnn);
             }
@@ -408,9 +419,11 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
                 char *v = ogs_sbi_discovery_option_build_tai(discovery_option);
                 ogs_expect(v);
 
+
                 if (v) {
                     char *encoded = ogs_sbi_url_encode(v);
                     ogs_expect(encoded);
+                    ogs_debug("tai [%s]", v);
 
                     if (encoded) {
                         ogs_sbi_header_set(request->http.headers,
@@ -429,7 +442,7 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
                                 discovery_option->tai.tac.v);
             }
 
-            if (discovery_option && discovery_option->target_guami) {
+            if (discovery_option && discovery_option->guami_presence) {
                 bool rc = false;
                 char *v = ogs_sbi_discovery_option_build_guami(discovery_option);
                 ogs_expect(v);
@@ -437,6 +450,7 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
                 if (v) {
                     char *encoded = ogs_sbi_url_encode(v);
                     ogs_expect(encoded);
+                    ogs_debug("guami [%s]", v);
 
                     if (encoded) {
                         ogs_sbi_header_set(request->http.headers,
@@ -451,9 +465,9 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
                 if (rc == false)
                     ogs_error("build failed: guami[PLMN_ID:%06x,AMF_ID:%x]",
                                 ogs_plmn_id_hexdump(
-                                    &discovery_option->target_guami->plmn_id),
+                                    &discovery_option->guami.plmn_id),
                                 ogs_amf_id_hexdump(
-                                    &discovery_option->target_guami->amf_id));
+                                    &discovery_option->guami.amf_id));
             }
 
             if (discovery_option &&

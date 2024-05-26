@@ -268,6 +268,8 @@ struct amf_ue_s {
         ogs_nas_5gs_guti_t guti;
     } current, next;
 
+    ogs_nas_5gs_guti_t old_guti;
+
     /* UE Info */
     ogs_guami_t     *guami;
     uint16_t        gnb_ostream_id;

@@ -1192,8 +1192,6 @@ typedef struct ogs_nas_rsn_s {
     uint8_t value;
 } __attribute__ ((packed)) ogs_nas_rsn_t;
 
-bool ogs_nas_5gs_guti_is_valid(ogs_nas_5gs_guti_t *guti);
-
 #ifdef __cplusplus
 }
 #endif
