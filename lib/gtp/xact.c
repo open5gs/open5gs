@@ -803,6 +803,20 @@ static void holding_timeout(void *data)
                 xact->step, xact->seq[xact->step-1].type,
                 OGS_ADDR(&xact->gnode->addr, buf),
                 OGS_PORT(&xact->gnode->addr));
+        /*
+         * Even for remotely created transactions, there are things
+         * that need to be done, such as returning memory
+         * when the transaction is deleted after a holding timeout.
+         * We added a Callback Function for that purpose.
+         *
+         * You can set it up and use it as follows.
+         *
+         *   xact->cb = gtp_remote_holding_timeout;
+         *   xact->data = bearer;
+         */
+        if (xact->cb)
+            xact->cb(xact, xact->data);
+
         ogs_gtp_xact_delete(xact);
     }
 }

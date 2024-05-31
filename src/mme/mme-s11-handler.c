@@ -59,6 +59,94 @@ static uint8_t esm_cause_from_gtp(uint8_t gtp_cause)
     return OGS_NAS_ESM_CAUSE_NETWORK_FAILURE;
 }
 
+static void gtp_remote_holding_timeout(ogs_gtp_xact_t *xact, void *data)
+{
+    char buf[OGS_ADDRSTRLEN];
+    mme_bearer_t *bearer = data;
+    uint8_t type;
+
+    ogs_assert(xact);
+    bearer = mme_bearer_cycle(bearer);
+    ogs_assert(bearer);
+
+    type = xact->seq[xact->step-1].type;
+
+    ogs_warn("[%d] %s HOLDING TIMEOUT "
+            "for step %d type %d peer [%s]:%d",
+            xact->xid,
+            xact->org == OGS_GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+            xact->step, type,
+            OGS_ADDR(&xact->gnode->addr, buf),
+            OGS_PORT(&xact->gnode->addr));
+
+    /*
+     * Issues #3240
+     *
+     * SMF->SGW-C->MME: First Update Bearer Request
+     * MME->UE:         First Modify EPS bearer context request
+     * SMF->SGW-C->MME: Second Update Bearer Request
+     * MME->UE:         Second Modify EPS bearer context request
+     * UE->MME:         First Modify EPS bearer context accept
+     * MME->SGW-C->SMF: First Update Bearer Response
+     * UE->MME:         Second Modify EPS bearer context accept
+     * MME->SGW-C->SMF: Second Update Bearer Response
+     */
+    switch (type) {
+    case OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE:
+        /*
+         * In this case, a timeout occurs while waiting
+         * for Modify EPS bearer context accept from UE.
+         *
+         * If the UE does not send a Modify EPS bearer context accept,
+         * the MME fails to send an Update Bearer Response.
+         *
+         * Therefore, we need to delete the Transaction Node
+         * that was managed by the Bearer Context from the List.
+         */
+        if (ogs_list_exists(
+                    &bearer->update.xact_list,
+                    &xact->to_update_node) == true) {
+            ogs_list_remove(&bearer->update.xact_list, &xact->to_update_node);
+        } else {
+            ogs_error("[%d] %s HAVE ALREADY BEEN REMOVED "
+                    "for step %d type %d peer [%s]:%d",
+                    xact->xid,
+                    xact->org == OGS_GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+                    xact->step, type,
+                    OGS_ADDR(&xact->gnode->addr, buf),
+                    OGS_PORT(&xact->gnode->addr));
+        }
+        break;
+    case OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE:
+        /*
+         * The following is the case where the UE sends
+         * Modify EPS bearer context accept to the MME.
+         *
+         * In this case, the MME sends Update Bearer Response
+         * to SGW-C and deletes the Transaction Node.
+         *
+         * Therefore, there is no need to delete the Transaction Node
+         * from the list managed by the Bearer Context here.
+         */
+        if (ogs_list_exists(
+                    &bearer->update.xact_list,
+                    &xact->to_update_node) == true) {
+            ogs_error("[%d] %s SHOULD HAVE REMOVED "
+                    "for step %d type %d peer [%s]:%d",
+                    xact->xid,
+                    xact->org == OGS_GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+                    xact->step, type,
+                    OGS_ADDR(&xact->gnode->addr, buf),
+                    OGS_PORT(&xact->gnode->addr));
+        }
+        break;
+    default:
+        ogs_fatal("Unknown type[%d]", type);
+        ogs_assert_if_reached();
+        break;
+    }
+}
+
 void mme_s11_handle_echo_request(
         ogs_gtp_xact_t *xact, ogs_gtp2_echo_request_t *req)
 {
@@ -1045,13 +1133,31 @@ void mme_s11_handle_update_bearer_request(
     }
 
     /*
-     * Save Transaction. It will be handled after EMM-attached
+     * Issues #3240
      *
-     * You should not remove OLD bearer->xact.
-     * If GTP-xact Holding timer is expired,
-     * OLD bearer->xact memory will be automatically removed.
+     * SMF->SGW-C->MME: First Update Bearer Request
+     * MME->UE:         First Modify EPS bearer context request
+     * SMF->SGW-C->MME: Second Update Bearer Request
+     * MME->UE:         Second Modify EPS bearer context request
+     * UE->MME:         First Modify EPS bearer context accept
+     * MME->SGW-C->SMF: First Update Bearer Response
+     * UE->MME:         Second Modify EPS bearer context accept
+     * MME->SGW-C->SMF: Second Update Bearer Response
+     *
+     * If the UE does not send a Modify EPS bearer context accept,
+     * the MME cannot send an Update Bearer Response to the SGW-C.
+     *
+     * In this case, REMOTE holding timeout occurs, and a callback function
+     * is registered as follows to free memory.
+     *
+     * Also, as shown above, multiple Update Bearer Request/Response can occur,
+     * so we manage the Transaction Node as a list within the Bearer Context.
      */
-    bearer->update.xact = xact;
+
+    xact->cb = gtp_remote_holding_timeout;
+    xact->data = bearer;
+
+    ogs_list_add(&bearer->update.xact_list, &xact->to_update_node);
 
     if (req->bearer_contexts.bearer_level_qos.presence == 1) {
         /* Bearer QoS */
