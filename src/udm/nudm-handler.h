@@ -35,6 +35,8 @@ bool udm_nudm_uecm_handle_amf_registration(
     udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
 bool udm_nudm_uecm_handle_amf_registration_update(
     udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
+bool udm_nudm_uecm_handle_amf_registration_get(
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 bool udm_nudm_uecm_handle_smf_registration(
     udm_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
