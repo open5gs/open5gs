@@ -144,6 +144,29 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
                             "Invalid HTTP method", message->h.method, NULL));
                 END
                 break;
+            CASE(OGS_SBI_HTTP_METHOD_GET)
+                SWITCH(message->h.resource.component[1])
+                CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
+                    r = udm_nudm_uecm_handle_amf_registration_get(
+                            udm_ue, stream, message);
+                    if (!r)
+                    {
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_FORBIDDEN, message,
+                                "Invalid UE Identifier", message->h.method, NULL));
+                    }
+                    break;
+
+                DEFAULT
+                    ogs_error("[%s] Invalid resource name [%s]",
+                            udm_ue->suci, message->h.resource.component[1]);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, message,
+                            "Invalid resource name", message->h.method, NULL));
+                END
+                break;
             DEFAULT
                 ogs_error("[%s] Invalid HTTP method [%s]",
                         udm_ue->suci, message->h.method);
