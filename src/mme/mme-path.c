@@ -218,7 +218,13 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
                 mme_gtp_send_update_bearer_response(
                     bearer, OGS_GTP2_CAUSE_UNABLE_TO_PAGE_UE));
         } else {
-            ogs_gtp_xact_t *xact = ogs_gtp_xact_cycle(bearer->update.xact);
+            ogs_gtp_xact_t *xact = NULL;
+
+            /* Get the first Entry */
+            ogs_list_for_each_entry(
+                    &bearer->update.xact_list, xact, to_update_node) {
+                break;
+            }
             if (!xact) {
                 ogs_error("No GTP xact");
                 goto cleanup;

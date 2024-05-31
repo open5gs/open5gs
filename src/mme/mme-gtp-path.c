@@ -427,7 +427,7 @@ int mme_gtp_send_update_bearer_response(
 {
     int rv;
 
-    ogs_gtp_xact_t *xact = NULL;
+    ogs_gtp_xact_t *xact = NULL, *next_xact = NULL;
     mme_ue_t *mme_ue = NULL;
     sgw_ue_t *sgw_ue = NULL;
 
@@ -439,7 +439,27 @@ int mme_gtp_send_update_bearer_response(
     ogs_assert(mme_ue);
     sgw_ue = mme_ue->sgw_ue;
     ogs_assert(sgw_ue);
-    xact = ogs_gtp_xact_cycle(bearer->update.xact);
+
+    /*
+     * Issues #3240
+     *
+     * SMF->SGW-C->MME: First Update Bearer Request
+     * MME->UE:         First Modify EPS bearer context request
+     * SMF->SGW-C->MME: Second Update Bearer Request
+     * MME->UE:         Second Modify EPS bearer context request
+     * UE->MME:         First Modify EPS bearer context accept
+     * MME->SGW-C->SMF: First Update Bearer Response
+     * UE->MME:         Second Modify EPS bearer context accept
+     * MME->SGW-C->SMF: Second Update Bearer Response
+     *
+     * After sending the Update Bearer Response, remove the corresponding
+     * Transaction Node from the list managed by the Bearer Context.
+     */
+    ogs_list_for_each_entry_safe(
+            &bearer->update.xact_list, next_xact, xact, to_update_node) {
+        ogs_list_remove(&bearer->update.xact_list, &xact->to_update_node);
+        break;
+    }
     if (!xact) {
         ogs_warn("GTP transaction(UPDATE) has already been removed");
         return OGS_OK;

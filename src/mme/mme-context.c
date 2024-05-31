@@ -4149,6 +4149,8 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
     ogs_assert(bearer);
     memset(bearer, 0, sizeof *bearer);
 
+    ogs_list_init(&bearer->update.xact_list);
+
     ogs_pool_alloc(&mme_ue->ebi_pool, &bearer->ebi_node);
     ogs_assert(bearer->ebi_node);
 
@@ -4176,6 +4178,7 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
 void mme_bearer_remove(mme_bearer_t *bearer)
 {
     mme_event_t e;
+    ogs_gtp_xact_t *xact = NULL, *next_xact = NULL;
 
     ogs_assert(bearer);
     ogs_assert(bearer->mme_ue);
@@ -4194,6 +4197,11 @@ void mme_bearer_remove(mme_bearer_t *bearer)
 
     if (bearer->ebi_node)
         ogs_pool_free(&bearer->mme_ue->ebi_pool, bearer->ebi_node);
+
+    ogs_list_for_each_entry_safe(&bearer->update.xact_list,
+            next_xact, xact, to_update_node) {
+        ogs_list_remove(&bearer->update.xact_list, &xact->to_update_node);
+    }
 
     ogs_pool_free(&mme_bearer_pool, bearer);
 }

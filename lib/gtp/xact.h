@@ -58,6 +58,26 @@ extern "C" {
  */
 typedef struct ogs_gtp_xact_s {
     ogs_lnode_t     node;           /**< A node of list */
+
+    /*
+     * Issues #3240
+     *
+     * SMF->SGW-C->MME: First Update Bearer Request
+     * MME->UE:         First Modify EPS bearer context request
+     * SMF->SGW-C->MME: Second Update Bearer Request
+     * MME->UE:         Second Modify EPS bearer context request
+     * UE->MME:         First Modify EPS bearer context accept
+     * MME->SGW-C->SMF: First Update Bearer Response
+     * UE->MME:         Second Modify EPS bearer context accept
+     * MME->SGW-C->SMF: Second Update Bearer Response
+     *
+     * In the above situation, while NAS-ESM messages are exchanged
+     * between the MME and UE, the bearer may have multiple transactions
+     * that need to be managed. to_update_node is used as a node
+     * in the Transaction List related to Update Bearer Request/Response.
+     */
+    ogs_lnode_t     to_update_node;
+
     ogs_pool_id_t   index;
 
     uint8_t gtp_version;            /**< 1 or 2 */

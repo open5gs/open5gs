@@ -873,9 +873,27 @@ typedef struct mme_bearer_s {
     mme_ue_t        *mme_ue;
     mme_sess_t      *sess;
 
+    /*
+     * Issues #3240
+     *
+     * SMF->SGW-C->MME: First Update Bearer Request
+     * MME->UE:         First Modify EPS bearer context request
+     * SMF->SGW-C->MME: Second Update Bearer Request
+     * MME->UE:         Second Modify EPS bearer context request
+     * UE->MME:         First Modify EPS bearer context accept
+     * MME->SGW-C->SMF: First Update Bearer Response
+     * UE->MME:         Second Modify EPS bearer context accept
+     * MME->SGW-C->SMF: Second Update Bearer Response
+     *
+     * We'll start by managing only Update Bearer Request/Response
+     * as a list so that we can manage multiple of them.
+     */
     struct {
         ogs_gtp_xact_t  *xact;
-    } create, update, delete, notify;
+    } create, delete, notify;
+    struct {
+        ogs_list_t  xact_list;
+    } update;
 } mme_bearer_t;
 
 void mme_context_init(void);
