@@ -2894,7 +2894,7 @@ int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id)
 {
     ogs_assert(enb);
 
-    ogs_hash_set(self.enb_id_hash, &enb_id, sizeof(enb_id), NULL);
+    ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
 
     enb->enb_id = enb_id;
     ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), enb);

@@ -1290,7 +1290,7 @@ int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id)
 {
     ogs_assert(gnb);
 
-    ogs_hash_set(self.gnb_id_hash, &gnb_id, sizeof(gnb_id), NULL);
+    ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), NULL);
 
     gnb->gnb_id = gnb_id;
     ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), gnb);
