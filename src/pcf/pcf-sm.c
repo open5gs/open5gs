@@ -176,23 +176,63 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_SM_POLICIES)
                 if (!message.h.resource.component[1]) {
                     if (message.SmPolicyContextData &&
-                        message.SmPolicyContextData->supi) {
+                        message.SmPolicyContextData->supi &&
+                        message.SmPolicyContextData->pdu_session_id) {
+
                         pcf_ue = pcf_ue_find_by_supi(
                                     message.SmPolicyContextData->supi);
                         if (!pcf_ue) {
-                            pcf_ue = pcf_ue_add(
-                                        message.SmPolicyContextData->supi);
-                            ogs_assert(pcf_ue);
+                            if (!strcmp(message.h.method,
+                                        OGS_SBI_HTTP_METHOD_POST)) {
+                                pcf_ue = pcf_ue_add(
+                                            message.SmPolicyContextData->supi);
+                                if (!pcf_ue) {
+                                    ogs_error("[%s:%d] Invalid Request [%s]",
+                                            message.SmPolicyContextData->supi,
+                                            message.SmPolicyContextData->
+                                                pdu_session_id,
+                                            message.h.method);
+                                } else
+                                    ogs_debug("[%s:%d] PCF UE added",
+                                        message.SmPolicyContextData->supi,
+                                        message.SmPolicyContextData->
+                                            pdu_session_id);
+                            } else {
+                                ogs_error("[%s:%d] Invalid HTTP method [%s]",
+                                        message.SmPolicyContextData->supi,
+                                        message.SmPolicyContextData->
+                                            pdu_session_id,
+                                        message.h.method);
+                            }
                         }
-                        if (message.SmPolicyContextData->pdu_session_id) {
+
+                        if (pcf_ue) {
                             sess = pcf_sess_find_by_psi(pcf_ue, message.
                                     SmPolicyContextData->pdu_session_id);
                             if (!sess) {
-                                sess = pcf_sess_add(pcf_ue, message.
-                                    SmPolicyContextData->pdu_session_id);
-                                ogs_assert(sess);
-                                ogs_debug("[%s:%d] PCF session added",
-                                            pcf_ue->supi, sess->psi);
+                                if (!strcmp(message.h.method,
+                                            OGS_SBI_HTTP_METHOD_POST)) {
+                                    sess = pcf_sess_add(pcf_ue, message.
+                                        SmPolicyContextData->pdu_session_id);
+                                    if (!sess) {
+                                        ogs_error("[%s:%d] "
+                                                "Invalid Request [%s]",
+                                                message.SmPolicyContextData->
+                                                    supi,
+                                                message.SmPolicyContextData->
+                                                    pdu_session_id,
+                                                message.h.method);
+                                    } else
+                                        ogs_debug("[%s:%d] PCF session added",
+                                                    pcf_ue->supi, sess->psi);
+                                } else {
+                                    ogs_error("[%s:%d] "
+                                            "Invalid HTTP method [%s]",
+                                            message.SmPolicyContextData->supi,
+                                            message.SmPolicyContextData->
+                                                pdu_session_id,
+                                            message.h.method);
+                                }
                             }
                         }
                     }
