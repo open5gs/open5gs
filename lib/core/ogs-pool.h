@@ -165,6 +165,8 @@ typedef int32_t ogs_pool_id_t;
 } while (0)
 
 #define ogs_pool_id_free(pool, node) do { \
+    ogs_assert(((node)->id) >= OGS_MIN_POOL_ID && \
+            ((node)->id) <= OGS_MAX_POOL_ID); \
     ogs_hash_set((pool)->id_hash, \
             &((node)->id), sizeof(ogs_pool_id_t), NULL); \
     ogs_pool_free(pool, node); \

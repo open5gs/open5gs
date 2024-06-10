@@ -2266,12 +2266,11 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
 
     ogs_assert(sbi_object);
 
-    ogs_pool_alloc(&xact_pool, &xact);
+    ogs_pool_id_calloc(&xact_pool, &xact);
     if (!xact) {
-        ogs_error("ogs_pool_alloc() failed");
+        ogs_error("ogs_pool_id_alloc() failed");
         return NULL;
     }
-    memset(xact, 0, sizeof(ogs_sbi_xact_t));
 
     xact->sbi_object = sbi_object;
     xact->service_type = service_type;
@@ -2301,13 +2300,14 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
     xact->discovery_option = discovery_option;
 
     xact->t_response = ogs_timer_add(
-            ogs_app()->timer_mgr, ogs_timer_sbi_client_wait_expire, xact);
+            ogs_app()->timer_mgr, ogs_timer_sbi_client_wait_expire,
+            OGS_UINT_TO_POINTER(xact->id));
     if (!xact->t_response) {
         ogs_error("ogs_timer_add() failed");
 
         if (xact->discovery_option)
             ogs_sbi_discovery_option_free(xact->discovery_option);
-        ogs_pool_free(&xact_pool, xact);
+        ogs_pool_id_free(&xact_pool, xact);
 
         return NULL;
     }
@@ -2324,7 +2324,7 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
                 ogs_sbi_discovery_option_free(xact->discovery_option);
 
             ogs_timer_delete(xact->t_response);
-            ogs_pool_free(&xact_pool, xact);
+            ogs_pool_id_free(&xact_pool, xact);
 
             return NULL;
         }
@@ -2383,7 +2383,7 @@ void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact)
         ogs_free(xact->target_apiroot);
 
     ogs_list_remove(&sbi_object->xact_list, xact);
-    ogs_pool_free(&xact_pool, xact);
+    ogs_pool_id_free(&xact_pool, xact);
 }
 
 void ogs_sbi_xact_remove_all(ogs_sbi_object_t *sbi_object)
@@ -2396,9 +2396,9 @@ void ogs_sbi_xact_remove_all(ogs_sbi_object_t *sbi_object)
         ogs_sbi_xact_remove(xact);
 }
 
-ogs_sbi_xact_t *ogs_sbi_xact_cycle(ogs_sbi_xact_t *xact)
+ogs_sbi_xact_t *ogs_sbi_xact_find_by_id(ogs_pool_id_t id)
 {
-    return ogs_pool_cycle(&xact_pool, xact);
+    return ogs_pool_find_by_id(&xact_pool, id);
 }
 
 ogs_sbi_subscription_spec_t *ogs_sbi_subscription_spec_add(
