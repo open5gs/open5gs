@@ -216,6 +216,8 @@ typedef ogs_sbi_request_t *(*ogs_sbi_build_f)(
 typedef struct ogs_sbi_xact_s {
     ogs_lnode_t lnode;
 
+    ogs_pool_id_t id;
+
     ogs_sbi_service_type_e service_type;
     OpenAPI_nf_type_e requester_nf_type;
     ogs_sbi_discovery_option_t *discovery_option;
@@ -545,7 +547,7 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
         ogs_sbi_build_f build, void *context, void *data);
 void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact);
 void ogs_sbi_xact_remove_all(ogs_sbi_object_t *sbi_object);
-ogs_sbi_xact_t *ogs_sbi_xact_cycle(ogs_sbi_xact_t *xact);
+ogs_sbi_xact_t *ogs_sbi_xact_find_by_id(ogs_pool_id_t id);
 
 ogs_sbi_subscription_spec_t *ogs_sbi_subscription_spec_add(
         OpenAPI_nf_type_e nf_type, const char *service_name);

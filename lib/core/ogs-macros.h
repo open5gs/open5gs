@@ -222,6 +222,9 @@ static ogs_inline ogs_uint24_t ogs_htobe24(ogs_uint24_t x)
     ((__oBJ)->reference_count)--
 #define OGS_OBJECT_IS_REF(__oBJ) ((__oBJ)->reference_count > 1)
 
+#define OGS_POINTER_TO_UINT(u) ((uintptr_t)(u))
+#define OGS_UINT_TO_POINTER(u) ((void *)(uintptr_t)(u))
+
 #ifdef __cplusplus
 }
 #endif

@@ -90,6 +90,7 @@ static int client_discover_cb(
     ogs_event_t *e = NULL;
 
     ogs_sbi_xact_t *xact = NULL;
+    ogs_pool_id_t xact_id = 0;
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
@@ -99,10 +100,10 @@ static int client_discover_cb(
     ogs_hash_index_t *hi = NULL;
     char *producer_id = NULL;
 
-    xact = data;
-    ogs_assert(xact);
+    xact_id = OGS_POINTER_TO_UINT(data);
+    ogs_assert(xact_id >= OGS_MIN_POOL_ID && xact_id <= OGS_MAX_POOL_ID);
 
-    xact = ogs_sbi_xact_cycle(xact);
+    xact = ogs_sbi_xact_find_by_id(xact_id);
     if (!xact) {
         ogs_error("SBI transaction has already been removed");
         if (response)
@@ -349,7 +350,8 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
             ogs_free(apiroot);
 
             rc = ogs_sbi_client_send_via_scp_or_sepp(
-                    scp_client, ogs_sbi_client_handler, request, xact);
+                    scp_client, ogs_sbi_client_handler, request,
+                    OGS_UINT_TO_POINTER(xact->id));
             ogs_expect(rc == true);
             return (rc == true) ? OGS_OK : OGS_ERROR;
 
@@ -486,7 +488,8 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
             }
 
             rc = ogs_sbi_client_send_via_scp_or_sepp(
-                    scp_client, client_discover_cb, request, xact);
+                    scp_client, client_discover_cb, request,
+                    OGS_UINT_TO_POINTER(xact->id));
             ogs_expect(rc == true);
             return (rc == true) ? OGS_OK : OGS_ERROR;
         }
@@ -498,7 +501,8 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
 
         /* If `client` instance is available, use direct communication */
         rc = ogs_sbi_send_request_to_client(
-                client, ogs_sbi_client_handler, request, xact);
+                client, ogs_sbi_client_handler, request,
+                OGS_UINT_TO_POINTER(xact->id));
         ogs_expect(rc == true);
         return (rc == true) ? OGS_OK : OGS_ERROR;
 
@@ -558,7 +562,8 @@ int ogs_sbi_discover_only(ogs_sbi_xact_t *xact)
         }
 
         rc = ogs_sbi_client_send_request(
-                client, ogs_sbi_client_handler, request, xact);
+                client, ogs_sbi_client_handler, request,
+                OGS_UINT_TO_POINTER(xact->id));
         ogs_expect(rc == true);
 
         ogs_sbi_request_free(request);
@@ -680,7 +685,8 @@ bool ogs_sbi_send_request_to_nf_instance(
             }
 
             rc = ogs_sbi_client_send_request(
-                    nrf_client, sepp_discover_handler, nrf_request, xact);
+                    nrf_client, sepp_discover_handler, nrf_request,
+                    OGS_UINT_TO_POINTER(xact->id));
             if (rc == false) {
                 ogs_error("ogs_sbi_client_send_request() failed");
                 ogs_sbi_xact_remove(xact);
@@ -693,7 +699,8 @@ bool ogs_sbi_send_request_to_nf_instance(
     }
 
     rc = ogs_sbi_send_request_to_client(
-            client, ogs_sbi_client_handler, request, xact);
+            client, ogs_sbi_client_handler, request,
+            OGS_UINT_TO_POINTER(xact->id));
     if (rc == false) {
         ogs_error("ogs_sbi_send_request_to_client() failed");
         ogs_sbi_xact_remove(xact);
@@ -856,26 +863,40 @@ static int sepp_discover_handler(
     char *strerror = NULL;
     ogs_sbi_message_t message;
 
-    ogs_sbi_xact_t *xact = data;
+    ogs_sbi_xact_t *xact = NULL;
+    ogs_pool_id_t xact_id = 0;
 
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *scp_client = NULL, *sepp_client = NULL;
 
-    ogs_assert(xact);
-    request = xact->request;
-    ogs_assert(request);
+    xact_id = OGS_POINTER_TO_UINT(data);
+    ogs_assert(xact_id >= OGS_MIN_POOL_ID && xact_id <= OGS_MAX_POOL_ID);
+
+    xact = ogs_sbi_xact_find_by_id(xact_id);
+    if (!xact) {
+        ogs_error("SBI transaction has already been removed");
+        if (response)
+            ogs_sbi_response_free(response);
+
+        return OGS_ERROR;
+    }
 
     if (status != OGS_OK) {
-
         ogs_log_message(
                 status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
                 "sepp_discover_handler() failed [%d]", status);
 
+        if (response)
+            ogs_sbi_response_free(response);
+
         ogs_sbi_xact_remove(xact);
+
         return OGS_ERROR;
     }
 
     ogs_assert(response);
+    request = xact->request;
+    ogs_assert(request);
 
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
@@ -915,7 +936,8 @@ static int sepp_discover_handler(
 
     if (false == ogs_sbi_client_send_via_scp_or_sepp(
                 scp_client ? scp_client : sepp_client,
-                ogs_sbi_client_handler, request, xact)) {
+                ogs_sbi_client_handler, request,
+                OGS_UINT_TO_POINTER(xact->id))) {
         strerror = ogs_msprintf("ogs_sbi_client_send_via_scp_or_sepp() failed");
         goto cleanup;
     }

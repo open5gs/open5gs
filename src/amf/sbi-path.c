@@ -211,6 +211,7 @@ static int client_discover_cb(
     ogs_sbi_message_t message;
 
     ogs_sbi_xact_t *xact = NULL;
+    ogs_pool_id_t xact_id = 0;
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
     OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
@@ -218,10 +219,10 @@ static int client_discover_cb(
     ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
 
-    xact = data;
-    ogs_assert(xact);
+    xact_id = OGS_POINTER_TO_UINT(data);
+    ogs_assert(xact_id >= OGS_MIN_POOL_ID && xact_id <= OGS_MAX_POOL_ID);
 
-    xact = ogs_sbi_xact_cycle(xact);
+    xact = ogs_sbi_xact_find_by_id(xact_id);
     if (!xact) {
         ogs_error("SBI transaction has already been removed");
         if (response)
@@ -391,7 +392,8 @@ int amf_sess_sbi_discover_by_nsi(
     }
 
     return ogs_sbi_client_send_request(
-            client, client_discover_cb, xact->request, xact) == true ? OGS_OK : OGS_ERROR;
+            client, client_discover_cb, xact->request,
+            OGS_UINT_TO_POINTER(xact->id)) == true ? OGS_OK : OGS_ERROR;
 }
 
 void amf_sbi_send_activating_session(

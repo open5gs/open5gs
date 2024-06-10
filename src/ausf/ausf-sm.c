@@ -46,6 +46,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
     ogs_sbi_response_t *response = NULL;
     ogs_sbi_message_t message;
     ogs_sbi_xact_t *sbi_xact = NULL;
+    ogs_pool_id_t sbi_xact_id = 0;
 
     ausf_ue_t *ausf_ue = NULL;
 
@@ -267,8 +268,17 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                sbi_xact = e->h.sbi.data;
-                ogs_assert(sbi_xact);
+                sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+                ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                        sbi_xact_id <= OGS_MAX_POOL_ID);
+
+                sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
+                if (!sbi_xact) {
+                    /* CLIENT_WAIT timer could remove SBI transaction
+                     * before receiving SBI message */
+                    ogs_error("SBI transaction has already been removed");
+                    break;
+                }
 
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
@@ -293,10 +303,11 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UEAU)
-            sbi_xact = e->h.sbi.data;
-            ogs_assert(sbi_xact);
+            sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                    sbi_xact_id <= OGS_MAX_POOL_ID);
 
-            sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
+            sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
             if (!sbi_xact) {
                 /* CLIENT_WAIT timer could remove SBI transaction
                  * before receiving SBI message */
@@ -413,9 +424,13 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
              * 4. timer expiration event is processed. (double-free SBI xact)
              *
              * To avoid double-free SBI xact,
-             * we need to check ogs_sbi_xact_cycle()
+             * we need to check ogs_sbi_xact_find_by_id()
              */
-            sbi_xact = ogs_sbi_xact_cycle(e->h.sbi.data);
+            sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                    sbi_xact_id <= OGS_MAX_POOL_ID);
+
+            sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
             if (!sbi_xact) {
                 ogs_error("SBI transaction has already been removed");
                 break;
