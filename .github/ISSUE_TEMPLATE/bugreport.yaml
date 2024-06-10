@@ -18,7 +18,7 @@ body:
     attributes:
       label: Open5GS Release, Revision, or Tag
       description: Please check if your issue has been resolved in the latest release.
-      placeholder: v2.6.0
+      placeholder: v2.7.1
     validations:
       required: true
   - type: textarea
