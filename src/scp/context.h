@@ -43,7 +43,7 @@ typedef struct scp_assoc_s scp_assoc_t;
 typedef struct scp_assoc_s {
     ogs_lnode_t lnode;
 
-    ogs_sbi_stream_t *stream;
+    ogs_pool_id_t stream_id;
 
     ogs_sbi_client_t *client;
     ogs_sbi_client_t *nrf_client;
@@ -67,7 +67,7 @@ scp_context_t *scp_self(void);
 
 int scp_context_parse_config(void);
 
-scp_assoc_t *scp_assoc_add(ogs_sbi_stream_t *stream);
+scp_assoc_t *scp_assoc_add(ogs_pool_id_t stream_id);
 void scp_assoc_remove(scp_assoc_t *assoc);
 void scp_assoc_remove_all(void);
 

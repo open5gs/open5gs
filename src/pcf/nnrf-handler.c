@@ -49,7 +49,10 @@ void pcf_nnrf_handle_nf_discover(
     ogs_assert(requester_nf_type);
 
     discovery_option = xact->discovery_option;
-    stream = xact->assoc_stream;
+
+    if (xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+        xact->assoc_stream_id <= OGS_MAX_POOL_ID)
+        stream = ogs_sbi_stream_find_by_id(xact->assoc_stream_id);
 
     SearchResult = recvmsg->SearchResult;
     if (!SearchResult) {

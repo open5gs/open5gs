@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -44,6 +44,7 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
     bsf_sess_t *sess = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = 0;
     ogs_sbi_request_t *request = NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -67,8 +68,16 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         request = e->h.sbi.request;
         ogs_assert(request);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         rv = ogs_sbi_parse_request(&message, request);
         if (rv != OGS_OK) {
@@ -294,7 +303,8 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
                 if (!sbi_xact) {
                     /* CLIENT_WAIT timer could remove SBI transaction
                      * before receiving SBI message */
-                    ogs_error("SBI transaction has already been removed");
+                    ogs_error("SBI transaction has already been removed [%d]",
+                            sbi_xact_id);
                     break;
                 }
 
@@ -411,11 +421,14 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
 
             sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
             if (!sbi_xact) {
-                ogs_error("SBI transaction has already been removed");
+                ogs_error("SBI transaction has already been removed [%d]",
+                        sbi_xact_id);
                 break;
             }
 
-            stream = sbi_xact->assoc_stream;
+            if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
+                stream = ogs_sbi_stream_find_by_id(sbi_xact->assoc_stream_id);
             /* Here, we should not use ogs_assert(stream)
              * since 'namf-comm' service has no an associated stream. */
 
