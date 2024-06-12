@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -2268,7 +2268,7 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
 
     ogs_pool_id_calloc(&xact_pool, &xact);
     if (!xact) {
-        ogs_error("ogs_pool_id_alloc() failed");
+        ogs_error("ogs_pool_id_calloc() failed");
         return NULL;
     }
 

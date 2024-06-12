@@ -230,7 +230,10 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
-    stream = xact->assoc_stream;
+    if (xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+            xact->assoc_stream_id <= OGS_MAX_POOL_ID)
+        stream = ogs_sbi_stream_find_by_id(xact->assoc_stream_id);
+
     type = xact->seq[0].type;
 
     switch (type) {
@@ -486,7 +489,12 @@ int smf_5gc_pfcp_send_all_pdr_modification_request(
         return OGS_ERROR;
     }
 
-    xact->assoc_stream = stream;
+    if (stream) {
+        xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
+        ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                xact->assoc_stream_id <= OGS_MAX_POOL_ID);
+    }
+
     xact->local_seid = sess->smf_n4_seid;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
 
@@ -516,7 +524,12 @@ int smf_5gc_pfcp_send_qos_flow_list_modification_request(
         return OGS_ERROR;
     }
 
-    xact->assoc_stream = stream;
+    if (stream) {
+        xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
+        ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                xact->assoc_stream_id <= OGS_MAX_POOL_ID);
+    }
+
     xact->local_seid = sess->smf_n4_seid;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
 
@@ -544,7 +557,12 @@ int smf_5gc_pfcp_send_session_deletion_request(
         return OGS_ERROR;
     }
 
-    xact->assoc_stream = stream;
+    if (stream) {
+        xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
+        ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                xact->assoc_stream_id <= OGS_MAX_POOL_ID);
+    }
+
     xact->delete_trigger = trigger;
     xact->local_seid = sess->smf_n4_seid;
 

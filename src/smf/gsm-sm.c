@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
-
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -169,6 +168,7 @@ void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
     ogs_nas_5gs_message_t *nas_message = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = 0;
     ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_assert(s);
@@ -249,8 +249,16 @@ void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         sbi_message = e->h.sbi.message;
         ogs_assert(sbi_message);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
@@ -289,10 +297,18 @@ void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
     case SMF_EVT_5GSM_MESSAGE:
         nas_message = e->nas.message;
         ogs_assert(nas_message);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
         smf_ue = sess->smf_ue;
         ogs_assert(smf_ue);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         switch (nas_message->gsm.h.message_type) {
         case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST:
@@ -447,6 +463,7 @@ void smf_gsm_state_wait_5gc_sm_policy_association(ogs_fsm_t *s, smf_event_t *e)
     smf_sess_t *sess = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = 0;
     ogs_sbi_message_t *sbi_message = NULL;
 
     int state = 0;
@@ -474,8 +491,15 @@ void smf_gsm_state_wait_5gc_sm_policy_association(ogs_fsm_t *s, smf_event_t *e)
 
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
-            stream = e->h.sbi.data;
-            ogs_assert(stream);
+            stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                    stream_id <= OGS_MAX_POOL_ID);
+
+            stream = ogs_sbi_stream_find_by_id(stream_id);
+            if (!stream) {
+                ogs_error("STREAM has already been removed [%d]", stream_id);
+                break;
+            }
 
             SWITCH(sbi_message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
@@ -735,6 +759,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     ogs_nas_5gs_message_t *nas_message = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = 0;
     ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_gtp1_message_t *gtp1_message = NULL;
@@ -874,8 +899,16 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         sbi_message = e->h.sbi.message;
         ogs_assert(sbi_message);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
@@ -918,7 +951,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
-            stream = e->h.sbi.data;
+            stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            if (stream_id >= OGS_MIN_POOL_ID && stream_id <= OGS_MAX_POOL_ID)
+                stream = ogs_sbi_stream_find_by_id(stream_id);
+
             state = e->h.sbi.state;
 
             SWITCH(sbi_message->h.resource.component[0])
@@ -1062,10 +1098,18 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     case SMF_EVT_5GSM_MESSAGE:
         nas_message = e->nas.message;
         ogs_assert(nas_message);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
         smf_ue = sess->smf_ue;
         ogs_assert(smf_ue);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         switch (nas_message->gsm.h.message_type) {
         case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST:
@@ -1128,13 +1172,21 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         break;
 
     case SMF_EVT_NGAP_MESSAGE:
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
         smf_ue = sess->smf_ue;
         ogs_assert(smf_ue);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
         ogs_assert(e->ngap.type);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         switch (e->ngap.type) {
         case OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP:
@@ -1263,6 +1315,7 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
     smf_sess_t *sess = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = 0;
     ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_pfcp_xact_t *pfcp_xact = NULL;
@@ -1289,8 +1342,15 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                 smf_epc_pfcp_send_session_deletion_request(sess, e->gtp_xact));
         } else {
             /* 5GC */
-            stream = e->h.sbi.data;
-            ogs_assert(stream);
+            stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                    stream_id <= OGS_MAX_POOL_ID);
+
+            stream = ogs_sbi_stream_find_by_id(stream_id);
+            if (!stream) {
+                ogs_error("STREAM has already been removed [%d]", stream_id);
+                break;
+            }
 
             ogs_assert(OGS_OK ==
                 smf_5gc_pfcp_send_session_deletion_request(
@@ -1334,7 +1394,11 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
             } else {
                 int trigger;
 
-                stream = pfcp_xact->assoc_stream;
+                if (pfcp_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                        pfcp_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
+                    stream = ogs_sbi_stream_find_by_id(
+                            pfcp_xact->assoc_stream_id);
+
                 trigger = pfcp_xact->delete_trigger;
                 ogs_assert(trigger);
 
@@ -1429,8 +1493,15 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
             ogs_pkbuf_t *n1smbuf = NULL;
 
-            stream = e->h.sbi.data;
-            ogs_assert(stream);
+            stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                    stream_id <= OGS_MAX_POOL_ID);
+
+            stream = ogs_sbi_stream_find_by_id(stream_id);
+            if (!stream) {
+                ogs_error("STREAM has already been removed [%d]", stream_id);
+                break;
+            }
 
             ogs_error("[%s:%d] state [%d] res_status [%d]",
                 smf_ue->supi, sess->psi,
@@ -1586,6 +1657,7 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
     ogs_nas_5gs_message_t *nas_message = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = 0;
     ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_assert(s);
@@ -1605,8 +1677,16 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         sbi_message = e->h.sbi.message;
         ogs_assert(sbi_message);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
@@ -1669,8 +1749,15 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
             ogs_pkbuf_t *n1smbuf = NULL;
 
-            stream = e->h.sbi.data;
-            ogs_assert(stream);
+            stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                    stream_id <= OGS_MAX_POOL_ID);
+
+            stream = ogs_sbi_stream_find_by_id(stream_id);
+            if (!stream) {
+                ogs_error("STREAM has already been removed [%d]", stream_id);
+                break;
+            }
 
             ogs_error("[%s:%d] state [%d] res_status [%d]",
                 smf_ue->supi, sess->psi,
@@ -1692,13 +1779,21 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
         break;
 
     case SMF_EVT_NGAP_MESSAGE:
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
         smf_ue = sess->smf_ue;
         ogs_assert(smf_ue);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
         ogs_assert(e->ngap.type);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         switch (e->ngap.type) {
         case OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP:
@@ -1766,10 +1861,18 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
     case SMF_EVT_5GSM_MESSAGE:
         nas_message = e->nas.message;
         ogs_assert(nas_message);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
         smf_ue = sess->smf_ue;
         ogs_assert(smf_ue);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         switch (nas_message->gsm.h.message_type) {
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
@@ -1925,6 +2028,7 @@ void smf_gsm_state_5gc_session_will_deregister(ogs_fsm_t *s, smf_event_t *e)
     smf_sess_t *sess = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = 0;
     ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_assert(s);
@@ -1945,8 +2049,16 @@ void smf_gsm_state_5gc_session_will_deregister(ogs_fsm_t *s, smf_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         sbi_message = e->h.sbi.message;
         ogs_assert(sbi_message);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)

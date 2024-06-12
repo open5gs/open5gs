@@ -258,7 +258,9 @@ void smf_5gc_n4_handle_session_modification_response(
     ogs_assert(flags);
 
     /* 'stream' could be NULL in smf_qos_flow_binding() */
-    stream = xact->assoc_stream;
+    if (xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+            xact->assoc_stream_id <= OGS_MAX_POOL_ID)
+        stream = ogs_sbi_stream_find_by_id(xact->assoc_stream_id);
 
     if (flags & OGS_PFCP_MODIFY_SESSION) {
         /* If smf_5gc_pfcp_send_all_pdr_modification_request() is called */

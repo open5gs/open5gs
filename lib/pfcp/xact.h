@@ -74,7 +74,7 @@ typedef struct ogs_pfcp_xact_s {
     uint8_t         gtp_pti;        /**< GTP Procedure transaction identity */
     uint8_t         gtp_cause;      /**< GTP Cause Value */
 
-    void            *assoc_stream;  /**< Associated SBI session */
+    ogs_pool_id_t   assoc_stream_id;  /**< Associated SBI session ID */
 
     bool            epc;            /**< EPC or 5GC */
 

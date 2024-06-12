@@ -82,7 +82,7 @@ typedef struct sepp_assoc_s sepp_assoc_t;
 typedef struct sepp_assoc_s {
     ogs_lnode_t lnode;
 
-    ogs_sbi_stream_t *stream;
+    ogs_pool_id_t stream_id;
 
     ogs_sbi_client_t *client;
     ogs_sbi_client_t *nrf_client;
@@ -106,7 +106,7 @@ void sepp_node_remove_all(void);
 sepp_node_t *sepp_node_find_by_receiver(char *receiver);
 sepp_node_t *sepp_node_find_by_plmn_id(uint16_t mcc, uint16_t mnc);
 
-sepp_assoc_t *sepp_assoc_add(ogs_sbi_stream_t *stream);
+sepp_assoc_t *sepp_assoc_add(ogs_pool_id_t stream_id);
 void sepp_assoc_remove(sepp_assoc_t *assoc);
 void sepp_assoc_remove_all(void);
 

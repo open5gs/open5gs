@@ -304,11 +304,11 @@ int scp_context_parse_config(void)
     return OGS_OK;
 }
 
-scp_assoc_t *scp_assoc_add(ogs_sbi_stream_t *stream)
+scp_assoc_t *scp_assoc_add(ogs_pool_id_t stream_id)
 {
     scp_assoc_t *assoc = NULL;
 
-    ogs_assert(stream);
+    ogs_assert(stream_id >= OGS_MIN_POOL_ID && stream_id <= OGS_MAX_POOL_ID);
 
     ogs_pool_alloc(&scp_assoc_pool, &assoc);
     if (!assoc) {
@@ -318,7 +318,7 @@ scp_assoc_t *scp_assoc_add(ogs_sbi_stream_t *stream)
     }
     memset(assoc, 0, sizeof *assoc);
 
-    assoc->stream = stream;
+    assoc->stream_id = stream_id;
 
     assoc->discovery_option = ogs_sbi_discovery_option_new();
     ogs_assert(assoc->discovery_option);

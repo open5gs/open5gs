@@ -211,7 +211,12 @@ int smf_sbi_discover_and_send(
     }
 
     xact->state = state;
-    xact->assoc_stream = stream;
+
+    if (stream) {
+        xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
+        ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                xact->assoc_stream_id <= OGS_MAX_POOL_ID);
+    }
 
     r = ogs_sbi_discover_and_send(xact);
     if (r != OGS_OK) {
