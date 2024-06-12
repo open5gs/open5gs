@@ -75,9 +75,8 @@ ogs_gtp_xact_t *ogs_gtp1_xact_local_create(ogs_gtp_node_t *gnode,
     ogs_assert(gnode);
     ogs_assert(hdesc);
 
-    ogs_pool_alloc(&pool, &xact);
+    ogs_pool_id_calloc(&pool, &xact);
     ogs_assert(xact);
-    memset(xact, 0, sizeof *xact);
     xact->index = ogs_pool_index(&pool, xact);
 
     xact->gtp_version = 1;
@@ -131,9 +130,8 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     ogs_assert(gnode);
     ogs_assert(hdesc);
 
-    ogs_pool_alloc(&pool, &xact);
+    ogs_pool_id_calloc(&pool, &xact);
     ogs_assert(xact);
-    memset(xact, 0, sizeof *xact);
     xact->index = ogs_pool_index(&pool, xact);
 
     xact->gtp_version = 2;
@@ -184,9 +182,8 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
 
     ogs_assert(gnode);
 
-    ogs_pool_alloc(&pool, &xact);
+    ogs_pool_id_calloc(&pool, &xact);
     ogs_assert(xact);
-    memset(xact, 0, sizeof *xact);
     xact->index = ogs_pool_index(&pool, xact);
 
     xact->gtp_version = gtp_version;
@@ -216,9 +213,9 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
     return xact;
 }
 
-ogs_gtp_xact_t *ogs_gtp_xact_cycle(ogs_gtp_xact_t *xact)
+ogs_gtp_xact_t *ogs_gtp_xact_find_by_id(ogs_pool_id_t id)
 {
-    return ogs_pool_cycle(&pool, xact);
+    return ogs_pool_find_by_id(&pool, id);
 }
 
 void ogs_gtp_xact_delete_all(ogs_gtp_node_t *gnode)
@@ -1183,7 +1180,7 @@ static int ogs_gtp_xact_delete(ogs_gtp_xact_t *xact)
 
     ogs_list_remove(xact->org == OGS_GTP_LOCAL_ORIGINATOR ?
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
-    ogs_pool_free(&pool, xact);
+    ogs_pool_id_free(&pool, xact);
 
     return OGS_OK;
 }

@@ -390,15 +390,18 @@ int mme_gtp_send_create_bearer_response(
     ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_assert(bearer);
+    ogs_assert(bearer->create.xact_id >= OGS_MIN_POOL_ID &&
+            bearer->create.xact_id <= OGS_MAX_POOL_ID);
+    xact = ogs_gtp_xact_find_by_id(bearer->create.xact_id);
+    if (!xact) {
+        ogs_error("GTP transaction(CREATE) has already been removed");
+        return OGS_OK;
+    }
+
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
     sgw_ue = mme_ue->sgw_ue;
     ogs_assert(sgw_ue);
-    xact = ogs_gtp_xact_cycle(bearer->create.xact);
-    if (!xact) {
-        ogs_warn("GTP transaction(CREATE) has already been removed");
-        return OGS_OK;
-    }
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE;
@@ -500,15 +503,18 @@ int mme_gtp_send_delete_bearer_response(
     ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_assert(bearer);
+    ogs_assert(bearer->delete.xact_id >= OGS_MIN_POOL_ID &&
+            bearer->delete.xact_id <= OGS_MAX_POOL_ID);
+    xact = ogs_gtp_xact_find_by_id(bearer->delete.xact_id);
+    if (!xact) {
+        ogs_error("GTP transaction(DELETE) has already been removed");
+        return OGS_OK;
+    }
+
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
     sgw_ue = mme_ue->sgw_ue;
     ogs_assert(sgw_ue);
-    xact = ogs_gtp_xact_cycle(bearer->delete.xact);
-    if (!xact) {
-        ogs_warn("GTP transaction(DELETE) has already been removed");
-        return OGS_OK;
-    }
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE;
@@ -631,11 +637,14 @@ int mme_gtp_send_downlink_data_notification_ack(
     ogs_pkbuf_t *s11buf = NULL;
 
     ogs_assert(bearer);
-    xact = ogs_gtp_xact_cycle(bearer->notify.xact);
+    ogs_assert(bearer->notify.xact_id >= OGS_MIN_POOL_ID &&
+            bearer->notify.xact_id <= OGS_MAX_POOL_ID);
+    xact = ogs_gtp_xact_find_by_id(bearer->notify.xact_id);
     if (!xact) {
-        ogs_warn("GTP transaction(NOTIFY) has already been removed");
+        ogs_error("GTP transaction(NOTIFY) has already been removed");
         return OGS_OK;
     }
+
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
     sgw_ue = mme_ue->sgw_ue;
