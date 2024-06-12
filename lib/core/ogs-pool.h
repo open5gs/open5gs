@@ -28,7 +28,10 @@
 extern "C" {
 #endif
 
-typedef uint32_t ogs_pool_id_t;
+#define OGS_MIN_POOL_ID     1
+#define OGS_MAX_POOL_ID     0x7fffffff
+
+typedef int32_t ogs_pool_id_t;
 
 #define OGS_POOL(pool, type) \
     struct { \
@@ -36,6 +39,9 @@ typedef uint32_t ogs_pool_id_t;
         int head, tail; \
         int size, avail; \
         type **free, *array, **index; \
+        \
+        ogs_hash_t *id_hash; \
+        ogs_pool_id_t id; \
     } pool
 
 /*
@@ -57,6 +63,9 @@ typedef uint32_t ogs_pool_id_t;
         (pool)->free[i] = &((pool)->array[i]); \
         (pool)->index[i] = NULL; \
     } \
+    \
+    (pool)->id_hash = ogs_hash_make(); \
+    ogs_assert((pool)->id_hash); \
 } while (0)
 
 /*
@@ -70,6 +79,9 @@ typedef uint32_t ogs_pool_id_t;
     free((pool)->free); \
     free((pool)->array); \
     free((pool)->index); \
+    \
+    ogs_assert((pool)->id_hash); \
+    ogs_hash_destroy((pool)->id_hash); \
 } while (0)
 
 /*
@@ -93,6 +105,9 @@ typedef uint32_t ogs_pool_id_t;
         (pool)->free[i] = &((pool)->array[i]); \
         (pool)->index[i] = NULL; \
     } \
+    \
+    (pool)->id_hash = ogs_hash_make(); \
+    ogs_assert((pool)->id_hash); \
 } while (0)
 
 /*
@@ -108,13 +123,10 @@ typedef uint32_t ogs_pool_id_t;
     ogs_free((pool)->free); \
     ogs_free((pool)->array); \
     ogs_free((pool)->index); \
+    \
+    ogs_assert((pool)->id_hash); \
+    ogs_hash_destroy((pool)->id_hash); \
 } while (0)
-
-#define ogs_pool_index(pool, node) (((node) - (pool)->array)+1)
-#define ogs_pool_find(pool, _index) \
-    (_index > 0 && _index <= (pool)->size) ? (pool)->index[_index-1] : NULL
-#define ogs_pool_cycle(pool, node) \
-    ogs_pool_find((pool), ogs_pool_index((pool), (node)))
 
 #define ogs_pool_alloc(pool, node) do { \
     *(node) = NULL; \
@@ -135,6 +147,31 @@ typedef uint32_t ogs_pool_id_t;
         (pool)->index[ogs_pool_index(pool, node)-1] = NULL; \
     } \
 } while (0)
+
+#define ogs_pool_index(pool, node) (((node) - (pool)->array)+1)
+#define ogs_pool_find(pool, _index) \
+    (_index > 0 && _index <= (pool)->size) ? (pool)->index[_index-1] : NULL
+#define ogs_pool_cycle(pool, node) \
+    ogs_pool_find((pool), ogs_pool_index((pool), (node)))
+
+#define ogs_pool_id_calloc(pool, node) do { \
+    ogs_pool_alloc(pool, node); \
+    if (*node) { \
+        memset(*(node), 0, sizeof(**(node))); \
+        (*(node))->id = OGS_NEXT_ID((pool)->id, 1, OGS_MAX_POOL_ID); \
+        ogs_hash_set((pool)->id_hash, \
+                &((*(node))->id), sizeof(ogs_pool_id_t), *(node)); \
+    } \
+} while (0)
+
+#define ogs_pool_id_free(pool, node) do { \
+    ogs_hash_set((pool)->id_hash, \
+            &((node)->id), sizeof(ogs_pool_id_t), NULL); \
+    ogs_pool_free(pool, node); \
+} while (0)
+
+#define ogs_pool_find_by_id(pool, id) \
+    ogs_hash_get((pool)->id_hash, &id, sizeof(ogs_pool_id_t))
 
 #define ogs_pool_size(pool) ((pool)->size)
 #define ogs_pool_avail(pool) ((pool)->avail)
