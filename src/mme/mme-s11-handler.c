@@ -1028,7 +1028,8 @@ void mme_s11_handle_create_bearer_request(
      * If GTP-xact Holding timer is expired,
      * OLD bearer->xact memory will be automatically removed.
      */
-    bearer->create.xact = xact;
+    ogs_assert(xact->id >= OGS_MIN_POOL_ID && xact->id <= OGS_MAX_POOL_ID);
+    bearer->create.xact_id = xact->id;
 
     /* Before Activate DEDICATED bearer, check DEFAULT bearer status */
     default_bearer = mme_default_bearer_in_sess(sess);
@@ -1329,7 +1330,8 @@ void mme_s11_handle_delete_bearer_request(
      * If GTP-xact Holding timer is expired,
      * OLD bearer->xact memory will be automatically removed.
      */
-    bearer->delete.xact = xact;
+    ogs_assert(xact->id >= OGS_MIN_POOL_ID && xact->id <= OGS_MAX_POOL_ID);
+    bearer->delete.xact_id = xact->id;
 
     if (ECM_IDLE(mme_ue)) {
         MME_STORE_PAGING_INFO(mme_ue,
@@ -1577,7 +1579,8 @@ void mme_s11_handle_downlink_data_notification(
      * If GTP-xact Holding timer is expired,
      * OLD bearer->xact memory will be automatically removed.
      */
-    bearer->notify.xact = xact;
+    ogs_assert(xact->id >= OGS_MIN_POOL_ID && xact->id <= OGS_MAX_POOL_ID);
+    bearer->notify.xact_id = xact->id;
 
     if (noti->cause.presence) {
         ogs_gtp2_cause_t *cause = noti->cause.data;

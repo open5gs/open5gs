@@ -889,7 +889,7 @@ typedef struct mme_bearer_s {
      * as a list so that we can manage multiple of them.
      */
     struct {
-        ogs_gtp_xact_t  *xact;
+        ogs_pool_id_t  xact_id;
     } create, delete, notify;
     struct {
         ogs_list_t  xact_list;

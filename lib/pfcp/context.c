@@ -873,11 +873,6 @@ ogs_pfcp_node_t *ogs_pfcp_node_new(ogs_sockaddr_t *sa_list)
     return node;
 }
 
-ogs_pfcp_node_t *ogs_pfcp_node_cycle(ogs_pfcp_node_t *node)
-{
-    return ogs_pool_cycle(&ogs_pfcp_node_pool, node);
-}
-
 void ogs_pfcp_node_free(ogs_pfcp_node_t *node)
 {
     ogs_assert(node);
