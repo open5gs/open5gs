@@ -1231,7 +1231,8 @@ amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     ogs_fsm_init(&gnb->sm, ngap_state_initial, ngap_state_final, &e);
 
     ogs_list_add(&self.gnb_list, gnb);
-    amf_metrics_inst_global_inc(AMF_METR_GLOB_GAUGE_GNB);
+    amf_metrics_inst_by_addr_add(gnb->sctp.addr,
+            AMF_METR_GAUGE_GNB, 1);
 
     ogs_info("[Added] Number of gNBs is now %d",
             ogs_list_count(&self.gnb_list));
@@ -1256,10 +1257,13 @@ void amf_gnb_remove(amf_gnb_t *gnb)
             gnb->sctp.addr, sizeof(ogs_sockaddr_t), NULL);
     ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), NULL);
 
+    amf_metrics_inst_by_addr_add(gnb->sctp.addr,
+            AMF_METR_GAUGE_GNB, -1);
+
     ogs_sctp_flush_and_destroy(&gnb->sctp);
 
     ogs_pool_free(&amf_gnb_pool, gnb);
-    amf_metrics_inst_global_dec(AMF_METR_GLOB_GAUGE_GNB);
+
     ogs_info("[Removed] Number of gNBs is now %d",
             ogs_list_count(&self.gnb_list));
 }
