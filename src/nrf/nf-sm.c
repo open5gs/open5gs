@@ -85,7 +85,7 @@ void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
 
     ogs_assert(s);
@@ -185,7 +185,7 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
     ogs_sbi_response_t *response = NULL;
 

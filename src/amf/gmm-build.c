@@ -636,7 +636,7 @@ ogs_pkbuf_t *gmm_build_dl_nas_transport(amf_sess_t *sess,
     ogs_nas_gprs_timer_3_t *back_off_timer_value = NULL;
 
     ogs_assert(sess);
-    amf_ue = sess->amf_ue;
+    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
     ogs_assert(amf_ue);
     ogs_assert(payload_container_type);
     ogs_assert(payload_container);

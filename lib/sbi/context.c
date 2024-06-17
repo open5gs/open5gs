@@ -2257,6 +2257,7 @@ void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object)
 }
 
 ogs_sbi_xact_t *ogs_sbi_xact_add(
+        ogs_pool_id_t sbi_object_id,
         ogs_sbi_object_t *sbi_object,
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
@@ -2272,6 +2273,7 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
         return NULL;
     }
 
+    xact->sbi_object_id = sbi_object_id;
     xact->sbi_object = sbi_object;
     xact->service_type = service_type;
     xact->requester_nf_type = NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);

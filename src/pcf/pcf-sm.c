@@ -39,7 +39,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
     int rv;
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *request = NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -49,7 +49,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_sbi_xact_t *sbi_xact = NULL;
-    ogs_pool_id_t sbi_xact_id = 0;
+    ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
 
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
 

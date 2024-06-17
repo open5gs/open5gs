@@ -33,20 +33,19 @@ int amf_nsmf_pdusession_handle_create_sm_context(
     ran_ue_t *ran_ue = NULL;
 
     ogs_assert(recvmsg);
-    ogs_assert(sess);
-    sess = amf_sess_cycle(sess);
+
     if (!sess) {
         ogs_error("Session has already been removed");
         return OGS_ERROR;
     }
 
-    amf_ue = amf_ue_cycle(sess->amf_ue);
+    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
     if (!amf_ue) {
         ogs_error("UE(amf_ue) Context has already been removed");
         return OGS_ERROR;
     }
 
-    ran_ue = ran_ue_cycle(sess->ran_ue);
+    ran_ue = ran_ue_find_by_id(sess->ran_ue_id);
     if (!ran_ue) {
         ogs_error("[%s] RAN-NG Context has already been removed", amf_ue->supi);
         return OGS_ERROR;
@@ -255,20 +254,19 @@ int amf_nsmf_pdusession_handle_update_sm_context(
     ran_ue_t *ran_ue = NULL;
 
     ogs_assert(recvmsg);
-    ogs_assert(sess);
-    sess = amf_sess_cycle(sess);
+
     if (!sess) {
         ogs_error("Session has already been removed");
         return OGS_ERROR;
     }
 
-    amf_ue = amf_ue_cycle(sess->amf_ue);
+    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
     if (!amf_ue) {
         ogs_error("UE(amf_ue) Context has already been removed");
         return OGS_ERROR;
     }
 
-    ran_ue = ran_ue_cycle(sess->ran_ue);
+    ran_ue = ran_ue_find_by_id(sess->ran_ue_id);
 
     if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT ||
         recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
@@ -711,9 +709,9 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
                     ran_ue_t *source_ue = NULL, *target_ue = NULL;
 
-                    source_ue = sess->ran_ue;
+                    source_ue = ran_ue_find_by_id(sess->ran_ue_id);
                     ogs_assert(source_ue);
-                    target_ue = ran_ue_cycle(source_ue->target_ue);
+                    target_ue = ran_ue_find_by_id(source_ue->target_ue_id);
                     if (target_ue) {
                         r = ngap_send_ran_ue_context_release_command(
                                 target_ue,
@@ -783,7 +781,9 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                     amf_ue_deassociate(amf_ue);
 
                     if (ran_ue) {
-                        amf_gnb_t *gnb = ran_ue->gnb;
+                        amf_gnb_t *gnb = NULL;
+
+                        gnb = amf_gnb_find_by_id(ran_ue->gnb_id);
                         ogs_assert(gnb);
 
                         ogs_debug("    SUPI[%s]", amf_ue->supi);
@@ -839,7 +839,9 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                     amf_ue_deassociate(amf_ue);
 
                     if (ran_ue) {
-                        amf_gnb_t *gnb = ran_ue->gnb;
+                        amf_gnb_t *gnb = NULL;
+
+                        gnb = amf_gnb_find_by_id(ran_ue->gnb_id);
                         ogs_assert(gnb);
 
                         ogs_debug("    SUPI[%s]", amf_ue->supi);
@@ -936,8 +938,16 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         ogs_pkbuf_t *n2smbuf = NULL;
 #endif
 
-        amf_ue = sess->amf_ue;
-        ogs_assert(amf_ue);
+        amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
+        if (!amf_ue) {
+            ogs_error("[%d:%d] UE context has already been removed [%d]",
+                    sess->psi, sess->pti, recvmsg->res_status);
+            r = ngap_send_error_indication2(ran_ue,
+                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return OGS_ERROR;
+        }
 
         SmContextUpdateError = recvmsg->SmContextUpdateError;
         if (!SmContextUpdateError) {
@@ -1072,20 +1082,18 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *ran_ue = NULL;
 
-    ogs_assert(sess);
-    sess = amf_sess_cycle(sess);
     if (!sess) {
         ogs_error("Session has already been removed");
         return OGS_ERROR;
     }
 
-    amf_ue = amf_ue_cycle(sess->amf_ue);
+    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
     if (!amf_ue) {
         ogs_error("UE(amf_ue) Context has already been removed");
         return OGS_ERROR;
     }
 
-    ran_ue = ran_ue_cycle(sess->ran_ue);
+    ran_ue = ran_ue_find_by_id(sess->ran_ue_id);
 
     /*
      * To check if Reactivation Request has been used.

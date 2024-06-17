@@ -198,7 +198,7 @@ int smf_sbi_discover_and_send(
     }
 
     xact = ogs_sbi_xact_add(
-            &sess->sbi, service_type, discovery_option,
+            0, &sess->sbi, service_type, discovery_option,
             (ogs_sbi_build_f)build, sess, data);
     if (!xact) {
         ogs_error("smf_sbi_discover_and_send() failed");
@@ -256,7 +256,7 @@ void smf_namf_comm_send_n1_n2_message_transfer(
             discovery_option, sess->serving_nf_id);
 
     xact = ogs_sbi_xact_add(
-            &sess->sbi, OGS_SBI_SERVICE_TYPE_NAMF_COMM, discovery_option,
+            0, &sess->sbi, OGS_SBI_SERVICE_TYPE_NAMF_COMM, discovery_option,
             (ogs_sbi_build_f)smf_namf_comm_build_n1_n2_message_transfer,
             sess, param);
     if (!xact) {

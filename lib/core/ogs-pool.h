@@ -28,6 +28,7 @@
 extern "C" {
 #endif
 
+#define OGS_INVALID_POOL_ID 0
 #define OGS_MIN_POOL_ID     1
 #define OGS_MAX_POOL_ID     0x7fffffff
 

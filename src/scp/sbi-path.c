@@ -111,7 +111,7 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
     ogs_sbi_client_t *client = NULL, *nrf_client = NULL, *next_scp = NULL;
     ogs_sbi_client_t *sepp_client = NULL;
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
 
     OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
     OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
@@ -631,7 +631,7 @@ static int response_handler(
 {
     scp_assoc_t *assoc = data;
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
 
     ogs_assert(assoc);
 
@@ -689,7 +689,7 @@ static int nf_discover_handler(
 
     scp_assoc_t *assoc = data;
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
 
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
@@ -846,7 +846,7 @@ static int sepp_discover_handler(
 
     scp_assoc_t *assoc = data;
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
 
     ogs_sbi_request_t *request = NULL;
 

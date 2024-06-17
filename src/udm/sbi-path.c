@@ -112,7 +112,7 @@ static int udm_sbi_discover_and_send(
     ogs_assert(build);
 
     xact = ogs_sbi_xact_add(
-            sbi_object, service_type, discovery_option,
+            0, sbi_object, service_type, discovery_option,
             (ogs_sbi_build_f)build, context, data);
     if (!xact) {
         ogs_error("udm_sbi_discover_and_send() failed");
