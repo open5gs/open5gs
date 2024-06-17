@@ -168,7 +168,7 @@ void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
     ogs_nas_5gs_message_t *nas_message = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_assert(s);
@@ -463,7 +463,7 @@ void smf_gsm_state_wait_5gc_sm_policy_association(ogs_fsm_t *s, smf_event_t *e)
     smf_sess_t *sess = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *sbi_message = NULL;
 
     int state = 0;
@@ -759,7 +759,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     ogs_nas_5gs_message_t *nas_message = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_gtp1_message_t *gtp1_message = NULL;
@@ -1315,7 +1315,7 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
     smf_sess_t *sess = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_pfcp_xact_t *pfcp_xact = NULL;
@@ -1657,7 +1657,7 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
     ogs_nas_5gs_message_t *nas_message = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_assert(s);
@@ -2028,7 +2028,7 @@ void smf_gsm_state_5gc_session_will_deregister(ogs_fsm_t *s, smf_event_t *e)
     smf_sess_t *sess = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_assert(s);

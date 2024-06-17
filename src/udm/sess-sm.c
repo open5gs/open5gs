@@ -40,7 +40,7 @@ void udm_sess_state_operational(ogs_fsm_t *s, udm_event_t *e)
     udm_sess_t *sess = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
 
     ogs_assert(s);

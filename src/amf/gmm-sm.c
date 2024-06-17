@@ -74,12 +74,12 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 
     amf_sm_debug(e);
 
-    if (e->sess) {
-        sess = e->sess;
-        amf_ue = sess->amf_ue;
+    sess = amf_sess_find_by_id(e->sess_id);
+    if (sess) {
+        amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
         ogs_assert(amf_ue);
     } else {
-        amf_ue = e->amf_ue;
+        amf_ue = amf_ue_find_by_id(e->amf_ue_id);
         ogs_assert(amf_ue);
     }
 
@@ -575,7 +575,7 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 
                         xact_count = amf_sess_xact_count(amf_ue);
                         amf_sbi_send_release_all_sessions(
-                                amf_ue->ran_ue, amf_ue,
+                                ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
                                 AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
                         if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
@@ -630,12 +630,12 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
 
     amf_sm_debug(e);
 
-    if (e->sess) {
-        sess = e->sess;
-        amf_ue = sess->amf_ue;
+    sess = amf_sess_find_by_id(e->sess_id);
+    if (sess) {
+        amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
         ogs_assert(amf_ue);
     } else {
-        amf_ue = e->amf_ue;
+        amf_ue = amf_ue_find_by_id(e->amf_ue_id);
         ogs_assert(amf_ue);
     }
 
@@ -1142,7 +1142,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
 
                         if (amf_ue->explict_de_registered.n1_done == true) {
                             r = ngap_send_ran_ue_context_release_command(
-                                    amf_ue->ran_ue,
+                                    ran_ue_find_by_id(amf_ue->ran_ue_id),
                                     NGAP_Cause_PR_misc,
                                     NGAP_CauseMisc_om_intervention,
                                     NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
@@ -1194,12 +1194,12 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
 
     ogs_assert(e);
 
-    if (e->sess) {
-        sess = e->sess;
-        amf_ue = sess->amf_ue;
+    sess = amf_sess_find_by_id(e->sess_id);
+    if (sess) {
+        amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
         ogs_assert(amf_ue);
     } else {
-        amf_ue = e->amf_ue;
+        amf_ue = amf_ue_find_by_id(e->amf_ue_id);
         ogs_assert(amf_ue);
     }
 
@@ -1208,7 +1208,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
         nas_message = e->nas.message;
         ogs_assert(nas_message);
 
-        ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+        ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
         ogs_assert(ran_ue);
 
         h.type = e->nas.type;
@@ -1618,12 +1618,12 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
 
     amf_sm_debug(e);
 
-    if (e->sess) {
-        sess = e->sess;
-        amf_ue = sess->amf_ue;
+    sess = amf_sess_find_by_id(e->sess_id);
+    if (sess) {
+        amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
         ogs_assert(amf_ue);
     } else {
-        amf_ue = e->amf_ue;
+        amf_ue = amf_ue_find_by_id(e->amf_ue_id);
         ogs_assert(amf_ue);
     }
 
@@ -1636,7 +1636,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
         nas_message = e->nas.message;
         ogs_assert(nas_message);
 
-        ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+        ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
         ogs_assert(ran_ue);
 
         h.type = e->nas.type;
@@ -1908,7 +1908,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
 
     amf_sm_debug(e);
 
-    amf_ue = e->amf_ue;
+    amf_ue = amf_ue_find_by_id(e->amf_ue_id);
     ogs_assert(amf_ue);
 
     switch (e->h.id) {
@@ -1924,7 +1924,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
         nas_message = e->nas.message;
         ogs_assert(nas_message);
 
-        ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+        ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
         ogs_assert(ran_ue);
 
         h.type = e->nas.type;
@@ -2068,7 +2068,8 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             if (amf_ue->t3560.retry_count >=
                     amf_timer_cfg(AMF_TIMER_T3560)->max_count) {
                 ogs_warn("[%s] Retransmission failed. Stop", amf_ue->supi);
-                r = nas_5gs_send_gmm_reject(amf_ue->ran_ue, amf_ue,
+                r = nas_5gs_send_gmm_reject(
+                        ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
                         OGS_5GMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
@@ -2112,12 +2113,12 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 
     amf_sm_debug(e);
 
-    if (e->sess) {
-        sess = e->sess;
-        amf_ue = sess->amf_ue;
+    sess = amf_sess_find_by_id(e->sess_id);
+    if (sess) {
+        amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
         ogs_assert(amf_ue);
     } else {
-        amf_ue = e->amf_ue;
+        amf_ue = amf_ue_find_by_id(e->amf_ue_id);
         ogs_assert(amf_ue);
     }
 
@@ -2143,7 +2144,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                     ogs_error("[%s] HTTP response error [%d]",
                             amf_ue->supi, sbi_message->res_status);
                     r = nas_5gs_send_gmm_reject(
-                            amf_ue->ran_ue, amf_ue,
+                            ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
                             OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
@@ -2188,7 +2189,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                     ogs_error("[%s] HTTP response error [%d]",
                             amf_ue->supi, sbi_message->res_status);
                     r = nas_5gs_send_gmm_reject(
-                            amf_ue->ran_ue, amf_ue,
+                            ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
                             OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
@@ -2275,7 +2276,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         nas_message = e->nas.message;
         ogs_assert(nas_message);
 
-        ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+        ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
         ogs_assert(ran_ue);
 
         h.type = e->nas.type;
@@ -2459,12 +2460,12 @@ void gmm_state_ue_context_will_remove(ogs_fsm_t *s, amf_event_t *e)
 
     amf_sm_debug(e);
 
-    if (e->sess) {
-        sess = e->sess;
-        amf_ue = sess->amf_ue;
+    sess = amf_sess_find_by_id(e->sess_id);
+    if (sess) {
+        amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
         ogs_assert(amf_ue);
     } else {
-        amf_ue = e->amf_ue;
+        amf_ue = amf_ue_find_by_id(e->amf_ue_id);
         ogs_assert(amf_ue);
     }
 
@@ -2497,12 +2498,12 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
 
     amf_sm_debug(e);
 
-    if (e->sess) {
-        sess = e->sess;
-        amf_ue = sess->amf_ue;
+    sess = amf_sess_find_by_id(e->sess_id);
+    if (sess) {
+        amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
         ogs_assert(amf_ue);
     } else {
-        amf_ue = e->amf_ue;
+        amf_ue = amf_ue_find_by_id(e->amf_ue_id);
         ogs_assert(amf_ue);
     }
 
@@ -2516,7 +2517,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         xact_count = amf_sess_xact_count(amf_ue);
 
         amf_sbi_send_release_all_sessions(
-                amf_ue->ran_ue, amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
+                AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
         if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
             amf_sess_xact_count(amf_ue) == xact_count) {
@@ -2534,7 +2536,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         nas_message = e->nas.message;
         ogs_assert(nas_message);
 
-        ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+        ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
         ogs_assert(ran_ue);
 
         h.type = e->nas.type;

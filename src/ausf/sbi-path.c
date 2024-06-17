@@ -89,7 +89,7 @@ int ausf_sbi_discover_and_send(
     ogs_assert(build);
 
     xact = ogs_sbi_xact_add(
-            &ausf_ue->sbi, service_type, discovery_option,
+            0, &ausf_ue->sbi, service_type, discovery_option,
             (ogs_sbi_build_f)build, ausf_ue, data);
     if (!xact) {
         ogs_error("ausf_sbi_discover_and_send() failed");

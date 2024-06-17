@@ -39,7 +39,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
     int rv;
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *request = NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -47,7 +47,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
     ogs_sbi_response_t *response = NULL;
     ogs_sbi_message_t message;
     ogs_sbi_xact_t *sbi_xact = NULL;
-    ogs_pool_id_t sbi_xact_id = 0;
+    ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
 
     ausf_ue_t *ausf_ue = NULL;
 

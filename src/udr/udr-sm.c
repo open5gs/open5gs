@@ -41,7 +41,7 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
     int rv;
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *request = NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;

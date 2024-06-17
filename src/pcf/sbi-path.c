@@ -139,7 +139,7 @@ static int pcf_sbi_discover_and_send(
     ogs_assert(build);
 
     xact = ogs_sbi_xact_add(
-            sbi_object, service_type, discovery_option,
+            0, sbi_object, service_type, discovery_option,
             build, context, data);
     if (!xact) {
         ogs_error("ogs_sbi_xact_add() failed");
@@ -194,7 +194,8 @@ int pcf_sess_sbi_discover_only(
     ogs_assert(sess);
     ogs_assert(service_type);
 
-    xact = ogs_sbi_xact_add(&sess->sbi, service_type, NULL, NULL, NULL, NULL);
+    xact = ogs_sbi_xact_add(
+            0, &sess->sbi, service_type, NULL, NULL, NULL, NULL);
     if (!xact) {
         ogs_error("ogs_sbi_xact_add() failed");
         return OGS_ERROR;

@@ -40,7 +40,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
     const char *api_version = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *request = NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -48,7 +48,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
     ogs_sbi_response_t *response = NULL;
     ogs_sbi_message_t message;
     ogs_sbi_xact_t *sbi_xact = NULL;
-    ogs_pool_id_t sbi_xact_id = 0;
+    ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
 
     udm_ue_t *udm_ue = NULL;
     udm_sess_t *sess = NULL;

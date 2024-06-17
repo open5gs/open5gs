@@ -158,7 +158,7 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
     ogs_hash_index_t *hi;
     ogs_sbi_client_t *client = NULL, *scp_client = NULL;
     ogs_sbi_stream_t *stream = data;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_server_t *server = NULL;
 
     ogs_sbi_request_t sepp_request;
@@ -419,7 +419,7 @@ static int response_handler(
 {
     sepp_assoc_t *assoc = data;
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
 
     ogs_assert(assoc);
 

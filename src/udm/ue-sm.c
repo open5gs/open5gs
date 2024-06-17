@@ -38,7 +38,7 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
     udm_ue_t *udm_ue = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
     int r;
 

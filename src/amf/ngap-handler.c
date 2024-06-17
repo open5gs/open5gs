@@ -696,7 +696,7 @@ void ngap_handle_uplink_nas_transport(
         return;
     }
 
-    amf_ue = ran_ue->amf_ue;
+    amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -783,6 +783,7 @@ void ngap_handle_ue_radio_capability_info_indication(
     int i, r;
 
     ran_ue_t *ran_ue = NULL;
+    amf_ue_t *amf_ue = NULL;
     uint64_t amf_ue_ngap_id;
 
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -872,9 +873,9 @@ void ngap_handle_ue_radio_capability_info_indication(
         return;
     }
 
-    if (ran_ue->amf_ue)
-        OGS_ASN_STORE_DATA(&ran_ue->amf_ue->ueRadioCapability,
-                UERadioCapability);
+    amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
+    if (amf_ue)
+        OGS_ASN_STORE_DATA(&amf_ue->ueRadioCapability, UERadioCapability);
 }
 
 void ngap_handle_initial_context_setup_response(
@@ -969,7 +970,7 @@ void ngap_handle_initial_context_setup_response(
 
     ran_ue->initial_context_setup_response_received = true;
 
-    amf_ue = ran_ue->amf_ue;
+    amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -1268,7 +1269,7 @@ void ngap_handle_initial_context_setup_failure(
      * may in principle be adopted. The RAN should ensure
      * that no hanging resources remain at the RAN.
      */
-    amf_ue = ran_ue->amf_ue;
+    amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (amf_ue) {
         /*
          * if T3550 is running, Registration complete will be sent.
@@ -1569,7 +1570,7 @@ void ngap_handle_ue_context_release_request(
         break;
     }
 
-    amf_ue = ran_ue->amf_ue;
+    amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -1720,12 +1721,7 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
 
     ogs_assert(ran_ue);
 
-    if (ran_ue_cycle(ran_ue) == NULL) {
-        ogs_error("NG context has already been removed");
-        return;
-    }
-
-    amf_ue = ran_ue->amf_ue;
+    amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
 
     ogs_info("UE Context Release [Action:%d]", ran_ue->ue_ctx_rel_action);
     ogs_info("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
@@ -1821,12 +1817,14 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
             ogs_error("No UE(amf-ue) context");
             return;
         }
-        if (!amf_ue->ran_ue) {
+
+        ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+        if (!ran_ue) {
             ogs_error("No NG context");
             return;
         }
 
-        r = ngap_send_handover_cancel_ack(amf_ue->ran_ue);
+        r = ngap_send_handover_cancel_ack(ran_ue);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         break;
@@ -1945,7 +1943,7 @@ void ngap_handle_pdu_session_resource_setup_response(
             (long long)ran_ue->ran_ue_ngap_id,
             (long long)ran_ue->amf_ue_ngap_id);
 
-    amf_ue = ran_ue->amf_ue;
+    amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -2267,7 +2265,7 @@ void ngap_handle_pdu_session_resource_modify_response(
             (long long)ran_ue->ran_ue_ngap_id,
             (long long)ran_ue->amf_ue_ngap_id);
 
-    amf_ue = ran_ue->amf_ue;
+    amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -2454,7 +2452,7 @@ void ngap_handle_pdu_session_resource_release_response(
             (long long)ran_ue->ran_ue_ngap_id,
             (long long)ran_ue->amf_ue_ngap_id);
 
-    amf_ue = ran_ue->amf_ue;
+    amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -2802,7 +2800,7 @@ void ngap_handle_path_switch_request(
         return;
     }
 
-    amf_ue = ran_ue->amf_ue;
+    amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -3133,7 +3131,7 @@ void ngap_handle_handover_required(
         (long long)source_ue->ran_ue_ngap_id,
         (long long)source_ue->amf_ue_ngap_id);
 
-    amf_ue = source_ue->amf_ue;
+    amf_ue = amf_ue_find_by_id(source_ue->amf_ue_id);
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -3251,7 +3249,7 @@ void ngap_handle_handover_required(
         return;
     }
 
-    target_ue = ran_ue_cycle(source_ue->target_ue);
+    target_ue = ran_ue_find_by_id(source_ue->target_ue_id);
     if (target_ue) {
     /*
      * Issue #3014
@@ -3521,7 +3519,7 @@ void ngap_handle_handover_request_ack(
 
     target_ue->ran_ue_ngap_id = *RAN_UE_NGAP_ID;
 
-    source_ue = target_ue->source_ue;
+    source_ue = ran_ue_find_by_id(target_ue->source_ue_id);
     if (!source_ue) {
         ogs_error("Cannot find Source-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -3533,7 +3531,7 @@ void ngap_handle_handover_request_ack(
         ogs_assert(r != OGS_ERROR);
         return;
     }
-    amf_ue = target_ue->amf_ue;
+    amf_ue = amf_ue_find_by_id(target_ue->amf_ue_id);
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -3728,7 +3726,7 @@ void ngap_handle_handover_failure(
         return;
     }
 
-    source_ue = target_ue->source_ue;
+    source_ue = ran_ue_find_by_id(target_ue->source_ue_id);
     if (!source_ue) {
         ogs_error("Cannot find Source-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -3853,7 +3851,7 @@ void ngap_handle_handover_cancel(
         return;
     }
 
-    target_ue = source_ue->target_ue;
+    target_ue = ran_ue_find_by_id(source_ue->target_ue_id);
     if (!target_ue) {
         ogs_error("Cannot find Source-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -3865,7 +3863,7 @@ void ngap_handle_handover_cancel(
         ogs_assert(r != OGS_ERROR);
         return;
     }
-    amf_ue = source_ue->amf_ue;
+    amf_ue = amf_ue_find_by_id(source_ue->amf_ue_id);
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -4005,7 +4003,7 @@ void ngap_handle_uplink_ran_status_transfer(
         return;
     }
 
-    target_ue = source_ue->target_ue;
+    target_ue = ran_ue_find_by_id(source_ue->target_ue_id);
     if (!target_ue) {
         ogs_error("Cannot find Source-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -4017,7 +4015,7 @@ void ngap_handle_uplink_ran_status_transfer(
         ogs_assert(r != OGS_ERROR);
         return;
     }
-    amf_ue = source_ue->amf_ue;
+    amf_ue = amf_ue_find_by_id(source_ue->amf_ue_id);
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -4127,7 +4125,7 @@ void ngap_handle_handover_notification(
         return;
     }
 
-    source_ue = target_ue->source_ue;
+    source_ue = ran_ue_find_by_id(target_ue->source_ue_id);
     if (!source_ue) {
         ogs_error("Cannot find Source-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -4139,7 +4137,7 @@ void ngap_handle_handover_notification(
         ogs_assert(r != OGS_ERROR);
         return;
     }
-    amf_ue = target_ue->amf_ue;
+    amf_ue = amf_ue_find_by_id(target_ue->amf_ue_id);
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
@@ -4663,7 +4661,7 @@ void ngap_handle_ng_reset(
             /* RAN_UE Context where PartOfNG_interface was requested */
             ran_ue->part_of_ng_reset_requested = true;
 
-            amf_ue = ran_ue->amf_ue;
+            amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
             /*
              * Issues #1928
              *

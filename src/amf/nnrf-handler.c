@@ -84,13 +84,15 @@ void amf_nnrf_handle_nf_discover(
             ogs_error("[%d:%d] (NF discover) No [%s]", sess->psi, sess->pti,
                         ogs_sbi_service_type_to_name(service_type));
             if (sess->payload_container_type) {
-                r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
+                r = nas_5gs_send_back_gsm_message(
+                        ran_ue_find_by_id(sess->ran_ue_id), sess,
                         OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                         AMF_NAS_BACKOFF_TIME);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             } else {
-                r = ngap_send_error_indication2(sess->ran_ue,
+                r = ngap_send_error_indication2(
+                        ran_ue_find_by_id(sess->ran_ue_id),
                         NGAP_Cause_PR_transport,
                         NGAP_CauseTransport_transport_resource_unavailable);
                 ogs_expect(r == OGS_OK);

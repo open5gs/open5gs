@@ -231,6 +231,7 @@ typedef struct ogs_sbi_xact_s {
     char *target_apiroot;
 
     ogs_sbi_object_t *sbi_object;
+    ogs_pool_id_t sbi_object_id;
 } ogs_sbi_xact_t;
 
 typedef struct ogs_sbi_nf_service_s {
@@ -542,6 +543,7 @@ bool ogs_sbi_discovery_option_target_plmn_list_is_matched(
 void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object);
 
 ogs_sbi_xact_t *ogs_sbi_xact_add(
+        ogs_pool_id_t sbi_object_id,
         ogs_sbi_object_t *sbi_object,
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,

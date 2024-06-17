@@ -42,7 +42,7 @@ void sepp_state_operational(ogs_fsm_t *s, sepp_event_t *e)
     sepp_node_t *sepp_node = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_pool_id_t stream_id = 0;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_server_t *server = NULL;
 
