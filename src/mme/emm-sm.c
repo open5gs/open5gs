@@ -72,7 +72,7 @@ void emm_state_de_registered(ogs_fsm_t *s, mme_event_t *e)
 
     mme_sm_debug(e);
 
-    mme_ue = e->mme_ue;
+    mme_ue = mme_ue_find_by_id(e->mme_ue_id);
     ogs_assert(mme_ue);
 
     switch (e->id) {
@@ -123,7 +123,7 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
 
     mme_sm_debug(e);
 
-    mme_ue = e->mme_ue;
+    mme_ue = mme_ue_find_by_id(e->mme_ue_id);
     ogs_assert(mme_ue);
 
     switch (e->id) {
@@ -297,7 +297,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
 
     mme_sm_debug(e);
 
-    mme_ue = e->mme_ue;
+    mme_ue = mme_ue_find_by_id(e->mme_ue_id);
     ogs_assert(mme_ue);
 
     switch (e->id) {
@@ -305,7 +305,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
         message = e->nas_message;
         ogs_assert(message);
 
-        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+        enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
         ogs_assert(enb_ue);
 
         h.type = e->nas_type;
@@ -898,17 +898,22 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             } else {
                 S1AP_MME_UE_S1AP_ID_t MME_UE_S1AP_ID;
                 S1AP_ENB_UE_S1AP_ID_t ENB_UE_S1AP_ID;
+                mme_enb_t *enb = NULL;
 
                 ogs_warn("No connection of MSC/VLR");
                 MME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
                 ENB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
 
-                r = s1ap_send_error_indication(enb_ue->enb,
-                        &MME_UE_S1AP_ID, &ENB_UE_S1AP_ID,
-                        S1AP_Cause_PR_transport,
-                        S1AP_CauseTransport_transport_resource_unavailable);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
+                enb = mme_enb_find_by_id(enb_ue->enb_id);
+                if (enb) {
+                    r = s1ap_send_error_indication(enb,
+                            &MME_UE_S1AP_ID, &ENB_UE_S1AP_ID,
+                            S1AP_Cause_PR_transport,
+                            S1AP_CauseTransport_transport_resource_unavailable);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else
+                    ogs_error("eNB has already been removed");
             }
             break;
 
@@ -945,9 +950,8 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
 
     mme_sm_debug(e);
 
-    mme_ue = e->mme_ue;
+    mme_ue = mme_ue_find_by_id(e->mme_ue_id);
     ogs_assert(mme_ue);
-    MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
@@ -958,7 +962,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
         message = e->nas_message;
         ogs_assert(message);
 
-        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+        enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
         ogs_assert(enb_ue);
 
         switch (message->emm.h.message_type) {
@@ -1146,7 +1150,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
 
     mme_sm_debug(e);
 
-    mme_ue = e->mme_ue;
+    mme_ue = mme_ue_find_by_id(e->mme_ue_id);
     ogs_assert(mme_ue);
 
     switch (e->id) {
@@ -1162,7 +1166,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
         message = e->nas_message;
         ogs_assert(message);
 
-        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+        enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
         ogs_assert(enb_ue);
 
         if (message->emm.h.security_header_type
@@ -1327,7 +1331,8 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                         "Stop retransmission", mme_ue->imsi_bcd);
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
 
-                r = nas_eps_send_attach_reject(mme_ue->enb_ue, mme_ue,
+                r = nas_eps_send_attach_reject(
+                        enb_ue_find_by_id(mme_ue->enb_ue_id), mme_ue,
                         OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
                         OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
                 ogs_expect(r == OGS_OK);
@@ -1364,7 +1369,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 
     mme_sm_debug(e);
 
-    mme_ue = e->mme_ue;
+    mme_ue = mme_ue_find_by_id(e->mme_ue_id);
     ogs_assert(mme_ue);
 
     switch (e->id) {
@@ -1376,7 +1381,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
         message = e->nas_message;
         ogs_assert(message);
 
-        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+        enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
         ogs_assert(enb_ue);
 
         xact_count = mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR);
@@ -1606,7 +1611,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                         mme_timer_cfg(MME_TIMER_T3450)->duration);
 
                 r = nas_eps_send_to_downlink_nas_transport(
-                        mme_ue->enb_ue, emmbuf);
+                        enb_ue_find_by_id(mme_ue->enb_ue_id), emmbuf);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             }
@@ -1635,7 +1640,7 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
     ogs_assert(e);
     mme_sm_debug(e);
 
-    mme_ue = e->mme_ue;
+    mme_ue = mme_ue_find_by_id(e->mme_ue_id);
     ogs_assert(mme_ue);
 
     switch (e->id) {
@@ -1650,7 +1655,7 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
         message = e->nas_message;
         ogs_assert(message);
 
-        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+        enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
         ogs_assert(enb_ue);
 
         h.type = e->nas_type;

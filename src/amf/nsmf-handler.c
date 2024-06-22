@@ -784,12 +784,11 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         amf_gnb_t *gnb = NULL;
 
                         gnb = amf_gnb_find_by_id(ran_ue->gnb_id);
-                        ogs_assert(gnb);
 
                         ogs_debug("    SUPI[%s]", amf_ue->supi);
                         ran_ue_remove(ran_ue);
 
-                        if (ogs_list_count(&gnb->ran_ue_list) == 0) {
+                        if (gnb && ogs_list_count(&gnb->ran_ue_list) == 0) {
                             r = ngap_send_ng_reset_ack(gnb, NULL);
                             ogs_expect(r == OGS_OK);
                             ogs_assert(r != OGS_ERROR);
@@ -842,32 +841,32 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         amf_gnb_t *gnb = NULL;
 
                         gnb = amf_gnb_find_by_id(ran_ue->gnb_id);
-                        ogs_assert(gnb);
 
                         ogs_debug("    SUPI[%s]", amf_ue->supi);
                         ran_ue_remove(ran_ue);
 
-                        ogs_list_for_each(&gnb->ran_ue_list, iter) {
-                            if (iter->part_of_ng_reset_requested == true) {
-                                /* The GNB_UE context
-                                 * where PartOfNG_interface was requested
-                                 * still remains */
-                                return OGS_OK;
+                        if (gnb) {
+                            ogs_list_for_each(&gnb->ran_ue_list, iter) {
+                                if (iter->part_of_ng_reset_requested == true) {
+                                    /* The GNB_UE context
+                                     * where PartOfNG_interface was requested
+                                     * still remains */
+                                    return OGS_OK;
+                                }
                             }
+
+                            /* All GNB_UE context
+                             * where PartOfNG_interface was requested
+                             * REMOVED */
+                            ogs_assert(gnb->ng_reset_ack);
+                            r = ngap_send_to_gnb(
+                                gnb, gnb->ng_reset_ack, NGAP_NON_UE_SIGNALLING);
+                            ogs_expect(r == OGS_OK);
+                            ogs_assert(r != OGS_ERROR);
+
+                            /* Clear NG-Reset Ack Buffer */
+                            gnb->ng_reset_ack = NULL;
                         }
-
-                        /* All GNB_UE context
-                         * where PartOfNG_interface was requested
-                         * REMOVED */
-                        ogs_assert(gnb->ng_reset_ack);
-                        r = ngap_send_to_gnb(
-                            gnb, gnb->ng_reset_ack, NGAP_NON_UE_SIGNALLING);
-                        ogs_expect(r == OGS_OK);
-                        ogs_assert(r != OGS_ERROR);
-
-                        /* Clear NG-Reset Ack Buffer */
-                        gnb->ng_reset_ack = NULL;
-
                     } else {
                         ogs_warn("[%s] RAN-NG Context has already been removed",
                                 amf_ue->supi);

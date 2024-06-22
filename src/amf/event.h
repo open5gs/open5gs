@@ -78,7 +78,6 @@ typedef struct amf_event_s {
     ogs_pool_id_t ran_ue_id;
     ogs_pool_id_t amf_ue_id;
     ogs_pool_id_t sess_id;
-    amf_bearer_t *bearer;
 
     ogs_timer_t *timer;
 } amf_event_t;

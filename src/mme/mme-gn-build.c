@@ -24,7 +24,11 @@
 
 static int sess_fill_mm_context_decoded(mme_sess_t *sess, ogs_gtp1_mm_context_decoded_t *mmctx_dec)
 {
-    mme_ue_t *mme_ue = sess->mme_ue;
+    mme_ue_t *mme_ue = NULL;
+
+    ogs_assert(sess);
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
+    ogs_assert(mme_ue);
     *mmctx_dec = (ogs_gtp1_mm_context_decoded_t) {
         .gupii = 1, /* Integrity Protection not required */
         .ugipai = 1, /* Ignore "Used GPRS integrity protection algorithm" field" */
@@ -55,8 +59,13 @@ static int sess_fill_mm_context_decoded(mme_sess_t *sess, ogs_gtp1_mm_context_de
 static void build_qos_profile_from_session(ogs_gtp1_qos_profile_decoded_t *qos_pdec,
         const mme_sess_t *sess, const mme_bearer_t *bearer)
 {
-    const mme_ue_t *mme_ue = sess->mme_ue;
+    mme_ue_t *mme_ue = NULL;
     const ogs_session_t *session = sess->session;
+
+    ogs_assert(sess);
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
+    ogs_assert(mme_ue);
+
     /* FIXME: Initialize with defaults: */
     memset(qos_pdec, 0, sizeof(*qos_pdec));
 

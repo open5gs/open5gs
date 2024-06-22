@@ -1203,7 +1203,7 @@ amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     ogs_pool_id_calloc(&amf_gnb_pool, &gnb);
     if (!gnb) {
-        ogs_error("ogs_pool_id_callod() failed");
+        ogs_error("ogs_pool_id_calloc() failed");
         return NULL;
     }
 
@@ -1370,12 +1370,12 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint64_t ran_ue_ngap_id)
 void ran_ue_remove(ran_ue_t *ran_ue)
 {
     amf_gnb_t *gnb = NULL;
+
     ogs_assert(ran_ue);
 
     gnb = amf_gnb_find_by_id(ran_ue->gnb_id);
-    ogs_assert(gnb);
 
-    ogs_list_remove(&gnb->ran_ue_list, ran_ue);
+    if (gnb) ogs_list_remove(&gnb->ran_ue_list, ran_ue);
 
     ogs_assert(ran_ue->t_ng_holding);
     ogs_timer_delete(ran_ue->t_ng_holding);
@@ -2104,7 +2104,7 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
                     ran_ue_remove(ran_ue);
                 } else {
                     ogs_error("[%s] RAN-NG Context has already been removed",
-                                suci);
+                                old_amf_ue->suci);
                 }
             }
 

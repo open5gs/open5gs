@@ -37,11 +37,10 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     uint8_t security_protected_required = 0;
 
     ogs_assert(bearer);
-    sess = bearer->sess;
+    sess = mme_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
-    mme_ue = sess->mme_ue;
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
-    MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
 
     ogs_assert(req);
 
@@ -180,9 +179,8 @@ int esm_handle_information_response(mme_sess_t *sess,
     mme_ue_t *mme_ue = NULL;
 
     ogs_assert(sess);
-    mme_ue = sess->mme_ue;
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
-    MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
 
     ogs_assert(rsp);
 
@@ -278,9 +276,9 @@ int esm_handle_bearer_resource_allocation_request(
     mme_sess_t *sess = NULL;
 
     ogs_assert(bearer);
-    sess = bearer->sess;
+    sess = mme_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
-    mme_ue = sess->mme_ue;
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
 
     r = nas_eps_send_bearer_resource_allocation_reject(
@@ -297,7 +295,7 @@ int esm_handle_bearer_resource_modification_request(
     mme_ue_t *mme_ue = NULL;
 
     ogs_assert(bearer);
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
 
     ogs_assert(OGS_OK ==
