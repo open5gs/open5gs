@@ -115,22 +115,22 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
     case OGS_GTP2_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
     case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
     case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
-        mme_ue = data;
+        mme_ue = mme_ue_find_by_id(OGS_POINTER_TO_UINT(data));
         ogs_assert(mme_ue);
         break;
     case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
     case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
-        sess = data;
+        sess = mme_sess_find_by_id(OGS_POINTER_TO_UINT(data));
         ogs_assert(sess);
-        mme_ue = sess->mme_ue;
+        mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
         ogs_assert(mme_ue);
         break;
     case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
-        bearer = data;
+        bearer = mme_bearer_find_by_id(OGS_POINTER_TO_UINT(data));
         ogs_assert(bearer);
-        sess = bearer->sess;
+        sess = mme_sess_find_by_id(bearer->sess_id);
         ogs_assert(sess);
-        mme_ue = sess->mme_ue;
+        mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
         ogs_assert(mme_ue);
         break;
     default:
@@ -154,7 +154,7 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
          */
         CLEAR_SESSION_CONTEXT(mme_ue);
 
-        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+        enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
         if (enb_ue) {
             r = s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
@@ -244,13 +244,13 @@ int mme_gtp_send_create_session_request(mme_sess_t *sess, int create_action)
     mme_ue_t *mme_ue = NULL;
     sgw_ue_t *sgw_ue = NULL;
 
-    mme_ue = sess->mme_ue;
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
-    sgw_ue = sgw_ue_cycle(mme_ue->sgw_ue);
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     if (create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST) {
-        sgw_ue = sgw_ue_cycle(sgw_ue->target_ue);
+        sgw_ue = sgw_ue_find_by_id(sgw_ue->target_ue_id);
         ogs_assert(sgw_ue);
     }
 
@@ -264,7 +264,9 @@ int mme_gtp_send_create_session_request(mme_sess_t *sess, int create_action)
         return OGS_ERROR;
     }
 
-    xact = ogs_gtp_xact_local_create(sgw_ue->gnode, &h, pkbuf, timeout, sess);
+    xact = ogs_gtp_xact_local_create(
+            sgw_ue->gnode, &h, pkbuf, timeout,
+            OGS_UINT_TO_POINTER(sess->id));
     if (!xact) {
         ogs_error("ogs_gtp_xact_local_create() failed");
         return OGS_ERROR;
@@ -290,7 +292,7 @@ int mme_gtp_send_modify_bearer_request(
     ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
@@ -303,7 +305,9 @@ int mme_gtp_send_modify_bearer_request(
         return OGS_ERROR;
     }
 
-    xact = ogs_gtp_xact_local_create(sgw_ue->gnode, &h, pkbuf, timeout, mme_ue);
+    xact = ogs_gtp_xact_local_create(
+            sgw_ue->gnode, &h, pkbuf, timeout,
+            OGS_UINT_TO_POINTER(mme_ue->id));
     if (!xact) {
         ogs_error("ogs_gtp_xact_local_create() failed");
         return OGS_ERROR;
@@ -328,7 +332,7 @@ int mme_gtp_send_delete_session_request(
 
     ogs_assert(action);
     ogs_assert(sess);
-    mme_ue = sess->mme_ue;
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
     ogs_assert(sgw_ue);
 
@@ -342,7 +346,9 @@ int mme_gtp_send_delete_session_request(
         return OGS_ERROR;
     }
 
-    xact = ogs_gtp_xact_local_create(sgw_ue->gnode, &h, s11buf, timeout, sess);
+    xact = ogs_gtp_xact_local_create(
+            sgw_ue->gnode, &h, s11buf, timeout,
+            OGS_UINT_TO_POINTER(sess->id));
     if (!xact) {
         ogs_error("ogs_gtp_xact_local_create() failed");
         return OGS_ERROR;
@@ -363,11 +369,10 @@ void mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue, int action)
     sgw_ue_t *sgw_ue = NULL;
 
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
     ogs_assert(action);
 
-    MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
     ogs_list_for_each_safe(&mme_ue->sess_list, next_sess, sess) {
         if (MME_HAVE_SGW_S1U_PATH(sess)) {
             mme_gtp_send_delete_session_request(sgw_ue, sess, action);
@@ -398,9 +403,9 @@ int mme_gtp_send_create_bearer_response(
         return OGS_OK;
     }
 
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
@@ -438,9 +443,9 @@ int mme_gtp_send_update_bearer_response(
     ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_assert(bearer);
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     /*
@@ -511,9 +516,9 @@ int mme_gtp_send_delete_bearer_response(
         return OGS_OK;
     }
 
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
@@ -548,7 +553,7 @@ int mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue, int action)
 
     ogs_assert(action);
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
@@ -561,7 +566,9 @@ int mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue, int action)
         return OGS_ERROR;
     }
 
-    xact = ogs_gtp_xact_local_create(sgw_ue->gnode, &h, pkbuf, timeout, mme_ue);
+    xact = ogs_gtp_xact_local_create(
+            sgw_ue->gnode, &h, pkbuf, timeout,
+            OGS_UINT_TO_POINTER(mme_ue->id));
     if (!xact) {
         ogs_error("ogs_gtp_xact_local_create() failed");
         return OGS_ERROR;
@@ -581,7 +588,7 @@ void mme_gtp_send_release_all_ue_in_enb(mme_enb_t *enb, int action)
     enb_ue_t *enb_ue = NULL, *next = NULL;
 
     ogs_list_for_each_safe(&enb->enb_ue_list, next, enb_ue) {
-        mme_ue = enb_ue->mme_ue;
+        mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
 
         if (mme_ue) {
             if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_LO_CONNREFUSED) {
@@ -645,9 +652,9 @@ int mme_gtp_send_downlink_data_notification_ack(
         return OGS_OK;
     }
 
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     /* Build Downlink data notification ack */
@@ -683,7 +690,7 @@ int mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
     sgw_ue_t *sgw_ue = NULL;
 
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
@@ -698,7 +705,9 @@ int mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
         return OGS_ERROR;
     }
 
-    xact = ogs_gtp_xact_local_create(sgw_ue->gnode, &h, pkbuf, timeout, mme_ue);
+    xact = ogs_gtp_xact_local_create(
+            sgw_ue->gnode, &h, pkbuf, timeout,
+            OGS_UINT_TO_POINTER(mme_ue->id));
     if (!xact) {
         ogs_error("ogs_gtp_xact_local_create() failed");
         return OGS_ERROR;
@@ -722,7 +731,7 @@ int mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
 
     ogs_assert(action);
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
@@ -736,7 +745,9 @@ int mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
     }
     ogs_pkbuf_reserve(pkbuf, OGS_TLV_MAX_HEADROOM);
 
-    xact = ogs_gtp_xact_local_create(sgw_ue->gnode, &h, pkbuf, timeout, mme_ue);
+    xact = ogs_gtp_xact_local_create(
+            sgw_ue->gnode, &h, pkbuf, timeout,
+            OGS_UINT_TO_POINTER(mme_ue->id));
     if (!xact) {
         ogs_error("ogs_gtp_xact_local_create() failed");
         return OGS_ERROR;
@@ -762,9 +773,9 @@ int mme_gtp_send_bearer_resource_command(
     sgw_ue_t *sgw_ue = NULL;
 
     ogs_assert(bearer);
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
@@ -777,7 +788,9 @@ int mme_gtp_send_bearer_resource_command(
         return OGS_ERROR;
     }
 
-    xact = ogs_gtp_xact_local_create(sgw_ue->gnode, &h, pkbuf, timeout, bearer);
+    xact = ogs_gtp_xact_local_create(
+            sgw_ue->gnode, &h, pkbuf, timeout,
+            OGS_UINT_TO_POINTER(bearer->id));
     if (!xact) {
         ogs_error("ogs_gtp_xact_local_create() failed");
         return OGS_ERROR;

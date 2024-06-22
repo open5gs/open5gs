@@ -33,7 +33,7 @@ ogs_pkbuf_t *esm_build_pdn_connectivity_reject(
             &message.esm.pdn_connectivity_reject;
 
     ogs_assert(sess);
-    mme_ue = sess->mme_ue;
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
 
     ogs_debug("PDN connectivity reject");
@@ -68,9 +68,9 @@ ogs_pkbuf_t *esm_build_information_request(mme_bearer_t *bearer)
     mme_sess_t *sess = NULL;
 
     ogs_assert(bearer);
-    sess = bearer->sess;
+    sess = mme_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
 
     ogs_debug("ESM information request");
@@ -117,7 +117,7 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
     ogs_session_t *session = NULL;
 
     ogs_assert(sess);
-    mme_ue = sess->mme_ue;
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
     session = sess->session;
     ogs_assert(session);
@@ -269,9 +269,9 @@ ogs_pkbuf_t *esm_build_activate_dedicated_bearer_context_request(
         &activate_dedicated_eps_bearer_context_request->tft;
     
     ogs_assert(bearer);
-    sess = bearer->sess;
+    sess = mme_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
     linked_bearer = mme_linked_bearer(bearer); 
     ogs_assert(linked_bearer);
@@ -333,9 +333,9 @@ ogs_pkbuf_t *esm_build_modify_bearer_context_request(
         &modify_eps_bearer_context_request->tft;
 
     ogs_assert(bearer);
-    sess = bearer->sess;
+    sess = mme_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
 
     ogs_debug("Modify bearer context request");
@@ -383,9 +383,9 @@ ogs_pkbuf_t *esm_build_deactivate_bearer_context_request(
             &message.esm.deactivate_eps_bearer_context_request;
     
     ogs_assert(bearer);
-    sess = bearer->sess;
+    sess = mme_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
 
     ogs_debug("Deactivate bearer context request");
