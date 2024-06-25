@@ -58,6 +58,7 @@ static int hss_ogs_diam_s6a_fb_cb(struct msg **msg, struct avp *avp,
 {
     /* This CB should never be called */
     ogs_warn("Unexpected message received!");
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_CTR_S6A_RX_UNKNOWN);
 
     return ENOTSUP;
 }
@@ -96,7 +97,8 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Authentication-Information-Request");
+    ogs_debug("Rx Authentication-Information-Request");
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_CTR_S6A_RX_AIR);
 
     /* Create answer header */
     qry = *msg;
@@ -766,7 +768,8 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Update-Location-Request");
+    ogs_debug("Rx Update-Location-Request");
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_CTR_S6A_RX_ULR);
 
     memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
 
@@ -1034,7 +1037,8 @@ static int hss_ogs_diam_s6a_pur_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Purge-UE-Request");
+    ogs_debug("Rx Purge-UE-Request");
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_CTR_S6A_RX_PUR);
 
     memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
 
@@ -1169,7 +1173,7 @@ void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm,
     struct sess_state *sess_data = NULL, *svg;
     struct session *session = NULL;
 
-    ogs_debug("[HSS] Cancel-Location-Request");
+    ogs_debug("[HSS] Tx Cancel-Location-Request");
 
     /* Create the random value to store with the session */
     sess_data = ogs_calloc(1, sizeof(*sess_data));
@@ -1278,6 +1282,8 @@ void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm,
     ret = fd_msg_send(&req, hss_s6a_cla_cb, svg);
     ogs_assert(ret == 0);
 
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_CTR_S6A_TX_CLR);
+
     /* Increment the counter */
     ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
     ogs_diam_logger_self()->stats.nb_sent++;
@@ -1294,7 +1300,8 @@ static void hss_s6a_cla_cb(void *data, struct msg **msg)
     struct session *session;
     int new;
 
-    ogs_debug("[HSS] Cancel-Location-Answer");
+    ogs_debug("[HSS] Rx Cancel-Location-Answer");
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_CTR_S6A_RX_CLA);
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
@@ -1343,7 +1350,7 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdata_mask)
 
     ogs_subscription_data_t subscription_data;
 
-    ogs_debug("[HSS] Insert-Subscriber-Data-Request");
+    ogs_debug("[HSS] Tx Insert-Subscriber-Data-Request");
 
     memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
 
@@ -1479,6 +1486,8 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdata_mask)
     ret = fd_msg_send(&req, hss_s6a_ida_cb, svg);
     ogs_assert(ret == 0);
 
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_CTR_S6A_TX_IDR);
+
     /* Increment the counter */
     ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
     ogs_diam_logger_self()->stats.nb_sent++;
@@ -1498,7 +1507,8 @@ static void hss_s6a_ida_cb(void *data, struct msg **msg)
     struct session *session;
     int new;
 
-    ogs_debug("[HSS] Insert-Subscriber-Data-Answer");
+    ogs_debug("[HSS] Rx Insert-Subscriber-Data-Answer");
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_CTR_S6A_RX_IDA);
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
