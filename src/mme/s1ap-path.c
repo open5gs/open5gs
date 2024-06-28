@@ -422,7 +422,7 @@ int s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
     return rv;
 }
 
-int s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue)
+int s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue, bool include_ue_ambr)
 {
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
@@ -439,7 +439,7 @@ int s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue)
         return OGS_NOTFOUND;
     }
 
-    s1apbuf = s1ap_build_ue_context_modification_request(mme_ue);
+    s1apbuf = s1ap_build_ue_context_modification_request(mme_ue, include_ue_ambr);
     if (!s1apbuf) {
         ogs_error("s1ap_build_ue_context_modification_request() failed");
         return OGS_ERROR;

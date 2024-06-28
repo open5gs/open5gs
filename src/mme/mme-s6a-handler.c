@@ -174,6 +174,7 @@ uint8_t mme_s6a_handle_idr(
     ogs_subscription_data_t *subscription_data = NULL;
     ogs_slice_data_t *slice_data = NULL;
     int num_of_session;
+    int rv;
 
     ogs_assert(mme_ue);
     ogs_assert(s6a_message);
@@ -184,6 +185,9 @@ uint8_t mme_s6a_handle_idr(
 
     if (idr_message->subdatamask & OGS_DIAM_S6A_SUBDATA_UEAMBR) {
         memcpy(&mme_ue->ambr, &subscription_data->ambr, sizeof(ogs_bitrate_t));
+        /* notify eNB */
+        rv = s1ap_send_ue_context_modification_request(mme_ue, true);
+        ogs_expect(rv == OGS_OK);
     }
 
     if (idr_message->subdatamask & OGS_DIAM_S6A_SUBDATA_APN_CONFIG) {

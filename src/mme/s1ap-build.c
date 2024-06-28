@@ -830,7 +830,7 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
     return ogs_s1ap_encode(&pdu);
 }
 
-ogs_pkbuf_t *s1ap_build_ue_context_modification_request(mme_ue_t *mme_ue)
+ogs_pkbuf_t *s1ap_build_ue_context_modification_request(mme_ue_t *mme_ue, bool include_ue_ambr)
 {
     S1AP_S1AP_PDU_t pdu;
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -844,6 +844,7 @@ ogs_pkbuf_t *s1ap_build_ue_context_modification_request(mme_ue_t *mme_ue)
     S1AP_SecurityKey_t *SecurityKey = NULL;
     S1AP_CSFallbackIndicator_t *CSFallbackIndicator = NULL;
     S1AP_LAI_t *LAI = NULL;
+    S1AP_UEAggregateMaximumBitrate_t *UEAggregateMaximumBitrate = NULL;
 
     enb_ue_t *enb_ue = NULL;
 
@@ -967,6 +968,24 @@ ogs_pkbuf_t *s1ap_build_ue_context_modification_request(mme_ue_t *mme_ue)
             CALLOC(SecurityKey->size, sizeof(uint8_t));
         SecurityKey->bits_unused = 0;
         memcpy(SecurityKey->buf, mme_ue->kenb, SecurityKey->size);
+    }
+    /* UE AMBR */
+    if (include_ue_ambr) {
+        ie = CALLOC(1, sizeof(S1AP_UEContextModificationRequestIEs_t));
+        ASN_SEQUENCE_ADD(&UEContextModificationRequest->protocolIEs, ie);
+        ie->id = S1AP_ProtocolIE_ID_id_uEaggregateMaximumBitrate;
+        ie->criticality = S1AP_Criticality_ignore;
+        ie->value.present = S1AP_UEContextModificationRequestIEs__value_PR_UEAggregateMaximumBitrate;
+        UEAggregateMaximumBitrate = &ie->value.choice.UEAggregateMaximumBitrate;
+        ogs_debug("    AMBR[DL:%lld,UL:%lld]",
+            (long long)mme_ue->ambr.downlink, (long long)mme_ue->ambr.uplink);
+
+        asn_uint642INTEGER(
+                &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateUL,
+                mme_ue->ambr.uplink);
+        asn_uint642INTEGER(
+                &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateDL,
+                mme_ue->ambr.downlink);
     }
 
     return ogs_s1ap_encode(&pdu);
