@@ -112,7 +112,7 @@ typedef struct ogs_gtp_xact_s {
     uint32_t        local_teid;     /**< Local TEID,
                                          expected in reply from peer */
 
-    void            *assoc_xact;    /**< Associated GTP transaction */
+    ogs_pool_id_t   assoc_xact_id;  /**< Associated GTP transaction ID */
     void            *pfcp_xact;     /**< Associated PFCP transaction */
 
 #define OGS_GTP_MODIFY_TFT_UPDATE ((uint64_t)1<<0)

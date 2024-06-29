@@ -117,7 +117,7 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
             ogs_pfcp_cp_send_association_setup_request(node, node_timeout);
             break;
         case SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE:
-            sess = smf_sess_cycle(e->sess);
+            sess = smf_sess_find_by_id(e->sess_id);
             if (!sess) {
                 ogs_warn("Session has already been removed");
                 break;
@@ -125,7 +125,7 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case SMF_TIMER_PFCP_NO_DELETION_RESPONSE:
-            sess = smf_sess_cycle(e->sess);
+            sess = smf_sess_find_by_id(e->sess_id);
             if (!sess) {
                 ogs_warn("Session has already been removed");
                 break;
@@ -141,7 +141,7 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
     case SMF_EVT_N4_MESSAGE:
         message = e->pfcp_message;
         ogs_assert(message);
-        xact = e->pfcp_xact;
+        xact = ogs_pfcp_xact_find_by_id(e->pfcp_xact_id);
         ogs_assert(xact);
 
         switch (message->h.type) {
@@ -223,7 +223,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
     case SMF_EVT_N4_MESSAGE:
         message = e->pfcp_message;
         ogs_assert(message);
-        xact = e->pfcp_xact;
+        xact = ogs_pfcp_xact_find_by_id(e->pfcp_xact_id);
         ogs_assert(xact);
 
         if (message->h.seid_presence && message->h.seid != 0) {
@@ -237,7 +237,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             sess = smf_sess_find_by_seid(xact->local_seid);
         }
         if (sess)
-            e->sess = sess;
+            e->sess_id = sess->id;
 
         switch (message->h.type) {
         case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
@@ -313,7 +313,8 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             if (!message->h.seid_presence) ogs_error("No SEID");
 
             if (!sess) {
-                ogs_gtp_xact_t *gtp_xact = xact->assoc_xact;
+                ogs_gtp_xact_t *gtp_xact =
+                    ogs_gtp_xact_find_by_id(xact->assoc_xact_id);
                 ogs_error("No Session");
                 if (!gtp_xact) {
                     ogs_error("No associated GTP transaction");
@@ -348,7 +349,8 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             if (!message->h.seid_presence) ogs_error("No SEID");
 
             if (!sess) {
-                ogs_gtp_xact_t *gtp_xact = xact->assoc_xact;
+                ogs_gtp_xact_t *gtp_xact =
+                    ogs_gtp_xact_find_by_id(xact->assoc_xact_id);
                 ogs_error("No Session");
                 if (!gtp_xact) {
                     ogs_error("No associated GTP transaction");
@@ -397,7 +399,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                 ogs_pfcp_send_heartbeat_request(node, node_timeout));
             break;
         case SMF_TIMER_PFCP_NO_ESTABLISHMENT_RESPONSE:
-            sess = smf_sess_cycle(e->sess);
+            sess = smf_sess_find_by_id(e->sess_id);
             if (!sess) {
                 ogs_warn("Session has already been removed");
                 break;
@@ -405,7 +407,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case SMF_TIMER_PFCP_NO_DELETION_RESPONSE:
-            sess = smf_sess_cycle(e->sess);
+            sess = smf_sess_find_by_id(e->sess_id);
             if (!sess) {
                 ogs_warn("Session has already been removed");
                 break;
@@ -482,7 +484,7 @@ static void pfcp_restoration(ogs_pfcp_node_t *node)
                             OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
                     ogs_assert(OGS_OK ==
                         smf_epc_pfcp_send_session_establishment_request(
-                            sess, NULL,
+                            sess, OGS_INVALID_POOL_ID,
                             OGS_PFCP_CREATE_RESTORATION_INDICATION));
                 } else {
                     ogs_info("UE SUPI[%s] DNN[%s] IPv4[%s] IPv6[%s]",

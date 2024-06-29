@@ -121,7 +121,7 @@ void sgwc_pfcp_state_will_associate(ogs_fsm_t *s, sgwc_event_t *e)
     case SGWC_EVT_SXA_MESSAGE:
         message = e->pfcp_message;
         ogs_assert(message);
-        xact = e->pfcp_xact;
+        xact = ogs_pfcp_xact_find_by_id(e->pfcp_xact_id);
         ogs_assert(xact);
 
         switch (message->h.type) {
@@ -203,7 +203,7 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
     case SGWC_EVT_SXA_MESSAGE:
         message = e->pfcp_message;
         ogs_assert(message);
-        xact = e->pfcp_xact;
+        xact = ogs_pfcp_xact_find_by_id(e->pfcp_xact_id);
         ogs_assert(xact);
 
         if (message->h.seid_presence && message->h.seid != 0) {
@@ -400,7 +400,7 @@ static void pfcp_restoration(ogs_pfcp_node_t *node)
                     sgwc_ue->imsi_bcd, sess->session.name);
                 ogs_assert(OGS_OK ==
                     sgwc_pfcp_send_session_establishment_request(
-                        sess, NULL, NULL,
+                        sess, OGS_INVALID_POOL_ID, NULL,
                         OGS_PFCP_CREATE_RESTORATION_INDICATION));
             }
         }

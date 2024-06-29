@@ -31,7 +31,7 @@ void nas_5gs_send_to_gsm(
     e = smf_event_new(SMF_EVT_5GSM_MESSAGE);
     ogs_assert(e);
 
-    e->sess = sess;
+    e->sess_id = sess->id;
     e->pkbuf = pkbuf;
 
     if (stream) {

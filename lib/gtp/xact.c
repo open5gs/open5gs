@@ -1131,11 +1131,11 @@ void ogs_gtp_xact_associate(ogs_gtp_xact_t *xact1, ogs_gtp_xact_t *xact2)
     ogs_assert(xact1);
     ogs_assert(xact2);
 
-    ogs_assert(xact1->assoc_xact == NULL);
-    ogs_assert(xact2->assoc_xact == NULL);
+    ogs_assert(xact1->assoc_xact_id == OGS_INVALID_POOL_ID);
+    ogs_assert(xact2->assoc_xact_id == OGS_INVALID_POOL_ID);
 
-    xact1->assoc_xact = xact2;
-    xact2->assoc_xact = xact1;
+    xact1->assoc_xact_id = xact2->id;
+    xact2->assoc_xact_id = xact1->id;
 }
 
 void ogs_gtp_xact_deassociate(ogs_gtp_xact_t *xact1, ogs_gtp_xact_t *xact2)
@@ -1143,16 +1143,17 @@ void ogs_gtp_xact_deassociate(ogs_gtp_xact_t *xact1, ogs_gtp_xact_t *xact2)
     ogs_assert(xact1);
     ogs_assert(xact2);
 
-    ogs_assert(xact1->assoc_xact != NULL);
-    ogs_assert(xact2->assoc_xact != NULL);
+    ogs_assert(xact1->assoc_xact_id != OGS_INVALID_POOL_ID);
+    ogs_assert(xact2->assoc_xact_id != OGS_INVALID_POOL_ID);
 
-    xact1->assoc_xact = NULL;
-    xact2->assoc_xact = NULL;
+    xact1->assoc_xact_id = OGS_INVALID_POOL_ID;
+    xact2->assoc_xact_id = OGS_INVALID_POOL_ID;
 }
 
 static int ogs_gtp_xact_delete(ogs_gtp_xact_t *xact)
 {
     char buf[OGS_ADDRSTRLEN];
+    ogs_gtp_xact_t *assoc_xact = NULL;
 
     ogs_assert(xact);
     ogs_assert(xact->gnode);
@@ -1175,8 +1176,9 @@ static int ogs_gtp_xact_delete(ogs_gtp_xact_t *xact)
     if (xact->tm_holding)
         ogs_timer_delete(xact->tm_holding);
 
-    if (xact->assoc_xact)
-        ogs_gtp_xact_deassociate(xact, xact->assoc_xact);
+    assoc_xact = ogs_gtp_xact_find_by_id(xact->assoc_xact_id);
+    if (assoc_xact)
+        ogs_gtp_xact_deassociate(xact, assoc_xact);
 
     ogs_list_remove(xact->org == OGS_GTP_LOCAL_ORIGINATOR ?
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);

@@ -47,6 +47,7 @@ typedef struct sgwu_context_s {
 #define SGWU_SESS(pfcp_sess) ogs_container_of(pfcp_sess, sgwu_sess_t, pfcp)
 typedef struct sgwu_sess_s {
     ogs_lnode_t     lnode;
+    ogs_pool_id_t   id;
     ogs_pool_id_t   *sgwu_sxa_seid_node;    /* A node of SGWU-SXA-SEID */
 
     ogs_pfcp_sess_t pfcp;
@@ -74,6 +75,7 @@ void sgwu_sess_remove_all(void);
 sgwu_sess_t *sgwu_sess_find_by_sgwc_sxa_seid(uint64_t seid);
 sgwu_sess_t *sgwu_sess_find_by_sgwc_sxa_f_seid(ogs_pfcp_f_seid_t *f_seid);
 sgwu_sess_t *sgwu_sess_find_by_sgwu_sxa_seid(uint64_t seid);
+sgwu_sess_t *sgwu_sess_find_by_id(ogs_pool_id_t id);
 
 #ifdef __cplusplus
 }

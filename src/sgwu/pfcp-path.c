@@ -267,10 +267,22 @@ int sgwu_pfcp_send_session_deletion_response(ogs_pfcp_xact_t *xact,
 
 static void sess_timeout(ogs_pfcp_xact_t *xact, void *data)
 {
+    sgwu_sess_t *sess = NULL;
+    ogs_pool_id_t sess_id = OGS_INVALID_POOL_ID;
     uint8_t type;
 
     ogs_assert(xact);
     type = xact->seq[0].type;
+
+    ogs_assert(data);
+    sess_id = OGS_POINTER_TO_UINT(data);
+    ogs_assert(sess_id >= OGS_MIN_POOL_ID && sess_id <= OGS_MAX_POOL_ID);
+
+    sess = sgwu_sess_find_by_id(sess_id);
+    if (!sess) {
+        ogs_error("Session has already been removed [%d]", type);
+        return;
+    }
 
     switch (type) {
     case OGS_PFCP_SESSION_REPORT_REQUEST_TYPE:
@@ -297,7 +309,8 @@ int sgwu_pfcp_send_session_report_request(
     h.type = OGS_PFCP_SESSION_REPORT_REQUEST_TYPE;
     h.seid = sess->sgwc_sxa_f_seid.seid;
 
-    xact = ogs_pfcp_xact_local_create(sess->pfcp_node, sess_timeout, sess);
+    xact = ogs_pfcp_xact_local_create(
+            sess->pfcp_node, sess_timeout, OGS_UINT_TO_POINTER(sess->id));
     if (!xact) {
         ogs_error("ogs_pfcp_xact_local_create() failed");
         return OGS_ERROR;

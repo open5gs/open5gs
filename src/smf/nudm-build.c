@@ -26,7 +26,7 @@ ogs_sbi_request_t *smf_nudm_sdm_build_get(smf_sess_t *sess, void *data)
     ogs_sbi_request_t *request = NULL;
 
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
     ogs_assert(smf_ue->supi);
 
@@ -62,7 +62,7 @@ ogs_sbi_request_t *smf_nudm_uecm_build_registration(
 
     ogs_assert(sess);
     ogs_assert(sess->psi);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
     ogs_assert(smf_ue->supi);
 
@@ -123,7 +123,7 @@ ogs_sbi_request_t *smf_nudm_uecm_build_deregistration(
 
     ogs_assert(sess);
     ogs_assert(sess->psi);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
     ogs_assert(smf_ue->supi);
 

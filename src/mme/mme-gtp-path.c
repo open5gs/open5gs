@@ -102,9 +102,12 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
 {
     int r;
     mme_ue_t *mme_ue = NULL;
+    ogs_pool_id_t mme_ue_id = OGS_INVALID_POOL_ID;
     enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
+    ogs_pool_id_t sess_id = OGS_INVALID_POOL_ID;
     mme_bearer_t *bearer = NULL;
+    ogs_pool_id_t bearer_id = OGS_INVALID_POOL_ID;
     uint8_t type = 0;
 
     ogs_assert(xact);
@@ -115,18 +118,26 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
     case OGS_GTP2_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
     case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
     case OGS_GTP2_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
-        mme_ue = mme_ue_find_by_id(OGS_POINTER_TO_UINT(data));
+        mme_ue_id = OGS_POINTER_TO_UINT(data);
+        ogs_assert(mme_ue_id >= OGS_MIN_POOL_ID &&
+                mme_ue_id <= OGS_MAX_POOL_ID);
+        mme_ue = mme_ue_find_by_id(mme_ue_id);
         ogs_assert(mme_ue);
         break;
     case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
     case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
-        sess = mme_sess_find_by_id(OGS_POINTER_TO_UINT(data));
+        sess_id = OGS_POINTER_TO_UINT(data);
+        ogs_assert(sess_id >= OGS_MIN_POOL_ID && sess_id <= OGS_MAX_POOL_ID);
+        sess = mme_sess_find_by_id(sess_id);
         ogs_assert(sess);
         mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
         ogs_assert(mme_ue);
         break;
     case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
-        bearer = mme_bearer_find_by_id(OGS_POINTER_TO_UINT(data));
+        bearer_id = OGS_POINTER_TO_UINT(data);
+        ogs_assert(bearer_id >= OGS_MIN_POOL_ID &&
+                bearer_id <= OGS_MAX_POOL_ID);
+        bearer = mme_bearer_find_by_id(bearer_id);
         ogs_assert(bearer);
         sess = mme_sess_find_by_id(bearer->sess_id);
         ogs_assert(sess);
