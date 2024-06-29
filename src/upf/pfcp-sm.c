@@ -122,7 +122,7 @@ void upf_pfcp_state_will_associate(ogs_fsm_t *s, upf_event_t *e)
     case UPF_EVT_N4_MESSAGE:
         message = e->pfcp_message;
         ogs_assert(message);
-        xact = e->pfcp_xact;
+        xact = ogs_pfcp_xact_find_by_id(e->pfcp_xact_id);
         ogs_assert(xact);
 
         switch (message->h.type) {
@@ -204,7 +204,7 @@ void upf_pfcp_state_associated(ogs_fsm_t *s, upf_event_t *e)
     case UPF_EVT_N4_MESSAGE:
         message = e->pfcp_message;
         ogs_assert(message);
-        xact = e->pfcp_xact;
+        xact = ogs_pfcp_xact_find_by_id(e->pfcp_xact_id);
         ogs_assert(xact);
 
         if (message->h.seid_presence && message->h.seid != 0)

@@ -66,22 +66,22 @@ static void gtp_remote_holding_timeout(ogs_gtp_xact_t *xact, void *data)
     uint8_t type;
 
     ogs_assert(xact);
-    ogs_assert(data);
-    bearer = mme_bearer_find_by_id(OGS_POINTER_TO_UINT(data));
-    if (!bearer) {
-        ogs_error("No Bearer");
-        return;
-    }
-
     type = xact->seq[xact->step-1].type;
 
-    ogs_warn("[%d] %s HOLDING TIMEOUT "
+    ogs_error("[%d] %s HOLDING TIMEOUT "
             "for step %d type %d peer [%s]:%d",
             xact->xid,
             xact->org == OGS_GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             xact->step, type,
             OGS_ADDR(&xact->gnode->addr, buf),
             OGS_PORT(&xact->gnode->addr));
+
+    ogs_assert(data);
+    bearer = mme_bearer_find_by_id(OGS_POINTER_TO_UINT(data));
+    if (!bearer) {
+        ogs_error("Bearer has already been removed [%d]", type);
+        return;
+    }
 
     /*
      * Issues #3240

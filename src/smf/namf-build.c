@@ -44,7 +44,7 @@ ogs_sbi_request_t *smf_namf_comm_build_n1_n2_message_transfer(
     OpenAPI_ref_to_binary_data_t ngapData;
 
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
     ogs_assert(smf_ue->supi);
 

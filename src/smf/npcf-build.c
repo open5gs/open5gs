@@ -38,7 +38,7 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     ogs_assert(sess);
     ogs_assert(sess->sm_context_ref);
     ogs_assert(sess->session.name);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     memset(&message, 0, sizeof(message));
@@ -301,7 +301,7 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
 
     ogs_assert(sess);
     ogs_assert(sess->sm_context_ref);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
     ogs_assert(sess->policy_association.resource_uri);
 

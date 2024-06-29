@@ -79,6 +79,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
     ogs_sbi_message_t sbi_message;
     ogs_sbi_xact_t *sbi_xact = NULL;
     ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
+    ogs_pool_id_t sbi_object_id = OGS_INVALID_POOL_ID;
 
     ogs_nas_5gs_message_t nas_message;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -118,7 +119,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_pkbuf_free(recvbuf);
             break;
         }
-        e->gtp_xact = gtp_xact;
+        e->gtp_xact_id = gtp_xact ? gtp_xact->id : OGS_INVALID_POOL_ID;
 
         if (gtp2_message.h.teid_presence && gtp2_message.h.teid != 0) {
             sess = smf_sess_find_by_teid(gtp2_message.h.teid);
@@ -164,7 +165,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     sess->sgw_s5c_teid,
                     gtp2_sender_f_teid.teid_presence, gtp2_sender_f_teid.teid);
 
-            e->sess = sess;
+            e->sess_id = sess->id;
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
@@ -192,7 +193,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     break;
                 }
             }
-            e->sess = sess;
+            e->sess_id = sess->id;
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
@@ -218,7 +219,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 ogs_error("TODO: NACK the message");
                 break;
             }
-            e->sess = sess;
+            e->sess_id = sess->id;
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
@@ -260,7 +261,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_pkbuf_free(recvbuf);
             break;
         }
-        e->gtp_xact = gtp_xact;
+        e->gtp_xact_id = gtp_xact ? gtp_xact->id : OGS_INVALID_POOL_ID;
 
         switch(gtp1_message.h.type) {
         case OGS_GTP1_ECHO_REQUEST_TYPE:
@@ -284,7 +285,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         OGS_GTP1_CAUSE_CONTEXT_NOT_FOUND);
                 break;
             }
-            e->sess = sess;
+            e->sess_id = sess->id;
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP1_DELETE_PDP_CONTEXT_REQUEST_TYPE:
@@ -296,7 +297,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         OGS_GTP1_CAUSE_NON_EXISTENT);
                 break;
             }
-            e->sess = sess;
+            e->sess_id = sess->id;
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP1_UPDATE_PDP_CONTEXT_REQUEST_TYPE:
@@ -319,7 +320,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         gx_message = e->gx_message;
         ogs_assert(gx_message);
 
-        sess = e->sess;
+        sess = smf_sess_find_by_id(e->sess_id);
         ogs_assert(sess);
 
         switch(gx_message->cmd_code) {
@@ -354,7 +355,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         gy_message = e->gy_message;
         ogs_assert(gy_message);
 
-        sess = e->sess;
+        sess = smf_sess_find_by_id(e->sess_id);
         ogs_assert(sess);
 
         switch(gy_message->cmd_code) {
@@ -376,7 +377,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(e);
         s6b_message = e->s6b_message;
         ogs_assert(s6b_message);
-        sess = e->sess;
+        sess = smf_sess_find_by_id(e->sess_id);
         ogs_assert(sess);
 
         switch(s6b_message->cmd_code) {
@@ -421,7 +422,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         }
 
         e->pfcp_message = pfcp_message;
-        e->pfcp_xact = pfcp_xact;
+        e->pfcp_xact_id = pfcp_xact ? pfcp_xact->id : OGS_INVALID_POOL_ID;
 
         e->gtp2_message = NULL;
         if (pfcp_xact->gtpbuf) {
@@ -579,11 +580,11 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 END
 
                 if (sess) {
-                    smf_ue = sess->smf_ue;
+                    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
                     ogs_assert(smf_ue);
                     ogs_assert(OGS_FSM_STATE(&sess->sm));
 
-                    e->sess = sess;
+                    e->sess_id = sess->id;
                     e->h.sbi.message = &sbi_message;
                     ogs_fsm_dispatch(&sess->sm, e);
                 }
@@ -824,8 +825,9 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 break;
             }
 
-            sess = (smf_sess_t *)sbi_xact->sbi_object;
-            ogs_assert(sess);
+            sbi_object_id = sbi_xact->sbi_object_id;
+            ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
+                    sbi_object_id <= OGS_MAX_POOL_ID);
 
             if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                 sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
@@ -835,16 +837,16 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
             ogs_sbi_xact_remove(sbi_xact);
 
-            sess = smf_sess_cycle(sess);
+            sess = smf_sess_find_by_id(sbi_object_id);
             if (!sess) {
                 ogs_error("Session has already been removed");
                 break;
             }
-            smf_ue = smf_ue_cycle(sess->smf_ue);
+            smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
             ogs_assert(smf_ue);
             ogs_assert(OGS_FSM_STATE(&sess->sm));
 
-            e->sess = sess;
+            e->sess_id = sess->id;
             e->h.sbi.message = &sbi_message;
 
             ogs_fsm_dispatch(&sess->sm, e);
@@ -867,8 +869,9 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 break;
             }
 
-            sess = (smf_sess_t *)sbi_xact->sbi_object;
-            ogs_assert(sess);
+            sbi_object_id = sbi_xact->sbi_object_id;
+            ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
+                    sbi_object_id <= OGS_MAX_POOL_ID);
 
             if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                 sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
@@ -879,12 +882,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
             ogs_sbi_xact_remove(sbi_xact);
 
-            sess = smf_sess_cycle(sess);
+            sess = smf_sess_find_by_id(sbi_object_id);
             if (!sess) {
                 ogs_error("Session has already been removed");
                 break;
             }
-            smf_ue = smf_ue_cycle(sess->smf_ue);
+            smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
             ogs_assert(smf_ue);
 
             if (state == SMF_UECM_STATE_REGISTERED) {
@@ -1055,8 +1058,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         break;
 
     case SMF_EVT_5GSM_MESSAGE:
-        sess = e->sess;
-        ogs_assert(sess);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
 
@@ -1066,8 +1067,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             return;
         }
 
-        ogs_assert(sess);
-        sess = smf_sess_cycle(sess);
+        sess = smf_sess_find_by_id(e->sess_id);
         if (!sess) {
             ogs_error("Session has already been removed");
             ogs_pkbuf_free(pkbuf);
@@ -1081,14 +1081,11 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         break;
 
     case SMF_EVT_NGAP_MESSAGE:
-        sess = e->sess;
-        ogs_assert(sess);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
         ogs_assert(e->ngap.type);
 
-        ogs_assert(sess);
-        sess = smf_sess_cycle(sess);
+        sess = smf_sess_find_by_id(e->sess_id);
         if (!sess) {
             ogs_error("Session has already been removed");
             ogs_pkbuf_free(pkbuf);

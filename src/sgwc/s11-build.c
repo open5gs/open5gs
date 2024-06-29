@@ -44,7 +44,7 @@ ogs_pkbuf_t *sgwc_s11_build_create_session_response(
     ogs_debug("[SGWC] Create Session Response");
 
     ogs_assert(sess);
-    sgwc_ue = sess->sgwc_ue;
+    sgwc_ue = sgwc_ue_find_by_id(sess->sgwc_ue_id);
     ogs_assert(sgwc_ue);
 
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
@@ -141,7 +141,7 @@ ogs_pkbuf_t *sgwc_s11_build_downlink_data_notification(
     sgwc_sess_t *sess = NULL;
 
     ogs_assert(bearer);
-    sess = bearer->sess;
+    sess = sgwc_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
 
     /* Build downlink notification message */
