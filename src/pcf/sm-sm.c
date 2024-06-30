@@ -50,9 +50,9 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
     pcf_sm_debug(e);
 
-    sess = e->sess;
+    sess = pcf_sess_find_by_id(e->sess_id);
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(pcf_ue);
 
     switch (e->h.id) {
@@ -334,15 +334,14 @@ void pcf_sm_state_deleted(ogs_fsm_t *s, pcf_event_t *e)
 
     pcf_sm_debug(e);
 
-    sess = e->sess;
+    sess = pcf_sess_find_by_id(e->sess_id);
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(pcf_ue);
 
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
-        ogs_assert(sess->pcf_ue);
-        pcf_metrics_inst_by_slice_add(&sess->pcf_ue->guami.plmn_id,
+        pcf_metrics_inst_by_slice_add(&pcf_ue->guami.plmn_id,
                 &sess->s_nssai, PCF_METR_GAUGE_PA_SESSIONNBR, -1);
         break;
 
@@ -366,15 +365,14 @@ void pcf_sm_state_exception(ogs_fsm_t *s, pcf_event_t *e)
 
     pcf_sm_debug(e);
 
-    sess = e->sess;
+    sess = pcf_sess_find_by_id(e->sess_id);
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(pcf_ue);
 
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
-        ogs_assert(sess->pcf_ue);
-        pcf_metrics_inst_by_slice_add(&sess->pcf_ue->guami.plmn_id,
+        pcf_metrics_inst_by_slice_add(&pcf_ue->guami.plmn_id,
                 &sess->s_nssai, PCF_METR_GAUGE_PA_SESSIONNBR, -1);
         break;
 

@@ -46,6 +46,7 @@ typedef struct udm_context_s {
 
 struct udm_ue_s {
     ogs_sbi_object_t sbi;
+    ogs_pool_id_t id;
     ogs_fsm_t sm;
 
     OpenAPI_auth_event_t *auth_event;
@@ -78,6 +79,7 @@ struct udm_ue_s {
 
 struct udm_sess_s {
     ogs_sbi_object_t sbi;
+    ogs_pool_id_t id;
     ogs_fsm_t sm;
 
     uint8_t psi; /* PDU Session Identity */
@@ -87,7 +89,7 @@ struct udm_sess_s {
     char *smf_instance_id;
 
     /* Related Context */
-    udm_ue_t *udm_ue;
+    ogs_pool_id_t udm_ue_id;
 };
 
 typedef struct udm_sdm_subscription_s {
@@ -118,8 +120,8 @@ void udm_sess_remove(udm_sess_t *sess);
 void udm_sess_remove_all(udm_ue_t *udm_ue);
 udm_sess_t *udm_sess_find_by_psi(udm_ue_t *udm_ue, uint8_t psi);
 
-udm_ue_t *udm_ue_cycle(udm_ue_t *udm_ue);
-udm_sess_t *udm_sess_cycle(udm_sess_t *sess);
+udm_ue_t *udm_ue_find_by_id(ogs_pool_id_t id);
+udm_sess_t *udm_sess_find_by_id(ogs_pool_id_t id);
 
 udm_sdm_subscription_t *udm_sdm_subscription_add(udm_ue_t *udm_ue);
 void udm_sdm_subscription_remove(udm_sdm_subscription_t *subscription);

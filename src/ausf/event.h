@@ -31,7 +31,7 @@ typedef struct ausf_ue_s ausf_ue_t;
 typedef struct ausf_event_s {
     ogs_event_t h;
 
-    ausf_ue_t *ausf_ue;
+    ogs_pool_id_t ausf_ue_id;
 } ausf_event_t;
 
 OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(ausf_event_t));

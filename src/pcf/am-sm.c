@@ -48,7 +48,7 @@ void pcf_am_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
     pcf_sm_debug(e);
 
-    pcf_ue = e->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(e->pcf_ue_id);
     ogs_assert(pcf_ue);
 
     switch (e->h.id) {
@@ -177,7 +177,7 @@ void pcf_am_state_deleted(ogs_fsm_t *s, pcf_event_t *e)
 
     pcf_sm_debug(e);
 
-    pcf_ue = e->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(e->pcf_ue_id);
     ogs_assert(pcf_ue);
 
     switch (e->h.id) {
@@ -201,7 +201,7 @@ void pcf_am_state_exception(ogs_fsm_t *s, pcf_event_t *e)
 
     pcf_sm_debug(e);
 
-    pcf_ue = e->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(e->pcf_ue_id);
     ogs_assert(pcf_ue);
 
     switch (e->h.id) {

@@ -48,9 +48,9 @@ void udm_sess_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
     udm_sm_debug(e);
 
-    sess = e->sess;
+    sess = udm_sess_find_by_id(e->sess_id);
     ogs_assert(sess);
-    udm_ue = sess->udm_ue;
+    udm_ue = udm_ue_find_by_id(sess->udm_ue_id);
     ogs_assert(udm_ue);
 
     switch (e->h.id) {
@@ -179,9 +179,9 @@ void udm_sess_state_exception(ogs_fsm_t *s, udm_event_t *e)
 
     udm_sm_debug(e);
 
-    sess = e->sess;
+    sess = udm_sess_find_by_id(e->sess_id);
     ogs_assert(sess);
-    udm_ue = sess->udm_ue;
+    udm_ue = udm_ue_find_by_id(sess->udm_ue_id);
     ogs_assert(udm_ue);
 
     switch (e->h.id) {

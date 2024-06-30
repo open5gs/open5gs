@@ -131,13 +131,11 @@ ausf_ue_t *ausf_ue_add(char *suci)
 
     ogs_assert(suci);
 
-    ogs_pool_alloc(&ausf_ue_pool, &ausf_ue);
+    ogs_pool_id_calloc(&ausf_ue_pool, &ausf_ue);
     if (!ausf_ue) {
-        ogs_error("ogs_pool_alloc() failed");
+        ogs_error("ogs_pool_id_calloc() failed");
         return NULL;
     }
-    ogs_assert(ausf_ue);
-    memset(ausf_ue, 0, sizeof *ausf_ue);
 
     ausf_ue->ctx_id =
         ogs_msprintf("%d", (int)ogs_pool_index(&ausf_ue_pool, ausf_ue));
@@ -148,7 +146,7 @@ ausf_ue_t *ausf_ue_add(char *suci)
     ogs_hash_set(self.suci_hash, ausf_ue->suci, strlen(ausf_ue->suci), ausf_ue);
 
     memset(&e, 0, sizeof(e));
-    e.ausf_ue = ausf_ue;
+    e.ausf_ue_id = ausf_ue->id;
     ogs_fsm_init(&ausf_ue->sm, ausf_ue_state_initial, ausf_ue_state_final, &e);
 
     ogs_list_add(&self.ausf_ue_list, ausf_ue);
@@ -165,7 +163,7 @@ void ausf_ue_remove(ausf_ue_t *ausf_ue)
     ogs_list_remove(&self.ausf_ue_list, ausf_ue);
 
     memset(&e, 0, sizeof(e));
-    e.ausf_ue = ausf_ue;
+    e.ausf_ue_id = ausf_ue->id;
     ogs_fsm_fini(&ausf_ue->sm, &e);
 
     /* Free SBI object memory */
@@ -191,7 +189,7 @@ void ausf_ue_remove(ausf_ue_t *ausf_ue)
     if (ausf_ue->serving_network_name)
         ogs_free(ausf_ue->serving_network_name);
     
-    ogs_pool_free(&ausf_ue_pool, ausf_ue);
+    ogs_pool_id_free(&ausf_ue_pool, ausf_ue);
 }
 
 void ausf_ue_remove_all(void)
@@ -229,9 +227,9 @@ ausf_ue_t *ausf_ue_find_by_ctx_id(char *ctx_id)
     return ogs_pool_find(&ausf_ue_pool, atoll(ctx_id));
 }
 
-ausf_ue_t *ausf_ue_cycle(ausf_ue_t *ausf_ue)
+ausf_ue_t *ausf_ue_find_by_id(ogs_pool_id_t id)
 {
-    return ogs_pool_cycle(&ausf_ue_pool, ausf_ue);
+    return ogs_pool_find_by_id(&ausf_ue_pool, id);
 }
 
 int get_ue_load(void)
