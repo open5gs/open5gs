@@ -754,7 +754,7 @@ bool udm_nudr_dr_handle_smf_registration(
     int status;
 
     ogs_assert(sess);
-    udm_ue = sess->udm_ue;
+    udm_ue = udm_ue_find_by_id(sess->udm_ue_id);
     ogs_assert(udm_ue);
     ogs_assert(stream);
     server = ogs_sbi_server_from_stream(stream);

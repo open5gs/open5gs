@@ -54,7 +54,9 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
 
     pcf_ue_t *pcf_ue = NULL;
+    ogs_pool_id_t pcf_ue_id = OGS_INVALID_POOL_ID;
     pcf_sess_t *sess = NULL;
+    ogs_pool_id_t sess_id = OGS_INVALID_POOL_ID;
     pcf_app_t *app_session = NULL;
 
     pcf_sm_debug(e);
@@ -169,7 +171,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             ogs_assert(OGS_FSM_STATE(&pcf_ue->sm));
 
-            e->pcf_ue = pcf_ue;
+            e->pcf_ue_id = pcf_ue->id;
             e->h.sbi.message = &message;
             ogs_fsm_dispatch(&pcf_ue->sm, e);
             if (OGS_FSM_CHECK(&pcf_ue->sm, pcf_am_state_exception)) {
@@ -274,7 +276,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             ogs_assert(OGS_FSM_STATE(&sess->sm));
 
-            e->sess = sess;
+            e->sess_id = sess->id;
             e->h.sbi.message = &message;
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
@@ -324,7 +326,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             ogs_assert(OGS_FSM_STATE(&sess->sm));
 
-            e->sess = sess;
+            e->sess_id = sess->id;
             e->app = app_session;
             e->h.sbi.message = &message;
             ogs_fsm_dispatch(&sess->sm, e);
@@ -492,8 +494,9 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                         break;
                     }
 
-                    pcf_ue = (pcf_ue_t *)sbi_xact->sbi_object;
-                    ogs_assert(pcf_ue);
+                    pcf_ue_id = sbi_xact->sbi_object_id;
+                    ogs_assert(pcf_ue_id >= OGS_MIN_POOL_ID &&
+                            pcf_ue_id <= OGS_MAX_POOL_ID);
 
                     if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                         sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
@@ -502,14 +505,14 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
                     ogs_sbi_xact_remove(sbi_xact);
 
-                    pcf_ue = pcf_ue_cycle(pcf_ue);
+                    pcf_ue = pcf_ue_find_by_id(pcf_ue_id);
                     if (!pcf_ue) {
                         ogs_error("UE(pcf_ue) Context "
                                     "has already been removed");
                         break;
                     }
 
-                    e->pcf_ue = pcf_ue;
+                    e->pcf_ue_id = pcf_ue->id;
                     e->h.sbi.message = &message;
 
                     ogs_fsm_dispatch(&pcf_ue->sm, e);
@@ -534,8 +537,9 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                         break;
                     }
 
-                    sess = (pcf_sess_t *)sbi_xact->sbi_object;
-                    ogs_assert(sess);
+                    sess_id = sbi_xact->sbi_object_id;
+                    ogs_assert(sess_id >= OGS_MIN_POOL_ID &&
+                            sess_id <= OGS_MAX_POOL_ID);
 
                     if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                         sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
@@ -544,18 +548,16 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
                     ogs_sbi_xact_remove(sbi_xact);
 
-                    sess = pcf_sess_cycle(sess);
+                    sess = pcf_sess_find_by_id(sess_id);
                     if (!sess) {
                         ogs_error("Session has already been removed");
                         break;
                     }
 
-                    pcf_ue = sess->pcf_ue;
-                    ogs_assert(pcf_ue);
-                    pcf_ue = pcf_ue_cycle(pcf_ue);
+                    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
                     ogs_assert(pcf_ue);
 
-                    e->sess = sess;
+                    e->sess_id = sess->id;
                     e->h.sbi.message = &message;
 
                     ogs_fsm_dispatch(&sess->sm, e);
@@ -597,8 +599,9 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     break;
                 }
 
-                sess = (pcf_sess_t *)sbi_xact->sbi_object;
-                ogs_assert(sess);
+                sess_id = sbi_xact->sbi_object_id;
+                ogs_assert(sess_id >= OGS_MIN_POOL_ID &&
+                        sess_id <= OGS_MAX_POOL_ID);
 
                 if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                     sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
@@ -606,18 +609,16 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
                 ogs_sbi_xact_remove(sbi_xact);
 
-                sess = pcf_sess_cycle(sess);
+                sess = pcf_sess_find_by_id(sess_id);
                 if (!sess) {
                     ogs_error("Session has already been removed");
                     break;
                 }
 
-                pcf_ue = sess->pcf_ue;
-                ogs_assert(pcf_ue);
-                pcf_ue = pcf_ue_cycle(pcf_ue);
+                pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
                 ogs_assert(pcf_ue);
 
-                e->sess = sess;
+                e->sess_id = sess->id;
                 e->h.sbi.message = &message;
 
                 ogs_fsm_dispatch(&sess->sm, e);
@@ -751,9 +752,11 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             switch(sbi_object->type) {
             case OGS_SBI_OBJ_UE_TYPE:
-                pcf_ue = (pcf_ue_t *)sbi_object;
-                ogs_assert(pcf_ue);
-                pcf_ue = pcf_ue_cycle(pcf_ue);
+                pcf_ue_id = sbi_xact->sbi_object_id;
+                ogs_assert(pcf_ue_id >= OGS_MIN_POOL_ID &&
+                        pcf_ue_id <= OGS_MAX_POOL_ID);
+
+                pcf_ue = pcf_ue_find_by_id(pcf_ue_id);
                 if (!pcf_ue) {
                     ogs_error("UE(pcf_ue) has already been removed");
                     break;
@@ -762,9 +765,11 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                 break;
 
             case OGS_SBI_OBJ_SESS_TYPE:
-                sess = (pcf_sess_t *)sbi_object;
-                ogs_assert(sess);
-                sess = pcf_sess_cycle(sess);
+                sess_id = sbi_xact->sbi_object_id;
+                ogs_assert(sess_id >= OGS_MIN_POOL_ID &&
+                        sess_id <= OGS_MAX_POOL_ID);
+
+                sess = pcf_sess_find_by_id(sess_id);
                 if (!sess) {
                     ogs_error("Session has already been removed");
                     break;

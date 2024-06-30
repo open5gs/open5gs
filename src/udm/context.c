@@ -151,12 +151,11 @@ udm_ue_t *udm_ue_add(char *suci)
 
     ogs_assert(suci);
 
-    ogs_pool_alloc(&udm_ue_pool, &udm_ue);
+    ogs_pool_id_calloc(&udm_ue_pool, &udm_ue);
     if (!udm_ue) {
         ogs_error("No memory pool [%s]", suci);
         return NULL;
     }
-    memset(udm_ue, 0, sizeof *udm_ue);
 
     /* SBI Type */
     udm_ue->sbi.type = OGS_SBI_OBJ_UE_TYPE;
@@ -165,7 +164,7 @@ udm_ue_t *udm_ue_add(char *suci)
             (int)ogs_pool_index(&udm_ue_pool, udm_ue));
     if (!udm_ue->ctx_id) {
         ogs_error("No memory for udm_ue->ctx_id [%s]", suci);
-        ogs_pool_free(&udm_ue_pool, udm_ue);
+        ogs_pool_id_free(&udm_ue_pool, udm_ue);
         return NULL;
     }
 
@@ -173,7 +172,7 @@ udm_ue_t *udm_ue_add(char *suci)
     if (!udm_ue->suci) {
         ogs_error("No memory for udm_ue->suci [%s]", suci);
         ogs_free(udm_ue->ctx_id);
-        ogs_pool_free(&udm_ue_pool, udm_ue);
+        ogs_pool_id_free(&udm_ue_pool, udm_ue);
         return NULL;
     }
 
@@ -182,7 +181,7 @@ udm_ue_t *udm_ue_add(char *suci)
         ogs_error("No memory for udm_ue->supi [%s]", suci);
         ogs_free(udm_ue->suci);
         ogs_free(udm_ue->ctx_id);
-        ogs_pool_free(&udm_ue_pool, udm_ue);
+        ogs_pool_id_free(&udm_ue_pool, udm_ue);
         return NULL;
     }
 
@@ -190,7 +189,7 @@ udm_ue_t *udm_ue_add(char *suci)
     ogs_hash_set(self.supi_hash, udm_ue->supi, strlen(udm_ue->supi), udm_ue);
 
     memset(&e, 0, sizeof(e));
-    e.udm_ue = udm_ue;
+    e.udm_ue_id = udm_ue->id;
     ogs_fsm_init(&udm_ue->sm, udm_ue_state_initial, udm_ue_state_final, &e);
 
     ogs_list_add(&self.udm_ue_list, udm_ue);
@@ -207,7 +206,7 @@ void udm_ue_remove(udm_ue_t *udm_ue)
     ogs_list_remove(&self.udm_ue_list, udm_ue);
 
     memset(&e, 0, sizeof(e));
-    e.udm_ue = udm_ue;
+    e.udm_ue_id = udm_ue->id;
     ogs_fsm_fini(&udm_ue->sm, &e);
 
     /* Free SBI object memory */
@@ -240,7 +239,7 @@ void udm_ue_remove(udm_ue_t *udm_ue)
     if (udm_ue->dereg_callback_uri)
         ogs_free(udm_ue->dereg_callback_uri);
 
-    ogs_pool_free(&udm_ue_pool, udm_ue);
+    ogs_pool_id_free(&udm_ue_pool, udm_ue);
 }
 
 void udm_ue_remove_all(void)
@@ -286,18 +285,17 @@ udm_sess_t *udm_sess_add(udm_ue_t *udm_ue, uint8_t psi)
     ogs_assert(udm_ue);
     ogs_assert(psi != OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED);
 
-    ogs_pool_alloc(&udm_sess_pool, &sess);
+    ogs_pool_id_calloc(&udm_sess_pool, &sess);
     ogs_assert(sess);
-    memset(sess, 0, sizeof *sess);
 
     /* SBI Type */
     sess->sbi.type = OGS_SBI_OBJ_SESS_TYPE;
 
-    sess->udm_ue = udm_ue;
+    sess->udm_ue_id = udm_ue->id;
     sess->psi = psi;
 
     memset(&e, 0, sizeof(e));
-    e.sess = sess;
+    e.sess_id = sess->id;
     ogs_fsm_init(&sess->sm, udm_sess_state_initial, udm_sess_state_final, &e);
 
     ogs_list_add(&udm_ue->sess_list, sess);
@@ -308,14 +306,16 @@ udm_sess_t *udm_sess_add(udm_ue_t *udm_ue, uint8_t psi)
 void udm_sess_remove(udm_sess_t *sess)
 {
     udm_event_t e;
+    udm_ue_t *udm_ue = NULL;
 
     ogs_assert(sess);
-    ogs_assert(sess->udm_ue);
+    udm_ue = udm_ue_find_by_id(sess->udm_ue_id);
+    ogs_assert(udm_ue);
 
-    ogs_list_remove(&sess->udm_ue->sess_list, sess);
+    ogs_list_remove(&udm_ue->sess_list, sess);
 
     memset(&e, 0, sizeof(e));
-    e.sess = sess;
+    e.sess_id = sess->id;
     ogs_fsm_fini(&sess->sm, &e);
 
     /* Free SBI object memory */
@@ -329,7 +329,7 @@ void udm_sess_remove(udm_sess_t *sess)
     if (sess->smf_instance_id)
         ogs_free(sess->smf_instance_id);
 
-    ogs_pool_free(&udm_sess_pool, sess);
+    ogs_pool_id_free(&udm_sess_pool, sess);
 }
 
 void udm_sess_remove_all(udm_ue_t *udm_ue)
@@ -352,14 +352,14 @@ udm_sess_t *udm_sess_find_by_psi(udm_ue_t *udm_ue, uint8_t psi)
     return NULL;
 }
 
-udm_ue_t *udm_ue_cycle(udm_ue_t *udm_ue)
+udm_ue_t *udm_ue_find_by_id(ogs_pool_id_t id)
 {
-    return ogs_pool_cycle(&udm_ue_pool, udm_ue);
+    return ogs_pool_find_by_id(&udm_ue_pool, id);
 }
 
-udm_sess_t *udm_sess_cycle(udm_sess_t *sess)
+udm_sess_t *udm_sess_find_by_id(ogs_pool_id_t id)
 {
-    return ogs_pool_cycle(&udm_sess_pool, sess);
+    return ogs_pool_find_by_id(&udm_sess_pool, id);
 }
 
 udm_sdm_subscription_t *udm_sdm_subscription_add(udm_ue_t *udm_ue)

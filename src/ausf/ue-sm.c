@@ -31,7 +31,7 @@ void ausf_ue_state_initial(ogs_fsm_t *s, ausf_event_t *e)
 
     ausf_sm_debug(e);
 
-    ausf_ue = e->ausf_ue;
+    ausf_ue = ausf_ue_find_by_id(e->ausf_ue_id);
     ogs_assert(ausf_ue);
 
     OGS_FSM_TRAN(s, &ausf_ue_state_operational);
@@ -46,7 +46,7 @@ void ausf_ue_state_final(ogs_fsm_t *s, ausf_event_t *e)
 
     ausf_sm_debug(e);
 
-    ausf_ue = e->ausf_ue;
+    ausf_ue = ausf_ue_find_by_id(e->ausf_ue_id);
     ogs_assert(ausf_ue);
 }
 
@@ -64,7 +64,7 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
     ausf_sm_debug(e);
 
-    ausf_ue = e->ausf_ue;
+    ausf_ue = ausf_ue_find_by_id(e->ausf_ue_id);
     ogs_assert(ausf_ue);
 
     switch (e->h.id) {
@@ -152,7 +152,7 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
         message = e->h.sbi.message;
         ogs_assert(message);
 
-        ausf_ue = e->ausf_ue;
+        ausf_ue = ausf_ue_find_by_id(e->ausf_ue_id);
         ogs_assert(ausf_ue);
 
         stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
@@ -242,7 +242,7 @@ void ausf_ue_state_deleted(ogs_fsm_t *s, ausf_event_t *e)
 
     ausf_sm_debug(e);
 
-    ausf_ue = e->ausf_ue;
+    ausf_ue = ausf_ue_find_by_id(e->ausf_ue_id);
     ogs_assert(ausf_ue);
 
     switch (e->h.id) {
@@ -266,7 +266,7 @@ void ausf_ue_state_exception(ogs_fsm_t *s, ausf_event_t *e)
 
     ausf_sm_debug(e);
 
-    ausf_ue = e->ausf_ue;
+    ausf_ue = ausf_ue_find_by_id(e->ausf_ue_id);
     ogs_assert(ausf_ue);
 
     switch (e->h.id) {

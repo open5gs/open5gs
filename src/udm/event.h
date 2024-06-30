@@ -32,8 +32,8 @@ typedef struct udm_sess_s udm_sess_t;
 typedef struct udm_event_s {
     ogs_event_t h;
 
-    udm_ue_t *udm_ue;
-    udm_sess_t *sess;
+    ogs_pool_id_t udm_ue_id;
+    ogs_pool_id_t sess_id;
 } udm_event_t;
 
 OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(udm_event_t));

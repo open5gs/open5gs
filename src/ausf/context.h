@@ -44,6 +44,7 @@ typedef struct ausf_context_s {
 
 struct ausf_ue_s {
     ogs_sbi_object_t sbi;
+    ogs_pool_id_t id;
     ogs_fsm_t sm;
 
     char *ctx_id;
@@ -93,8 +94,8 @@ ausf_ue_t *ausf_ue_find_by_suci(char *suci);
 ausf_ue_t *ausf_ue_find_by_supi(char *supi);
 ausf_ue_t *ausf_ue_find_by_suci_or_supi(char *suci_or_supi);
 ausf_ue_t *ausf_ue_find_by_ctx_id(char *ctx_id);
+ausf_ue_t *ausf_ue_find_by_id(ogs_pool_id_t id);
 
-ausf_ue_t *ausf_ue_cycle(ausf_ue_t *ausf_ue);
 int get_ue_load(void);
 
 #ifdef __cplusplus

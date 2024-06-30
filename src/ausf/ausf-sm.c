@@ -50,6 +50,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
     ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
 
     ausf_ue_t *ausf_ue = NULL;
+    ogs_pool_id_t ausf_ue_id = OGS_INVALID_POOL_ID;
 
     ausf_sm_debug(e);
 
@@ -164,7 +165,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
             ogs_assert(OGS_FSM_STATE(&ausf_ue->sm));
 
-            e->ausf_ue = ausf_ue;
+            e->ausf_ue_id = ausf_ue->id;
             e->h.sbi.message = &message;
             ogs_fsm_dispatch(&ausf_ue->sm, e);
             if (OGS_FSM_CHECK(&ausf_ue->sm, ausf_ue_state_exception)) {
@@ -326,8 +327,9 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                 break;
             }
 
-            ausf_ue = (ausf_ue_t *)sbi_xact->sbi_object;
-            ogs_assert(ausf_ue);
+            ausf_ue_id = sbi_xact->sbi_object_id;
+            ogs_assert(ausf_ue_id >= OGS_MIN_POOL_ID &&
+                    ausf_ue_id <= OGS_MAX_POOL_ID);
 
             ogs_assert(sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                     sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID);
@@ -335,13 +337,13 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
             ogs_sbi_xact_remove(sbi_xact);
 
-            ausf_ue = ausf_ue_cycle(ausf_ue);
+            ausf_ue = ausf_ue_find_by_id(ausf_ue_id);
             if (!ausf_ue) {
                 ogs_error("UE(ausf-ue) Context has already been removed");
                 break;
             }
 
-            e->ausf_ue = ausf_ue;
+            e->ausf_ue_id = ausf_ue->id;
             e->h.sbi.message = &message;
 
             ogs_fsm_dispatch(&ausf_ue->sm, e);

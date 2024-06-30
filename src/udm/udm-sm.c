@@ -51,7 +51,9 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
     ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
 
     udm_ue_t *udm_ue = NULL;
+    ogs_pool_id_t udm_ue_id = OGS_INVALID_POOL_ID;
     udm_sess_t *sess = NULL;
+    ogs_pool_id_t sess_id = OGS_INVALID_POOL_ID;
 
     udm_sm_debug(e);
 
@@ -213,7 +215,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 ogs_assert(sess);
                 ogs_assert(OGS_FSM_STATE(&sess->sm));
 
-                e->sess = sess;
+                e->sess_id = sess->id;
                 e->h.sbi.message = &message;
                 ogs_fsm_dispatch(&sess->sm, e);
                 if (OGS_FSM_CHECK(&sess->sm, udm_sess_state_exception)) {
@@ -226,7 +228,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
             DEFAULT
                 ogs_assert(OGS_FSM_STATE(&udm_ue->sm));
 
-                e->udm_ue = udm_ue;
+                e->udm_ue_id = udm_ue->id;
                 e->h.sbi.message = &message;
                 ogs_fsm_dispatch(&udm_ue->sm, e);
                 if (OGS_FSM_CHECK(&udm_ue->sm, udm_ue_state_exception)) {
@@ -401,8 +403,9 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                         break;
                     }
 
-                    sess = (udm_sess_t *)sbi_xact->sbi_object;
-                    ogs_assert(sess);
+                    sess_id = sbi_xact->sbi_object_id;
+                    ogs_assert(sess_id >= OGS_MIN_POOL_ID &&
+                            sess_id <= OGS_MAX_POOL_ID);
 
                     if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                         sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
@@ -411,19 +414,19 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
                     ogs_sbi_xact_remove(sbi_xact);
 
-                    sess = udm_sess_cycle(sess);
+                    sess = udm_sess_find_by_id(sess_id);
                     if (!sess) {
                         ogs_error("SESS Context has already been removed");
                         break;
                     }
 
-                    udm_ue = udm_ue_cycle(sess->udm_ue);
+                    udm_ue = udm_ue_find_by_id(sess->udm_ue_id);
                     if (!udm_ue) {
                         ogs_error("UE Context has already been removed");
                         break;
                     }
 
-                    e->sess = sess;
+                    e->sess_id = sess->id;
                     e->h.sbi.message = &message;
 
                     ogs_fsm_dispatch(&sess->sm, e);
@@ -449,8 +452,9 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                         break;
                     }
 
-                    udm_ue = (udm_ue_t *)sbi_xact->sbi_object;
-                    ogs_assert(udm_ue);
+                    udm_ue_id = sbi_xact->sbi_object_id;
+                    ogs_assert(udm_ue_id >= OGS_MIN_POOL_ID &&
+                            udm_ue_id <= OGS_MAX_POOL_ID);
 
                     if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                         sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
@@ -459,13 +463,13 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
                     ogs_sbi_xact_remove(sbi_xact);
 
-                    udm_ue = udm_ue_cycle(udm_ue);
+                    udm_ue = udm_ue_find_by_id(udm_ue_id);
                     if (!udm_ue) {
                         ogs_error("UE Context has already been removed");
                         break;
                     }
 
-                    e->udm_ue = udm_ue;
+                    e->udm_ue_id = udm_ue->id;
                     e->h.sbi.message = &message;
 
                     ogs_fsm_dispatch(&udm_ue->sm, e);
