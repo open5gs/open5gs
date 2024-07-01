@@ -69,6 +69,9 @@ static int diam_config_apply(ogs_diam_config_t *fd_config)
     if (fd_config->cnf_flags.no_fwd)
         fd_g_config->cnf_flags.no_fwd = fd_config->cnf_flags.no_fwd;
 
+    if (fd_config->cnf_timer_tc)
+        fd_g_config->cnf_timer_tc = fd_config->cnf_timer_tc;
+
     /********************************************************************
      * Diameter Client
      */
@@ -85,6 +88,8 @@ static int diam_config_apply(ogs_diam_config_t *fd_config)
         fddpi.config.pic_flags.pro4 = PI_P4_DEFAULT;
         fddpi.config.pic_flags.alg = PI_ALGPREF_SCTP;
         fddpi.config.pic_flags.sec |= PI_SEC_NONE;
+
+        fddpi.config.pic_tctimer = fd_config->conn[i].tc_timer;
 
         fddpi.config.pic_port = fd_config->conn[i].port;
         fddpi.pi_diamid = (DiamId_t)fd_config->conn[i].identity;
