@@ -227,14 +227,13 @@ bool ogs_pfcp_up_handle_association_setup_response(
 
 bool ogs_pfcp_up_handle_pdr(
         ogs_pfcp_pdr_t *pdr, uint8_t type,
-        ogs_gtp2_header_desc_t *recvhdr, ogs_pkbuf_t *recvbuf,
+        ogs_gtp2_header_desc_t *recvhdr, ogs_pkbuf_t *sendbuf,
         ogs_pfcp_user_plane_report_t *report)
 {
     ogs_pfcp_far_t *far = NULL;
-    ogs_pkbuf_t *sendbuf = NULL;
     bool buffering;
 
-    ogs_assert(recvbuf);
+    ogs_assert(sendbuf);
     ogs_assert(type);
     ogs_assert(pdr);
     ogs_assert(report);
@@ -243,12 +242,6 @@ bool ogs_pfcp_up_handle_pdr(
     ogs_assert(far);
 
     memset(report, 0, sizeof(*report));
-
-    sendbuf = ogs_pkbuf_copy(recvbuf);
-    if (!sendbuf) {
-        ogs_error("ogs_pkbuf_copy() failed");
-        return false;
-    }
 
     buffering = false;
 
