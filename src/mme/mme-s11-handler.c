@@ -1612,6 +1612,10 @@ void mme_s11_handle_downlink_data_notification(
         ogs_assert(r != OGS_ERROR);
     } else if (ECM_CONNECTED(mme_ue)) {
         MME_CLEAR_PAGING_INFO(mme_ue);
+        ogs_assert(OGS_OK ==
+            mme_gtp_send_downlink_data_notification_ack(
+                bearer, OGS_GTP2_CAUSE_UE_ALREADY_RE_ATTACHED));
+
         if (cause_value == OGS_GTP2_CAUSE_ERROR_INDICATION_RECEIVED) {
 
 /*
@@ -1645,17 +1649,11 @@ void mme_s11_handle_downlink_data_notification(
             enb_ue_t *enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
             ogs_assert(enb_ue);
 
-            MME_STORE_PAGING_INFO(mme_ue,
-                MME_PAGING_TYPE_DOWNLINK_DATA_NOTIFICATION, bearer->id);
             r = s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                     S1AP_UE_CTX_REL_S1_PAGING, 0);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
-        } else {
-            ogs_assert(OGS_OK ==
-                mme_gtp_send_downlink_data_notification_ack(
-                    bearer, OGS_GTP2_CAUSE_UE_ALREADY_RE_ATTACHED));
         }
     }
 }

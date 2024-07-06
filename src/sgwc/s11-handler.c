@@ -1309,7 +1309,7 @@ void sgwc_s11_handle_downlink_data_notification_ack(
         ogs_error("No Cause");
     }
 
-    ogs_debug("Downlink Data Notification Acknowledge");
+    ogs_debug("Downlink Data Notification Acknowledge [%d]", bearer->id);
     if (sgwc_ue) {
         ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);

@@ -158,7 +158,7 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
 
     bearer = sgwc_bearer_find_by_id(bearer_id);
     if (!bearer) {
-        ogs_error("Bearer has already been removed [%d]", type);
+        ogs_error("Bearer[%d] has already been removed [%d]", bearer_id, type);
         return;
     }
 
@@ -235,7 +235,7 @@ int sgwc_gtp_send_downlink_data_notification(
     ogs_assert(sgwc_ue);
     ogs_assert(sgwc_ue->gnode);
 
-    ogs_debug("Downlink Data Notification");
+    ogs_debug("Downlink Data Notification [%d]", bearer->id);
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
 
