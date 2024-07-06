@@ -287,6 +287,12 @@ struct enb_ue_s {
     /* S1 Holding timer for removing this context */
     ogs_timer_t     *t_s1_holding;
 
+    /* UEContextReleaseRequest or InitialContextSetupFailure */
+    struct {
+        S1AP_Cause_PR group;
+        long cause;
+    } relcause;
+
     /* Store by UE Context Release Command
      * Retrieve by UE Context Release Complete */
 #define S1AP_UE_CTX_REL_INVALID_ACTION                      0

@@ -156,7 +156,7 @@ void mme_send_release_access_bearer_or_ue_context_release(enb_ue_t *enb_ue)
     } else {
         ogs_debug("No UE Context");
         r = s1ap_send_ue_context_release_command(enb_ue,
-                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                enb_ue->relcause.group, enb_ue->relcause.cause,
                 S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);

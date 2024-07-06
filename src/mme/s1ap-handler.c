@@ -1195,6 +1195,9 @@ void s1ap_handle_initial_context_setup_failure(
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
     }
 
+    enb_ue->relcause.group = S1AP_Cause_PR_nas;
+    enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
+
     /*
      * 19.2.2.3 in Spec 36.300
      *
@@ -1759,6 +1762,8 @@ void s1ap_handle_ue_context_release_request(
         break;
     }
 
+    enb_ue->relcause.group = Cause->present;
+    enb_ue->relcause.cause = (int)Cause->choice.radioNetwork;
     mme_send_release_access_bearer_or_ue_context_release(enb_ue);
 }
 
