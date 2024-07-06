@@ -674,8 +674,11 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                 ogs_fatal("Invalid Procedure Code[%d]", (int)e->s1ap_code);
             }
 
-            if (!mme_ue->nas_eps.update.active_flag)
+            if (!mme_ue->nas_eps.update.active_flag) {
+                enb_ue->relcause.group = S1AP_Cause_PR_nas;
+                enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
                 mme_send_release_access_bearer_or_ue_context_release(enb_ue);
+            }
 
             if (mme_ue->next.m_tmsi) {
                 ogs_fatal("MME does not create new GUTI");
@@ -743,6 +746,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                         OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
+                    enb_ue->relcause.group = S1AP_Cause_PR_nas;
+                    enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
                     mme_send_release_access_bearer_or_ue_context_release(
                             enb_ue);
                     break;

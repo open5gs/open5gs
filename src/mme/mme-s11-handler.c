@@ -1435,7 +1435,7 @@ void mme_s11_handle_release_access_bearers_response(
         enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
         if (enb_ue) {
             r = s1ap_send_ue_context_release_command(enb_ue,
-                    S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                    enb_ue->relcause.group, enb_ue->relcause.cause,
                     S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
