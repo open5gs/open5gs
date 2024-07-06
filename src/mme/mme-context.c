@@ -4234,6 +4234,7 @@ void mme_bearer_remove(mme_bearer_t *bearer)
 
     ogs_list_for_each_entry_safe(&bearer->update.xact_list,
             next_xact, xact, to_update_node) {
+        ogs_timer_stop(xact->tm_peer);
         ogs_list_remove(&bearer->update.xact_list, &xact->to_update_node);
     }
 

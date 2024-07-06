@@ -59,7 +59,7 @@ static uint8_t esm_cause_from_gtp(uint8_t gtp_cause)
     return OGS_NAS_ESM_CAUSE_NETWORK_FAILURE;
 }
 
-static void gtp_remote_holding_timeout(ogs_gtp_xact_t *xact, void *data)
+static void gtp_remote_peer_timeout(ogs_gtp_xact_t *xact, void *data)
 {
     char buf[OGS_ADDRSTRLEN];
     mme_bearer_t *bearer = NULL;
@@ -68,8 +68,7 @@ static void gtp_remote_holding_timeout(ogs_gtp_xact_t *xact, void *data)
     ogs_assert(xact);
     type = xact->seq[xact->step-1].type;
 
-    ogs_error("[%d] %s HOLDING TIMEOUT "
-            "for step %d type %d peer [%s]:%d",
+    ogs_error("[%d] %s Peer Timeout for step %d type %d peer [%s]:%d",
             xact->xid,
             xact->org == OGS_GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             xact->step, type,
@@ -110,6 +109,7 @@ static void gtp_remote_holding_timeout(ogs_gtp_xact_t *xact, void *data)
         if (ogs_list_exists(
                     &bearer->update.xact_list,
                     &xact->to_update_node) == true) {
+            ogs_error("Bearer-ID [%d] removed from the list", bearer->id);
             ogs_list_remove(&bearer->update.xact_list, &xact->to_update_node);
         } else {
             ogs_error("[%d] %s HAVE ALREADY BEEN REMOVED "
@@ -121,6 +121,7 @@ static void gtp_remote_holding_timeout(ogs_gtp_xact_t *xact, void *data)
                     OGS_PORT(&xact->gnode->addr));
         }
         break;
+#if 0
     case OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE:
         /*
          * The following is the case where the UE sends
@@ -142,8 +143,11 @@ static void gtp_remote_holding_timeout(ogs_gtp_xact_t *xact, void *data)
                     xact->step, type,
                     OGS_ADDR(&xact->gnode->addr, buf),
                     OGS_PORT(&xact->gnode->addr));
+        } else {
+            ogs_error("Not existed");
         }
         break;
+#endif
     default:
         ogs_fatal("Unknown type[%d]", type);
         ogs_assert_if_reached();
@@ -1146,15 +1150,15 @@ void mme_s11_handle_update_bearer_request(
      * If the UE does not send a Modify EPS bearer context accept,
      * the MME cannot send an Update Bearer Response to the SGW-C.
      *
-     * In this case, REMOTE holding timeout occurs, and a callback function
+     * In this case, peer timeout occurs, and a callback function
      * is registered as follows to free memory.
      *
      * Also, as shown above, multiple Update Bearer Request/Response can occur,
      * so we manage the Transaction Node as a list within the Bearer Context.
      */
 
-    xact->cb = gtp_remote_holding_timeout;
-    xact->data = OGS_UINT_TO_POINTER(bearer->id);
+    xact->peer_cb = gtp_remote_peer_timeout;
+    xact->peer_data = OGS_UINT_TO_POINTER(bearer->id);
 
     ogs_list_add(&bearer->update.xact_list, &xact->to_update_node);
 
@@ -1196,6 +1200,14 @@ void mme_s11_handle_update_bearer_request(
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
         } else {
+            /*
+             * MME must wait for Modify Bearer Context Accept
+             * before sending Update Bearer Response,
+             * To check this, start a peer timer to check it.
+             */
+            ogs_timer_start(xact->tm_peer,
+                    ogs_local_conf()->time.message.gtp.t3_response_duration);
+
             MME_CLEAR_PAGING_INFO(mme_ue);
             r = nas_eps_send_modify_bearer_context_request(bearer,
                     req->bearer_contexts.bearer_level_qos.presence,

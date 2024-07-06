@@ -41,6 +41,7 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type);
 
 static void response_timeout(void *data);
 static void holding_timeout(void *data);
+static void peer_timeout(void *data);
 
 int ogs_gtp_xact_init(void)
 {
@@ -158,6 +159,9 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     ogs_assert(xact->tm_holding);
     xact->holding_rcount = ogs_local_conf()->time.message.gtp.n3_holding_rcount,
 
+    xact->tm_peer = ogs_timer_add(ogs_app()->timer_mgr, peer_timeout, xact);
+    ogs_assert(xact->tm_peer);
+
     ogs_list_add(&xact->gnode->local_list, xact);
 
     rv = ogs_gtp_xact_update_tx(xact, hdesc, pkbuf);
@@ -202,6 +206,9 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
             ogs_app()->timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
     xact->holding_rcount = ogs_local_conf()->time.message.gtp.n3_holding_rcount,
+
+    xact->tm_peer = ogs_timer_add(ogs_app()->timer_mgr, peer_timeout, xact);
+    ogs_assert(xact->tm_peer);
 
     ogs_list_add(&xact->gnode->remote_list, xact);
 
@@ -800,22 +807,28 @@ static void holding_timeout(void *data)
                 xact->step, xact->seq[xact->step-1].type,
                 OGS_ADDR(&xact->gnode->addr, buf),
                 OGS_PORT(&xact->gnode->addr));
-        /*
-         * Even for remotely created transactions, there are things
-         * that need to be done, such as returning memory
-         * when the transaction is deleted after a holding timeout.
-         * We added a Callback Function for that purpose.
-         *
-         * You can set it up and use it as follows.
-         *
-         *   xact->cb = gtp_remote_holding_timeout;
-         *   xact->data = bearer;
-         */
-        if (xact->cb)
-            xact->cb(xact, xact->data);
-
         ogs_gtp_xact_delete(xact);
     }
+}
+
+static void peer_timeout(void *data)
+{
+    char buf[OGS_ADDRSTRLEN];
+    ogs_gtp_xact_t *xact = data;
+
+    ogs_assert(xact);
+    ogs_assert(xact->gnode);
+
+    ogs_error("[%d] %s Peer Timeout "
+            "for step %d type %d peer [%s]:%d",
+            xact->xid,
+            xact->org == OGS_GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+            xact->step, xact->seq[xact->step-1].type,
+            OGS_ADDR(&xact->gnode->addr, buf),
+            OGS_PORT(&xact->gnode->addr));
+
+    if (xact->peer_cb)
+        xact->peer_cb(xact, xact->peer_data);
 }
 
 int ogs_gtp1_xact_receive(
@@ -1175,6 +1188,8 @@ static int ogs_gtp_xact_delete(ogs_gtp_xact_t *xact)
         ogs_timer_delete(xact->tm_response);
     if (xact->tm_holding)
         ogs_timer_delete(xact->tm_holding);
+    if (xact->tm_peer)
+        ogs_timer_delete(xact->tm_peer);
 
     assoc_xact = ogs_gtp_xact_find_by_id(xact->assoc_xact_id);
     if (assoc_xact)

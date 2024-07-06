@@ -232,6 +232,14 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
                 goto cleanup;
             }
 
+            /*
+             * MME must wait for Modify Bearer Context Accept
+             * before sending Update Bearer Response,
+             * To check this, start a peer timer to check it.
+             */
+            ogs_timer_start(xact->tm_peer,
+                    ogs_local_conf()->time.message.gtp.t3_response_duration);
+
             r = nas_eps_send_modify_bearer_context_request(bearer,
                     (xact->update_flags &
                         OGS_GTP_MODIFY_QOS_UPDATE) ? 1 : 0,

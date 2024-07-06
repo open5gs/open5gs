@@ -484,6 +484,13 @@ int mme_gtp_send_update_bearer_response(
         return OGS_OK;
     }
 
+    /*
+     * eNB sends Modify EPS Bearer Accept to the MME
+     * MME can send Update Bearer Response to the SGW-C,
+     * so stop the peer waiting timer
+     */
+    ogs_timer_stop(xact->tm_peer);
+
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE;
     h.teid = sgw_ue->sgw_s11_teid;

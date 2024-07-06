@@ -109,6 +109,10 @@ typedef struct ogs_gtp_xact_s {
     ogs_timer_t     *tm_holding;    /**< Timer waiting for holding message */
     uint8_t         holding_rcount;
 
+    ogs_timer_t     *tm_peer;       /**< Timer waiting for peer message */
+    void (*peer_cb)(ogs_gtp_xact_t *, void *); /**< timer expiration handler */
+    void            *peer_data;     /**< Peer timeout data */
+
     uint32_t        local_teid;     /**< Local TEID,
                                          expected in reply from peer */
 
