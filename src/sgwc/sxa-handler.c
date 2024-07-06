@@ -514,19 +514,22 @@ void sgwc_sxa_handle_session_modification_response(
                 bearer_id <= OGS_MAX_POOL_ID);
 
         bearer = sgwc_bearer_find_by_id(bearer_id);
-        ogs_assert(bearer);
-
-        if (!sess) {
-            ogs_error("No Context");
-
-            sess = sgwc_sess_find_by_id(bearer->sess_id);
-            ogs_assert(sess);
-
+        if (!bearer) {
+            ogs_error("No Bearer Context");
             cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-        }
+        } else {
+            if (!sess) {
+                ogs_error("No Context");
 
-        sgwc_ue = sgwc_ue_find_by_id(bearer->sgwc_ue_id);
-        ogs_assert(sgwc_ue);
+                sess = sgwc_sess_find_by_id(bearer->sess_id);
+                ogs_assert(sess);
+
+                cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+            }
+
+            sgwc_ue = sgwc_ue_find_by_id(bearer->sgwc_ue_id);
+            ogs_assert(sgwc_ue);
+        }
     }
 
     if (pfcp_rsp->cause.presence) {
@@ -1404,7 +1407,10 @@ void sgwc_sxa_handle_session_deletion_response(
     }
 
 cleanup:
-    sgwc_sess_remove(sess);
+    if (sess)
+        sgwc_sess_remove(sess);
+    else
+        ogs_error("No Session");
 }
 
 void sgwc_sxa_handle_session_report_request(
