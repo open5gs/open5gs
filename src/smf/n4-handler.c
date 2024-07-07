@@ -950,6 +950,10 @@ void smf_epc_n4_handle_session_modification_response(
     } else if (flags & OGS_PFCP_MODIFY_CREATE) {
         ogs_assert(bearer);
         ogs_assert(OGS_OK == smf_gtp2_send_create_bearer_request(bearer));
+    
+    } else if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
+        ogs_assert(bearer);
+        ogs_assert(OGS_OK == smf_gtp2_send_update_bearer_request(bearer));
 
     } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
         /*
