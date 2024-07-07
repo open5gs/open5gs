@@ -1165,7 +1165,10 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
 
     /* Get Session Information */
     sess = smf_sess_find_by_id(sess_data->sess_id);
-    ogs_assert(sess);
+    if (!sess) {
+        ogs_error("No Session ID [%d]", sess_data->sess_id);
+        goto out;
+    }
 
     ret = fd_msg_browse(qry, MSG_BRW_FIRST_CHILD, &avp, NULL);
     ogs_assert(ret == 0);

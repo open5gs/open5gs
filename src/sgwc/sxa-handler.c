@@ -615,7 +615,11 @@ void sgwc_sxa_handle_session_modification_response(
                         OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE, cause_value);
             }
 
-            sgwc_bearer_remove(bearer);
+            if (bearer)
+                sgwc_bearer_remove(bearer);
+            else
+                ogs_error("No Bearer");
+
         } else if (flags & OGS_PFCP_MODIFY_CREATE) {
             s5c_xact = ogs_gtp_xact_find_by_id(pfcp_xact->assoc_xact_id);
             ogs_assert(s5c_xact);

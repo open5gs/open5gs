@@ -775,7 +775,8 @@ void sgwc_s11_handle_create_bearer_response(
                 bearer_id <= OGS_MAX_POOL_ID);
 
         bearer = sgwc_bearer_find_by_id(bearer_id);
-        ogs_assert(bearer);
+        if (!bearer)
+            ogs_error("No Bearer ID [%d]", bearer_id);
     } else {
         ogs_assert(s11_xact->data);
         bearer_id = OGS_POINTER_TO_UINT(s11_xact->data);
@@ -783,11 +784,15 @@ void sgwc_s11_handle_create_bearer_response(
                 bearer_id <= OGS_MAX_POOL_ID);
 
         bearer = sgwc_bearer_find_by_id(bearer_id);
-        ogs_assert(bearer);
+        if (!bearer)
+            ogs_error("No Bearer ID [%d]", bearer_id);
     }
 
-    sess = sgwc_sess_find_by_id(bearer->sess_id);
-    ogs_assert(sess);
+    if (bearer) {
+        sess = sgwc_sess_find_by_id(bearer->sess_id);
+        if (!sess)
+            ogs_error("No Session ID [%d]", bearer->sess_id);
+    }
 
     rv = ogs_gtp_xact_commit(s11_xact);
     ogs_expect(rv == OGS_OK);
@@ -823,11 +828,22 @@ void sgwc_s11_handle_create_bearer_response(
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
+    if (!bearer) {
+        ogs_error("No Bearer Context");
+        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+    }
+    if (!sess) {
+        ogs_error("No Session Context");
+        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+    }
+
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
-        ogs_assert(OGS_OK ==
-            sgwc_pfcp_send_bearer_modification_request(
-                bearer, OGS_INVALID_POOL_ID, NULL,
-                OGS_PFCP_MODIFY_UL_ONLY|OGS_PFCP_MODIFY_REMOVE));
+        if (bearer) {
+            ogs_assert(OGS_OK ==
+                sgwc_pfcp_send_bearer_modification_request(
+                    bearer, OGS_INVALID_POOL_ID, NULL,
+                    OGS_PFCP_MODIFY_UL_ONLY|OGS_PFCP_MODIFY_REMOVE));
+        }
         ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
                 OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
