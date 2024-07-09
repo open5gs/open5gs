@@ -122,14 +122,22 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
         ogs_assert(mme_ue_id >= OGS_MIN_POOL_ID &&
                 mme_ue_id <= OGS_MAX_POOL_ID);
         mme_ue = mme_ue_find_by_id(mme_ue_id);
-        ogs_assert(mme_ue);
+        if (!mme_ue) {
+            ogs_error("MME-UE[%d] has already been removed [%d]",
+                    mme_ue_id, type);
+            return;
+        }
         break;
     case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
     case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
         sess_id = OGS_POINTER_TO_UINT(data);
         ogs_assert(sess_id >= OGS_MIN_POOL_ID && sess_id <= OGS_MAX_POOL_ID);
         sess = mme_sess_find_by_id(sess_id);
-        ogs_assert(sess);
+        if (!sess) {
+            ogs_error("Session[%d] has already been removed [%d]",
+                    sess_id, type);
+            return;
+        }
         mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
         ogs_assert(mme_ue);
         break;
@@ -138,7 +146,11 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
         ogs_assert(bearer_id >= OGS_MIN_POOL_ID &&
                 bearer_id <= OGS_MAX_POOL_ID);
         bearer = mme_bearer_find_by_id(bearer_id);
-        ogs_assert(bearer);
+        if (!bearer) {
+            ogs_error("Bearer[%d] has already been removed [%d]",
+                    bearer_id, type);
+            return;
+        }
         sess = mme_sess_find_by_id(bearer->sess_id);
         ogs_assert(sess);
         mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
