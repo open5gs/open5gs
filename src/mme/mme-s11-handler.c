@@ -802,6 +802,10 @@ void mme_s11_handle_delete_session_response(
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
             if (ECM_IDLE(mme_ue)) {
                 mme_ue_remove(mme_ue);
+
+                /* mme_sess_remove() should not be called here
+                 * since mme_ue_remove() has already been executed. */
+                return;
             } else {
                 r = s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,

@@ -69,7 +69,7 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
      * Ch 5.3.8.3 MME-initiated Detach procedure (Without Step 1)
      */
     case MME_DETACH_TYPE_MME_IMPLICIT:
-        ogs_debug("Implicit MME Detach");
+        ogs_warn("[%s] Implicit MME Detach", mme_ue->imsi_bcd);
         mme_gtp_send_delete_all_sessions(mme_ue,
             OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE);
 
@@ -78,11 +78,13 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
                 xact_count) {
             enb_ue_t *enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
             if (enb_ue) {
+                ogs_warn("[%s] UEContextReleaseCommand Sent", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     s1ap_send_ue_context_release_command(enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
             } else {
+                ogs_warn("[%s] MME-UE Context Removed", mme_ue->imsi_bcd);
                 mme_ue_remove(mme_ue);
             }
         }
