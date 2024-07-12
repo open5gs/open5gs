@@ -53,8 +53,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     if (size <= 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
                 "ogs_recv() failed");
-        ogs_pkbuf_free(pkbuf);
-        return;
+        goto cleanup;
     }
 
     ogs_pkbuf_trim(pkbuf, size);
@@ -66,16 +65,14 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     if (gtp_h->version != OGS_GTP2_VERSION_1) {
         ogs_error("[DROP] Invalid GTPU version [%d]", gtp_h->version);
         ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-        ogs_pkbuf_free(pkbuf);
-        return;
+        goto cleanup;
     }
 
     len = ogs_gtpu_parse_header(&header_desc, pkbuf);
     if (len < 0) {
         ogs_error("[DROP] Cannot decode GTPU packet");
         ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-        ogs_pkbuf_free(pkbuf);
-        return;
+        goto cleanup;
     }
     if (header_desc.type == OGS_GTPU_MSGTYPE_ECHO_REQ) {
         ogs_pkbuf_t *echo_rsp;
@@ -96,16 +93,14 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             }
             ogs_pkbuf_free(echo_rsp);
         }
-        ogs_pkbuf_free(pkbuf);
-        return;
+        goto cleanup;
     }
     if (header_desc.type != OGS_GTPU_MSGTYPE_END_MARKER &&
         pkbuf->len <= len) {
         ogs_error("[DROP] Small GTPU packet(type:%d len:%d)",
                 header_desc.type, len);
         ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-        ogs_pkbuf_free(pkbuf);
-        return;
+        goto cleanup;
     }
 
     ogs_trace("[RECV] GPU-U Type [%d] from [%s] : TEID[0x%x]",
@@ -144,8 +139,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 ogs_gtp1_send_error_indication(
                         sock, header_desc.teid, 0, &from);
             }
-            ogs_pkbuf_free(pkbuf);
-            return;
+            goto cleanup;
         }
 
         switch(pfcp_object->type) {
@@ -168,7 +162,6 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         sendhdr.type = header_desc.type;
 
         ogs_pfcp_send_g_pdu(pdr, &sendhdr, sendbuf);
-        ogs_pkbuf_free(pkbuf);
 
     } else if (header_desc.type == OGS_GTPU_MSGTYPE_ERR_IND) {
         ogs_pfcp_far_t *far = NULL;
@@ -190,7 +183,6 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             ogs_error("[DROP] Cannot find FAR by Error-Indication");
             ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
         }
-        ogs_pkbuf_free(pkbuf);
     } else if (header_desc.type == OGS_GTPU_MSGTYPE_GPDU) {
         struct ip *ip_h = NULL;
         ogs_pfcp_object_t *pfcp_object = NULL;
@@ -224,8 +216,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 ogs_gtp1_send_error_indication(
                         sock, header_desc.teid, 0, &from);
             }
-            ogs_pkbuf_free(pkbuf);
-            return;
+            goto cleanup;
         }
 
         switch(pfcp_object->type) {
@@ -259,8 +250,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
             if (!pdr) {
                 /* TODO : Send Error Indication */
-                ogs_pkbuf_free(pkbuf);
-                return;
+                goto cleanup;
             }
 
             break;
@@ -286,11 +276,19 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             ogs_assert(OGS_OK ==
                 sgwu_pfcp_send_session_report_request(sess, &report));
         }
+
+        /*
+         * The ogs_pfcp_up_handle_pdr() function
+         * buffers or frees the Packet Buffer(pkbuf) memory.
+         */
+        return;
     } else {
         ogs_error("[DROP] Invalid GTPU Type [%d]", header_desc.type);
         ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-        ogs_pkbuf_free(pkbuf);
     }
+
+cleanup:
+    ogs_pkbuf_free(pkbuf);
 }
 
 int sgwu_gtp_init(void)
