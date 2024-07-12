@@ -242,6 +242,12 @@ static void _gtpv1_tun_recv_common_cb(
             upf_pfcp_send_session_report_request(sess, &report));
     }
 
+    /*
+     * The ogs_pfcp_up_handle_pdr() function
+     * buffers or frees the Packet Buffer(pkbuf) memory.
+     */
+    return;
+
 cleanup:
     ogs_pkbuf_free(recvbuf);
 }
@@ -366,7 +372,6 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             ogs_error("[DROP] Cannot find FAR by Error-Indication");
             ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
         }
-
     } else if (header_desc.type == OGS_GTPU_MSGTYPE_GPDU) {
         uint16_t eth_type = 0;
         struct ip *ip_h = NULL;
@@ -669,6 +674,12 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                     upf_pfcp_send_session_report_request(sess, &report));
             }
 
+            /*
+             * The ogs_pfcp_up_handle_pdr() function
+             * buffers or frees the Packet Buffer(pkbuf) memory.
+             */
+            return;
+
         } else if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
 
             if (!far->gnode) {
@@ -686,6 +697,12 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                         pdr, header_desc.type, &header_desc, pkbuf, &report));
 
             ogs_assert(report.type.downlink_data_report == 0);
+
+            /*
+             * The ogs_pfcp_up_handle_pdr() function
+             * buffers or frees the Packet Buffer(pkbuf) memory.
+             */
+            return;
 
         } else {
             ogs_fatal("Not implemented : FAR-DST_IF[%d]", far->dst_if);
@@ -872,10 +889,12 @@ static void upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)
 
                     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
                         if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) {
+                            ogs_pkbuf_t *sendbuf = ogs_pkbuf_copy(recvbuf);
+                            ogs_assert(sendbuf);
                             ogs_assert(true ==
                                 ogs_pfcp_up_handle_pdr(
                                     pdr, OGS_GTPU_MSGTYPE_GPDU,
-                                    NULL, recvbuf, &report));
+                                    NULL, sendbuf, &report));
                             break;
                         }
                     }

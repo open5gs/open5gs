@@ -276,6 +276,12 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             ogs_assert(OGS_OK ==
                 sgwu_pfcp_send_session_report_request(sess, &report));
         }
+
+        /*
+         * The ogs_pfcp_up_handle_pdr() function
+         * buffers or frees the Packet Buffer(pkbuf) memory.
+         */
+        return;
     } else {
         ogs_error("[DROP] Invalid GTPU Type [%d]", header_desc.type);
         ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
