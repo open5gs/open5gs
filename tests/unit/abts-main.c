@@ -37,6 +37,7 @@ abts_suite *test_ngap_message(abts_suite *suite);
 abts_suite *test_sbi_message(abts_suite *suite);
 abts_suite *test_security(abts_suite *suite);
 abts_suite *test_crash(abts_suite *suite);
+abts_suite *test_smf_ue_add(abts_suite *suite)
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
@@ -47,6 +48,7 @@ const struct testlist {
     {test_gtp_message},
     {test_ngap_message},
     {test_sbi_message},
+    {test_smf_ue_add},
     {test_security},
     {test_crash},
     {NULL},

@@ -486,6 +486,7 @@ int smf_use_gy_iface(void);
 smf_gtp_node_t *smf_gtp_node_new(ogs_gtp_node_t *gnode);
 void smf_gtp_node_free(smf_gtp_node_t *smf_gnode);
 
+smf_ue_t *smf_ue_add(void);
 smf_ue_t *smf_ue_add_by_supi(char *supi);
 smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len);
 void smf_ue_remove(smf_ue_t *smf_ue);
