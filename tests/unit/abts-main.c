@@ -20,6 +20,7 @@
 #include "ogs-core.h"
 #include "core/abts.h"
 
+
 extern int __ogs_s1ap_domain;
 extern int __ogs_ngap_domain;
 extern int __ogs_nas_domain;
@@ -37,6 +38,7 @@ abts_suite *test_ngap_message(abts_suite *suite);
 abts_suite *test_sbi_message(abts_suite *suite);
 abts_suite *test_security(abts_suite *suite);
 abts_suite *test_crash(abts_suite *suite);
+abts_suite *test_smf_gtp_node_free(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
@@ -49,6 +51,7 @@ const struct testlist {
     {test_sbi_message},
     {test_security},
     {test_crash},
+    {test_smf_gtp_node_free},
     {NULL},
 };
 
