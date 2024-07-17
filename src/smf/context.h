@@ -20,7 +20,12 @@
 #ifndef SMF_CONTEXT_H
 #define SMF_CONTEXT_H
 
-#include "smf-config.h"
+//#include "smf-config.h"
+#define HAVE_NETINET_ICMP6_H 1
+#define HAVE_NETINET_IP6_H 1
+#define HAVE_NETINET_IP_H 1
+#define HAVE_NETINET_IP_ICMP_H 1
+#define HAVE_NET_IF_H 1
 
 #include "ogs-gtp.h"
 #include "ogs-diameter-gx.h"
@@ -486,6 +491,7 @@ int smf_use_gy_iface(void);
 smf_gtp_node_t *smf_gtp_node_new(ogs_gtp_node_t *gnode);
 void smf_gtp_node_free(smf_gtp_node_t *smf_gnode);
 
+smf_ue_t *smf_ue_add(void);
 smf_ue_t *smf_ue_add_by_supi(char *supi);
 smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len);
 void smf_ue_remove(smf_ue_t *smf_ue);

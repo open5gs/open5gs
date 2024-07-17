@@ -999,7 +999,7 @@ void smf_gtp_node_free(smf_gtp_node_t *smf_gnode)
     ogs_pool_free(&smf_gtp_node_pool, smf_gnode);
 }
 
-static smf_ue_t *smf_ue_add(void)
+smf_ue_t *smf_ue_add(void)
 {
     smf_ue_t *smf_ue = NULL;
 
