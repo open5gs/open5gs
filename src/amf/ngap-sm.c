@@ -54,7 +54,7 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
     amf_sm_debug(e);
 
-    gnb = e->gnb;
+    gnb = amf_gnb_find_by_id(e->gnb_id);
     ogs_assert(gnb);
 
     switch (e->h.id) {
@@ -191,10 +191,10 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
     case AMF_EVENT_NGAP_TIMER:
         switch (e->h.timer_id) {
         case AMF_TIMER_NG_DELAYED_SEND:
-            ogs_assert(e->ran_ue);
             ogs_assert(e->pkbuf);
 
-            r = ngap_send_to_ran_ue(e->ran_ue, e->pkbuf);
+            r = ngap_send_to_ran_ue(
+                    ran_ue_find_by_id(e->ran_ue_id), e->pkbuf);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
 

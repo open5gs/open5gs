@@ -59,6 +59,8 @@ extern "C" {
 typedef struct ogs_gtp_xact_s {
     ogs_lnode_t     node;           /**< A node of list */
 
+    ogs_pool_id_t   id;
+
     /*
      * Issues #3240
      *
@@ -107,10 +109,14 @@ typedef struct ogs_gtp_xact_s {
     ogs_timer_t     *tm_holding;    /**< Timer waiting for holding message */
     uint8_t         holding_rcount;
 
+    ogs_timer_t     *tm_peer;       /**< Timer waiting for peer message */
+    void (*peer_cb)(ogs_gtp_xact_t *, void *); /**< timer expiration handler */
+    void            *peer_data;     /**< Peer timeout data */
+
     uint32_t        local_teid;     /**< Local TEID,
                                          expected in reply from peer */
 
-    void            *assoc_xact;    /**< Associated GTP transaction */
+    ogs_pool_id_t   assoc_xact_id;  /**< Associated GTP transaction ID */
     void            *pfcp_xact;     /**< Associated PFCP transaction */
 
 #define OGS_GTP_MODIFY_TFT_UPDATE ((uint64_t)1<<0)
@@ -159,7 +165,7 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
         ogs_gtp2_header_t *hdesc, ogs_pkbuf_t *pkbuf,
         void (*cb)(ogs_gtp_xact_t *xact, void *data), void *data);
 
-ogs_gtp_xact_t *ogs_gtp_xact_cycle(ogs_gtp_xact_t *xact);
+ogs_gtp_xact_t *ogs_gtp_xact_find_by_id(ogs_pool_id_t id);
 void ogs_gtp_xact_delete_all(ogs_gtp_node_t *gnode);
 
 int ogs_gtp1_xact_update_tx(ogs_gtp_xact_t *xact,

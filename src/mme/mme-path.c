@@ -69,21 +69,22 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
      * Ch 5.3.8.3 MME-initiated Detach procedure (Without Step 1)
      */
     case MME_DETACH_TYPE_MME_IMPLICIT:
-        ogs_debug("Implicit MME Detach");
+        ogs_warn("[%s] Implicit MME Detach", mme_ue->imsi_bcd);
         mme_gtp_send_delete_all_sessions(mme_ue,
             OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE);
 
         if (!MME_SESSION_RELEASE_PENDING(mme_ue) &&
             mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR) ==
                 xact_count) {
-            enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+            enb_ue_t *enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
             if (enb_ue) {
+                ogs_warn("[%s] UEContextReleaseCommand Sent", mme_ue->imsi_bcd);
                 ogs_assert(OGS_OK ==
                     s1ap_send_ue_context_release_command(enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
             } else {
-                MME_UE_CHECK(OGS_LOG_WARN, mme_ue);
+                ogs_warn("[%s] MME-UE Context Removed", mme_ue->imsi_bcd);
                 mme_ue_remove(mme_ue);
             }
         }
@@ -129,7 +130,7 @@ void mme_send_delete_session_or_mme_ue_context_release(mme_ue_t *mme_ue)
     if (!MME_SESSION_RELEASE_PENDING(mme_ue) &&
         mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR) ==
             xact_count) {
-        enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+        enb_ue_t *enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
         if (enb_ue) {
             r = s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
@@ -148,7 +149,7 @@ void mme_send_release_access_bearer_or_ue_context_release(enb_ue_t *enb_ue)
     mme_ue_t *mme_ue = NULL;
     ogs_assert(enb_ue);
 
-    mme_ue = enb_ue->mme_ue;
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
     if (mme_ue) {
         ogs_debug("[%s] Release access bearer request", mme_ue->imsi_bcd);
         ogs_assert(OGS_OK ==
@@ -157,7 +158,7 @@ void mme_send_release_access_bearer_or_ue_context_release(enb_ue_t *enb_ue)
     } else {
         ogs_debug("No UE Context");
         r = s1ap_send_ue_context_release_command(enb_ue,
-                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                enb_ue->relcause.group, enb_ue->relcause.cause,
                 S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -173,7 +174,8 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
 
     switch (mme_ue->paging.type) {
     case MME_PAGING_TYPE_DOWNLINK_DATA_NOTIFICATION:
-        bearer = mme_bearer_cycle(mme_ue->paging.data);
+        bearer = mme_bearer_find_by_id(
+                OGS_POINTER_TO_UINT(mme_ue->paging.data));
         if (!bearer) {
             ogs_error("No Bearer [%d]", mme_ue->paging.type);
             goto cleanup;
@@ -190,7 +192,8 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
         }
         break;
     case MME_PAGING_TYPE_CREATE_BEARER:
-        bearer = mme_bearer_cycle(mme_ue->paging.data);
+        bearer = mme_bearer_find_by_id(
+                OGS_POINTER_TO_UINT(mme_ue->paging.data));
         if (!bearer) {
             ogs_error("No Bearer [%d]", mme_ue->paging.type);
             goto cleanup;
@@ -207,7 +210,8 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
         }
         break;
     case MME_PAGING_TYPE_UPDATE_BEARER:
-        bearer = mme_bearer_cycle(mme_ue->paging.data);
+        bearer = mme_bearer_find_by_id(
+                OGS_POINTER_TO_UINT(mme_ue->paging.data));
         if (!bearer) {
             ogs_error("No Bearer [%d]", mme_ue->paging.type);
             goto cleanup;
@@ -230,6 +234,14 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
                 goto cleanup;
             }
 
+            /*
+             * MME must wait for Modify Bearer Context Accept
+             * before sending Update Bearer Response,
+             * To check this, start a peer timer to check it.
+             */
+            ogs_timer_start(xact->tm_peer,
+                    ogs_local_conf()->time.message.gtp.t3_response_duration);
+
             r = nas_eps_send_modify_bearer_context_request(bearer,
                     (xact->update_flags &
                         OGS_GTP_MODIFY_QOS_UPDATE) ? 1 : 0,
@@ -240,7 +252,8 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
         }
         break;
     case MME_PAGING_TYPE_DELETE_BEARER:
-        bearer = mme_bearer_cycle(mme_ue->paging.data);
+        bearer = mme_bearer_find_by_id(
+                OGS_POINTER_TO_UINT(mme_ue->paging.data));
         if (!bearer) {
             ogs_error("No Bearer [%d]", mme_ue->paging.type);
             goto cleanup;

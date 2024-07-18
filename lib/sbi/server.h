@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -37,6 +37,8 @@ typedef struct ogs_sbi_server_s {
     ogs_socknode_t  node;
     ogs_sockaddr_t  *advertise;
 
+    ogs_pool_id_t   id;
+
     char *interface;
     OpenAPI_uri_scheme_e scheme;
     char *private_key, *cert;
@@ -64,7 +66,10 @@ typedef struct ogs_sbi_server_actions_s {
     bool (*send_response)(
             ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
 
-    ogs_sbi_server_t *(*from_stream)(ogs_sbi_stream_t *stream);
+    ogs_sbi_server_t *(*server_from_stream)(ogs_sbi_stream_t *stream);
+
+    ogs_pool_id_t (*id_from_stream)(ogs_sbi_stream_t *stream);
+    void *(*stream_find_by_id)(ogs_pool_id_t id);
 } ogs_sbi_server_actions_t;
 
 void ogs_sbi_server_init(int num_of_session_pool, int num_of_stream_pool);
@@ -96,7 +101,9 @@ bool ogs_sbi_server_send_problem(
         ogs_sbi_stream_t *stream, OpenAPI_problem_details_t *problem);
 
 ogs_sbi_server_t *ogs_sbi_server_from_stream(ogs_sbi_stream_t *stream);
-char *ogs_sbi_server_id_context(ogs_sbi_server_t *server);
+
+ogs_pool_id_t ogs_sbi_id_from_stream(ogs_sbi_stream_t *stream);
+void *ogs_sbi_stream_find_by_id(ogs_pool_id_t id);
 
 ogs_sbi_server_t *ogs_sbi_server_first(void);
 ogs_sbi_server_t *ogs_sbi_server_next(ogs_sbi_server_t *current);

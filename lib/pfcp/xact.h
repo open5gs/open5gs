@@ -35,6 +35,8 @@ typedef struct ogs_pfcp_xact_s {
     ogs_lnode_t     lnode;          /**< A node of list */
     ogs_lnode_t     tmpnode;        /**< A node of temp-list */
 
+    ogs_pool_id_t   id;
+
     ogs_pool_id_t   index;
 
 #define OGS_PFCP_LOCAL_ORIGINATOR  0
@@ -68,13 +70,13 @@ typedef struct ogs_pfcp_xact_s {
     uint64_t        local_seid;     /**< Local SEID,
                                          expected in reply from peer */
 
-    void            *assoc_xact;    /**< Associated GTP transaction */
+    ogs_pool_id_t   assoc_xact_id;  /**< Associated GTP transaction ID */
     ogs_pkbuf_t     *gtpbuf;        /**< GTP packet buffer */
 
     uint8_t         gtp_pti;        /**< GTP Procedure transaction identity */
     uint8_t         gtp_cause;      /**< GTP Cause Value */
 
-    void            *assoc_stream;  /**< Associated SBI session */
+    ogs_pool_id_t   assoc_stream_id;  /**< Associated SBI session ID */
 
     bool            epc;            /**< EPC or 5GC */
 
@@ -134,6 +136,7 @@ void ogs_pfcp_xact_final(void);
 ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
         void (*cb)(ogs_pfcp_xact_t *xact, void *data), void *data);
 void ogs_pfcp_xact_delete_all(ogs_pfcp_node_t *node);
+ogs_pfcp_xact_t *ogs_pfcp_xact_find_by_id(ogs_pool_id_t id);
 
 int ogs_pfcp_xact_update_tx(ogs_pfcp_xact_t *xact,
         ogs_pfcp_header_t *hdesc, ogs_pkbuf_t *pkbuf);

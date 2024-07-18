@@ -55,13 +55,13 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     session = sess->session;
     ogs_assert(session);
     ogs_assert(session->name);
-    mme_ue = sess->mme_ue;
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     if (create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST) {
-        sgw_ue = sgw_ue_cycle(sgw_ue->target_ue);
+        sgw_ue = sgw_ue_find_by_id(sgw_ue->target_ue_id);
         ogs_assert(sgw_ue);
     }
 
@@ -405,7 +405,7 @@ ogs_pkbuf_t *mme_s11_build_modify_bearer_request(
     ogs_debug("Modifty Bearer Request");
 
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
     ogs_assert(ogs_list_count(&mme_ue->bearer_to_modify_list));
 
@@ -448,7 +448,7 @@ ogs_pkbuf_t *mme_s11_build_modify_bearer_request(
     memset(&indication, 0, sizeof(ogs_gtp2_indication_t));
     ogs_list_for_each_entry(
             &mme_ue->bearer_to_modify_list, bearer, to_modify_node) {
-        mme_sess_t *sess = bearer->sess;
+        mme_sess_t *sess = mme_sess_find_by_id(bearer->sess_id);
         ogs_assert(sess);
 
         if (sess->ue_request_type.value == OGS_NAS_EPS_REQUEST_TYPE_HANDOVER) {
@@ -513,9 +513,9 @@ ogs_pkbuf_t *mme_s11_build_delete_session_request(
     sgw_ue_t *sgw_ue = NULL;
 
     ogs_assert(sess);
-    mme_ue = sess->mme_ue;
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
     bearer = mme_default_bearer_in_sess(sess);
     ogs_assert(bearer);
@@ -576,9 +576,9 @@ ogs_pkbuf_t *mme_s11_build_create_bearer_response(
     sgw_ue_t *sgw_ue = NULL;
 
     ogs_assert(bearer);
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     ogs_debug("Create Bearer Response");
@@ -683,9 +683,9 @@ ogs_pkbuf_t *mme_s11_build_update_bearer_response(
     sgw_ue_t *sgw_ue = NULL;
 
     ogs_assert(bearer);
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     ogs_debug("Update Bearer Response");
@@ -762,9 +762,9 @@ ogs_pkbuf_t *mme_s11_build_delete_bearer_response(
     sgw_ue_t *sgw_ue = NULL;
 
     ogs_assert(bearer);
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     ogs_debug("Delete Bearer Response");
@@ -918,7 +918,7 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
     int len;
 
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     ogs_debug("Create Indirect Data Forwarding Tunnel Request");
@@ -1002,11 +1002,11 @@ ogs_pkbuf_t *mme_s11_build_bearer_resource_command(
     mme_bearer_t *linked_bearer = NULL;
 
     ogs_assert(bearer);
-    sess = bearer->sess;
+    sess = mme_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
-    mme_ue = sess->mme_ue;
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
 
     ogs_debug("Bearer Resource Command");

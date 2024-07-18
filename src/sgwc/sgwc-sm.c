@@ -114,7 +114,7 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
         }
 
         e->pfcp_message = pfcp_message;
-        e->pfcp_xact = pfcp_xact;
+        e->pfcp_xact_id = pfcp_xact ? pfcp_xact->id : OGS_INVALID_POOL_ID;
 
         e->gtp_message = NULL;
         if (pfcp_xact->gtpbuf) {

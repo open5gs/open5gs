@@ -127,7 +127,7 @@ int amf_ue_sbi_discover_and_send(
     }
 
     xact = ogs_sbi_xact_add(
-            &amf_ue->sbi, service_type, discovery_option,
+            amf_ue->id, &amf_ue->sbi, service_type, discovery_option,
             (ogs_sbi_build_f)build, amf_ue, data);
     if (!xact) {
         ogs_error("amf_ue_sbi_discover_and_send() failed");
@@ -169,21 +169,18 @@ int amf_sess_sbi_discover_and_send(
     ogs_assert(build);
 
     if (ran_ue) {
-        sess->ran_ue = ran_ue_cycle(ran_ue);
-        if (!sess->ran_ue) {
-            ogs_error("NG context has already been removed");
-            return OGS_NOTFOUND;
-        }
+        sess->ran_ue_id = ran_ue->id;
     } else
-        sess->ran_ue = NULL;
+        sess->ran_ue_id = OGS_INVALID_POOL_ID;
 
     xact = ogs_sbi_xact_add(
-            &sess->sbi, service_type, discovery_option,
+            sess->id, &sess->sbi, service_type, discovery_option,
             (ogs_sbi_build_f)build, sess, data);
     if (!xact) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
-        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
-            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
+        r = nas_5gs_send_back_gsm_message(
+                ran_ue_find_by_id(sess->ran_ue_id), sess,
+                OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
@@ -195,8 +192,9 @@ int amf_sess_sbi_discover_and_send(
     if (rv != OGS_OK) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
-        r = nas_5gs_send_back_gsm_message(sess->ran_ue, sess,
-            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
+        r = nas_5gs_send_back_gsm_message(
+                ran_ue_find_by_id(sess->ran_ue_id), sess,
+                OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return rv;
@@ -211,6 +209,7 @@ static int client_discover_cb(
     ogs_sbi_message_t message;
 
     ogs_sbi_xact_t *xact = NULL;
+    ogs_pool_id_t xact_id = OGS_INVALID_POOL_ID;
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
     OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
@@ -218,10 +217,10 @@ static int client_discover_cb(
     ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
 
-    xact = data;
-    ogs_assert(xact);
+    xact_id = OGS_POINTER_TO_UINT(data);
+    ogs_assert(xact_id >= OGS_MIN_POOL_ID && xact_id <= OGS_MAX_POOL_ID);
 
-    xact = ogs_sbi_xact_cycle(xact);
+    xact = ogs_sbi_xact_find_by_id(xact_id);
     if (!xact) {
         ogs_error("SBI transaction has already been removed");
         if (response)
@@ -229,16 +228,13 @@ static int client_discover_cb(
         return OGS_ERROR;
     }
 
-    sess = (amf_sess_t *)xact->sbi_object;
-    ogs_assert(sess);
-
     service_type = xact->service_type;
     ogs_assert(service_type);
     requester_nf_type = xact->requester_nf_type;
     ogs_assert(requester_nf_type);
     discovery_option = xact->discovery_option;
 
-    sess = amf_sess_cycle(sess);
+    sess = amf_sess_find_by_id(xact->sbi_object_id);
     if (!sess) {
         ogs_error("Session has already been removed");
         ogs_sbi_xact_remove(xact);
@@ -248,7 +244,7 @@ static int client_discover_cb(
     }
 
     ogs_assert(sess->sbi.type == OGS_SBI_OBJ_SESS_TYPE);
-    amf_ue = amf_ue_cycle(sess->amf_ue);
+    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
     if (!amf_ue) {
         ogs_error("UE(amf-ue) context has already been removed");
         ogs_sbi_xact_remove(xact);
@@ -256,7 +252,7 @@ static int client_discover_cb(
             ogs_sbi_response_free(response);
         return OGS_ERROR;
     }
-    ran_ue = ran_ue_cycle(sess->ran_ue);
+    ran_ue = ran_ue_find_by_id(sess->ran_ue_id);
     if (!ran_ue) {
         ogs_error("[%s] NG context has already been removed", amf_ue->supi);
         ogs_sbi_xact_remove(xact);
@@ -367,16 +363,13 @@ int amf_sess_sbi_discover_by_nsi(
                 ogs_sbi_service_type_to_name(service_type));
 
     if (ran_ue) {
-        sess->ran_ue = ran_ue_cycle(ran_ue);
-        if (!sess->ran_ue) {
-            ogs_error("NG context has already been removed");
-            return OGS_NOTFOUND;
-        }
+        sess->ran_ue_id = ran_ue->id;
     } else
-        sess->ran_ue = NULL;
+        sess->ran_ue_id = OGS_INVALID_POOL_ID;
 
     xact = ogs_sbi_xact_add(
-            &sess->sbi, service_type, discovery_option, NULL, NULL, NULL);
+            sess->id, &sess->sbi,
+            service_type, discovery_option, NULL, NULL, NULL);
     if (!xact) {
         ogs_error("ogs_sbi_xact_add() failed");
         return OGS_ERROR;
@@ -391,7 +384,8 @@ int amf_sess_sbi_discover_by_nsi(
     }
 
     return ogs_sbi_client_send_request(
-            client, client_discover_cb, xact->request, xact) == true ? OGS_OK : OGS_ERROR;
+            client, client_discover_cb, xact->request,
+            OGS_UINT_TO_POINTER(xact->id)) == true ? OGS_OK : OGS_ERROR;
 }
 
 void amf_sbi_send_activating_session(
@@ -457,7 +451,7 @@ void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state)
     ogs_list_for_each_safe(&gnb->ran_ue_list, ran_ue_next, ran_ue) {
         int old_xact_count = 0, new_xact_count = 0;
 
-        amf_ue = amf_ue_cycle(ran_ue->amf_ue);
+        amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
 
         if (amf_ue) {
             old_xact_count = amf_sess_xact_count(amf_ue);

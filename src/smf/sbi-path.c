@@ -106,7 +106,7 @@ int smf_sbi_discover_and_send(
     target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
     ogs_assert(target_nf_type);
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
     ogs_assert(build);
 
@@ -198,7 +198,7 @@ int smf_sbi_discover_and_send(
     }
 
     xact = ogs_sbi_xact_add(
-            &sess->sbi, service_type, discovery_option,
+            sess->id, &sess->sbi, service_type, discovery_option,
             (ogs_sbi_build_f)build, sess, data);
     if (!xact) {
         ogs_error("smf_sbi_discover_and_send() failed");
@@ -211,7 +211,12 @@ int smf_sbi_discover_and_send(
     }
 
     xact->state = state;
-    xact->assoc_stream = stream;
+
+    if (stream) {
+        xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
+        ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                xact->assoc_stream_id <= OGS_MAX_POOL_ID);
+    }
 
     r = ogs_sbi_discover_and_send(xact);
     if (r != OGS_OK) {
@@ -238,7 +243,7 @@ void smf_namf_comm_send_n1_n2_message_transfer(
     int r;
 
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_assert(param);
@@ -251,7 +256,8 @@ void smf_namf_comm_send_n1_n2_message_transfer(
             discovery_option, sess->serving_nf_id);
 
     xact = ogs_sbi_xact_add(
-            &sess->sbi, OGS_SBI_SERVICE_TYPE_NAMF_COMM, discovery_option,
+            sess->id, &sess->sbi, OGS_SBI_SERVICE_TYPE_NAMF_COMM,
+            discovery_option,
             (ogs_sbi_build_f)smf_namf_comm_build_n1_n2_message_transfer,
             sess, param);
     if (!xact) {

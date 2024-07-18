@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -62,9 +62,8 @@ ogs_sbi_server_t *ogs_sbi_server_add(
     ogs_assert(addr);
     ogs_assert(scheme);
 
-    ogs_pool_alloc(&server_pool, &server);
+    ogs_pool_id_calloc(&server_pool, &server);
     ogs_assert(server);
-    memset(server, 0, sizeof(ogs_sbi_server_t));
 
     if (interface)
         server->interface = ogs_strdup(interface);
@@ -114,7 +113,7 @@ void ogs_sbi_server_remove(ogs_sbi_server_t *server)
     if (server->cert)
         ogs_free(server->cert);
 
-    ogs_pool_free(&server_pool, server);
+    ogs_pool_id_free(&server_pool, server);
 }
 
 void ogs_sbi_server_remove_all(void)
@@ -238,12 +237,17 @@ bool ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
 
 ogs_sbi_server_t *ogs_sbi_server_from_stream(ogs_sbi_stream_t *stream)
 {
-    return ogs_sbi_server_actions.from_stream(stream);
+    return ogs_sbi_server_actions.server_from_stream(stream);
 }
 
-char *ogs_sbi_server_id_context(ogs_sbi_server_t *server)
+ogs_pool_id_t ogs_sbi_id_from_stream(ogs_sbi_stream_t *stream)
 {
-    return ogs_msprintf("%d", (int)ogs_pool_index(&server_pool, server));
+    return ogs_sbi_server_actions.id_from_stream(stream);
+}
+
+void *ogs_sbi_stream_find_by_id(ogs_pool_id_t id)
+{
+    return ogs_sbi_server_actions.stream_find_by_id(id);
 }
 
 static ogs_sbi_server_t *ogs_sbi_server_find_by_interface(

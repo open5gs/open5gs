@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -39,6 +39,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
     int rv;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *request = NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -46,8 +47,10 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
     ogs_sbi_response_t *response = NULL;
     ogs_sbi_message_t message;
     ogs_sbi_xact_t *sbi_xact = NULL;
+    ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
 
     ausf_ue_t *ausf_ue = NULL;
+    ogs_pool_id_t ausf_ue_id = OGS_INVALID_POOL_ID;
 
     ausf_sm_debug(e);
 
@@ -63,8 +66,16 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         request = e->h.sbi.request;
         ogs_assert(request);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         rv = ogs_sbi_parse_request(&message, request);
         if (rv != OGS_OK) {
@@ -154,7 +165,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
             ogs_assert(OGS_FSM_STATE(&ausf_ue->sm));
 
-            e->ausf_ue = ausf_ue;
+            e->ausf_ue_id = ausf_ue->id;
             e->h.sbi.message = &message;
             ogs_fsm_dispatch(&ausf_ue->sm, e);
             if (OGS_FSM_CHECK(&ausf_ue->sm, ausf_ue_state_exception)) {
@@ -267,8 +278,18 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                sbi_xact = e->h.sbi.data;
-                ogs_assert(sbi_xact);
+                sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+                ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                        sbi_xact_id <= OGS_MAX_POOL_ID);
+
+                sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
+                if (!sbi_xact) {
+                    /* CLIENT_WAIT timer could remove SBI transaction
+                     * before receiving SBI message */
+                    ogs_error("SBI transaction has already been removed [%d]",
+                            sbi_xact_id);
+                    break;
+                }
 
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
@@ -293,31 +314,36 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UEAU)
-            sbi_xact = e->h.sbi.data;
-            ogs_assert(sbi_xact);
+            sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                    sbi_xact_id <= OGS_MAX_POOL_ID);
 
-            sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
+            sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
             if (!sbi_xact) {
                 /* CLIENT_WAIT timer could remove SBI transaction
                  * before receiving SBI message */
-                ogs_error("SBI transaction has already been removed");
+                ogs_error("SBI transaction has already been removed [%d]",
+                        sbi_xact_id);
                 break;
             }
 
-            ausf_ue = (ausf_ue_t *)sbi_xact->sbi_object;
-            ogs_assert(ausf_ue);
+            ausf_ue_id = sbi_xact->sbi_object_id;
+            ogs_assert(ausf_ue_id >= OGS_MIN_POOL_ID &&
+                    ausf_ue_id <= OGS_MAX_POOL_ID);
 
-            e->h.sbi.data = sbi_xact->assoc_stream;
+            ogs_assert(sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                    sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID);
+            e->h.sbi.data = OGS_UINT_TO_POINTER(sbi_xact->assoc_stream_id);
 
             ogs_sbi_xact_remove(sbi_xact);
 
-            ausf_ue = ausf_ue_cycle(ausf_ue);
+            ausf_ue = ausf_ue_find_by_id(ausf_ue_id);
             if (!ausf_ue) {
                 ogs_error("UE(ausf-ue) Context has already been removed");
                 break;
             }
 
-            e->ausf_ue = ausf_ue;
+            e->ausf_ue_id = ausf_ue->id;
             e->h.sbi.message = &message;
 
             ogs_fsm_dispatch(&ausf_ue->sm, e);
@@ -413,20 +439,32 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
              * 4. timer expiration event is processed. (double-free SBI xact)
              *
              * To avoid double-free SBI xact,
-             * we need to check ogs_sbi_xact_cycle()
+             * we need to check ogs_sbi_xact_find_by_id()
              */
-            sbi_xact = ogs_sbi_xact_cycle(e->h.sbi.data);
+            sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                    sbi_xact_id <= OGS_MAX_POOL_ID);
+
+            sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
             if (!sbi_xact) {
-                ogs_error("SBI transaction has already been removed");
+                ogs_error("SBI transaction has already been removed [%d]",
+                        sbi_xact_id);
                 break;
             }
 
-            stream = sbi_xact->assoc_stream;
-            ogs_assert(stream);
+            ogs_assert(sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                    sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID);
+            stream = ogs_sbi_stream_find_by_id(sbi_xact->assoc_stream_id);
 
             ogs_sbi_xact_remove(sbi_xact);
 
             ogs_error("Cannot receive SBI message");
+
+            if (!stream) {
+                ogs_error("STREAM has alreadt been removed [%d]",
+                        sbi_xact->assoc_stream_id);
+                break;
+            }
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,

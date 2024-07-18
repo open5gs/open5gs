@@ -72,10 +72,10 @@ typedef struct smf_event_s {
     ogs_pkbuf_t *pkbuf;
 
     smf_gtp_node_t *gnode;
-    ogs_gtp_xact_t *gtp_xact;
+    ogs_pool_id_t gtp_xact_id;
 
     ogs_pfcp_node_t *pfcp_node;
-    ogs_pfcp_xact_t *pfcp_xact;
+    ogs_pool_id_t pfcp_xact_id;
     ogs_pfcp_message_t *pfcp_message;
 
     union {
@@ -99,7 +99,7 @@ typedef struct smf_event_s {
         ogs_nas_5gs_message_t *message;
     } nas;
 
-    smf_sess_t *sess;
+    ogs_pool_id_t sess_id;
 } smf_event_t;
 
 OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(smf_event_t));

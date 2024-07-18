@@ -52,7 +52,7 @@ typedef struct sgwu_event_s {
     ogs_gtp_node_t *gnode;
 
     ogs_pfcp_node_t *pfcp_node;
-    ogs_pfcp_xact_t *pfcp_xact;
+    ogs_pool_id_t pfcp_xact_id;
     ogs_pfcp_message_t *pfcp_message;
 
     sgwu_bearer_t *bearer;

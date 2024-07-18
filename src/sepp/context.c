@@ -538,11 +538,11 @@ sepp_node_t *sepp_node_find_by_plmn_id(uint16_t mcc, uint16_t mnc)
     return NULL;
 }
 
-sepp_assoc_t *sepp_assoc_add(ogs_sbi_stream_t *stream)
+sepp_assoc_t *sepp_assoc_add(ogs_pool_id_t stream_id)
 {
     sepp_assoc_t *assoc = NULL;
 
-    ogs_assert(stream);
+    ogs_assert(stream_id >= OGS_MIN_POOL_ID && stream_id <= OGS_MAX_POOL_ID);
 
     ogs_pool_alloc(&sepp_assoc_pool, &assoc);
     if (!assoc) {
@@ -552,7 +552,7 @@ sepp_assoc_t *sepp_assoc_add(ogs_sbi_stream_t *stream)
     }
     memset(assoc, 0, sizeof *assoc);
 
-    assoc->stream = stream;
+    assoc->stream_id = stream_id;
 
     ogs_list_add(&self.assoc_list, assoc);
 

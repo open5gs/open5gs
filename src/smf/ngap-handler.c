@@ -46,7 +46,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     ogs_assert(stream);
 
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_debug("PDUSessionResourceSetupResponseTransfer");
@@ -185,7 +185,7 @@ int ngap_handle_pdu_session_resource_setup_unsuccessful_transfer(
     ogs_assert(stream);
 
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_debug("PDUSessionResourceSetupUnsuccessfulTransfer");
@@ -285,7 +285,7 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
     ogs_assert(stream);
 
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_debug("PDUSessionResourceModifyResponseTransfer");
@@ -390,7 +390,7 @@ int ngap_handle_path_switch_request_transfer(
     ogs_assert(stream);
 
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_debug("PathSwitchRequestTransfer");
@@ -517,7 +517,7 @@ int ngap_handle_handover_required_transfer(
     ogs_assert(stream);
 
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_debug("HandoverRequiredTransfer");
@@ -569,7 +569,7 @@ int ngap_handle_handover_request_ack(
     ogs_assert(stream);
 
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_debug("HandoverRequestAcknowledgeTransfer");

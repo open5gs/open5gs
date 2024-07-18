@@ -505,7 +505,6 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                 ogs_info("Unknown UE by S_TMSI[G:%d,C:%d,M_TMSI:0x%x]",
                         nas_guti.mme_gid, nas_guti.mme_code, nas_guti.m_tmsi);
             } else {
-                MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
                 ogs_info("    S_TMSI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]",
                         mme_ue->current.guti.mme_gid,
                         mme_ue->current.guti.mme_code,
@@ -542,16 +541,15 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
             }
         }
     } else {
+        mme_ue_t *mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
         ogs_error("Known UE ENB_UE_S1AP_ID[%d] [%p:%p]",
-                (int)*ENB_UE_S1AP_ID, enb_ue, enb_ue->mme_ue);
-        if (enb_ue->mme_ue) {
-            MME_UE_CHECK(OGS_LOG_DEBUG, enb_ue->mme_ue);
+                (int)*ENB_UE_S1AP_ID, enb_ue, mme_ue);
+        if (mme_ue) {
             ogs_error("    S_TMSI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]",
-                enb_ue->mme_ue->current.guti.mme_gid,
-                enb_ue->mme_ue->current.guti.mme_code,
-                enb_ue->mme_ue->current.guti.m_tmsi,
-                MME_UE_HAVE_IMSI(enb_ue->mme_ue)
-                ? enb_ue->mme_ue->imsi_bcd : "Unknown");
+                mme_ue->current.guti.mme_gid,
+                mme_ue->current.guti.mme_code,
+                mme_ue->current.guti.m_tmsi,
+                MME_UE_HAVE_IMSI(mme_ue) ? mme_ue->imsi_bcd : "Unknown");
         }
     }
 
@@ -631,6 +629,7 @@ void s1ap_handle_uplink_nas_transport(
     S1AP_CellIdentity_t *cell_ID = NULL;
 
     enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
 
     ogs_eps_tai_t tai;
     int served_tai_index = 0;
@@ -784,10 +783,8 @@ void s1ap_handle_uplink_nas_transport(
         enb_ue->saved.tai.tac, enb_ue->saved.e_cgi.cell_id);
 
     /* Copy Stream-No/TAI/ECGI from enb_ue */
-    if (enb_ue->mme_ue) {
-        mme_ue_t *mme_ue = enb_ue->mme_ue;
-
-        MME_UE_CHECK(OGS_LOG_DEBUG, enb_ue->mme_ue);
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
+    if (mme_ue) {
         memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
         memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
         mme_ue->ue_location_timestamp = ogs_time_now();
@@ -814,6 +811,7 @@ void s1ap_handle_ue_capability_info_indication(
     S1AP_UERadioCapability_t *UERadioCapability = NULL;
 
     enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
 
     ogs_assert(enb);
     ogs_assert(enb->sctp.sock);
@@ -889,11 +887,10 @@ void s1ap_handle_ue_capability_info_indication(
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    if (enb_ue->mme_ue) {
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
+    if (mme_ue) {
         ogs_assert(UERadioCapability);
-        MME_UE_CHECK(OGS_LOG_DEBUG, enb_ue->mme_ue);
-        OGS_ASN_STORE_DATA(&enb_ue->mme_ue->ueRadioCapability,
-                UERadioCapability);
+        OGS_ASN_STORE_DATA(&mme_ue->ueRadioCapability, UERadioCapability);
     }
 }
 
@@ -989,13 +986,12 @@ void s1ap_handle_initial_context_setup_response(
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    mme_ue = enb_ue->mme_ue;
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
     if (!mme_ue) {
         ogs_error("No UE(mme-ue) context");
         return;
     }
 
-    MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
     if (E_RABSetupListCtxtSURes) {
         int uli_presence = 0;
 
@@ -1188,7 +1184,7 @@ void s1ap_handle_initial_context_setup_failure(
     ogs_debug("    Cause[Group:%d Cause:%d]",
             Cause->present, (int)Cause->choice.radioNetwork);
 
-    mme_ue = enb_ue->mme_ue;
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
 
     if (mme_ue) {
         /*
@@ -1198,6 +1194,9 @@ void s1ap_handle_initial_context_setup_failure(
         CLEAR_SERVICE_INDICATOR(mme_ue);
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
     }
+
+    enb_ue->relcause.group = S1AP_Cause_PR_nas;
+    enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
 
     /*
      * 19.2.2.3 in Spec 36.300
@@ -1300,7 +1299,7 @@ void s1ap_handle_ue_context_modification_response(
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    mme_ue = enb_ue->mme_ue;
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
     if (!mme_ue) {
         ogs_error("No UE(mme-ue) context");
         return;
@@ -1412,7 +1411,7 @@ void s1ap_handle_ue_context_modification_failure(
     ogs_debug("    Cause[Group:%d Cause:%d]",
             Cause->present, (int)Cause->choice.radioNetwork);
 
-    mme_ue = enb_ue->mme_ue;
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
     if (!mme_ue) {
         ogs_error("No UE(mme-ue) context");
         return;
@@ -1522,7 +1521,7 @@ void s1ap_handle_e_rab_setup_response(
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
         enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    mme_ue = enb_ue->mme_ue;
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
     if (!mme_ue) {
         ogs_error("No UE(mme-ue) context");
         return;
@@ -1763,6 +1762,8 @@ void s1ap_handle_ue_context_release_request(
         break;
     }
 
+    enb_ue->relcause.group = Cause->present;
+    enb_ue->relcause.cause = (int)Cause->choice.radioNetwork;
     mme_send_release_access_bearer_or_ue_context_release(enb_ue);
 }
 
@@ -1857,9 +1858,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
     int r;
     mme_ue_t *mme_ue = NULL;
 
-    ogs_assert(enb_ue);
-
-    if (enb_ue_cycle(enb_ue) == NULL) {
+    if (!enb_ue) {
         ogs_error("S1 context has already been removed");
         return;
     }
@@ -1868,7 +1867,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
     ogs_info("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    mme_ue = mme_ue_cycle(enb_ue->mme_ue);
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
     if (mme_ue) {
         ogs_info("    IMSI[%s]", mme_ue->imsi_bcd);
 
@@ -1964,7 +1963,6 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
             return;
         }
 
-        MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
         mme_ue_remove(mme_ue);
         break;
     case S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE:
@@ -2008,11 +2006,12 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
             ogs_warn("  Packet could be dropped during S1-Handover");
             mme_ue_clear_indirect_tunnel(mme_ue);
 
-            if (!mme_ue->enb_ue) {
+            enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+            if (!enb_ue) {
                 ogs_error("No S1 context");
                 return;
             }
-            r = s1ap_send_handover_cancel_ack(mme_ue->enb_ue);
+            r = s1ap_send_handover_cancel_ack(enb_ue);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
         }
@@ -2153,13 +2152,12 @@ void s1ap_handle_e_rab_modification_indication(
         return;
     }
 
-    mme_ue = enb_ue->mme_ue;
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
     if (!mme_ue) {
         ogs_error("No UE(mme-ue) context");
         return;
     }
 
-    MME_UE_CHECK(OGS_LOG_DEBUG, mme_ue);
     ogs_list_init(&mme_ue->bearer_to_modify_list);
 
     for (i = 0; i < E_RABToBeModifiedListBearerModInd->list.count; i++) {
@@ -2510,7 +2508,7 @@ void s1ap_handle_path_switch_request(
         return;
     }
 
-    mme_ue = mme_ue_cycle(enb_ue->mme_ue);
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
     if (!mme_ue) {
         ogs_error("No UE(mme-ue) context");
         return;
@@ -2816,7 +2814,7 @@ static void s1ap_handle_handover_required_intralte(enb_ue_t *source_ue,
         return;
     }
 
-    mme_ue = source_ue->mme_ue;
+    mme_ue = mme_ue_find_by_id(source_ue->mme_ue_id);
     if (!mme_ue) {
         ogs_error("No UE(mme-ue) context");
         return;
@@ -3112,7 +3110,7 @@ void s1ap_handle_handover_request_ack(
         return;
     }
 
-    source_ue = target_ue->source_ue;
+    source_ue = enb_ue_find_by_id(target_ue->source_ue_id);
     if (!source_ue) {
         ogs_error("No Source UE");
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
@@ -3122,7 +3120,7 @@ void s1ap_handle_handover_request_ack(
         return;
     }
 
-    mme_ue = source_ue->mme_ue;
+    mme_ue = mme_ue_find_by_id(source_ue->mme_ue_id);
     if (!mme_ue) {
         ogs_error("No UE(mme-ue) context");
         return;
@@ -3315,7 +3313,7 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
         return;
     }
 
-    source_ue = target_ue->source_ue;
+    source_ue = enb_ue_find_by_id(target_ue->source_ue_id);
     if (!source_ue) {
         ogs_error("No Source UE");
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, NULL,
@@ -3437,7 +3435,7 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
         return;
     }
 
-    target_ue = source_ue->target_ue;
+    target_ue = enb_ue_find_by_id(source_ue->target_ue_id);
     if (!target_ue) {
         ogs_error("No Target UE");
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
@@ -3565,7 +3563,7 @@ void s1ap_handle_enb_status_transfer(
         return;
     }
 
-    target_ue = source_ue->target_ue;
+    target_ue = enb_ue_find_by_id(source_ue->target_ue_id);
     if (!target_ue) {
         ogs_error("No Target UE");
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
@@ -3711,7 +3709,7 @@ void s1ap_handle_handover_notification(
     tAC = &TAI->tAC;
     ogs_assert(tAC && tAC->size == sizeof(uint16_t));
 
-    source_ue = target_ue->source_ue;
+    source_ue = enb_ue_find_by_id(target_ue->source_ue_id);
     if (!source_ue) {
         ogs_error("No Source UE");
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
@@ -3721,7 +3719,7 @@ void s1ap_handle_handover_notification(
         return;
     }
 
-    mme_ue = source_ue->mme_ue;
+    mme_ue = mme_ue_find_by_id(source_ue->mme_ue_id);
     if (!mme_ue) {
         ogs_error("No UE(mme-ue) context");
         return;
@@ -3944,7 +3942,7 @@ void s1ap_handle_s1_reset(
             /* ENB_UE Context where PartOfS1_interface was requested */
             enb_ue->part_of_s1_reset_requested = true;
 
-            mme_ue = enb_ue->mme_ue;
+            mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
             if (mme_ue) {
                 ogs_assert(OGS_OK ==
                     mme_gtp_send_release_access_bearers_request(mme_ue,

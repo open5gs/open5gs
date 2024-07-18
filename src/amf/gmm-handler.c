@@ -50,7 +50,7 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
     ogs_nas_ue_security_capability_t *ue_security_capability = NULL;
 
     ogs_assert(amf_ue);
-    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
     ogs_assert(ran_ue);
 
     ogs_assert(registration_request);
@@ -107,7 +107,8 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
         (OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_PRESENT| \
         OGS_NAS_5GS_REGISTRATION_REQUEST_UE_STATUS_PRESENT| \
         OGS_NAS_5GS_REGISTRATION_REQUEST_EPS_NAS_MESSAGE_CONTAINER_PRESENT| \
-        OGS_NAS_5GS_REGISTRATION_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT)
+        OGS_NAS_5GS_REGISTRATION_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT| \
+        OGS_NAS_5GS_REGISTRATION_REQUEST_ADDITIONAL_GUTI_PRESENT)
 
     if (ngap_code == NGAP_ProcedureCode_id_InitialUEMessage &&
         registration_request->presencemask &
@@ -632,7 +633,7 @@ ogs_nas_5gmm_cause_t gmm_handle_service_request(amf_ue_t *amf_ue,
     ogs_nas_key_set_identifier_t *ngksi = NULL;
 
     ogs_assert(amf_ue);
-    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
     ogs_assert(ran_ue);
 
     ngksi = &service_request->ngksi;
@@ -850,7 +851,7 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
     ogs_nas_de_registration_type_t *de_registration_type = NULL;
 
     ogs_assert(amf_ue);
-    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
     ogs_assert(ran_ue);
     ogs_assert(deregistration_request);
 
@@ -974,7 +975,7 @@ ogs_nas_5gmm_cause_t gmm_handle_identity_response(amf_ue_t *amf_ue,
     ogs_assert(identity_response);
 
     ogs_assert(amf_ue);
-    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
     ogs_assert(ran_ue);
     ogs_assert(identity_response);
 
@@ -1040,7 +1041,7 @@ ogs_nas_5gmm_cause_t gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
     ogs_nas_mobile_identity_imeisv_t *mobile_identity_imeisv = NULL;
 
     ogs_assert(amf_ue);
-    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
     ogs_assert(ran_ue);
     ogs_assert(security_mode_complete);
 
@@ -1139,8 +1140,8 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
     ogs_nas_dnn_t *dnn = NULL;
     ogs_nas_5gsm_header_t *gsm_header = NULL;
 
-    ogs_assert(amf_ue_cycle(amf_ue));
-    ogs_assert(ran_ue_cycle(ran_ue));
+    ogs_assert(amf_ue);
+    ogs_assert(ran_ue);
     ogs_assert(ul_nas_transport);
 
     payload_container_type = &ul_nas_transport->payload_container_type;

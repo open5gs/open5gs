@@ -69,22 +69,20 @@ static int decode_global_enb_id(S1AP_Global_ENB_ID_t *glob_enb_id, const uint8_t
     return OGS_OK;
 }
 
-/* 3GPP TS 23.003 2.8.2.1 Mapping from GUTI to RAI, P-TMSI and P-TMSI signature */
-void guti_to_rai_ptmsi(const ogs_nas_eps_guti_t *nas_guti, ogs_nas_rai_t *rai, mme_p_tmsi_t *ptmsi, uint32_t *ptmsi_sig)
+/* 3GPP TS 23.003 2.8.2.2 Mapping RAI and P-TMSI from GUTI (in the MME) */
+void guti_to_rai_ptmsi(const ogs_nas_eps_guti_t *nas_guti, ogs_nas_rai_t *rai, mme_p_tmsi_t *ptmsi)
 {
     rai->lai.nas_plmn_id = nas_guti->nas_plmn_id;
     rai->lai.lac = nas_guti->mme_gid;
-    rai->rac = nas_guti->mme_code;
+    rai->rac = (nas_guti->m_tmsi >> 16) & 0xff;
     if (ptmsi)
         *ptmsi = 0xC0000000 |
                 (nas_guti->m_tmsi & 0x3f000000) |
                 (nas_guti->mme_code & 0x0ff) << 16 |
                 (nas_guti->m_tmsi & 0x0000ffff);
-    if (ptmsi_sig)
-        *ptmsi_sig = (nas_guti->m_tmsi & 0x00ff0000);
 }
 
-/* 3GPP TS 23.003 2.8.2.2 Mapping from RAI and P-TMSI to GUTI */
+/* 3GPP TS 23.003 2.8.2.1 Mapping GUTI from RAI, P-TMSI and P-TMSI signature (in the MME) */
 static void rai_ptmsi_to_guti(const ogs_nas_rai_t *rai, mme_p_tmsi_t ptmsi, uint32_t ptmsi_sig, ogs_nas_eps_guti_t *nas_guti)
 {
     nas_guti->nas_plmn_id = rai->lai.nas_plmn_id;
@@ -304,6 +302,7 @@ int mme_gn_handle_sgsn_context_response(
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
     ogs_gtp1_mm_context_decoded_t gtp1_mm_ctx;
     ogs_gtp1_pdp_context_decoded_t gtp1_pdp_ctx;
+    enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
     uint8_t ret_cause = OGS_GTP1_CAUSE_REQUEST_ACCEPTED;
 
@@ -319,6 +318,8 @@ int mme_gn_handle_sgsn_context_response(
         ogs_error("MME-UE Context has already been removed");
         return OGS_GTP1_CAUSE_IMSI_IMEI_NOT_KNOWN;
     }
+
+    enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
 
     switch (resp->cause.u8) {
      case OGS_GTP1_CAUSE_REQUEST_ACCEPTED:
@@ -340,7 +341,7 @@ int mme_gn_handle_sgsn_context_response(
 
     if (resp->cause.u8 != OGS_GTP1_CAUSE_REQUEST_ACCEPTED) {
         ogs_error("[Gn] Rx SGSN Context Response cause:%u", resp->cause.u8);
-        rv = nas_eps_send_tau_reject(mme_ue->enb_ue, mme_ue, emm_cause);
+        rv = nas_eps_send_tau_reject(enb_ue, mme_ue, emm_cause);
         return OGS_GTP1_CAUSE_SYSTEM_FAILURE;
     }
 
@@ -430,7 +431,7 @@ int mme_gn_handle_sgsn_context_response(
 nack_and_reject:
     rv = mme_gtp1_send_sgsn_context_ack(mme_ue, gtp1_cause, xact);
     ogs_info("[%s] TAU Reject [OGS_NAS_EMM_CAUSE:%d]", mme_ue->imsi_bcd, emm_cause);
-    rv = nas_eps_send_tau_reject(mme_ue->enb_ue, mme_ue, emm_cause);
+    rv = nas_eps_send_tau_reject(enb_ue, mme_ue, emm_cause);
     return OGS_GTP1_CAUSE_SYSTEM_FAILURE;
 }
 
@@ -439,6 +440,7 @@ void mme_gn_handle_sgsn_context_acknowledge(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue, ogs_gtp1_sgsn_context_acknowledge_t *req)
 {
     int rv;
+    enb_ue_t *enb_ue = NULL;
 
     ogs_debug("[Gn] Rx SGSN Context Acknowledge");
 
@@ -452,6 +454,8 @@ void mme_gn_handle_sgsn_context_acknowledge(
         ogs_error("MME-UE Context has already been removed");
         return;
     }
+
+    enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
 
     /* 3GPP TS 23.060 6.9.1.2.2 Step 4), 3GPP TS 23.401 D.3.5 Step 4)
     * The new SGSN sends an SGSN Context Acknowledge message to the old SGSN. The old MME (which is the old
@@ -475,8 +479,8 @@ void mme_gn_handle_sgsn_context_acknowledge(
     * connection is released by the source eNodeB. The source eNodeB confirms the release of the RRC connection
     * and of the S1-U connection by sending a S1-U Release Complete message to the source MME."
     */
-    if (mme_ue->enb_ue) {
-        rv = s1ap_send_ue_context_release_command(mme_ue->enb_ue,
+    if (enb_ue) {
+        rv = s1ap_send_ue_context_release_command(enb_ue,
             S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
             S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
         ogs_expect(rv == OGS_OK);

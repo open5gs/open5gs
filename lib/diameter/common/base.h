@@ -43,6 +43,9 @@ typedef struct ogs_diam_config_s {
     /* the local port for Diameter/TLS (default: 5658) in host byte order */
     uint16_t cnf_port_tls;
 
+    /* default TC timer */
+    int cnf_timer_tc;
+
     struct {
         /* the peer does not relay messages (0xffffff app id) */
         unsigned no_fwd: 1;
@@ -64,6 +67,7 @@ typedef struct ogs_diam_config_s {
         const char *identity;
         const char *addr; /* IP address of the remote peer */
         uint16_t port; /* port to connect to. 0: default. */
+        int tc_timer; /* TcTimer value to use for this peer, use default if 0 */
     } conn[MAX_NUM_OF_FD_CONN];
     int num_of_conn;
 } ogs_diam_config_t;

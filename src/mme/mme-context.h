@@ -146,45 +146,6 @@ typedef struct mme_context_s {
     /* Generator for unique identification */
     uint32_t        mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
 
-#define MME_UE_CHECK(level, __mME) \
-    do { \
-        sgw_ue_t *__sGW = (((mme_ue_t *)__mME)->sgw_ue); \
-        mme_sess_t *__sESS = NULL; \
-        mme_bearer_t *__bEARER = NULL; \
-        \
-        ogs_log_message(level, 0, "MME-UE Context Memory[%p:%p]", \
-                (__mME), mme_ue_cycle((__mME))); \
-        ogs_log_message(level, 0, "SGW-UE Context Memory[%p:%p]", \
-                (__sGW), sgw_ue_cycle((__sGW))); \
-        ogs_log_message(level, 0, \
-                "IMSI [%s] NAS-EPS Type[%d]", \
-                (__mME) ? ((mme_ue_t *)__mME)->imsi_bcd : "No MME_UE", \
-                (__mME) ? ((mme_ue_t *)__mME)->nas_eps.type : 0); \
-        ogs_log_message(level, 0, \
-                "MME_S11_TEID[%d] SGW_S11_TEID[%d]", \
-                (__mME) ? ((mme_ue_t *)__mME)->mme_s11_teid : 0, \
-                (__sGW) ? (__sGW)->sgw_s11_teid : 0); \
-        if (!mme_ue_cycle(__mME)) { \
-            ogs_log_message(level, 0, \
-                    "MME-UE Context has already been removed"); \
-            break; \
-        } \
-        ogs_list_for_each(&((mme_ue_t *)__mME)->sess_list, (__sESS)) { \
-            ogs_log_message(level, 0, "SESS(%p) [%s:%d]", (__sESS), \
-                    (__sESS)->session ? (__sESS)->session->name : "Unknown", \
-                    (__sESS)->pti); \
-            ogs_list_for_each(&(__sESS)->bearer_list, (__bEARER)) { \
-                ogs_log_message(level, 0, \
-                        "BEARER(%p) [%d] ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]", \
-                        (__bEARER), (__bEARER)->ebi, \
-                        (__bEARER)->enb_s1u_teid, (__bEARER)->sgw_s1u_teid); \
-                ogs_assert((__bEARER)->sess == (__sESS)); \
-                ogs_assert((__bEARER)->mme_ue == (__mME)); \
-            } \
-            ogs_assert((__sESS)->mme_ue == (__mME)); \
-        } \
-    } while(0)
-
     ogs_list_t      mme_ue_list;
 
     ogs_hash_t *enb_addr_hash;  /* hash table for ENB Address */
@@ -273,6 +234,7 @@ typedef struct mme_csmap_s {
 
 typedef struct mme_enb_s {
     ogs_lnode_t     lnode;
+    ogs_pool_id_t   id;
 
     ogs_fsm_t       sm;         /* A state machine */
 
@@ -298,6 +260,7 @@ typedef struct mme_enb_s {
 
 struct enb_ue_s {
     ogs_lnode_t     lnode;
+    ogs_pool_id_t   id;
     uint32_t        index;
 
     /* UE identity */
@@ -309,8 +272,8 @@ struct enb_ue_s {
 
     /* Handover Info */
     S1AP_HandoverType_t handover_type;
-    enb_ue_t        *source_ue;
-    enb_ue_t        *target_ue;
+    ogs_pool_id_t source_ue_id;
+    ogs_pool_id_t target_ue_id;
 
     /* Use mme_ue->tai, mme_ue->e_cgi.
      * Do not access enb_ue->saved.tai enb_ue->saved.e_cgi.
@@ -323,6 +286,12 @@ struct enb_ue_s {
 
     /* S1 Holding timer for removing this context */
     ogs_timer_t     *t_s1_holding;
+
+    /* UEContextReleaseRequest or InitialContextSetupFailure */
+    struct {
+        S1AP_Cause_PR group;
+        long cause;
+    } relcause;
 
     /* Store by UE Context Release Command
      * Retrieve by UE Context Release Complete */
@@ -339,15 +308,16 @@ struct enb_ue_s {
     bool            part_of_s1_reset_requested;
 
     /* Related Context */
-    mme_enb_t       *enb;
-    mme_ue_t        *mme_ue;
+    ogs_pool_id_t   enb_id;
+    ogs_pool_id_t   mme_ue_id;
 };
 
 struct sgw_ue_s {
     ogs_lnode_t     lnode;
+    ogs_pool_id_t   id;
 
-    sgw_ue_t        *source_ue;
-    sgw_ue_t        *target_ue;
+    ogs_pool_id_t   source_ue_id;
+    ogs_pool_id_t   target_ue_id;
 
     /* UE identity */
     uint32_t        sgw_s11_teid;   /* SGW-S11-TEID is received from SGW */
@@ -360,11 +330,12 @@ struct sgw_ue_s {
         mme_sgw_t       *sgw;
         ogs_gtp_node_t  *gnode;
     };
-    mme_ue_t        *mme_ue;
+    ogs_pool_id_t mme_ue_id;
 };
 
 struct mme_ue_s {
     ogs_lnode_t     lnode;
+    ogs_pool_id_t   id;
     ogs_fsm_t       sm;     /* A state machine */
 
     struct {
@@ -536,50 +507,66 @@ struct mme_ue_s {
 
     /* Paging Info */
 #define ECM_CONNECTED(__mME) \
-    ((__mME) && ((__mME)->enb_ue != NULL) && enb_ue_cycle((__mME)->enb_ue))
+    ((__mME) && \
+     ((__mME)->enb_ue_id >= OGS_MIN_POOL_ID) && \
+     ((__mME)->enb_ue_id <= OGS_MAX_POOL_ID) && \
+     (enb_ue_find_by_id((__mME)->enb_ue_id)))
 #define ECM_IDLE(__mME) \
     ((__mME) && \
-     (((__mME)->enb_ue == NULL) || (enb_ue_cycle((__mME)->enb_ue) == NULL)))
-    enb_ue_t        *enb_ue;    /* S1 UE context */
+     (((__mME)->enb_ue_id < OGS_MIN_POOL_ID) || \
+      ((__mME)->enb_ue_id > OGS_MAX_POOL_ID) || \
+      (enb_ue_find_by_id((__mME)->enb_ue_id) == NULL)))
+    ogs_pool_id_t   enb_ue_id;
 
 #define HOLDING_S1_CONTEXT(__mME) \
     do { \
-        enb_ue_deassociate((__mME)->enb_ue); \
+        enb_ue_t *enb_ue_holding = NULL; \
         \
-        (__mME)->enb_ue_holding = enb_ue_cycle((__mME)->enb_ue); \
-        if ((__mME)->enb_ue_holding) { \
+        (__mME)->enb_ue_holding_id = OGS_INVALID_POOL_ID; \
+        \
+        enb_ue_holding = enb_ue_find_by_id((__mME)->enb_ue_id); \
+        if (enb_ue_holding) { \
+            enb_ue_deassociate(enb_ue_holding); \
+            \
             ogs_warn("[%s] Holding S1 Context", (__mME)->imsi_bcd); \
             ogs_warn("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]", \
-                    (__mME)->imsi_bcd, (__mME)->enb_ue_holding->enb_ue_s1ap_id, \
-                    (__mME)->enb_ue_holding->mme_ue_s1ap_id); \
+                    (__mME)->imsi_bcd, \
+                    enb_ue_holding->enb_ue_s1ap_id, \
+                    enb_ue_holding->mme_ue_s1ap_id); \
             \
-            (__mME)->enb_ue_holding->ue_ctx_rel_action = \
+            enb_ue_holding->ue_ctx_rel_action = \
                 S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE; \
-            ogs_timer_start((__mME)->enb_ue_holding->t_s1_holding, \
+            ogs_timer_start(enb_ue_holding->t_s1_holding, \
                     mme_timer_cfg(MME_TIMER_S1_HOLDING)->duration); \
+            \
+            (__mME)->enb_ue_holding_id = (__mME)->enb_ue_id; \
         } else \
             ogs_error("[%s] S1 Context has already been removed", \
                     (__mME)->imsi_bcd); \
     } while(0)
 #define CLEAR_S1_CONTEXT(__mME) \
     do { \
-        if (enb_ue_cycle((__mME)->enb_ue_holding)) { \
+        enb_ue_t *enb_ue_holding = NULL; \
+        \
+        enb_ue_holding = enb_ue_find_by_id((__mME)->enb_ue_holding_id); \
+        if (enb_ue_holding) { \
             int r; \
             ogs_warn("[%s] Clear S1 Context", (__mME)->imsi_bcd); \
             ogs_warn("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]", \
-                    (__mME)->imsi_bcd, (__mME)->enb_ue_holding->enb_ue_s1ap_id, \
-                    (__mME)->enb_ue_holding->mme_ue_s1ap_id); \
+                    (__mME)->imsi_bcd, \
+                    enb_ue_holding->enb_ue_s1ap_id, \
+                    enb_ue_holding->mme_ue_s1ap_id); \
             \
             r = s1ap_send_ue_context_release_command( \
-                    (__mME)->enb_ue_holding, \
+                    enb_ue_holding, \
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release, \
                     S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0); \
             ogs_expect(r == OGS_OK); \
             ogs_assert(r != OGS_ERROR); \
         } \
-        (__mME)->enb_ue_holding = NULL; \
+        (__mME)->enb_ue_holding_id = OGS_INVALID_POOL_ID; \
     } while(0)
-    enb_ue_t        *enb_ue_holding;
+    ogs_pool_id_t   enb_ue_holding_id;
 
     struct {
 #define MME_CLEAR_PAGING_INFO(__mME) \
@@ -596,7 +583,7 @@ struct mme_ue_s {
         ogs_assert(__tYPE); \
         ogs_debug("[%s] Store Paging Info", mme_ue->imsi_bcd); \
         (__mME)->paging.type = __tYPE; \
-        (__mME)->paging.data = __dATA; \
+        (__mME)->paging.data = OGS_UINT_TO_POINTER(__dATA); \
     } while(0)
 
 #define MME_PAGING_ONGOING(__mME) ((__mME) && ((__mME)->paging.type))
@@ -614,7 +601,7 @@ struct mme_ue_s {
     } paging;
 
     /* SGW UE context */
-    sgw_ue_t        *sgw_ue;
+    ogs_pool_id_t sgw_ue_id;
 
     /* Save PDN Connectivity Request */
     ogs_nas_esm_message_container_t pdn_connectivity_request;
@@ -715,19 +702,25 @@ struct mme_ue_s {
 };
 
 #define SESSION_CONTEXT_IS_AVAILABLE(__mME) \
-     ((__mME) && ((__mME)->sgw_ue) && (((__mME)->sgw_ue)->sgw_s11_teid))
+    ((__mME) && \
+     ((__mME)->sgw_ue_id >= OGS_MIN_POOL_ID) && \
+     ((__mME)->sgw_ue_id <= OGS_MAX_POOL_ID) && \
+     (sgw_ue_find_by_id((__mME)->sgw_ue_id)) && \
+     (sgw_ue_find_by_id((__mME)->sgw_ue_id)->sgw_s11_teid))
 
 #define CLEAR_SESSION_CONTEXT(__mME) \
     do { \
+        sgw_ue_t *sgw_ue = NULL; \
         ogs_assert((__mME)); \
-        ((__mME)->sgw_ue)->sgw_s11_teid = 0; \
+        sgw_ue = sgw_ue_find_by_id((__mME)->sgw_ue_id); \
+        if (sgw_ue) sgw_ue->sgw_s11_teid = 0; \
     } while(0)
 
 #define MME_SESS_CLEAR(__sESS) \
     do { \
         mme_ue_t *mme_ue = NULL; \
         ogs_assert(__sESS); \
-        mme_ue = (__sESS)->mme_ue; \
+        mme_ue = mme_ue_find_by_id((__sESS)->mme_ue_id); \
         ogs_assert(mme_ue); \
         ogs_info("Removed Session: UE IMSI:[%s] APN:[%s]", \
                 mme_ue->imsi_bcd, \
@@ -743,6 +736,7 @@ struct mme_ue_s {
     (mme_ue_have_session_release_pending(__mME))
 typedef struct mme_sess_s {
     ogs_lnode_t     lnode;
+    ogs_pool_id_t   id;
 
     uint8_t         pti;        /* Procedure Trasaction Identity */
 
@@ -756,7 +750,7 @@ typedef struct mme_sess_s {
     ogs_list_t      bearer_list;
 
     /* Related Context */
-    mme_ue_t        *mme_ue;
+    ogs_pool_id_t   mme_ue_id;
 
     ogs_session_t   *session;
 
@@ -821,6 +815,8 @@ typedef struct mme_bearer_s {
     ogs_lnode_t     lnode;
     ogs_lnode_t     to_modify_node;
 
+    ogs_pool_id_t   id;
+
     ogs_fsm_t       sm;             /* State Machine */
 
     uint8_t         *ebi_node;      /* Pool-Node for EPS Bearer ID */
@@ -870,8 +866,8 @@ typedef struct mme_bearer_s {
     } t3489;
 
     /* Related Context */
-    mme_ue_t        *mme_ue;
-    mme_sess_t      *sess;
+    ogs_pool_id_t   mme_ue_id;
+    ogs_pool_id_t   sess_id;
 
     /*
      * Issues #3240
@@ -889,7 +885,7 @@ typedef struct mme_bearer_s {
      * as a list so that we can manage multiple of them.
      */
     struct {
-        ogs_gtp_xact_t  *xact;
+        ogs_pool_id_t  xact_id;
     } create, delete, notify;
     struct {
         ogs_list_t  xact_list;
@@ -940,7 +936,7 @@ mme_enb_t *mme_enb_find_by_addr(const ogs_sockaddr_t *addr);
 mme_enb_t *mme_enb_find_by_enb_id(uint32_t enb_id);
 int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id);
 int mme_enb_sock_type(ogs_sock_t *sock);
-mme_enb_t *mme_enb_cycle(mme_enb_t *enb);
+mme_enb_t *mme_enb_find_by_id(ogs_pool_id_t id);
 
 enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id);
 void enb_ue_remove(enb_ue_t *enb_ue);
@@ -949,12 +945,12 @@ enb_ue_t *enb_ue_find_by_enb_ue_s1ap_id(
         const mme_enb_t *enb, uint32_t enb_ue_s1ap_id);
 enb_ue_t *enb_ue_find(uint32_t index);
 enb_ue_t *enb_ue_find_by_mme_ue_s1ap_id(uint32_t mme_ue_s1ap_id);
-enb_ue_t *enb_ue_cycle(enb_ue_t *enb_ue);
+enb_ue_t *enb_ue_find_by_id(ogs_pool_id_t id);
 
 sgw_ue_t *sgw_ue_add(mme_sgw_t *sgw);
 void sgw_ue_remove(sgw_ue_t *sgw_ue);
 void sgw_ue_switch_to_sgw(sgw_ue_t *sgw_ue, mme_sgw_t *new_sgw);
-sgw_ue_t *sgw_ue_cycle(sgw_ue_t *sgw_ue);
+sgw_ue_t *sgw_ue_find_by_id(ogs_pool_id_t id);
 
 typedef enum {
     SGW_WITHOUT_RELOCATION = 1,
@@ -969,7 +965,7 @@ void mme_ue_confirm_guti(mme_ue_t *mme_ue);
 mme_ue_t *mme_ue_add(enb_ue_t *enb_ue);
 void mme_ue_remove(mme_ue_t *mme_ue);
 void mme_ue_remove_all(void);
-mme_ue_t *mme_ue_cycle(mme_ue_t *mme_ue);
+mme_ue_t *mme_ue_find_by_id(ogs_pool_id_t id);
 
 void mme_ue_fsm_init(mme_ue_t *mme_ue);
 void mme_ue_fsm_fini(mme_ue_t *mme_ue);
@@ -1059,6 +1055,7 @@ void mme_sess_remove_all(mme_ue_t *mme_ue);
 mme_sess_t *mme_sess_find_by_pti(const mme_ue_t *mme_ue, uint8_t pti);
 mme_sess_t *mme_sess_find_by_ebi(const mme_ue_t *mme_ue, uint8_t ebi);
 mme_sess_t *mme_sess_find_by_apn(const mme_ue_t *mme_ue, const char *apn);
+mme_sess_t *mme_sess_find_by_id(ogs_pool_id_t id);
 
 mme_sess_t *mme_sess_first(const mme_ue_t *mme_ue);
 mme_sess_t *mme_sess_next(mme_sess_t *sess);
@@ -1075,7 +1072,7 @@ mme_bearer_t *mme_default_bearer_in_sess(mme_sess_t *sess);
 mme_bearer_t *mme_linked_bearer(mme_bearer_t *bearer);
 mme_bearer_t *mme_bearer_first(const mme_sess_t *sess);
 mme_bearer_t *mme_bearer_next(mme_bearer_t *bearer);
-mme_bearer_t *mme_bearer_cycle(mme_bearer_t *bearer);
+mme_bearer_t *mme_bearer_find_by_id(ogs_pool_id_t id);
 
 void mme_session_remove_all(mme_ue_t *mme_ue);
 ogs_session_t *mme_session_find_by_apn(mme_ue_t *mme_ue, const char *apn);

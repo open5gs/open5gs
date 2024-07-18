@@ -53,7 +53,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
 
     ogs_assert(sess);
     ogs_assert(stream);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
     server = ogs_sbi_server_from_stream(stream);
     ogs_assert(server);

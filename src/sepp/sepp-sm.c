@@ -42,6 +42,7 @@ void sepp_state_operational(ogs_fsm_t *s, sepp_event_t *e)
     sepp_node_t *sepp_node = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_server_t *server = NULL;
 
@@ -64,8 +65,17 @@ void sepp_state_operational(ogs_fsm_t *s, sepp_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         request = e->h.sbi.request;
         ogs_assert(request);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
+
         server = ogs_sbi_server_from_stream(stream);
         ogs_assert(server);
 

@@ -177,7 +177,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
              * 4.3.2 PDU Session Establishment *
              ***********************************/
 
-            ran_ue = ran_ue_cycle(sess->ran_ue);
+            ran_ue = ran_ue_find_by_id(sess->ran_ue_id);
             if (ran_ue) {
                 if (sess->pdu_session_establishment_accept) {
                     ogs_pkbuf_free(sess->pdu_session_establishment_accept);
@@ -480,7 +480,8 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_error("[%d:%d] PDU session establishment reject",
                 sess->psi, sess->pti);
 
-        r = nas_5gs_send_gsm_reject(sess->ran_ue, sess,
+        r = nas_5gs_send_gsm_reject(
+                ran_ue_find_by_id(sess->ran_ue_id), sess,
                 OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1buf);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -1003,7 +1004,7 @@ int amf_namf_callback_handle_sdm_data_change_notify(
     }
 
     if (amf_ue) {
-        ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+        ran_ue_t *ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
         if (!ran_ue) {
             ogs_error("NG context has already been removed");
             /* ran_ue is required for amf_ue_is_rat_restricted() */
@@ -1092,6 +1093,7 @@ int amf_namf_comm_handle_ue_context_transfer_request(
     ogs_sbi_response_t *response = NULL;
     ogs_sbi_message_t sendmsg;
     amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
 
     OpenAPI_ambr_t *UeAmbr = NULL;
     OpenAPI_list_t *MmContextList = NULL;
@@ -1246,8 +1248,9 @@ int amf_namf_comm_handle_ue_context_transfer_request(
      * Context TRANSFERRED !!!
      * So, we removed UE context.
      */
-    if (amf_ue->ran_ue)
-        ran_ue_remove(amf_ue->ran_ue);
+    ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+    if (ran_ue)
+        ran_ue_remove(ran_ue);
     amf_ue_remove(amf_ue);
 
     return OGS_OK;

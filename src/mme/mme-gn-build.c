@@ -24,7 +24,11 @@
 
 static int sess_fill_mm_context_decoded(mme_sess_t *sess, ogs_gtp1_mm_context_decoded_t *mmctx_dec)
 {
-    mme_ue_t *mme_ue = sess->mme_ue;
+    mme_ue_t *mme_ue = NULL;
+
+    ogs_assert(sess);
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
+    ogs_assert(mme_ue);
     *mmctx_dec = (ogs_gtp1_mm_context_decoded_t) {
         .gupii = 1, /* Integrity Protection not required */
         .ugipai = 1, /* Ignore "Used GPRS integrity protection algorithm" field" */
@@ -55,8 +59,13 @@ static int sess_fill_mm_context_decoded(mme_sess_t *sess, ogs_gtp1_mm_context_de
 static void build_qos_profile_from_session(ogs_gtp1_qos_profile_decoded_t *qos_pdec,
         const mme_sess_t *sess, const mme_bearer_t *bearer)
 {
-    const mme_ue_t *mme_ue = sess->mme_ue;
+    mme_ue_t *mme_ue = NULL;
     const ogs_session_t *session = sess->session;
+
+    ogs_assert(sess);
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
+    ogs_assert(mme_ue);
+
     /* FIXME: Initialize with defaults: */
     memset(qos_pdec, 0, sizeof(*qos_pdec));
 
@@ -188,13 +197,12 @@ static int sess_fill_pdp_context_decoded(mme_sess_t *sess, ogs_gtp1_pdp_context_
 
 /* 3GPP TS 29.060 7.5.3 SGSN Context Request */
 ogs_pkbuf_t *mme_gn_build_sgsn_context_request(
-                mme_ue_t *mme_ue)
+                mme_ue_t *mme_ue, const ogs_nas_p_tmsi_signature_t *ptmsi_sig)
 {
     ogs_gtp1_message_t gtp1_message;
     ogs_gtp1_sgsn_context_request_t *req = NULL;
     ogs_nas_rai_t rai;
     mme_p_tmsi_t ptmsi;
-    uint32_t ptmsi_sig;
     ogs_gtp1_gsn_addr_t mme_gnc_gsnaddr, mme_gnc_alt_gsnaddr;
     int gsn_len;
     int rv;
@@ -206,21 +214,25 @@ ogs_pkbuf_t *mme_gn_build_sgsn_context_request(
     req = &gtp1_message.sgsn_context_request;
     memset(&gtp1_message, 0, sizeof(ogs_gtp1_message_t));
 
-    guti_to_rai_ptmsi(&mme_ue->next.guti, &rai, &ptmsi, &ptmsi_sig);
+    guti_to_rai_ptmsi(&mme_ue->next.guti, &rai, &ptmsi);
 
     req->imsi.presence = 0;
 
     req->routeing_area_identity.presence = 1;
+    /* Needs to be big-endian */
+    rai.lai.lac = htons(rai.lai.lac);
     req->routeing_area_identity.data = &rai;
     req->routeing_area_identity.len = sizeof(ogs_nas_rai_t);
 
     req->temporary_logical_link_identifier.presence = 0;
 
     req->packet_tmsi.presence = 1;
-    req->packet_tmsi.u32 = be32toh(ptmsi);
+    req->packet_tmsi.u32 = ptmsi;
 
-    req->p_tmsi_signature.presence = 1;
-    req->p_tmsi_signature.u24 = ptmsi_sig;
+    if (ptmsi_sig) {
+        req->p_tmsi_signature.presence = 1;
+        req->p_tmsi_signature.u24 = *ptmsi_sig >> 8;
+    }
 
     req->ms_validated.presence = 0;
 

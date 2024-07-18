@@ -41,6 +41,7 @@ static int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type);
 
 static void response_timeout(void *data);
 static void holding_timeout(void *data);
+static void peer_timeout(void *data);
 
 int ogs_gtp_xact_init(void)
 {
@@ -75,9 +76,8 @@ ogs_gtp_xact_t *ogs_gtp1_xact_local_create(ogs_gtp_node_t *gnode,
     ogs_assert(gnode);
     ogs_assert(hdesc);
 
-    ogs_pool_alloc(&pool, &xact);
+    ogs_pool_id_calloc(&pool, &xact);
     ogs_assert(xact);
-    memset(xact, 0, sizeof *xact);
     xact->index = ogs_pool_index(&pool, xact);
 
     xact->gtp_version = 1;
@@ -92,14 +92,16 @@ ogs_gtp_xact_t *ogs_gtp1_xact_local_create(ogs_gtp_node_t *gnode,
      * message (for which a response has been defined) is sent." */
     if (hdesc->type != OGS_GTP1_RAN_INFORMATION_RELAY_TYPE) {
         xact->tm_response = ogs_timer_add(
-                ogs_app()->timer_mgr, response_timeout, xact);
+                ogs_app()->timer_mgr, response_timeout,
+                OGS_UINT_TO_POINTER(xact->id));
         ogs_assert(xact->tm_response);
         xact->response_rcount =
             ogs_local_conf()->time.message.gtp.n3_response_rcount;
     }
 
     xact->tm_holding = ogs_timer_add(
-            ogs_app()->timer_mgr, holding_timeout, xact);
+            ogs_app()->timer_mgr, holding_timeout,
+            OGS_UINT_TO_POINTER(xact->id));
     ogs_assert(xact->tm_holding);
     xact->holding_rcount = ogs_local_conf()->time.message.gtp.n3_holding_rcount;
 
@@ -131,9 +133,8 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     ogs_assert(gnode);
     ogs_assert(hdesc);
 
-    ogs_pool_alloc(&pool, &xact);
+    ogs_pool_id_calloc(&pool, &xact);
     ogs_assert(xact);
-    memset(xact, 0, sizeof *xact);
     xact->index = ogs_pool_index(&pool, xact);
 
     xact->gtp_version = 2;
@@ -150,15 +151,21 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     xact->data = data;
 
     xact->tm_response = ogs_timer_add(
-            ogs_app()->timer_mgr, response_timeout, xact);
+            ogs_app()->timer_mgr, response_timeout,
+            OGS_UINT_TO_POINTER(xact->id));
     ogs_assert(xact->tm_response);
     xact->response_rcount =
         ogs_local_conf()->time.message.gtp.n3_response_rcount,
 
     xact->tm_holding = ogs_timer_add(
-            ogs_app()->timer_mgr, holding_timeout, xact);
+            ogs_app()->timer_mgr, holding_timeout,
+            OGS_UINT_TO_POINTER(xact->id));
     ogs_assert(xact->tm_holding);
     xact->holding_rcount = ogs_local_conf()->time.message.gtp.n3_holding_rcount,
+
+    xact->tm_peer = ogs_timer_add(ogs_app()->timer_mgr, peer_timeout,
+            OGS_UINT_TO_POINTER(xact->id));
+    ogs_assert(xact->tm_peer);
 
     ogs_list_add(&xact->gnode->local_list, xact);
 
@@ -184,9 +191,8 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
 
     ogs_assert(gnode);
 
-    ogs_pool_alloc(&pool, &xact);
+    ogs_pool_id_calloc(&pool, &xact);
     ogs_assert(xact);
-    memset(xact, 0, sizeof *xact);
     xact->index = ogs_pool_index(&pool, xact);
 
     xact->gtp_version = gtp_version;
@@ -196,15 +202,21 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
     xact->gnode = gnode;
 
     xact->tm_response = ogs_timer_add(
-            ogs_app()->timer_mgr, response_timeout, xact);
+            ogs_app()->timer_mgr, response_timeout,
+            OGS_UINT_TO_POINTER(xact->id));
     ogs_assert(xact->tm_response);
     xact->response_rcount =
         ogs_local_conf()->time.message.gtp.n3_response_rcount,
 
     xact->tm_holding = ogs_timer_add(
-            ogs_app()->timer_mgr, holding_timeout, xact);
+            ogs_app()->timer_mgr, holding_timeout,
+            OGS_UINT_TO_POINTER(xact->id));
     ogs_assert(xact->tm_holding);
     xact->holding_rcount = ogs_local_conf()->time.message.gtp.n3_holding_rcount,
+
+    xact->tm_peer = ogs_timer_add(ogs_app()->timer_mgr, peer_timeout,
+            OGS_UINT_TO_POINTER(xact->id));
+    ogs_assert(xact->tm_peer);
 
     ogs_list_add(&xact->gnode->remote_list, xact);
 
@@ -216,9 +228,9 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
     return xact;
 }
 
-ogs_gtp_xact_t *ogs_gtp_xact_cycle(ogs_gtp_xact_t *xact)
+ogs_gtp_xact_t *ogs_gtp_xact_find_by_id(ogs_pool_id_t id)
 {
-    return ogs_pool_cycle(&pool, xact);
+    return ogs_pool_find_by_id(&pool, id);
 }
 
 void ogs_gtp_xact_delete_all(ogs_gtp_node_t *gnode)
@@ -735,9 +747,18 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
 static void response_timeout(void *data)
 {
     char buf[OGS_ADDRSTRLEN];
-    ogs_gtp_xact_t *xact = data;
+    ogs_pool_id_t xact_id = OGS_INVALID_POOL_ID;
+    ogs_gtp_xact_t *xact = NULL;
 
-    ogs_assert(xact);
+    ogs_assert(data);
+    xact_id = OGS_POINTER_TO_UINT(data);
+    ogs_assert(xact_id >= OGS_MIN_POOL_ID && xact_id <= OGS_MAX_POOL_ID);
+
+    xact = ogs_gtp_xact_find_by_id(xact_id);
+    if (!xact) {
+        ogs_error("GTP Transaction has already been removed [%d]", xact_id);
+        return;;
+    }
     ogs_assert(xact->gnode);
 
     ogs_debug("[%d] %s Response Timeout "
@@ -778,9 +799,18 @@ static void response_timeout(void *data)
 static void holding_timeout(void *data)
 {
     char buf[OGS_ADDRSTRLEN];
-    ogs_gtp_xact_t *xact = data;
+    ogs_pool_id_t xact_id = OGS_INVALID_POOL_ID;
+    ogs_gtp_xact_t *xact = NULL;
 
-    ogs_assert(xact);
+    ogs_assert(data);
+    xact_id = OGS_POINTER_TO_UINT(data);
+    ogs_assert(xact_id >= OGS_MIN_POOL_ID && xact_id <= OGS_MAX_POOL_ID);
+
+    xact = ogs_gtp_xact_find_by_id(xact_id);
+    if (!xact) {
+        ogs_error("GTP Transaction has already been removed [%d]", xact_id);
+        return;;
+    }
     ogs_assert(xact->gnode);
 
     ogs_debug("[%d] %s Holding Timeout "
@@ -803,22 +833,37 @@ static void holding_timeout(void *data)
                 xact->step, xact->seq[xact->step-1].type,
                 OGS_ADDR(&xact->gnode->addr, buf),
                 OGS_PORT(&xact->gnode->addr));
-        /*
-         * Even for remotely created transactions, there are things
-         * that need to be done, such as returning memory
-         * when the transaction is deleted after a holding timeout.
-         * We added a Callback Function for that purpose.
-         *
-         * You can set it up and use it as follows.
-         *
-         *   xact->cb = gtp_remote_holding_timeout;
-         *   xact->data = bearer;
-         */
-        if (xact->cb)
-            xact->cb(xact, xact->data);
-
         ogs_gtp_xact_delete(xact);
     }
+}
+
+static void peer_timeout(void *data)
+{
+    char buf[OGS_ADDRSTRLEN];
+    ogs_pool_id_t xact_id = OGS_INVALID_POOL_ID;
+    ogs_gtp_xact_t *xact = NULL;
+
+    ogs_assert(data);
+    xact_id = OGS_POINTER_TO_UINT(data);
+    ogs_assert(xact_id >= OGS_MIN_POOL_ID && xact_id <= OGS_MAX_POOL_ID);
+
+    xact = ogs_gtp_xact_find_by_id(xact_id);
+    if (!xact) {
+        ogs_error("GTP Transaction has already been removed [%d]", xact_id);
+        return;;
+    }
+    ogs_assert(xact->gnode);
+
+    ogs_error("[%d] %s Peer Timeout "
+            "for step %d type %d peer [%s]:%d",
+            xact->xid,
+            xact->org == OGS_GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+            xact->step, xact->seq[xact->step-1].type,
+            OGS_ADDR(&xact->gnode->addr, buf),
+            OGS_PORT(&xact->gnode->addr));
+
+    if (xact->peer_cb)
+        xact->peer_cb(xact, xact->peer_data);
 }
 
 int ogs_gtp1_xact_receive(
@@ -1134,11 +1179,11 @@ void ogs_gtp_xact_associate(ogs_gtp_xact_t *xact1, ogs_gtp_xact_t *xact2)
     ogs_assert(xact1);
     ogs_assert(xact2);
 
-    ogs_assert(xact1->assoc_xact == NULL);
-    ogs_assert(xact2->assoc_xact == NULL);
+    ogs_assert(xact1->assoc_xact_id == OGS_INVALID_POOL_ID);
+    ogs_assert(xact2->assoc_xact_id == OGS_INVALID_POOL_ID);
 
-    xact1->assoc_xact = xact2;
-    xact2->assoc_xact = xact1;
+    xact1->assoc_xact_id = xact2->id;
+    xact2->assoc_xact_id = xact1->id;
 }
 
 void ogs_gtp_xact_deassociate(ogs_gtp_xact_t *xact1, ogs_gtp_xact_t *xact2)
@@ -1146,16 +1191,17 @@ void ogs_gtp_xact_deassociate(ogs_gtp_xact_t *xact1, ogs_gtp_xact_t *xact2)
     ogs_assert(xact1);
     ogs_assert(xact2);
 
-    ogs_assert(xact1->assoc_xact != NULL);
-    ogs_assert(xact2->assoc_xact != NULL);
+    ogs_assert(xact1->assoc_xact_id != OGS_INVALID_POOL_ID);
+    ogs_assert(xact2->assoc_xact_id != OGS_INVALID_POOL_ID);
 
-    xact1->assoc_xact = NULL;
-    xact2->assoc_xact = NULL;
+    xact1->assoc_xact_id = OGS_INVALID_POOL_ID;
+    xact2->assoc_xact_id = OGS_INVALID_POOL_ID;
 }
 
 static int ogs_gtp_xact_delete(ogs_gtp_xact_t *xact)
 {
     char buf[OGS_ADDRSTRLEN];
+    ogs_gtp_xact_t *assoc_xact = NULL;
 
     ogs_assert(xact);
     ogs_assert(xact->gnode);
@@ -1177,13 +1223,16 @@ static int ogs_gtp_xact_delete(ogs_gtp_xact_t *xact)
         ogs_timer_delete(xact->tm_response);
     if (xact->tm_holding)
         ogs_timer_delete(xact->tm_holding);
+    if (xact->tm_peer)
+        ogs_timer_delete(xact->tm_peer);
 
-    if (xact->assoc_xact)
-        ogs_gtp_xact_deassociate(xact, xact->assoc_xact);
+    assoc_xact = ogs_gtp_xact_find_by_id(xact->assoc_xact_id);
+    if (assoc_xact)
+        ogs_gtp_xact_deassociate(xact, assoc_xact);
 
     ogs_list_remove(xact->org == OGS_GTP_LOCAL_ORIGINATOR ?
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
-    ogs_pool_free(&pool, xact);
+    ogs_pool_id_free(&pool, xact);
 
     return OGS_OK;
 }

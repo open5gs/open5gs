@@ -257,7 +257,7 @@ uint32_t smf_gy_handle_cca_update_request(
     if (modify_flags) {
         modify_flags |= OGS_PFCP_MODIFY_URR|OGS_PFCP_MODIFY_UL_ONLY;
         rv = smf_epc_pfcp_send_all_pdr_modification_request(
-                sess, pfcp_xact, NULL, modify_flags,
+                sess, OGS_INVALID_POOL_ID, NULL, modify_flags,
                 OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                 OGS_GTP1_CAUSE_REACTIACTION_REQUESTED);
         ogs_assert(rv == OGS_OK);

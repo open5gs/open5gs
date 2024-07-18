@@ -87,7 +87,7 @@ void upf_state_operational(ogs_fsm_t *s, upf_event_t *e)
         }
 
         e->pfcp_message = pfcp_message;
-        e->pfcp_xact = xact;
+        e->pfcp_xact_id = xact ? xact->id : OGS_INVALID_POOL_ID;
         ogs_fsm_dispatch(&node->sm, e);
         if (OGS_FSM_CHECK(&node->sm, upf_pfcp_state_exception)) {
             ogs_error("PFCP state machine exception");

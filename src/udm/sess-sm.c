@@ -40,6 +40,7 @@ void udm_sess_state_operational(ogs_fsm_t *s, udm_event_t *e)
     udm_sess_t *sess = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
 
     ogs_assert(s);
@@ -47,9 +48,9 @@ void udm_sess_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
     udm_sm_debug(e);
 
-    sess = e->sess;
+    sess = udm_sess_find_by_id(e->sess_id);
     ogs_assert(sess);
-    udm_ue = sess->udm_ue;
+    udm_ue = udm_ue_find_by_id(sess->udm_ue_id);
     ogs_assert(udm_ue);
 
     switch (e->h.id) {
@@ -62,8 +63,16 @@ void udm_sess_state_operational(ogs_fsm_t *s, udm_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         message = e->h.sbi.message;
         ogs_assert(message);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         SWITCH(message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UECM)
@@ -112,8 +121,16 @@ void udm_sess_state_operational(ogs_fsm_t *s, udm_event_t *e)
     case OGS_EVENT_SBI_CLIENT:
         message = e->h.sbi.message;
         ogs_assert(message);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         SWITCH(message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NUDR_DR)
@@ -162,9 +179,9 @@ void udm_sess_state_exception(ogs_fsm_t *s, udm_event_t *e)
 
     udm_sm_debug(e);
 
-    sess = e->sess;
+    sess = udm_sess_find_by_id(e->sess_id);
     ogs_assert(sess);
-    udm_ue = sess->udm_ue;
+    udm_ue = udm_ue_find_by_id(sess->udm_ue_id);
     ogs_assert(udm_ue);
 
     switch (e->h.id) {

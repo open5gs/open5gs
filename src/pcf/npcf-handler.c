@@ -235,7 +235,7 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
     char *home_network_domain = NULL;
 
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(stream);
     ogs_assert(message);
 
@@ -580,7 +580,7 @@ bool pcf_npcf_smpolicycontrol_handle_delete(pcf_sess_t *sess,
     OpenAPI_sm_policy_delete_data_t *SmPolicyDeleteData = NULL;
 
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(stream);
     ogs_assert(message);
 
@@ -681,7 +681,7 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     OpenAPI_lnode_t *node = NULL, *node2 = NULL, *node3 = NULL;
 
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(stream);
     ogs_assert(recvmsg);
 
@@ -1188,7 +1188,7 @@ bool pcf_npcf_policyauthorization_handle_update(
     OpenAPI_lnode_t *node = NULL, *node2 = NULL, *node3 = NULL;
 
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(app_session);
     ogs_assert(stream);
     ogs_assert(recvmsg);

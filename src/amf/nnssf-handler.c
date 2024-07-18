@@ -42,21 +42,20 @@ int amf_nnssf_nsselection_handle_get(
     ogs_assert(recvmsg);
     ogs_assert(!SESSION_CONTEXT_IN_SMF(sess));
 
-    sess = amf_sess_cycle(sess);
     if (!sess) {
         ogs_error("Session has already been removed");
         return OGS_ERROR;
     }
 
-    amf_ue = amf_ue_cycle(sess->amf_ue);
+    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
     if (!amf_ue) {
         ogs_error("UE(amf_ue) Context has already been removed");
         return OGS_ERROR;
     }
 
-    ran_ue = ran_ue_cycle(sess->ran_ue);
+    ran_ue = ran_ue_find_by_id(sess->ran_ue_id);
     if (!ran_ue) {
-        ogs_error("NG context has already been removed");
+        ogs_error("[%s] RAN-NG Context has already been removed", amf_ue->supi);
         return OGS_ERROR;
     }
 
