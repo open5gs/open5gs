@@ -85,3 +85,4 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
 
 - @loxilb
   - [Exploring 5G SCP with Open5GS and LoxiLB](https://dev.to/nikhilmalik/5g-service-communication-proxy-with-loxilb-4242)
+  - [NGAP Load Balancing with Open5GS and LoxiLB](https://www.loxilb.io/post/ngap-load-balancing-with-loxilb)
