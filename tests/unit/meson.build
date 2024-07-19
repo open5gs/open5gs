@@ -25,15 +25,20 @@ testunit_unit_sources = files('''
     sbi-message-test.c
     security-test.c
     crash-test.c
+    smf_bearer_remove-test.c
 '''.split())
+
+smfinc = include_directories('../../src/smf')
 
 testunit_unit_exe = executable('unit',
     sources : testunit_unit_sources,
     c_args : [testunit_core_cc_flags, sbi_cc_flags],
+    include_directories : [srcinc, smfinc],
     dependencies : [libs1ap_dep,
                     libgtp_dep,
                     libngap_dep,
                     libnas_eps_dep,
-                    libsbi_dep])
+                    libsbi_dep,
+                    libsmf_dep])
 
 test('unit', testunit_unit_exe, is_parallel : false, suite: 'unit')
