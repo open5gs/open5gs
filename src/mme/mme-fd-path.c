@@ -871,9 +871,17 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     }
 
     mme_ue = mme_ue_find_by_id(sess_data->mme_ue_id);
-    ogs_assert(mme_ue);
+    if (!mme_ue) {
+        ogs_error("MME-UE Context has already been removed [%d]",
+                sess_data->mme_ue_id);
+        return;
+    }
     enb_ue = enb_ue_find_by_id(sess_data->enb_ue_id);
-    ogs_assert(enb_ue);
+    if (!enb_ue) {
+        ogs_error("[%s] ENB-S1 Context has already been removed [%d]",
+                mme_ue->imsi_bcd, sess_data->enb_ue_id);
+        return;
+    }
 
     /* Set Authentication-Information Command */
     s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
@@ -1308,9 +1316,17 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     }
 
     mme_ue = mme_ue_find_by_id(sess_data->mme_ue_id);
-    ogs_assert(mme_ue);
+    if (!mme_ue) {
+        ogs_error("MME-UE Context has already been removed [%d]",
+                sess_data->mme_ue_id);
+        return;
+    }
     enb_ue = enb_ue_find_by_id(sess_data->enb_ue_id);
-    ogs_assert(enb_ue);
+    if (!enb_ue) {
+        ogs_error("[%s] ENB-S1 Context has already been removed [%d]",
+                mme_ue->imsi_bcd, sess_data->enb_ue_id);
+        return;
+    }
 
     /* Set Update-Location Command */
     s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
@@ -1665,9 +1681,17 @@ static void mme_s6a_pua_cb(void *data, struct msg **msg)
     }
 
     mme_ue = mme_ue_find_by_id(sess_data->mme_ue_id);
-    ogs_assert(mme_ue);
+    if (!mme_ue) {
+        ogs_error("MME-UE Context has already been removed [%d]",
+                sess_data->mme_ue_id);
+        return;
+    }
     enb_ue = enb_ue_find_by_id(sess_data->enb_ue_id);
-    ogs_assert(enb_ue);
+    if (!enb_ue) {
+        ogs_error("[%s] ENB-S1 Context has already been removed [%d]",
+                mme_ue->imsi_bcd, sess_data->enb_ue_id);
+        return;
+    }
 
     /* Set Purge-UE Command */
     s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
