@@ -190,14 +190,25 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
         goto end;
     }
 
+    /*
+     * We're experiencing an issue after changing SearchResult.validityTime
+     * from 3600 seconds to 30 seconds. (#3210)
+     *
+     * When AMF finds a PCF through Discovery, it can be deleted
+     * after 30 seconds by ValidityTime.
+     *
+     * We have changed our implementation to not send the PCF-ID in this case.
+     *
+     * What we need to do is proactively add a part that will re-discover
+     * the PCF when a situation arises where we really need the PCF-ID.
+     */
     pcf_nf_instance = OGS_SBI_GET_NF_INSTANCE(
             amf_ue->sbi.service_type_array[
             OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL]);
-    if (!pcf_nf_instance) {
+    if (pcf_nf_instance)
+        SmContextCreateData.pcf_id = pcf_nf_instance->id;
+    else
         ogs_error("No pcf_nf_instance");
-        goto end;
-    }
-    SmContextCreateData.pcf_id = pcf_nf_instance->id;
 
     message.SmContextCreateData = &SmContextCreateData;
 
