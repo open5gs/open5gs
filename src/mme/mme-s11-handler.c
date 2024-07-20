@@ -207,13 +207,17 @@ void mme_s11_handle_create_session_response(
     ogs_assert(xact);
     create_action = xact->create_action;
     sess = mme_sess_find_by_id(OGS_POINTER_TO_UINT(xact->data));
-    ogs_assert(sess);
-
-    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
+    if (sess)
+        mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
 
     rv = ogs_gtp_xact_commit(xact);
     if (rv != OGS_OK) {
         ogs_error("ogs_gtp_xact_commit() failed");
+        return;
+    }
+
+    if (!sess) {
+        ogs_error("Session Context has already been removed");
         return;
     }
 
@@ -694,14 +698,17 @@ void mme_s11_handle_delete_session_response(
     action = xact->delete_action;
     ogs_assert(action);
     sess = mme_sess_find_by_id(OGS_POINTER_TO_UINT(xact->data));
-    ogs_assert(sess);
-
-    ogs_debug("delete_session_response - xact:%p, sess:%p", xact, sess);
-    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
+    if (sess)
+        mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
 
     rv = ogs_gtp_xact_commit(xact);
     if (rv != OGS_OK) {
         ogs_error("ogs_gtp_xact_commit() failed");
+        return;
+    }
+
+    if (!sess) {
+        ogs_error("Session Context has already been removed");
         return;
     }
 
@@ -1937,16 +1944,28 @@ void mme_s11_handle_bearer_resource_failure_indication(
     /********************
      * Check Transaction
      ********************/
+    ogs_assert(ind);
     ogs_assert(xact);
     bearer = mme_bearer_find_by_id(OGS_POINTER_TO_UINT(xact->data));
-    ogs_assert(ind);
-    sess = mme_sess_find_by_id(bearer->sess_id);
-    ogs_assert(sess);
-    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
+    if (bearer) {
+        sess = mme_sess_find_by_id(bearer->sess_id);
+        if (sess)
+            mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
+    }
 
     rv = ogs_gtp_xact_commit(xact);
     if (rv != OGS_OK) {
         ogs_error("ogs_gtp_xact_commit() failed");
+        return;
+    }
+
+    if (!bearer) {
+        ogs_error("Bearer Context has already been removed");
+        return;
+    }
+
+    if (!sess) {
+        ogs_error("Session Context has already been removed");
         return;
     }
 
