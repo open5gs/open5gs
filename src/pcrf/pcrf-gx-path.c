@@ -180,7 +180,10 @@ static struct rx_sess_state *find_rx_state(struct sess_state *gx, os0_t sid)
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No session state");
+        return;
+    }
 
     if (sess_data->peer_host)
         ogs_free(sess_data->peer_host);

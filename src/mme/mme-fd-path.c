@@ -45,6 +45,11 @@ static void mme_s6a_pua_cb(void *data, struct msg **msg);
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
+    if (!sess_data) {
+        ogs_error("No session state");
+        return;
+    }
+
     ogs_free(sess_data);
 }
 
