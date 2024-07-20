@@ -439,7 +439,8 @@ int16_t ogs_gtp2_parse_tft(ogs_gtp2_tft_t *tft, ogs_tlv_octet_t *octet)
         size += len;
     }
 
-    ogs_assert(size == octet->len);
+    if (size != octet->len)
+        ogs_error("Mismatch IE Length[%d] != Decoded[%d]", octet->len, size);
 
     return size;
 }
@@ -606,7 +607,6 @@ int16_t ogs_gtp2_build_tft(
             }
         }
     }
-
 
     octet->len = size;
 

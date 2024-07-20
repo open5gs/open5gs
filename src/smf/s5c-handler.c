@@ -1281,6 +1281,14 @@ void smf_s5c_handle_bearer_resource_command(
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
     decoded = ogs_gtp2_parse_tft(&tft, &cmd->traffic_aggregate_description);
+    if (cmd->traffic_aggregate_description.len != decoded) {
+        ogs_fatal("ogs_gtp2_parse_tft() failed");
+        ogs_log_hexdump(OGS_LOG_FATAL,
+            cmd->traffic_aggregate_description.data,
+            cmd->traffic_aggregate_description.len);
+        ogs_assert_if_reached();
+    }
+
     ogs_assert(cmd->traffic_aggregate_description.len == decoded);
 
     if (tft.code == OGS_GTP2_TFT_CODE_NO_TFT_OPERATION) {
