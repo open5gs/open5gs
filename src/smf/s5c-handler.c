@@ -1281,12 +1281,16 @@ void smf_s5c_handle_bearer_resource_command(
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
     decoded = ogs_gtp2_parse_tft(&tft, &cmd->traffic_aggregate_description);
-    if (cmd->traffic_aggregate_description.len != decoded) {
-        ogs_fatal("ogs_gtp2_parse_tft() failed");
-        ogs_log_hexdump(OGS_LOG_FATAL,
+    if (cmd->traffic_aggregate_description.len == decoded) {
+        ogs_error("ogs_gtp2_parse_tft() failed");
+        ogs_log_hexdump(OGS_LOG_ERROR,
             cmd->traffic_aggregate_description.data,
             cmd->traffic_aggregate_description.len);
-        ogs_assert_if_reached();
+        ogs_gtp2_send_error_message(
+                xact, get_sender_f_teid(sess, sender_f_teid),
+                OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
+                OGS_GTP2_CAUSE_INVALID_MESSAGE_FORMAT);
+        return;
     }
 
     ogs_assert(cmd->traffic_aggregate_description.len == decoded);
