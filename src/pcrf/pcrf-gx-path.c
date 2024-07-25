@@ -731,7 +731,7 @@ int pcrf_gx_send_rar(
     ret = fd_sess_state_retrieve(pcrf_gx_reg, session, &sess_data);
     ogs_assert(ret == 0);
     if (sess_data == NULL) {
-        ogs_error("No session data");
+        ogs_error("No Session Data");
         ret = fd_msg_free(req);
         ogs_assert(ret == 0);
         rx_message->result_code = OGS_DIAM_UNKNOWN_SESSION_ID;
@@ -1061,7 +1061,10 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
 
     ret = fd_sess_state_retrieve(pcrf_gx_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        return;
+    }
     ogs_assert((void *)sess_data == data);
 
     /* Value of Result Code */

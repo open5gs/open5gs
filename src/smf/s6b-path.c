@@ -368,7 +368,10 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
 
     ret = fd_sess_state_retrieve(smf_s6b_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        return;
+    }
     ogs_assert((void *)sess_data == data);
 
     ogs_debug("    Retrieve its data: [%s]", sess_data->s6b_sid);
@@ -553,7 +556,10 @@ void smf_s6b_send_str(smf_sess_t *sess, ogs_gtp_xact_t *xact, uint32_t cause)
     /* Retrieve session state in this session */
     ret = fd_sess_state_retrieve(smf_s6b_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        return;
+    }
     ogs_debug("    Retrieve session: [%s]", sess_data->s6b_sid);
 
     /* Update session state */
@@ -661,7 +667,10 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
 
     ret = fd_sess_state_retrieve(smf_s6b_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        return;
+    }
     ogs_assert((void *)sess_data == data);
 
     ogs_debug("    Retrieve its data: [%s]", sess_data->s6b_sid);

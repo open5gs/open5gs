@@ -745,7 +745,10 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
 
     ret = fd_sess_state_retrieve(smf_gx_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        return;
+    }
     ogs_assert((void *)sess_data == data);
 
     ogs_debug("    Retrieve its data: [%s]", sess_data->gx_sid);
