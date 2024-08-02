@@ -327,12 +327,18 @@ void zuc_eea3(u8* CK, u32 COUNT, u32 BEARER, u32 DIRECTION,
 		C[i] = M[i] ^ ((z[i/4] >> (3-i%4)*8) & 0xff);
     }
 
+    /*
+     * Issues #3349
+     * Valgrind memcheck: Invalid read & write: Add {}.
+     */
+
 	/* zero last bits of data in case its length is not  word-aligned (32 bits)
 	   this is an addition to the C reference code, which did not handle it */
-	if (lastbits)
+	if (lastbits) {
         i--;
 		C[i] &= 0x100 - (1<<lastbits);
-	
+    }
+
 	ogs_free(z);
 }
 /* end of EEA3.c */

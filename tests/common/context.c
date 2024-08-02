@@ -1021,6 +1021,7 @@ static void test_ue_set_mobile_identity(test_ue_t *test_ue,
     mobile_identity->length =
         OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + scheme_output_size;
     mobile_identity->buffer = ogs_calloc(1, mobile_identity->length);
+
     ogs_assert(mobile_identity->buffer);
     memcpy(mobile_identity->buffer,
             mobile_identity_suci, OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE);
@@ -1047,8 +1048,11 @@ static void test_ue_set_mobile_identity(test_ue_t *test_ue,
 
 static void test_ue_set_mobile_identity_imsi(test_ue_t *test_ue)
 {
+    int imsi_len = 0;
     ogs_assert(test_ue);
     ogs_assert(test_ue->imsi);
+
+    imsi_len = strlen(test_ue->imsi);
 
     test_ue->mobile_identity_imsi.odd_even = OGS_NAS_MOBILE_IDENTITY_ODD;
     test_ue->mobile_identity_imsi.type = OGS_NAS_MOBILE_IDENTITY_IMSI;
@@ -1060,13 +1064,32 @@ static void test_ue_set_mobile_identity_imsi(test_ue_t *test_ue)
     test_ue->mobile_identity_imsi.digit6 = test_ue->imsi[5] - '0';
     test_ue->mobile_identity_imsi.digit7 = test_ue->imsi[6] - '0';
     test_ue->mobile_identity_imsi.digit8 = test_ue->imsi[7] - '0';
-    test_ue->mobile_identity_imsi.digit9 = test_ue->imsi[8] - '0';
-    test_ue->mobile_identity_imsi.digit10 = test_ue->imsi[9] - '0';
-    test_ue->mobile_identity_imsi.digit11 = test_ue->imsi[10] - '0';
-    test_ue->mobile_identity_imsi.digit12 = test_ue->imsi[11] - '0';
-    test_ue->mobile_identity_imsi.digit13 = test_ue->imsi[12] - '0';
-    test_ue->mobile_identity_imsi.digit14 = test_ue->imsi[13] - '0';
-    test_ue->mobile_identity_imsi.digit15 = test_ue->imsi[14] - '0';
+
+    /*
+     * Issue #3349
+     *
+     * Valgrind memcheck: Function test_ue_set_mobile_identity_imsi() uses
+     * a max 15 digit IMSI. The configuration file slice.yaml.in uses
+     * a 3 digit MCC & 2 digit MNC. The memcheck tool reports an issue
+     * for an invalid memory read when a <15 digit IMSI is used
+     * in test_ue_set_mobile_identity_imsi(). 1 way to fix the issue is
+     * to use a full 10 digit MSIN here (was using 8 digits).
+     */
+
+    if (imsi_len > 8)
+        test_ue->mobile_identity_imsi.digit9 = test_ue->imsi[8] - '0';
+    if (imsi_len > 9)
+        test_ue->mobile_identity_imsi.digit10 = test_ue->imsi[9] - '0';
+    if (imsi_len > 10)
+        test_ue->mobile_identity_imsi.digit11 = test_ue->imsi[10] - '0';
+    if (imsi_len > 11)
+        test_ue->mobile_identity_imsi.digit12 = test_ue->imsi[11] - '0';
+    if (imsi_len > 12)
+        test_ue->mobile_identity_imsi.digit13 = test_ue->imsi[12] - '0';
+    if (imsi_len > 13)
+        test_ue->mobile_identity_imsi.digit14 = test_ue->imsi[13] - '0';
+    if (imsi_len > 14)
+        test_ue->mobile_identity_imsi.digit15 = test_ue->imsi[14] - '0';
 }
 
 static void test_ue_set_mobile_identity_imsisv(test_ue_t *test_ue)
