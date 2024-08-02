@@ -2122,8 +2122,6 @@ int test_rx_init(void)
     int ret;
     struct disp_when data;
 
-    test_cx_init();
-
     /* Install objects definitions for this application */
     ret = ogs_diam_rx_init();
     ogs_assert(ret == 0);
