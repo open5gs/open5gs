@@ -3,10 +3,10 @@ title: FreeBSD
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
-This guide is based on **FreeBSD-13.1-STABLE**.
+This guide is based on **FreeBSD-14.1-STABLE**.
 {: .blue}
 
-## Install **FreeBSD-13.1-STABLE** from Vagrant box (optional)
+## Install **FreeBSD-14.1-STABLE** from Vagrant box (optional)
 ---
 Vagrant provides a simple way to create and deploy Virtual Machines from
 pre-built images using VirtualBox, libvirt, or VMWare as a hypervisor engine.
@@ -20,13 +20,13 @@ The instructions to install Vagrant are provided at
 [vagrantup.com](https://www.vagrantup.com/).
 
 
-### Create a FreeBSD-13.1-STABLE Virtual Machine using Vagrant
+### Create a FreeBSD-14.1-STABLE Virtual Machine using Vagrant
 ---
 
 Use the supplied `Vagrantfile` in the `vagrant` directory to create the
 virtual machine.
 
-Note that this Vagrantfile is identical to the base FreeBSD 13 box, with
+Note that this Vagrantfile is identical to the base FreeBSD 14 box, with
 the exception that the amount of virtual memory has been increased to 1GB:
 
 ```bash
@@ -37,7 +37,7 @@ vagrant up --provider virtualbox
 ### Log into the newly created FreeBSD VM
 ---
 
-Use SSH to log into the FreeBSD 13 VM:
+Use SSH to log into the FreeBSD 14 VM:
 
 ```bash
 vagrant ssh
@@ -45,10 +45,10 @@ vagrant ssh
 
 Note that the Open5GS source is *not* copied into the VM.  The instructions
 below provide the step by step instructions for setting up Open5GS for
-either a bare metal or virtual FreeBSD 13 system.
+either a bare metal or virtual FreeBSD 14 system.
 
 The rest of the commands below are performed inside the FreeBSD VM as the
-user 'vagrant', or on your bare metal FreeBSD 13 system as any normal user.
+user 'vagrant', or on your bare metal FreeBSD 14 system as any normal user.
 
 ### Getting MongoDB
 ---
@@ -171,7 +171,7 @@ $ meson build --prefix=`pwd`/install
 $ ninja -C build
 ```
 
-**Note:** No source code changes are required for FreeBSD 11.x version. However, in FreeBSD 12.x/13.x version, we'll getting a crash with segmentation fault when calling basename(3). To avoid this, you need to change the freeDiameter source code as below.
+**Note:** No source code changes are required for FreeBSD 11.x version. However, in FreeBSD 12.x/13.x/14.x version, we'll getting a crash with segmentation fault when calling basename(3). To avoid this, you need to change the freeDiameter source code as below.
 {: .blue}
 
 ```diff
