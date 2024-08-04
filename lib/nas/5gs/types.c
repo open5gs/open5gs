@@ -128,8 +128,7 @@ void ogs_nas_build_s_nssai(
 
     pos = 0;
 
-    if (nas_s_nssai_ie->sst)
-        nas_s_nssai->buffer[pos++] = nas_s_nssai_ie->sst;
+    nas_s_nssai->buffer[pos++] = nas_s_nssai_ie->sst;
 
     if (nas_s_nssai_ie->sd.v != OGS_S_NSSAI_NO_SD_VALUE ||
 
