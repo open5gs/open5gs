@@ -865,13 +865,20 @@ static void handle_validity_time(
         ogs_assert(validity_time_string);
     }
 
-    ogs_info("[%s] Subscription %s until %s "
-            "[duration:%lld,validity:%d.%06d,patch:%d.%06d]",
-            subscription_data->id, action, validity_time_string,
-            (long long)subscription_data->validity_duration,
-            (int)ogs_time_sec(subscription_data->validity_duration),
-            (int)ogs_time_usec(subscription_data->validity_duration),
-            (int)ogs_time_sec(patch), (int)ogs_time_usec(patch));
+    char* subscriptionTarget;
+    if (subscription_data->subscr_cond.nf_type) {
+        subscriptionTarget = OpenAPI_nf_type_ToString(subscription_data->subscr_cond.nf_type);
+    } else if (subscription_data->subscr_cond.service_name) {
+        subscriptionTarget = subscription_data->subscr_cond.service_name;
+    }
+    ogs_info("[%s] Subscription for %s %s until %s "
+        "[duration:%lld,validity:%d.%06d,patch:%d.%06d]",
+        subscription_data->id, subscriptionTarget, action,
+        validity_time_string,
+        (long long)subscription_data->validity_duration,
+        (int)ogs_time_sec(subscription_data->validity_duration),
+        (int)ogs_time_usec(subscription_data->validity_duration),
+        (int)ogs_time_sec(patch), (int)ogs_time_usec(patch));
 
     ogs_free(validity_time_string);
 }

@@ -998,8 +998,15 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_assert(true ==
                 ogs_nnrf_nfm_send_nf_status_update(subscription_data));
 
-            ogs_info("[%s] Need to update Subscription",
-                    subscription_data->id);
+            char* subscriptionTarget;
+            if (subscription_data->subscr_cond.nf_type) {
+                subscriptionTarget = OpenAPI_nf_type_ToString(subscription_data->subscr_cond.nf_type);
+            }
+            else if (subscription_data->subscr_cond.service_name) {
+                subscriptionTarget = subscription_data->subscr_cond.service_name;
+            }
+            ogs_info("[%s] Need to update Subscription for %s",
+                subscription_data->id, subscriptionTarget);
             break;
 
         case OGS_TIMER_SBI_CLIENT_WAIT:
