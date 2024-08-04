@@ -84,8 +84,11 @@ typedef int64_t ogs_time_t;
 /** @return ogs_time_t as a msec */
 #define ogs_time_msec(time) (((time) / 1000) % 1000)
 
-/** @return ogs_time_t as a msec */
+/** @return ogs_time_t to msec */
 #define ogs_time_to_msec(time) ((time) ? (1 + ((time) - 1) / 1000) : 0)
+/** @return ogs_time_t to sec */
+#define ogs_time_to_sec(time) \
+    ((time) ? (1 + ((time) - 1) / OGS_USEC_PER_SEC) : 0)
 
 /** @return milliseconds as an ogs_time_t */
 #define ogs_time_from_msec(msec) ((ogs_time_t)(msec) * 1000)

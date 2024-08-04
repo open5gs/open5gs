@@ -285,12 +285,7 @@ typedef struct ogs_sbi_subscription_spec_s {
 typedef struct ogs_sbi_subscription_data_s {
     ogs_lnode_t lnode;
 
-#define OGS_SBI_VALIDITY_SEC(v) \
-        ogs_time_sec(v) + (ogs_time_usec(v) ? 1 : 0)
-    struct {
-        int validity_duration;
-    } time;
-
+    ogs_time_t validity_duration;           /* valditiyTime(unit: usec) */
     ogs_timer_t *t_validity;                /* check validation */
     ogs_timer_t *t_patch;                   /* for sending PATCH */
 
