@@ -39,6 +39,7 @@ static int hss_ogs_diam_cx_fb_cb(struct msg **msg, struct avp *avp,
 {
     /* This CB should never be called */
     ogs_warn("Unexpected message received!");
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_CTR_CX_RX_UNKNOWN);
 
     return ENOTSUP;
 }
@@ -66,7 +67,8 @@ static int hss_ogs_diam_cx_uar_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("User-Authorization-Request");
+    ogs_debug("Rx User-Authorization-Request");
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_CTR_CX_RX_UAR);
 
     /* Create answer header */
     qry = *msg;
@@ -250,7 +252,8 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Multimedia-Auth-Request");
+    ogs_debug("Rx Multimedia-Auth-Request");
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_CTR_CX_RX_MAR);
 
     /* Create answer header */
     qry = *msg;
@@ -627,7 +630,8 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Server-Assignment-Request");
+    ogs_debug("Rx Server-Assignment-Request");
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_CTR_CX_RX_SAR);
 
     /* Create answer header */
     qry = *msg;
@@ -875,7 +879,8 @@ static int hss_ogs_diam_cx_lir_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Location-Info-Request");
+    ogs_debug("Rx Location-Info-Request");
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_CTR_CX_RX_LIR);
 
     /* Create answer header */
     qry = *msg;
