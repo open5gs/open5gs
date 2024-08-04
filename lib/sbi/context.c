@@ -342,6 +342,9 @@ int ogs_sbi_context_parse_config(
                                     }
                                 }
                             }
+                        } else if (!strcmp(default_key, "source_interface")) {
+                            self.source_interface = 
+                                ogs_yaml_iter_value(&default_iter);
                         }
                     }
                 }
@@ -936,6 +939,8 @@ ogs_sbi_client_t *ogs_sbi_context_parse_client_config(ogs_yaml_iter_t *iter)
     const char *client_private_key = NULL;
     const char *client_cert = NULL;
 
+    const char *client_source_interface = NULL;
+
     bool rc;
 
     OpenAPI_uri_scheme_e scheme =
@@ -976,6 +981,8 @@ ogs_sbi_client_t *ogs_sbi_context_parse_client_config(ogs_yaml_iter_t *iter)
             client_private_key = ogs_yaml_iter_value(iter);
         } else if (!strcmp(key, "client_cert")) {
             client_cert = ogs_yaml_iter_value(iter);
+        } else if (!strcmp(key, "source_interface")) {
+            client_source_interface = ogs_yaml_iter_value(iter);
         }
     }
 
@@ -1050,6 +1057,13 @@ ogs_sbi_client_t *ogs_sbi_context_parse_client_config(ogs_yaml_iter_t *iter)
         ogs_error("Either the private key or certificate is missing.");
         ogs_sbi_client_remove(client);
         return NULL;
+    }
+
+    if (client_source_interface) {
+        if (client->source_interface)
+            ogs_free(client->source_interface);
+        client->source_interface = ogs_strdup(client_source_interface);
+        ogs_assert(client->source_interface);
     }
 
     ogs_free(fqdn);
