@@ -444,10 +444,10 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     }
 
     ogs_info("[%s] Subscription created until %s "
-            "[duration:%ld,validity:%d.%06d]",
+            "[duration:%lld,validity:%d.%06d]",
             subscription_data->id,
             SubscriptionData->validity_time,
-            subscription_data->validity_duration,
+            (long long)subscription_data->validity_duration,
             (int)ogs_time_sec(subscription_data->validity_duration),
             (int)ogs_time_usec(subscription_data->validity_duration));
 
@@ -609,9 +609,9 @@ bool nrf_nnrf_handle_nf_status_update(
             subscription_data->validity_duration);
 
     ogs_info("[%s] Subscription updated until %s "
-            "[duration:%ld,validity:%d.%06d]",
+            "[duration:%lld,validity:%d.%06d]",
             subscription_data->id, validity_time,
-            subscription_data->validity_duration,
+            (long long)subscription_data->validity_duration,
             (int)ogs_time_sec(subscription_data->validity_duration),
             (int)ogs_time_usec(subscription_data->validity_duration));
 
