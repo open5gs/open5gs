@@ -86,6 +86,7 @@ int ngap_send_error_indication2(
 int ngap_send_ng_reset_ack(
         amf_gnb_t *gnb,
         NGAP_UE_associatedLogicalNG_connectionList_t *partOfNG_Interface);
+int ngap_send_amf_status_indication(amf_ue_t *amf_ue);
 
 #ifdef __cplusplus
 }
