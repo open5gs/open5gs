@@ -793,6 +793,7 @@ static void handle_validity_time(
         char *validity_time, const char *action)
 {
     ogs_time_t time, validity, patch;
+    char *validity_time_string = NULL;
 
     ogs_assert(subscription_data);
     ogs_assert(action);
@@ -855,13 +856,24 @@ static void handle_validity_time(
     }
     ogs_timer_start(subscription_data->t_patch, patch);
 
+    if (validity_time) {
+        validity_time_string = ogs_strdup(validity_time);
+        ogs_assert(validity_time_string);
+    } else {
+        validity_time_string = ogs_sbi_localtime_string(
+                ogs_time_now() + subscription_data->validity_duration);
+        ogs_assert(validity_time_string);
+    }
+
     ogs_info("[%s] Subscription %s until %s "
             "[duration:%ld,validity:%d.%06d,patch:%d.%06d]",
-            subscription_data->id, action, validity_time,
+            subscription_data->id, action, validity_time_string,
             subscription_data->validity_duration,
             (int)ogs_time_sec(subscription_data->validity_duration),
             (int)ogs_time_usec(subscription_data->validity_duration),
             (int)ogs_time_sec(patch), (int)ogs_time_usec(patch));
+
+    ogs_free(validity_time_string);
 }
 
 void ogs_nnrf_nfm_handle_nf_status_subscribe(
@@ -967,6 +979,7 @@ void ogs_nnrf_nfm_handle_nf_status_update(
 {
     OpenAPI_subscription_data_t *SubscriptionData = NULL;
     char *validity_time = NULL;
+    const char *action = NULL;
 
     ogs_assert(recvmsg);
     ogs_assert(subscription_data);
@@ -983,8 +996,10 @@ void ogs_nnrf_nfm_handle_nf_status_update(
         }
 
         validity_time = SubscriptionData->validity_time;
+        action = "updated(200 OK)";
     } else if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT) {
         /* No valdityTime. Re-use current subscription_data->valdity_duration */
+        action = "updated(204 No Content)";
     } else {
         ogs_fatal("[%s] HTTP response error [%d]",
                 subscription_data->id ?  subscription_data->id : "Unknown",
@@ -993,7 +1008,7 @@ void ogs_nnrf_nfm_handle_nf_status_update(
     }
 
     /* Update Subscription Validity Time */
-    handle_validity_time(subscription_data, validity_time, "updated");
+    handle_validity_time(subscription_data, validity_time, action);
 }
 
 bool ogs_nnrf_nfm_handle_nf_status_notify(
