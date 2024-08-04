@@ -817,8 +817,8 @@ static void handle_validity_time(
         validity = time - ogs_time_now();
         if (validity < 0) {
             ogs_error("[%s] Subscription %s until %s [validity:%d.%06d]",
-                subscription_data->id, action, validity_time,
-                (int)ogs_time_sec(validity), (int)ogs_time_usec(validity));
+                    subscription_data->id, action, validity_time,
+                    (int)ogs_time_sec(validity), (int)ogs_time_usec(validity));
             return;
         }
 
