@@ -152,7 +152,7 @@ void upf_n4_handle_session_establishment_request(
             pdr = created_pdr[i];
             ogs_assert(pdr);
 
-            if (pdr->f_teid_len)
+            if (pdr->f_teid_len && !pdr->f_teid.ch)
                 ogs_pfcp_pdr_swap_teid(pdr);
         }
         restoration_indication = true;
