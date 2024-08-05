@@ -865,7 +865,7 @@ static void handle_validity_time(
         ogs_assert(validity_time_string);
     }
 
-    char* subscriptionTarget;
+    const char* subscriptionTarget = NULL;
     if (subscription_data->subscr_cond.nf_type) {
         subscriptionTarget = OpenAPI_nf_type_ToString(subscription_data->subscr_cond.nf_type);
     } else if (subscription_data->subscr_cond.service_name) {

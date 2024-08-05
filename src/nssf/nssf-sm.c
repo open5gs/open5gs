@@ -278,6 +278,8 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
     case OGS_EVENT_SBI_TIMER:
         ogs_assert(e);
 
+        const char* subscriptionTarget = NULL;
+
         switch(e->h.timer_id) {
         case OGS_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
         case OGS_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
@@ -307,8 +309,17 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
                     subscription_data->subscr_cond.nf_type,
                     subscription_data->subscr_cond.service_name));
 
-            ogs_error("[%s] Subscription validity expired",
-                subscription_data->id);
+            if (subscription_data->subscr_cond.nf_type) {
+                subscriptionTarget = OpenAPI_nf_type_ToString(subscription_data->subscr_cond.nf_type);
+            }
+            else if (subscription_data->subscr_cond.service_name) {
+                subscriptionTarget = subscription_data->subscr_cond.service_name;
+            }
+            else {
+                subscriptionTarget = "Unknown";
+            }
+            ogs_error("[%s] Subscription for %s validity expired",
+                subscription_data->id, subscriptionTarget);
             ogs_sbi_subscription_data_remove(subscription_data);
             break;
 
@@ -319,7 +330,6 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             ogs_assert(true ==
                 ogs_nnrf_nfm_send_nf_status_update(subscription_data));
 
-            char* subscriptionTarget;
             if (subscription_data->subscr_cond.nf_type) {
                 subscriptionTarget = OpenAPI_nf_type_ToString(subscription_data->subscr_cond.nf_type);
             } else if (subscription_data->subscr_cond.service_name) {
