@@ -643,6 +643,11 @@ bool udr_nudr_dr_handle_subscription_provisioned(
                     DnnInfo->default_dnn_indicator = true;
                 }
 
+                if (session->lbo_roaming_allowed == true) {
+                    DnnInfo->is_lbo_roaming_allowed = true;
+                    DnnInfo->lbo_roaming_allowed = true;
+                }
+
                 OpenAPI_list_add(DnnInfoList, DnnInfo);
             }
 

@@ -74,9 +74,22 @@ const Profile = new Schema({
             uplink: { value: Number, unit: Number }
           },
         },
-      }]
+      }],
+
+      lbo_roaming_allowed: Boolean
+
     }]
-  }]
+  }],
+
+  subscriber_status: {
+    $type: Number,
+    default: 0  // Service Granted
+  },
+  operator_determined_barring: {
+    $type: Number,
+    default: 0 // No barring
+  }
+
 }, { typeKey: '$type' });
 
 module.exports = mongoose.model('Profile', Profile);

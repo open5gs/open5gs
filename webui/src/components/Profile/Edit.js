@@ -114,6 +114,30 @@ const schema = {
         }
       }
     },
+    "subscriber_status": {
+      "type": "number",
+      "title": "Subscriber Status (TS 29.272 7.3.29)",
+      "enum": [ 0, 1 ],
+      "enumNames": ["SERVICE_GRANTED", "OPERATOR_DETERMINED_BARRING"],
+      "default": 0,
+    },
+    "operator_determined_barring": {
+      "type": "number",
+      "title": "Operator Determined Barring (TS 29.272 7.3.30)",
+      "enum": [ 0, 1, 2, 3, 4, 5, 6, 7, 8 ],
+      "enumNames": [
+        "(0) All Packet Oriented Services Barred",
+        "(1) Roamer Access HPLMN-AP Barred",
+        "(2) Roamer Access to VPLMN-AP Barred",
+        "(3) Barring of all outgoing calls",
+        "(4) Barring of all outgoing international calls",
+        "(5) Barring of all outgoing international calls except those directed to the home PLMN country",
+        "(6) Barring of all outgoing inter-zonal calls",
+        "(7) Barring of all outgoing inter-zonal calls except those directed to the home PLMN country",
+        "(8) Barring of all outgoing international calls except those directed to the home PLMN country and Barring of all outgoing inter-zonal calls"
+      ],
+      "default": 0,
+    },
     "slice": {
       "type": "array",
       "title": "Slice Configurations",
@@ -169,6 +193,10 @@ const schema = {
                   "enum": [1, 2, 3],
                   "enumNames": ["IPv4", "IPv6", "IPv4v6"],
                   "default": 3,
+                },
+                "lbo_roaming_allowed": {
+                  "type": "boolean",
+                  "title": "LBO Roaming Allowed",
                 },
                 "qos": {
                   "type": "object",
@@ -519,6 +547,9 @@ const uiSchema = {
           },
           "type": {
             classNames: "col-xs-4",
+          },
+          "lbo_roaming_allowed": {
+            classNames: "col-xs-12",
           },
           "qos": {
             classNames: "col-xs-12",

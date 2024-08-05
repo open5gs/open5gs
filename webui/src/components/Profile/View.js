@@ -172,6 +172,8 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
   const imeisv = (profile || {}).imeisv;
   const security = ((profile || {}).security || {});
   const ambr = ((profile || {}).ambr || {});
+  const subscriber_status = (profile || {}).subscriber_status;
+  const operator_determined_barring = (profile || {}).operator_determined_barring;
   const slice_list = ((profile || {}).slice || []);
 
   return (
@@ -260,6 +262,23 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
                 <div className="sectioncolumn">
                   <div className="body">
                     <div className="left">
+                      <SecurityIcon/>
+                    </div>
+                    <div className="right">
+                      <div className="data">
+                        {subscriber_status == 0 ? ( "SERVICE_GRANTED (0)" ) : ( "OPERATOR_DETERMINED_BARRING (1)" )}
+                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>Subscriber Status (TS 29.272 7.3.29)</span>
+                      </div>
+                      <div className="data">
+                        {operator_determined_barring}
+                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>Operator Determined Barring (TS 29.272 7.3.30)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="sectioncolumn">
+                  <div className="body">
+                    <div className="left">
                       <PdnIcon/>
                     </div>
                     <div className="right">
@@ -314,6 +333,7 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
                   <div className="body" style={{color:oc.gray[5]}}>
                     <div className="large_data">DNN/APN</div>
                     <div className="medium_data">Type</div>
+                    <div className="medium_data">LBO</div>
                     <div className="small_data">5QI/QCI</div>
                     <div className="small_data">ARP</div>
                     <div className="medium_data">Capability</div>
@@ -331,6 +351,10 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
                             session.type === 2 ? "IPv6" :
                             session.type === 3 ? "IPv4v6" :
                             "Unknown"
+                        }</div>
+                        <div className="medium_data">{
+                            session.lbo_roaming_allowed == true ? "Allowed" :
+                            "Not allowed"
                         }</div>
                         <div className="small_data">{session.qos.index}</div>
                         <div className="small_data">{session.qos.arp.priority_level}</div>
@@ -410,6 +434,7 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
                           <div key={index}>
                             <div className="body">
                               <div className="large_data"></div>
+                              <div className="medium_data"></div>
                               <div className="medium_data"></div>
                               <div className="small_data">{pcc_rule.qos.index}</div>
                               <div className="small_data">{pcc_rule.qos.arp.priority_level}</div>

@@ -359,6 +359,7 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                   <div className="body" style={{color:oc.gray[5]}}>
                     <div className="large_data">DNN/APN</div>
                     <div className="medium_data">Type</div>
+                    <div className="medium_data">LBO</div>
                     <div className="small_data">5QI/QCI</div>
                     <div className="small_data">ARP</div>
                     <div className="medium_data">Capability</div>
@@ -376,6 +377,10 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                             session.type === 2 ? "IPv6" :
                             session.type === 3 ? "IPv4v6" :
                             "Unknown"
+                        }</div>
+                        <div className="medium_data">{
+                            session.lbo_roaming_allowed == true ? "Allowed" :
+                            "Not allowed"
                         }</div>
                         <div className="small_data">{session.qos.index}</div>
                         <div className="small_data">{session.qos.arp.priority_level}</div>
@@ -455,6 +460,7 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                           <div key={index}>
                             <div className="body">
                               <div className="large_data"></div>
+                              <div className="medium_data"></div>
                               <div className="medium_data"></div>
                               <div className="small_data">{pcc_rule.qos.index}</div>
                               <div className="small_data">{pcc_rule.qos.arp.priority_level}</div>

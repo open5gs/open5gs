@@ -200,6 +200,10 @@ const schema = {
                   "enumNames": ["IPv4", "IPv6", "IPv4v6"],
                   "default": 3,
                 },
+                "lbo_roaming_allowed": {
+                  "type": "boolean",
+                  "title": "LBO Roaming Allowed",
+                },
                 "qos": {
                   "type": "object",
                   "title": "",
@@ -555,6 +559,9 @@ const uiSchema = {
           },
           "type": {
             classNames: "col-xs-4",
+          },
+          "lbo_roaming_allowed": {
+            classNames: "col-xs-12",
           },
           "qos": {
             classNames: "col-xs-12",
