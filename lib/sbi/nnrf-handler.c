@@ -870,6 +870,8 @@ static void handle_validity_time(
         subscriptionTarget = OpenAPI_nf_type_ToString(subscription_data->subscr_cond.nf_type);
     } else if (subscription_data->subscr_cond.service_name) {
         subscriptionTarget = subscription_data->subscr_cond.service_name;
+    } else {
+        subscriptionTarget = "Unknown";
     }
     ogs_info("[%s] Subscription for %s %s until %s "
         "[duration:%lld,validity:%d.%06d,patch:%d.%06d]",

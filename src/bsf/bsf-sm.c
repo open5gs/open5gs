@@ -386,9 +386,10 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
             char* subscriptionTarget;
             if (subscription_data->subscr_cond.nf_type) {
                 subscriptionTarget = OpenAPI_nf_type_ToString(subscription_data->subscr_cond.nf_type);
-            }
-            else if (subscription_data->subscr_cond.service_name) {
+            } else if (subscription_data->subscr_cond.service_name) {
                 subscriptionTarget = subscription_data->subscr_cond.service_name;
+            } else {
+                subscriptionTarget = "Unknown";
             }
             ogs_info("[%s] Need to update Subscription for %s",
                 subscription_data->id, subscriptionTarget);
