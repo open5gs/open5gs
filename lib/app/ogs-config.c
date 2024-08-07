@@ -134,6 +134,30 @@ static int global_conf_validation(void)
     return OGS_OK;
 }
 
+int ogs_app_count_nf_conf_sections(const char *conf_section)
+{
+    if (!strcmp(conf_section, "amf"))
+        global_conf.parameter.amf_count++;
+    else if (!strcmp(conf_section, "smf"))
+        global_conf.parameter.smf_count++;
+    else if (!strcmp(conf_section, "upf"))
+        global_conf.parameter.upf_count++;
+    else if (!strcmp(conf_section, "ausf"))
+        global_conf.parameter.ausf_count++;
+    else if (!strcmp(conf_section, "udm"))
+        global_conf.parameter.udm_count++;
+    else if (!strcmp(conf_section, "pcf"))
+        global_conf.parameter.pcf_count++;
+    else if (!strcmp(conf_section, "nssf"))
+        global_conf.parameter.nssf_count++;
+    else if (!strcmp(conf_section, "bsf"))
+        global_conf.parameter.bsf_count++;
+    else if (!strcmp(conf_section, "udr"))
+        global_conf.parameter.udr_count++;
+
+    return OGS_OK;
+}
+
 int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent)
 {
     int rv;
@@ -459,6 +483,7 @@ int ogs_app_parse_local_conf(const char *local)
     int rv;
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
+    int idx = 0;
 
     document = ogs_app()->document;
     ogs_assert(document);
@@ -470,7 +495,8 @@ int ogs_app_parse_local_conf(const char *local)
     while (ogs_yaml_iter_next(&root_iter)) {
         const char *root_key = ogs_yaml_iter_key(&root_iter);
         ogs_assert(root_key);
-        if (!strcmp(root_key, local)) {
+        if (!strcmp(root_key, local) &&
+            (idx++ == ogs_app()->config_section_id)) {
             ogs_yaml_iter_t local_iter;
             ogs_yaml_iter_recurse(&root_iter, &local_iter);
             while (ogs_yaml_iter_next(&local_iter)) {

@@ -22,76 +22,12 @@ global:
 #    no_nssf: true
 #    no_bsf: true
 #    no_udr: true
-#    no_mme: true
-#    no_sgwc: true
-#    no_sgwu: true
-#    no_pcrf: true
-#    no_hss: true
+    no_mme: true
+    no_sgwc: true
+    no_sgwu: true
+    no_pcrf: true
+    no_hss: true
 
-mme:
-  freeDiameter:
-    identity: mme.localdomain
-    realm: localdomain
-    listen_on: 127.0.0.2
-    no_fwd: true
-    load_extension:
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
-        conf: 0x8888
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
-    connect:
-      - identity: hss.localdomain
-        address: 127.0.0.8
-
-  s1ap:
-    server:
-      - address: 127.0.0.2
-  gtpc:
-    server:
-      - address: 127.0.0.2
-    client:
-      sgwc:
-        - address: 127.0.0.3
-      smf:
-        - address: 127.0.0.4
-  metrics:
-    server:
-      - address: 127.0.0.2
-        port: 9090
-  gummei:
-    - plmn_id:
-        mcc: 999
-        mnc: 70
-      mme_gid: 2
-      mme_code: 1
-  tai:
-    - plmn_id:
-        mcc: 999
-        mnc: 70
-      tac: 1
-  security:
-    integrity_order : [ EIA2, EIA1, EIA0 ]
-    ciphering_order : [ EEA0, EEA1, EEA2 ]
-  network_name:
-    full: Open5GS
-  time:
-    t3412:
-      value: 540
-
-sgwc:
-  gtpc:
-    server:
-      - address: 127.0.0.3
-  pfcp:
-    server:
-      - address: 127.0.0.3
-    client:
-      sgwu:
-        - address: 127.0.0.6
 
 smf:
   sbi:
@@ -168,6 +104,7 @@ amf:
       amf_id:
         region: 2
         set: 1
+        pointer: 31
   tai:
     - plmn_id:
         mcc: 999
@@ -212,6 +149,7 @@ amf:
       amf_id:
         region: 2
         set: 1
+        pointer: 30
   tai:
     - plmn_id:
         mcc: 999
@@ -233,14 +171,6 @@ amf:
     t3512:
       value: 540     # 9 mintues * 60 = 540 seconds
 
-sgwu:
-  pfcp:
-    server:
-      - address: 127.0.0.6
-  gtpu:
-    server:
-      - address: 127.0.0.6
-
 upf:
   pfcp:
     server:
@@ -257,43 +187,6 @@ upf:
     server:
       - address: 127.0.0.7
         port: 9090
-
-hss:
-  freeDiameter:
-    identity: hss.localdomain
-    realm: localdomain
-    listen_on: 127.0.0.8
-    no_fwd: true
-    load_extension:
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
-        conf: 0x8888
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
-    connect:
-      - identity: mme.localdomain
-        address: 127.0.0.2
-pcrf:
-  freeDiameter:
-    identity: pcrf.localdomain
-    realm: localdomain
-    listen_on: 127.0.0.9
-    no_fwd: true
-    load_extension:
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
-        conf: 0x8888
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
-      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
-    connect:
-      - identity: smf.localdomain
-        address: 127.0.0.4
 
 nrf:
   sbi:
