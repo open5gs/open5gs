@@ -52,6 +52,16 @@ typedef struct ogs_global_conf_s {
         int no_scp;
         int no_nrf;
 
+        int amf_count;
+        int smf_count;
+        int upf_count;
+        int ausf_count;
+        int udm_count;
+        int pcf_count;
+        int nssf_count;
+        int bsf_count;
+        int udr_count;
+
         /* Network */
         int no_ipv4;
         int no_ipv6;
@@ -163,6 +173,7 @@ void ogs_app_config_final(void);
 ogs_app_global_conf_t *ogs_global_conf(void);
 ogs_app_local_conf_t *ogs_local_conf(void);
 
+int ogs_app_count_nf_conf_sections(const char *conf_section);
 int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent);
 int ogs_app_parse_local_conf(const char *local);
 

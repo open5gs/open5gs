@@ -100,6 +100,7 @@ int udm_context_parse_config(void)
     int rv;
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
+    int idx = 0;
 
     document = ogs_app()->document;
     ogs_assert(document);
@@ -111,7 +112,8 @@ int udm_context_parse_config(void)
     while (ogs_yaml_iter_next(&root_iter)) {
         const char *root_key = ogs_yaml_iter_key(&root_iter);
         ogs_assert(root_key);
-        if (!strcmp(root_key, "udm")) {
+        if ((!strcmp(root_key, "udm")) &&
+            (idx++ == ogs_app()->config_section_id)) {
             ogs_yaml_iter_t udm_iter;
             ogs_yaml_iter_recurse(&root_iter, &udm_iter);
             while (ogs_yaml_iter_next(&udm_iter)) {
