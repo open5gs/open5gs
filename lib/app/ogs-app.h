@@ -41,6 +41,7 @@ extern "C" {
 #endif
 
 int app_initialize(const char *const argv[]);
+int app_initialize_transfer(const char *const argv[]);
 void app_terminate(void);
 
 int mme_initialize(void);

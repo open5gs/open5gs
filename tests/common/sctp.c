@@ -91,19 +91,30 @@ ogs_socknode_t *tests1ap_client(int family)
     return node;
 }
 
-ogs_socknode_t *testngap_client(int family)
+ogs_socknode_t *testngap_client(int index, int family)
 {
     int rv;
     ogs_sockaddr_t *addr = NULL;
     ogs_socknode_t *node = NULL;
     ogs_sock_t *sock = NULL;
 
-    if (family == AF_INET6)
-        ogs_assert(OGS_OK ==
-            ogs_copyaddrinfo(&addr, test_self()->ngap_addr6));
-    else
-        ogs_assert(OGS_OK ==
-            ogs_copyaddrinfo(&addr, test_self()->ngap_addr));
+    if (index == 1) {
+        if (family == AF_INET6)
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(&addr, test_self()->ngap_addr6));
+        else
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(&addr, test_self()->ngap_addr));
+
+    } else if (index == 2) {
+        if (family == AF_INET6)
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(&addr, test_self()->ngap2_addr6));
+        else
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(&addr, test_self()->ngap2_addr));
+    } else
+        ogs_assert_if_reached();
 
     ogs_assert(addr);
 

@@ -213,6 +213,7 @@ int ogs_sbi_context_parse_config(
     int rv;
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
+    int idx = 0;
 
     document = ogs_app()->document;
     ogs_assert(document);
@@ -224,7 +225,8 @@ int ogs_sbi_context_parse_config(
     while (ogs_yaml_iter_next(&root_iter)) {
         const char *root_key = ogs_yaml_iter_key(&root_iter);
         ogs_assert(root_key);
-        if (local && !strcmp(root_key, local)) {
+        if (local && !strcmp(root_key, local) &&
+            idx++ == ogs_app()->config_section_id) {
             ogs_yaml_iter_t local_iter;
             ogs_yaml_iter_recurse(&root_iter, &local_iter);
             while (ogs_yaml_iter_next(&local_iter)) {
@@ -349,11 +351,13 @@ int ogs_sbi_context_parse_config(
         }
     }
 
+    idx = 0;
     ogs_yaml_iter_init(&root_iter, document);
     while (ogs_yaml_iter_next(&root_iter)) {
         const char *root_key = ogs_yaml_iter_key(&root_iter);
         ogs_assert(root_key);
-        if (local && !strcmp(root_key, local)) {
+        if (local && !strcmp(root_key, local) &&
+            idx++ == ogs_app()->config_section_id) {
             ogs_yaml_iter_t local_iter;
             ogs_yaml_iter_recurse(&root_iter, &local_iter);
             while (ogs_yaml_iter_next(&local_iter)) {

@@ -42,7 +42,7 @@ static void test1_func(abts_case *tc, void *data)
     bson_t *doc = NULL;
 
     /* gNB connects to AMF */
-    ngap = testngap_client(AF_INET);
+    ngap = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap);
 
     /* gNB connects to UPF */
