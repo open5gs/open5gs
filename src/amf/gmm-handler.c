@@ -971,63 +971,7 @@ ogs_nas_5gmm_cause_t gmm_handle_identity_response(amf_ue_t *amf_ue,
     ogs_nas_5gs_mobile_identity_suci_t *mobile_identity_suci = NULL;
     ogs_nas_5gs_mobile_identity_header_t *mobile_identity_header = NULL;
 
-    ogs_assert(identity_response);
-
-    ogs_assert(amf_ue);
-    ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
-    ogs_assert(ran_ue);
-    ogs_assert(identity_response);
-
-    mobile_identity = &identity_response->mobile_identity;
-
-    if (!mobile_identity->length || !mobile_identity->buffer) {
-        ogs_error("No Mobile Identity");
-        return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
-    }
-
-    if (mobile_identity->length < OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE) {
-        ogs_error("The length of Mobile Identity(%d) is less then the min(%d)",
-            mobile_identity->length, OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE);
-        return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
-    }
-
-    mobile_identity_header =
-            (ogs_nas_5gs_mobile_identity_header_t *)mobile_identity->buffer;
-
-    if (mobile_identity_header->type == OGS_NAS_5GS_MOBILE_IDENTITY_SUCI) {
-        mobile_identity_suci =
-            (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;
-        if (mobile_identity_suci->h.supi_format !=
-                OGS_NAS_5GS_SUPI_FORMAT_IMSI) {
-            ogs_error("Not implemented SUPI format [%d]",
-                mobile_identity_suci->h.supi_format);
-            return OGS_ERROR;
-        }
-        if (mobile_identity_suci->protection_scheme_id !=
-                OGS_PROTECTION_SCHEME_NULL &&
-            mobile_identity_suci->protection_scheme_id !=
-                OGS_PROTECTION_SCHEME_PROFILE_A &&
-            mobile_identity_suci->protection_scheme_id !=
-                OGS_PROTECTION_SCHEME_PROFILE_B) {
-            ogs_error("Invalid ProtectionSchemeID(%d) in SUCI",
-                mobile_identity_suci->protection_scheme_id);
-            return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
-        }
-        ogs_nas_to_plmn_id(&amf_ue->home_plmn_id,
-                &mobile_identity_suci->nas_plmn_id);
-
-        gmm_cause = gmm_cause_from_access_control(&amf_ue->home_plmn_id);
-        if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
-            ogs_error("Rejected by PLMN-ID access control");
-            return gmm_cause;
-        }
-
-        amf_ue_set_suci(amf_ue, mobile_identity);
-        ogs_info("[%s]    SUCI", amf_ue->suci);
-    } else {
-        ogs_error("Not supported Identity type[%d]",
-                mobile_identity_header->type);
-    }
+//TODO
 
     return OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
 }

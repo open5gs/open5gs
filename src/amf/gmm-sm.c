@@ -1439,57 +1439,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             break;
 
         case OGS_NAS_5GS_IDENTITY_RESPONSE:
-            if (amf_ue->nas.message_type == 0) {
-                ogs_warn("No Received NAS message");
-                r = ngap_send_error_indication2(
-                        ran_ue,
-                        NGAP_Cause_PR_protocol,
-                        NGAP_CauseProtocol_semantic_error);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, gmm_state_exception);
-                break;
-            }
-
-            CLEAR_AMF_UE_TIMER(amf_ue->t3570);
-
-            ogs_info("Identity response");
-            gmm_cause = gmm_handle_identity_response(amf_ue,
-                    &nas_message->gmm.identity_response);
-            if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
-                ogs_error("gmm_handle_identity_response() "
-                            "failed [%d] in type [%d]",
-                            gmm_cause, amf_ue->nas.message_type);
-                r = nas_5gs_send_gmm_reject(ran_ue, amf_ue, gmm_cause);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, gmm_state_exception);
-                break;
-            }
-
-            if (!AMF_UE_HAVE_SUCI(amf_ue)) {
-                ogs_error("No SUCI");
-                r = nas_5gs_send_gmm_reject(ran_ue, amf_ue, gmm_cause);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, gmm_state_exception);
-                break;
-            }
-
-            amf_sbi_send_release_all_sessions(
-                    ran_ue, amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
-
-            if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
-                amf_sess_xact_count(amf_ue) == xact_count) {
-                r = amf_ue_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-                        amf_nausf_auth_build_authenticate,
-                        amf_ue, 0, NULL);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-            }
-
-            OGS_FSM_TRAN(s, &gmm_state_authentication);
+              //TODO
             break;
 
         case OGS_NAS_5GS_5GMM_STATUS:
