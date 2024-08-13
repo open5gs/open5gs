@@ -1745,6 +1745,10 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->policy_association.client)
         ogs_sbi_client_remove(sess->policy_association.client);
 
+    UDM_SDM_CLEAR(sess);
+    if (sess->data_change_subscription.client)
+        ogs_sbi_client_remove(sess->data_change_subscription.client);
+
     if (sess->session.name)
         ogs_free(sess->session.name);
     if (sess->full_dnn)

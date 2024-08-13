@@ -318,6 +318,37 @@ typedef struct smf_sess_s {
         ogs_sbi_client_t *client;
     } policy_association;
 
+    /* SubscriptionId of Subscription to Data Change Notification to UDM */
+#define UDM_SDM_SUBSCRIBED(__sESS) \
+    ((__sESS) && ((__sESS)->data_change_subscription.id))
+#define UDM_SDM_CLEAR(__sESS) \
+    do { \
+        ogs_assert((__sESS)); \
+        if ((__sESS)->data_change_subscription.resource_uri) \
+            ogs_free((__sESS)->data_change_subscription.resource_uri); \
+        (__sESS)->data_change_subscription.resource_uri = NULL; \
+        if ((__sESS)->data_change_subscription.id) \
+            ogs_free((__sESS)->data_change_subscription.id); \
+        (__sESS)->data_change_subscription.id = NULL; \
+    } while(0)
+#define UDM_SDM_STORE(__sESS, __rESOURCE_URI, __iD) \
+    do { \
+        ogs_assert((__sESS)); \
+        ogs_assert((__rESOURCE_URI)); \
+        ogs_assert((__iD)); \
+        UDM_SDM_CLEAR(__sESS); \
+        (__sESS)->data_change_subscription.resource_uri = \
+            ogs_strdup(__rESOURCE_URI); \
+        ogs_assert((__sESS)->data_change_subscription.resource_uri); \
+        (__sESS)->data_change_subscription.id = ogs_strdup(__iD); \
+        ogs_assert((__sESS)->data_change_subscription.id); \
+    } while(0)
+    struct {
+        char *resource_uri;
+        char *id;
+        ogs_sbi_client_t *client;
+    } data_change_subscription;
+
     OpenAPI_up_cnx_state_e up_cnx_state;
 
     /* Serving PLMN ID & Home PLMN ID */

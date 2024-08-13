@@ -28,6 +28,7 @@
 #include "gy-handler.h"
 #include "nnrf-handler.h"
 #include "namf-handler.h"
+#include "nsmf-handler.h"
 #include "npcf-handler.h"
 
 void smf_state_initial(ogs_fsm_t *s, smf_event_t *e)
@@ -657,6 +658,10 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             "Invalid resource name",
                             sbi_message.h.resource.component[0], NULL));
                 END
+                break;
+            CASE(OGS_SBI_RESOURCE_NAME_SDMSUBSCRIPTION_NOTIFY)
+                smf_nsmf_callback_handle_sdm_data_change_notify(
+                        stream, &sbi_message);
                 break;
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
