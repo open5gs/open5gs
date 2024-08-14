@@ -41,6 +41,10 @@ ogs_sbi_request_t *smf_nudm_sdm_build_get(smf_sess_t *sess, void *data)
     memcpy(&message.param.s_nssai, &sess->s_nssai,
             sizeof(message.param.s_nssai));
 
+    message.param.plmn_id_presence = true;
+    memcpy(&message.param.plmn_id, &sess->home_plmn_id,
+            sizeof(message.param.plmn_id));
+
     if (sess->session.name)
         message.param.dnn = sess->session.name;
 

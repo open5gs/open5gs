@@ -164,6 +164,10 @@ ogs_sbi_request_t *amf_nudm_sdm_build_get(amf_ue_t *amf_ue, void *data)
     message.h.resource.component[0] = amf_ue->supi;
     message.h.resource.component[1] = data;
 
+    message.param.plmn_id_presence = true;
+    memcpy(&message.param.plmn_id, &amf_ue->home_plmn_id,
+            sizeof(message.param.plmn_id));
+
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
 
