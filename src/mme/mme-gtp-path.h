@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -29,28 +29,32 @@ extern "C" {
 int mme_gtp_open(void);
 void mme_gtp_close(void);
 
-int mme_gtp_send_create_session_request(mme_sess_t *sess, int create_action);
+int mme_gtp_send_create_session_request(
+        enb_ue_t *enb_ue, mme_sess_t *sess, int create_action);
 int mme_gtp_send_modify_bearer_request(
-        mme_ue_t *mme_ue, int uli_presence, int modify_action);
+        enb_ue_t *enb_ue, mme_ue_t *mme_ue,
+        int uli_presence, int modify_action);
 int mme_gtp_send_delete_session_request(
-        sgw_ue_t *sgw_ue, mme_sess_t *sess, int action);
-void mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue, int action);
+        enb_ue_t *enb_ue, sgw_ue_t *sgw_ue, mme_sess_t *sess, int action);
+void mme_gtp_send_delete_all_sessions(
+        enb_ue_t *enb_ue, mme_ue_t *mme_ue, int action);
 int mme_gtp_send_create_bearer_response(
         mme_bearer_t *bearer, uint8_t cause_value);
 int mme_gtp_send_update_bearer_response(
         mme_bearer_t *bearer, uint8_t cause_value);
 int mme_gtp_send_delete_bearer_response(
         mme_bearer_t *bearer, uint8_t cause_value);
-int mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue, int action);
+int mme_gtp_send_release_access_bearers_request(
+        enb_ue_t *enb_ue, mme_ue_t *mme_ue, int action);
 void mme_gtp_send_release_all_ue_in_enb(mme_enb_t *enb, int action);
 
 int mme_gtp_send_downlink_data_notification_ack(
         mme_bearer_t *bearer, uint8_t cause_value);
 
 int mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
-        mme_ue_t *mme_ue);
+        enb_ue_t *enb_ue, mme_ue_t *mme_ue);
 int mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
-        mme_ue_t *mme_ue, int action);
+        enb_ue_t *enb_ue, mme_ue_t *mme_ue, int action);
 
 int mme_gtp_send_bearer_resource_command(
         mme_bearer_t *bearer, ogs_nas_eps_message_t *nas_message);

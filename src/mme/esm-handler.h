@@ -26,15 +26,17 @@
 extern "C" {
 #endif
 
-int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
+int esm_handle_pdn_connectivity_request(
+        enb_ue_t *enb_ue, mme_bearer_t *bearer,
         ogs_nas_eps_pdn_connectivity_request_t *req,
         int create_action);
-int esm_handle_information_response(mme_sess_t *sess, 
+int esm_handle_information_response(
+        enb_ue_t *enb_ue, mme_sess_t *sess,
         ogs_nas_eps_esm_information_response_t *rsp);
 int esm_handle_bearer_resource_allocation_request(
-        mme_bearer_t *bearer, ogs_nas_eps_message_t *message);
+        enb_ue_t *enb_ue, mme_bearer_t *bearer, ogs_nas_eps_message_t *message);
 int esm_handle_bearer_resource_modification_request(
-        mme_bearer_t *bearer, ogs_nas_eps_message_t *message);
+        enb_ue_t *enb_ue, mme_bearer_t *bearer, ogs_nas_eps_message_t *message);
 
 #ifdef __cplusplus
 }

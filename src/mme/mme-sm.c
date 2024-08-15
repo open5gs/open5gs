@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -347,7 +347,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         ogs_fsm_dispatch(&mme_ue->sm, e);
         if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_exception)) {
-            mme_send_delete_session_or_mme_ue_context_release(mme_ue);
+            mme_send_delete_session_or_mme_ue_context_release(enb_ue, mme_ue);
         }
 
         ogs_pkbuf_free(pkbuf);
@@ -802,10 +802,15 @@ cleanup:
                 GTP_COUNTER_INCREMENT(
                     mme_ue, GTP_COUNTER_DELETE_SESSION_BY_PATH_SWITCH);
 
-                ogs_assert(OGS_OK ==
-                    mme_gtp_send_delete_session_request(
-                        sgw_ue, sess,
-                        OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST));
+                enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+                if (enb_ue) {
+                    ogs_assert(OGS_OK ==
+                        mme_gtp_send_delete_session_request(
+                            enb_ue, sgw_ue, sess,
+                            OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST));
+                } else
+                    ogs_error("ENB-S1 Context has already been removed");
+
             }
             break;
 
@@ -895,10 +900,15 @@ cleanup:
             ogs_list_for_each(&mme_ue->sess_list, sess) {
                 GTP_COUNTER_INCREMENT(
                     mme_ue, GTP_COUNTER_DELETE_SESSION_BY_PATH_SWITCH);
-                ogs_assert(OGS_OK ==
-                    mme_gtp_send_delete_session_request(
-                        sgw_ue, sess,
-                        OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST));
+
+                enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+                if (enb_ue) {
+                    ogs_assert(OGS_OK ==
+                        mme_gtp_send_delete_session_request(
+                            enb_ue, sgw_ue, sess,
+                            OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST));
+                } else
+                    ogs_error("ENB-S1 Context has already been removed");
             }
             break;
 

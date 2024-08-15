@@ -119,6 +119,8 @@ typedef struct ogs_gtp_xact_s {
     ogs_pool_id_t   assoc_xact_id;  /**< Associated GTP transaction ID */
     void            *pfcp_xact;     /**< Associated PFCP transaction */
 
+    ogs_pool_id_t   enb_ue_id;
+
 #define OGS_GTP_MODIFY_TFT_UPDATE ((uint64_t)1<<0)
 #define OGS_GTP_MODIFY_QOS_UPDATE ((uint64_t)1<<1)
     uint64_t        update_flags;
