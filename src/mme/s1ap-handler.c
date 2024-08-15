@@ -1760,8 +1760,12 @@ void s1ap_handle_ue_context_release_request(
         ogs_warn("NAS-Cause[%d]", (int)Cause->choice.nas);
         break;
     default:
-        ogs_warn("Invalid cause group[%d]", Cause->present);
-        break;
+        ogs_error("Invalid cause group[%d]", Cause->present);
+        r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
     }
 
     enb_ue->relcause.group = Cause->present;
