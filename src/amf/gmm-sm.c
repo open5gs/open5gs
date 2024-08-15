@@ -2522,7 +2522,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
 
         if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
             amf_sess_xact_count(amf_ue) == xact_count) {
-            r = ngap_send_amf_ue_context_release_command(amf_ue,
+            r = ngap_send_ran_ue_context_release_command(
+                    ran_ue_find_by_id(amf_ue->ran_ue_id),
                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
                     NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
             ogs_expect(r == OGS_OK);

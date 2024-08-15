@@ -1626,7 +1626,7 @@ void ngap_handle_ue_context_release_request(
         }
  
         if (amf_sess_xact_count(amf_ue) == xact_count) {
-            r = ngap_send_amf_ue_context_release_command(amf_ue,
+            r = ngap_send_ran_ue_context_release_command(ran_ue,
                     Cause->present, (int)Cause->choice.radioNetwork,
                     NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
             ogs_expect(r == OGS_OK);

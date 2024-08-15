@@ -415,26 +415,6 @@ int ngap_send_ran_ue_context_release_command(
     return rv;
 }
 
-int ngap_send_amf_ue_context_release_command(
-    amf_ue_t *amf_ue, NGAP_Cause_PR group, long cause,
-    uint8_t action, ogs_time_t duration)
-{
-    int rv;
-
-    if (!amf_ue) {
-        ogs_error("UE(amf-ue) context has already been removed");
-        return OGS_NOTFOUND;
-    }
-
-    rv = ngap_send_ran_ue_context_release_command(
-            ran_ue_find_by_id(amf_ue->ran_ue_id),
-            group, cause, action, duration);
-    ogs_expect(rv == OGS_OK);
-    ogs_debug("    SUPI[%s]", amf_ue->supi);
-
-    return rv;
-}
-
 int ngap_send_paging(amf_ue_t *amf_ue)
 {
     ogs_pkbuf_t *ngapbuf = NULL;
