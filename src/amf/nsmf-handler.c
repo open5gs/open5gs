@@ -584,11 +584,12 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  * 6. UEContextReleaseComplete
                  */
                 ogs_warn("PDUSessionResourceSetupResponse(Unsuccessful)");
-                ogs_assert(amf_ue->deactivation.group);
+                ogs_assert(ran_ue);
+                ogs_assert(ran_ue->deactivation.group);
 
                 r = ngap_send_ran_ue_context_release_command(ran_ue,
-                        amf_ue->deactivation.group,
-                        amf_ue->deactivation.cause,
+                        ran_ue->deactivation.group,
+                        ran_ue->deactivation.cause,
                         NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
@@ -622,11 +623,12 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  */
 
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
-                    ogs_assert(amf_ue->deactivation.group);
+                    ogs_assert(ran_ue);
+                    ogs_assert(ran_ue->deactivation.group);
 
                     r = ngap_send_ran_ue_context_release_command(ran_ue,
-                            amf_ue->deactivation.group,
-                            amf_ue->deactivation.cause,
+                            ran_ue->deactivation.group,
+                            ran_ue->deactivation.cause,
                             NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
