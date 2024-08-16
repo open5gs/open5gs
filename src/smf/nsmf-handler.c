@@ -781,7 +781,7 @@ bool smf_nsmf_handle_update_sm_context(
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
         } else {
-            ogs_warn("[%s:%d] No PolicyAssociationId. Forcibly remove SESSION",
+            ogs_warn("[%s:%d] No UDM Subscription. Forcibly remove SESSION",
                     smf_ue->supi, sess->psi);
             r = smf_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
@@ -889,7 +889,7 @@ bool smf_nsmf_handle_release_sm_context(
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     } else {
-        ogs_warn("[%s:%d] No PolicyAssociationId. Forcibly remove SESSION",
+        ogs_warn("[%s:%d] No UDM Subscription. Forcibly remove SESSION",
                 smf_ue->supi, sess->psi);
         r = smf_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,

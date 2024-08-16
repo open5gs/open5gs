@@ -1201,7 +1201,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             } else {
-                ogs_warn("[%s:%d] No PolicyAssociationId. "
+                ogs_warn("[%s:%d] No SDM Subscription. "
                         "Forcibly remove SESSION", smf_ue->supi, sess->psi);
                 r = smf_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,

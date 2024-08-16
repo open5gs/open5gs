@@ -183,6 +183,7 @@ ogs_sbi_request_t *smf_nudm_sdm_build_subscription(
             (char *)OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS;
 
     memset(&SDMSubscription, 0, sizeof(SDMSubscription));
+    memset(&sNSSAI, 0, sizeof(sNSSAI));
 
     SDMSubscription.nf_instance_id =
         NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
@@ -225,7 +226,6 @@ ogs_sbi_request_t *smf_nudm_sdm_build_subscription(
     SDMSubscription.dnn = sess->session.name;
     SDMSubscription.plmn_id = ogs_sbi_build_plmn_id(&sess->serving_plmn_id);
 
-    memset(&sNSSAI, 0, sizeof(sNSSAI));
     sNSSAI.sst = sess->s_nssai.sst;
     sNSSAI.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
     SDMSubscription.single_nssai = &sNSSAI;
