@@ -124,6 +124,11 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     return;
 
 error:
+    /* Clang scan-build SA: NULL pointer dereference: mme_ue=NULL if root=NULL. */
+    if (!mme_ue) {
+        ogs_error("!mme_ue");
+        return;
+    }
     r = nas_eps_send_attach_reject(
             enb_ue_find_by_id(mme_ue->enb_ue_id), mme_ue,
             OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,

@@ -94,6 +94,13 @@ char *ogs_supi_from_suci(char *suci)
         return NULL;
     }
 
+    /* Clang scan-build SA: Branch condition evaluates to a garbage value: If array "array" is not fully populated
+     * in the while loop below then later access in the following switch-case may check uninitialized values.
+     * Initialize "array" to NULL pointers to fix the issue. */
+    for (i = 0; i < MAX_SUCI_TOKEN; i++) {
+        array[i] = NULL;
+    }
+
     p = tmp;
     i = 0;
     while((array[i++] = strsep(&p, "-"))) {

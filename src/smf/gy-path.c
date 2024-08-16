@@ -401,11 +401,15 @@ static void fill_ps_information(smf_sess_t *sess, uint32_t cc_request_type,
     /* PDP-Address, TS 32.299 7.2.137 */
     if (sess->ipv4) {
         ret = fd_msg_avp_new(ogs_diam_gy_pdp_address, 0, &avpch2);
+        /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+        ogs_assert(ret == 0);
         sin.sin_family = AF_INET;
         memcpy(&sin.sin_addr.s_addr, (uint8_t*)&sess->ipv4->addr[0], OGS_IPV4_LEN);
         ret = fd_msg_avp_value_encode(&sin, avpch2);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+        ogs_assert(ret == 0);
     }
     if (sess->ipv6) {
         ret = fd_msg_avp_new(ogs_diam_gy_pdp_address, 0, &avpch2);
@@ -425,6 +429,8 @@ static void fill_ps_information(smf_sess_t *sess, uint32_t cc_request_type,
     /* SGSN-Address */
     if (sess->sgw_s5c_ip.ipv4) {
         ret = fd_msg_avp_new(ogs_diam_gy_sgsn_address, 0, &avpch2);
+        /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+        ogs_assert(ret == 0);
         sin.sin_family = AF_INET;
         memcpy(&sin.sin_addr.s_addr, (uint8_t*)&sess->sgw_s5c_ip.addr, OGS_IPV4_LEN);
         ret = fd_msg_avp_value_encode(&sin, avpch2);
@@ -434,6 +440,8 @@ static void fill_ps_information(smf_sess_t *sess, uint32_t cc_request_type,
     }
     if (sess->sgw_s5c_ip.ipv6) {
         ret = fd_msg_avp_new(ogs_diam_gy_sgsn_address, 0, &avpch2);
+        /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+        ogs_assert(ret == 0);
         sin6.sin6_family = AF_INET6;
         memcpy(&sin6.sin6_addr.s6_addr, (uint8_t*)&sess->sgw_s5c_ip.addr6[0], OGS_IPV6_LEN);
         ret = fd_msg_avp_value_encode(&sin6, avpch2);
@@ -569,6 +577,8 @@ static void fill_ps_information(smf_sess_t *sess, uint32_t cc_request_type,
     if (smf_ue->imeisv_len > 0) {
         /* User-Equipment-Info, 3GPP TS 32.299 7.1.17 */
         ret = fd_msg_avp_new(ogs_diam_gy_user_equipment_info, 0, &avpch2);
+        /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+        ogs_assert(ret == 0);
 
         /* User-Equipment-Info-Type 0 (IMEI) */
         ret = fd_msg_avp_new(ogs_diam_gy_user_equipment_info_type, 0, &avpch3);

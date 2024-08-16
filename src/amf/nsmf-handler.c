@@ -377,8 +377,9 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
             case OpenAPI_n2_sm_info_type_PDU_RES_MOD_REQ:
                 if (!n1smbuf) {
-                    ogs_error("[%s:%d] No N1 SM Content [%s]",
-                            amf_ue->supi, sess->psi, n1SmMsg->content_id);
+                    /* Clang scan-build SA: NULL pointer deference: n1SmMsg=NULL, remove logging of n1SmMsg->content_id. */
+                    ogs_error("[%s:%d] No N1 SM Content",
+                            amf_ue->supi, sess->psi);
                     r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                             AMF_NAS_BACKOFF_TIME);
@@ -419,8 +420,9 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
             case OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD:
                 if (!n1smbuf) {
-                    ogs_error("[%s:%d] No N1 SM Content [%s]",
-                            amf_ue->supi, sess->psi, n1SmMsg->content_id);
+                    /* Clang scan-build SA: NULL pointer deference: n1SmMsg=NULL, remove logging of n1SmMsg->content_id. */
+                    ogs_error("[%s:%d] No N1 SM Content",
+                            amf_ue->supi, sess->psi);
                     r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                             AMF_NAS_BACKOFF_TIME);
