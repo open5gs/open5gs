@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -494,6 +494,10 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
     ogs_nas_eps_tracking_area_update_accept_t *tau_accept =
         &message.emm.tracking_area_update_accept;
     ogs_nas_eps_mobile_identity_t *nas_guti = &tau_accept->guti;
+    ogs_nas_location_area_identification_t *lai =
+        &tau_accept->location_area_identification;
+    ogs_nas_mobile_identity_t *ms_identity = &tau_accept->ms_identity;
+    ogs_nas_mobile_identity_tmsi_t *tmsi = &ms_identity->tmsi;;
     ogs_nas_gprs_timer_t *t3412_value = &tau_accept->t3412_value;
     ogs_nas_gprs_timer_t *t3402_value = &tau_accept->t3402_value;
     ogs_nas_gprs_timer_t *t3423_value = &tau_accept->t3423_value;
@@ -593,6 +597,27 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
             bearer = mme_bearer_next(bearer);
         }
         sess = mme_sess_next(sess);
+    }
+
+    /* Location Area Identification & MS Identity */
+    if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+        ogs_assert(mme_ue->csmap);
+        ogs_assert(mme_ue->p_tmsi);
+
+        tau_accept->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT;
+        lai->nas_plmn_id = mme_ue->csmap->lai.nas_plmn_id;
+        lai->lac = mme_ue->csmap->lai.lac;
+        ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
+                ogs_plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
+
+        tau_accept->presencemask |=
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_MS_IDENTITY_PRESENT;
+        ms_identity->length = 5;
+        tmsi->spare = 0xf;
+        tmsi->odd_even = 0;
+        tmsi->type = OGS_NAS_MOBILE_IDENTITY_TMSI;
+        tmsi->tmsi = mme_ue->p_tmsi;
+        ogs_debug("    P-TMSI: 0x%08x", tmsi->tmsi);
     }
 
     /* Set T3402 */

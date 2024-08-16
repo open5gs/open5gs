@@ -519,6 +519,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                              rai.lai.lac, rai.rac);
                     r = nas_eps_send_tau_reject(enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
                     OGS_FSM_TRAN(s, &emm_state_exception);
                     break;
                 }
@@ -637,9 +639,36 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
              * 10. UplinkNASTransport + Tracking area update complete (Target)
              */
 
-            if (e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage) {
-                ogs_debug("    Iniital UE Message");
-                if (mme_ue->nas_eps.update.active_flag) {
+            /* Update CSMAP from Tracking area update request */
+            mme_ue->csmap = mme_csmap_find_by_tai(&mme_ue->tai);
+            if (mme_ue->csmap &&
+                mme_ue->network_access_mode ==
+                    OGS_NETWORK_ACCESS_MODE_PACKET_AND_CIRCUIT &&
+                (mme_ue->nas_eps.update.value ==
+                 OGS_NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING ||
+                 mme_ue->nas_eps.update.value ==
+                 OGS_NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING_WITH_IMSI_ATTACH)) {
+
+                if (e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage)
+                    mme_ue->tracking_area_update_request_type =
+                        MME_TAU_TYPE_INITIAL_UE_MESSAGE;
+                else if (e->s1ap_code ==
+                        S1AP_ProcedureCode_id_uplinkNASTransport)
+                    mme_ue->tracking_area_update_request_type =
+                        MME_TAU_TYPE_UPLINK_NAS_TRANPORT;
+                else {
+                    ogs_error("Invalid Procedure Code[%d]", (int)e->s1ap_code);
+                    break;
+                }
+
+                ogs_assert(OGS_OK ==
+                    sgsap_send_location_update_request(mme_ue));
+
+            } else {
+
+                if (e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage) {
+                    ogs_debug("    Iniital UE Message");
+                    if (mme_ue->nas_eps.update.active_flag) {
 
     /*
      * TS33.401
@@ -652,36 +681,39 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
      * UP data or pending downlink signalling, radio bearers will be established
      * as part of the TAU procedure and a KeNB derivation is necessary.
      */
-                    ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32,
-                            mme_ue->kenb);
-                    ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
-                    mme_ue->nhcc = 1;
+                        ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32,
+                                mme_ue->kenb);
+                        ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+                        mme_ue->nhcc = 1;
 
-                    r = nas_eps_send_tau_accept(mme_ue,
-                            S1AP_ProcedureCode_id_InitialContextSetup);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                } else {
+                        r = nas_eps_send_tau_accept(mme_ue,
+                                S1AP_ProcedureCode_id_InitialContextSetup);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                    } else {
+                        r = nas_eps_send_tau_accept(mme_ue,
+                                S1AP_ProcedureCode_id_downlinkNASTransport);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                    }
+                } else if (e->s1ap_code ==
+                        S1AP_ProcedureCode_id_uplinkNASTransport) {
+                    ogs_debug("    Uplink NAS Transport");
                     r = nas_eps_send_tau_accept(mme_ue,
                             S1AP_ProcedureCode_id_downlinkNASTransport);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
+                } else {
+                    ogs_error("Invalid Procedure Code[%d]", (int)e->s1ap_code);
+                    break;
                 }
-            } else if (e->s1ap_code ==
-                    S1AP_ProcedureCode_id_uplinkNASTransport) {
-                ogs_debug("    Uplink NAS Transport");
-                r = nas_eps_send_tau_accept(mme_ue,
-                        S1AP_ProcedureCode_id_downlinkNASTransport);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-            } else {
-                ogs_fatal("Invalid Procedure Code[%d]", (int)e->s1ap_code);
-            }
 
-            if (!mme_ue->nas_eps.update.active_flag) {
-                enb_ue->relcause.group = S1AP_Cause_PR_nas;
-                enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
-                mme_send_release_access_bearer_or_ue_context_release(enb_ue);
+                if (!mme_ue->nas_eps.update.active_flag) {
+                    enb_ue->relcause.group = S1AP_Cause_PR_nas;
+                    enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
+                    mme_send_release_access_bearer_or_ue_context_release(
+                            enb_ue);
+                }
             }
 
             if (mme_ue->next.m_tmsi) {

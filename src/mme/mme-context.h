@@ -363,6 +363,11 @@ struct mme_ue_s {
         ogs_nas_detach_type_t detach;
     } nas_eps;
 
+#define MME_TAU_TYPE_INITIAL_UE_MESSAGE    1
+#define MME_TAU_TYPE_UPLINK_NAS_TRANPORT   2
+#define MME_TAU_TYPE_UNPROTECTED_INGERITY  3
+    uint8_t tracking_area_update_request_type;
+
     /* 1. MME initiated detach request to the UE.
      *    (nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE)
      * 2. If UE is IDLE, Paging sent to the UE
