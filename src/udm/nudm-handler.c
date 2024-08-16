@@ -690,7 +690,8 @@ bool udm_nudm_sdm_handle_subscription_create(
         return false;
     }
 
-    if ((!SDMSubscription->monitored_resource_uris) &&
+    /* Clang scan-build SA: NULL pointer dereference: change && to || in case monitored_resource_uris=NULL. */
+    if ((!SDMSubscription->monitored_resource_uris) ||
         (!SDMSubscription->monitored_resource_uris->count)) {
         ogs_error("[%s] No monitoredResourceUris", udm_ue->supi);
         ogs_assert(true ==

@@ -163,7 +163,8 @@ int sgwc_context_parse_config(void)
 sgwc_ue_t *sgwc_ue_add_by_message(ogs_gtp2_message_t *message)
 {
     sgwc_ue_t *sgwc_ue = NULL;
-    ogs_gtp2_create_session_request_t *req = &message->create_session_request;
+    /* Clang scan-build SA: Dead initialization: Don't set req before message is checked for NULL. */
+    ogs_gtp2_create_session_request_t *req;
 
     ogs_assert(message);
 

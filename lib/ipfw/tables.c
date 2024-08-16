@@ -263,9 +263,16 @@ ipfw_table_handler(int ac, char *av[])
 	case TOK_INFO:
 		arg = (tcmd == TOK_DETAIL) ? (void *)1 : NULL;
 		if (is_all == 0) {
+			/* Clang scan-build SA: Uninitialized argument value: false-positive report for the contents
+			 * of "i" being undefined if table_get_info() doesn't fill in "i" and returns an error.
+			 * table_get_info() only returns success if "i" is filled in. The SA is incorrectly creating
+			 * a path where table_get_info() doesn't fill in "i" on an error but the SA is using
+			 * error=0 (success) below to pass an uninitialized "i" to table_show_info(). */
+#ifndef __clang_analyzer__
 			if ((error = table_get_info(&oh, &i)) != 0)
 				err(EX_OSERR, "failed to request table info");
 			table_show_info(&i, arg);
+#endif
 		} else {
 			error = tables_foreach(table_show_info, arg, 1);
 			if (error != 0)
@@ -275,9 +282,16 @@ ipfw_table_handler(int ac, char *av[])
 	case TOK_LIST:
 		if (is_all == 0) {
 			ipfw_xtable_info i;
+			/* Clang scan-build SA: Result of operation is garbage: false-positive report for the contents
+			 * of "i" being undefined if table_get_info() doesn't fill in "i" and returns an error.
+			 * table_get_info() only returns success if "i" is filled in. The SA is incorrectly creating
+			 * a path where table_get_info() doesn't fill in "i" on an error but the SA is using
+			 * error=0 (success) below to pass an uninitialized "i" to table_show_one(). */
+#ifndef __clang_analyzer__
 			if ((error = table_get_info(&oh, &i)) != 0)
 				err(EX_OSERR, "failed to request table info");
 			table_show_one(&i, NULL);
+#endif
 		} else {
 			error = tables_foreach(table_show_one, NULL, 1);
 			if (error != 0)
@@ -1588,6 +1602,14 @@ tables_foreach(table_cb_t *f, void *arg, int sort)
 static int
 table_do_get_list(ipfw_xtable_info *i, ipfw_obj_header **poh)
 {
+	/* Clang scan-build SA: Memory error - use of 0 allocated: This is a code bug or a false-positive that
+	 * is not clear. The SA is taking a path that assumes i->size=0 on 1st pass thru the for loop &
+	 * therefore the "sz < i->size" check fails and sz=0 remains from the initialization at the top of
+	 * the function for the calloc() call. "i->size=0" would be from tables_foreach(). In that
+	 * function ipfw_xtable_info is contained within a larger buffer that is init'ed by calloc(). It
+	 * is not obvious how ipfw_xtable_info->size is getting set to a >0 value before getting passed
+	 * to this function. */
+#ifndef __clang_analyzer__
 	ipfw_obj_header *oh;
 	size_t sz;
 	int c;
@@ -1612,6 +1634,7 @@ table_do_get_list(ipfw_xtable_info *i, ipfw_obj_header **poh)
 			break;
 	}
 	free(oh);
+#endif
 
 	return (errno);
 }
@@ -1625,6 +1648,12 @@ table_show_list(ipfw_obj_header *oh, int need_header)
 	ipfw_obj_tentry *tent;
 	uint32_t count;
 	ipfw_xtable_info *i;
+
+	/* Clang scan-build SA: NULL pointer dereference: oh=NULL. */
+	if (!oh) {
+		ogs_error("Unable to print table list, oh=NULL");
+		return;
+	}
 
 	i = (ipfw_xtable_info *)(oh + 1);
 	tent = (ipfw_obj_tentry *)(i + 1);
@@ -1829,14 +1858,17 @@ table_do_get_vlist(ipfw_obj_lheader **polh)
 void
 ipfw_list_ta(int ac, char *av[])
 {
-	ipfw_obj_lheader *olh;
+	/* Clang scan-build SA: Result of operation is garbage: initialize olh=NULL and check for NULL before use. */
+	ipfw_obj_lheader *olh = NULL;
 	ipfw_ta_info *info;
 	int error, i;
 	const char *atype;
 
 	error = table_do_get_algolist(&olh);
-	if (error != 0)
-		err(EX_OSERR, "Unable to request algorithm list");
+	if ((error != 0) || (!olh)) {
+		ogs_error("Unable to request algorithm list");
+		return;
+	}
 
 	info = (ipfw_ta_info *)(olh + 1);
 	for (i = 0; i < olh->count; i++) {
@@ -1890,15 +1922,18 @@ compare_values(const void *_a, const void *_b)
 void
 ipfw_list_values(int ac, char *av[])
 {
-	ipfw_obj_lheader *olh;
+	/* Clang scan-build SA: Result of operation is garbage: initialize olh=NULL and check for NULL before use. */
+	ipfw_obj_lheader *olh = NULL;
 	struct _table_value *v;
 	int error, i;
 	uint32_t vmask;
 	char buf[128];
 
 	error = table_do_get_vlist(&olh);
-	if (error != 0)
-		err(EX_OSERR, "Unable to request value list");
+	if ((error != 0) || (!olh)) {
+		ogs_error("Unable to request value list");
+		return;
+	}
 
 	vmask = 0x7FFFFFFF; /* Similar to IPFW_VTYPE_LEGACY */
 

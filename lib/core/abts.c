@@ -152,10 +152,17 @@ abts_suite *abts_add_suite(abts_suite *suite, const char *suite_name_full)
         suite = malloc(sizeof(*suite));
         suite->head = subsuite;
         suite->tail = subsuite;
-    }
-    else {
-        suite->tail->next = subsuite;
-        suite->tail = subsuite;
+    } else {
+        /* Clang scan-build SA: NULL pointer dereference: add check for suite->tail=NULL */
+        if (suite->tail) {
+            suite->tail->next = subsuite;
+            suite->tail = subsuite;
+        } else {
+            fprintf(stderr, "suite->tail=NULL\n");
+            fflush(stderr);
+            free(subsuite);
+            return(NULL);
+        }
     }
 
     if (!should_test_run(subsuite->name)) {
@@ -201,6 +208,13 @@ static int report(abts_suite *suite)
 
     if (suite && suite->tail &&!suite->tail->not_run) {
         end_suite(suite);
+    }
+
+    /* Clang scan-build SA: NULL pointer dereference: suite=NULL */
+    if (!suite) {
+        fprintf(stderr, "suite=NULL\n");
+        fflush(stderr);
+        return(1);
     }
 
     for (dptr = suite->head; dptr; dptr = dptr->next) {

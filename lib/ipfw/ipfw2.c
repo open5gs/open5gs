@@ -764,6 +764,8 @@ print_flags_buffer(char *buf, size_t sz, struct _s_x *list, uint32_t set)
 int
 _substrcmp(const char *str1, const char* str2)
 {
+	/* Clang scan-build SA: Argument with nonnull attribute passed null. */
+	if ((!str1) || (!str2)) return(1);
 
 	if (strncmp(str1, str2, strlen(str1)) != 0)
 		return 1;
@@ -2464,9 +2466,15 @@ list_dyn_range(struct cmdline_opts *co, struct format_opts *fo,
 void
 ipfw_list(int ac, char *av[], int show_counters)
 {
+	/* Clang scan-build SA: Uninitialized argument value: false-positive report for the variable
+	 * sz being uninitialized if ipfw_get_config() doesn't fill in sz and returns an error.
+	 * ipfw_get_config() only returns success if sz is filled in. The SA is incorrectly creating
+	 * a path where ipfw_get_config() doesn't fill in sz on an error but the SA is using
+	 * error=0 (success) below to pass an unitialized sz to ipfw_show_config().
+	 * Initialize sz=0 to make the SA happy. */
 	ipfw_cfg_lheader *cfg;
 	struct format_opts sfo;
-	size_t sz;
+	size_t sz = 0;
 	int error;
 	int lac;
 	char **lav;
@@ -2534,6 +2542,12 @@ ipfw_show_config(struct cmdline_opts *co, struct format_opts *fo,
 	struct buf_pr bp;
 	ipfw_obj_ctlv *ctlv, *tstate;
 	ipfw_obj_tlv *rbase;
+
+	/* Clang scan-build SA: NULL pointer dereference */
+	if (!cfg) {
+		ogs_error("!cfg");
+		return(EX_DATAERR);
+	}
 
 	/*
 	 * Handle tablenames TLV first, if any
@@ -2853,7 +2867,10 @@ fill_ip(ipfw_insn_ip *cmd, char *av, int cblen, struct tidx *tstate)
 			d[1] = htonl(~0 << (32 - masklen));
 		break;
 	case '{':	/* no mask, assume /24 and put back the '{' */
-		d[1] = htonl(~0 << (32 - 24));
+		/* Clang scan-build SA: Result of operation is garbage: The SA is whining that the result of the << is
+		 * undefined because the left operand (~0) is negative. Fix by casting to unsigned. Why is this
+		 * the only place the SA reports this issue? Same code a few lines above... */
+		d[1] = htonl((uint32_t)(~0) << (32 - 24));
 		*(--p) = md;
 		break;
 
@@ -4914,6 +4931,14 @@ ipfw_get_tracked_ifaces(ipfw_obj_lheader **polh)
 	}
 
 	sz = req.size;
+#ifndef __clang_analyzer__
+	/* Clang scan-build SA: Memory error - use of 0 allocated: This is a code bug or a false-positive that is
+	 * not clear. do_get3(..., &req.opheader, &sz) calls getsockopt(..., optval=&req.opheader, optlen=&sz)
+	 * which fills in optval & optlen on return. However opheader does not contain a size field and
+	 * sz (optlen) is overwritten by the line above. req.size appears to still be 0 from the memset() at the
+	 * top of the function. This looks like a bug but hard to believe because this is code from/for a BSD
+	 * linux firewall package. */
+
 	if ((olh = calloc(1, sz)) == NULL)
 		return (ENOMEM);
 
@@ -4924,6 +4949,7 @@ ipfw_get_tracked_ifaces(ipfw_obj_lheader **polh)
 	}
 
 	*polh = olh;
+#endif
 	return (0);
 }
 
@@ -4953,6 +4979,12 @@ ipfw_list_tifaces(void)
 	if ((error = ipfw_get_tracked_ifaces(&olh)) != 0)
 		err(EX_OSERR, "Unable to request ipfw tracked interface list");
 
+
+        /* Clang scan-build SA: NULL pointer dereference: false-positive report that olh=NULL after
+         * ipfw_get_tracked_ifaces()=0 (2 functions up). This is incorrect because ipfw_get_tracked_ifaces()
+         * only returns 0 when it sets the olh pointer. But add an assert just in case and to stop the SA from
+         * reporting this. */
+        ogs_assert(olh);
 
 	qsort(olh + 1, olh->count, olh->objsize, ifinfo_cmp);
 

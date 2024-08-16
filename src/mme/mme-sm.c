@@ -854,6 +854,11 @@ cleanup:
             mme_gn_handle_sgsn_context_request(xact, &gtp1_message.sgsn_context_request);
             break;
         case OGS_GTP1_SGSN_CONTEXT_RESPONSE_TYPE:
+            /* Clang scan-build SA: NULL pointer dereference: mme_ue=NULL if both gtp1_message.h.teid=0 and
+             * xact->local_teid=0. The following function mme_gn_handle_sgsn_context_response() handles the NULL
+             * but the later calls to OGS_FSM_TRAN() to change state will be a NULL pointer dereference. */
+            ogs_assert(mme_ue);
+
             /* 3GPP TS 23.401 Figure D.3.6-1 step 5 */
             rv = mme_gn_handle_sgsn_context_response(xact, mme_ue, &gtp1_message.sgsn_context_response);
             if (rv == OGS_GTP1_CAUSE_ACCEPT) {
