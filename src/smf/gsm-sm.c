@@ -546,6 +546,31 @@ void smf_gsm_state_wait_5gc_sm_policy_association(ogs_fsm_t *s, smf_event_t *e)
                 }
                 break;
 
+            CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
+                if ((sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) &&
+                    (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED)) {
+                    strerror = ogs_msprintf("[%s:%d] HTTP response error [%d]",
+                            smf_ue->supi, sess->psi, sbi_message->res_status);
+                    ogs_assert(strerror);
+
+                    ogs_error("%s", strerror);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(
+                            stream, sbi_message->res_status,
+                            sbi_message, strerror, NULL, NULL));
+                    ogs_free(strerror);
+
+                    OGS_FSM_TRAN(s, smf_gsm_state_exception);
+                    break;
+                }
+
+                if (smf_nudm_sdm_handle_subscription(
+                        sess, stream, sbi_message) == false) {
+                    ogs_error("smf_nudm_sdm_handle_subscription() failed");
+                    OGS_FSM_TRAN(s, smf_gsm_state_exception);
+                }
+                break;
+
             DEFAULT
                 strerror = ogs_msprintf("[%s:%d] Invalid resource name [%s]",
                         smf_ue->supi, sess->psi,
@@ -1166,8 +1191,17 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED, &param);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-            } else {
+            } else if (UDM_SDM_SUBSCRIBED(sess)) {
                 ogs_warn("[%s:%d] No PolicyAssociationId. "
+                        "Forcibly remove SESSION", smf_ue->supi, sess->psi);
+                r = smf_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                    smf_nudm_sdm_build_subscription_delete, sess, stream,
+                    SMF_UECM_STATE_DEREGISTERED_BY_AMF, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            } else {
+                ogs_warn("[%s:%d] No SDM Subscription. "
                         "Forcibly remove SESSION", smf_ue->supi, sess->psi);
                 r = smf_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
@@ -1469,12 +1503,22 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                             trigger ==
                             OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT) {
 
-                    int r = smf_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
-                            smf_nudm_uecm_build_deregistration, sess, stream,
-                            SMF_UECM_STATE_DEREGISTERED_BY_AMF, NULL);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
+                    if (UDM_SDM_SUBSCRIBED(sess)) {
+                        int r = smf_sbi_discover_and_send(
+                                OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                                smf_nudm_sdm_build_subscription_delete, sess, stream,
+                                SMF_UECM_STATE_DEREGISTERED_BY_AMF, NULL);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                    }
+                    else {
+                        int r = smf_sbi_discover_and_send(
+                                OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
+                                smf_nudm_uecm_build_deregistration, sess, stream,
+                                SMF_UECM_STATE_DEREGISTERED_BY_AMF, NULL);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                    }
 
                     OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
 
@@ -1798,6 +1842,47 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
                     stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     n1smbuf, OpenAPI_n2_sm_info_type_NULL, NULL);
             break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
+            SWITCH(sbi_message->h.resource.component[1])
+            CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+
+                    if (e->h.sbi.data) {
+                        /* stream is optional here in this case,
+                         * depending on the different code paths */
+                        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+                        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                                stream_id <= OGS_MAX_POOL_ID);
+
+                        stream = ogs_sbi_stream_find_by_id(stream_id);
+                    }
+                    int state = e->h.sbi.state;
+
+                    UDM_SDM_CLEAR(sess);
+
+                    int r = smf_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
+                        smf_nudm_uecm_build_deregistration,
+                        sess, stream, state, NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                    break;
+
+                DEFAULT
+                    ogs_warn("[%s] Ignore invalid HTTP method [%s]",
+                        smf_ue->supi, sbi_message->h.method);
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[1]);
+                ogs_assert_if_reached();
+            END
+            break;
+
         DEFAULT
             ogs_error("[%s:%d] Invalid API name [%s]",
                     smf_ue->supi, sess->psi, sbi_message->h.service.name);
@@ -1866,8 +1951,8 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
                 sess->n2_released = true;
                 if ((sess->n1_released) && (sess->n2_released)) {
                     int r = smf_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
-                            smf_nudm_uecm_build_deregistration, sess, NULL,
+                            OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                            smf_nudm_sdm_build_subscription_delete, sess, NULL,
                             SMF_UECM_STATE_DEREGISTERED_BY_N1_N2_RELEASE, NULL);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
@@ -1908,8 +1993,8 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
             sess->n1_released = true;
             if ((sess->n1_released) && (sess->n2_released)) {
                 int r = smf_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
-                        smf_nudm_uecm_build_deregistration, sess, NULL,
+                        OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                        smf_nudm_sdm_build_subscription_delete, sess, NULL,
                         SMF_UECM_STATE_DEREGISTERED_BY_N1_N2_RELEASE, NULL);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
@@ -2114,6 +2199,57 @@ void smf_gsm_state_5gc_session_will_deregister(ogs_fsm_t *s, smf_event_t *e)
                     "Invalid API name", sbi_message->h.service.name,
                     NULL));
             OGS_FSM_TRAN(s, smf_gsm_state_exception);
+        END
+        break;
+
+    case OGS_EVENT_SBI_CLIENT:
+        sbi_message = e->h.sbi.message;
+        ogs_assert(sbi_message);
+
+        SWITCH(sbi_message->h.service.name)
+        CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
+
+            if (e->h.sbi.data) {
+                /* stream is optional here in this case,
+                 * depending on the different code paths */
+                stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+                ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                        stream_id <= OGS_MAX_POOL_ID);
+
+                stream = ogs_sbi_stream_find_by_id(stream_id);
+            }
+            int state = e->h.sbi.state;
+
+            SWITCH(sbi_message->h.resource.component[1])
+            CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+
+                    UDM_SDM_CLEAR(sess);
+
+                    int r = smf_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
+                        smf_nudm_uecm_build_deregistration,
+                        sess, stream, state, NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                    break;
+
+                DEFAULT
+                    ogs_warn("Ignore invalid HTTP method [%s]",
+                        sbi_message->h.method);
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[1]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        DEFAULT
+            ogs_error("Invalid API name [%s]", sbi_message->h.service.name);
         END
         break;
 

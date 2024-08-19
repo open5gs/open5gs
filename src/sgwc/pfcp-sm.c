@@ -302,6 +302,9 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
                 }
                 up_f_seid = rsp->up_f_seid.data;
                 ogs_assert(up_f_seid);
+                /* Clang scan-build SA: NULL pointer dereference: sess=NULL if both message->h.seid=0 and
+                 * xact->local_seid=0. */
+                ogs_assert(sess);
                 sess->sgwu_sxa_seid = be64toh(up_f_seid->seid);
             } else {
                 sgwc_sxa_handle_session_establishment_response(

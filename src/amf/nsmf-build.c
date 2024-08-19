@@ -437,7 +437,10 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_release_sm_context(
             ngApCause.value = param->ngApCause.value;
         }
 
-        SmContextReleaseData._5g_mm_cause_value = param->gmm_cause;
+        if (param->gmm_cause) {
+            SmContextReleaseData._5g_mm_cause_value = param->gmm_cause;
+            SmContextReleaseData.is__5g_mm_cause_value = true;
+        }
     }
 
     memset(&ueLocation, 0, sizeof(ueLocation));

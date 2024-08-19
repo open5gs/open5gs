@@ -2274,6 +2274,10 @@ void s1ap_handle_enb_direct_information_transfer(
         }
     }
 
+    /* Clang scan-build SA: NULL pointer dereference: Inter_SystemInformationTransferType=NULL if above
+     * protocolIEs.list.count=0 in loop. */
+    ogs_assert(Inter_SystemInformationTransferType);
+
     RIMTransfer = Inter_SystemInformationTransferType->choice.rIMTransfer;
 
     RIMInformation = &RIMTransfer->rIMInformation;

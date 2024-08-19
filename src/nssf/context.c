@@ -233,6 +233,10 @@ int nssf_context_parse_config(void)
                                                     addr, addr6, port, &h);
                                             ogs_assert(nrf_id);
 
+					    /* Clang scan-build SA: Argument with nonnull attribute passed null:
+					     * sst may be NULL in atoi(sst) if the "uri" key path is followed. */
+					    ogs_assert(sst);
+
                                             nsi = nssf_nsi_add(
                                                     nrf_id,
                                                     atoi(sst),
