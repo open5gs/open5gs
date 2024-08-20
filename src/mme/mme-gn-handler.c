@@ -289,6 +289,10 @@ static mme_sess_t *mme_ue_session_from_gtp1_pdp_ctx(mme_ue_t *mme_ue, const ogs_
     bearer->enb_s1u_ip.ipv4 = 1;
     bearer->enb_s1u_ip.addr = 0;
     bearer->enb_s1u_teid = 0xffffffff;
+    bearer->qos.index = ogs_sess->qos.index;
+    bearer->qos.arp.priority_level = ogs_sess->qos.arp.priority_level;
+    bearer->qos.arp.pre_emption_capability = ogs_sess->qos.arp.pre_emption_capability;
+    bearer->qos.arp.pre_emption_vulnerability = ogs_sess->qos.arp.pre_emption_vulnerability;
 
     return sess;
 }
