@@ -136,6 +136,12 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
                         }
                     }
                 }
+
+                if (sess->ue_session_type ==
+                        pduSessionTypeList->default_session_type) {
+                    sess->session.session_type =
+                            pduSessionTypeList->default_session_type;
+                }
             }
 
             if (!sess->session.session_type)
@@ -151,6 +157,10 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
                             break;
                         }
                     }
+                }
+
+                if (sess->ue_ssc_mode == sscModeList->default_ssc_mode) {
+                    sess->session.ssc_mode = sess->ue_ssc_mode;
                 }
             } else {
                 sess->session.ssc_mode = sscModeList->default_ssc_mode;
