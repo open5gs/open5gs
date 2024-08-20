@@ -182,6 +182,7 @@ ogs_sbi_request_t *amf_nudm_sdm_build_subscription(amf_ue_t *amf_ue, void *data)
     ogs_sbi_server_t *server = NULL;
 
     OpenAPI_sdm_subscription_t SDMSubscription;
+    uint64_t supported_features = 0;
 
     char *monres = NULL;
 
@@ -232,6 +233,14 @@ ogs_sbi_request_t *amf_nudm_sdm_build_subscription(amf_ue_t *amf_ue, void *data)
     SDMSubscription.is_implicit_unsubscribe = true;
     SDMSubscription.implicit_unsubscribe = 1;
 
+    OGS_SBI_FEATURES_SET(supported_features,
+            OGS_SBI_NUDM_SDM_LIMITED_SUBSCRIPTIONS);
+    SDMSubscription.supported_features =
+            ogs_uint64_to_string(supported_features);
+
+    SDMSubscription.is_unique_subscription = true;
+    SDMSubscription.unique_subscription = 1;
+
     message.SDMSubscription = &SDMSubscription;
 
     message.http.custom.callback =
@@ -241,7 +250,8 @@ ogs_sbi_request_t *amf_nudm_sdm_build_subscription(amf_ue_t *amf_ue, void *data)
     ogs_expect(request);
 
 end:
-
+    if (SDMSubscription.supported_features)
+        ogs_free(SDMSubscription.supported_features);
     if (monres)
         ogs_free(monres);
     OpenAPI_list_free(SDMSubscription.monitored_resource_uris);
