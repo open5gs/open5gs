@@ -157,8 +157,22 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
             }
 
             if (!sess->session.ssc_mode) {
-                ogs_error("SSCMode is not allowed");
-                continue;
+                strerror = ogs_msprintf("[%s:%d] SSCMode is not allowed",
+                        smf_ue->supi, sess->psi);
+                ogs_assert(strerror);
+
+                n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
+                    OGS_5GSM_CAUSE_NOT_SUPPORTED_SSC_MODE);
+                ogs_assert(n1smbuf);
+
+                ogs_warn("%s", strerror);
+                smf_sbi_send_sm_context_create_error(stream,
+                        OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                        OGS_SBI_APP_ERRNO_SSC_DENIED,
+                        strerror, NULL, n1smbuf);
+                ogs_free(strerror);
+
+                return false;
             }
 
             sessionAmbr = dnnConfiguration->session_ambr;
