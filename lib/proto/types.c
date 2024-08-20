@@ -422,7 +422,7 @@ int ogs_fqdn_parse(char *dst, const char *src, int length)
             ogs_error("Invalid FQDN encoding[j:%d+len:%d] + 1 > length[%d]",
                     j, len, length);
             ogs_log_hexdump(OGS_LOG_ERROR, (unsigned char *)src, length);
-            return 0;
+            return -EINVAL;
         }
         memcpy(&dst[j], &src[i], len);
 
