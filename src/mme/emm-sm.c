@@ -1167,7 +1167,8 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
         CLEAR_MME_UE_TIMER(mme_ue->t3460);
         r = nas_eps_send_security_mode_command(mme_ue);
         ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
+        if (r == OGS_ERROR)
+            OGS_FSM_TRAN(s, &emm_state_exception);
         break;
     case OGS_FSM_EXIT_SIG:
         break;
