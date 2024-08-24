@@ -5,8 +5,6 @@ subject: Support
 permalink: /support/
 ---
 
-###### Updated Aug, 2024
-
 Open5GS receives strong and ongoing support from [NewPlane](https://newplane.io), which proudly backs the project and contributes to its continuous development and success.
 
 ### Licensing Options:
