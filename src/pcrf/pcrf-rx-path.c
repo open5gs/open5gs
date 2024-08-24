@@ -73,7 +73,10 @@ static __inline__ struct sess_state *new_state(os0_t sid)
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No session state");
+        return;
+    }
 
     if (sess_data->rx_sid)
         ogs_free((char *)sess_data->rx_sid);
@@ -490,7 +493,13 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
 
     /* Retrieve session state in this session */
     ret = fd_sess_state_retrieve(pcrf_rx_reg, session, &sess_data);
-    ogs_assert(sess_data);
+    ogs_assert(ret == 0);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        ret = fd_msg_free(req);
+        ogs_assert(ret == 0);
+        return OGS_ERROR;
+    }
 
     /* Update State */
     sess_data->state = SESSION_ABORTED;

@@ -100,6 +100,7 @@ typedef struct upf_sess_urr_acc_s {
 #define UPF_SESS(pfcp_sess) ogs_container_of(pfcp_sess, upf_sess_t, pfcp)
 typedef struct upf_sess_s {
     ogs_lnode_t     lnode;
+    ogs_pool_id_t   id;
     ogs_pool_id_t   *upf_n4_seid_node;  /* A node of UPF-N4-SEID */
 
     ogs_pfcp_sess_t pfcp;
@@ -141,6 +142,7 @@ upf_sess_t *upf_sess_find_by_smf_n4_f_seid(ogs_pfcp_f_seid_t *f_seid);
 upf_sess_t *upf_sess_find_by_upf_n4_seid(uint64_t seid);
 upf_sess_t *upf_sess_find_by_ipv4(uint32_t addr);
 upf_sess_t *upf_sess_find_by_ipv6(uint32_t *addr6);
+upf_sess_t *upf_sess_find_by_id(ogs_pool_id_t id);
 
 uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
         uint8_t session_type, ogs_pfcp_pdr_t *pdr);

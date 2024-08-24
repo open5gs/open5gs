@@ -26,6 +26,7 @@ void pcf_nnrf_handle_nf_discover(
     int r;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_object_t *sbi_object = NULL;
+    ogs_pool_id_t sbi_object_id = OGS_INVALID_POOL_ID;
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
     ogs_sbi_stream_t *stream = NULL;
@@ -48,8 +49,15 @@ void pcf_nnrf_handle_nf_discover(
     requester_nf_type = xact->requester_nf_type;
     ogs_assert(requester_nf_type);
 
+    sbi_object_id = xact->sbi_object_id;
+    ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
+            sbi_object_id <= OGS_MAX_POOL_ID);
+
     discovery_option = xact->discovery_option;
-    stream = xact->assoc_stream;
+
+    if (xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+        xact->assoc_stream_id <= OGS_MAX_POOL_ID)
+        stream = ogs_sbi_stream_find_by_id(xact->assoc_stream_id);
 
     SearchResult = recvmsg->SearchResult;
     if (!SearchResult) {
@@ -58,12 +66,12 @@ void pcf_nnrf_handle_nf_discover(
     }
 
     if (sbi_object->type == OGS_SBI_OBJ_UE_TYPE) {
-        pcf_ue = (pcf_ue_t *)sbi_object;
+        pcf_ue = pcf_ue_find_by_id(sbi_object_id);
         ogs_assert(pcf_ue);
     } else if (sbi_object->type == OGS_SBI_OBJ_SESS_TYPE) {
-        sess = (pcf_sess_t *)sbi_object;
+        sess = pcf_sess_find_by_id(sbi_object_id);
         ogs_assert(sess);
-        pcf_ue = sess->pcf_ue;
+        pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
         ogs_assert(pcf_ue);
     } else {
         ogs_fatal("(NF discover) Not implemented [%s:%d]",

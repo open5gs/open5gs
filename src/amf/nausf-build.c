@@ -46,8 +46,18 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate(
 
     memset(&AuthenticationInfo, 0, sizeof(AuthenticationInfo));
 
-    ogs_assert(amf_ue->suci);
-    AuthenticationInfo.supi_or_suci = amf_ue->suci;
+    if (amf_ue->suci)
+        AuthenticationInfo.supi_or_suci = amf_ue->suci;
+    else
+        AuthenticationInfo.supi_or_suci = amf_ue->supi;
+
+    if (!AuthenticationInfo.supi_or_suci) {
+        ogs_error("No SUPI[%s] or SUCI[%s]",
+                amf_ue->supi ? amf_ue->supi : "NULL",
+                amf_ue->suci ? amf_ue->suci : "NULL");
+        goto end;
+    }
+
     AuthenticationInfo.serving_network_name =
         ogs_serving_network_name_from_plmn_id(&amf_ue->nr_tai.plmn_id);
     if (!AuthenticationInfo.serving_network_name) {

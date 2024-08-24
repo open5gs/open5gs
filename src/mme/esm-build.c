@@ -33,7 +33,7 @@ ogs_pkbuf_t *esm_build_pdn_connectivity_reject(
             &message.esm.pdn_connectivity_reject;
 
     ogs_assert(sess);
-    mme_ue = sess->mme_ue;
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
 
     ogs_debug("PDN connectivity reject");
@@ -68,9 +68,9 @@ ogs_pkbuf_t *esm_build_information_request(mme_bearer_t *bearer)
     mme_sess_t *sess = NULL;
 
     ogs_assert(bearer);
-    sess = bearer->sess;
+    sess = mme_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
 
     ogs_debug("ESM information request");
@@ -117,7 +117,7 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
     ogs_session_t *session = NULL;
 
     ogs_assert(sess);
-    mme_ue = sess->mme_ue;
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
     session = sess->session;
     ogs_assert(session);
@@ -168,31 +168,31 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
      * included in the ACTIVATE DEFAULT EPS BEARER CONTEXT REQUEST message.
      */
 
-    pdn_address->pdn_type = session->paa.session_type;
-    if (sess->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4V6) {
-        if (session->paa.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+    pdn_address->pdn_type = sess->paa.session_type;
+    if (sess->ue_request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4V6) {
+        if (sess->paa.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
             pdn_address->pdn_type = OGS_PDU_SESSION_TYPE_IPV4;
             activate_default_eps_bearer_context_request->esm_cause =
                 OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED;
             activate_default_eps_bearer_context_request->presencemask |=
                 OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
-        } else if (session->paa.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
+        } else if (sess->paa.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
             pdn_address->pdn_type = OGS_PDU_SESSION_TYPE_IPV6;
             activate_default_eps_bearer_context_request->esm_cause =
                 OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED;
             activate_default_eps_bearer_context_request->presencemask |=
                 OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
         }
-    } else if (sess->request_type.type == OGS_PDU_SESSION_TYPE_IPV4) {
-        if (session->paa.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
+    } else if (sess->ue_request_type.type == OGS_PDU_SESSION_TYPE_IPV4) {
+        if (sess->paa.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
             pdn_address->pdn_type = OGS_PDU_SESSION_TYPE_IPV6;
             activate_default_eps_bearer_context_request->esm_cause =
                 OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED;
             activate_default_eps_bearer_context_request->presencemask |=
                 OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
         }
-    } else if (sess->request_type.type == OGS_PDU_SESSION_TYPE_IPV6) {
-        if (session->paa.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+    } else if (sess->ue_request_type.type == OGS_PDU_SESSION_TYPE_IPV6) {
+        if (sess->paa.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
             pdn_address->pdn_type = OGS_PDU_SESSION_TYPE_IPV4;
             activate_default_eps_bearer_context_request->esm_cause =
                 OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED;
@@ -202,18 +202,18 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
     }
 
     if (pdn_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        pdn_address->addr = session->paa.addr;
+        pdn_address->addr = sess->paa.addr;
         pdn_address->length = OGS_NAS_PDU_ADDRESS_IPV4_LEN;
         ogs_debug("    IPv4");
     } else if (pdn_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV6) {
         memcpy(pdn_address->addr6,
-                session->paa.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
+                sess->paa.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
         pdn_address->length = OGS_NAS_PDU_ADDRESS_IPV6_LEN;
         ogs_debug("    IPv6");
     } else if (pdn_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        pdn_address->both.addr = session->paa.both.addr;
+        pdn_address->both.addr = sess->paa.both.addr;
         memcpy(pdn_address->both.addr6,
-                session->paa.both.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
+                sess->paa.both.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
         pdn_address->length = OGS_NAS_PDU_ADDRESS_IPV4V6_LEN;
         ogs_debug("    IPv4v6");
     } else {
@@ -269,9 +269,9 @@ ogs_pkbuf_t *esm_build_activate_dedicated_bearer_context_request(
         &activate_dedicated_eps_bearer_context_request->tft;
     
     ogs_assert(bearer);
-    sess = bearer->sess;
+    sess = mme_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
     linked_bearer = mme_linked_bearer(bearer); 
     ogs_assert(linked_bearer);
@@ -333,9 +333,9 @@ ogs_pkbuf_t *esm_build_modify_bearer_context_request(
         &modify_eps_bearer_context_request->tft;
 
     ogs_assert(bearer);
-    sess = bearer->sess;
+    sess = mme_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
 
     ogs_debug("Modify bearer context request");
@@ -383,9 +383,9 @@ ogs_pkbuf_t *esm_build_deactivate_bearer_context_request(
             &message.esm.deactivate_eps_bearer_context_request;
     
     ogs_assert(bearer);
-    sess = bearer->sess;
+    sess = mme_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
-    mme_ue = bearer->mme_ue;
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
     ogs_assert(mme_ue);
 
     ogs_debug("Deactivate bearer context request");

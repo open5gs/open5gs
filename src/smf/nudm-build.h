@@ -32,6 +32,10 @@ ogs_sbi_request_t *smf_nudm_uecm_build_registration(
         smf_sess_t *sess, void *data);
 ogs_sbi_request_t *smf_nudm_uecm_build_deregistration(
         smf_sess_t *sess, void *data);
+ogs_sbi_request_t *smf_nudm_sdm_build_subscription(
+        smf_sess_t *sess, void *data);
+ogs_sbi_request_t *smf_nudm_sdm_build_subscription_delete(
+        smf_sess_t *sess, void *data);
 
 #ifdef __cplusplus
 }

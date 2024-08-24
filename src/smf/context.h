@@ -112,6 +112,7 @@ typedef struct smf_gtp_node_s {
 
 typedef struct smf_ue_s {
     ogs_lnode_t lnode;
+    ogs_pool_id_t id;
 
     /* SUPI */
     char *supi;
@@ -138,7 +139,7 @@ typedef struct smf_ue_s {
     do { \
         smf_ue_t *smf_ue = NULL; \
         ogs_assert(__sESS); \
-        smf_ue = (__sESS)->smf_ue; \
+        smf_ue = smf_ue_find_by_id((__sESS)->smf_ue_id); \
         ogs_assert(smf_ue); \
         smf_metrics_inst_by_slice_add(&(__sESS)->serving_plmn_id, \
                 &(__sESS)->s_nssai, SMF_METR_GAUGE_SM_SESSIONNBR, -1); \
@@ -155,6 +156,8 @@ typedef struct smf_pf_s {
     ogs_lnode_t     lnode;
     ogs_lnode_t     to_add_node;
 
+    ogs_pool_id_t   id;
+
 ED3(uint8_t spare:2;,
     uint8_t direction:2;,
     uint8_t identifier:4;)
@@ -169,11 +172,12 @@ ED3(uint8_t spare:2;,
     ogs_ipfw_rule_t ipfw_rule;
     char *flow_description;
 
-    smf_bearer_t    *bearer;
+    ogs_pool_id_t bearer_id;
 } smf_pf_t;
 
 typedef struct smf_bearer_s {
     ogs_lnode_t     lnode;          /**< A node of list_t */
+    ogs_pool_id_t   id;
 
     ogs_lnode_t     to_modify_node;
     ogs_lnode_t     to_delete_node;
@@ -212,12 +216,13 @@ typedef struct smf_bearer_s {
     uint8_t num_of_pf_to_delete;
     uint8_t pf_to_delete[OGS_MAX_NUM_OF_FLOW_IN_NAS];
 
-    smf_sess_t      *sess;
+    ogs_pool_id_t   sess_id;
 } smf_bearer_t;
 
 #define SMF_SESS(pfcp_sess) ogs_container_of(pfcp_sess, smf_sess_t, pfcp)
 typedef struct smf_sess_s {
     ogs_sbi_object_t sbi;
+    ogs_pool_id_t id;
 
     uint32_t        index;              /* An index of this node */
     ogs_pool_id_t   *smf_n4_seid_node;  /* A node of SMF-N4-SEID */
@@ -313,6 +318,37 @@ typedef struct smf_sess_s {
         ogs_sbi_client_t *client;
     } policy_association;
 
+    /* SubscriptionId of Subscription to Data Change Notification to UDM */
+#define UDM_SDM_SUBSCRIBED(__sESS) \
+    ((__sESS) && ((__sESS)->data_change_subscription.id))
+#define UDM_SDM_CLEAR(__sESS) \
+    do { \
+        ogs_assert((__sESS)); \
+        if ((__sESS)->data_change_subscription.resource_uri) \
+            ogs_free((__sESS)->data_change_subscription.resource_uri); \
+        (__sESS)->data_change_subscription.resource_uri = NULL; \
+        if ((__sESS)->data_change_subscription.id) \
+            ogs_free((__sESS)->data_change_subscription.id); \
+        (__sESS)->data_change_subscription.id = NULL; \
+    } while(0)
+#define UDM_SDM_STORE(__sESS, __rESOURCE_URI, __iD) \
+    do { \
+        ogs_assert((__sESS)); \
+        ogs_assert((__rESOURCE_URI)); \
+        ogs_assert((__iD)); \
+        UDM_SDM_CLEAR(__sESS); \
+        (__sESS)->data_change_subscription.resource_uri = \
+            ogs_strdup(__rESOURCE_URI); \
+        ogs_assert((__sESS)->data_change_subscription.resource_uri); \
+        (__sESS)->data_change_subscription.id = ogs_strdup(__iD); \
+        ogs_assert((__sESS)->data_change_subscription.id); \
+    } while(0)
+    struct {
+        char *resource_uri;
+        char *id;
+        ogs_sbi_client_t *client;
+    } data_change_subscription;
+
     OpenAPI_up_cnx_state_e up_cnx_state;
 
     /* Serving PLMN ID & Home PLMN ID */
@@ -348,6 +384,9 @@ typedef struct smf_sess_s {
     ogs_session_t session;
     uint8_t ue_session_type;
     uint8_t ue_ssc_mode;
+
+    /* PDN Address Allocation (PAA) */
+    ogs_paa_t paa;
 
     /* DNN */
     char *full_dnn;
@@ -461,7 +500,7 @@ typedef struct smf_sess_s {
     ogs_gtp_node_t  *gnode;
     ogs_pfcp_node_t *pfcp_node;
 
-    smf_ue_t *smf_ue;
+    ogs_pool_id_t smf_ue_id;
 
     bool n1_released;
     bool n2_released;
@@ -541,15 +580,17 @@ smf_bearer_t *smf_default_bearer_in_sess(smf_sess_t *sess);
 void smf_bearer_tft_update(smf_bearer_t *bearer);
 void smf_bearer_qos_update(smf_bearer_t *bearer);
 
-smf_ue_t *smf_ue_cycle(smf_ue_t *smf_ue);
-smf_sess_t *smf_sess_cycle(smf_sess_t *sess);
-smf_bearer_t *smf_qos_flow_cycle(smf_bearer_t *qos_flow);
-smf_bearer_t *smf_bearer_cycle(smf_bearer_t *bearer);
+smf_ue_t *smf_ue_find_by_id(ogs_pool_id_t id);
+smf_sess_t *smf_sess_find_by_id(ogs_pool_id_t id);
+smf_bearer_t *smf_bearer_find_by_id(ogs_pool_id_t id);
+smf_bearer_t *smf_qos_flow_find_by_id(ogs_pool_id_t id);
+smf_pf_t *smf_pf_find_by_id(ogs_pool_id_t id);
 
 smf_pf_t *smf_pf_add(smf_bearer_t *bearer);
 int smf_pf_remove(smf_pf_t *pf);
 void smf_pf_remove_all(smf_bearer_t *bearer);
-smf_pf_t *smf_pf_find_by_id(smf_bearer_t *smf_bearer, uint8_t id);
+smf_pf_t *smf_pf_find_by_identifier(
+        smf_bearer_t *bearer, uint8_t identifier);
 smf_pf_t *smf_pf_find_by_flow(
     smf_bearer_t *bearer, uint8_t direction, char *flow_description);
 smf_pf_t *smf_pf_first(smf_bearer_t *bearer);

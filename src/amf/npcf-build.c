@@ -38,7 +38,7 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
 
     ogs_assert(amf_ue);
     ogs_assert(amf_ue->supi);
-    ogs_assert(ran_ue_cycle(amf_ue->ran_ue));
+    ogs_assert(ran_ue_find_by_id(amf_ue->ran_ue_id));
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;

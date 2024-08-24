@@ -793,32 +793,45 @@ static void handle_validity_time(
         char *validity_time, const char *action)
 {
     ogs_time_t time, validity, patch;
+    char *validity_time_string = NULL;
 
-    ogs_assert(validity_time);
     ogs_assert(subscription_data);
     ogs_assert(action);
 
-    if (ogs_sbi_time_from_string(&time, validity_time) == false) {
-        ogs_error("[%s] Subscription %s until %s [parser error]",
-                subscription_data->id, action, validity_time);
-        return;
-    }
-
-    validity = time - ogs_time_now();
-    if (validity < 0) {
-        ogs_error("[%s] Subscription %s until %s [validity:%d.%06d]",
-                subscription_data->id, action, validity_time,
-                (int)ogs_time_sec(validity), (int)ogs_time_usec(validity));
-        return;
-    }
-
     /*
-     * Store subscription_data->time.validity_duration to derive NRF validity.
-     * It will be used in ogs_nnrf_nfm_build_status_update().
+     * If there is a validity_time, then the NRF is updating
+     * the validity_time by sending HTTP_STATUS to 200.
+     * Therefore, change subscription_data->valdity_duration
+     * according to this value.
      *
-     * So, you should not remove the following lines.
+     * If validity_time is NULL, NRF sent an HTTP_STATUS of 204 (No content).
+     * In this case, use the existing subscription_data->validity_duration.
      */
-    subscription_data->time.validity_duration = OGS_SBI_VALIDITY_SEC(validity);
+    if (validity_time) {
+        if (ogs_sbi_time_from_string(&time, validity_time) == false) {
+            ogs_error("[%s] Subscription %s until %s [parser error]",
+                    subscription_data->id, action, validity_time);
+            return;
+        }
+
+        validity = time - ogs_time_now();
+        if (validity < 0) {
+            ogs_error("[%s] Subscription %s until %s [validity:%d.%06d]",
+                    subscription_data->id, action, validity_time,
+                    (int)ogs_time_sec(validity), (int)ogs_time_usec(validity));
+            return;
+        }
+
+        /*
+         * Store subscription_data->validity_duration to derive NRF validity.
+         * It will be used in ogs_nnrf_nfm_build_status_update().
+         *
+         * So, you should not remove the following lines.
+         */
+        subscription_data->validity_duration =
+            /* Normalize seconds */
+            ogs_time_from_sec(ogs_time_to_sec(validity));
+    }
 
     if (!subscription_data->t_validity) {
         subscription_data->t_validity =
@@ -826,13 +839,14 @@ static void handle_validity_time(
                 ogs_timer_subscription_validity, subscription_data);
         ogs_assert(subscription_data->t_validity);
     }
-    ogs_timer_start(subscription_data->t_validity, validity);
+    ogs_timer_start(subscription_data->t_validity,
+            subscription_data->validity_duration);
 
     /*
      * PATCH request will be sent before VALIDITY is expired.
      */
 #define PATCH_TIME_FROM_VALIDITY(x) ((x) / 2)
-    patch = PATCH_TIME_FROM_VALIDITY(validity);
+    patch = PATCH_TIME_FROM_VALIDITY(subscription_data->validity_duration);
 
     if (!subscription_data->t_patch) {
         subscription_data->t_patch =
@@ -842,12 +856,24 @@ static void handle_validity_time(
     }
     ogs_timer_start(subscription_data->t_patch, patch);
 
+    if (validity_time) {
+        validity_time_string = ogs_strdup(validity_time);
+        ogs_assert(validity_time_string);
+    } else {
+        validity_time_string = ogs_sbi_localtime_string(
+                ogs_time_now() + subscription_data->validity_duration);
+        ogs_assert(validity_time_string);
+    }
+
     ogs_info("[%s] Subscription %s until %s "
-            "[duration:%d,validity:%d.%06d,patch:%d.%06d]",
-            subscription_data->id, action, validity_time,
-            subscription_data->time.validity_duration,
-            (int)ogs_time_sec(validity), (int)ogs_time_usec(validity),
+            "[duration:%lld,validity:%d.%06d,patch:%d.%06d]",
+            subscription_data->id, action, validity_time_string,
+            (long long)subscription_data->validity_duration,
+            (int)ogs_time_sec(subscription_data->validity_duration),
+            (int)ogs_time_usec(subscription_data->validity_duration),
             (int)ogs_time_sec(patch), (int)ogs_time_usec(patch));
+
+    ogs_free(validity_time_string);
 }
 
 void ogs_nnrf_nfm_handle_nf_status_subscribe(
@@ -952,20 +978,37 @@ void ogs_nnrf_nfm_handle_nf_status_update(
         ogs_sbi_message_t *recvmsg)
 {
     OpenAPI_subscription_data_t *SubscriptionData = NULL;
+    char *validity_time = NULL;
+    const char *action = NULL;
 
     ogs_assert(recvmsg);
     ogs_assert(subscription_data);
 
-    SubscriptionData = recvmsg->SubscriptionData;
-    if (!SubscriptionData) {
-        ogs_error("No SubscriptionData");
-        return;
+    if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
+        SubscriptionData = recvmsg->SubscriptionData;
+        if (!SubscriptionData) {
+            ogs_error("No SubscriptionData");
+            return;
+        }
+        if (!SubscriptionData->validity_time) {
+            ogs_error("No validityTime");
+            return;
+        }
+
+        validity_time = SubscriptionData->validity_time;
+        action = "updated(200 OK)";
+    } else if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+        /* No valdityTime. Re-use current subscription_data->valdity_duration */
+        action = "updated(204 No Content)";
+    } else {
+        ogs_fatal("[%s] HTTP response error [%d]",
+                subscription_data->id ?  subscription_data->id : "Unknown",
+                recvmsg->res_status);
+        ogs_assert_if_reached();
     }
 
-    /* Subscription Validity Time */
-    if (SubscriptionData->validity_time)
-        handle_validity_time(
-                subscription_data, SubscriptionData->validity_time, "updated");
+    /* Update Subscription Validity Time */
+    handle_validity_time(subscription_data, validity_time, action);
 }
 
 bool ogs_nnrf_nfm_handle_nf_status_notify(

@@ -393,7 +393,6 @@ ogs_pfcp_context_t *ogs_pfcp_self(void);
 int ogs_pfcp_context_parse_config(const char *local, const char *remote);
 
 ogs_pfcp_node_t *ogs_pfcp_node_new(ogs_sockaddr_t *sa_list);
-ogs_pfcp_node_t *ogs_pfcp_node_cycle(ogs_pfcp_node_t *node);
 void ogs_pfcp_node_free(ogs_pfcp_node_t *node);
 
 ogs_pfcp_node_t *ogs_pfcp_node_add(

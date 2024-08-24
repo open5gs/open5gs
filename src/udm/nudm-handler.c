@@ -480,6 +480,45 @@ bool udm_nudm_uecm_handle_amf_registration_update(
     return true;
 }
 
+bool udm_nudm_uecm_handle_amf_registration_get(
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    ogs_assert(udm_ue);
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    SWITCH(recvmsg->h.resource.component[1])
+    CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
+        if (udm_ue->amf_3gpp_access_registration == NULL) {
+            ogs_error("Invalid UE Identifier [%s]",
+                    udm_ue->suci);
+            return false;
+        }
+        memset(&sendmsg, 0, sizeof(sendmsg));
+        sendmsg.Amf3GppAccessRegistration =
+            OpenAPI_amf3_gpp_access_registration_copy(
+                sendmsg.Amf3GppAccessRegistration,
+                udm_ue->amf_3gpp_access_registration);
+        response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
+        ogs_assert(response);
+        ogs_sbi_server_send_response(stream, response);
+
+        OpenAPI_amf3_gpp_access_registration_free(
+                sendmsg.Amf3GppAccessRegistration);
+        break;
+
+    DEFAULT
+        ogs_error("Invalid resource name [%s]",
+                recvmsg->h.resource.component[3]);
+        return false;
+    END
+
+    return true;
+}
+
 bool udm_nudm_uecm_handle_smf_registration(
     udm_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
@@ -491,7 +530,7 @@ bool udm_nudm_uecm_handle_smf_registration(
     ogs_assert(message);
 
     ogs_assert(sess);
-    udm_ue = sess->udm_ue;
+    udm_ue = udm_ue_find_by_id(sess->udm_ue_id);
     ogs_assert(udm_ue);
 
     SmfRegistration = message->SmfRegistration;
@@ -565,7 +604,7 @@ bool udm_nudm_uecm_handle_smf_deregistration(
     ogs_assert(message);
 
     ogs_assert(sess);
-    udm_ue = sess->udm_ue;
+    udm_ue = udm_ue_find_by_id(sess->udm_ue_id);
     ogs_assert(udm_ue);
 
     r = udm_sess_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
@@ -651,7 +690,8 @@ bool udm_nudm_sdm_handle_subscription_create(
         return false;
     }
 
-    if ((!SDMSubscription->monitored_resource_uris) &&
+    /* Clang scan-build SA: NULL pointer dereference: change && to || in case monitored_resource_uris=NULL. */
+    if ((!SDMSubscription->monitored_resource_uris) ||
         (!SDMSubscription->monitored_resource_uris->count)) {
         ogs_error("[%s] No monitoredResourceUris", udm_ue->supi);
         ogs_assert(true ==

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -39,6 +39,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
     int rv;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *request = NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -48,11 +49,14 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_sbi_xact_t *sbi_xact = NULL;
+    ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
 
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
 
     pcf_ue_t *pcf_ue = NULL;
+    ogs_pool_id_t pcf_ue_id = OGS_INVALID_POOL_ID;
     pcf_sess_t *sess = NULL;
+    ogs_pool_id_t sess_id = OGS_INVALID_POOL_ID;
     pcf_app_t *app_session = NULL;
 
     pcf_sm_debug(e);
@@ -69,8 +73,16 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         request = e->h.sbi.request;
         ogs_assert(request);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         rv = ogs_sbi_parse_request(&message, request);
         if (rv != OGS_OK) {
@@ -159,7 +171,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             ogs_assert(OGS_FSM_STATE(&pcf_ue->sm));
 
-            e->pcf_ue = pcf_ue;
+            e->pcf_ue_id = pcf_ue->id;
             e->h.sbi.message = &message;
             ogs_fsm_dispatch(&pcf_ue->sm, e);
             if (OGS_FSM_CHECK(&pcf_ue->sm, pcf_am_state_exception)) {
@@ -176,23 +188,63 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_SM_POLICIES)
                 if (!message.h.resource.component[1]) {
                     if (message.SmPolicyContextData &&
-                        message.SmPolicyContextData->supi) {
+                        message.SmPolicyContextData->supi &&
+                        message.SmPolicyContextData->pdu_session_id) {
+
                         pcf_ue = pcf_ue_find_by_supi(
                                     message.SmPolicyContextData->supi);
                         if (!pcf_ue) {
-                            pcf_ue = pcf_ue_add(
-                                        message.SmPolicyContextData->supi);
-                            ogs_assert(pcf_ue);
+                            if (!strcmp(message.h.method,
+                                        OGS_SBI_HTTP_METHOD_POST)) {
+                                pcf_ue = pcf_ue_add(
+                                            message.SmPolicyContextData->supi);
+                                if (!pcf_ue) {
+                                    ogs_error("[%s:%d] Invalid Request [%s]",
+                                            message.SmPolicyContextData->supi,
+                                            message.SmPolicyContextData->
+                                                pdu_session_id,
+                                            message.h.method);
+                                } else
+                                    ogs_debug("[%s:%d] PCF UE added",
+                                        message.SmPolicyContextData->supi,
+                                        message.SmPolicyContextData->
+                                            pdu_session_id);
+                            } else {
+                                ogs_error("[%s:%d] Invalid HTTP method [%s]",
+                                        message.SmPolicyContextData->supi,
+                                        message.SmPolicyContextData->
+                                            pdu_session_id,
+                                        message.h.method);
+                            }
                         }
-                        if (message.SmPolicyContextData->pdu_session_id) {
+
+                        if (pcf_ue) {
                             sess = pcf_sess_find_by_psi(pcf_ue, message.
                                     SmPolicyContextData->pdu_session_id);
                             if (!sess) {
-                                sess = pcf_sess_add(pcf_ue, message.
-                                    SmPolicyContextData->pdu_session_id);
-                                ogs_assert(sess);
-                                ogs_debug("[%s:%d] PCF session added",
-                                            pcf_ue->supi, sess->psi);
+                                if (!strcmp(message.h.method,
+                                            OGS_SBI_HTTP_METHOD_POST)) {
+                                    sess = pcf_sess_add(pcf_ue, message.
+                                        SmPolicyContextData->pdu_session_id);
+                                    if (!sess) {
+                                        ogs_error("[%s:%d] "
+                                                "Invalid Request [%s]",
+                                                message.SmPolicyContextData->
+                                                    supi,
+                                                message.SmPolicyContextData->
+                                                    pdu_session_id,
+                                                message.h.method);
+                                    } else
+                                        ogs_debug("[%s:%d] PCF session added",
+                                                    pcf_ue->supi, sess->psi);
+                                } else {
+                                    ogs_error("[%s:%d] "
+                                            "Invalid HTTP method [%s]",
+                                            message.SmPolicyContextData->supi,
+                                            message.SmPolicyContextData->
+                                                pdu_session_id,
+                                            message.h.method);
+                                }
                             }
                         }
                     }
@@ -224,12 +276,13 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             ogs_assert(OGS_FSM_STATE(&sess->sm));
 
-            e->sess = sess;
+            e->sess_id = sess->id;
             e->h.sbi.message = &message;
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
+                /* Clang scan-build SA: NULL pointer dereference: pcf_ue=NULL, remove logging of pcf_ue->supi. */
                 ogs_error("[%s:%d] State machine exception",
-                        pcf_ue->supi, sess->psi);
+                        pcf_ue ? pcf_ue->supi : "Unknown", sess->psi);
                 pcf_sess_remove(sess);
             }
             break;
@@ -274,13 +327,14 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             ogs_assert(OGS_FSM_STATE(&sess->sm));
 
-            e->sess = sess;
+            e->sess_id = sess->id;
             e->app = app_session;
             e->h.sbi.message = &message;
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
+                /* Clang scan-build SA: NULL pointer dereference: pcf_ue=NULL, remove logging of pcf_ue->supi. */
                 ogs_error("[%s:%d] State machine exception",
-                        pcf_ue->supi, sess->psi);
+                        pcf_ue ? pcf_ue->supi : "Unknown", sess->psi);
                 pcf_sess_remove(sess);
             }
             break;
@@ -388,8 +442,18 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                sbi_xact = e->h.sbi.data;
-                ogs_assert(sbi_xact);
+                sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+                ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                        sbi_xact_id <= OGS_MAX_POOL_ID);
+
+                sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
+                if (!sbi_xact) {
+                    /* CLIENT_WAIT timer could remove SBI transaction
+                     * before receiving SBI message */
+                    ogs_error("SBI transaction has already been removed [%d]",
+                            sbi_xact_id);
+                    break;
+                }
 
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
@@ -418,32 +482,39 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_POLICY_DATA)
                 SWITCH(message.h.resource.component[3])
                 CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
-                    sbi_xact = e->h.sbi.data;
-                    ogs_assert(sbi_xact);
+                    sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+                    ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                            sbi_xact_id <= OGS_MAX_POOL_ID);
 
-                    sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
+                    sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
                     if (!sbi_xact) {
                         /* CLIENT_WAIT timer could remove SBI transaction
                          * before receiving SBI message */
-                        ogs_error("SBI transaction has already been removed");
+                        ogs_error(
+                                "SBI transaction has already been removed [%d]",
+                                sbi_xact_id);
                         break;
                     }
 
-                    pcf_ue = (pcf_ue_t *)sbi_xact->sbi_object;
-                    ogs_assert(pcf_ue);
+                    pcf_ue_id = sbi_xact->sbi_object_id;
+                    ogs_assert(pcf_ue_id >= OGS_MIN_POOL_ID &&
+                            pcf_ue_id <= OGS_MAX_POOL_ID);
 
-                    e->h.sbi.data = sbi_xact->assoc_stream;
+                    if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                        sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
+                        e->h.sbi.data =
+                            OGS_UINT_TO_POINTER(sbi_xact->assoc_stream_id);
 
                     ogs_sbi_xact_remove(sbi_xact);
 
-                    pcf_ue = pcf_ue_cycle(pcf_ue);
+                    pcf_ue = pcf_ue_find_by_id(pcf_ue_id);
                     if (!pcf_ue) {
                         ogs_error("UE(pcf_ue) Context "
                                     "has already been removed");
                         break;
                     }
 
-                    e->pcf_ue = pcf_ue;
+                    e->pcf_ue_id = pcf_ue->id;
                     e->h.sbi.message = &message;
 
                     ogs_fsm_dispatch(&pcf_ue->sm, e);
@@ -454,36 +525,41 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     break;
 
                 CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
-                    sbi_xact = e->h.sbi.data;
-                    ogs_assert(sbi_xact);
+                    sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+                    ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                            sbi_xact_id <= OGS_MAX_POOL_ID);
 
-                    sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
+                    sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
                     if (!sbi_xact) {
                         /* CLIENT_WAIT timer could remove SBI transaction
                          * before receiving SBI message */
-                        ogs_error("SBI transaction has already been removed");
+                        ogs_error(
+                                "SBI transaction has already been removed [%d]",
+                                sbi_xact_id);
                         break;
                     }
 
-                    sess = (pcf_sess_t *)sbi_xact->sbi_object;
-                    ogs_assert(sess);
+                    sess_id = sbi_xact->sbi_object_id;
+                    ogs_assert(sess_id >= OGS_MIN_POOL_ID &&
+                            sess_id <= OGS_MAX_POOL_ID);
 
-                    e->h.sbi.data = sbi_xact->assoc_stream;
+                    if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                        sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
+                        e->h.sbi.data =
+                            OGS_UINT_TO_POINTER(sbi_xact->assoc_stream_id);
 
                     ogs_sbi_xact_remove(sbi_xact);
 
-                    sess = pcf_sess_cycle(sess);
+                    sess = pcf_sess_find_by_id(sess_id);
                     if (!sess) {
                         ogs_error("Session has already been removed");
                         break;
                     }
 
-                    pcf_ue = sess->pcf_ue;
-                    ogs_assert(pcf_ue);
-                    pcf_ue = pcf_ue_cycle(pcf_ue);
+                    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
                     ogs_assert(pcf_ue);
 
-                    e->sess = sess;
+                    e->sess_id = sess->id;
                     e->h.sbi.message = &message;
 
                     ogs_fsm_dispatch(&sess->sm, e);
@@ -512,37 +588,39 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_PCF_BINDINGS)
+                sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+                ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                        sbi_xact_id <= OGS_MAX_POOL_ID);
 
-                sbi_xact = e->h.sbi.data;
-                ogs_assert(sbi_xact);
-
-                sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
+                sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
                 if (!sbi_xact) {
                     /* CLIENT_WAIT timer could remove SBI transaction
                      * before receiving SBI message */
-                    ogs_error("SBI transaction has already been removed");
+                    ogs_error("SBI transaction has already been removed [%d]",
+                            sbi_xact_id);
                     break;
                 }
 
-                sess = (pcf_sess_t *)sbi_xact->sbi_object;
-                ogs_assert(sess);
+                sess_id = sbi_xact->sbi_object_id;
+                ogs_assert(sess_id >= OGS_MIN_POOL_ID &&
+                        sess_id <= OGS_MAX_POOL_ID);
 
-                e->h.sbi.data = sbi_xact->assoc_stream;
+                if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                    sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
+                    e->h.sbi.data = OGS_UINT_TO_POINTER(sbi_xact->assoc_stream_id);
 
                 ogs_sbi_xact_remove(sbi_xact);
 
-                sess = pcf_sess_cycle(sess);
+                sess = pcf_sess_find_by_id(sess_id);
                 if (!sess) {
                     ogs_error("Session has already been removed");
                     break;
                 }
 
-                pcf_ue = sess->pcf_ue;
-                ogs_assert(pcf_ue);
-                pcf_ue = pcf_ue_cycle(pcf_ue);
+                pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
                 ogs_assert(pcf_ue);
 
-                e->sess = sess;
+                e->sess_id = sess->id;
                 e->h.sbi.message = &message;
 
                 ogs_fsm_dispatch(&sess->sm, e);
@@ -647,19 +725,25 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
              * 4. timer expiration event is processed. (double-free SBI xact)
              *
              * To avoid double-free SBI xact,
-             * we need to check ogs_sbi_xact_cycle()
+             * we need to check ogs_sbi_xact_find_by_id()
              */
-            sbi_xact = ogs_sbi_xact_cycle(e->h.sbi.data);
+            sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                    sbi_xact_id <= OGS_MAX_POOL_ID);
+
+            sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
             if (!sbi_xact) {
-                ogs_error("SBI transaction has already been removed");
+                ogs_error("SBI transaction has already been removed [%d]",
+                        sbi_xact_id);
                 break;
             }
 
             sbi_object = sbi_xact->sbi_object;
             ogs_assert(sbi_object);
 
-            stream = sbi_xact->assoc_stream;
-            ogs_assert(stream);
+            ogs_assert(sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                    sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID);
+            stream = ogs_sbi_stream_find_by_id(sbi_xact->assoc_stream_id);
 
             service_type = sbi_xact->service_type;
 
@@ -670,9 +754,11 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             switch(sbi_object->type) {
             case OGS_SBI_OBJ_UE_TYPE:
-                pcf_ue = (pcf_ue_t *)sbi_object;
-                ogs_assert(pcf_ue);
-                pcf_ue = pcf_ue_cycle(pcf_ue);
+                pcf_ue_id = sbi_xact->sbi_object_id;
+                ogs_assert(pcf_ue_id >= OGS_MIN_POOL_ID &&
+                        pcf_ue_id <= OGS_MAX_POOL_ID);
+
+                pcf_ue = pcf_ue_find_by_id(pcf_ue_id);
                 if (!pcf_ue) {
                     ogs_error("UE(pcf_ue) has already been removed");
                     break;
@@ -681,9 +767,11 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                 break;
 
             case OGS_SBI_OBJ_SESS_TYPE:
-                sess = (pcf_sess_t *)sbi_object;
-                ogs_assert(sess);
-                sess = pcf_sess_cycle(sess);
+                sess_id = sbi_xact->sbi_object_id;
+                ogs_assert(sess_id >= OGS_MIN_POOL_ID &&
+                        sess_id <= OGS_MAX_POOL_ID);
+
+                sess = pcf_sess_find_by_id(sess_id);
                 if (!sess) {
                     ogs_error("Session has already been removed");
                     break;
@@ -699,6 +787,12 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             }
 
             ogs_error("Cannot receive SBI message");
+
+            if (!stream) {
+                ogs_error("STREAM has alreadt been removed [%d]",
+                        sbi_xact->assoc_stream_id);
+                break;
+            }
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,

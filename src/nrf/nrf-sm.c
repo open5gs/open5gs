@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -40,6 +40,7 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
 {
     int rv;
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *request = NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -63,8 +64,15 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         request = e->h.sbi.request;
         ogs_assert(request);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         rv = ogs_sbi_parse_request(&message, request);
         if (rv != OGS_OK) {

@@ -34,15 +34,28 @@ extern "C" {
 #define OGS_MAX_NUM_OF_PACKET_BUFFER    64  /* Num of PacketBuffer per UE */
 
 /*
- * The array of TLV messages is limited to 8.
- * So, Flow(PDI.SDF_Filter) in PDR is limited to 8.
+ * TS24.008
+ * 10.5.6.12 Traffic Flow Template
+ * Table 10.5.162: Traffic flow template information element
  *
- * However, the number of flow in bearer context seems to need more than 16.
+ * Number of packet filters (octet 3)
+ * The number of packet filters contains the binary coding
+ * for the number of packet filters in the packet filter list.
+ * The number of packet filters field is encoded in bits 4
+ * through 1 of octet 3 where bit 4 is the most significant
+ * and bit 1 is the least significant bit.
  *
- * Therefore, the maximum number of flows of messages is defined as 8,
- * and the maximum number of flows stored by the context is 16.
+ * For the "delete existing TFT" operation and
+ * for the "no TFT operation", the number of packet filters shall be
+ * coded as 0. For all other operations, the number of packet filters
+ * shall be greater than 0 and less than or equal to 15.
+ *
+ * The array of TLV messages is limited to 16.
+ * So, Flow(PDI.SDF_Filter) in PDR is limited to 16.
+ *
+ * Therefore, we defined the maximum number of flows as 16.
  */
-#define OGS_MAX_NUM_OF_FLOW_IN_PDR      8
+#define OGS_MAX_NUM_OF_FLOW_IN_PDR      16
 #define OGS_MAX_NUM_OF_FLOW_IN_GTP      OGS_MAX_NUM_OF_FLOW_IN_PDR
 #define OGS_MAX_NUM_OF_FLOW_IN_NAS      OGS_MAX_NUM_OF_FLOW_IN_PDR
 #define OGS_MAX_NUM_OF_FLOW_IN_PCC_RULE OGS_MAX_NUM_OF_FLOW_IN_PDR
@@ -603,7 +616,6 @@ typedef struct ogs_session_s {
     ogs_qos_t qos;
     ogs_bitrate_t ambr; /* APN-AMBR */
 
-    ogs_paa_t paa;
     ogs_ip_t ue_ip;
     char **ipv4_framed_routes;
     char **ipv6_framed_routes;

@@ -69,22 +69,20 @@ static int decode_global_enb_id(S1AP_Global_ENB_ID_t *glob_enb_id, const uint8_t
     return OGS_OK;
 }
 
-/* 3GPP TS 23.003 2.8.2.1 Mapping from GUTI to RAI, P-TMSI and P-TMSI signature */
-void guti_to_rai_ptmsi(const ogs_nas_eps_guti_t *nas_guti, ogs_nas_rai_t *rai, mme_p_tmsi_t *ptmsi, uint32_t *ptmsi_sig)
+/* 3GPP TS 23.003 2.8.2.2 Mapping RAI and P-TMSI from GUTI (in the MME) */
+void guti_to_rai_ptmsi(const ogs_nas_eps_guti_t *nas_guti, ogs_nas_rai_t *rai, mme_p_tmsi_t *ptmsi)
 {
     rai->lai.nas_plmn_id = nas_guti->nas_plmn_id;
     rai->lai.lac = nas_guti->mme_gid;
-    rai->rac = nas_guti->mme_code;
+    rai->rac = (nas_guti->m_tmsi >> 16) & 0xff;
     if (ptmsi)
         *ptmsi = 0xC0000000 |
                 (nas_guti->m_tmsi & 0x3f000000) |
                 (nas_guti->mme_code & 0x0ff) << 16 |
                 (nas_guti->m_tmsi & 0x0000ffff);
-    if (ptmsi_sig)
-        *ptmsi_sig = (nas_guti->m_tmsi & 0x00ff0000);
 }
 
-/* 3GPP TS 23.003 2.8.2.2 Mapping from RAI and P-TMSI to GUTI */
+/* 3GPP TS 23.003 2.8.2.1 Mapping GUTI from RAI, P-TMSI and P-TMSI signature (in the MME) */
 static void rai_ptmsi_to_guti(const ogs_nas_rai_t *rai, mme_p_tmsi_t ptmsi, uint32_t ptmsi_sig, ogs_nas_eps_guti_t *nas_guti)
 {
     nas_guti->nas_plmn_id = rai->lai.nas_plmn_id;
@@ -238,11 +236,6 @@ static mme_sess_t *mme_ue_session_from_gtp1_pdp_ctx(mme_ue_t *mme_ue, const ogs_
     }
     ogs_sess->smf_ip = gtp1_pdp_ctx->ggsn_address_c;
     ogs_sess->context_identifier = gtp1_pdp_ctx->pdp_ctx_id;
-    ogs_sess->session_type = gtp1_pdp_ctx->pdp_type_num[0];
-    ogs_sess->ue_ip = gtp1_pdp_ctx->pdp_address[0];
-    /* TODO: sess->paa with gtp1_pdp_ctx->pdp_address[0],
-     using/implementing ogs_gtp2_ip_to_paa ? */
-    ogs_ip_to_paa(&ogs_sess->ue_ip, &ogs_sess->paa);
 
     /* 3GPP TS 23.060 section 9.2.1A: "The QoS profiles of the PDP context and EPS bearer are mapped as specified in TS 23.401"
      * 3GPP TS 23.401 Annex E: "Mapping between EPS and Release 99 QoS parameters"
@@ -250,8 +243,8 @@ static mme_sess_t *mme_ue_session_from_gtp1_pdp_ctx(mme_ue_t *mme_ue, const ogs_
     ogs_gtp1_qos_profile_to_qci(qos_pdec, &qci);
     ogs_sess->qos.index = qci;
     ogs_sess->qos.arp.priority_level = qos_pdec->qos_profile.arp; /* 3GPP TS 23.401 Annex E Table E.2 */
-    ogs_sess->qos.arp.pre_emption_capability = 0; /* ignored as per 3GPP TS 23.401 Annex E */
-    ogs_sess->qos.arp.pre_emption_vulnerability = 0; /* ignored as per 3GPP TS 23.401 Annex E */
+    ogs_sess->qos.arp.pre_emption_capability = 0; /* operator policy, hardcoded, 3GPP TS 23.401 Annex E */
+    ogs_sess->qos.arp.pre_emption_vulnerability = 1; /* operator policy, hardcoded, 3GPP TS 23.401 Annex E */
     if (qos_pdec->data_octet6_to_13_present) {
         ogs_sess->ambr.downlink = qos_pdec->dec_mbr_kbps_dl * 1000;
         ogs_sess->ambr.uplink = qos_pdec->dec_mbr_kbps_ul * 1000;
@@ -266,18 +259,19 @@ static mme_sess_t *mme_ue_session_from_gtp1_pdp_ctx(mme_ue_t *mme_ue, const ogs_
     sess->session = ogs_sess;
     sess->pgw_s5c_teid = gtp1_pdp_ctx->ul_teic;
     sess->pgw_s5c_ip = gtp1_pdp_ctx->ggsn_address_c;
-    switch (ogs_sess->session_type) {
+    ogs_ip_to_paa(&gtp1_pdp_ctx->pdp_address[0], &sess->paa);
+    switch (gtp1_pdp_ctx->pdp_type_num[0]) {
     case OGS_PDU_SESSION_TYPE_IPV4:
-        sess->request_type.type = OGS_NAS_EPS_PDN_TYPE_IPV4;
+        sess->ue_request_type.type = OGS_NAS_EPS_PDN_TYPE_IPV4;
         break;
     case OGS_PDU_SESSION_TYPE_IPV6:
-        sess->request_type.type = OGS_NAS_EPS_PDN_TYPE_IPV6;
+        sess->ue_request_type.type = OGS_NAS_EPS_PDN_TYPE_IPV6;
         break;
     case OGS_PDU_SESSION_TYPE_IPV4V6:
-        sess->request_type.type = OGS_NAS_EPS_PDN_TYPE_IPV4V6;
+        sess->ue_request_type.type = OGS_NAS_EPS_PDN_TYPE_IPV4V6;
         break;
     }
-    sess->request_type.value = OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
+    sess->ue_request_type.value = OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
 
     /* NSAPI = EBI: 3GPP TS 23.401 5.2.1, TS 23.060 14.4A */
     bearer = mme_bearer_find_by_sess_ebi(sess, gtp1_pdp_ctx->nsapi);
@@ -295,6 +289,10 @@ static mme_sess_t *mme_ue_session_from_gtp1_pdp_ctx(mme_ue_t *mme_ue, const ogs_
     bearer->enb_s1u_ip.ipv4 = 1;
     bearer->enb_s1u_ip.addr = 0;
     bearer->enb_s1u_teid = 0xffffffff;
+    bearer->qos.index = ogs_sess->qos.index;
+    bearer->qos.arp.priority_level = ogs_sess->qos.arp.priority_level;
+    bearer->qos.arp.pre_emption_capability = ogs_sess->qos.arp.pre_emption_capability;
+    bearer->qos.arp.pre_emption_vulnerability = ogs_sess->qos.arp.pre_emption_vulnerability;
 
     return sess;
 }
@@ -308,6 +306,7 @@ int mme_gn_handle_sgsn_context_response(
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
     ogs_gtp1_mm_context_decoded_t gtp1_mm_ctx;
     ogs_gtp1_pdp_context_decoded_t gtp1_pdp_ctx;
+    enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
     uint8_t ret_cause = OGS_GTP1_CAUSE_REQUEST_ACCEPTED;
 
@@ -323,6 +322,8 @@ int mme_gn_handle_sgsn_context_response(
         ogs_error("MME-UE Context has already been removed");
         return OGS_GTP1_CAUSE_IMSI_IMEI_NOT_KNOWN;
     }
+
+    enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
 
     switch (resp->cause.u8) {
      case OGS_GTP1_CAUSE_REQUEST_ACCEPTED:
@@ -344,7 +345,7 @@ int mme_gn_handle_sgsn_context_response(
 
     if (resp->cause.u8 != OGS_GTP1_CAUSE_REQUEST_ACCEPTED) {
         ogs_error("[Gn] Rx SGSN Context Response cause:%u", resp->cause.u8);
-        rv = nas_eps_send_tau_reject(mme_ue->enb_ue, mme_ue, emm_cause);
+        rv = nas_eps_send_tau_reject(enb_ue, mme_ue, emm_cause);
         return OGS_GTP1_CAUSE_SYSTEM_FAILURE;
     }
 
@@ -427,14 +428,15 @@ int mme_gn_handle_sgsn_context_response(
 
     rv = mme_gtp1_send_sgsn_context_ack(mme_ue, OGS_GTP1_CAUSE_REQUEST_ACCEPTED, xact);
 
-    mme_gtp_send_create_session_request(sess, OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE);
+    mme_gtp_send_create_session_request(
+            enb_ue, sess, OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE);
 
     return ret_cause;
 
 nack_and_reject:
     rv = mme_gtp1_send_sgsn_context_ack(mme_ue, gtp1_cause, xact);
     ogs_info("[%s] TAU Reject [OGS_NAS_EMM_CAUSE:%d]", mme_ue->imsi_bcd, emm_cause);
-    rv = nas_eps_send_tau_reject(mme_ue->enb_ue, mme_ue, emm_cause);
+    rv = nas_eps_send_tau_reject(enb_ue, mme_ue, emm_cause);
     return OGS_GTP1_CAUSE_SYSTEM_FAILURE;
 }
 
@@ -443,6 +445,7 @@ void mme_gn_handle_sgsn_context_acknowledge(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue, ogs_gtp1_sgsn_context_acknowledge_t *req)
 {
     int rv;
+    enb_ue_t *enb_ue = NULL;
 
     ogs_debug("[Gn] Rx SGSN Context Acknowledge");
 
@@ -456,6 +459,8 @@ void mme_gn_handle_sgsn_context_acknowledge(
         ogs_error("MME-UE Context has already been removed");
         return;
     }
+
+    enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
 
     /* 3GPP TS 23.060 6.9.1.2.2 Step 4), 3GPP TS 23.401 D.3.5 Step 4)
     * The new SGSN sends an SGSN Context Acknowledge message to the old SGSN. The old MME (which is the old
@@ -479,8 +484,8 @@ void mme_gn_handle_sgsn_context_acknowledge(
     * connection is released by the source eNodeB. The source eNodeB confirms the release of the RRC connection
     * and of the S1-U connection by sending a S1-U Release Complete message to the source MME."
     */
-    if (mme_ue->enb_ue) {
-        rv = s1ap_send_ue_context_release_command(mme_ue->enb_ue,
+    if (enb_ue) {
+        rv = s1ap_send_ue_context_release_command(enb_ue,
             S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
             S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
         ogs_expect(rv == OGS_OK);

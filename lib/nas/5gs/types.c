@@ -1082,21 +1082,3 @@ cleanup:
 
     return (int)(rule-first);
 }
-
-bool ogs_nas_5gs_guti_is_valid(ogs_nas_5gs_guti_t *guti)
-{
-    if ((guti->amf_id.region !=0) &&
-        (guti->amf_id.set2 !=0) &&
-        (guti->m_tmsi != 0) &&
-        ((guti->nas_plmn_id.mcc1) !=0 ||
-            (guti->nas_plmn_id.mcc2) !=0 ||
-            (guti->nas_plmn_id.mcc3) !=0) &&
-        ((guti->nas_plmn_id.mnc1) !=0 ||
-            (guti->nas_plmn_id.mnc2) !=0 ||
-            (guti->nas_plmn_id.mnc3) !=0)) {
-
-        return true;
-    }
-
-    return false;
-}

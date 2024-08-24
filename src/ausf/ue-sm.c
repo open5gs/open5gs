@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -31,7 +31,7 @@ void ausf_ue_state_initial(ogs_fsm_t *s, ausf_event_t *e)
 
     ausf_sm_debug(e);
 
-    ausf_ue = e->ausf_ue;
+    ausf_ue = ausf_ue_find_by_id(e->ausf_ue_id);
     ogs_assert(ausf_ue);
 
     OGS_FSM_TRAN(s, &ausf_ue_state_operational);
@@ -46,7 +46,7 @@ void ausf_ue_state_final(ogs_fsm_t *s, ausf_event_t *e)
 
     ausf_sm_debug(e);
 
-    ausf_ue = e->ausf_ue;
+    ausf_ue = ausf_ue_find_by_id(e->ausf_ue_id);
     ogs_assert(ausf_ue);
 }
 
@@ -56,6 +56,7 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
     ausf_ue_t *ausf_ue = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
 
     ogs_assert(s);
@@ -63,7 +64,7 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
     ausf_sm_debug(e);
 
-    ausf_ue = e->ausf_ue;
+    ausf_ue = ausf_ue_find_by_id(e->ausf_ue_id);
     ogs_assert(ausf_ue);
 
     switch (e->h.id) {
@@ -76,8 +77,16 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         message = e->h.sbi.message;
         ogs_assert(message);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         SWITCH(message->h.method)
         CASE(OGS_SBI_HTTP_METHOD_POST)
@@ -143,10 +152,18 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
         message = e->h.sbi.message;
         ogs_assert(message);
 
-        ausf_ue = e->ausf_ue;
+        ausf_ue = ausf_ue_find_by_id(e->ausf_ue_id);
         ogs_assert(ausf_ue);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         SWITCH(message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UEAU)
@@ -225,7 +242,7 @@ void ausf_ue_state_deleted(ogs_fsm_t *s, ausf_event_t *e)
 
     ausf_sm_debug(e);
 
-    ausf_ue = e->ausf_ue;
+    ausf_ue = ausf_ue_find_by_id(e->ausf_ue_id);
     ogs_assert(ausf_ue);
 
     switch (e->h.id) {
@@ -249,7 +266,7 @@ void ausf_ue_state_exception(ogs_fsm_t *s, ausf_event_t *e)
 
     ausf_sm_debug(e);
 
-    ausf_ue = e->ausf_ue;
+    ausf_ue = ausf_ue_find_by_id(e->ausf_ue_id);
     ogs_assert(ausf_ue);
 
     switch (e->h.id) {

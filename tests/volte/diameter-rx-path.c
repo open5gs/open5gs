@@ -51,6 +51,11 @@ static __inline__ struct sess_state *new_state(os0_t sid)
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
+    if (!sess_data) {
+        ogs_error("No session state");
+        return;
+    }
+
     if (sess_data->sid)
         ogs_free(sess_data->sid);
 
@@ -1673,7 +1678,10 @@ static void pcscf_rx_aaa_cb(void *data, struct msg **msg)
     
     ret = fd_sess_state_retrieve(pcscf_rx_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        return;
+    }
     ogs_assert((void *)sess_data == data);
 
     /* Value of Result Code */
@@ -1802,7 +1810,10 @@ static int pcscf_rx_asr_cb( struct msg **msg, struct avp *avp,
 
     ret = fd_sess_state_retrieve(pcscf_rx_reg, sess, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        return EINVAL;
+    }
 
     /* Create answer header */
     qry = *msg;
@@ -1905,7 +1916,10 @@ void test_rx_send_str(uint8_t *rx_sid)
     /* Retrieve session state in this session */
     ret = fd_sess_state_retrieve(pcscf_rx_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        return;
+    }
     
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
@@ -1992,7 +2006,11 @@ static void pcscf_rx_sta_cb(void *data, struct msg **msg)
     
     ret = fd_sess_state_retrieve(pcscf_rx_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data && (void *)sess_data == data);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        return;
+    }
+    ogs_assert((void *)sess_data == data);
 
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
@@ -2103,8 +2121,6 @@ int test_rx_init(void)
 {
     int ret;
     struct disp_when data;
-
-    test_cx_init();
 
     /* Install objects definitions for this application */
     ret = ogs_diam_rx_init();

@@ -47,6 +47,7 @@ typedef struct pcf_context_s {
 
 struct pcf_ue_s {
     ogs_sbi_object_t sbi;
+    ogs_pool_id_t id;
     ogs_fsm_t sm;
 
     char *association_id;
@@ -75,6 +76,7 @@ struct pcf_ue_s {
 
 struct pcf_sess_s {
     ogs_sbi_object_t sbi;
+    ogs_pool_id_t id;
     ogs_fsm_t sm;
 
     char *sm_policy_id;
@@ -154,7 +156,7 @@ struct pcf_sess_s {
     ogs_list_t app_list;
 
     /* Related Context */
-    pcf_ue_t *pcf_ue;
+    ogs_pool_id_t pcf_ue_id;
 };
 
 typedef struct pcf_app_s {
@@ -202,8 +204,8 @@ pcf_sess_t *pcf_sess_find_by_ipv6prefix(char *ipv6prefix_string);
 int pcf_sessions_number_by_snssai_and_dnn(
         pcf_ue_t *pcf_ue, ogs_s_nssai_t *s_nssai, char *dnn);
 
-pcf_ue_t *pcf_ue_cycle(pcf_ue_t *pcf_ue);
-pcf_sess_t *pcf_sess_cycle(pcf_sess_t *sess);
+pcf_ue_t *pcf_ue_find_by_id(ogs_pool_id_t id);
+pcf_sess_t *pcf_sess_find_by_id(ogs_pool_id_t id);
 
 pcf_app_t *pcf_app_add(pcf_sess_t *sess);
 int pcf_app_remove(pcf_app_t *app);

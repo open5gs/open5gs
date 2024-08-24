@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2023-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -87,6 +87,7 @@ void sepp_handshake_state_will_establish(ogs_fsm_t *s, sepp_event_t *e)
     sepp_node_t *sepp_node = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
 
     ogs_assert(s);
@@ -118,8 +119,16 @@ void sepp_handshake_state_will_establish(ogs_fsm_t *s, sepp_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         message = e->h.sbi.message;
         ogs_assert(message);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         SWITCH(message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_N32C_HANDSHAKE)
@@ -282,6 +291,7 @@ void sepp_handshake_state_established(ogs_fsm_t *s, sepp_event_t *e)
     sepp_node_t *sepp_node = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
 
     ogs_assert(s);
@@ -304,8 +314,16 @@ void sepp_handshake_state_established(ogs_fsm_t *s, sepp_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         message = e->h.sbi.message;
         ogs_assert(message);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         SWITCH(message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_N32C_HANDSHAKE)
@@ -420,6 +438,7 @@ void sepp_handshake_state_terminated(ogs_fsm_t *s, sepp_event_t *e)
     sepp_node_t *sepp_node = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
 
     ogs_assert(s);
@@ -447,8 +466,16 @@ void sepp_handshake_state_terminated(ogs_fsm_t *s, sepp_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         message = e->h.sbi.message;
         ogs_assert(message);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         SWITCH(message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_N32C_HANDSHAKE)

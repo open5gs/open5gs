@@ -39,10 +39,10 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     ogs_sbi_nf_instance_t *pcf_nf_instance = NULL;
 
     ogs_assert(sess);
-    amf_ue = sess->amf_ue;
+    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
     ogs_assert(amf_ue);
     ogs_assert(amf_ue->nas.access_type);
-    ogs_assert(ran_ue_cycle(amf_ue->ran_ue));
+    ogs_assert(ran_ue_find_by_id(amf_ue->ran_ue_id));
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
@@ -190,14 +190,25 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
         goto end;
     }
 
+    /*
+     * We're experiencing an issue after changing SearchResult.validityTime
+     * from 3600 seconds to 30 seconds. (#3210)
+     *
+     * When AMF finds a PCF through Discovery, it can be deleted
+     * after 30 seconds by ValidityTime.
+     *
+     * We have changed our implementation to not send the PCF-ID in this case.
+     *
+     * What we need to do is proactively add a part that will re-discover
+     * the PCF when a situation arises where we really need the PCF-ID.
+     */
     pcf_nf_instance = OGS_SBI_GET_NF_INSTANCE(
             amf_ue->sbi.service_type_array[
             OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL]);
-    if (!pcf_nf_instance) {
+    if (pcf_nf_instance)
+        SmContextCreateData.pcf_id = pcf_nf_instance->id;
+    else
         ogs_error("No pcf_nf_instance");
-        goto end;
-    }
-    SmContextCreateData.pcf_id = pcf_nf_instance->id;
 
     message.SmContextCreateData = &SmContextCreateData;
 
@@ -274,7 +285,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
     ogs_assert(param);
     ogs_assert(sess);
     ogs_assert(sess->sm_context.resource_uri);
-    amf_ue = sess->amf_ue;
+    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
     ogs_assert(amf_ue);
 
     memset(&message, 0, sizeof(message));
@@ -407,8 +418,6 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_release_sm_context(
 
     ogs_assert(sess);
     ogs_assert(sess->sm_context.resource_uri);
-    amf_ue = sess->amf_ue;
-    ogs_assert(amf_ue);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
@@ -428,10 +437,20 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_release_sm_context(
             ngApCause.value = param->ngApCause.value;
         }
 
-        SmContextReleaseData._5g_mm_cause_value = param->gmm_cause;
+        if (param->gmm_cause) {
+            SmContextReleaseData._5g_mm_cause_value = param->gmm_cause;
+            SmContextReleaseData.is__5g_mm_cause_value = true;
+        }
     }
 
     memset(&ueLocation, 0, sizeof(ueLocation));
+
+    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
+    if (!amf_ue) {
+        ogs_error("UE(amf_ue) Context has already been removed");
+        goto end;
+    }
+
     ueLocation.nr_location = ogs_sbi_build_nr_location(
             &amf_ue->nr_tai, &amf_ue->nr_cgi);
     if (!ueLocation.nr_location) {

@@ -180,7 +180,10 @@ static struct rx_sess_state *find_rx_state(struct sess_state *gx, os0_t sid)
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No session state");
+        return;
+    }
 
     if (sess_data->peer_host)
         ogs_free(sess_data->peer_host);
@@ -728,7 +731,7 @@ int pcrf_gx_send_rar(
     ret = fd_sess_state_retrieve(pcrf_gx_reg, session, &sess_data);
     ogs_assert(ret == 0);
     if (sess_data == NULL) {
-        ogs_error("No session data");
+        ogs_error("No Session Data");
         ret = fd_msg_free(req);
         ogs_assert(ret == 0);
         rx_message->result_code = OGS_DIAM_UNKNOWN_SESSION_ID;
@@ -1058,7 +1061,10 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
 
     ret = fd_sess_state_retrieve(pcrf_gx_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        return;
+    }
     ogs_assert((void *)sess_data == data);
 
     /* Value of Result Code */

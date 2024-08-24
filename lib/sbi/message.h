@@ -169,6 +169,13 @@ extern "C" {
 #define OGS_SBI_NPCF_AM_POLICY_CONTROL_MULTIPLE_ACCESS_TYPES 5
 #define OGS_SBI_NPCF_AM_POLICY_CONTROL_WIRELINE_WIRELESS_CONVERGE 6
 
+#define OGS_SBI_NUDM_SDM_SHARED_DATA 1
+#define OGS_SBI_NUDM_SDM_IMMEDIATE_REPORT 2
+#define OGS_SBI_NUDM_SDM_PATCH_REPORT 3
+#define OGS_SBI_NUDM_SDM_NSSAA 4
+#define OGS_SBI_NUDM_SDM_CAG_FEATURE 5
+#define OGS_SBI_NUDM_SDM_LIMITED_SUBSCRIPTIONS 13
+
 #define OGS_SBI_NPCF_SMPOLICYCONTROL_TSC 1
 #define OGS_SBI_NPCF_SMPOLICYCONTROL_RES_SHARE 2
 #define OGS_SBI_NPCF_SMPOLICYCONTROL_3GPP_PS_DATA_OFF 3
@@ -435,7 +442,8 @@ typedef struct ogs_sbi_discovery_option_s {
     bool tai_presence;
     ogs_5gs_tai_t tai;
 
-    ogs_guami_t *target_guami;
+    bool guami_presence;
+    ogs_guami_t guami;
 
     int num_of_target_plmn_list;
     ogs_plmn_id_t target_plmn_list[OGS_MAX_NUM_OF_PLMN];
@@ -649,6 +657,8 @@ char *ogs_sbi_discovery_option_build_snssais(
 void ogs_sbi_discovery_option_parse_snssais(
         ogs_sbi_discovery_option_t *discovery_option, char *snssais);
 
+void ogs_sbi_discovery_option_set_guami(
+        ogs_sbi_discovery_option_t *discovery_option, ogs_guami_t *guami);
 char *ogs_sbi_discovery_option_build_guami(
         ogs_sbi_discovery_option_t *discovery_option);
 void ogs_sbi_discovery_option_parse_guami(

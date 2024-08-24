@@ -70,7 +70,7 @@ bool pcf_nbsf_management_handle_register(
     ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(pcf_ue);
     ogs_assert(stream);
     server = ogs_sbi_server_from_stream(stream);
@@ -423,7 +423,7 @@ bool pcf_nbsf_management_handle_register(
     if (SmPolicyDecision.supp_feat)
         ogs_free(SmPolicyDecision.supp_feat);
 
-    pcf_metrics_inst_by_slice_add(&sess->pcf_ue->guami.plmn_id,
+    pcf_metrics_inst_by_slice_add(&pcf_ue->guami.plmn_id,
             &sess->s_nssai, PCF_METR_CTR_PA_POLICYSMASSOSUCC, 1);
 
     OGS_SESSION_DATA_FREE(&session_data);

@@ -144,7 +144,7 @@ int amf_nudm_sdm_handle_provisioned(
         if (amf_update_allowed_nssai(amf_ue) == false) {
             ogs_error("No Allowed-NSSAI");
             r = nas_5gs_send_gmm_reject(
-                    amf_ue->ran_ue, amf_ue,
+                    ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
                     OGS_5GMM_CAUSE_NO_NETWORK_SLICES_AVAILABLE);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -154,7 +154,7 @@ int amf_nudm_sdm_handle_provisioned(
         if (amf_ue_is_rat_restricted(amf_ue)) {
             ogs_error("Registration rejected due to RAT restrictions");
             r = nas_5gs_send_gmm_reject(
-                    amf_ue->ran_ue, amf_ue,
+                    ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
                     OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);

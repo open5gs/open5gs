@@ -52,12 +52,7 @@ int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
     char buf[OGS_ADDRSTRLEN];
 
     ogs_assert(pkbuf);
-
-    if (!mme_enb_cycle(enb)) {
-        ogs_error("eNB has already been removed");
-        ogs_pkbuf_free(pkbuf);
-        return OGS_NOTFOUND;
-    }
+    ogs_assert(enb);
 
     ogs_assert(enb->sctp.sock);
     if (enb->sctp.sock->fd == INVALID_SOCKET) {
@@ -84,15 +79,24 @@ int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 int s1ap_send_to_enb_ue(enb_ue_t *enb_ue, ogs_pkbuf_t *pkbuf)
 {
     int rv;
+    mme_enb_t *enb = NULL;
+
     ogs_assert(pkbuf);
 
-    if (!enb_ue_cycle(enb_ue)) {
+    if (!enb_ue) {
         ogs_error("S1 context has already been removed");
         ogs_pkbuf_free(pkbuf);
         return OGS_NOTFOUND;
     }
 
-    rv = s1ap_send_to_enb(enb_ue->enb, pkbuf, enb_ue->enb_ostream_id);
+    enb = mme_enb_find_by_id(enb_ue->enb_id);
+    if (!enb) {
+        ogs_error("[%d] eNB has already been removed", enb_ue->enb_id);
+        ogs_pkbuf_free(pkbuf);
+        return OGS_NOTFOUND;
+    }
+
+    rv = s1ap_send_to_enb(enb, pkbuf, enb_ue->enb_ostream_id);
     ogs_expect(rv == OGS_OK);
 
     return rv;
@@ -113,8 +117,7 @@ int s1ap_delayed_send_to_enb_ue(
                 ogs_app()->timer_mgr, mme_timer_s1_delayed_send, e);
         ogs_assert(e->timer);
         e->pkbuf = pkbuf;
-        e->enb_ue = enb_ue;
-        e->enb = enb_ue->enb;
+        e->enb_ue_id = enb_ue->id;
 
         ogs_timer_start(e->timer, duration);
 
@@ -139,7 +142,7 @@ int s1ap_send_to_esm(
 
     e = mme_event_new(MME_EVENT_ESM_MESSAGE);
     ogs_assert(e);
-    e->mme_ue = mme_ue;
+    e->mme_ue_id = mme_ue->id;
     e->pkbuf = esmbuf;
     e->nas_type = nas_type;
     e->create_action = create_action;
@@ -157,6 +160,9 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         S1AP_ProcedureCode_t procedureCode, S1AP_NAS_PDU_t *nasPdu)
 {
     int rv;
+
+    mme_ue_t *mme_ue = NULL;
+
     ogs_nas_eps_security_header_t *sh = NULL;
     ogs_nas_security_header_type_t security_header_type;
 
@@ -166,6 +172,8 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
 
     ogs_assert(enb_ue);
     ogs_assert(nasPdu);
+
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM.
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
@@ -211,8 +219,8 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         return OGS_ERROR;
     }
 
-    if (enb_ue->mme_ue) {
-        if (nas_eps_security_decode(enb_ue->mme_ue,
+    if (mme_ue) {
+        if (nas_eps_security_decode(mme_ue,
                 security_header_type, nasbuf) != OGS_OK) {
             ogs_error("nas_eps_security_decode failed()");
             enb_ue_remove(enb_ue);
@@ -259,7 +267,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
             ogs_pkbuf_free(nasbuf);
             return OGS_ERROR;
         }
-        e->enb_ue = enb_ue;
+        e->enb_ue_id = enb_ue->id;
         e->s1ap_code = procedureCode;
         e->nas_type = security_header_type.type;
         e->pkbuf = nasbuf;
@@ -272,7 +280,6 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         return rv;
     } else if (h->protocol_discriminator ==
             OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM) {
-        mme_ue_t *mme_ue = enb_ue->mme_ue;
         if (!mme_ue) {
             ogs_error("No UE Context");
             ogs_pkbuf_free(nasbuf);
@@ -299,12 +306,9 @@ int s1ap_send_s1_setup_response(mme_enb_t *enb)
     int rv;
     ogs_pkbuf_t *s1ap_buffer;
 
-    ogs_debug("S1-Setup response");
+    ogs_assert(enb);
 
-    if (!mme_enb_cycle(enb)) {
-        ogs_error("eNB has already been removed");
-        return OGS_NOTFOUND;
-    }
+    ogs_debug("S1-Setup response");
 
     s1ap_buffer = s1ap_build_setup_rsp();
     if (!s1ap_buffer) {
@@ -324,12 +328,9 @@ int s1ap_send_s1_setup_failure(
     int rv;
     ogs_pkbuf_t *s1ap_buffer;
 
-    ogs_debug("S1-Setup failure");
+    ogs_assert(enb);
 
-    if (!mme_enb_cycle(enb)) {
-        ogs_error("eNB has already been removed");
-        return OGS_NOTFOUND;
-    }
+    ogs_debug("S1-Setup failure");
 
     s1ap_buffer = s1ap_build_setup_failure(group, cause, S1AP_TimeToWait_v10s);
     if (!s1ap_buffer) {
@@ -348,12 +349,9 @@ int s1ap_send_enb_configuration_update_ack(mme_enb_t *enb)
     int rv;
     ogs_pkbuf_t *s1ap_buffer;
 
-    ogs_debug("ENBConfigurationUpdateAcknowledge");
+    ogs_assert(enb);
 
-    if (!mme_enb_cycle(enb)) {
-        ogs_error("eNB has already been removed");
-        return OGS_NOTFOUND;
-    }
+    ogs_debug("ENBConfigurationUpdateAcknowledge");
 
     s1ap_buffer = s1ap_build_enb_configuration_update_ack();
     if (!s1ap_buffer) {
@@ -373,12 +371,9 @@ int s1ap_send_enb_configuration_update_failure(
     int rv;
     ogs_pkbuf_t *s1ap_buffer;
 
-    ogs_debug("ENBConfigurationUpdateFailure");
+    ogs_assert(enb);
 
-    if (!mme_enb_cycle(enb)) {
-        ogs_error("eNB has already been removed");
-        return OGS_NOTFOUND;
-    }
+    ogs_debug("ENBConfigurationUpdateFailure");
 
     s1ap_buffer = s1ap_build_enb_configuration_update_failure(
             group, cause, S1AP_TimeToWait_v10s);
@@ -400,12 +395,12 @@ int s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
 
     ogs_debug("InitialContextSetupRequest");
 
-    if (!mme_ue_cycle(mme_ue)) {
+    if (!mme_ue) {
         ogs_error("UE(mme-ue) context has already been removed");
         return OGS_NOTFOUND;
     }
 
-    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+    if (!enb_ue_find_by_id(mme_ue->enb_ue_id)) {
         ogs_error("S1 context has already been removed");
         return OGS_NOTFOUND;
     }
@@ -429,12 +424,12 @@ int s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue)
 
     ogs_debug("UEContextModificationRequest");
 
-    if (!mme_ue_cycle(mme_ue)) {
+    if (!mme_ue) {
         ogs_error("UE(mme-ue) context has already been removed");
         return OGS_NOTFOUND;
     }
 
-    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+    if (!enb_ue_find_by_id(mme_ue->enb_ue_id)) {
         ogs_error("S1 context has already been removed");
         return OGS_NOTFOUND;
     }
@@ -460,7 +455,7 @@ int s1ap_send_ue_context_release_command(
 
     ogs_debug("UEContextReleaseCommand");
 
-    if (!enb_ue_cycle(enb_ue)) {
+    if (!enb_ue) {
         ogs_error("S1 context has already been removed");
         return OGS_NOTFOUND;
     }
@@ -498,7 +493,7 @@ int s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
 
     ogs_debug("S1-Paging");
 
-    if (!mme_ue_cycle(mme_ue)) {
+    if (!mme_ue) {
         ogs_error("UE(mme-ue) context has already been removed");
         return OGS_NOTFOUND;
     }
@@ -550,14 +545,10 @@ int s1ap_send_mme_configuration_transfer(
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
 
-    ogs_debug("MMEConfigurationTransfer");
-
-    if (!mme_enb_cycle(target_enb)) {
-        ogs_error("eNB has already been removed");
-        return OGS_NOTFOUND;
-    }
-
+    ogs_assert(target_enb);
     ogs_assert(SONConfigurationTransfer);
+
+    ogs_debug("MMEConfigurationTransfer");
 
     s1apbuf = s1ap_build_mme_configuration_transfer(SONConfigurationTransfer);
     if (!s1apbuf) {
@@ -577,12 +568,9 @@ int s1ap_send_mme_direct_information_transfer(
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
 
-    ogs_debug("Tx MME Direct Information Transfer");
+    ogs_assert(target_enb);
 
-    if (!mme_enb_cycle(target_enb)) {
-        ogs_error("eNB has already been removed");
-        return OGS_NOTFOUND;
-    }
+    ogs_debug("Tx MME Direct Information Transfer");
 
     s1apbuf = s1ap_build_direct_information_transfer(buf, buf_len);
     if (!s1apbuf) {
@@ -603,12 +591,12 @@ int s1ap_send_e_rab_modification_confirm(mme_ue_t *mme_ue)
 
     ogs_debug("E-RABModificationConfirm");
 
-    if (!mme_ue_cycle(mme_ue)) {
+    if (!mme_ue) {
         ogs_error("UE(mme-ue) context has already been removed");
         return OGS_NOTFOUND;
     }
 
-    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+    if (!enb_ue_find_by_id(mme_ue->enb_ue_id)) {
         ogs_error("S1 context has already been removed");
         return OGS_NOTFOUND;
     }
@@ -633,12 +621,12 @@ int s1ap_send_path_switch_ack(
 
     ogs_debug("PathSwitchAcknowledge");
 
-    if (!mme_ue_cycle(mme_ue)) {
+    if (!mme_ue) {
         ogs_error("UE(mme-ue) context has already been removed");
         return OGS_NOTFOUND;
     }
 
-    if (!enb_ue_cycle(mme_ue->enb_ue)) {
+    if (!enb_ue_find_by_id(mme_ue->enb_ue_id)) {
         ogs_error("S1 context has already been removed");
         return OGS_NOTFOUND;
     }
@@ -663,12 +651,12 @@ int s1ap_send_handover_command(enb_ue_t *source_ue)
 
     ogs_debug("HandoverCommand");
 
-    if (!enb_ue_cycle(source_ue)) {
+    if (!source_ue) {
         ogs_error("S1 context has already been removed");
         return OGS_NOTFOUND;
     }
 
-    if (!mme_ue_cycle(source_ue->mme_ue)) {
+    if (!mme_ue_find_by_id(source_ue->mme_ue_id)) {
         ogs_error("UE(mme-ue) context has already been removed");
         return OGS_NOTFOUND;
     }
@@ -693,7 +681,7 @@ int s1ap_send_handover_preparation_failure(
 
     ogs_debug("HandoverPreparationFailure");
 
-    if (!enb_ue_cycle(source_ue)) {
+    if (!source_ue) {
         ogs_error("S1 context has already been removed");
         return OGS_NOTFOUND;
     }
@@ -719,7 +707,7 @@ int s1ap_send_handover_cancel_ack(enb_ue_t *source_ue)
 
     ogs_debug("HandoverCancelAcknowledge");
 
-    if (!enb_ue_cycle(source_ue)) {
+    if (!source_ue) {
         ogs_error("S1 context has already been removed");
         return OGS_NOTFOUND;
     }
@@ -748,24 +736,21 @@ int s1ap_send_handover_request(
 
     enb_ue_t *target_ue = NULL;
 
+    ogs_assert(target_enb);
+
     ogs_info("HandoverRequest");
 
-    if (!enb_ue_cycle(source_ue)) {
+    if (!source_ue) {
         ogs_error("S1 context has already been removed");
         return OGS_NOTFOUND;
     }
 
-    if (!mme_ue_cycle(source_ue->mme_ue)) {
+    if (!mme_ue_find_by_id(source_ue->mme_ue_id)) {
         ogs_error("UE(mme-ue) context has already been removed");
         return OGS_NOTFOUND;
     }
 
-    if (!mme_enb_cycle(target_enb)) {
-        ogs_error("eNB has already been removed");
-        return OGS_NOTFOUND;
-    }
-
-    target_ue = enb_ue_cycle(source_ue->target_ue);
+    target_ue = enb_ue_find_by_id(source_ue->target_ue_id);
     if (target_ue) {
     /*
      * Issue #3014
@@ -844,7 +829,7 @@ int s1ap_send_mme_status_transfer(
 
     ogs_info("MMEStatusTransfer");
 
-    if (!enb_ue_cycle(target_ue)) {
+    if (!target_ue) {
         ogs_error("S1 context has already been removed");
         return OGS_NOTFOUND;
     }
@@ -871,12 +856,9 @@ int s1ap_send_error_indication(
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
 
-    ogs_info("ErrorIndication");
+    ogs_assert(enb);
 
-    if (!mme_enb_cycle(enb)) {
-        ogs_error("eNB has already been removed");
-        return OGS_NOTFOUND;
-    }
+    ogs_info("ErrorIndication");
 
     s1apbuf = ogs_s1ap_build_error_indication(
             mme_ue_s1ap_id, enb_ue_s1ap_id, group, cause);
@@ -901,18 +883,18 @@ int s1ap_send_error_indication2(
     S1AP_MME_UE_S1AP_ID_t mme_ue_s1ap_id;
     S1AP_ENB_UE_S1AP_ID_t enb_ue_s1ap_id;
 
-    if (!mme_ue_cycle(mme_ue)) {
+    if (!mme_ue) {
         ogs_error("UE(mme-ue) context has already been removed");
         return OGS_NOTFOUND;
     }
 
-    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+    enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
     if (!enb_ue) {
         ogs_error("S1 context has already been removed");
         return OGS_NOTFOUND;
     }
 
-    enb = mme_enb_cycle(enb_ue->enb);
+    enb = mme_enb_find_by_id(enb_ue->enb_id);
     if (!enb) {
         ogs_error("eNB has already been removed");
         return OGS_NOTFOUND;
@@ -935,10 +917,7 @@ int s1ap_send_s1_reset_ack(
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
 
-    if (!mme_enb_cycle(enb)) {
-        ogs_error("eNB has already been removed");
-        return OGS_NOTFOUND;
-    }
+    ogs_assert(enb);
 
     ogs_info("S1-Reset Acknowledge");
     s1apbuf = ogs_s1ap_build_s1_reset_ack(partOfS1_Interface);

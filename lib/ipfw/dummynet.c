@@ -853,6 +853,10 @@ ipfw_config_pipe(int ac, char **av)
 		fs->fs_nr = i + DN_MAX_ID;
 		fs->sched_nr = i;
 		break;
+	default:
+		/* Clang scan-build SA: NULL pointer dereference: missing "default" case leaves fs=NULL. */
+		ogs_error("unrecognised option %d", co.do_pipe);
+		break;
 	}
 	/* set to -1 those fields for which we want to reuse existing
 	 * values from the kernel.

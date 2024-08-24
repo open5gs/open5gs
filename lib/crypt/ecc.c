@@ -1075,6 +1075,11 @@ int ecc_make_key(uint8_t p_publicKey[ECC_BYTES+1], uint8_t p_privateKey[ECC_BYTE
     EccPoint l_public;
     unsigned l_tries = 0;
     
+    /* Clang scan-build SA: Branch condition evaluates to garbage value: In 1st pass thru the do loop the struct l_public
+     * will not contain a value in the while() check if vli_isZero(l_private)==true and the continue branch is taken.
+     * Initialize l_public to fix the issue. */
+    memset(&l_public, 0, sizeof(EccPoint));
+
     do
     {
         if(!getRandomNumber(l_private) || (l_tries++ >= MAX_TRIES))
@@ -1255,6 +1260,11 @@ int ecdsa_sign(const uint8_t p_privateKey[ECC_BYTES], const uint8_t p_hash[ECC_B
     EccPoint p;
     unsigned l_tries = 0;
     
+    /* Clang scan-build SA: Branch condition evaluates to garbage value: In 1st pass thru the do loop the struct "p"
+     * will not contain a value in the while() check if vli_isZero(k)==true and the continue branch is taken.
+     * Initialize "p" to fix the issue. */
+    memset(&p, 0, sizeof(EccPoint));
+
     do
     {
         if(!getRandomNumber(k) || (l_tries++ >= MAX_TRIES))

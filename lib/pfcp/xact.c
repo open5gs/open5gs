@@ -75,9 +75,8 @@ ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
 
     ogs_assert(node);
 
-    ogs_pool_alloc(&pool, &xact);
+    ogs_pool_id_calloc(&pool, &xact);
     ogs_assert(xact);
-    memset(xact, 0, sizeof *xact);
     xact->index = ogs_pool_index(&pool, xact);
 
     xact->org = OGS_PFCP_LOCAL_ORIGINATOR;
@@ -87,19 +86,22 @@ ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
     xact->data = data;
 
     xact->tm_response = ogs_timer_add(
-            ogs_app()->timer_mgr, response_timeout, xact);
+            ogs_app()->timer_mgr, response_timeout,
+            OGS_UINT_TO_POINTER(xact->id));
     ogs_assert(xact->tm_response);
     xact->response_rcount =
         ogs_local_conf()->time.message.pfcp.n1_response_rcount;
 
     xact->tm_holding = ogs_timer_add(
-            ogs_app()->timer_mgr, holding_timeout, xact);
+            ogs_app()->timer_mgr, holding_timeout,
+            OGS_UINT_TO_POINTER(xact->id));
     ogs_assert(xact->tm_holding);
     xact->holding_rcount =
         ogs_local_conf()->time.message.pfcp.n1_holding_rcount;
 
     xact->tm_delayed_commit = ogs_timer_add(
-            ogs_app()->timer_mgr, delayed_commit_timeout, xact);
+            ogs_app()->timer_mgr, delayed_commit_timeout,
+            OGS_UINT_TO_POINTER(xact->id));
     ogs_assert(xact->tm_delayed_commit);
 
     ogs_list_add(xact->org == OGS_PFCP_LOCAL_ORIGINATOR ?
@@ -124,9 +126,8 @@ static ogs_pfcp_xact_t *ogs_pfcp_xact_remote_create(
 
     ogs_assert(node);
 
-    ogs_pool_alloc(&pool, &xact);
+    ogs_pool_id_calloc(&pool, &xact);
     ogs_assert(xact);
-    memset(xact, 0, sizeof *xact);
     xact->index = ogs_pool_index(&pool, xact);
 
     xact->org = OGS_PFCP_REMOTE_ORIGINATOR;
@@ -134,19 +135,22 @@ static ogs_pfcp_xact_t *ogs_pfcp_xact_remote_create(
     xact->node = node;
 
     xact->tm_response = ogs_timer_add(
-            ogs_app()->timer_mgr, response_timeout, xact);
+            ogs_app()->timer_mgr, response_timeout,
+            OGS_UINT_TO_POINTER(xact->id));
     ogs_assert(xact->tm_response);
     xact->response_rcount =
         ogs_local_conf()->time.message.pfcp.n1_response_rcount;
 
     xact->tm_holding = ogs_timer_add(
-            ogs_app()->timer_mgr, holding_timeout, xact);
+            ogs_app()->timer_mgr, holding_timeout,
+            OGS_UINT_TO_POINTER(xact->id));
     ogs_assert(xact->tm_holding);
     xact->holding_rcount =
         ogs_local_conf()->time.message.pfcp.n1_holding_rcount;
 
     xact->tm_delayed_commit = ogs_timer_add(
-            ogs_app()->timer_mgr, delayed_commit_timeout, xact);
+            ogs_app()->timer_mgr, delayed_commit_timeout,
+            OGS_UINT_TO_POINTER(xact->id));
     ogs_assert(xact->tm_delayed_commit);
 
     ogs_list_add(xact->org == OGS_PFCP_LOCAL_ORIGINATOR ?
@@ -169,6 +173,11 @@ void ogs_pfcp_xact_delete_all(ogs_pfcp_node_t *node)
         ogs_pfcp_xact_delete(xact);
     ogs_list_for_each_safe(&node->remote_list, next_xact, xact)
         ogs_pfcp_xact_delete(xact);
+}
+
+ogs_pfcp_xact_t *ogs_pfcp_xact_find_by_id(ogs_pool_id_t id)
+{
+    return ogs_pool_find_by_id(&pool, id);
 }
 
 int ogs_pfcp_xact_update_tx(ogs_pfcp_xact_t *xact,
@@ -573,9 +582,18 @@ void ogs_pfcp_xact_delayed_commit(ogs_pfcp_xact_t *xact, ogs_time_t duration)
 static void response_timeout(void *data)
 {
     char buf[OGS_ADDRSTRLEN];
-    ogs_pfcp_xact_t *xact = data;
+    ogs_pool_id_t xact_id = OGS_INVALID_POOL_ID;
+    ogs_pfcp_xact_t *xact = NULL;
 
-    ogs_assert(xact);
+    ogs_assert(data);
+    xact_id = OGS_POINTER_TO_UINT(data);
+    ogs_assert(xact_id >= OGS_MIN_POOL_ID && xact_id <= OGS_MAX_POOL_ID);
+
+    xact = ogs_pfcp_xact_find_by_id(xact_id);
+    if (!xact) {
+        ogs_error("PFCP Transaction has already been removed [%d]", xact_id);
+        return;;
+    }
     ogs_assert(xact->node);
 
     ogs_debug("[%d] %s Response Timeout "
@@ -616,9 +634,18 @@ static void response_timeout(void *data)
 static void holding_timeout(void *data)
 {
     char buf[OGS_ADDRSTRLEN];
-    ogs_pfcp_xact_t *xact = data;
+    ogs_pool_id_t xact_id = OGS_INVALID_POOL_ID;
+    ogs_pfcp_xact_t *xact = NULL;
 
-    ogs_assert(xact);
+    ogs_assert(data);
+    xact_id = OGS_POINTER_TO_UINT(data);
+    ogs_assert(xact_id >= OGS_MIN_POOL_ID && xact_id <= OGS_MAX_POOL_ID);
+
+    xact = ogs_pfcp_xact_find_by_id(xact_id);
+    if (!xact) {
+        ogs_error("PFCP Transaction has already been removed [%d]", xact_id);
+        return;;
+    }
     ogs_assert(xact->node);
 
     ogs_debug("[%d] %s Holding Timeout "
@@ -648,9 +675,18 @@ static void holding_timeout(void *data)
 static void delayed_commit_timeout(void *data)
 {
     char buf[OGS_ADDRSTRLEN];
-    ogs_pfcp_xact_t *xact = data;
+    ogs_pool_id_t xact_id = OGS_INVALID_POOL_ID;
+    ogs_pfcp_xact_t *xact = NULL;
 
-    ogs_assert(xact);
+    ogs_assert(data);
+    xact_id = OGS_POINTER_TO_UINT(data);
+    ogs_assert(xact_id >= OGS_MIN_POOL_ID && xact_id <= OGS_MAX_POOL_ID);
+
+    xact = ogs_pfcp_xact_find_by_id(xact_id);
+    if (!xact) {
+        ogs_error("PFCP Transaction has already been removed [%d]", xact_id);
+        return;;
+    }
     ogs_assert(xact->node);
 
     ogs_debug("[%d] %s Delayed Send Timeout "
@@ -802,7 +838,7 @@ int ogs_pfcp_xact_delete(ogs_pfcp_xact_t *xact)
 
     ogs_list_remove(xact->org == OGS_PFCP_LOCAL_ORIGINATOR ?
             &xact->node->local_list : &xact->node->remote_list, xact);
-    ogs_pool_free(&pool, xact);
+    ogs_pool_id_free(&pool, xact);
 
     return OGS_OK;
 }

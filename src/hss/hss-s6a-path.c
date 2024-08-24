@@ -49,6 +49,11 @@ struct sess_state {
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
+    if (!sess_data) {
+        ogs_error("No session state");
+        return;
+    }
+
     ogs_free(sess_data);
 }
 

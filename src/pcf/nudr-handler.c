@@ -193,7 +193,7 @@ bool pcf_nudr_dr_handle_query_sm_data(
     int r;
 
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(pcf_ue);
     ogs_assert(stream);
     server = ogs_sbi_server_from_stream(stream);

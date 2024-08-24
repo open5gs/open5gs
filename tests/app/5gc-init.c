@@ -85,7 +85,7 @@ int app_initialize(const char *const argv[])
      * 
      * If freeDiameter is not used, it uses a delay of less than 4 seconds.
      */
-    ogs_msleep(500);
+    ogs_msleep(1000);
 
     return OGS_OK;;
 }

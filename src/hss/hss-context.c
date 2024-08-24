@@ -270,6 +270,7 @@ int hss_context_parse_config(void)
                                     const char *identity = NULL;
                                     const char *addr = NULL;
                                     uint16_t port = 0;
+                                    int tc_timer = 0;
 
                                     if (ogs_yaml_iter_type(&conn_array) ==
                                         YAML_MAPPING_NODE) {
@@ -304,6 +305,10 @@ int hss_context_parse_config(void)
                                             const char *v =
                                                 ogs_yaml_iter_value(&conn_iter);
                                             if (v) port = atoi(v);
+                                        } else if (!strcmp(conn_key, "tc_timer")) {
+                                            const char *v =
+                                                ogs_yaml_iter_value(&conn_iter);
+                                            if (v) tc_timer = atoi(v);
                                         } else
                                             ogs_warn("unknown key `%s`",
                                                     conn_key);
@@ -319,10 +324,16 @@ int hss_context_parse_config(void)
                                         self.diam_config->
                                             conn[self.diam_config->num_of_conn].
                                                 port = port;
+                                        self.diam_config->
+                                            conn[self.diam_config->num_of_conn].
+                                                tc_timer = tc_timer;
                                         self.diam_config->num_of_conn++;
                                     }
                                 } while (ogs_yaml_iter_type(&conn_array) ==
                                         YAML_SEQUENCE_NODE);
+                            } else if (!strcmp(fd_key, "tc_timer")) {
+                                const char *v = ogs_yaml_iter_value(&fd_iter);
+                                if (v) self.diam_config->cnf_timer_tc = atoi(v);
                             } else
                                 ogs_warn("unknown key `%s`", fd_key);
                         }

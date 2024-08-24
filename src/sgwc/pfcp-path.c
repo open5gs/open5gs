@@ -170,10 +170,22 @@ void sgwc_pfcp_close(void)
 
 static void sess_timeout(ogs_pfcp_xact_t *xact, void *data)
 {
+    sgwc_sess_t *sess = NULL;
+    ogs_pool_id_t sess_id = OGS_INVALID_POOL_ID;
     uint8_t type;
 
     ogs_assert(xact);
     type = xact->seq[0].type;
+
+    ogs_assert(data);
+    sess_id = OGS_POINTER_TO_UINT(data);
+    ogs_assert(sess_id >= OGS_MIN_POOL_ID && sess_id <= OGS_MAX_POOL_ID);
+
+    sess = sgwc_sess_find_by_id(sess_id);
+    if (!sess) {
+        ogs_error("Session has already been removed [%d]", type);
+        return;
+    }
 
     switch (type) {
     case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
@@ -193,10 +205,22 @@ static void sess_timeout(ogs_pfcp_xact_t *xact, void *data)
 
 static void bearer_timeout(ogs_pfcp_xact_t *xact, void *data)
 {
+    sgwc_bearer_t *bearer = NULL;
+    ogs_pool_id_t bearer_id = OGS_INVALID_POOL_ID;
     uint8_t type;
 
     ogs_assert(xact);
     type = xact->seq[0].type;
+
+    ogs_assert(data);
+    bearer_id = OGS_POINTER_TO_UINT(data);
+    ogs_assert(bearer_id >= OGS_MIN_POOL_ID && bearer_id <= OGS_MAX_POOL_ID);
+
+    bearer = sgwc_bearer_find_by_id(bearer_id);
+    if (!bearer) {
+        ogs_error("Bearer has already been removed [%d]", type);
+        return;
+    }
 
     switch (type) {
     case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
@@ -243,7 +267,7 @@ int sgwc_pfcp_send_bearer_to_modify_list(
 }
 
 int sgwc_pfcp_send_session_establishment_request(
-        sgwc_sess_t *sess, ogs_gtp_xact_t *gtp_xact, ogs_pkbuf_t *gtpbuf,
+        sgwc_sess_t *sess, ogs_pool_id_t gtp_xact_id, ogs_pkbuf_t *gtpbuf,
         uint64_t flags)
 {
     int rv;
@@ -253,13 +277,14 @@ int sgwc_pfcp_send_session_establishment_request(
 
     ogs_assert(sess);
 
-    xact = ogs_pfcp_xact_local_create(sess->pfcp_node, sess_timeout, sess);
+    xact = ogs_pfcp_xact_local_create(
+            sess->pfcp_node, sess_timeout, OGS_UINT_TO_POINTER(sess->id));
     if (!xact) {
         ogs_error("ogs_pfcp_xact_local_create() failed");
         return OGS_ERROR;
     }
 
-    xact->assoc_xact = gtp_xact;
+    xact->assoc_xact_id = gtp_xact_id;
     if (gtpbuf) {
         xact->gtpbuf = ogs_pkbuf_copy(gtpbuf);
         if (!xact->gtpbuf) {
@@ -323,7 +348,7 @@ int sgwc_pfcp_send_session_establishment_request(
 }
 
 int sgwc_pfcp_send_session_modification_request(
-        sgwc_sess_t *sess, ogs_gtp_xact_t *gtp_xact,
+        sgwc_sess_t *sess, ogs_pool_id_t gtp_xact_id,
         ogs_pkbuf_t *gtpbuf, uint64_t flags)
 {
     ogs_pfcp_xact_t *xact = NULL;
@@ -331,13 +356,14 @@ int sgwc_pfcp_send_session_modification_request(
 
     ogs_assert(sess);
 
-    xact = ogs_pfcp_xact_local_create(sess->pfcp_node, sess_timeout, sess);
+    xact = ogs_pfcp_xact_local_create(
+            sess->pfcp_node, sess_timeout, OGS_UINT_TO_POINTER(sess->id));
     if (!xact) {
         ogs_error("ogs_pfcp_xact_local_create() failed");
         return OGS_ERROR;
     }
 
-    xact->assoc_xact = gtp_xact;
+    xact->assoc_xact_id = gtp_xact_id;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
     if (gtpbuf) {
         xact->gtpbuf = ogs_pkbuf_copy(gtpbuf);
@@ -355,7 +381,7 @@ int sgwc_pfcp_send_session_modification_request(
 }
 
 int sgwc_pfcp_send_bearer_modification_request(
-        sgwc_bearer_t *bearer, ogs_gtp_xact_t *gtp_xact,
+        sgwc_bearer_t *bearer, ogs_pool_id_t gtp_xact_id,
         ogs_pkbuf_t *gtpbuf, uint64_t flags)
 {
     int rv;
@@ -365,16 +391,17 @@ int sgwc_pfcp_send_bearer_modification_request(
     sgwc_sess_t *sess = NULL;
 
     ogs_assert(bearer);
-    sess = bearer->sess;
+    sess = sgwc_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
 
-    xact = ogs_pfcp_xact_local_create(sess->pfcp_node, bearer_timeout, bearer);
+    xact = ogs_pfcp_xact_local_create(
+            sess->pfcp_node, bearer_timeout, OGS_UINT_TO_POINTER(bearer->id));
     if (!xact) {
         ogs_error("ogs_pfcp_xact_local_create() failed");
         return OGS_ERROR;
     }
 
-    xact->assoc_xact = gtp_xact;
+    xact->assoc_xact_id = gtp_xact_id;
     xact->modify_flags = flags;
     if (gtpbuf) {
         xact->gtpbuf = ogs_pkbuf_copy(gtpbuf);
@@ -410,7 +437,7 @@ int sgwc_pfcp_send_bearer_modification_request(
 }
 
 int sgwc_pfcp_send_session_deletion_request(
-        sgwc_sess_t *sess, ogs_gtp_xact_t *gtp_xact, ogs_pkbuf_t *gtpbuf)
+        sgwc_sess_t *sess, ogs_pool_id_t gtp_xact_id, ogs_pkbuf_t *gtpbuf)
 {
     int rv;
     ogs_pkbuf_t *sxabuf = NULL;
@@ -419,13 +446,14 @@ int sgwc_pfcp_send_session_deletion_request(
 
     ogs_assert(sess);
 
-    xact = ogs_pfcp_xact_local_create(sess->pfcp_node, sess_timeout, sess);
+    xact = ogs_pfcp_xact_local_create(
+            sess->pfcp_node, sess_timeout, OGS_UINT_TO_POINTER(sess->id));
     if (!xact) {
         ogs_error("ogs_pfcp_xact_local_create() failed");
         return OGS_ERROR;
     }
 
-    xact->assoc_xact = gtp_xact;
+    xact->assoc_xact_id = gtp_xact_id;
     if (gtpbuf) {
         xact->gtpbuf = ogs_pkbuf_copy(gtpbuf);
         if (!xact->gtpbuf) {

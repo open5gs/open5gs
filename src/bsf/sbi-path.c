@@ -89,7 +89,7 @@ int bsf_sbi_discover_and_send(
     ogs_assert(build);
 
     xact = ogs_sbi_xact_add(
-            &sess->sbi, service_type, discovery_option,
+            0, &sess->sbi, service_type, discovery_option,
             (ogs_sbi_build_f)build, sess, data);
     if (!xact) {
         ogs_error("bsf_sbi_discover_and_send() failed");
@@ -100,7 +100,9 @@ int bsf_sbi_discover_and_send(
         return OGS_ERROR;
     }
 
-    xact->assoc_stream = stream;
+    xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
+    ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+            xact->assoc_stream_id <= OGS_MAX_POOL_ID);
 
     r = ogs_sbi_discover_and_send(xact);
     if (r != OGS_OK) {

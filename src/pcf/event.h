@@ -33,8 +33,8 @@ typedef struct pcf_app_s pcf_app_t;
 typedef struct pcf_event_s {
     ogs_event_t h;
 
-    pcf_ue_t *pcf_ue;
-    pcf_sess_t *sess;
+    ogs_pool_id_t pcf_ue_id;
+    ogs_pool_id_t sess_id;
     pcf_app_t *app;
 } pcf_event_t;
 

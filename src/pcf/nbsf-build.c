@@ -38,7 +38,7 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     int i;
 
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(pcf_ue);
 
     nf_instance = data;
@@ -187,7 +187,7 @@ ogs_sbi_request_t *pcf_nbsf_management_build_de_register(
     ogs_sbi_request_t *request = NULL;
 
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(pcf_ue);
     ogs_assert(sess->binding.resource_uri);
 

@@ -31,11 +31,11 @@ struct sess_state {
 
 #define NUM_CC_REQUEST_SLOT 4
 
-    smf_sess_t *sess;
+    ogs_pool_id_t sess_id;
     struct {
         uint32_t cc_req_no;
         bool pfcp;
-        void *ptr; /* INITIAL: ogs_gtp_xact_t, UPDATE: ogs_pfcp_xact_t */
+        ogs_pool_id_t id; /* INITIAL: ogs_gtp_xact_t, UPDATE: ogs_pfcp_xact_t */
     } xact_data[NUM_CC_REQUEST_SLOT];
     uint32_t cc_request_type;
     uint32_t cc_request_number;
@@ -80,6 +80,11 @@ static __inline__ struct sess_state *new_state(os0_t sid)
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
+    if (!sess_data) {
+        ogs_error("No session state");
+        return;
+    }
+
     if (sess_data->gy_sid)
         ogs_free(sess_data->gy_sid);
 
@@ -345,6 +350,12 @@ static void fill_ps_information(smf_sess_t *sess, uint32_t cc_request_type,
     char buf[OGS_PLMNIDSTRLEN];
     char digit;
 
+    smf_ue_t *smf_ue = NULL;
+
+    ogs_assert(sess);
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+
     /* PS-Information, TS 32.299 sec 7.2.158 */
     ret = fd_msg_avp_new(ogs_diam_gy_ps_information, 0, &avpch1);
     ogs_assert(ret == 0);
@@ -390,11 +401,15 @@ static void fill_ps_information(smf_sess_t *sess, uint32_t cc_request_type,
     /* PDP-Address, TS 32.299 7.2.137 */
     if (sess->ipv4) {
         ret = fd_msg_avp_new(ogs_diam_gy_pdp_address, 0, &avpch2);
+        /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+        ogs_assert(ret == 0);
         sin.sin_family = AF_INET;
         memcpy(&sin.sin_addr.s_addr, (uint8_t*)&sess->ipv4->addr[0], OGS_IPV4_LEN);
         ret = fd_msg_avp_value_encode(&sin, avpch2);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+        ogs_assert(ret == 0);
     }
     if (sess->ipv6) {
         ret = fd_msg_avp_new(ogs_diam_gy_pdp_address, 0, &avpch2);
@@ -414,6 +429,8 @@ static void fill_ps_information(smf_sess_t *sess, uint32_t cc_request_type,
     /* SGSN-Address */
     if (sess->sgw_s5c_ip.ipv4) {
         ret = fd_msg_avp_new(ogs_diam_gy_sgsn_address, 0, &avpch2);
+        /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+        ogs_assert(ret == 0);
         sin.sin_family = AF_INET;
         memcpy(&sin.sin_addr.s_addr, (uint8_t*)&sess->sgw_s5c_ip.addr, OGS_IPV4_LEN);
         ret = fd_msg_avp_value_encode(&sin, avpch2);
@@ -423,6 +440,8 @@ static void fill_ps_information(smf_sess_t *sess, uint32_t cc_request_type,
     }
     if (sess->sgw_s5c_ip.ipv6) {
         ret = fd_msg_avp_new(ogs_diam_gy_sgsn_address, 0, &avpch2);
+        /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+        ogs_assert(ret == 0);
         sin6.sin6_family = AF_INET6;
         memcpy(&sin6.sin6_addr.s6_addr, (uint8_t*)&sess->sgw_s5c_ip.addr6[0], OGS_IPV6_LEN);
         ret = fd_msg_avp_value_encode(&sin6, avpch2);
@@ -555,9 +574,11 @@ static void fill_ps_information(smf_sess_t *sess, uint32_t cc_request_type,
     ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
     ogs_assert(ret == 0);
 
-    if (sess->smf_ue->imeisv_len > 0) {
+    if (smf_ue->imeisv_len > 0) {
         /* User-Equipment-Info, 3GPP TS 32.299 7.1.17 */
         ret = fd_msg_avp_new(ogs_diam_gy_user_equipment_info, 0, &avpch2);
+        /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+        ogs_assert(ret == 0);
 
         /* User-Equipment-Info-Type 0 (IMEI) */
         ret = fd_msg_avp_new(ogs_diam_gy_user_equipment_info_type, 0, &avpch3);
@@ -572,7 +593,7 @@ static void fill_ps_information(smf_sess_t *sess, uint32_t cc_request_type,
         ret = fd_msg_avp_new(ogs_diam_gy_user_equipment_info_value, 0, &avpch3);
         ogs_assert(ret == 0);
         digit = '0';
-        val.os.data = (uint8_t*)&sess->smf_ue->imeisv_bcd[0];
+        val.os.data = (uint8_t*)&smf_ue->imeisv_bcd[0];
         val.os.len = 16;
         ret = fd_msg_avp_setvalue(avpch3, &val);
         ogs_assert(ret == 0);
@@ -610,7 +631,7 @@ static void fill_service_information_ccr(smf_sess_t *sess,
 }
 
 /* 3GPP TS 32.299  6.4.2 Credit-Control-Request message */
-void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
+void smf_gy_send_ccr(smf_sess_t *sess, ogs_pool_id_t xact_id,
         uint32_t cc_request_type)
 {
 
@@ -630,7 +651,7 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
     ogs_assert(sess);
 
     ogs_assert(sess->ipv4 || sess->ipv6);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_debug("[Gy][Credit-Control-Request]");
@@ -713,14 +734,14 @@ void smf_gy_send_ccr(smf_sess_t *sess, void *xact,
         sess_data->cc_request_type, sess_data->cc_request_number);
 
     /* Update session state */
-    sess_data->sess = sess;
+    sess_data->sess_id = sess->id;
     req_slot = sess_data->cc_request_number % NUM_CC_REQUEST_SLOT;
     if (cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST)
         sess_data->xact_data[req_slot].pfcp = true;
     else
         sess_data->xact_data[req_slot].pfcp = false;
     sess_data->xact_data[req_slot].cc_req_no = sess_data->cc_request_number;
-    sess_data->xact_data[req_slot].ptr = xact;
+    sess_data->xact_data[req_slot].id = xact_id;
 
 
     /* Origin-Host & Origin-Realm */
@@ -958,7 +979,6 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
     int new;
     struct msg *req = NULL;
     smf_event_t *e = NULL;
-    void *xact = NULL;
     smf_sess_t *sess = NULL;
     ogs_diam_gy_message_t *gy_message = NULL;
     uint32_t req_slot, cc_request_number = 0;
@@ -981,7 +1001,10 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
 
     ret = fd_sess_state_retrieve(smf_gy_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        return;
+    }
     ogs_assert((void *)sess_data == data);
 
     ogs_debug("    Retrieve its data: [%s]", sess_data->gy_sid);
@@ -1007,9 +1030,8 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
 
     ogs_debug("    CC-Request-Number[%d]", cc_request_number);
 
-    xact = sess_data->xact_data[req_slot].ptr;
     ogs_assert(sess_data->xact_data[req_slot].cc_req_no == cc_request_number);
-    sess = sess_data->sess;
+    sess = smf_sess_find_by_id(sess_data->sess_id);
     ogs_assert(sess);
 
     gy_message = ogs_calloc(1, sizeof(ogs_diam_gy_message_t));
@@ -1175,15 +1197,13 @@ out:
         e = smf_event_new(SMF_EVT_GY_MESSAGE);
         ogs_assert(e);
 
-        e->sess = sess;
+        e->sess_id = sess->id;
         e->gy_message = gy_message;
-        if (gy_message->cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST) {
-            ogs_assert(sess_data->xact_data[req_slot].pfcp == true);
-            e->pfcp_xact = xact;
-        } else {
-            ogs_assert(sess_data->xact_data[req_slot].pfcp == false);
-            e->gtp_xact = xact;
-        }
+        if (sess_data->xact_data[req_slot].pfcp == true)
+            e->pfcp_xact_id = sess_data->xact_data[req_slot].id;
+        else
+            e->gtp_xact_id = sess_data->xact_data[req_slot].id;
+
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_error("ogs_queue_push() failed:%d", (int)rv);
@@ -1302,7 +1322,7 @@ static int smf_gy_rar_cb( struct msg **msg, struct avp *avp,
     }
 
     /* Get Session Information */
-    sess = sess_data->sess;
+    sess = smf_sess_find_by_id(sess_data->sess_id);
     ogs_assert(sess);
 
     /* TODO: parsing of msg into gy_message */
@@ -1311,7 +1331,7 @@ static int smf_gy_rar_cb( struct msg **msg, struct avp *avp,
     e = smf_event_new(SMF_EVT_GY_MESSAGE);
     ogs_assert(e);
 
-    e->sess = sess;
+    e->sess_id = sess->id;
     e->gy_message = gy_message;
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {

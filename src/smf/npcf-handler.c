@@ -304,7 +304,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
     ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_assert(recvmsg);
@@ -517,12 +517,12 @@ bool smf_npcf_smpolicycontrol_handle_create(
 
     /* Set UE IP Address to the Default DL PDR */
     ogs_assert(OGS_OK ==
-        ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
+        ogs_pfcp_paa_to_ue_ip_addr(&sess->paa,
             &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len));
     dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
 
     ogs_assert(OGS_OK ==
-        ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
+        ogs_pfcp_paa_to_ue_ip_addr(&sess->paa,
             &ul_pdr->ue_ip_addr, &ul_pdr->ue_ip_addr_len));
 
     if (sess->session.ipv4_framed_routes &&
@@ -699,7 +699,7 @@ bool smf_npcf_smpolicycontrol_handle_update_notify(
 
     ogs_assert(sess);
     ogs_assert(stream);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_assert(recvmsg);
@@ -748,7 +748,7 @@ bool smf_npcf_smpolicycontrol_handle_terminate_notify(
 
     ogs_assert(sess);
     ogs_assert(stream);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_assert(recvmsg);

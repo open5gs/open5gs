@@ -97,6 +97,7 @@ bool udm_sbi_send_request(
 }
 
 static int udm_sbi_discover_and_send(
+        ogs_pool_id_t sbi_object_id,
         ogs_sbi_object_t *sbi_object,
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
@@ -111,15 +112,22 @@ static int udm_sbi_discover_and_send(
     ogs_assert(stream);
     ogs_assert(build);
 
+    ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
+            sbi_object_id <= OGS_MAX_POOL_ID);
+
     xact = ogs_sbi_xact_add(
-            sbi_object, service_type, discovery_option,
+            sbi_object_id, sbi_object, service_type, discovery_option,
             (ogs_sbi_build_f)build, context, data);
     if (!xact) {
         ogs_error("udm_sbi_discover_and_send() failed");
         return OGS_ERROR;
     }
 
-    xact->assoc_stream = stream;
+    if (stream) {
+        xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
+        ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                xact->assoc_stream_id <= OGS_MAX_POOL_ID);
+    }
 
     r = ogs_sbi_discover_and_send(xact);
     if (r != OGS_OK) {
@@ -139,9 +147,11 @@ int udm_ue_sbi_discover_and_send(
 {
     int r;
 
+    ogs_assert(udm_ue->id >= OGS_MIN_POOL_ID && udm_ue->id <= OGS_MAX_POOL_ID);
+
     r = udm_sbi_discover_and_send(
-                &udm_ue->sbi, service_type, discovery_option,
-                (ogs_sbi_build_f)build, udm_ue, stream, data);
+            udm_ue->id, &udm_ue->sbi, service_type, discovery_option,
+            (ogs_sbi_build_f)build, udm_ue, stream, data);
     if (r != OGS_OK) {
         ogs_error("udm_ue_sbi_discover_and_send() failed");
         ogs_assert(true ==
@@ -162,9 +172,11 @@ int udm_sess_sbi_discover_and_send(
 {
     int r;
 
+    ogs_assert(sess->id >= OGS_MIN_POOL_ID && sess->id <= OGS_MAX_POOL_ID);
+
     r = udm_sbi_discover_and_send(
-                &sess->sbi, service_type, discovery_option,
-                (ogs_sbi_build_f)build, sess, stream, data);
+            sess->id, &sess->sbi, service_type, discovery_option,
+            (ogs_sbi_build_f)build, sess, stream, data);
     if (r != OGS_OK) {
         ogs_error("udm_sess_sbi_discover_and_send() failed");
         ogs_assert(true ==

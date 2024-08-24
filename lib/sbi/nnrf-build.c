@@ -1722,10 +1722,9 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_update(
         goto end;
     }
 
-    ogs_assert(subscription_data->time.validity_duration);
+    ogs_assert(subscription_data->validity_duration);
     validity_time = ogs_sbi_localtime_string(
-            ogs_time_now() +
-            ogs_time_from_sec(subscription_data->time.validity_duration));
+            ogs_time_now() + subscription_data->validity_duration);
     ogs_assert(validity_time);
 
     ValidityItem.op = OpenAPI_patch_operation_replace;

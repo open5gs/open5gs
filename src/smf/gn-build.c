@@ -191,9 +191,20 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
     rsp->charging_id.u32 = sess->charging.id;
 
     /* End User Address */
-    rv = ogs_paa_to_ip(&sess->session.paa, &ip_eua);
+    rv = ogs_paa_to_ip(&sess->paa, &ip_eua);
+    /* Clang scan-build SA: Value stored is not used: add check for rv error. */
+    if (rv != OGS_OK) {
+        ogs_error("ogs_paa_to_ip() failed");
+        return NULL;
+    }
     rv = ogs_gtp1_ip_to_eua(sess->session.session_type, &ip_eua, &eua,
             &eua_len);
+    /* Clang scan-build SA: Value stored is not used: add check for rv error. */
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp1_ip_to_eua() failed");
+        return NULL;
+    }
+
     rsp->end_user_address.presence = 1;
     rsp->end_user_address.data = &eua;
     rsp->end_user_address.len = eua_len;

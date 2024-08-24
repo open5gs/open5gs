@@ -52,6 +52,11 @@ static void test_cx_lia_cb(void *data, struct msg **msg);
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
+    if (!sess_data) {
+        ogs_error("No session state");
+        return;
+    }
+
     if (sess_data->user_name)
         ogs_free(sess_data->user_name);
     if (sess_data->public_identity)

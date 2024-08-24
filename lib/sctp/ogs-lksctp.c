@@ -194,6 +194,10 @@ int ogs_sctp_connect(ogs_sock_t *sock, ogs_sockaddr_t *sa_list)
 
     ogs_assert(sock);
 
+    /* Clang scan-build SA: NULL pointer dereference: if addr=sa_list=NULL then the macro OGS_PORT(sa_list) will
+     * dereference the NULL pointer. */
+    ogs_assert(sa_list);
+
     addr = sa_list;
     while (addr) {
         if (ogs_sock_connect(sock, addr) == OGS_OK) {
