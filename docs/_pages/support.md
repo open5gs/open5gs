@@ -5,7 +5,7 @@ subject: Support
 permalink: /support/
 ---
 
-Open5GS receives strong and ongoing support from [NewPlane](https://newplane.io), which proudly backs the project and contributes to its continuous development and success.
+Open5GS receives strong and ongoing support from [NewPlane Inc.](https://newplane.io), which proudly backs the project and contributes to its continuous development and success.
 
 ### Licensing Options:
 
