@@ -1832,6 +1832,22 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                         ogs_assert(r != OGS_ERROR);
                         OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
                     } else {
+                        amf_ue->selected_int_algorithm =
+                            amf_selected_int_algorithm(amf_ue);
+                        amf_ue->selected_enc_algorithm =
+                            amf_selected_enc_algorithm(amf_ue);
+
+                        if (amf_ue->selected_int_algorithm ==
+                                OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
+                            ogs_error("Encrypt[0x%x] can be skipped "
+                                "with NEA0, but Integrity[0x%x] cannot be "
+                                "bypassed with NIA0",
+                                amf_ue->selected_enc_algorithm,
+                                amf_ue->selected_int_algorithm);
+                            OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                            break;
+                        }
+
                         OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_security_mode);
                     }
                     break;

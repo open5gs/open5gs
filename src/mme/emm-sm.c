@@ -1003,6 +1003,21 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                 ogs_assert(r != OGS_ERROR);
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
             } else {
+                mme_ue->selected_int_algorithm =
+                    mme_selected_int_algorithm(mme_ue);
+                mme_ue->selected_enc_algorithm =
+                    mme_selected_enc_algorithm(mme_ue);
+
+                if (mme_ue->selected_int_algorithm ==
+                        OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
+                    ogs_error("Encrypt[0x%x] can be skipped with EEA0, "
+                        "but Integrity[0x%x] cannot be bypassed with EIA0",
+                        mme_ue->selected_enc_algorithm,
+                        mme_ue->selected_int_algorithm);
+                    OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+                    break;
+                }
+
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
             }
 
@@ -1167,8 +1182,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
         CLEAR_MME_UE_TIMER(mme_ue->t3460);
         r = nas_eps_send_security_mode_command(mme_ue);
         ogs_expect(r == OGS_OK);
-        if (r == OGS_ERROR)
-            OGS_FSM_TRAN(s, &emm_state_exception);
+        ogs_assert(r != OGS_ERROR);
         break;
     case OGS_FSM_EXIT_SIG:
         break;
