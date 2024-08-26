@@ -84,7 +84,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
             OGS_5GSM_CAUSE_MISSING_OR_UNKNOWN_DNN);
         ogs_assert(n1smbuf);
 
-        ogs_warn("%s", strerror);
+        ogs_error("%s", strerror);
         smf_sbi_send_sm_context_create_error(stream,
                 OGS_SBI_HTTP_STATUS_NOT_FOUND, OGS_SBI_APP_ERRNO_NULL,
                 strerror, NULL, n1smbuf);
@@ -116,6 +116,12 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
             sscModeList = dnnConfiguration->ssc_modes;
             if (!sscModeList) {
                 ogs_error("No sscModes");
+                continue;
+            }
+
+            sessionAmbr = dnnConfiguration->session_ambr;
+            if (!sessionAmbr) {
+                ogs_error("No Session-AMBR");
                 continue;
             }
 
@@ -168,12 +174,6 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
 
             if (!sess->session.ssc_mode) {
                 ogs_error("SSCMode is not allowed");
-                continue;
-            }
-
-            sessionAmbr = dnnConfiguration->session_ambr;
-            if (!sessionAmbr) {
-                ogs_error("No Session-AMBR");
                 continue;
             }
 
@@ -301,9 +301,39 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     }
 
     if (!sess->session.name) {
-        strerror = ogs_msprintf("[%s:%d] No dnnConfiguration",
+        strerror = ogs_msprintf("[%s:%d] No DNN", smf_ue->supi, sess->psi);
+        ogs_assert(strerror);
+
+        n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
+            OGS_5GSM_CAUSE_MISSING_OR_UNKNOWN_DNN_IN_A_SLICE);
+        ogs_assert(n1smbuf);
+
+        ogs_error("%s", strerror);
+        smf_sbi_send_sm_context_create_error(stream,
+                OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                OGS_SBI_APP_ERRNO_DNN_DENIED,
+                strerror, NULL, n1smbuf);
+        ogs_free(strerror);
+
+        return false;
+    }
+
+    if (!sess->session.ssc_mode) {
+        strerror = ogs_msprintf("[%s:%d] SSCMode is not allowed",
                 smf_ue->supi, sess->psi);
         ogs_assert(strerror);
+
+        n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
+            OGS_5GSM_CAUSE_NOT_SUPPORTED_SSC_MODE);
+        ogs_assert(n1smbuf);
+
+        ogs_error("%s", strerror);
+        smf_sbi_send_sm_context_create_error(stream,
+                OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                OGS_SBI_APP_ERRNO_SSC_DENIED,
+                strerror, NULL, n1smbuf);
+        ogs_free(strerror);
+
         return false;
     }
 
@@ -319,7 +349,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
             OGS_5GSM_CAUSE_INSUFFICIENT_RESOURCES_FOR_SPECIFIC_SLICE_AND_DNN);
         ogs_assert(n1smbuf);
 
-        ogs_warn("%s", strerror);
+        ogs_error("%s", strerror);
         smf_sbi_send_sm_context_create_error(stream,
                 OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                 OGS_SBI_APP_ERRNO_NULL, strerror, NULL, n1smbuf);
