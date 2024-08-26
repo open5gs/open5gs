@@ -402,6 +402,7 @@ struct mme_ue_s {
         ogs_ip_t        sgsn_gn_ip_alt;
         /* Unnamed timer in 3GPP TS 23.401 D.3.5 step 2), see also 3GPP TS 23.060 6.9.1.2.2 */
         ogs_timer_t     *t_gn_holding;
+        ogs_pool_id_t   gtp_xact_id; /* 2g->4g SGSN Context Req/Resp/Ack gtp1c xact */
     } gn;
 
     struct {

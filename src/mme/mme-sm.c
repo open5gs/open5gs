@@ -624,20 +624,10 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            /* TODO: Delay this further until AuthReq below + SecurityModeCommand succeeds against UE */
             if (xact) {
-                rv = mme_gtp1_send_sgsn_context_ack(mme_ue,
-                                                    OGS_GTP1_CAUSE_REQUEST_ACCEPTED,
-                                                    xact);
-                if (rv != OGS_OK) {
-                    ogs_warn("Tx SGSN Context Request failed(%d)", rv);
-                    break;
-                }
-                mme_sess_t *sess = mme_sess_find_by_pti(mme_ue, OGS_POINTER_TO_UINT(xact->data));
-                ogs_assert(sess);
-                mme_gtp_send_create_session_request(enb_ue, sess,
-                                                    OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE);
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_initial_context_setup);
+                /* Subscriber coming from SGSN, store info so we can SGSN
+                 * Context Ack after authenticating the UE: */
+                mme_ue->gn.gtp_xact_id = e->gtp_xact_id;
             }
 
             /* Auth-Info accepted from HSS, now authenticate the UE: */

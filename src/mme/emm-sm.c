@@ -1256,6 +1256,31 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             /* Create New GUTI */
             mme_ue_new_guti(mme_ue);
 
+             /* Special path when SGSN (Gn interface) is involved: */
+            if (mme_ue->gn.gtp_xact_id != OGS_INVALID_POOL_ID) {
+                ogs_gtp_xact_t *gtp_xact = ogs_gtp_xact_find_by_id(mme_ue->gn.gtp_xact_id);
+                if (!gtp_xact) {
+                    ogs_warn("Not xact found!");
+                    OGS_FSM_TRAN(s, &emm_state_exception);
+                    break;
+                }
+                uint8_t pti = OGS_POINTER_TO_UINT(gtp_xact->data);
+                rv = mme_gtp1_send_sgsn_context_ack(mme_ue, OGS_GTP1_CAUSE_REQUEST_ACCEPTED, gtp_xact);
+                if (rv != OGS_OK) {
+                    ogs_warn("Tx SGSN Context Request failed(%d)", rv);
+                    OGS_FSM_TRAN(s, &emm_state_exception);
+                    break;
+                }
+                mme_ue->gn.gtp_xact_id = OGS_INVALID_POOL_ID;
+
+                mme_sess_t *sess = mme_sess_find_by_pti(mme_ue, pti);
+                ogs_assert(sess);
+                mme_gtp_send_create_session_request(enb_ue, sess,
+                                                    OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE);
+                OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
+                break;
+            }
+
             mme_s6a_send_ulr(enb_ue, mme_ue);
 
             if (mme_ue->next.m_tmsi) {
