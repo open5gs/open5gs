@@ -39,7 +39,6 @@ static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue,
 uint8_t mme_s6a_handle_aia(
         mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
 {
-    int r;
     ogs_diam_s6a_aia_message_t *aia_message = NULL;
     ogs_diam_e_utran_vector_t *e_utran_vector = NULL;
 
@@ -66,10 +65,6 @@ uint8_t mme_s6a_handle_aia(
 
     if (mme_ue->nas_eps.ksi == OGS_NAS_KSI_NO_KEY_IS_AVAILABLE)
         mme_ue->nas_eps.ksi = 0;
-
-    r = nas_eps_send_authentication_request(mme_ue);
-    ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
 
     return OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
 }
