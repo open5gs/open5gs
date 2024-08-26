@@ -3354,6 +3354,7 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
         ogs_pool_id_free(&mme_ue_pool, mme_ue);
         return NULL;
     }
+    mme_ue->gn.gtp_xact_id = OGS_INVALID_POOL_ID;
 
     mme_ebi_pool_init(mme_ue);
 
