@@ -425,6 +425,10 @@ int mme_gn_handle_sgsn_context_response(
     }
 
     sess = mme_ue_session_from_gtp1_pdp_ctx(mme_ue, &gtp1_pdp_ctx);
+    if (!sess) {
+        gtp1_cause = OGS_GTP1_CAUSE_SYSTEM_FAILURE;
+        goto nack_and_reject;
+    }
 
     rv = mme_gtp1_send_sgsn_context_ack(mme_ue, OGS_GTP1_CAUSE_REQUEST_ACCEPTED, xact);
 
