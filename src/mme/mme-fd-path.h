@@ -33,6 +33,9 @@ void mme_fd_final(void);
 void mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
     ogs_nas_authentication_failure_parameter_t
         *authentication_failure_parameter);
+void mme_s6a_send_air_from_gn(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
+    ogs_gtp_xact_t *gtp_xact);
+
 /* MME Sends Update Location Request to HSS */
 void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue);
 /* MME Sends Purge UE Request to HSS */

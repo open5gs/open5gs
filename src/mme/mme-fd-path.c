@@ -37,6 +37,7 @@ struct sess_state {
     ogs_pool_id_t mme_ue_id;
     ogs_pool_id_t enb_ue_id;
     struct timespec ts; /* Time of sending the message */
+    ogs_pool_id_t gtp_xact_id; /* GTPv1C (Gn) xact originating this session */
 };
 
 static void mme_s6a_aia_cb(void *data, struct msg **msg);
@@ -673,9 +674,9 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
 }
 
 /* MME Sends Authentication Information Request to HSS */
-void mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
-    ogs_nas_authentication_failure_parameter_t
-        *authentication_failure_parameter)
+static void _mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
+    ogs_nas_authentication_failure_parameter_t *authentication_failure_parameter,
+    ogs_gtp_xact_t *gtp_xact)
 {
     int ret;
 
@@ -710,6 +711,7 @@ void mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
 
     sess_data->mme_ue_id = mme_ue->id;
     sess_data->enb_ue_id = enb_ue->id;
+    sess_data->gtp_xact_id = gtp_xact ? gtp_xact->id : OGS_INVALID_POOL_ID;
 
     /* Create the request */
     ret = fd_msg_new(ogs_diam_s6a_cmd_air, MSGFL_ALLOC_ETEID, &req);
@@ -828,6 +830,19 @@ void mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
     ogs_diam_logger_self()->stats.nb_sent++;
     ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 }
+
+void mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
+    ogs_nas_authentication_failure_parameter_t
+        *authentication_failure_parameter)
+{
+    _mme_s6a_send_air(enb_ue, mme_ue, authentication_failure_parameter, NULL);
+};
+
+/* Trigger authentication for session/bearer/PdpCtx coming from Gn: */
+void mme_s6a_send_air_from_gn(enb_ue_t *enb_ue, mme_ue_t *mme_ue, ogs_gtp_xact_t *gtp_xact)
+{
+    _mme_s6a_send_air(enb_ue, mme_ue, NULL, gtp_xact);
+};
 
 /* MME received Authentication Information Answer from HSS */
 static void mme_s6a_aia_cb(void *data, struct msg **msg)
@@ -1058,6 +1073,7 @@ out:
         ogs_assert(e);
         e->mme_ue_id = mme_ue->id;
         e->enb_ue_id = enb_ue->id;
+        e->gtp_xact_id = sess_data->gtp_xact_id;
         e->s6a_message = s6a_message;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {

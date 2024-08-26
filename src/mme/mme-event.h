@@ -99,6 +99,7 @@ typedef struct mme_event_s {
     ogs_pool_id_t sgw_ue_id;
     ogs_pool_id_t mme_ue_id;
     ogs_pool_id_t bearer_id;
+    ogs_pool_id_t gtp_xact_id;
 
     ogs_timer_t *timer;
 } mme_event_t;
