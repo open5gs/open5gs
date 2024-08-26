@@ -1,0 +1,57 @@
+data saved at 18:26 on 25.8.2024 
+
+partial data from CRC_start
+array_CRC         1 0 1                size_array_CRC =        3
+array_signal      1 1 0 1 0 1 1 0      size_array_signal =     8
+array_signal_out  0 0 0 0 0 0 0 0 0 0  size_array_signal_out = 10
+
+partial data from CRC_encoding
+array_CRC         1 0 1                size_array_CRC =        3
+array_signal      1 1 0 1 0 1 1 0      size_array_signal =     8
+array_signal_out  1 1 0 1 0 1 1 0 0 1  size_array_signal_out = 10
+
+partial data from CRC_decoding
+array_CRC         1 0 1                size_array_CRC =        3
+array_signal      1 1 0 1 0 1 1 0      size_array_signal =     8
+array_signal_out  0 0 0 0 0 0 0 0 0 0  size_array_signal_out = 10
+
+correct signal
+
+data saved at 18:27 on 25.8.2024 
+
+partial data from CRC_start
+array_CRC         1 0 1                size_array_CRC =        3
+array_signal      1 1 0 1 0 1 1 0      size_array_signal =     8
+array_signal_out  0 0 0 0 0 0 0 0 0 0  size_array_signal_out = 10
+
+partial data from CRC_encoding
+array_CRC         1 0 1                size_array_CRC =        3
+array_signal      1 1 0 1 0 1 1 0      size_array_signal =     8
+array_signal_out  1 1 0 1 0 1 1 0 0 1  size_array_signal_out = 10
+
+partial data from CRC_decoding
+array_CRC         1 0 1                size_array_CRC =        3
+array_signal      1 1 0 1 0 1 1 0      size_array_signal =     8
+array_signal_out  0 0 0 0 0 0 0 0 0 0  size_array_signal_out = 10
+
+correct signal
+
+data saved at 14:43 on 26.8.2024 
+
+partial data from CRC_start
+array_CRC         1 0 1                size_array_CRC =        3
+array_signal      1 1 0 1 0 1 1 0      size_array_signal =     8
+array_signal_out  0 0 0 0 0 0 0 0 0 0  size_array_signal_out = 10
+
+partial data from CRC_encoding
+array_CRC         1 0 1                size_array_CRC =        3
+array_signal      1 1 0 1 0 1 1 0      size_array_signal =     8
+array_signal_out  1 1 0 1 0 1 1 0 0 1  size_array_signal_out = 10
+
+partial data from CRC_decoding
+array_CRC         1 0 1                size_array_CRC =        3
+array_signal      1 1 0 1 0 1 1 0      size_array_signal =     8
+array_signal_out  0 0 0 0 0 0 0 0 0 0  size_array_signal_out = 10
+
+correct signal
+
