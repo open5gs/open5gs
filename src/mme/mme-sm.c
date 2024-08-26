@@ -580,15 +580,41 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         switch (s6a_message->cmd_code) {
         case OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION:
             ogs_debug("OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION");
+            if (e->gtp_xact_id != OGS_INVALID_POOL_ID)
+                xact = ogs_gtp_xact_find_by_id(e->gtp_xact_id);
+            else
+                xact = NULL;
             emm_cause = mme_s6a_handle_aia(mme_ue, s6a_message);
             if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
-                ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
-                        mme_ue->imsi_bcd, emm_cause);
-                r = nas_eps_send_attach_reject(
-                        enb_ue, mme_ue, emm_cause,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
+                /* If authentication was triggered due to subscriber coming from
+                 * an SGSN, report to it that something went wrong: */
+                if (xact) {
+                    rv = mme_gtp1_send_sgsn_context_ack(mme_ue, OGS_GTP1_CAUSE_AUTHENTICATION_FAILURE, xact);
+                    if (rv != OGS_OK)
+                        ogs_warn("Failed to send SGSN Context Ack (rv %d)", rv);
+                } else
+                    ogs_warn("Originating SGSN Context xact no longer valid (%d)", e->gtp_xact_id);
+
+                /* Finally reject the UE: */
+                if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
+                    ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
+                            mme_ue->imsi_bcd, emm_cause);
+                    r = nas_eps_send_attach_reject(
+                            enb_ue, mme_ue, emm_cause,
+                            OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
+                    /* This is usually an UE coming from 2G (Cell reselection),
+                     * which we decided to re-authenticate */
+                    ogs_info("[%s] TAU reject [OGS_NAS_EMM_CAUSE:%d]",
+                            mme_ue->imsi_bcd, emm_cause);
+                    r = nas_eps_send_tau_reject(
+                            enb_ue, mme_ue, emm_cause);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else
+                    ogs_error("Invalid Type[%d]", mme_ue->nas_eps.type);
 
                 r = s1ap_send_ue_context_release_command(enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
@@ -596,6 +622,22 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 break;
+            }
+
+            /* TODO: Delay this further until AuthReq below + SecurityModeCommand succeeds against UE */
+            if (xact) {
+                rv = mme_gtp1_send_sgsn_context_ack(mme_ue,
+                                                    OGS_GTP1_CAUSE_REQUEST_ACCEPTED,
+                                                    xact);
+                if (rv != OGS_OK) {
+                    ogs_warn("Tx SGSN Context Request failed(%d)", rv);
+                    break;
+                }
+                mme_sess_t *sess = mme_sess_find_by_pti(mme_ue, OGS_POINTER_TO_UINT(xact->data));
+                ogs_assert(sess);
+                mme_gtp_send_create_session_request(enb_ue, sess,
+                                                    OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE);
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_initial_context_setup);
             }
 
             /* Auth-Info accepted from HSS, now authenticate the UE: */
@@ -870,13 +912,18 @@ cleanup:
              * xact->local_teid=0. The following function mme_gn_handle_sgsn_context_response() handles the NULL
              * but the later calls to OGS_FSM_TRAN() to change state will be a NULL pointer dereference. */
             ogs_assert(mme_ue);
+            enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+            if (!enb_ue) {
+                ogs_error("ENB-S1 Context has already been removed");
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+                break;
+            }
 
             /* 3GPP TS 23.401 Figure D.3.6-1 step 5 */
             rv = mme_gn_handle_sgsn_context_response(xact, mme_ue, &gtp1_message.sgsn_context_response);
-            if (rv == OGS_GTP1_CAUSE_ACCEPT) {
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_initial_context_setup);
-            } else if (rv == OGS_GTP1_CAUSE_REQUEST_IMEI) {
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
+            if (rv == OGS_GTP1_CAUSE_ACCEPT || rv == OGS_GTP1_CAUSE_REQUEST_IMEI) {
+                mme_s6a_send_air_from_gn(enb_ue, mme_ue, xact);
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
             } else {
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
             }

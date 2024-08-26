@@ -429,11 +429,8 @@ int mme_gn_handle_sgsn_context_response(
         gtp1_cause = OGS_GTP1_CAUSE_SYSTEM_FAILURE;
         goto nack_and_reject;
     }
-
-    rv = mme_gtp1_send_sgsn_context_ack(mme_ue, OGS_GTP1_CAUSE_REQUEST_ACCEPTED, xact);
-
-    mme_gtp_send_create_session_request(
-            enb_ue, sess, OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE);
+    /* Store sess id to be able to retrieve it later on from xact: */
+    xact->data = OGS_UINT_TO_POINTER(sess->pti);
 
     return ret_cause;
 
