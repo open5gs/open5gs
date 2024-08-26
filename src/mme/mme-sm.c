@@ -595,7 +595,14 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                         S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
+                break;
             }
+
+            /* Auth-Info accepted from HSS, now authenticate the UE: */
+            r = nas_eps_send_authentication_request(mme_ue);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+
             break;
         case OGS_DIAM_S6A_CMD_CODE_UPDATE_LOCATION:
             ogs_debug("OGS_DIAM_S6A_CMD_CODE_UPDATE_LOCATION");
