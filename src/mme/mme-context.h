@@ -52,6 +52,7 @@ typedef struct mme_sgw_s mme_sgw_t;
 typedef struct mme_pgw_s mme_pgw_t;
 typedef struct mme_vlr_s mme_vlr_t;
 typedef struct mme_csmap_s mme_csmap_t;
+typedef struct mme_hssmap_s mme_hssmap_t;
 
 typedef struct enb_ue_s enb_ue_t;
 typedef struct sgw_ue_s sgw_ue_t;
@@ -97,6 +98,7 @@ typedef struct mme_context_s {
 
     ogs_list_t      vlr_list;       /* VLR SGsAP Client List */
     ogs_list_t      csmap_list;     /* TAI-LAI Map List */
+    ogs_list_t      hssmap_list;    /* PLMN HSS Map List */
 
     /* Served GUMME */
     int             num_of_served_gummei;
@@ -231,6 +233,14 @@ typedef struct mme_csmap_s {
 
     mme_vlr_t       *vlr;
 } mme_csmap_t;
+
+typedef struct mme_hssmap_s {
+    ogs_lnode_t     lnode;
+
+    ogs_plmn_id_t   plmn_id;
+    char            *realm;
+    char            *host;
+} mme_hssmap_t;
 
 typedef struct mme_enb_s {
     ogs_lnode_t     lnode;
@@ -700,6 +710,7 @@ struct mme_ue_s {
     ogs_list_t      bearer_to_modify_list;
 
     mme_csmap_t     *csmap;
+    mme_hssmap_t    *hssmap;
 };
 
 #define SESSION_CONTEXT_IS_AVAILABLE(__mME) \
@@ -929,6 +940,13 @@ void mme_csmap_remove_all(void);
 
 mme_csmap_t *mme_csmap_find_by_tai(const ogs_eps_tai_t *tai);
 mme_csmap_t *mme_csmap_find_by_nas_lai(const ogs_nas_lai_t *lai);
+
+mme_hssmap_t *mme_hssmap_add(ogs_plmn_id_t *plmn_id, const char *realm,
+                             const char *host);
+void mme_hssmap_remove(mme_hssmap_t *hssmap);
+void mme_hssmap_remove_all(void);
+
+mme_hssmap_t *mme_hssmap_find_by_imsi_bcd(const char *imsi_bcd);
 
 mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
 int mme_enb_remove(mme_enb_t *enb);
