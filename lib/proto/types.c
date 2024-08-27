@@ -146,6 +146,13 @@ char *ogs_home_network_domain_from_plmn_id(const ogs_plmn_id_t *plmn_id)
             ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
 }
 
+char *ogs_epc_domain_from_plmn_id(const ogs_plmn_id_t *plmn_id)
+{
+    ogs_assert(plmn_id);
+    return ogs_msprintf("epc.mnc%03d.mcc%03d" FQDN_3GPPNETWORK_ORG,
+            ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
+}
+
 char *ogs_nrf_fqdn_from_plmn_id(const ogs_plmn_id_t *plmn_id)
 {
     return ogs_msprintf("nrf.5gc.mnc%03d.mcc%03d" FQDN_3GPPNETWORK_ORG,

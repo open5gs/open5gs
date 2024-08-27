@@ -54,6 +54,45 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
     ogs_free(sess_data);
 }
 
+static void mme_add_hss_destination(mme_ue_t *mme_ue, struct msg *req)
+{
+    int ret;
+    struct avp *avp;
+    union avp_value val;
+    const char *realm = NULL, *host = NULL;
+
+    ogs_assert(mme_ue);
+    ogs_assert(req);
+
+    if (mme_ue->hssmap) {
+        realm = mme_ue->hssmap->realm;
+        host = mme_ue->hssmap->host;
+    }
+
+    if (realm == NULL)
+        realm = fd_g_config->cnf_diamrlm;
+
+    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = (unsigned char *)realm;
+    val.os.len  = strlen(realm);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    if (host != NULL) {
+        ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
+        ogs_assert(ret == 0);
+        val.os.data = (unsigned char *)host;
+        val.os.len  = strlen(host);
+        ret = fd_msg_avp_setvalue(avp, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);
+    }
+}
+
 /* s6a process Subscription-Data from avp */
 static int mme_s6a_subscription_data_from_avp(struct avp *avp,
     ogs_subscription_data_t *subscription_data,
@@ -738,15 +777,8 @@ static void _mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
     ret = fd_msg_add_origin(req, 0);
     ogs_assert(ret == 0);
 
-    /* Set the Destination-Realm AVP */
-    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
-    ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
+    /* Set the Destination-Realm & Destination-Host */
+    mme_add_hss_destination(mme_ue, req);
 
     /* Set the User-Name AVP */
     ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
@@ -1184,15 +1216,8 @@ void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     ret = fd_msg_add_origin(req, 0);
     ogs_assert(ret == 0);
 
-    /* Set the Destination-Realm AVP */
-    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
-    ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
+    /* Set the Destination-Realm & Destination-Host */
+    mme_add_hss_destination(mme_ue, req);
 
     /* Set the User-Name AVP */
     ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
@@ -1616,15 +1641,8 @@ void mme_s6a_send_pur(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     ret = fd_msg_add_origin(req, 0);
     ogs_assert(ret == 0);
 
-    /* Set the Destination-Realm AVP */
-    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
-    ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
+    /* Set the Destination-Realm & Destination-Host */
+    mme_add_hss_destination(mme_ue, req);
 
     /* Set the User-Name AVP */
     ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
