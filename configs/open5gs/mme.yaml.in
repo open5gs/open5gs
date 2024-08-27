@@ -277,5 +277,23 @@ mme:
 #        mcc: 999
 #        mnc: 70
 #
+#  o HSS Selection
+#    o realm and host are optional
+#    o realm will be generated from plmn_id if not provided
+#    o host will not be used if not provided
+#  hss_map:
+#    - plmn_id:
+#        mcc: 001
+#        mnc: 01
+#    - plmn_id:
+#        mcc: 002
+#        mnc: 02
+#      realm: epc.mnc002.mcc002.3gppnetwork.org
+#    - plmn_id:
+#        mcc: 999
+#        mnc: 70
+#      realm: localdomain
+#      host: hss.localdomain
+#
 #  o Relative Capacity
 #  relative_capacity: 100
