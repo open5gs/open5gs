@@ -146,7 +146,5 @@ ogs_sbi_request_t *amf_namf_comm_build_registration_status_update(
     if (ue_context_id)
         ogs_free(ue_context_id);
 
-    OpenAPI_list_clear(amf_ue->to_release_session_list);
-
     return request;
 }
