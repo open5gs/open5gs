@@ -555,9 +555,6 @@ bool gmm_registration_request_from_old_amf(amf_ue_t *amf_ue,
     ogs_assert(amf_ue);
     ogs_assert(registration_request);
 
-    if (&registration_request->mobile_identity == NULL)
-        return false;
-
     mobile_identity = &registration_request->mobile_identity;
     mobile_identity_header =
             (ogs_nas_5gs_mobile_identity_header_t *)mobile_identity->buffer;
