@@ -77,7 +77,7 @@ void test_app_run(int argc, const char *const argv[],
     ogs_assert(rv == OGS_OK);
 }
 
-#define MAX_CHILD_PROCESS               17
+#define MAX_CHILD_PROCESS               32
 #define OGS_ARG_MAX                     256
 
 static ogs_proc_t process[MAX_CHILD_PROCESS];

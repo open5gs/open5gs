@@ -552,24 +552,29 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                         r = OGS_ERROR;
 
                         if (sbi_message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                            amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_TRANSFER_NEW_AMF_STATE;
                             r = amf_namf_comm_handle_ue_context_transfer_response(
                                     sbi_message, amf_ue);
                             if (r != OGS_OK) {
                                 ogs_error("failed to handle "
                                         "UE_CONTEXT_TRANSFER response");
+                                amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_INITIAL_STATE;
                             }
                         } else {
                             ogs_error("[%s] HTTP response error [%d]",
                                 amf_ue->suci, sbi_message->res_status);
+                            amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_INITIAL_STATE;
                         }
 
-                        if (!(AMF_UE_HAVE_SUCI(amf_ue) ||
-                                AMF_UE_HAVE_SUPI(amf_ue))) {
-                            CLEAR_AMF_UE_TIMER(amf_ue->t3570);
-                            r = nas_5gs_send_identity_request(amf_ue);
-                            ogs_expect(r == OGS_OK);
-                            ogs_assert(r != OGS_ERROR);
-                            break;
+                        if (r != OGS_OK) {
+                            if (!(AMF_UE_HAVE_SUCI(amf_ue) ||
+                                    AMF_UE_HAVE_SUPI(amf_ue))) {
+                                CLEAR_AMF_UE_TIMER(amf_ue->t3570);
+                                r = nas_5gs_send_identity_request(amf_ue);
+                                ogs_expect(r == OGS_OK);
+                                ogs_assert(r != OGS_ERROR);
+                                break;
+                            }
                         }
 
                         xact_count = amf_sess_xact_count(amf_ue);
@@ -1254,6 +1259,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 ogs_sbi_discovery_option_t *discovery_option = NULL;
                 ogs_guami_t guami;
 
+                amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_INITIAL_STATE;
+
                 discovery_option = ogs_sbi_discovery_option_new();
                 ogs_assert(discovery_option);
 
@@ -1274,7 +1281,6 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                         amf_ue, state, nas_message);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                amf_ue->send_registration_status_update = true;
                 break;
             }
 
@@ -2000,12 +2006,12 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
-            if (amf_ue->send_registration_status_update == true) {
-            /*
-            * UE context transfer message has been sent
-            * to old AMF after Registration request.
-            * Now Registrations status update needs to be sent.
-            */
+            if (amf_ue->amf_ue_context_transfer_state == UE_CONTEXT_TRANSFER_NEW_AMF_STATE) {
+                /*
+                * UE context transfer message has been sent
+                * to old AMF after Registration request.
+                * Now Registrations status update needs to be sent.
+                */
                 ogs_sbi_discovery_option_t *discovery_option = NULL;
                 ogs_guami_t guami;
                 int state = e->h.sbi.state;
@@ -2028,7 +2034,8 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                         amf_ue, state, NULL);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                amf_ue->send_registration_status_update = false;
+
+                amf_ue->amf_ue_context_transfer_state = REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE;
                 break;
             }
 
@@ -2122,6 +2129,9 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
                 SWITCH(sbi_message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE)
+                    if (amf_ue->amf_ue_context_transfer_state != REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE) {
+                        ogs_error("UE context transfer state not correct");
+                    }
                     if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
                         ogs_error("[%s] HTTP response error [%d]",
                                 amf_ue->supi, sbi_message->res_status);
@@ -2129,6 +2139,8 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                     r = amf_namf_comm_handle_registration_status_update_response(sbi_message, amf_ue);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
+
+                    amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_INITIAL_STATE;
 
                     /* Continue with registration */
                     ogs_kdf_kgnb_and_kn3iwf(
@@ -2627,12 +2639,12 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
 
-        if (amf_ue->send_registration_status_update == true) {
-        /*
-        * UE context transfer message has been sent
-        * to old AMF after Registration request.
-        * Now Registrations status update needs to be sent.
-        */
+        if (amf_ue->amf_ue_context_transfer_state == UE_CONTEXT_TRANSFER_NEW_AMF_STATE) {
+            /*
+            * UE context transfer message has been sent
+            * to old AMF after Registration request.
+            * Now Registrations status update needs to be sent.
+            */
             ogs_sbi_discovery_option_t *discovery_option = NULL;
             ogs_guami_t guami;
             int state = e->h.sbi.state;
@@ -2655,7 +2667,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                     amf_ue, state, NULL);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
-            amf_ue->send_registration_status_update = false;
+
+            amf_ue->amf_ue_context_transfer_state = REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE;
             break;
         }
 
@@ -2809,6 +2822,9 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
                 SWITCH(sbi_message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE)
+                    if (amf_ue->amf_ue_context_transfer_state != REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE) {
+                        ogs_error("UE context transfer state not correct");
+                    }
                     if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
                         ogs_error("[%s] HTTP response error [%d]",
                                 amf_ue->supi, sbi_message->res_status);
@@ -2816,6 +2832,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                     r = amf_namf_comm_handle_registration_status_update_response(sbi_message, amf_ue);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
+
+                    amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_INITIAL_STATE;
 
                     /* Continue with release command */
                     xact_count = amf_sess_xact_count(amf_ue);

@@ -45,6 +45,14 @@ typedef struct amf_ue_s amf_ue_t;
 
 typedef uint32_t amf_m_tmsi_t;
 
+typedef enum {
+    UE_CONTEXT_INITIAL_STATE = 0,
+    UE_CONTEXT_TRANSFER_OLD_AMF_STATE,
+    UE_CONTEXT_TRANSFER_NEW_AMF_STATE,
+    REGISTRATION_STATUS_UPDATE_OLD_AMF_STATE,
+    REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE,
+} amf_ue_context_transfer_state_t;
+
 typedef struct amf_context_s {
     /* Served GUAMI */
     int num_of_served_guami;
@@ -285,7 +293,7 @@ struct amf_ue_s {
     /* UE context transfer and Registration status update */
     ogs_nas_5gs_guti_t old_guti;
     OpenAPI_ue_context_transfer_status_e transfer_status;
-    bool send_registration_status_update;
+    amf_ue_context_transfer_state_t amf_ue_context_transfer_state;
     OpenAPI_list_t *to_release_session_list;
 
     /* UE Info */

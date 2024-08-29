@@ -554,7 +554,6 @@ bool gmm_registration_request_from_old_amf(amf_ue_t *amf_ue,
 
     ogs_assert(amf_ue);
     ogs_assert(registration_request);
-
     mobile_identity = &registration_request->mobile_identity;
     mobile_identity_header =
             (ogs_nas_5gs_mobile_identity_header_t *)mobile_identity->buffer;
@@ -1648,12 +1647,4 @@ static uint8_t gmm_cause_from_access_control(ogs_plmn_id_t *plmn_id)
         return amf_self()->default_reject_cause;
 
     return OGS_5GMM_CAUSE_PLMN_NOT_ALLOWED;
-}
-
-int amf_namf_comm_handle_registration_status_update_response(
-        ogs_sbi_message_t *recvmsg, amf_ue_t *amf_ue) {
-
-    /* Nothing to do */
-
-    return OGS_OK;
 }
