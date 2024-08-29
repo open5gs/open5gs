@@ -1110,7 +1110,6 @@ int amf_namf_comm_handle_ue_context_transfer_request(
 
     ogs_sbi_nf_instance_t *pcf_nf_instance = NULL;
 
-    char *ue_context_id = NULL;
     char *encoded_gmm_capability = NULL;
     int status = OGS_SBI_HTTP_STATUS_OK;
     char hxkamf_string[OGS_KEYSTRLEN(OGS_SHA256_DIGEST_SIZE)];
@@ -1126,18 +1125,22 @@ int amf_namf_comm_handle_ue_context_transfer_request(
     memset(&sendmsg, 0, sizeof(sendmsg));
     sendmsg.UeContextTransferRspData = &UeContextTransferRspData;
 
-    ue_context_id = recvmsg->h.resource.component[1];
-    if (!ue_context_id) {
+    if (!recvmsg->h.resource.component[1]) {
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         strerror = ogs_msprintf("No UE context ID");
         goto cleanup;
     }
 
-    amf_ue = amf_ue_find_by_ue_context_id(ue_context_id);
+    amf_ue = amf_ue_find_by_ue_context_id(recvmsg->h.resource.component[1]);
     if (!amf_ue) {
         status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
-        strerror = ogs_msprintf("Context not found");
+        strerror = ogs_msprintf("Cannot find Context ID [%s]",
+                recvmsg->h.resource.component[1]);
         goto cleanup;
+    }
+
+    if (amf_ue->amf_ue_context_transfer_state != UE_CONTEXT_INITIAL_STATE) {
+        ogs_warn("Incorrect UE context transfer state");
     }
 
     if (amf_ue->supi) {
@@ -1211,7 +1214,7 @@ int amf_namf_comm_handle_ue_context_transfer_request(
     if (recvmsg->UeContextTransferReqData->reason ==
             OpenAPI_transfer_reason_MOBI_REG) {
         SessionContextList =
-	    amf_namf_comm_encode_ue_session_context_list(amf_ue);
+	            amf_namf_comm_encode_ue_session_context_list(amf_ue);
         if (SessionContextList->count == 0) {
             OpenAPI_list_free(SessionContextList);
             SessionContextList = NULL;
@@ -1224,6 +1227,8 @@ int amf_namf_comm_handle_ue_context_transfer_request(
     response = ogs_sbi_build_response(&sendmsg, status);
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_TRANSFER_OLD_AMF_STATE;
 
     if (encoded_gmm_capability)
         ogs_free(encoded_gmm_capability);
@@ -1830,22 +1835,26 @@ int amf_namf_comm_handle_registration_status_update_request(
 
     int status = 0;
     char *strerror = NULL;
-    char *ue_context_id = NULL;
 
     ogs_assert(stream);
     ogs_assert(recvmsg);
 
-    ue_context_id = recvmsg->h.resource.component[1];
-
-    if (!ue_context_id) {
+    if (!recvmsg->h.resource.component[1]) {
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         strerror = ogs_msprintf("No UE context ID");
         goto cleanup;
     }
-    amf_ue = amf_ue_find_by_ue_context_id(ue_context_id);
+    amf_ue = amf_ue_find_by_ue_context_id(recvmsg->h.resource.component[1]);
     if (!amf_ue) {
         status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
-        strerror = ogs_msprintf("Context not found");
+        strerror = ogs_msprintf("Cannot find Context ID [%s]",
+                recvmsg->h.resource.component[1]);
+        goto cleanup;
+    }
+
+    if (amf_ue->amf_ue_context_transfer_state != UE_CONTEXT_TRANSFER_OLD_AMF_STATE) {
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        strerror = ogs_msprintf("Incorrect UE context transfer state");
         goto cleanup;
     }
 
@@ -1918,6 +1927,8 @@ int amf_namf_comm_handle_registration_status_update_request(
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
+    amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_INITIAL_STATE;
+
     return OGS_OK;
 
 cleanup:
@@ -1927,5 +1938,15 @@ cleanup:
     ogs_assert(true == ogs_sbi_server_send_error(stream, status, NULL, strerror, NULL, NULL));
     ogs_free(strerror);
 
+    amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_INITIAL_STATE;
+
     return OGS_ERROR;
+}
+
+int amf_namf_comm_handle_registration_status_update_response(
+        ogs_sbi_message_t *recvmsg, amf_ue_t *amf_ue) {
+
+    /* Nothing to do */
+
+    return OGS_OK;
 }
