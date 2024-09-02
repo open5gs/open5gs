@@ -20,13 +20,13 @@
 #include "ogs-diameter-common.h"
 #include "ogs-app.h"
 
-static ogs_diam_stats_t self;
+static ogs_diam_stats_ctx_t self;
 
 static void diam_stats_timer_cb(void *data);
 
 int ogs_diam_stats_init(int mode)
 {
-    memset(&self, 0, sizeof(ogs_diam_stats_t));
+    memset(&self, 0, sizeof(ogs_diam_stats_ctx_t));
 
     self.mode = mode;
     self.poll.t_interval = ogs_time_from_sec(60); /* 60 seconds */
@@ -46,7 +46,7 @@ void ogs_diam_stats_final()
     self.poll.timer = NULL;
 }
 
-ogs_diam_stats_t* ogs_diam_stats_self()
+ogs_diam_stats_ctx_t* ogs_diam_stats_self()
 {
     return &self;
 }
@@ -66,11 +66,11 @@ int ogs_diam_stats_start()
 static void diam_stats_timer_cb(void *data)
 {
     ogs_time_t now, since_start, since_prev, next_run;
-    struct fd_stats copy;
+    ogs_diam_stats_t copy;
 
     /* Now, get the current stats */
     CHECK_POSIX_DO( pthread_mutex_lock(&self.stats_lock), );
-    memcpy(&copy, &self.stats, sizeof(struct fd_stats));
+    memcpy(&copy, &self.stats, sizeof(ogs_diam_stats_t));
     CHECK_POSIX_DO( pthread_mutex_unlock(&self.stats_lock), );
 
     /* Get the current execution time */
