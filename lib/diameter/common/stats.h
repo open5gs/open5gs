@@ -31,6 +31,16 @@ extern "C" {
 #include <sys/time.h>
 
 typedef struct ogs_diam_stats_s {
+    unsigned long long nb_echoed; /* server */
+    unsigned long long nb_sent;   /* client */
+    unsigned long long nb_recv;   /* client */
+    unsigned long long nb_errs;   /* client */
+    unsigned long shortest;  /* fastest answer, in microseconds */
+    unsigned long longest;   /* slowest answer, in microseconds */
+    unsigned long avg;       /* average answer time, in microseconds */
+} ogs_diam_stats_t;
+
+typedef struct ogs_diam_stats_ctx_s {
 
 #define FD_MODE_SERVER   0x1
 #define FD_MODE_CLIENT   0x2
@@ -42,23 +52,15 @@ typedef struct ogs_diam_stats_s {
         ogs_time_t t_prev; /* in usecs */
         ogs_time_t t_interval; /* in usecs */
     } poll;
-    struct fd_stats {
-        unsigned long long nb_echoed; /* server */
-        unsigned long long nb_sent;   /* client */
-        unsigned long long nb_recv;   /* client */
-        unsigned long long nb_errs;   /* client */
-        unsigned long shortest;  /* fastest answer, in microseconds */
-        unsigned long longest;   /* slowest answer, in microseconds */
-        unsigned long avg;       /* average answer time, in microseconds */
-    } stats;
+    ogs_diam_stats_t stats;
 
     pthread_mutex_t stats_lock;
-} ogs_diam_stats_t;
+} ogs_diam_stats_ctx_t;
 
 int ogs_diam_stats_init(int mode);
 void ogs_diam_stats_final(void);
 
-ogs_diam_stats_t* ogs_diam_stats_self(void);
+ogs_diam_stats_ctx_t* ogs_diam_stats_self(void);
 
 int ogs_diam_stats_start(void);
 
