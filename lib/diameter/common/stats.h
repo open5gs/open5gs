@@ -40,6 +40,8 @@ typedef struct ogs_diam_stats_s {
     unsigned long avg;       /* average answer time, in microseconds */
 } ogs_diam_stats_t;
 
+typedef void (*ogs_diam_stats_update_cb)(const ogs_diam_stats_t *stats, const void *priv_stats);
+
 typedef struct ogs_diam_stats_ctx_s {
 
 #define FD_MODE_SERVER   0x1
@@ -53,6 +55,10 @@ typedef struct ogs_diam_stats_ctx_s {
         ogs_time_t t_interval; /* in usecs */
     } poll;
     ogs_diam_stats_t stats;
+    void *priv_stats; /* if !NULL, allocated struct of size "priv_stats_size" */
+    size_t priv_stats_size;
+    void *priv_stats_copy; /* buffer where priv_state are copied and passed to update_cb */
+    ogs_diam_stats_update_cb update_cb;
 
     pthread_mutex_t stats_lock;
 } ogs_diam_stats_ctx_t;
@@ -63,6 +69,9 @@ void ogs_diam_stats_final(void);
 ogs_diam_stats_ctx_t* ogs_diam_stats_self(void);
 
 int ogs_diam_stats_start(void);
+
+void ogs_diam_stats_update_cb_register(ogs_diam_stats_update_cb cb);
+void ogs_diam_stats_update_cb_unregister(void);
 
 #ifdef __cplusplus
 }
