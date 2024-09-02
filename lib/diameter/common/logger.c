@@ -19,7 +19,7 @@
 
 #include "ogs-diameter-common.h"
 
-static struct ogs_diam_logger_t self;
+static ogs_diam_logger_t self;
 
 static struct fd_hook_hdl *logger_hdl = NULL;
 static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
@@ -36,7 +36,7 @@ int ogs_diam_logger_init(int mode)
 {
     uint32_t mask_peers = HOOK_MASK( HOOK_PEER_CONNECT_SUCCESS );
 
-    memset(&self, 0, sizeof(struct ogs_diam_logger_t));
+    memset(&self, 0, sizeof(ogs_diam_logger_t));
 
     self.mode = mode;
     self.duration = 60;       /* 60 seconds */
@@ -57,7 +57,7 @@ void ogs_diam_logger_final()
     if (logger_hdl) { CHECK_FCT_DO( fd_hook_unregister( logger_hdl ), ); }
 }
 
-struct ogs_diam_logger_t* ogs_diam_logger_self()
+ogs_diam_logger_t* ogs_diam_logger_self()
 {
     return &self;
 }

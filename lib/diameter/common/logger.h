@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-struct ogs_diam_logger_t {
+typedef struct ogs_diam_logger_s {
 
 #define FD_MODE_SERVER   0x1
 #define FD_MODE_CLIENT   0x2
@@ -46,12 +46,12 @@ struct ogs_diam_logger_t {
     } stats;
 
     pthread_mutex_t stats_lock;
-};
+} ogs_diam_logger_t;
 
 int ogs_diam_logger_init(int mode);
 void ogs_diam_logger_final(void);
 
-struct ogs_diam_logger_t* ogs_diam_logger_self(void);
+ogs_diam_logger_t* ogs_diam_logger_self(void);
 
 int ogs_diam_logger_stats_start(void);
 
