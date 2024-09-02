@@ -21,25 +21,42 @@
 #error "This header cannot be included directly."
 #endif
 
-#ifndef OGS_DIAM_LOGGER_H
-#define OGS_DIAM_LOGGER_H
+#ifndef OGS_DIAM_STATS_H
+#define OGS_DIAM_STATS_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int ogs_diam_logger_init(void);
-void ogs_diam_logger_final(void);
+typedef struct ogs_diam_stats_s {
 
-typedef void (*ogs_diam_logger_user_handler)(
-    enum fd_hook_type type, struct msg *msg, struct peer_hdr *peer,
-    void *other, struct fd_hook_permsgdata *pmd, void *regdata);
+#define FD_MODE_SERVER   0x1
+#define FD_MODE_CLIENT   0x2
+    int mode;        /* default FD_MODE_SERVER | FD_MODE_CLIENT */
 
-void ogs_diam_logger_register(ogs_diam_logger_user_handler instance);
-void ogs_diam_logger_unregister(void);
+    int duration; /* default 10 */
+    struct fd_stats {
+        unsigned long long nb_echoed; /* server */
+        unsigned long long nb_sent;   /* client */
+        unsigned long long nb_recv;   /* client */
+        unsigned long long nb_errs;   /* client */
+        unsigned long shortest;  /* fastest answer, in microseconds */
+        unsigned long longest;   /* slowest answer, in microseconds */
+        unsigned long avg;       /* average answer time, in microseconds */
+    } stats;
+
+    pthread_mutex_t stats_lock;
+} ogs_diam_stats_t;
+
+int ogs_diam_stats_init(int mode);
+void ogs_diam_stats_final(void);
+
+ogs_diam_stats_t* ogs_diam_stats_self(void);
+
+int ogs_diam_stats_start(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_DIAM_LOGGER_H */
+#endif /* OGS_DIAM_STATS_H */

@@ -20,12 +20,14 @@ libdiameter_common_sources = files('''
 
     message.h
     logger.h
+    stats.h
     base.h
 
     libapp_sip.c
     dict.c
     message.c
     logger.c
+    stats.c
     config.c
     util.c
     init.c
