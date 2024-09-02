@@ -54,8 +54,9 @@ ogs_diam_stats_t* ogs_diam_stats_self()
 int ogs_diam_stats_start()
 {
     /* Get the start time */
-    CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &self.poll.ts_start), );
+    self.poll.t_start = ogs_get_monotonic_time();
     /* Start the statistics timer */
+    self.poll.t_prev = self.poll.t_start;
     ogs_timer_start(self.poll.timer, self.poll.t_interval);
 
     return 0;
@@ -64,7 +65,7 @@ int ogs_diam_stats_start()
 /* Function to display statistics periodically */
 static void diam_stats_timer_cb(void *data)
 {
-    struct timespec now;
+    ogs_time_t now, since_start, since_prev, next_run;
     struct fd_stats copy;
 
     /* Now, get the current stats */
@@ -73,19 +74,14 @@ static void diam_stats_timer_cb(void *data)
     CHECK_POSIX_DO( pthread_mutex_unlock(&self.stats_lock), );
 
     /* Get the current execution time */
-    CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &now), );
+    now = ogs_get_monotonic_time();
+    since_start = now - self.poll.t_start;
 
     /* Now, display everything */
     ogs_trace("------- fd statistics ---------");
-    if (now.tv_nsec >= self.poll.ts_start.tv_nsec) {
-        ogs_trace(" Executing for: %d.%06ld sec",
-                (int)(now.tv_sec - self.poll.ts_start.tv_sec),
-                (long)(now.tv_nsec - self.poll.ts_start.tv_nsec) / 1000);
-    } else {
-        ogs_trace(" Executing for: %d.%06ld sec",
-                (int)(now.tv_sec - 1 - self.poll.ts_start.tv_sec),
-                (long)(now.tv_nsec + 1000000000 - self.poll.ts_start.tv_nsec) / 1000);
-    }
+    ogs_trace(" Executing for: %llu.%06llu sec",
+              (unsigned long long)ogs_time_sec(since_start),
+              (unsigned long long)ogs_time_usec(since_start));
 
     if (self.mode & FD_MODE_SERVER) {
         ogs_trace(" Server: %llu message(s) echoed",
@@ -106,6 +102,17 @@ static void diam_stats_timer_cb(void *data)
     ogs_trace("-------------------------------------");
 
     /* Re-schedule timer: */
-    ogs_timer_start(self.poll.timer, self.poll.t_interval);
+    since_prev = now - self.poll.t_prev;
+    /* Avoid increasing drift: */
+    if (since_prev > self.poll.t_interval) {
+        if (since_prev - self.poll.t_interval >= self.poll.t_interval)
+            next_run = 1; /* 0 not accepted by ogs_timer_start() */
+        else
+            next_run = self.poll.t_interval - (since_prev - self.poll.t_interval);
+    } else {
+        next_run = self.poll.t_interval;
+    }
+    self.poll.t_prev = now;
+    ogs_timer_start(self.poll.timer, next_run);
 }
 
