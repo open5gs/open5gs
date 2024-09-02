@@ -38,7 +38,8 @@ typedef struct ogs_diam_stats_s {
 
     struct poll {
         ogs_timer_t *timer;
-        struct timespec ts_start;
+        ogs_time_t t_start; /* in usecs */
+        ogs_time_t t_prev; /* in usecs */
         ogs_time_t t_interval; /* in usecs */
     } poll;
     struct fd_stats {
