@@ -28,13 +28,19 @@
 extern "C" {
 #endif
 
+#include <sys/time.h>
+
 typedef struct ogs_diam_stats_s {
 
 #define FD_MODE_SERVER   0x1
 #define FD_MODE_CLIENT   0x2
     int mode;        /* default FD_MODE_SERVER | FD_MODE_CLIENT */
 
-    int duration; /* default 10 */
+    struct poll {
+        ogs_timer_t *timer;
+        struct timespec ts_start;
+        ogs_time_t t_interval; /* in usecs */
+    } poll;
     struct fd_stats {
         unsigned long long nb_echoed; /* server */
         unsigned long long nb_sent;   /* client */
