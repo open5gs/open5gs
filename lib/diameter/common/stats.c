@@ -62,6 +62,32 @@ int ogs_diam_stats_start()
     return 0;
 }
 
+static void ogs_diam_stats_log(const ogs_diam_stats_t *stats, ogs_time_t elapsed)
+{
+    ogs_trace("------- fd statistics ---------");
+    ogs_trace(" Executing for: %llu.%06llu sec",
+              (unsigned long long)ogs_time_sec(elapsed),
+              (unsigned long long)ogs_time_usec(elapsed));
+
+    if (self.mode & FD_MODE_SERVER) {
+        ogs_trace(" Server: %llu message(s) echoed",
+                stats->nb_echoed);
+    }
+    if (self.mode & FD_MODE_CLIENT) {
+        ogs_trace(" Client:");
+        ogs_trace("   %llu message(s) sent", stats->nb_sent);
+        ogs_trace("   %llu error(s) received", stats->nb_errs);
+        ogs_trace("   %llu answer(s) received", stats->nb_recv);
+        ogs_trace("     fastest: %ld.%06ld sec.",
+                stats->shortest / 1000000, stats->shortest % 1000000);
+        ogs_trace("     slowest: %ld.%06ld sec.",
+                stats->longest / 1000000, stats->longest % 1000000);
+        ogs_trace("     Average: %ld.%06ld sec.",
+                stats->avg / 1000000, stats->avg % 1000000);
+    }
+    ogs_trace("-------------------------------------");
+}
+
 /* Function to display statistics periodically */
 static void diam_stats_timer_cb(void *data)
 {
@@ -78,28 +104,7 @@ static void diam_stats_timer_cb(void *data)
     since_start = now - self.poll.t_start;
 
     /* Now, display everything */
-    ogs_trace("------- fd statistics ---------");
-    ogs_trace(" Executing for: %llu.%06llu sec",
-              (unsigned long long)ogs_time_sec(since_start),
-              (unsigned long long)ogs_time_usec(since_start));
-
-    if (self.mode & FD_MODE_SERVER) {
-        ogs_trace(" Server: %llu message(s) echoed",
-                copy.nb_echoed);
-    }
-    if (self.mode & FD_MODE_CLIENT) {
-        ogs_trace(" Client:");
-        ogs_trace("   %llu message(s) sent", copy.nb_sent);
-        ogs_trace("   %llu error(s) received", copy.nb_errs);
-        ogs_trace("   %llu answer(s) received", copy.nb_recv);
-        ogs_trace("     fastest: %ld.%06ld sec.",
-                copy.shortest / 1000000, copy.shortest % 1000000);
-        ogs_trace("     slowest: %ld.%06ld sec.",
-                copy.longest / 1000000, copy.longest % 1000000);
-        ogs_trace("     Average: %ld.%06ld sec.",
-                copy.avg / 1000000, copy.avg % 1000000);
-    }
-    ogs_trace("-------------------------------------");
+    ogs_diam_stats_log(&copy, since_start);
 
     /* Re-schedule timer: */
     since_prev = now - self.poll.t_prev;
