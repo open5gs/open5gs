@@ -105,7 +105,7 @@ static int diam_config_apply(ogs_diam_config_t *fd_config)
                     fd_config->conn[i].addr, errno, strerror(errno));
             return OGS_ERROR;
         }
-        
+
         CHECK_FCT_DO( fd_ep_add_merge(
                 &fddpi.pi_endpoints, ai->ai_addr, ai->ai_addrlen,
                 EP_FL_CONF | (disc ?: EP_ACCEPTALL) ), return OGS_ERROR);
@@ -197,7 +197,7 @@ int ogs_diam_config_init(ogs_diam_config_t *fd_config)
 
     /* Display configuration */
     b = fd_conf_dump(&buf, &len, NULL);
-    LOG_SPLIT(FD_LOG_NOTICE, NULL, 
+    LOG_SPLIT(FD_LOG_NOTICE, NULL,
             b ?: (char*)"<Error during configuration dump...>", NULL);
     free(buf);
 

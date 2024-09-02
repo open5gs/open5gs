@@ -36,14 +36,14 @@ int ogs_diam_init(int mode, const char *conffile, ogs_diam_config_t *fd_config)
     if (ret != 0) {
         ogs_error("fd_log_handler_register() failed");
         return ret;
-    } 
+    }
 
     ret = fd_core_initialize();
     if (ret != 0) {
         ogs_error("fd_core_initialize() failed");
         return ret;
-    } 
-    
+    }
+
     /* Parse the configuration file */
     if (conffile) {
         CHECK_FCT_DO( fd_core_parseconf(conffile), goto error );
@@ -118,12 +118,12 @@ static void diam_log_func(int printlevel, const char *format, va_list ap)
     ogs_log_printf(level, OGS_LOG_DOMAIN, 0, NULL, 0, NULL, 0, __VA_ARGS__)
 
     switch(printlevel) {
-    case FD_LOG_ANNOYING: 
+    case FD_LOG_ANNOYING:
         diam_log_printf(OGS_LOG_TRACE, "[%d] %s\n", printlevel, buffer);
-        break;  
+        break;
     case FD_LOG_DEBUG:
         diam_log_printf(OGS_LOG_TRACE, "[%d] %s\n", printlevel, buffer);
-        break;  
+        break;
     case FD_LOG_INFO:
         diam_log_printf(OGS_LOG_TRACE, "[%d] %s\n", printlevel, buffer);
         break;
