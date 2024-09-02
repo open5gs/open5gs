@@ -32,6 +32,9 @@ extern "C" {
 typedef struct ogs_diam_config_stats_s {
     /* Frequency at which freeDiameter thread stats are updated to the app. 0 = default 60 seconds. */
     unsigned int interval_sec;
+    /* Size of struct to allocate for diameters private statistics, see ogs_diam_stats_ctx_t.
+     * Defaults to 0, no priv_stats allocated. */
+    size_t priv_stats_size;
 } ogs_diam_config_stats_t;
 
 /* This is default diameter configuration if there is no config file
