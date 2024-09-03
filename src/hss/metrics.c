@@ -49,6 +49,72 @@ static int hss_metrics_init_spec(ogs_metrics_context_t *ctx,
 ogs_metrics_spec_t *hss_metrics_spec_global[_HSS_METR_GLOB_MAX];
 ogs_metrics_inst_t *hss_metrics_inst_global[_HSS_METR_GLOB_MAX];
 hss_metrics_spec_def_t hss_metrics_spec_def_global[_HSS_METR_GLOB_MAX] = {
+/* Global Counters: */
+[HSS_METR_GLOB_CTR_CX_RX_UNKNOWN] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "cx_rx_unknown",
+    .description = "Received Cx unknown messages",
+},
+[HSS_METR_GLOB_CTR_CX_RX_MAR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "cx_rx_mar",
+    .description = "Received Cx MAR messages",
+},
+[HSS_METR_GLOB_CTR_CX_RX_MAR_ERROR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "cx_rx_mar_error",
+    .description = "Received Cx MAR messages failed",
+},
+[HSS_METR_GLOB_CTR_CX_RX_SAR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "cx_rx_sar",
+    .description = "Received Cx SAR messages",
+},
+[HSS_METR_GLOB_CTR_CX_RX_SAR_ERROR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "cx_rx_sar_error",
+    .description = "Received Cx SAR messages failed",
+},
+[HSS_METR_GLOB_CTR_CX_RX_UAR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "cx_rx_uar",
+    .description = "Received Cx UAR messages",
+},
+[HSS_METR_GLOB_CTR_CX_RX_UAR_ERROR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "cx_rx_uar_error",
+    .description = "Received Cx UAR messages failed",
+},
+[HSS_METR_GLOB_CTR_CX_RX_LIR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "cx_rx_lir",
+    .description = "Transmitted Cx LIR messages",
+},
+[HSS_METR_GLOB_CTR_CX_RX_LIR_ERROR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "cx_rx_lir_error",
+    .description = "Transmitted Cx LIR messages failed",
+},
+[HSS_METR_GLOB_CTR_CX_TX_MAA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "cx_tx_maa",
+    .description = "Transmitted Cx MAA messages",
+},
+[HSS_METR_GLOB_CTR_CX_TX_SAA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "cx_tx_saa",
+    .description = "Transmitted Cx SAA messages",
+},
+[HSS_METR_GLOB_CTR_CX_TX_UAA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "cx_tx_uaa",
+    .description = "Transmitted Cx UAA messages",
+},
+[HSS_METR_GLOB_CTR_CX_TX_LIA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "cx_tx_lia",
+    .description = "Transmitted Cx LIA messages",
+},
 /* Global Gauges: */
 [HSS_METR_GLOB_GAUGE_IMSI] = {
     .type = OGS_METRICS_METRIC_TYPE_GAUGE,
