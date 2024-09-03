@@ -37,9 +37,22 @@ static void hsss_diam_stats_update_cb(const ogs_diam_stats_t *stats, const void 
         }
 
     METRIC_ADD(HSS_METR_GLOB_CTR_CX_RX_UNKNOWN,     cx.rx_unknown);
+    METRIC_ADD(HSS_METR_GLOB_CTR_CX_RX_MAR,         cx.rx_mar);
+    METRIC_ADD(HSS_METR_GLOB_CTR_CX_RX_MAR_ERROR,   cx.rx_mar_error);
+    METRIC_ADD(HSS_METR_GLOB_CTR_CX_RX_SAR,         cx.rx_sar);
+    METRIC_ADD(HSS_METR_GLOB_CTR_CX_RX_SAR_ERROR,   cx.rx_sar_error);
+    METRIC_ADD(HSS_METR_GLOB_CTR_CX_RX_UAR,         cx.rx_uar);
+    METRIC_ADD(HSS_METR_GLOB_CTR_CX_RX_UAR_ERROR,   cx.rx_uar_error);
+    METRIC_ADD(HSS_METR_GLOB_CTR_CX_RX_LIR,         cx.rx_lir);
+    METRIC_ADD(HSS_METR_GLOB_CTR_CX_RX_LIR_ERROR,   cx.rx_lir_error);
+    METRIC_ADD(HSS_METR_GLOB_CTR_CX_TX_MAA,         cx.tx_maa);
+    METRIC_ADD(HSS_METR_GLOB_CTR_CX_TX_SAA,         cx.tx_saa);
+    METRIC_ADD(HSS_METR_GLOB_CTR_CX_TX_UAA,         cx.tx_uaa);
+    METRIC_ADD(HSS_METR_GLOB_CTR_CX_TX_LIA,         cx.tx_lia);
 
     memcpy(&prev_st, st, sizeof(*st));
 }
+
 int hss_fd_init(void)
 {
     int rv;
