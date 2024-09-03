@@ -39,6 +39,9 @@ static int hss_ogs_diam_cx_fb_cb(struct msg **msg, struct avp *avp,
 {
     /* This CB should never be called */
     ogs_warn("Unexpected message received!");
+    OGS_DIAM_STATS_MTX(
+        HSS_DIAM_PRIV_STATS_INC(cx.rx_unknown);
+    )
 
     return ENOTSUP;
 }

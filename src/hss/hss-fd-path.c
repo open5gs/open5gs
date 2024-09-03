@@ -22,6 +22,24 @@
 #include "hss-context.h"
 #include "hss-fd-path.h"
 
+static hss_diam_stats_t prev_st;
+
+static void hsss_diam_stats_update_cb(const ogs_diam_stats_t *stats, const void *priv_stats)
+{
+    const hss_diam_stats_t *st = (const hss_diam_stats_t *)priv_stats;
+
+     ogs_debug("%s(): Update HSS diameter metrics", __func__);
+
+    #define METRIC_ADD(metric_name, field) \
+        { \
+        int diff = st->field - prev_st.field; \
+        if (diff > 0) hss_metrics_inst_global_add(metric_name, diff); \
+        }
+
+    METRIC_ADD(HSS_METR_GLOB_CTR_CX_RX_UNKNOWN,     cx.rx_unknown);
+
+    memcpy(&prev_st, st, sizeof(*st));
+}
 int hss_fd_init(void)
 {
     int rv;
@@ -36,6 +54,8 @@ int hss_fd_init(void)
     ogs_assert(rv == OGS_OK);
     rv = hss_swx_init();
     ogs_assert(rv == OGS_OK);
+
+    ogs_diam_stats_update_cb_register(hsss_diam_stats_update_cb);
 
     rv = ogs_diam_start();
     ogs_assert(rv == 0);

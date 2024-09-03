@@ -67,6 +67,14 @@ int ogs_diam_stats_init(int mode, const ogs_diam_config_stats_t *config);
 void ogs_diam_stats_final(void);
 
 ogs_diam_stats_ctx_t* ogs_diam_stats_self(void);
+#define OGS_DIAM_STATS_ADD(field, val) ogs_diam_stats_self()->stats.field += val
+#define OGS_DIAM_STATS_INC(field) OGS_DIAM_STATS_ADD(field, 1)
+
+#define OGS_DIAM_STATS_MTX(code) \
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0); \
+    { code } \
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
+
 
 int ogs_diam_stats_start(void);
 
