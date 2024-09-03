@@ -292,7 +292,6 @@ struct amf_ue_s {
 
     /* UE context transfer and Registration status update */
     ogs_nas_5gs_guti_t old_guti;
-    OpenAPI_ue_context_transfer_status_e transfer_status;
     amf_ue_context_transfer_state_t amf_ue_context_transfer_state;
     OpenAPI_list_t *to_release_session_list;
 

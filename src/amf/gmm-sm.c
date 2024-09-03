@@ -2025,13 +2025,12 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                         sizeof(ogs_amf_id_t));
 
                 ogs_sbi_discovery_option_set_guami(discovery_option, &guami);
-                amf_ue->transfer_status =
-                        OpenAPI_ue_context_transfer_status_TRANSFERRED;
 
                 r = amf_ue_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NAMF_COMM, discovery_option,
                         amf_namf_comm_build_registration_status_update,
-                        amf_ue, state, NULL);
+                        amf_ue, state,
+                        (void *)OpenAPI_ue_context_transfer_status_TRANSFERRED);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
 
@@ -2658,13 +2657,12 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                     sizeof(ogs_amf_id_t));
 
             ogs_sbi_discovery_option_set_guami(discovery_option, &guami);
-            amf_ue->transfer_status =
-                    OpenAPI_ue_context_transfer_status_NOT_TRANSFERRED;
 
             r = amf_ue_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NAMF_COMM, discovery_option,
                     amf_namf_comm_build_registration_status_update,
-                    amf_ue, state, NULL);
+                    amf_ue, state,
+                    (void *)OpenAPI_ue_context_transfer_status_NOT_TRANSFERRED);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
 

@@ -108,6 +108,7 @@ ogs_sbi_request_t *amf_namf_comm_build_registration_status_update(
     char *ue_context_id = NULL;
 
     ogs_assert(amf_ue);
+    ogs_assert(data);
 
     ue_context_id = ogs_guti_to_string(&amf_ue->old_guti);
     ogs_assert(ue_context_id);
@@ -125,7 +126,8 @@ ogs_sbi_request_t *amf_namf_comm_build_registration_status_update(
 
     memset(&UeRegStatusUpdateReqData, 0, sizeof(UeRegStatusUpdateReqData));
 
-    UeRegStatusUpdateReqData.transfer_status = amf_ue->transfer_status;
+    UeRegStatusUpdateReqData.transfer_status =
+        (OpenAPI_ue_context_transfer_status_e)data;
     /*
      * TS 29.518
      * 5.2.2.2.2 Registration Status Update
@@ -133,11 +135,13 @@ ogs_sbi_request_t *amf_namf_comm_build_registration_status_update(
      * Session(s) associated with them, the target AMF shall include these
      * PDU session(s) in the toReleaseSessionList attribute in the payload.
      */
-    if (amf_ue->transfer_status ==
-                OpenAPI_ue_context_transfer_status_TRANSFERRED &&
-                amf_ue->to_release_session_list->count) {
-        UeRegStatusUpdateReqData.to_release_session_list =
-                amf_ue->to_release_session_list;
+    if (UeRegStatusUpdateReqData.transfer_status ==
+                OpenAPI_ue_context_transfer_status_TRANSFERRED) {
+        ogs_assert(amf_ue->to_release_session_list); /* For safety */
+        if (amf_ue->to_release_session_list->count) {
+            UeRegStatusUpdateReqData.to_release_session_list =
+                    amf_ue->to_release_session_list;
+        }
     }
 
     request = ogs_sbi_build_request(&message);
