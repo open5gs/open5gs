@@ -101,7 +101,7 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Authentication-Information-Request");
+    ogs_debug("Rx Authentication-Information-Request");
 
     /* Create answer header */
     qry = *msg;
@@ -262,7 +262,7 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("Authentication-Information-Answer");
+    ogs_debug("Tx Authentication-Information-Answer");
 
     /* Add this value to the stats */
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
@@ -771,7 +771,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Update-Location-Request");
+    ogs_debug("Rx Update-Location-Request");
 
     memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
 
@@ -968,7 +968,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("Update-Location-Answer");
+    ogs_debug("Tx Update-Location-Answer");
 
     /* Add this value to the stats */
     ogs_assert( pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
@@ -1039,7 +1039,7 @@ static int hss_ogs_diam_s6a_pur_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Purge-UE-Request");
+    ogs_debug("Rx Purge-UE-Request");
 
     memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
 
@@ -1125,7 +1125,7 @@ static int hss_ogs_diam_s6a_pur_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("Purge-UE-Answer");
+    ogs_debug("Tx Purge-UE-Answer");
 
     /* Add this value to the stats */
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
@@ -1174,7 +1174,7 @@ void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm,
     struct sess_state *sess_data = NULL, *svg;
     struct session *session = NULL;
 
-    ogs_debug("[HSS] Cancel-Location-Request");
+    ogs_debug("[HSS] Tx Cancel-Location-Request");
 
     /* Create the random value to store with the session */
     sess_data = ogs_calloc(1, sizeof(*sess_data));
@@ -1299,7 +1299,7 @@ static void hss_s6a_cla_cb(void *data, struct msg **msg)
     struct session *session;
     int new;
 
-    ogs_debug("[HSS] Cancel-Location-Answer");
+    ogs_debug("[HSS] Rx Cancel-Location-Answer");
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
@@ -1348,7 +1348,7 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdata_mask)
 
     ogs_subscription_data_t subscription_data;
 
-    ogs_debug("[HSS] Insert-Subscriber-Data-Request");
+    ogs_debug("[HSS] Tx Insert-Subscriber-Data-Request");
 
     memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
 
@@ -1503,7 +1503,7 @@ static void hss_s6a_ida_cb(void *data, struct msg **msg)
     struct session *session;
     int new;
 
-    ogs_debug("[HSS] Insert-Subscriber-Data-Answer");
+    ogs_debug("[HSS] Rx Insert-Subscriber-Data-Answer");
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
