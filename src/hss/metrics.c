@@ -50,6 +50,7 @@ ogs_metrics_spec_t *hss_metrics_spec_global[_HSS_METR_GLOB_MAX];
 ogs_metrics_inst_t *hss_metrics_inst_global[_HSS_METR_GLOB_MAX];
 hss_metrics_spec_def_t hss_metrics_spec_def_global[_HSS_METR_GLOB_MAX] = {
 /* Global Counters: */
+/* Global Counters: Cx */
 [HSS_METR_GLOB_CTR_CX_RX_UNKNOWN] = {
     .type = OGS_METRICS_METRIC_TYPE_COUNTER,
     .name = "cx_rx_unknown",
@@ -114,6 +115,87 @@ hss_metrics_spec_def_t hss_metrics_spec_def_global[_HSS_METR_GLOB_MAX] = {
     .type = OGS_METRICS_METRIC_TYPE_COUNTER,
     .name = "cx_tx_lia",
     .description = "Transmitted Cx LIA messages",
+},
+/* Global Counters: S6a */
+[HSS_METR_GLOB_CTR_S6a_RX_UNKNOWN] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_rx_unknown",
+    .description = "Received S6a unknown messages",
+},
+[HSS_METR_GLOB_CTR_S6a_RX_AIR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_rx_air",
+    .description = "Received S6a AIR messages",
+},
+[HSS_METR_GLOB_CTR_S6a_RX_AIR_ERROR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_rx_air_error",
+    .description = "Received S6a AIR messages failed",
+},
+[HSS_METR_GLOB_CTR_S6a_RX_CLA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_rx_cla",
+    .description = "Received S6a CLA messages",
+},
+[HSS_METR_GLOB_CTR_S6a_RX_CLA_ERROR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_rx_cla_error",
+    .description = "Received S6a CLA messages failed",
+},
+[HSS_METR_GLOB_CTR_S6a_RX_IDA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_rx_ida",
+    .description = "Received S6a IDA messages",
+},
+[HSS_METR_GLOB_CTR_S6a_RX_IDA_ERROR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_rx_ida_error",
+    .description = "Received S6a IDA messages failed",
+},
+[HSS_METR_GLOB_CTR_S6a_RX_PUR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_rx_pur",
+    .description = "Transmitted S6a PUR messages",
+},
+[HSS_METR_GLOB_CTR_S6a_RX_PUR_ERROR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_rx_pur_error",
+    .description = "Transmitted S6a PUR messages failed",
+},
+[HSS_METR_GLOB_CTR_S6a_RX_ULR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_rx_ulr",
+    .description = "Transmitted S6a ULR messages",
+},
+[HSS_METR_GLOB_CTR_S6a_RX_ULR_ERROR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_rx_ulr_error",
+    .description = "Transmitted S6a ULR messages failed",
+},
+[HSS_METR_GLOB_CTR_S6a_TX_AIA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_tx_aia",
+    .description = "Transmitted S6a AIA messages",
+},
+[HSS_METR_GLOB_CTR_S6a_TX_CLR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_tx_clr",
+    .description = "Transmitted S6a CLR messages",
+},
+[HSS_METR_GLOB_CTR_S6a_TX_IDR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_tx_idr",
+    .description = "Transmitted S6a IDR messages",
+},
+[HSS_METR_GLOB_CTR_S6a_TX_PUA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_tx_pua",
+    .description = "Transmitted S6a PUA messages",
+},
+[HSS_METR_GLOB_CTR_S6a_TX_ULA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "s6a_tx_ula",
+    .description = "Transmitted S6a ULA messages",
 },
 /* Global Gauges: */
 [HSS_METR_GLOB_GAUGE_IMSI] = {

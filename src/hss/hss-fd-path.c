@@ -50,6 +50,23 @@ static void hsss_diam_stats_update_cb(const ogs_diam_stats_t *stats, const void 
     METRIC_ADD(HSS_METR_GLOB_CTR_CX_TX_UAA,         cx.tx_uaa);
     METRIC_ADD(HSS_METR_GLOB_CTR_CX_TX_LIA,         cx.tx_lia);
 
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_RX_UNKNOWN,      s6a.rx_unknown);
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_RX_AIR,          s6a.rx_air);
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_RX_AIR_ERROR,    s6a.rx_air_error);
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_RX_CLA,          s6a.rx_cla);
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_RX_CLA_ERROR,    s6a.rx_cla_error);
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_RX_IDA,          s6a.rx_ida);
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_RX_IDA_ERROR,    s6a.rx_ida_error);
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_RX_PUR,          s6a.rx_pur);
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_RX_PUR_ERROR,    s6a.rx_pur_error);
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_RX_ULR,          s6a.rx_ulr);
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_RX_ULR_ERROR,    s6a.rx_ulr_error);
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_TX_AIA,          s6a.tx_aia);
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_TX_CLR,          s6a.tx_clr);
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_TX_IDR,          s6a.tx_idr);
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_TX_PUA,          s6a.tx_pua);
+    METRIC_ADD(HSS_METR_GLOB_CTR_S6a_TX_ULA,          s6a.tx_ula);
+
     memcpy(&prev_st, st, sizeof(*st));
 }
 
