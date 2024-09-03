@@ -66,7 +66,7 @@ static int hss_ogs_diam_cx_uar_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("User-Authorization-Request");
+    ogs_debug("Rx User-Authorization-Request");
 
     /* Create answer header */
     qry = *msg;
@@ -163,7 +163,7 @@ static int hss_ogs_diam_cx_uar_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("User-Authorization-Answer");
+    ogs_debug("Tx User-Authorization-Answer");
 
     /* Add this value to the stats */
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
@@ -250,7 +250,7 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Multimedia-Auth-Request");
+    ogs_debug("Rx Multimedia-Auth-Request");
 
     /* Create answer header */
     qry = *msg;
@@ -552,7 +552,7 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("Multimedia-Auth-Answer");
+    ogs_debug("Tx Multimedia-Auth-Answer");
 
     /* Add this value to the stats */
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
@@ -627,7 +627,7 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Server-Assignment-Request");
+    ogs_debug("Rx Server-Assignment-Request");
 
     /* Create answer header */
     qry = *msg;
@@ -812,7 +812,7 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("Server-Assignment-Answer");
+    ogs_debug("Tx Server-Assignment-Answer");
 
     /* Add this value to the stats */
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
@@ -875,7 +875,7 @@ static int hss_ogs_diam_cx_lir_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Location-Info-Request");
+    ogs_debug("Rx Location-Info-Request");
 
     /* Create answer header */
     qry = *msg;
@@ -933,7 +933,7 @@ static int hss_ogs_diam_cx_lir_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("Location-Info-Answer");
+    ogs_debug("Tx Location-Info-Answer");
 
     /* Add this value to the stats */
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
