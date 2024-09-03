@@ -28,6 +28,12 @@
 extern "C" {
 #endif
 
+/* Configuration for ogs_diam_stats_ctx_t: */
+typedef struct ogs_diam_config_stats_s {
+    /* Frequency at which freeDiameter thread stats are updated to the app. 0 = default 60 seconds. */
+    unsigned int interval_sec;
+} ogs_diam_config_stats_t;
+
 /* This is default diameter configuration if there is no config file
  * The Configuration : No TLS, Only TCP */
 typedef struct ogs_diam_config_s {
@@ -70,6 +76,10 @@ typedef struct ogs_diam_config_s {
         int tc_timer; /* TcTimer value to use for this peer, use default if 0 */
     } conn[MAX_NUM_OF_FD_CONN];
     int num_of_conn;
+
+    /* Configure ogs_diam_stats_ctx_t: */
+    ogs_diam_config_stats_t stats;
+
 } ogs_diam_config_t;
 
 int ogs_diam_init(int mode, const char *conffile, ogs_diam_config_t *fd_config);

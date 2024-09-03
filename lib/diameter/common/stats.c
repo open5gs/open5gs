@@ -24,12 +24,15 @@ static ogs_diam_stats_ctx_t self;
 
 static void diam_stats_timer_cb(void *data);
 
-int ogs_diam_stats_init(int mode)
+int ogs_diam_stats_init(int mode, const ogs_diam_config_stats_t *config)
 {
+    ogs_assert(config);
     memset(&self, 0, sizeof(ogs_diam_stats_ctx_t));
 
     self.mode = mode;
-    self.poll.t_interval = ogs_time_from_sec(60); /* 60 seconds */
+    self.poll.t_interval = config->interval_sec > 0 ?
+                            ogs_time_from_sec(config->interval_sec) :
+                            ogs_time_from_sec(60); /* default 60 seconds */
     self.poll.timer = ogs_timer_add(ogs_app()->timer_mgr,
                 diam_stats_timer_cb, 0);
         ogs_assert(self.poll.timer);
@@ -58,6 +61,7 @@ int ogs_diam_stats_start()
     /* Start the statistics timer */
     self.poll.t_prev = self.poll.t_start;
     ogs_timer_start(self.poll.timer, self.poll.t_interval);
+    ogs_info("Polling freeDiameter stats every %lld seconds", (long long)self.poll.t_interval);
 
     return 0;
 }
