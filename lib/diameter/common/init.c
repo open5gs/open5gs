@@ -28,6 +28,8 @@ int ogs_diam_init(int mode, const char *conffile, ogs_diam_config_t *fd_config)
 {
     int ret;
 
+    ogs_assert(fd_config);
+
     gnutls_global_set_log_level(0);
     gnutls_global_set_log_function(diam_gnutls_log_func);
 
@@ -58,7 +60,7 @@ int ogs_diam_init(int mode, const char *conffile, ogs_diam_config_t *fd_config)
     CHECK_FCT_DO( ogs_diam_logger_init(), goto error );
 
     /* Initialize FD stats */
-    CHECK_FCT_DO( ogs_diam_stats_init(mode), goto error );
+    CHECK_FCT_DO( ogs_diam_stats_init(mode, &fd_config->stats), goto error );
 
     return 0;
 error:

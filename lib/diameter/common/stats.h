@@ -57,7 +57,7 @@ typedef struct ogs_diam_stats_ctx_s {
     pthread_mutex_t stats_lock;
 } ogs_diam_stats_ctx_t;
 
-int ogs_diam_stats_init(int mode);
+int ogs_diam_stats_init(int mode, const ogs_diam_config_stats_t *config);
 void ogs_diam_stats_final(void);
 
 ogs_diam_stats_ctx_t* ogs_diam_stats_self(void);
