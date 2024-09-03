@@ -20,6 +20,7 @@
 #include "ogs-dbi.h"
 #include "hss-context.h"
 #include "hss-event.h"
+#include "hss-fd-path.h"
 #include "hss-s6a-path.h"
 
 
@@ -144,6 +145,7 @@ static int hss_context_prepare(void)
 {
     self.diam_config->cnf_port = DIAMETER_PORT;
     self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
+    self.diam_config->stats.priv_stats_size = sizeof(hss_diam_stats_t);
 
     return OGS_OK;
 }
@@ -338,6 +340,9 @@ int hss_context_parse_config(void)
                                 ogs_warn("unknown key `%s`", fd_key);
                         }
                     }
+                } else if (!strcmp(hss_key, "diameter_stats_interval")) {
+                    const char *v = ogs_yaml_iter_value(&hss_iter);
+                    if (v) self.diam_config->stats.interval_sec = atoi(v);
                 } else if (!strcmp(hss_key, "sms_over_ims")) {
                             self.sms_over_ims =
                                 ogs_yaml_iter_value(&hss_iter);
