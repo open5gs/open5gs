@@ -80,7 +80,7 @@ static int hss_ogs_diam_swx_mar_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Multimedia-Auth-Request");
+    ogs_debug("Rx Multimedia-Auth-Request");
 
     /* Create answer header */
     qry = *msg;
@@ -331,7 +331,7 @@ static int hss_ogs_diam_swx_mar_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("Multimedia-Auth-Answer");
+    ogs_debug("Tx Multimedia-Auth-Answer");
 
     /* Add this value to the stats */
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
@@ -408,7 +408,7 @@ static int hss_ogs_diam_swx_sar_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Server-Assignment-Request");
+    ogs_debug("Rx Server-Assignment-Request");
 
     memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
 
@@ -854,7 +854,7 @@ static int hss_ogs_diam_swx_sar_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("Server-Assignment-Answer");
+    ogs_debug("Tx Server-Assignment-Answer");
 
     /* Add this value to the stats */
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
