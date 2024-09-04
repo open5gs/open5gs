@@ -20,6 +20,9 @@
 #include "pcrf-context.h"
 #include "pcrf-fd-path.h"
 
+static ogs_thread_t *thread;
+static void pcrf_main(void *data);
+
 static int initialized = 0;
 
 int pcrf_initialize(void)
@@ -47,6 +50,9 @@ int pcrf_initialize(void)
     rv = pcrf_fd_init();
     if (rv != OGS_OK) return OGS_ERROR;
 
+    thread = ogs_thread_create(pcrf_main, NULL);
+    if (!thread) return OGS_ERROR;
+
     initialized = 1;
 
     return OGS_OK;
@@ -65,4 +71,25 @@ void pcrf_terminate(void)
     pcrf_context_final();
 
     return;
+}
+
+static void pcrf_main(void *data)
+{
+    for ( ;; ) {
+        ogs_pollset_poll(ogs_app()->pollset,
+                ogs_timer_mgr_next(ogs_app()->timer_mgr));
+
+        /*
+         * After ogs_pollset_poll(), ogs_timer_mgr_expire() must be called.
+         *
+         * The reason is why ogs_timer_mgr_next() can get the corrent value
+         * when ogs_timer_stop() is called internally in ogs_timer_mgr_expire().
+         *
+         * You should not use event-queue before ogs_timer_mgr_expire().
+         * In this case, ogs_timer_mgr_expire() does not work
+         * because 'if rv == OGS_DONE' statement is exiting and
+         * not calling ogs_timer_mgr_expire().
+         */
+        ogs_timer_mgr_expire(ogs_app()->timer_mgr);
+    }
 }
