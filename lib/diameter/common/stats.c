@@ -74,7 +74,7 @@ int ogs_diam_stats_start()
     /* Start the statistics timer */
     self.poll.t_prev = self.poll.t_start;
     ogs_timer_start(self.poll.timer, self.poll.t_interval);
-    ogs_info("Polling freeDiameter stats every %lld seconds", (long long)self.poll.t_interval);
+    ogs_info("Polling freeDiameter stats every %lld usecs", (long long)self.poll.t_interval);
 
     return 0;
 }
