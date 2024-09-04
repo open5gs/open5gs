@@ -235,7 +235,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     uint32_t cc_request_number = 0;
     uint32_t result_code = OGS_DIAM_MISSING_AVP;
 
-    ogs_debug("[Credit-Control-Request]");
+    ogs_debug("Rx Credit-Control-Request");
 
     ogs_assert(msg);
 
@@ -618,7 +618,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("[Credit-Control-Answer]");
+    ogs_debug("Tx Credit-Control-Answer");
 
     /* Add this value to the stats */
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
@@ -689,7 +689,7 @@ int pcrf_gx_send_rar(
     ogs_assert(rx_sid);
     ogs_assert(rx_message);
 
-    ogs_debug("[PCRF] Re-Auth-Request");
+    ogs_debug("[PCRF] Tx Re-Auth-Request");
 
     /* Initialize Message */
     memset(&gx_message, 0, sizeof(ogs_diam_gx_message_t));
@@ -1049,7 +1049,7 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
 
     uint32_t result_code;
 
-    ogs_debug("[PCRF] Re-Auth-Answer");
+    ogs_debug("[PCRF] Rx Re-Auth-Answer");
 
     ret = clock_gettime(CLOCK_REALTIME, &ts);
     ogs_assert(ret == 0);
