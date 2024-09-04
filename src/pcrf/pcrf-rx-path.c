@@ -39,9 +39,9 @@ static OGS_POOL(sess_state_pool, struct sess_state);
 static ogs_thread_mutex_t sess_state_mutex;
 
 static struct session_handler *pcrf_rx_reg = NULL;
-static struct disp_hdl *hdl_rx_fb = NULL; 
-static struct disp_hdl *hdl_rx_aar = NULL; 
-static struct disp_hdl *hdl_rx_str = NULL; 
+static struct disp_hdl *hdl_rx_fb = NULL;
+static struct disp_hdl *hdl_rx_aar = NULL;
+static struct disp_hdl *hdl_rx_str = NULL;
 
 static void pcrf_rx_asa_cb(void *data, struct msg **msg);
 
@@ -91,7 +91,7 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
     ogs_thread_mutex_unlock(&sess_state_mutex);
 }
 
-static int pcrf_rx_fb_cb(struct msg **msg, struct avp *avp, 
+static int pcrf_rx_fb_cb(struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
     /* This CB should never be called */
@@ -100,7 +100,7 @@ static int pcrf_rx_fb_cb(struct msg **msg, struct avp *avp,
     return ENOTSUP;
 }
 
-static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp, 
+static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
     int rv;
@@ -418,7 +418,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
     ogs_ims_data_free(&rx_message.ims_data);
-    
+
     return 0;
 
 out:
@@ -438,7 +438,7 @@ out:
         ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
         ogs_assert(ret == 0);
     }
-    
+
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
@@ -504,7 +504,7 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
     /* Update State */
     sess_data->state = SESSION_ABORTED;
     sess_data->abort_cause = abort_cause;
-    
+
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
     ogs_assert(ret == 0);
@@ -547,15 +547,15 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
-    /* Keep a pointer to the session data for debug purpose, 
+    /* Keep a pointer to the session data for debug purpose,
      * in real life we would not need it */
     svg = sess_data;
-    
+
     /* Store this value in the session */
     ret = fd_sess_state_store(pcrf_rx_reg, session, &sess_data);
     ogs_assert(ret == 0);
     ogs_assert(sess_data == NULL);
-    
+
     /* Send the request */
     ret = fd_msg_send(&req, pcrf_rx_asa_cb, svg);
     ogs_assert(ret == 0);
@@ -584,7 +584,7 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
     ogs_assert(ret == 0);
     ogs_assert(new == 0);
-    
+
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
     ogs_assert(ret == 0);
@@ -646,7 +646,7 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     return;
 }
 
-static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp, 
+static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
     int rv;
@@ -752,7 +752,7 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
 
     state_cleanup(sess_data, NULL, NULL);
     ogs_ims_data_free(&rx_message.ims_data);
-    
+
     return 0;
 
 out:
@@ -773,7 +773,7 @@ out:
                     (char *)"DIAMETER_MISSING_AVP", NULL, NULL, 1);
         ogs_assert(ret == 0);
     }
-    
+
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
     ogs_debug("[PCRF] Session-Termination-Answer");
