@@ -50,6 +50,88 @@ ogs_metrics_spec_t *pcrf_metrics_spec_global[_PCRF_METR_GLOB_MAX];
 ogs_metrics_inst_t *pcrf_metrics_inst_global[_PCRF_METR_GLOB_MAX];
 pcrf_metrics_spec_def_t pcrf_metrics_spec_def_global[_PCRF_METR_GLOB_MAX] = {
 /* Global Counters: */
+/* Global Counters: Gx */
+[PCRF_METR_GLOB_CTR_Gx_RX_UNKNOWN] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "gx_rx_unknown",
+    .description = "Received Gx unknown messages",
+},
+[PCRF_METR_GLOB_CTR_Gx_RX_CCR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "gx_rx_ccr",
+    .description = "Received Gx CCR messages",
+},
+[PCRF_METR_GLOB_CTR_Gx_RX_CCR_ERROR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "gx_rx_ccr_error",
+    .description = "Received Gx CCR messages failed",
+},
+[PCRF_METR_GLOB_CTR_Gx_RX_RAA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "gx_rx_raa",
+    .description = "Received Gx RAA messages",
+},
+[PCRF_METR_GLOB_CTR_Gx_TX_CCA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "gx_tx_cca",
+    .description = "Received Gx RAA messages failed",
+},
+[PCRF_METR_GLOB_CTR_Gx_TX_RAR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "gx_tx_rar",
+    .description = "Transmitted Gx RAR messages",
+},
+[PCRF_METR_GLOB_CTR_Gx_TX_RAR_ERROR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "gx_tx_rar_error",
+    .description = "Failed to transmit Gx RAR messages",
+},
+/* Global Counters: Rx */
+[PCRF_METR_GLOB_CTR_Rx_RX_UNKNOWN] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "rx_rx_unknown",
+    .description = "Received Rx unknown messages",
+},
+[PCRF_METR_GLOB_CTR_Rx_RX_AAR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "rx_rx_aar",
+    .description = "Received Rx AAR messages",
+},
+[PCRF_METR_GLOB_CTR_Rx_RX_AAR_ERROR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "rx_rx_aar_error",
+    .description = "Received Rx AAR messages failed",
+},
+[PCRF_METR_GLOB_CTR_Rx_RX_ASA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "rx_rx_asa",
+    .description = "Received Rx ASA messages",
+},
+[PCRF_METR_GLOB_CTR_Rx_RX_STR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "rx_rx_asa_error",
+    .description = "Received Rx ASA messages failed",
+},
+[PCRF_METR_GLOB_CTR_Rx_RX_STR_ERROR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "rx_rx_str_error",
+    .description = "Received Rx STR messages failed",
+},
+[PCRF_METR_GLOB_CTR_Rx_TX_AAA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "rx_tx_aaa",
+    .description = "Transmitted Rx AAA messages",
+},
+[PCRF_METR_GLOB_CTR_Rx_TX_SAR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "rx_tx_sar",
+    .description = "Transmitted Rx SAR messages",
+},
+[PCRF_METR_GLOB_CTR_Rx_TX_STA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "rx_tx_sta",
+    .description = "Transmitted Rx STA messages",
+},
 /* Global Gauges: */
 };
 int pcrf_metrics_init_inst_global(void)

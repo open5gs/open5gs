@@ -97,6 +97,10 @@ static int pcrf_rx_fb_cb(struct msg **msg, struct avp *avp,
     /* This CB should never be called */
     ogs_warn("Unexpected message received!");
 
+    OGS_DIAM_STATS_MTX(
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_unknown);
+    )
+
     return ENOTSUP;
 }
 
@@ -413,9 +417,11 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     ogs_debug("[PCRF] Tx AA-Answer");
 
     /* Add this value to the stats */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
-    ogs_diam_stats_self()->stats.nb_echoed++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_echoed);
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_aar);
+        PCRF_DIAM_PRIV_STATS_INC(rx.tx_aaa);
+    )
 
     ogs_ims_data_free(&rx_message.ims_data);
 
@@ -441,6 +447,11 @@ out:
 
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
+
+    OGS_DIAM_STATS_MTX(
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_aar);
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_aar_error);
+    )
 
     state_cleanup(sess_data, NULL, NULL);
     ogs_ims_data_free(&rx_message.ims_data);
@@ -561,9 +572,10 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
     ogs_assert(ret == 0);
 
     /* Increment the counter */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
-    ogs_diam_stats_self()->stats.nb_sent++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_sent);
+        PCRF_DIAM_PRIV_STATS_INC(rx.tx_sar);
+    )
 
     return OGS_OK;
 }
@@ -638,6 +650,10 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     if (result_code != ER_DIAMETER_SUCCESS) {
         ogs_error("ERROR DIAMETER Result Code(%d)", result_code);
     }
+
+    OGS_DIAM_STATS_MTX(
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_asa);
+    )
 
     ret = fd_msg_free(*msg);
     ogs_assert(ret == 0);
@@ -746,9 +762,11 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     ogs_debug("[PCRF] Tx Session-Termination-Answer");
 
     /* Add this value to the stats */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
-    ogs_diam_stats_self()->stats.nb_echoed++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_echoed);
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_str);
+        PCRF_DIAM_PRIV_STATS_INC(rx.tx_sta);
+    )
 
     state_cleanup(sess_data, NULL, NULL);
     ogs_ims_data_free(&rx_message.ims_data);
@@ -777,6 +795,12 @@ out:
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
     ogs_debug("[PCRF] Tx Session-Termination-Answer");
+
+    OGS_DIAM_STATS_MTX(
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_str);
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_str_error);
+        PCRF_DIAM_PRIV_STATS_INC(rx.tx_sta);
+    )
 
     if (sess_data)
         state_cleanup(sess_data, NULL, NULL);
