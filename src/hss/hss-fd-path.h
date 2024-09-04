@@ -59,9 +59,20 @@ typedef struct hss_diam_stats_s6a_s {
     unsigned long long tx_ula;
 } hss_diam_stats_s6a_t;
 
+typedef struct hss_diam_stats_swx_s {
+    unsigned long long rx_unknown;
+    unsigned long long rx_mar;
+    unsigned long long rx_mar_error;
+    unsigned long long rx_sar;
+    unsigned long long rx_sar_error;
+    unsigned long long tx_maa;
+    unsigned long long tx_saa;
+} hss_diam_stats_swx_t;
+
 typedef struct hss_diam_stats_s {
     hss_diam_stats_cx_t cx;
     hss_diam_stats_s6a_t s6a;
+    hss_diam_stats_swx_t swx;
 } hss_diam_stats_t;
 
 #define HSS_DIAM_PRIV_STATS_ADD(field, val) ((hss_diam_stats_t *)ogs_diam_stats_self()->priv_stats)->field += val

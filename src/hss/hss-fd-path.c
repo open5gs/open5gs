@@ -67,6 +67,14 @@ static void hsss_diam_stats_update_cb(const ogs_diam_stats_t *stats, const void 
     METRIC_ADD(HSS_METR_GLOB_CTR_S6a_TX_PUA,          s6a.tx_pua);
     METRIC_ADD(HSS_METR_GLOB_CTR_S6a_TX_ULA,          s6a.tx_ula);
 
+    METRIC_ADD(HSS_METR_GLOB_CTR_SWx_RX_UNKNOWN,     swx.rx_unknown);
+    METRIC_ADD(HSS_METR_GLOB_CTR_SWx_RX_MAR,         swx.rx_mar);
+    METRIC_ADD(HSS_METR_GLOB_CTR_SWx_RX_MAR_ERROR,   swx.rx_mar_error);
+    METRIC_ADD(HSS_METR_GLOB_CTR_SWx_RX_SAR,         swx.rx_sar);
+    METRIC_ADD(HSS_METR_GLOB_CTR_SWx_RX_SAR_ERROR,   swx.rx_sar_error);
+    METRIC_ADD(HSS_METR_GLOB_CTR_SWx_TX_MAA,         swx.tx_maa);
+    METRIC_ADD(HSS_METR_GLOB_CTR_SWx_TX_SAA,         swx.tx_saa);
+
     memcpy(&prev_st, st, sizeof(*st));
 }
 
