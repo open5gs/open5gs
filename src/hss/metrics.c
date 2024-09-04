@@ -197,6 +197,42 @@ hss_metrics_spec_def_t hss_metrics_spec_def_global[_HSS_METR_GLOB_MAX] = {
     .name = "s6a_tx_ula",
     .description = "Transmitted S6a ULA messages",
 },
+/* Global Counters: SWx */
+[HSS_METR_GLOB_CTR_SWx_RX_UNKNOWN] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "swx_rx_unknown",
+    .description = "Received SWx unknown messages",
+},
+[HSS_METR_GLOB_CTR_SWx_RX_MAR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "swx_rx_mar",
+    .description = "Received SWx MAR messages",
+},
+[HSS_METR_GLOB_CTR_SWx_RX_MAR_ERROR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "swx_rx_mar_error",
+    .description = "Received SWx MAR messages failed",
+},
+[HSS_METR_GLOB_CTR_SWx_RX_SAR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "swx_rx_sar",
+    .description = "Received SWx SAR messages",
+},
+[HSS_METR_GLOB_CTR_SWx_RX_SAR_ERROR] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "swx_rx_sar_error",
+    .description = "Received SWx SAR messages failed",
+},
+[HSS_METR_GLOB_CTR_SWx_TX_MAA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "swx_tx_maa",
+    .description = "Transmitted SWx MAA messages",
+},
+[HSS_METR_GLOB_CTR_SWx_TX_SAA] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "swx_tx_saa",
+    .description = "Transmitted SWx SAA messages",
+},
 /* Global Gauges: */
 [HSS_METR_GLOB_GAUGE_IMSI] = {
     .type = OGS_METRICS_METRIC_TYPE_GAUGE,
