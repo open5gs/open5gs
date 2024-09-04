@@ -24,6 +24,7 @@
 #include "ogs-diameter-rx.h"
 #include "ogs-dbi.h"
 #include "ogs-app.h"
+#include "metrics.h"
 
 #ifdef __cplusplus
 extern "C" {
