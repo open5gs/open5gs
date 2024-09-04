@@ -122,7 +122,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     os0_t gx_sid = NULL;
     uint32_t result_code = OGS_DIAM_RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
 
-    ogs_debug("[PCRF] AA-Request");
+    ogs_debug("[PCRF] Rx AA-Request");
 
     ogs_assert(msg);
     ogs_assert(sess);
@@ -410,7 +410,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("[PCRF] AA-Answer");
+    ogs_debug("[PCRF] Tx AA-Answer");
 
     /* Add this value to the stats */
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
@@ -462,7 +462,7 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
 
     ogs_assert(rx_sid);
 
-    ogs_debug("[PCRF] Abort-Session-Request");
+    ogs_debug("[PCRF] Tx Abort-Session-Request");
 
     /* Retrieve session by Session-Id */
     sidlen = strlen((char *)rx_sid);
@@ -578,7 +578,7 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     int new;
     int result_code = 0;
 
-    ogs_debug("[PCRF] Abort-Session-Answer");
+    ogs_debug("[PCRF] Rx Abort-Session-Answer");
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
@@ -661,7 +661,7 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
 
     uint32_t result_code = OGS_DIAM_RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
 
-    ogs_debug("[PCRF] Session-Termination-Request");
+    ogs_debug("[PCRF] Rx Session-Termination-Request");
 
     ogs_assert(msg);
     ogs_assert(sess);
@@ -743,7 +743,7 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("[PCRF] Session-Termination-Answer");
+    ogs_debug("[PCRF] Tx Session-Termination-Answer");
 
     /* Add this value to the stats */
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
@@ -776,7 +776,7 @@ out:
 
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
-    ogs_debug("[PCRF] Session-Termination-Answer");
+    ogs_debug("[PCRF] Tx Session-Termination-Answer");
 
     if (sess_data)
         state_cleanup(sess_data, NULL, NULL);
