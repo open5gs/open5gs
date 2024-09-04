@@ -126,8 +126,7 @@ ogs_sbi_request_t *amf_namf_comm_build_registration_status_update(
 
     memset(&UeRegStatusUpdateReqData, 0, sizeof(UeRegStatusUpdateReqData));
 
-    UeRegStatusUpdateReqData.transfer_status =
-        (OpenAPI_ue_context_transfer_status_e)data;
+    UeRegStatusUpdateReqData.transfer_status = OGS_POINTER_TO_UINT(data);
     /*
      * TS 29.518
      * 5.2.2.2.2 Registration Status Update

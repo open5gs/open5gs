@@ -309,13 +309,13 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(message);
 
         enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
-        ogs_assert(enb_ue);
 
         switch (message->esm.h.message_type) {
         case OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST:
             ogs_debug("PDN Connectivity request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+            ogs_assert(enb_ue);
             rv = esm_handle_pdn_connectivity_request(
                     enb_ue, bearer, &message->esm.pdn_connectivity_request,
                     e->create_action);
@@ -330,6 +330,8 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("PDN disconnect request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+
+            ogs_assert(enb_ue);
             if (MME_HAVE_SGW_S1U_PATH(sess)) {
                 sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
                 ogs_assert(sgw_ue);
@@ -371,6 +373,7 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("Bearer resource allocation request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+            ogs_assert(enb_ue);
             esm_handle_bearer_resource_allocation_request(
                     enb_ue, bearer, message);
             break;
@@ -378,6 +381,7 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("Bearer resource modification request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+            ogs_assert(enb_ue);
             esm_handle_bearer_resource_modification_request(
                     enb_ue, bearer, message);
             break;
