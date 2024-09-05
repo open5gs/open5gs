@@ -342,6 +342,8 @@ int pcrf_context_parse_config(void)
                         ogs_error("parse_session_conf() failed");
                         return rv;
                     }
+                } else if (!strcmp(pcrf_key, "metrics")) {
+                    /* handle config in metrics library */
                 } else
                     ogs_warn("unknown key `%s`", pcrf_key);
             }

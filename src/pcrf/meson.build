@@ -18,17 +18,26 @@
 libpcrf_sources = files('''
     pcrf-context.h
     pcrf-fd-path.h
+    pcrf-event.h
+    pcrf-sm.h
+    metrics.h
 
     pcrf-init.c
     pcrf-context.c
+    pcrf-event.c
+    pcrf-sm.c
+
     pcrf-fd-path.c
     pcrf-gx-path.c
     pcrf-rx-path.c
+
+    metrics.c
 '''.split())
 
 libpcrf = static_library('pcrf',
     sources : libpcrf_sources,
-    dependencies : [libapp_dep,
+    dependencies : [libmetrics_dep,
+                    libapp_dep,
                     libdbi_dep,
                     libdiameter_rx_dep,
                     libdiameter_gx_dep],
@@ -36,7 +45,8 @@ libpcrf = static_library('pcrf',
 
 libpcrf_dep = declare_dependency(
     link_with : libpcrf,
-    dependencies : [libapp_dep,
+    dependencies : [libmetrics_dep,
+                    libapp_dep,
                     libdbi_dep,
                     libdiameter_rx_dep,
                     libdiameter_gx_dep])

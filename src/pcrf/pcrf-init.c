@@ -19,6 +19,8 @@
 
 #include "pcrf-context.h"
 #include "pcrf-fd-path.h"
+#include "pcrf-sm.h"
+#include "metrics.h"
 
 static ogs_thread_t *thread;
 static void pcrf_main(void *data);
@@ -33,14 +35,22 @@ int pcrf_initialize(void)
     rv = ogs_app_parse_local_conf(APP_NAME);
     if (rv != OGS_OK) return rv;
 
+    pcrf_metrics_init();
+
     pcrf_context_init();
+    pcrf_event_init();
 
     rv = ogs_log_config_domain(
             ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
+    rv = ogs_metrics_context_parse_config(APP_NAME);
+    if (rv != OGS_OK) return rv;
+
     rv = pcrf_context_parse_config();
     if (rv != OGS_OK) return rv;
+
+    ogs_metrics_context_open(ogs_metrics_self());
 
     if (ogs_app()->db_uri) {
         rv = ogs_dbi_init(ogs_app()->db_uri);
@@ -62,6 +72,10 @@ void pcrf_terminate(void)
 {
     if (!initialized) return;
 
+    pcrf_event_term();
+    ogs_thread_destroy(thread);
+    ogs_metrics_context_close(ogs_metrics_self());
+
     pcrf_fd_final();
 
     if (ogs_app()->db_uri) {
@@ -69,12 +83,19 @@ void pcrf_terminate(void)
     }
 
     pcrf_context_final();
+    pcrf_event_final();
+    pcrf_metrics_final();
 
     return;
 }
 
 static void pcrf_main(void *data)
 {
+    ogs_fsm_t pcrf_sm;
+    int rv;
+
+    ogs_fsm_init(&pcrf_sm, pcrf_state_initial, pcrf_state_final, 0);
+
     for ( ;; ) {
         ogs_pollset_poll(ogs_app()->pollset,
                 ogs_timer_mgr_next(ogs_app()->timer_mgr));
@@ -91,5 +112,25 @@ static void pcrf_main(void *data)
          * not calling ogs_timer_mgr_expire().
          */
         ogs_timer_mgr_expire(ogs_app()->timer_mgr);
+
+        for ( ;; ) {
+            pcrf_event_t *e = NULL;
+
+            rv = ogs_queue_trypop(ogs_app()->queue, (void**)&e);
+            ogs_assert(rv != OGS_ERROR);
+
+            if (rv == OGS_DONE)
+                goto done;
+
+            if (rv == OGS_RETRY)
+                break;
+
+            ogs_assert(e);
+            ogs_fsm_dispatch(&pcrf_sm, e);
+            pcrf_event_free(e);
+        }
     }
+done:
+
+    ogs_fsm_fini(&pcrf_sm, 0);
 }
