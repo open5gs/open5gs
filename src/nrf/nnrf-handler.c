@@ -877,6 +877,9 @@ bool nrf_nnrf_handle_nf_discover(
                     ogs_plmn_id_mnc(
                         &discovery_option->requester_plmn_list[i]));
         }
+        if (discovery_option->hnrf_uri) {
+            ogs_debug("hnrf_uri[%s]", discovery_option->hnrf_uri);
+        }
         if (discovery_option->requester_features) {
             ogs_debug("requester-features[0x%llx]",
                 (long long)discovery_option->requester_features);
@@ -911,11 +914,12 @@ bool nrf_nnrf_handle_nf_discover(
         if (recvmsg->param.limit && i >= recvmsg->param.limit)
             break;
 
-        ogs_debug("[%s:%d] NF-Discovered [NF-Type:%s,NF-Status:%s,"
-                "IPv4:%d,IPv6:%d]", nf_instance->id, i,
+        ogs_info("[%s:%d] NF-Discovered [NF-Type:%s,NF-Status:%s,"
+                "IPv4:%d,IPv6:%d,FQDN:%s]", nf_instance->id, i,
                 OpenAPI_nf_type_ToString(nf_instance->nf_type),
                 OpenAPI_nf_status_ToString(nf_instance->nf_status),
-                nf_instance->num_of_ipv4, nf_instance->num_of_ipv6);
+                nf_instance->num_of_ipv4, nf_instance->num_of_ipv6,
+                nf_instance->fqdn ? nf_instance->fqdn : "NULL");
 
         NFProfile = ogs_nnrf_nfm_build_nf_profile(
                 nf_instance, NULL, discovery_option,
@@ -982,6 +986,16 @@ bool nrf_nnrf_handle_nf_discover(
                         nf_instance, discovery_option) == false)
                 continue;
 
+            /*
+             * NRFs in Home PLMN are categorized into those with and without
+             * hnrf-uri. Since Open5GS includes hnrf-uri in the Discovery
+             * message, NRFs must be differentiated based on the presence or
+             * absence of hnrf-uri, so the following match routine is used.
+             */
+            if (ogs_sbi_discovery_option_hnrf_uri_is_matched(
+                        nf_instance, discovery_option) == false)
+                continue;
+
             break;
         }
 
@@ -1003,10 +1017,63 @@ bool nrf_nnrf_handle_nf_discover(
             nf_instance->num_of_plmn_id =
                 discovery_option->num_of_target_plmn_list;
 
-            nf_instance->fqdn = ogs_nrf_fqdn_from_plmn_id(nf_instance->plmn_id);
-            ogs_assert(nf_instance->fqdn);
+            /*
+             * NRFs with a Home PLMN can use the target_plmn information
+             * to extract the FQDN. However, the standards documentation
+             * describes hnrf-uri, so if hnrf-uri is included in discovery,
+             * we implement it so that the FQDN of an NRF with a Home PLMN
+             * is created using hnrf-uri.
+             */
+            if (discovery_option->hnrf_uri) {
+                OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
+                char *fqdn = NULL;
+                uint16_t fqdn_port = 0;
+                ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
+                rc = ogs_sbi_getaddr_from_uri(
+                        &scheme, &fqdn, &fqdn_port, &addr, &addr6,
+                        discovery_option->hnrf_uri);
+                if (rc == false || scheme == OpenAPI_uri_scheme_NULL)
+                    ogs_error("Invalid URL [%s]", request->h.uri);
+                else {
+            /*
+             * If there is an hnrf-uri, this value creates an nf-instance->fqdn,
+             * which in turn creates a client->fqdn from the hnrf-uri.
+             */
+                    nf_instance->hnrf_uri =
+                        ogs_strdup(discovery_option->hnrf_uri);
+                    nf_instance->fqdn = ogs_strdup(fqdn);
+
+                    ogs_free(fqdn);
+                    ogs_freeaddrinfo(addr);
+                    ogs_freeaddrinfo(addr6);
+                }
+            }
+
+            if (!nf_instance->fqdn) {
+                nf_instance->fqdn =
+                    ogs_nrf_fqdn_from_plmn_id(nf_instance->plmn_id);
+                ogs_assert(nf_instance->fqdn);
+            }
+
+            /*
+             * At this stage, the client->fqdn is set and this is
+             * passed through to the Target-apiRoot to the Home PLMN.
+             *
+             * As mentioned above, if there is an hnrf-uri, this value creates
+             * an nf-instance->fqdn, which in turn creates a client->fqdn
+             * from the hnrf-uri.
+             */
             ogs_sbi_client_associate(nf_instance);
+
+            ogs_info("New NRF [fqdn:%s, hnrf_uri:%s]",
+                    nf_instance->fqdn ? nf_instance->fqdn : "NULL",
+                    nf_instance->hnrf_uri ? nf_instance->hnrf_uri : "NULL");
+
+        } else {
+            ogs_info("NRF Found [fqdn:%s, hnrf_uri:%s]",
+                    nf_instance->fqdn ? nf_instance->fqdn : "NULL",
+                    nf_instance->hnrf_uri ? nf_instance->hnrf_uri : "NULL");
         }
 
         client = NF_INSTANCE_CLIENT(nf_instance);
@@ -1014,7 +1081,7 @@ bool nrf_nnrf_handle_nf_discover(
 
         /*
          * TS29.510
-         * 5.3.2.4 Service Discovery in a different PLMN
+         * 5.3.2.2.3 Service Discovery in a different PLMN
          *
          * Then, steps 1-2 in Figure 5.3.2.2.3-1 are executed,
          * between the NRF in the Serving PLMN and the NRF in the Home PLMN.
@@ -1022,6 +1089,7 @@ bool nrf_nnrf_handle_nf_discover(
          * in the query parameter of the URI is not required.
          */
         discovery_option->num_of_target_plmn_list = 0;
+        ogs_sbi_discovery_option_clear_hnrf_uri(discovery_option);
 
         assoc = nrf_assoc_add(stream);
         if (!assoc) {

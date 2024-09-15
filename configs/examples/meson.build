@@ -19,6 +19,9 @@ examples_conf = '''
     5gc-sepp1-999-70.yaml
     5gc-sepp2-001-01.yaml
     5gc-sepp3-315-010.yaml
+    5gc-no-scp-sepp1-999-70.yaml
+    5gc-no-scp-sepp2-001-01.yaml
+    5gc-no-scp-sepp3-315-010.yaml
     5gc-tls-sepp1-999-70.yaml
     5gc-tls-sepp2-001-01.yaml
     5gc-tls-sepp3-315-010.yaml

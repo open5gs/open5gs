@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -25,6 +25,17 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef struct amf_nnssf_nsselection_param_s {
+    struct {
+        bool presence;
+        ogs_s_nssai_t *snssai;
+        OpenAPI_roaming_indication_e roaming_indication;
+        ogs_s_nssai_t *home_snssai;
+    } slice_info_for_pdu_session;
+    ogs_plmn_id_t *home_plmn_id;
+    ogs_5gs_tai_t *tai;
+} amf_nnssf_nsselection_param_t;
 
 ogs_sbi_request_t *amf_nnssf_nsselection_build_get(
         amf_sess_t *sess, void *data);

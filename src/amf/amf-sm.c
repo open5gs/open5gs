@@ -613,7 +613,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             e->h.sbi.message = &sbi_message;;
             e->h.sbi.state = state;
 
-            amf_nnssf_nsselection_handle_get(sess, &sbi_message);
+            amf_nnssf_nsselection_handle_get(sess, state, &sbi_message);
             break;
 
         DEFAULT

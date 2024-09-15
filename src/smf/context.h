@@ -333,6 +333,9 @@ typedef struct smf_sess_s {
     ogs_nr_cgi_t    nr_cgi;
     ogs_time_t      ue_location_timestamp;
 
+    /* H-SMF URI */
+    char            *h_smf_uri;
+
     /* PCF ID */
     char            *pcf_id;
 
@@ -362,6 +365,9 @@ typedef struct smf_sess_s {
 
     ogs_pfcp_ue_ip_t *ipv4;
     ogs_pfcp_ue_ip_t *ipv6;
+
+    /* AN Type */
+    OpenAPI_access_type_e an_type;
 
     /* RAT Type */
     uint8_t gtp_rat_type;

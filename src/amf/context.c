@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -2309,10 +2309,12 @@ void amf_sess_remove(amf_sess_t *sess)
 
     if (sess->nssf.nsi_id)
         ogs_free(sess->nssf.nsi_id);
-    if (sess->nssf.nrf.id)
-        ogs_free(sess->nssf.nrf.id);
+    if (sess->nssf.nrf_uri)
+        ogs_free(sess->nssf.nrf_uri);
     if (sess->nssf.nrf.client)
         ogs_sbi_client_remove(sess->nssf.nrf.client);
+    if (sess->nssf.hnrf_uri)
+        ogs_free(sess->nssf.hnrf_uri);
 
     ogs_pool_id_free(&amf_sess_pool, sess);
 
@@ -2347,53 +2349,6 @@ amf_ue_t *amf_ue_find_by_id(ogs_pool_id_t id)
 amf_sess_t *amf_sess_find_by_id(ogs_pool_id_t id)
 {
     return ogs_pool_find_by_id(&amf_sess_pool, id);
-}
-
-void amf_sbi_select_nf(
-        ogs_sbi_object_t *sbi_object,
-        ogs_sbi_service_type_e service_type,
-        OpenAPI_nf_type_e requester_nf_type,
-        ogs_sbi_discovery_option_t *discovery_option)
-{
-    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
-    ogs_sbi_nf_instance_t *nf_instance = NULL;
-    amf_sess_t *sess = NULL;
-
-    ogs_assert(sbi_object);
-    ogs_assert(service_type);
-    target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
-    ogs_assert(target_nf_type);
-    ogs_assert(requester_nf_type);
-
-    switch(sbi_object->type) {
-    case OGS_SBI_OBJ_UE_TYPE:
-        nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
-                        target_nf_type, requester_nf_type, discovery_option);
-        if (nf_instance)
-            OGS_SBI_SETUP_NF_INSTANCE(
-                    sbi_object->service_type_array[service_type], nf_instance);
-        break;
-    case OGS_SBI_OBJ_SESS_TYPE:
-        sess = (amf_sess_t *)sbi_object;
-        ogs_assert(sess);
-
-        ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
-            if (ogs_sbi_discovery_param_is_matched(
-                    nf_instance,
-                    target_nf_type, requester_nf_type, discovery_option) ==
-                        false)
-                continue;
-
-            OGS_SBI_SETUP_NF_INSTANCE(
-                    sbi_object->service_type_array[service_type], nf_instance);
-            break;
-        }
-        break;
-    default:
-        ogs_fatal("(NF discover search result) Not implemented [%d]",
-                    sbi_object->type);
-        ogs_assert_if_reached();
-    }
 }
 
 int amf_sess_xact_count(amf_ue_t *amf_ue)

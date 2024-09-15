@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -65,6 +65,14 @@ bool amf_sbi_send_request(
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL              52
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL          53
 
+/*
+ * TS23.502
+ * 4.3.2.2.3 SMF selection
+ */
+#define AMF_SMF_SELECTION_IN_VPLMN_IN_NON_ROAMING_OR_LBO    1
+#define AMF_SMF_SELECTION_IN_VPLMN_IN_HOME_ROUTED           2
+#define AMF_SMF_SELECTION_IN_HPLMN_IN_HOME_ROUTED           3
+
 int amf_ue_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
@@ -79,7 +87,7 @@ int amf_sess_sbi_discover_and_send(
 int amf_sess_sbi_discover_by_nsi(
         ran_ue_t *ran_ue, amf_sess_t *sess,
         ogs_sbi_service_type_e service_type,
-        ogs_sbi_discovery_option_t *discovery_option);
+        ogs_sbi_discovery_option_t *discovery_option, int state);
 
 void amf_sbi_send_activating_session(
         ran_ue_t *ran_ue, amf_sess_t *sess, int state);

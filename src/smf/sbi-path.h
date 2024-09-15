@@ -22,6 +22,7 @@
 
 #include "nudm-build.h"
 #include "namf-build.h"
+#include "nsmf-build.h"
 #include "gsm-build.h"
 #include "nnrf-build.h"
 #include "npcf-build.h"

@@ -1,0 +1,532 @@
+db_uri: mongodb://localhost/open5gs
+
+logger:
+
+global:
+  parameter:
+#    no_nrf: true
+    no_scp: true
+#    no_sepp: true
+#    no_amf: true
+#    no_smf: true
+#    no_upf: true
+#    no_ausf: true
+#    no_udm: true
+#    no_pcf: true
+#    no_nssf: true
+#    no_bsf: true
+#    no_udr: true
+    no_mme: true
+    no_sgwc: true
+    no_sgwu: true
+    no_pcrf: true
+    no_hss: true
+
+mme:
+  freeDiameter:
+    identity: mme.localdomain
+    realm: localdomain
+    listen_on: 127.0.3.2
+    no_fwd: true
+    load_extension:
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
+        conf: 0x8888
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+    connect:
+      - identity: hss.localdomain
+        address: 127.0.3.8
+
+  s1ap:
+    server:
+      - address: 127.0.3.2
+  gtpc:
+    server:
+      - address: 127.0.3.2
+    client:
+      sgwc:
+        - address: 127.0.3.3
+      smf:
+        - address: 127.0.3.4
+  metrics:
+    server:
+      - address: 127.0.3.2
+        port: 9090
+  gummei:
+    - plmn_id:
+        mcc: 315
+        mnc: 010
+      mme_gid: 2
+      mme_code: 1
+  tai:
+    - plmn_id:
+        mcc: 315
+        mnc: 010
+      tac: 1
+  security:
+    integrity_order : [ EIA2, EIA1, EIA0 ]
+    ciphering_order : [ EEA0, EEA1, EEA2 ]
+  network_name:
+    full: Open5GS
+  time:
+    t3412:
+      value: 3240
+
+sgwc:
+  gtpc:
+    server:
+      - address: 127.0.3.3
+  pfcp:
+    server:
+      - address: 127.0.3.3
+    client:
+      sgwu:
+        - address: 127.0.3.6
+
+smf:
+  sbi:
+    server:
+#      - address: 127.0.3.4
+#        port: 7777
+      - address: smf.5gc.mnc010.mcc315.3gppnetwork.org
+    client:
+      nrf:
+        - uri: http://nrf.5gc.mnc010.mcc315.3gppnetwork.org
+  pfcp:
+    server:
+      - address: 127.0.3.4
+    client:
+      upf:
+        - address: 127.0.3.7
+  gtpc:
+    server:
+      - address: 127.0.3.4
+  gtpu:
+    server:
+      - address: 127.0.3.4
+  metrics:
+    server:
+      - address: 127.0.3.4
+        port: 9090
+  session:
+    - subnet: 10.47.0.0/16
+      gateway: 10.47.0.1
+    - subnet: 2001:db8:face::/48
+      gateway: 2001:db8:face::1
+  dns:
+    - 8.8.8.8
+    - 8.8.4.4
+    - 2001:4860:4860::8888
+    - 2001:4860:4860::8844
+  mtu: 1400
+  freeDiameter:
+    identity: smf.localdomain
+    realm: localdomain
+    listen_on: 127.0.3.4
+    no_fwd: true
+    load_extension:
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
+        conf: 0x8888
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+    connect:
+      - identity: pcrf.localdomain
+        address: 127.0.3.9
+
+amf:
+  sbi:
+    server:
+      - address: 127.0.3.5
+        port: 7777
+    client:
+      nrf:
+        - uri: http://nrf.5gc.mnc010.mcc315.3gppnetwork.org
+  ngap:
+    server:
+      - address: 127.0.3.5
+  metrics:
+    server:
+      - address: 127.0.3.5
+        port: 9090
+  access_control:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+    - plmn_id:
+        mcc: 001
+        mnc: 01
+    - plmn_id:
+        mcc: 315
+        mnc: 010
+  guami:
+    - plmn_id:
+        mcc: 315
+        mnc: 010
+      amf_id:
+        region: 2
+        set: 1
+  tai:
+    - plmn_id:
+        mcc: 315
+        mnc: 010
+      tac: 1
+  plmn_support:
+    - plmn_id:
+        mcc: 315
+        mnc: 010
+      s_nssai:
+        - sst: 1
+  security:
+    integrity_order : [ NIA2, NIA1, NIA0 ]
+    ciphering_order : [ NEA0, NEA1, NEA2 ]
+  network_name:
+    full: Open5GS
+  amf_name: open5gs-amf0
+  time:
+    t3512:
+      value: 540     # 9 mintues * 60 = 540 seconds
+
+sgwu:
+  pfcp:
+    server:
+      - address: 127.0.3.6
+  gtpu:
+    server:
+      - address: 127.0.3.6
+
+upf:
+  pfcp:
+    server:
+      - address: 127.0.3.7
+  gtpu:
+    server:
+      - address: 127.0.3.7
+  session:
+    - subnet: 10.47.0.0/16
+      gateway: 10.47.0.1
+      dev: ogstun3
+    - subnet: 2001:db8:face::/48
+      gateway: 2001:db8:face::1
+      dev: ogstun3
+  metrics:
+    server:
+      - address: 127.0.3.7
+        port: 9090
+
+hss:
+  freeDiameter:
+    identity: hss.localdomain
+    realm: localdomain
+    listen_on: 127.0.3.8
+    no_fwd: true
+    load_extension:
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
+        conf: 0x8888
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+    connect:
+      - identity: mme.localdomain
+        address: 127.0.3.2
+pcrf:
+  freeDiameter:
+    identity: pcrf.localdomain
+    realm: localdomain
+    listen_on: 127.0.3.9
+    no_fwd: true
+    load_extension:
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
+        conf: 0x8888
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+    connect:
+      - identity: smf.localdomain
+        address: 127.0.3.4
+
+nrf:
+  serving:
+    - plmn_id:
+        mcc: 315
+        mnc: 010
+  sbi:
+    server:
+#      - address: 127.0.3.10
+#        port: 7777
+      - address: nrf.5gc.mnc010.mcc315.3gppnetwork.org
+
+sepp:
+  default:
+    tls:
+      server:
+        private_key: @build_configs_dir@/open5gs/tls/sepp3.key
+        cert: @build_configs_dir@/open5gs/tls/sepp3.crt
+      client:
+        cacert: @build_configs_dir@/open5gs/tls/ca.crt
+  sbi:
+    server:
+      - address: 127.0.3.250
+        port: 7777
+    client:
+      nrf:
+        - uri: http://nrf.5gc.mnc010.mcc315.3gppnetwork.org
+  n32:
+    server:
+      - sender: sepp3.localdomain
+        address: 127.0.3.251
+        port: 7777
+        n32f:
+          address: 127.0.3.252
+          port: 7777
+    client:
+      sepp:
+        - receiver: sepp1.localdomain
+          uri: http://127.0.1.251:7777
+          n32f:
+            uri: http://127.0.1.252:7777
+        - receiver: sepp2.localdomain
+          uri: http://127.0.2.251:7777
+          n32f:
+            uri: http://127.0.2.252:7777
+
+ausf:
+  sbi:
+    server:
+#      - address: 127.0.3.11
+#        port: 7777
+      - address: ausf.5gc.mnc010.mcc315.3gppnetwork.org
+    client:
+      nrf:
+        - uri: http://nrf.5gc.mnc010.mcc315.3gppnetwork.org
+
+udm:
+  hnet:
+    - id: 1
+      scheme: 1
+      key: @build_configs_dir@/open5gs/hnet/curve25519-1.key
+    - id: 2
+      scheme: 2
+      key: @build_configs_dir@/open5gs/hnet/secp256r1-2.key
+  sbi:
+    server:
+#      - address: 127.0.3.12
+#        port: 7777
+      - address: udm.5gc.mnc010.mcc315.3gppnetwork.org
+    client:
+      nrf:
+        - uri: http://nrf.5gc.mnc010.mcc315.3gppnetwork.org
+
+pcf:
+  sbi:
+    server:
+      - address: 127.0.3.13
+        port: 7777
+    client:
+      nrf:
+        - uri: http://nrf.5gc.mnc010.mcc315.3gppnetwork.org
+  metrics:
+    server:
+      - address: 127.0.3.13
+        port: 9090
+  policy:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+      slice:
+        - sst: 1  # 1,2,3,4
+          default_indicator: true
+          session:
+            - name: internet
+              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+              ambr:
+                downlink:
+                  value: 1
+                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                uplink:
+                  value: 1
+                  unit: 3
+              qos:
+                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+                arp:
+                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
+                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+            - name: ims
+              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+              ambr:
+                downlink:
+                  value: 1
+                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                uplink:
+                  value: 1
+                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+              qos:
+                index: 5  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+                arp:
+                  priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
+                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+              pcc_rule:
+                - qos:
+                    index: 1  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+                    arp:
+                      priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+                      pre_emption_vulnerability: 1   # 1: Disabled, 2:Enabled
+                      pre_emption_capability: 1   # 1: Disabled, 2:Enabled
+                    mbr:
+                      downlink:
+                        value: 82
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                      uplink:
+                        value: 82
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                    gbr:
+                      downlink:
+                        value: 82
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                      uplink:
+                        value: 82
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                - qos:
+                    index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+                    arp:
+                      priority_level: 4  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+                      pre_emption_vulnerability: 2   # 1: Disabled, 2:Enabled
+                      pre_emption_capability: 2   # 1: Disabled, 2:Enabled
+                    mbr:
+                      downlink:
+                        value: 802
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                      uplink:
+                        value: 802
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                    gbr:
+                      downlink:
+                        value: 802
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                      uplink:
+                        value: 802
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+    - plmn_id:
+        mcc: 001
+        mnc: 01
+      slice:
+        - sst: 1  # 1,2,3,4
+          default_indicator: true
+          session:
+            - name: internet
+              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+              ambr:
+                downlink:
+                  value: 1
+                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                uplink:
+                  value: 1
+                  unit: 3
+              qos:
+                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+                arp:
+                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
+                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+            - name: ims
+              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+              ambr:
+                downlink:
+                  value: 1
+                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                uplink:
+                  value: 1
+                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+              qos:
+                index: 5  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+                arp:
+                  priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
+                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+              pcc_rule:
+                - qos:
+                    index: 1  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+                    arp:
+                      priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+                      pre_emption_vulnerability: 1   # 1: Disabled, 2:Enabled
+                      pre_emption_capability: 1   # 1: Disabled, 2:Enabled
+                    mbr:
+                      downlink:
+                        value: 82
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                      uplink:
+                        value: 82
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                    gbr:
+                      downlink:
+                        value: 82
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                      uplink:
+                        value: 82
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                - qos:
+                    index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+                    arp:
+                      priority_level: 4  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+                      pre_emption_vulnerability: 2   # 1: Disabled, 2:Enabled
+                      pre_emption_capability: 2   # 1: Disabled, 2:Enabled
+                    mbr:
+                      downlink:
+                        value: 802
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                      uplink:
+                        value: 802
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                    gbr:
+                      downlink:
+                        value: 802
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+                      uplink:
+                        value: 802
+                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+
+nssf:
+  sbi:
+    server:
+#      - address: 127.0.3.14
+#        port: 7777
+      - address: nssf.5gc.mnc010.mcc315.3gppnetwork.org
+    client:
+      nrf:
+        - uri: http://nrf.5gc.mnc010.mcc315.3gppnetwork.org
+      nsi:
+        - uri: http://nrf.5gc.mnc010.mcc315.3gppnetwork.org
+          s_nssai:
+            sst: 1
+bsf:
+  sbi:
+    server:
+      - address: 127.0.3.15
+        port: 7777
+    client:
+      nrf:
+        - uri: http://nrf.5gc.mnc010.mcc315.3gppnetwork.org
+
+udr:
+  sbi:
+    server:
+      - address: 127.0.3.20
+        port: 7777
+    client:
+      nrf:
+        - uri: http://nrf.5gc.mnc010.mcc315.3gppnetwork.org

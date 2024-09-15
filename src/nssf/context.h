@@ -36,6 +36,7 @@ extern int __nssf_log_domain;
 
 typedef struct nssf_context_s {
     ogs_list_t      nsi_list; /* NSI List */
+    ogs_list_t      home_list; /* Home List for HR-Roaming*/
 } nssf_context_t;
 
 void nssf_context_init(void);
@@ -51,12 +52,33 @@ typedef struct nssf_nsi_s {
     char *nsi_id;
 
     ogs_s_nssai_t s_nssai;
+    OpenAPI_roaming_indication_e roaming_indication;
+
+    bool tai_presence;
+    ogs_5gs_tai_t tai;
 } nssf_nsi_t;
+
+typedef struct nssf_home_s {
+    ogs_sbi_object_t sbi;
+    ogs_pool_id_t id;
+
+    ogs_plmn_id_t plmn_id;
+    ogs_s_nssai_t s_nssai;
+
+    char *nrf_id;
+    char *nsi_id;
+} nssf_home_t;
 
 nssf_nsi_t *nssf_nsi_add(char *nrf_id, uint8_t sst, ogs_uint24_t sd);
 void nssf_nsi_remove(nssf_nsi_t *nsi);
 void nssf_nsi_remove_all(void);
 nssf_nsi_t *nssf_nsi_find_by_s_nssai(ogs_s_nssai_t *s_nssai);
+
+nssf_home_t *nssf_home_add(ogs_plmn_id_t *plmn_id, ogs_s_nssai_t *s_nssai);
+void nssf_home_remove(nssf_home_t *home);
+void nssf_home_remove_all(void);
+nssf_home_t *nssf_home_find(ogs_plmn_id_t *plmn_id, ogs_s_nssai_t *s_nssai);
+nssf_home_t *nssf_home_find_by_id(ogs_pool_id_t id);
 
 int get_nsi_load(void);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -298,6 +298,8 @@ extern "C" {
     OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_REQUESTER_FEATURES
 #define OGS_SBI_CUSTOM_DISCOVERY_GUAMI  \
     OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_GUAMI
+#define OGS_SBI_CUSTOM_DISCOVERY_HNRF_URI  \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_HNRF_URI
 #define OGS_SBI_CUSTOM_PRODUCER_ID       \
     OGS_SBI_CUSTOM_3GPP_COMMON "Producer-Id"
 #define OGS_SBI_CUSTOM_OCI               \
@@ -340,6 +342,8 @@ extern "C" {
         "slice-info-request-for-pdu-session"
 #define OGS_SBI_PARAM_IPV4ADDR                      "ipv4Addr"
 #define OGS_SBI_PARAM_IPV6PREFIX                    "ipv6Prefix"
+#define OGS_SBI_PARAM_HOME_PLMN_ID                  "home-plmn-id"
+#define OGS_SBI_PARAM_HNRF_URI                      "hnrf-uri"
 
 #define OGS_SBI_CONTENT_JSON_TYPE                   \
     OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_JSON_TYPE
@@ -443,6 +447,8 @@ typedef struct ogs_sbi_discovery_option_s {
     int num_of_requester_plmn_list;
     ogs_plmn_id_t requester_plmn_list[OGS_MAX_NUM_OF_PLMN];
 
+    char *hnrf_uri;
+
     uint64_t requester_features;
 } ogs_sbi_discovery_option_t;
 
@@ -477,17 +483,25 @@ typedef struct ogs_sbi_message_s {
         char *dnn;
 
         /* Shared memory */
-        ogs_plmn_id_t plmn_id;
-        ogs_s_nssai_t s_nssai;
-
         bool plmn_id_presence;
+        ogs_plmn_id_t plmn_id;
+
         bool single_nssai_presence;
         bool snssai_presence;
-        bool slice_info_request_for_pdu_session_presence;
+        ogs_s_nssai_t s_nssai;
+
+        bool slice_info_for_pdu_session_presence;
         OpenAPI_roaming_indication_e roaming_indication;
+        bool home_snssai_presence;
+        ogs_s_nssai_t home_snssai;
 
         char *ipv4addr;
         char *ipv6prefix;
+
+        bool home_plmn_id_presence;
+        ogs_plmn_id_t home_plmn_id;
+        bool tai_presence;
+        ogs_5gs_tai_t tai;
     } param;
 
     int res_status;
@@ -675,6 +689,11 @@ char *ogs_sbi_discovery_option_build_plmn_list(
         ogs_plmn_id_t *plmn_list, int num_of_plmn_list);
 int ogs_sbi_discovery_option_parse_plmn_list(
         ogs_plmn_id_t *plmn_list, char *v);
+
+void ogs_sbi_discovery_option_set_hnrf_uri(
+        ogs_sbi_discovery_option_t *discovery_option, char *hnrf_uri);
+void ogs_sbi_discovery_option_clear_hnrf_uri(
+        ogs_sbi_discovery_option_t *discovery_option);
 
 #ifdef __cplusplus
 }

@@ -54,6 +54,7 @@ libsmf_sources = files('''
     nnrf-handler.h
     nudm-build.h
     nudm-handler.h
+    nsmf-build.h
     nsmf-handler.h
     namf-build.h
     namf-handler.h
@@ -93,6 +94,7 @@ libsmf_sources = files('''
     nnrf-handler.c
     nudm-build.c
     nudm-handler.c
+    nsmf-build.c
     nsmf-handler.c
     namf-build.c
     namf-handler.c

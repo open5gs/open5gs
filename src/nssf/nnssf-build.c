@@ -19,19 +19,15 @@
 
 #include "nnssf-build.h"
 
-ogs_sbi_request_t *amf_nnssf_nsselection_build_get(
-        amf_sess_t *sess, void *data)
+ogs_sbi_request_t *nssf_nnssf_nsselection_build_get(
+        nssf_home_t *home, void *data)
 {
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
-    amf_nnssf_nsselection_param_t *param = data;
-
-    amf_ue_t *amf_ue = NULL;
+    nssf_nnssf_nsselection_param_t *param = data;
 
     ogs_assert(param);
-    ogs_assert(sess);
-    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
-    ogs_assert(amf_ue);
+    ogs_assert(home);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
@@ -75,20 +71,6 @@ ogs_sbi_request_t *amf_nnssf_nsselection_build_get(
     if (!message.param.roaming_indication) {
         ogs_error("No roamingIndication");
         goto end;
-    }
-
-    if (param->slice_info_for_pdu_session.home_snssai) {
-        message.param.home_snssai_presence = true;
-        if (message.param.home_snssai_presence)
-            memcpy(&message.param.home_snssai,
-                    param->slice_info_for_pdu_session.home_snssai,
-                    sizeof(message.param.home_snssai));
-    }
-
-    if (param->home_plmn_id) {
-        message.param.home_plmn_id_presence = true;
-        memcpy(&message.param.home_plmn_id,
-                param->home_plmn_id, sizeof(message.param.home_plmn_id));
     }
 
     if (param->tai) {

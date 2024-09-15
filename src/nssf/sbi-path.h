@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -21,6 +21,7 @@
 #define NSSF_SBI_PATH_H
 
 #include "context.h"
+#include "nnssf-build.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,6 +29,14 @@ extern "C" {
 
 int nssf_sbi_open(void);
 void nssf_sbi_close(void);
+
+bool nssf_sbi_send_request(
+        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
+int nssf_sbi_discover_and_send(
+        ogs_sbi_service_type_e service_type,
+        ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_request_t *(*build)(nssf_home_t *home, void *data),
+        nssf_home_t *home, ogs_sbi_stream_t *stream, void *data);
 
 #ifdef __cplusplus
 }

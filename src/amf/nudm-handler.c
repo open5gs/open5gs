@@ -228,6 +228,12 @@ int amf_nudm_sdm_handle_provisioned(
                                                 DnnInfo->default_dnn_indicator;
                                         }
                                         slice->num_of_session++;
+
+                                        if (DnnInfo->is_lbo_roaming_allowed ==
+                                                true) {
+                                            session->lbo_roaming_allowed =
+                                                DnnInfo->lbo_roaming_allowed;
+                                        }
                                     }
                                 }
                             }

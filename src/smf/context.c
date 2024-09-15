@@ -1777,6 +1777,8 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->handover.upf_dl_addr6)
         ogs_freeaddrinfo(sess->handover.upf_dl_addr6);
 
+    if (sess->h_smf_uri)
+        ogs_free(sess->h_smf_uri);
     if (sess->pcf_id)
         ogs_free(sess->pcf_id);
     if (sess->serving_nf_id)

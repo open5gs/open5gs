@@ -226,6 +226,7 @@ bool smf_nsmf_handle_create_sm_context(
     ogs_sbi_parse_plmn_id_nid(&sess->serving_plmn_id, servingNetwork);
     memcpy(&sess->home_plmn_id, &sess->serving_plmn_id, OGS_PLMN_ID_LEN);
 
+    sess->an_type = SmContextCreateData->an_type;
     sess->sbi_rat_type = SmContextCreateData->rat_type;
 
     ogs_sbi_parse_nr_location(&sess->nr_tai, &sess->nr_cgi, NrLocation);
@@ -350,6 +351,12 @@ bool smf_nsmf_handle_create_sm_context(
                 ogs_free(sess->full_dnn);
             sess->full_dnn = NULL;
         }
+    }
+
+    if (SmContextCreateData->h_smf_uri) {
+        if (sess->h_smf_uri) ogs_free(sess->h_smf_uri);
+        sess->h_smf_uri = ogs_strdup(SmContextCreateData->h_smf_uri);
+        ogs_assert(sess->h_smf_uri);
     }
 
     if (SmContextCreateData->pcf_id) {

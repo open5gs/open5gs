@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -66,7 +66,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
 
     SmContextCreateData.serving_network =
         ogs_sbi_build_plmn_id_nid(&amf_ue->nr_tai.plmn_id);
-    if (!SmContextCreateData.serving_nf_id) {
+    if (!SmContextCreateData.serving_network) {
         ogs_error("No serving_network");
         goto end;
     }
@@ -111,6 +111,24 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
      */
     if (ogs_sbi_plmn_id_in_vplmn(&amf_ue->home_plmn_id) == true) {
         char *home_network_domain = NULL;
+
+        if (sess->lbo_roaming_allowed == false) {
+            ogs_sbi_nf_instance_t *h_smf_instance = NULL;
+            ogs_sbi_client_t *h_smf_client = NULL;
+
+            /* Home-Routed Roaming */
+            h_smf_instance = OGS_SBI_GET_NF_INSTANCE(
+                    sess->sbi.home_nsmf_pdusession);
+            ogs_assert(h_smf_instance);
+            h_smf_client = NF_INSTANCE_CLIENT(h_smf_instance);
+            ogs_assert(h_smf_client);
+
+            SmContextCreateData.h_smf_id = h_smf_instance->id;
+
+            SmContextCreateData.h_smf_uri =
+                ogs_sbi_client_apiroot(h_smf_client);
+            ogs_assert(SmContextCreateData.h_smf_uri);
+        }
 
         home_network_domain =
             ogs_home_network_domain_from_plmn_id(&amf_ue->home_plmn_id);
@@ -227,10 +245,10 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     message.http.custom.callback =
         (char *)OGS_SBI_CALLBACK_NSMF_PDUSESSION_STATUS_NOTIFY;
 
-    if (param && param->nrf_uri.nrf.id) {
+    if (param && param->nrf_uri) {
         message.http.custom.nrf_uri =
             ogs_msprintf("%s: \"%s\"",
-                    OGS_SBI_SERVICE_NAME_NNRF_DISC, param->nrf_uri.nrf.id);
+                    OGS_SBI_SERVICE_NAME_NNRF_DISC, param->nrf_uri);
     }
 
     request = ogs_sbi_build_request(&message);
@@ -260,6 +278,9 @@ end:
     }
     if (SmContextCreateData.ue_time_zone)
         ogs_free(SmContextCreateData.ue_time_zone);
+
+    if (SmContextCreateData.h_smf_uri)
+        ogs_free(SmContextCreateData.h_smf_uri);
 
     if (message.http.custom.nrf_uri)
         ogs_free(message.http.custom.nrf_uri);

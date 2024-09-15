@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -27,7 +27,7 @@ extern "C" {
 #include "context.h"
 
 int amf_nnssf_nsselection_handle_get(
-        amf_sess_t *sess, ogs_sbi_message_t *recvmsg);
+        amf_sess_t *sess, int state, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }

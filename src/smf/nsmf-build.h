@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef NSSF_NNSSF_HANDLER_H
-#define NSSF_NNSSF_HANDLER_H
+#ifndef SMF_NSMF_BUILD_H
+#define SMF_NSMF_BUILD_H
 
 #include "context.h"
 
@@ -26,14 +26,11 @@
 extern "C" {
 #endif
 
-bool nssf_nnrf_nsselection_handle_get_from_amf_or_vnssf(
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
-bool nssf_nnrf_nsselection_handle_get_from_hnssf(
-        nssf_home_t *home,
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
+ogs_sbi_request_t *smf_nsmf_pdusession_build_create_sm_context(
+        smf_sess_t *sess, void *data);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* NSSF_NNSSF_HANDLER_H */
+#endif /* SMF_NSMF_BUILD_H */

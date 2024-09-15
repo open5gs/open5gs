@@ -487,6 +487,13 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
                 ogs_free(v);
             }
 
+            if (discovery_option && discovery_option->hnrf_uri) {
+                ogs_debug("hnrf_uri [%s]", discovery_option->hnrf_uri);
+                ogs_sbi_header_set(request->http.headers,
+                        OGS_SBI_CUSTOM_DISCOVERY_HNRF_URI,
+                        discovery_option->hnrf_uri);
+            }
+
             rc = ogs_sbi_client_send_via_scp_or_sepp(
                     scp_client, client_discover_cb, request,
                     OGS_UINT_TO_POINTER(xact->id));

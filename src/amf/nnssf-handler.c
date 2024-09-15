@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -22,10 +22,10 @@
 #include "sbi-path.h"
 
 int amf_nnssf_nsselection_handle_get(
-        amf_sess_t *sess, ogs_sbi_message_t *recvmsg)
+        amf_sess_t *sess, int state, ogs_sbi_message_t *recvmsg)
 {
     bool rc;
-    int r;
+    int r, i;
     OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
     ogs_sbi_client_t *client = NULL, *scp_client = NULL;
     char *fqdn = NULL;
@@ -39,6 +39,7 @@ int amf_nnssf_nsselection_handle_get(
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *ran_ue = NULL;
 
+    ogs_assert(state);
     ogs_assert(recvmsg);
     ogs_assert(!SESSION_CONTEXT_IN_SMF(sess));
 
@@ -97,6 +98,27 @@ int amf_nnssf_nsselection_handle_get(
         return OGS_ERROR;
     }
 
+    if (state == AMF_SMF_SELECTION_IN_HPLMN_IN_HOME_ROUTED) {
+        if (!sess->nssf.nrf_uri) {
+            ogs_error("No VPLMN nrf_uri");
+            r = nas_5gs_send_gmm_reject_from_sbi(
+                    amf_ue, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return OGS_ERROR;
+        }
+
+        if (sess->nssf.hnrf_uri)
+            ogs_free(sess->nssf.hnrf_uri);
+        sess->nssf.hnrf_uri = ogs_strdup(NsiInformation->nrf_id);
+        ogs_assert(sess->nssf.hnrf_uri);
+    } else {
+        if (sess->nssf.nrf_uri)
+            ogs_free(sess->nssf.nrf_uri);
+        sess->nssf.nrf_uri = ogs_strdup(NsiInformation->nrf_id);
+        ogs_assert(sess->nssf.nrf_uri);
+    }
+
     discovery_option = ogs_sbi_discovery_option_new();
     ogs_assert(discovery_option);
 
@@ -104,18 +126,41 @@ int amf_nnssf_nsselection_handle_get(
     ogs_sbi_discovery_option_set_dnn(discovery_option, sess->dnn);
     ogs_sbi_discovery_option_set_tai(discovery_option, &amf_ue->nr_tai);
 
-    if (sess->nssf.nrf.id)
-        ogs_free(sess->nssf.nrf.id);
-    sess->nssf.nrf.id = ogs_strdup(NsiInformation->nrf_id);
-    ogs_assert(sess->nssf.nrf.id);
+    if (state == AMF_SMF_SELECTION_IN_HPLMN_IN_HOME_ROUTED) {
+        /*
+         * In order for Home Routed to find NRFs that are on HPLMN,
+         * we need to include Home PLMN information in the Discovery Option.
+         */
+        ogs_sbi_discovery_option_add_target_plmn_list(
+                discovery_option, &amf_ue->home_plmn_id);
 
-    scp_client = NF_INSTANCE_CLIENT(ogs_sbi_self()->scp_instance);
+        ogs_assert(ogs_local_conf()->num_of_serving_plmn_id);
+        for (i = 0; i < ogs_local_conf()->num_of_serving_plmn_id; i++) {
+            ogs_sbi_discovery_option_add_requester_plmn_list(
+                    discovery_option,
+                    &ogs_local_conf()->serving_plmn_id[i]);
+        }
+
+        ogs_assert(sess->nssf.hnrf_uri);
+        ogs_sbi_discovery_option_set_hnrf_uri(
+                discovery_option, sess->nssf.hnrf_uri);
+    }
+
+    /*
+     * SCP can only be used with Non-Roaming or LBO.
+     *
+     * In Home Routed, obtaining NRF from NSSF and selecting SMF
+     * cannot be done via SCP.
+     */
+    if (state == AMF_SMF_SELECTION_IN_VPLMN_IN_NON_ROAMING_OR_LBO)
+        scp_client = NF_INSTANCE_CLIENT(ogs_sbi_self()->scp_instance);
 
     if (scp_client) {
+        /* SCP can only be used with Non-Roaming or LBO. */
         amf_nsmf_pdusession_sm_context_param_t param;
 
         memset(&param, 0, sizeof(param));
-        param.nrf_uri.nrf.id = sess->nssf.nrf.id;
+        param.nrf_uri = sess->nssf.nrf_uri;
 
         r = amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, discovery_option,
@@ -124,6 +169,10 @@ int amf_nnssf_nsselection_handle_get(
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     } else {
+        /*
+         * In Home Routed, obtaining NRF from NSSF and selecting SMF
+         * cannot be done via SCP.
+         */
         rc = ogs_sbi_getaddr_from_uri(
                 &scheme, &fqdn, &fqdn_port, &addr, &addr6,
                 NsiInformation->nrf_id);
@@ -163,7 +212,7 @@ int amf_nnssf_nsselection_handle_get(
 
         r = amf_sess_sbi_discover_by_nsi(
                 ran_ue, sess,
-                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, discovery_option);
+                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, discovery_option, state);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     }

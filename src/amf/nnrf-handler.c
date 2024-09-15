@@ -29,9 +29,14 @@ void amf_nnrf_handle_nf_discover(
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_object_t *sbi_object = NULL;
+    ogs_pool_id_t sbi_object_id = OGS_INVALID_POOL_ID;
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
+    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
     OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
+
+    amf_ue_t *amf_ue = NULL;
+    amf_sess_t *sess = NULL;
 
     OpenAPI_search_result_t *SearchResult = NULL;
 
@@ -41,8 +46,14 @@ void amf_nnrf_handle_nf_discover(
     ogs_assert(sbi_object);
     service_type = xact->service_type;
     ogs_assert(service_type);
+    target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
+    ogs_assert(target_nf_type);
     requester_nf_type = xact->requester_nf_type;
     ogs_assert(requester_nf_type);
+
+    sbi_object_id = xact->sbi_object_id;
+    ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
+            sbi_object_id <= OGS_MAX_POOL_ID);
 
     discovery_option = xact->discovery_option;
 
@@ -52,24 +63,27 @@ void amf_nnrf_handle_nf_discover(
         return;
     }
 
+    if (sbi_object->type == OGS_SBI_OBJ_UE_TYPE) {
+        amf_ue = amf_ue_find_by_id(sbi_object_id);
+        ogs_assert(amf_ue);
+    } else if (sbi_object->type == OGS_SBI_OBJ_SESS_TYPE) {
+        sess = amf_sess_find_by_id(sbi_object_id);
+        ogs_assert(sess);
+        amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
+        ogs_assert(amf_ue);
+    } else {
+        ogs_fatal("(NF discover) Not implemented [%s:%d]",
+            ogs_sbi_service_type_to_name(service_type), sbi_object->type);
+        ogs_assert_if_reached();
+    }
+
     ogs_nnrf_disc_handle_nf_discover_search_result(SearchResult);
 
-    amf_sbi_select_nf(sbi_object,
-            service_type, requester_nf_type, discovery_option);
-
-    nf_instance = OGS_SBI_GET_NF_INSTANCE(
-            sbi_object->service_type_array[service_type]);
-
+    nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
+                    target_nf_type, requester_nf_type, discovery_option);
     if (!nf_instance) {
-        amf_ue_t *amf_ue = NULL;
-        amf_sess_t *sess = NULL;
-
-        ogs_assert(sbi_object->type > OGS_SBI_OBJ_BASE &&
-                    sbi_object->type < OGS_SBI_OBJ_TOP);
         switch(sbi_object->type) {
         case OGS_SBI_OBJ_UE_TYPE:
-            amf_ue = (amf_ue_t *)sbi_object;
-            ogs_assert(amf_ue);
             ogs_error("[%s] (NF discover) No [%s]", amf_ue->suci,
                         ogs_sbi_service_type_to_name(service_type));
             r = nas_5gs_send_gmm_reject_from_sbi(amf_ue,
@@ -78,9 +92,6 @@ void amf_nnrf_handle_nf_discover(
             ogs_assert(r != OGS_ERROR);
             break;
         case OGS_SBI_OBJ_SESS_TYPE:
-            sess = (amf_sess_t *)sbi_object;
-            ogs_assert(sess);
-                        
             ogs_error("[%d:%d] (NF discover) No [%s]", sess->psi, sess->pti,
                         ogs_sbi_service_type_to_name(service_type));
             if (sess->payload_container_type) {
@@ -107,6 +118,9 @@ void amf_nnrf_handle_nf_discover(
 
         return;
     }
+
+    OGS_SBI_SETUP_NF_INSTANCE(
+            sbi_object->service_type_array[service_type], nf_instance);
 
     ogs_expect(true == amf_sbi_send_request(nf_instance, xact));
 }
