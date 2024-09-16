@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -366,6 +366,8 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                 mme_ue->imsi_bcd, mme_ue->nas_eps.type);
         ogs_assert_if_reached();
     }
+
+    return;
 
 error:
     ogs_error("Error processing SGsAP LU REJECT");

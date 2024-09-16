@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -1141,7 +1141,7 @@ static void test3_func(abts_case *tc, void *data)
     test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
 #endif
 
-    /* Receive InitialContextSetupResponse + TAU Accept */
+    /* Receive InitialContextSetupRequest + TAU Accept */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);

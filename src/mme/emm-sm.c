@@ -959,9 +959,87 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                         mme_ue->imsi_bcd);
             break;
 
+
+        /*
+         * TS24.301
+         * 5.5.3 Tracking area updating procedure (S1 mode only)
+         * 5.5.3.2 Normal and periodic tracking area updating procedure
+         * 5.5.3.2.4 Normal and periodic tracking area updating procedure
+         * accepted by the network
+         *
+         * According to the standard, the MME should verify whether
+         * the P-TMSI has changed. If it has changed, the MME must
+         * wait for the Tracking Area Update Complete message. After
+         * sending the Tracking Area Update Accept, the T3450 timer
+         * should be started to wait for the Complete message. During
+         * this time, the EMM state should remain in
+         * initial_context_setup_request state. Only upon receiving the
+         * Complete message should the state transition to
+         * EMM-Registered.
+         *
+         * However, for simplicity, this implementation in Open5GS
+         * MME does not verify whether the P-TMSI has changed.
+         * Additionally, the T3450 timer is not started, and the
+         * state is immediately transitioned to EMM-Registered.
+         *
+         * If the UE sends the Tracking Area Update Complete, it
+         * implies that the P-TMSI has changed. Therefore, when
+         * receiving the Tracking Area Update Complete message in the
+         * EMM-Registered state, the implementation sends an SGsAP
+         * TMSI-REALLOCATION-COMPLETE to the VLR.
+         */
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_COMPLETE:
-            ogs_error("[%s] Tracking area update complete in INVALID-STATE",
-                        mme_ue->imsi_bcd);
+            ogs_info("[%s] Tracking area update complete", mme_ue->imsi_bcd);
+
+        /*
+         * TS24.301
+         * Section 4.4.4.3
+         * Integrity checking of NAS signalling messages in the MME:
+         *
+         * Once the secure exchange of NAS messages has been established
+         * for the NAS signalling connection, the receiving EMM or ESM entity
+         * in the MME shall not process any NAS signalling messages
+         * unless they have been successfully integrity checked by the NAS.
+         * If any NAS signalling message, having not successfully passed
+         * the integrity check, is received, then the NAS in the MME shall
+         * discard that message. If any NAS signalling message is received,
+         * as not integrity protected even though the secure exchange
+         * of NAS messages has been established, then the NAS shall discard
+         * this message.
+         */
+            h.type = e->nas_type;
+            if (h.integrity_protected == 0) {
+                ogs_error("[%s] No Integrity Protected", mme_ue->imsi_bcd);
+                break;
+            }
+
+            if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+                ogs_error("[%s] No Security Context", mme_ue->imsi_bcd);
+                break;
+            }
+
+            /*
+             * If the OLD ENB_UE is being maintained in MME-UE Context,
+             * it deletes the S1 Context after exchanging
+             * the UEContextReleaseCommand/Complete with the eNB
+             */
+            CLEAR_S1_CONTEXT(mme_ue);
+
+#if 0
+            /*
+             * The T3450 timer was not started in this implementation,
+             * so there is no need to stop it. This simplifies the
+             * process as the state transitions directly to
+             * EMM-Registered without waiting for the timer to expire.
+             */
+            CLEAR_MME_UE_TIMER(mme_ue->t3450);
+#endif
+
+            if (MME_P_TMSI_IS_AVAILABLE(mme_ue))
+                ogs_assert(OGS_OK ==
+                    sgsap_send_tmsi_reallocation_complete(mme_ue));
+
+            OGS_FSM_TRAN(s, &emm_state_registered);
             break;
 
         default:
@@ -1495,7 +1573,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             break;
 
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_COMPLETE:
-            ogs_debug("[%s] Tracking area update complete", mme_ue->imsi_bcd);
+            ogs_info("[%s] Tracking area update complete", mme_ue->imsi_bcd);
 
         /*
          * TS24.301
@@ -1536,6 +1614,10 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             /* Confirm GUTI */
             if (mme_ue->next.m_tmsi)
                 mme_ue_confirm_guti(mme_ue);
+
+            if (MME_P_TMSI_IS_AVAILABLE(mme_ue))
+                ogs_assert(OGS_OK ==
+                    sgsap_send_tmsi_reallocation_complete(mme_ue));
 
             OGS_FSM_TRAN(s, &emm_state_registered);
             break;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -26,11 +26,13 @@ ogs_pkbuf_t *test_sgsap_location_update_accept(int i)
     ogs_pkbuf_t *pkbuf = NULL;
     const char *payload[TEST_SGSAP_MAX_MESSAGE] = {
         "0a01089999073746 000006040509f107 09260e05f49ee88e 64",
+        "0a01089999073746 000006040509f107 09260e05f49ee88e 65",
         "0a01087942120000 000030040527f412 c9580e05f437ab9c c5",
         "",
 
     };
     uint16_t len[TEST_SGSAP_MAX_MESSAGE] = {
+        25,
         25,
         25,
         0,

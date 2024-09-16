@@ -251,12 +251,12 @@ static void test_simple_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send SGsAP-Location-Update-Accept */
-    sendbuf = test_sgsap_location_update_accept(0);
+    sendbuf = test_sgsap_location_update_accept(1);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testvlr_sgsap_send(sgsap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive InitialContextSetupResponse + TAU Accept */
+    /* Receive InitialContextSetupRequest + TAU Accept */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
@@ -266,6 +266,19 @@ static void test_simple_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send TAU Complete */
+    emmbuf = testemm_build_tau_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, emmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive SGsAP TMSI-REALLOCATION-COMPLETE */
+    recvbuf = testvlr_sgsap_read(sgsap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
 
     /* Send UE Context Release Request */
     sendbuf = test_s1ap_build_ue_context_release_request(test_ue,
@@ -531,7 +544,7 @@ static void test_no_active_flag_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send SGsAP-Location-Update-Accept */
-    sendbuf = test_sgsap_location_update_accept(0);
+    sendbuf = test_sgsap_location_update_accept(1);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testvlr_sgsap_send(sgsap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -540,6 +553,19 @@ static void test_no_active_flag_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+
+    /* Send TAU Complete */
+    emmbuf = testemm_build_tau_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, emmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive SGsAP TMSI-REALLOCATION-COMPLETE */
+    recvbuf = testvlr_sgsap_read(sgsap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
 
     /* Receive UEContextReleaseCommand */
     recvbuf = testenb_s1ap_read(s1ap);
@@ -825,12 +851,12 @@ static void test_integrity_unprotected_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send SGsAP-Location-Update-Accept */
-    sendbuf = test_sgsap_location_update_accept(0);
+    sendbuf = test_sgsap_location_update_accept(1);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testvlr_sgsap_send(sgsap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive InitialContextSetupResponse + TAU Accept */
+    /* Receive InitialContextSetupRequest + TAU Accept */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
@@ -848,6 +874,11 @@ static void test_integrity_unprotected_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive SGsAP TMSI-REALLOCATION-COMPLETE */
+    recvbuf = testvlr_sgsap_read(sgsap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
 
     /* Send UE Context Release Request */
     sendbuf = test_s1ap_build_ue_context_release_request(test_ue,
@@ -1291,7 +1322,7 @@ static void test_uplink_transport_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send SGsAP-Location-Update-Accept */
-    sendbuf = test_sgsap_location_update_accept(0);
+    sendbuf = test_sgsap_location_update_accept(1);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testvlr_sgsap_send(sgsap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -1300,6 +1331,19 @@ static void test_uplink_transport_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+
+    /* Send TAU Complete */
+    emmbuf = testemm_build_tau_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, emmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive SGsAP TMSI-REALLOCATION-COMPLETE */
+    recvbuf = testvlr_sgsap_read(sgsap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
 
     /* Receive UE Context Release Command */
     mme_ue_s1ap_id = test_ue->mme_ue_s1ap_id;
