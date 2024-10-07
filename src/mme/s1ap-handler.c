@@ -584,7 +584,6 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
     ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     tAC = &TAI->tAC;
     ogs_assert(tAC && tAC->size == sizeof(uint16_t));
-
     memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.tai.plmn_id));
     memcpy(&enb_ue->saved.tai.tac, tAC->buf, sizeof(enb_ue->saved.tai.tac));
@@ -744,7 +743,6 @@ void s1ap_handle_uplink_nas_transport(
     ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     tAC = &TAI->tAC;
     ogs_assert(tAC && tAC->size == sizeof(uint16_t));
-
     memcpy(&tai.plmn_id, pLMNidentity->buf, sizeof(tai.plmn_id));
     memcpy(&tai.tac, tAC->buf, sizeof(tai.tac));
     tai.tac = be16toh(tai.tac);
@@ -773,6 +771,10 @@ void s1ap_handle_uplink_nas_transport(
             sizeof(enb_ue->saved.e_cgi.cell_id));
     enb_ue->saved.e_cgi.cell_id = (be32toh(enb_ue->saved.e_cgi.cell_id) >> 4);
 
+    pLMNidentity = &TAI->pLMNidentity;
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
+    tAC = &TAI->tAC;
+    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
     memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.tai.plmn_id));
     memcpy(&enb_ue->saved.tai.tac, tAC->buf, sizeof(enb_ue->saved.tai.tac));
@@ -2472,11 +2474,6 @@ void s1ap_handle_path_switch_request(
         return;
     }
 
-    pLMNidentity = &EUTRAN_CGI->pLMNidentity;
-    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
-    cell_ID = &EUTRAN_CGI->cell_ID;
-    ogs_assert(cell_ID);
-
     if (!TAI) {
         ogs_error("No TAI");
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
@@ -2490,7 +2487,6 @@ void s1ap_handle_path_switch_request(
     ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     tAC = &TAI->tAC;
     ogs_assert(tAC && tAC->size == sizeof(uint16_t));
-
     memcpy(&tai.plmn_id, pLMNidentity->buf, sizeof(tai.plmn_id));
     memcpy(&tai.tac, tAC->buf, sizeof(tai.tac));
     tai.tac = be16toh(tai.tac);
@@ -2556,11 +2552,19 @@ void s1ap_handle_path_switch_request(
     ogs_info("    NEW ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
+    pLMNidentity = &TAI->pLMNidentity;
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
+    tAC = &TAI->tAC;
+    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
     memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.tai.plmn_id));
     memcpy(&enb_ue->saved.tai.tac, tAC->buf, sizeof(enb_ue->saved.tai.tac));
     enb_ue->saved.tai.tac = be16toh(enb_ue->saved.tai.tac);
 
+    pLMNidentity = &EUTRAN_CGI->pLMNidentity;
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
+    cell_ID = &EUTRAN_CGI->cell_ID;
+    ogs_assert(cell_ID);
     memcpy(&enb_ue->saved.e_cgi.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.e_cgi.plmn_id));
     memcpy(&enb_ue->saved.e_cgi.cell_id, cell_ID->buf,
@@ -3700,11 +3704,6 @@ void s1ap_handle_handover_notification(
         return;
     }
 
-    pLMNidentity = &EUTRAN_CGI->pLMNidentity;
-    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
-    cell_ID = &EUTRAN_CGI->cell_ID;
-    ogs_assert(cell_ID);
-
     if (!TAI) {
         ogs_error("No TAI");
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
@@ -3713,11 +3712,6 @@ void s1ap_handle_handover_notification(
         ogs_assert(r != OGS_ERROR);
         return;
     }
-
-    pLMNidentity = &TAI->pLMNidentity;
-    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
-    tAC = &TAI->tAC;
-    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
 
     source_ue = enb_ue_find_by_id(target_ue->source_ue_id);
     if (!source_ue) {
@@ -3744,12 +3738,20 @@ void s1ap_handle_handover_notification(
     ogs_debug("Mobile Reachable timer stopped for IMSI[%s]", mme_ue->imsi_bcd);
     CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
 
+    pLMNidentity = &TAI->pLMNidentity;
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
+    tAC = &TAI->tAC;
+    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
     memcpy(&target_ue->saved.tai.plmn_id, pLMNidentity->buf,
             sizeof(target_ue->saved.tai.plmn_id));
     memcpy(&target_ue->saved.tai.tac,
             tAC->buf, sizeof(target_ue->saved.tai.tac));
     target_ue->saved.tai.tac = be16toh(target_ue->saved.tai.tac);
 
+    pLMNidentity = &EUTRAN_CGI->pLMNidentity;
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
+    cell_ID = &EUTRAN_CGI->cell_ID;
+    ogs_assert(cell_ID);
     memcpy(&target_ue->saved.e_cgi.plmn_id, pLMNidentity->buf,
             sizeof(target_ue->saved.e_cgi.plmn_id));
     memcpy(&target_ue->saved.e_cgi.cell_id, cell_ID->buf,
