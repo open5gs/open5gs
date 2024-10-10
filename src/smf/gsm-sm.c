@@ -257,6 +257,8 @@ void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         sbi_message = e->h.sbi.message;
         ogs_assert(sbi_message);
+        smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+        ogs_assert(smf_ue);
 
         stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
         ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
@@ -270,24 +272,70 @@ void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
 
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
-            SWITCH(sbi_message->h.resource.component[2])
-            CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-            CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_SM_CONTEXTS)
+                SWITCH(sbi_message->h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+                CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
+                    ogs_error("Invalid resource name [%s]",
+                                sbi_message->h.resource.component[2]);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, sbi_message,
+                            "Invalid resource name [%s]",
+                            sbi_message->h.resource.component[2], NULL));
+                    OGS_FSM_TRAN(s, smf_gsm_state_exception);
+                    break;
+                DEFAULT
+                    if (smf_nsmf_handle_create_sm_context(
+                            sess, stream, sbi_message) == false) {
+                        ogs_error("smf_nsmf_handle_create_sm_context() failed");
+                        OGS_FSM_TRAN(s, smf_gsm_state_exception);
+                        break;
+                    }
+
+                    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+                        ogs_info("[%s:%d] Home-Routed Roaming in V-SMF",
+                                smf_ue->supi, sess->psi);
+                        OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_establishment);
+                    }
+                END
+                break;
+            CASE(OGS_SBI_RESOURCE_NAME_PDU_SESSIONS)
+                SWITCH(sbi_message->h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+                CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
+                    ogs_error("Invalid resource name [%s]",
+                                sbi_message->h.resource.component[2]);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, sbi_message,
+                            "Invalid resource name [%s]",
+                            sbi_message->h.resource.component[2], NULL));
+                    OGS_FSM_TRAN(s, smf_gsm_state_exception);
+                    break;
+                DEFAULT
+                    if (smf_nsmf_handle_create_pdu_session_in_hsmf(
+                            sess, stream, sbi_message) == false) {
+                        ogs_error(
+                                "smf_nsmf_handle_create_pdu_session_in_hsmf() "
+                                "failed");
+                        OGS_FSM_TRAN(s, smf_gsm_state_exception);
+                        break;
+                    }
+                    OGS_FSM_TRAN(s,
+                            smf_gsm_state_wait_5gc_sm_policy_association);
+                END
+                break;
+
+            DEFAULT
                 ogs_error("Invalid resource name [%s]",
-                            sbi_message->h.resource.component[2]);
+                        sbi_message->h.resource.component[0]);
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, sbi_message,
-                        "Invalid resource name [%s]",
-                        sbi_message->h.resource.component[2], NULL));
-                OGS_FSM_TRAN(s, smf_gsm_state_exception);
-                break;
-            DEFAULT
-                if (smf_nsmf_handle_create_sm_context(
-                        sess, stream, sbi_message) == false) {
-                    ogs_error("smf_nsmf_handle_create_sm_context() failed");
-                    OGS_FSM_TRAN(s, smf_gsm_state_exception);
-                }
+                        "Invalid resource name",
+                        sbi_message->h.resource.component[0], NULL));
             END
             break;
 
@@ -485,8 +533,6 @@ void smf_gsm_state_wait_5gc_sm_policy_association(ogs_fsm_t *s, smf_event_t *e)
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *sbi_message = NULL;
 
-    int state = 0;
-
     ogs_assert(s);
     ogs_assert(e);
 
@@ -565,6 +611,11 @@ void smf_gsm_state_wait_5gc_sm_policy_association(ogs_fsm_t *s, smf_event_t *e)
 
         CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
             /*
+             * TS23.502
+             * 4.3.2.2 UE Requested PDU Session Establishment
+             *
+             * 4.3.2.2.1 Non-roaming and Roaming with Local Breakout
+             *
              * By here, SMF has already sent a response to AMF in
              * smf_nudm_sdm_handle_get. Therefore, 'stream = e->h.sbi.data'
              * should not be used here. Instead of sending additional error
@@ -572,16 +623,22 @@ void smf_gsm_state_wait_5gc_sm_policy_association(ogs_fsm_t *s, smf_event_t *e)
              * Namf_Communication_N1N2MessageTransfer request by transitioning
              * into smf_gsm_state_5gc_n1_n2_reject. This is according to
              *
-             * TS23.502
-             * 6.3.1.7 4.3.2.2 UE Requested PDU Session Establishment
-             * p100
              * 11.  ...
              * If the PDU session establishment failed anywhere between step 5
              * and step 11, then the Namf_Communication_N1N2MessageTransfer
              * request shall include the N1 SM container with a PDU Session
              * Establishment Reject message ...
+             *
+             * 4.3.2.2.2 Home-routed Roaming
+             * However, Home Routed Roaming requires a stream.
+             * This is because we need the stream
+             * when we send the Nsmf_PDUSession_Create Response in step 13.
+             *
+             * 13. H-SMF to V-SMF: Nsmf_PDUSession_Create Response ...
              */
-            state = e->h.sbi.state;
+            stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            if (stream_id >= OGS_MIN_POOL_ID && stream_id <= OGS_MAX_POOL_ID)
+                stream = ogs_sbi_stream_find_by_id(stream_id);
 
             SWITCH(sbi_message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_SM_POLICIES)
@@ -597,7 +654,7 @@ void smf_gsm_state_wait_5gc_sm_policy_association(ogs_fsm_t *s, smf_event_t *e)
                             sbi_message->res_status);
                     OGS_FSM_TRAN(s, smf_gsm_state_5gc_n1_n2_reject);
                 } else if (smf_npcf_smpolicycontrol_handle_create(
-                        sess, state, sbi_message) == true) {
+                        sess, stream, sbi_message) == true) {
                     OGS_FSM_TRAN(s,
                         &smf_gsm_state_wait_pfcp_establishment);
                 } else {
@@ -639,6 +696,8 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
     ogs_pfcp_message_t *pfcp_message = NULL;
     int rv;
 
+    ogs_sbi_stream_t *stream = NULL;
+
     ogs_assert(s);
     ogs_assert(e);
 
@@ -656,6 +715,10 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(pfcp_xact);
         pfcp_message = e->pfcp_message;
         ogs_assert(pfcp_message);
+
+        if (pfcp_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                pfcp_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
+            stream = ogs_sbi_stream_find_by_id(pfcp_xact->assoc_stream_id);
 
         switch (pfcp_message->h.type) {
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
@@ -711,6 +774,7 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
                 }
                 smf_bearer_binding(sess);
             } else {
+                int r = 0;
                 pfcp_cause = smf_5gc_n4_handle_session_establishment_response(
                         sess, pfcp_xact,
                         &pfcp_message->pfcp_session_establishment_response);
@@ -718,16 +782,34 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
                     OGS_FSM_TRAN(s, smf_gsm_state_5gc_n1_n2_reject);
                     return;
                 }
-                memset(&param, 0, sizeof(param));
-                param.state = SMF_UE_REQUESTED_PDU_SESSION_ESTABLISHMENT;
-                param.n1smbuf =
-                    gsm_build_pdu_session_establishment_accept(sess);
-                ogs_assert(param.n1smbuf);
-                param.n2smbuf =
-                    ngap_build_pdu_session_resource_setup_request_transfer(
-                            sess);
-                ogs_assert(param.n2smbuf);
-                smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+                if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+                    r = smf_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            smf_nsmf_pdusession_build_create_pdu_session,
+                            sess, NULL, 0, NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
+                    r = smf_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
+                            smf_nudm_uecm_build_registration,
+                            sess, stream,
+                            SMF_UECM_STATE_REGISTERED_BY_HOME_ROUTED_ROAMING,
+                            NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else {
+                    memset(&param, 0, sizeof(param));
+                    param.state = SMF_UE_REQUESTED_PDU_SESSION_ESTABLISHMENT;
+                    param.n1smbuf =
+                        gsm_build_pdu_session_establishment_accept(sess);
+                    ogs_assert(param.n1smbuf);
+                    param.n2smbuf =
+                        ngap_build_pdu_session_resource_setup_request_transfer(
+                                sess);
+                    ogs_assert(param.n2smbuf);
+                    smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+                }
             }
 
             OGS_FSM_TRAN(s, smf_gsm_state_operational);

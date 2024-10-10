@@ -570,6 +570,9 @@ bool ogs_sbi_getaddr_from_uri(
     if (ogs_inet_pton(AF_INET, yuarel.host, &tmp) == OGS_OK ||
         ogs_inet_pton(AF_INET6, yuarel.host, &tmp) == OGS_OK) {
 
+        *fqdn = NULL;
+        *fqdn_port = 0;
+
         rv = ogs_getaddrinfo(addr, AF_UNSPEC, yuarel.host, port, 0);
         if (rv != OGS_OK) {
             ogs_error("ogs_getaddrinfo() failed [%s]", uri);
@@ -586,6 +589,9 @@ bool ogs_sbi_getaddr_from_uri(
         ogs_assert(rv == OGS_OK);
 
     } else {
+
+        *addr = NULL;
+        *addr6 = NULL;
 
         *fqdn = ogs_strdup(yuarel.host);
         ogs_assert(*fqdn);

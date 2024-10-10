@@ -857,7 +857,8 @@ void smf_s5c_handle_create_bearer_response(
 
     ogs_assert(OGS_OK ==
         smf_epc_pfcp_send_one_bearer_modification_request(
-            bearer, OGS_INVALID_POOL_ID, OGS_PFCP_MODIFY_ACTIVATE,
+            bearer, OGS_INVALID_POOL_ID,
+            OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE,
             OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
             OGS_GTP2_CAUSE_UNDEFINED_VALUE));
 }

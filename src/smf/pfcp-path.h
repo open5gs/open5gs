@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -36,12 +36,15 @@ int smf_pfcp_send_modify_list(
         ogs_pfcp_xact_t *xact, ogs_time_t duration);
 
 int smf_5gc_pfcp_send_session_establishment_request(
-        smf_sess_t *sess, uint64_t flags);
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, uint64_t flags);
 int smf_5gc_pfcp_send_all_pdr_modification_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
         uint64_t flags, ogs_time_t duration);
 int smf_5gc_pfcp_send_qos_flow_list_modification_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
+        uint64_t flags, ogs_time_t duration);
+int smf_5gc_pfcp_send_one_qos_flow_modification_request(
+        smf_bearer_t *qos_flow, ogs_sbi_stream_t *stream,
         uint64_t flags, ogs_time_t duration);
 int smf_5gc_pfcp_send_session_deletion_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, int trigger);

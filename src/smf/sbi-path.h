@@ -47,6 +47,8 @@ void smf_namf_comm_send_n1_n2_message_transfer(
 void smf_namf_comm_send_n1_n2_pdu_establishment_reject(
         smf_sess_t *sess);
 
+void smf_sbi_send_sm_context_created_data(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream);
 void smf_sbi_send_sm_context_create_error(
         ogs_sbi_stream_t *stream,
         int status, ogs_sbi_app_errno_e err,
@@ -103,6 +105,14 @@ void smf_sbi_send_sm_context_update_error(
         OpenAPI_up_cnx_state_e up_cnx_state);
 
 bool smf_sbi_send_sm_context_status_notify(smf_sess_t *sess);
+
+void smf_sbi_send_pdu_session_created_data(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream);
+void smf_sbi_send_pdu_session_create_error(
+        ogs_sbi_stream_t *stream,
+        int status, ogs_sbi_app_errno_e err, int n1SmCause,
+        const char *title, const char *detail,
+        ogs_pkbuf_t *n1SmBufToUe);
 
 #ifdef __cplusplus
 }

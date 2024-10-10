@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -19,7 +19,7 @@
 
 #include "nsmf-build.h"
 
-ogs_sbi_request_t *smf_nsmf_pdusession_build_create_sm_context(
+ogs_sbi_request_t *smf_nsmf_pdusession_build_create_pdu_session(
         smf_sess_t *sess, void *data)
 {
     ogs_sbi_message_t message;
@@ -30,14 +30,24 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_sm_context(
 
     smf_ue_t *smf_ue = NULL;
 
-    OpenAPI_sm_context_create_data_t SmContextCreateData;
+    OpenAPI_pdu_session_create_data_t PduSessionCreateData;
     OpenAPI_snssai_t sNssai;
     OpenAPI_snssai_t hplmnSnssai;
-    OpenAPI_ref_to_binary_data_t n1SmMsg;
+    OpenAPI_tunnel_info_t vcnTunnelInfo;
+    OpenAPI_ref_to_binary_data_t n1SmInfoFromUe;
     OpenAPI_user_location_t ueLocation;
-#if 0 /* Needs to be checked against AMF's nsmf-builc.c */
+
+#if 0 /* Needs to be checked against AMF's nsmf-build.c */
     ogs_sbi_nf_instance_t *pcf_nf_instance = NULL;
 #endif
+
+    int rv;
+    ogs_nas_5gs_message_t nas_message;
+    ogs_nas_5gs_pdu_session_establishment_request_t
+        *pdu_session_establishment_request = NULL;
+    ogs_nas_integrity_protection_maximum_data_rate_t
+        *integrity_protection_maximum_data_rate = NULL;
+    ogs_pkbuf_t *n1SmBufFromUe = NULL;
 
     ogs_assert(sess);
     smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
@@ -45,42 +55,28 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_sm_context(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION;
-    message.h.api.version = (char *)OGS_SBI_API_V1;
-    message.h.resource.component[0] =
-        (char *)OGS_SBI_RESOURCE_NAME_SM_CONTEXTS;
+    ogs_assert(sess->h_smf_uri);
+    message.h.uri = sess->h_smf_uri;
 
-    memset(&SmContextCreateData, 0, sizeof(SmContextCreateData));
+    memset(&header, 0, sizeof(header));
+    memset(&PduSessionCreateData, 0, sizeof(PduSessionCreateData));
     memset(&sNssai, 0, sizeof(sNssai));
     memset(&hplmnSnssai, 0, sizeof(hplmnSnssai));
-    memset(&header, 0, sizeof(header));
+    memset(&vcnTunnelInfo, 0, sizeof(vcnTunnelInfo));
     memset(&ueLocation, 0, sizeof(ueLocation));
 
-    SmContextCreateData.serving_nf_id =
-        NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
-    if (!SmContextCreateData.serving_nf_id) {
-        ogs_error("No serving_nf_id");
-        goto end;
+    PduSessionCreateData.supi = smf_ue->supi;
+    if (smf_ue->imeisv_len) {
+        PduSessionCreateData.pei = ogs_msprintf("%s-%s",
+                OGS_ID_SUPI_TYPE_IMEISV, smf_ue->imeisv_bcd);
     }
-
-    SmContextCreateData.serving_network =
-        ogs_sbi_build_plmn_id_nid(&sess->nr_tai.plmn_id);
-    if (!SmContextCreateData.serving_network) {
-        ogs_error("No serving_network");
-        goto end;
-    }
-
-    SmContextCreateData.supi = smf_ue->supi;
-#if 0 /* Needs to be checked against AMF's nsmf-builc.c */
-    SmContextCreateData.pei = smf_ue->pei;
-#endif
     if (smf_ue->msisdn_len) {
-        SmContextCreateData.gpsi = ogs_msprintf("%s-%s",
+        PduSessionCreateData.gpsi = ogs_msprintf("%s-%s",
                 OGS_ID_GPSI_TYPE_MSISDN, smf_ue->msisdn_bcd);
     }
-    SmContextCreateData.is_pdu_session_id = true;
-    SmContextCreateData.pdu_session_id = sess->psi;
-    if (!SmContextCreateData.pdu_session_id) {
+    PduSessionCreateData.is_pdu_session_id = true;
+    PduSessionCreateData.pdu_session_id = sess->psi;
+    if (!PduSessionCreateData.pdu_session_id) {
         ogs_error("No pdu_session_id");
         goto end;
     }
@@ -88,7 +84,7 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_sm_context(
     /*
      * TS29.502
      * 6.1 Nsmf_PDUSession Service API
-     * Table 6.1.6.2.2-1: Definition of type SmContextCreateData
+     * Table 6.1.6.2.2-1: Definition of type PduSessionCreateData
      *
      * NAME: dnn
      * Data type: Dnn
@@ -104,36 +100,42 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_sm_context(
      * the full DNN in LBO and non-roaming scenarios. If the Operator Identifier
      * is absent, the serving core network operator shall be assumed.
      */
-    if (ogs_sbi_plmn_id_in_vplmn(&sess->home_plmn_id) == true) {
-        SmContextCreateData.dnn = sess->full_dnn;
-    } else {
-        SmContextCreateData.dnn = sess->session.name;
-
-    }
+    PduSessionCreateData.dnn = ogs_strdup(sess->full_dnn);
+    ogs_assert(PduSessionCreateData.dnn);
 
     sNssai.sst = sess->s_nssai.sst;
     sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
-    SmContextCreateData.s_nssai = &sNssai;
+    PduSessionCreateData.s_nssai = &sNssai;
 
     if (sess->mapped_hplmn.sst) {
         hplmnSnssai.sst = sess->mapped_hplmn.sst;
         hplmnSnssai.sd = ogs_s_nssai_sd_to_string(sess->mapped_hplmn.sd);
-        SmContextCreateData.hplmn_snssai = &hplmnSnssai;
+        PduSessionCreateData.hplmn_snssai = &hplmnSnssai;
     }
 
-#if 0 /* Needs to be checked against AMF's nsmf-builc.c */
-    SmContextCreateData.guami = ogs_sbi_build_guami(amf_ue->guami);
-    if (!SmContextCreateData.guami) {
-        ogs_error("No guami");
+    PduSessionCreateData.vsmf_id = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
+    if (!PduSessionCreateData.vsmf_id) {
+        ogs_error("No vsmfId");
         goto end;
     }
-#endif
 
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_CALLBACK;
+    PduSessionCreateData.serving_network =
+        ogs_sbi_build_plmn_id_nid(&sess->nr_tai.plmn_id);
+    if (!PduSessionCreateData.serving_network) {
+        ogs_error("No serving_network");
+        goto end;
+    }
+
+    if (sess->request_type >= OpenAPI_request_type_INITIAL_REQUEST &&
+            sess->request_type <=
+            OpenAPI_request_type_EXISTING_EMERGENCY_PDU_SESSION)
+        PduSessionCreateData.request_type = sess->request_type;
+
+    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NSMF_CALLBACK;
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] = smf_ue->supi;
     header.resource.component[1] =
-        (char *)OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS;
+        (char *)OGS_SBI_RESOURCE_NAME_PDU_SESSION_STATUS;
     header.resource.component[2] = ogs_msprintf("%d", sess->psi);
     if (!header.resource.component[2]) {
         ogs_error("No header.resource.component[2]");
@@ -145,14 +147,18 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_sm_context(
         ogs_error("No server");
         goto end;
     }
-    SmContextCreateData.sm_context_status_uri =
+    PduSessionCreateData.vsmf_pdu_session_uri =
         ogs_sbi_server_uri(server, &header);
 
-    n1SmMsg.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
-    SmContextCreateData.n1_sm_msg = &n1SmMsg;
+    if (sess->local_dl_addr)
+        vcnTunnelInfo.ipv4_addr = ogs_ipstrdup(sess->local_dl_addr);
+    if (sess->local_dl_addr6)
+        vcnTunnelInfo.ipv6_addr = ogs_ipstrdup(sess->local_dl_addr6);
+    vcnTunnelInfo.gtp_teid = ogs_uint32_to_0string(sess->local_dl_teid);
+    PduSessionCreateData.vcn_tunnel_info = &vcnTunnelInfo;
 
-    SmContextCreateData.an_type = sess->an_type;
-    SmContextCreateData.rat_type = sess->sbi_rat_type;
+    PduSessionCreateData.an_type = sess->an_type;
+    PduSessionCreateData.rat_type = sess->sbi_rat_type;
 
     ueLocation.nr_location = ogs_sbi_build_nr_location(
             &sess->nr_tai, &sess->nr_cgi);
@@ -167,9 +173,9 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_sm_context(
         goto end;
     }
 
-    SmContextCreateData.ue_location = &ueLocation;
-    SmContextCreateData.ue_time_zone = ogs_sbi_timezone_string(ogs_timezone());
-    if (!SmContextCreateData.ue_time_zone) {
+    PduSessionCreateData.ue_location = &ueLocation;
+    PduSessionCreateData.ue_time_zone = ogs_sbi_timezone_string(ogs_timezone());
+    if (!PduSessionCreateData.ue_time_zone) {
         ogs_error("No ue_time_zone");
         goto end;
     }
@@ -186,28 +192,97 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_sm_context(
      * What we need to do is proactively add a part that will re-discover
      * the PCF when a situation arises where we really need the PCF-ID.
      */
-#if 0 /* Needs to be checked against AMF's nsmf-builc.c */
+#if 0 /* Needs to be checked against AMF's nsmf-build.c */
     pcf_nf_instance = OGS_SBI_GET_NF_INSTANCE(
             amf_ue->sbi.service_type_array[
             OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL]);
     if (pcf_nf_instance)
-        SmContextCreateData.pcf_id = pcf_nf_instance->id;
+        PduSessionCreateData.pcf_id = pcf_nf_instance->id;
     else
         ogs_error("No pcf_nf_instance");
 #endif
 
-    message.SmContextCreateData = &SmContextCreateData;
+    ogs_assert(sess->amf_nf_id);
+    PduSessionCreateData.amf_nf_id = sess->amf_nf_id;
 
-#if 0 /* Needs to be checked against AMF's nsmf-builc.c */
-    message.part[message.num_of_part].pkbuf = sess->payload_container;
-    if (message.part[message.num_of_part].pkbuf) {
-        message.part[message.num_of_part].content_id =
-            (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
-        message.part[message.num_of_part].content_type =
-            (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
-        message.num_of_part++;
+    PduSessionCreateData.guami = ogs_sbi_build_guami(&sess->guami);
+    if (!PduSessionCreateData.guami) {
+        ogs_error("No guami");
+        goto end;
     }
-#endif
+
+    ogs_assert(sess->n1smbuf);
+    rv = ogs_nas_5gsm_decode(&nas_message, sess->n1smbuf);
+
+    if (rv == OGS_OK) {
+        n1SmBufFromUe = gsmue_encode_n1_sm_info(&nas_message);
+        message.part[message.num_of_part].pkbuf = n1SmBufFromUe;
+        if (message.part[message.num_of_part].pkbuf) {
+            message.part[message.num_of_part].content_id =
+                (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+            message.part[message.num_of_part].content_type =
+                (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
+            message.num_of_part++;
+
+            n1SmInfoFromUe.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+            PduSessionCreateData.n1_sm_info_from_ue = &n1SmInfoFromUe;
+
+            pdu_session_establishment_request =
+                &nas_message.gsm.pdu_session_establishment_request;
+            integrity_protection_maximum_data_rate =
+                &pdu_session_establishment_request->
+                integrity_protection_maximum_data_rate;
+
+            switch (integrity_protection_maximum_data_rate->ul) {
+            case OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_64KBPS:
+                PduSessionCreateData.max_integrity_protected_data_rate_ul =
+                    OpenAPI_max_integrity_protected_data_rate__64_KBPS;
+                break;
+            case OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_NULL:
+                PduSessionCreateData.max_integrity_protected_data_rate_ul =
+                    OpenAPI_max_integrity_protected_data_rate_NULL;
+                break;
+            case OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_FULL:
+                PduSessionCreateData.max_integrity_protected_data_rate_ul =
+                    OpenAPI_max_integrity_protected_data_rate_MAX_UE_RATE;
+                break;
+            default:
+                ogs_error("Unknown Integrity Protection "
+                        "Maximum Data Rate [UL:%d]",
+                        integrity_protection_maximum_data_rate->ul);
+                break;
+            }
+
+            switch (integrity_protection_maximum_data_rate->dl) {
+            case OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_64KBPS:
+                PduSessionCreateData.max_integrity_protected_data_rate_dl =
+                    OpenAPI_max_integrity_protected_data_rate__64_KBPS;
+                break;
+            case OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_NULL:
+                PduSessionCreateData.max_integrity_protected_data_rate_dl =
+                    OpenAPI_max_integrity_protected_data_rate_NULL;
+                break;
+            case OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_FULL:
+                PduSessionCreateData.max_integrity_protected_data_rate_dl =
+                    OpenAPI_max_integrity_protected_data_rate_MAX_UE_RATE;
+                break;
+            defadlt:
+                ogs_error("Unknown Integrity Protection "
+                        "Maximum Data Rate [DL:%d]",
+                        integrity_protection_maximum_data_rate->dl);
+                break;
+            }
+        } else {
+            ogs_error("gsm_encode_n1_sm_info() failed [%d]", rv);
+            ogs_log_hexdump(OGS_LOG_ERROR,
+                    sess->n1smbuf->data, sess->n1smbuf->len);
+        }
+    } else {
+        ogs_error("ogs_nas_5gsm_decode() failed [%d]", rv);
+        ogs_log_hexdump(OGS_LOG_ERROR, sess->n1smbuf->data, sess->n1smbuf->len);
+    }
+
+    message.PduSessionCreateData = &PduSessionCreateData;
 
     message.http.accept = (char *)(OGS_SBI_CONTENT_JSON_TYPE ","
         OGS_SBI_CONTENT_NGAP_TYPE "," OGS_SBI_CONTENT_PROBLEM_TYPE);
@@ -215,7 +290,7 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_sm_context(
     message.http.custom.callback =
         (char *)OGS_SBI_CALLBACK_NSMF_PDUSESSION_STATUS_NOTIFY;
 
-#if 0 /* Needs to be checked against AMF's nsmf-builc.c */
+#if 0 /* Needs to be checked against AMF's nsmf-build.c */
     if (param && param->nrf_uri) {
         message.http.custom.nrf_uri =
             ogs_msprintf("%s: \"%s\"",
@@ -227,32 +302,41 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_sm_context(
     ogs_expect(request);
 
 end:
-    if (SmContextCreateData.serving_network)
-        ogs_sbi_free_plmn_id_nid(SmContextCreateData.serving_network);
-    if (SmContextCreateData.dnn)
-        ogs_free(SmContextCreateData.dnn);
-    if (SmContextCreateData.sm_context_status_uri)
-        ogs_free(SmContextCreateData.sm_context_status_uri);
     if (header.resource.component[2])
         ogs_free(header.resource.component[2]);
+
+    if (PduSessionCreateData.serving_network)
+        ogs_sbi_free_plmn_id_nid(PduSessionCreateData.serving_network);
+    if (PduSessionCreateData.dnn)
+        ogs_free(PduSessionCreateData.dnn);
+    if (PduSessionCreateData.vsmf_pdu_session_uri)
+        ogs_free(PduSessionCreateData.vsmf_pdu_session_uri);
+    if (vcnTunnelInfo.ipv4_addr)
+        ogs_free(vcnTunnelInfo.ipv4_addr);
+    if (vcnTunnelInfo.ipv6_addr)
+        ogs_free(vcnTunnelInfo.ipv6_addr);
+    if (vcnTunnelInfo.gtp_teid)
+        ogs_free(vcnTunnelInfo.gtp_teid);
     if (sNssai.sd)
         ogs_free(sNssai.sd);
     if (hplmnSnssai.sd)
         ogs_free(hplmnSnssai.sd);
-    if (SmContextCreateData.guami)
-        ogs_sbi_free_guami(SmContextCreateData.guami);
-    if (SmContextCreateData.gpsi)
-        ogs_free(SmContextCreateData.gpsi);
+    if (PduSessionCreateData.guami)
+        ogs_sbi_free_guami(PduSessionCreateData.guami);
+    if (PduSessionCreateData.pei)
+        ogs_free(PduSessionCreateData.pei);
+    if (PduSessionCreateData.gpsi)
+        ogs_free(PduSessionCreateData.gpsi);
     if (ueLocation.nr_location) {
         if (ueLocation.nr_location->ue_location_timestamp)
             ogs_free(ueLocation.nr_location->ue_location_timestamp);
         ogs_sbi_free_nr_location(ueLocation.nr_location);
     }
-    if (SmContextCreateData.ue_time_zone)
-        ogs_free(SmContextCreateData.ue_time_zone);
+    if (PduSessionCreateData.ue_time_zone)
+        ogs_free(PduSessionCreateData.ue_time_zone);
 
-    if (SmContextCreateData.h_smf_uri)
-        ogs_free(SmContextCreateData.h_smf_uri);
+    if (n1SmBufFromUe)
+        ogs_pkbuf_free(n1SmBufFromUe);
 
     if (message.http.custom.nrf_uri)
         ogs_free(message.http.custom.nrf_uri);

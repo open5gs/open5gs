@@ -584,9 +584,9 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                 } else {
                     ogs_assert(OGS_OK ==
                         ogs_pfcp_sockaddr_to_f_teid(
-                            sess->upf_n3_addr, sess->upf_n3_addr6,
+                            sess->local_ul_addr, sess->local_ul_addr6,
                             &ul_pdr->f_teid, &ul_pdr->f_teid_len));
-                    ul_pdr->f_teid.teid = sess->upf_n3_teid;
+                    ul_pdr->f_teid.teid = sess->local_ul_teid;
                 }
 
                 qos_flow->pcc_rule.id = ogs_strdup(pcc_rule->id);

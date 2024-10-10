@@ -43,7 +43,8 @@ void ogs_pfcp_build_create_pdr(
 bool ogs_pfcp_build_created_pdr(
     ogs_pfcp_tlv_created_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr);
 void ogs_pfcp_build_update_pdr(
-    ogs_pfcp_tlv_update_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr);
+    ogs_pfcp_tlv_update_pdr_t *message, int i,
+    ogs_pfcp_pdr_t *pdr, uint64_t modify_flags);
 
 void ogs_pfcp_build_create_far(
     ogs_pfcp_tlv_create_far_t *message, int i, ogs_pfcp_far_t *far);
@@ -55,12 +56,14 @@ void ogs_pfcp_build_update_far_activate(
 void ogs_pfcp_build_create_qer(
     ogs_pfcp_tlv_create_qer_t *message, int i, ogs_pfcp_qer_t *qer);
 void ogs_pfcp_build_update_qer(
-    ogs_pfcp_tlv_update_qer_t *message, int i, ogs_pfcp_qer_t *qer);
+    ogs_pfcp_tlv_update_qer_t *message, int i,
+    ogs_pfcp_qer_t *qer, uint64_t modify_flags);
 
 void ogs_pfcp_build_create_urr(
     ogs_pfcp_tlv_create_urr_t *message, int i, ogs_pfcp_urr_t *urr);
 void ogs_pfcp_build_update_urr(
-    ogs_pfcp_tlv_update_urr_t *message, int i, ogs_pfcp_urr_t *urr, uint64_t modify_flags);
+    ogs_pfcp_tlv_update_urr_t *message, int i,
+    ogs_pfcp_urr_t *urr, uint64_t modify_flags);
 
 void ogs_pfcp_build_create_bar(
     ogs_pfcp_tlv_create_bar_t *message, ogs_pfcp_bar_t *bar);

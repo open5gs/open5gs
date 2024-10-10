@@ -84,9 +84,9 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     UPTransportLayerInformation->choice.gTPTunnel = gTPTunnel;
 
     ogs_assert(OGS_OK == ogs_sockaddr_to_ip(
-                sess->upf_n3_addr, sess->upf_n3_addr6, &upf_n3_ip));
+                sess->local_ul_addr, sess->local_ul_addr6, &upf_n3_ip));
     ogs_asn_ip_to_BIT_STRING(&upf_n3_ip, &gTPTunnel->transportLayerAddress);
-    ogs_asn_uint32_to_OCTET_STRING(sess->upf_n3_teid, &gTPTunnel->gTP_TEID);
+    ogs_asn_uint32_to_OCTET_STRING(sess->local_ul_teid, &gTPTunnel->gTP_TEID);
 
     if (sess->handover.data_forwarding_not_possible == true) {
         ie = CALLOC(1,
@@ -476,9 +476,9 @@ ogs_pkbuf_t *ngap_build_path_switch_request_ack_transfer(smf_sess_t *sess)
     UPTransportLayerInformation->choice.gTPTunnel = gTPTunnel;
 
     ogs_assert(OGS_OK == ogs_sockaddr_to_ip(
-                sess->upf_n3_addr, sess->upf_n3_addr6, &upf_n3_ip));
+                sess->local_ul_addr, sess->local_ul_addr6, &upf_n3_ip));
     ogs_asn_ip_to_BIT_STRING(&upf_n3_ip, &gTPTunnel->transportLayerAddress);
-    ogs_asn_uint32_to_OCTET_STRING(sess->upf_n3_teid, &gTPTunnel->gTP_TEID);
+    ogs_asn_uint32_to_OCTET_STRING(sess->local_ul_teid, &gTPTunnel->gTP_TEID);
 
 #endif
 
@@ -490,7 +490,7 @@ ogs_pkbuf_t *ngap_build_handover_command_transfer(smf_sess_t *sess)
 {
     NGAP_HandoverCommandTransfer_t message;
 
-    ogs_ip_t upf_dl_ip;
+    ogs_ip_t local_dl_ip;
 
     ogs_assert(sess);
 
@@ -516,11 +516,11 @@ ogs_pkbuf_t *ngap_build_handover_command_transfer(smf_sess_t *sess)
         ogs_assert(gTPTunnel);
 
         ogs_assert(OGS_OK == ogs_sockaddr_to_ip(
-                sess->handover.upf_dl_addr, sess->handover.upf_dl_addr6,
-                &upf_dl_ip));
-        ogs_asn_ip_to_BIT_STRING(&upf_dl_ip, &gTPTunnel->transportLayerAddress);
+                sess->handover.local_dl_addr, sess->handover.local_dl_addr6,
+                &local_dl_ip));
+        ogs_asn_ip_to_BIT_STRING(&local_dl_ip, &gTPTunnel->transportLayerAddress);
         ogs_asn_uint32_to_OCTET_STRING(
-                sess->handover.upf_dl_teid, &gTPTunnel->gTP_TEID);
+                sess->handover.local_dl_teid, &gTPTunnel->gTP_TEID);
 
         ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
             ogs_pfcp_far_t *far = pdr->far;

@@ -57,20 +57,6 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     memset(&header, 0, sizeof(header));
     memset(&ueLocation, 0, sizeof(ueLocation));
 
-    SmContextCreateData.serving_nf_id =
-        NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
-    if (!SmContextCreateData.serving_nf_id) {
-        ogs_error("No serving_nf_id");
-        goto end;
-    }
-
-    SmContextCreateData.serving_network =
-        ogs_sbi_build_plmn_id_nid(&amf_ue->nr_tai.plmn_id);
-    if (!SmContextCreateData.serving_network) {
-        ogs_error("No serving_network");
-        goto end;
-    }
-
     SmContextCreateData.supi = amf_ue->supi;
     SmContextCreateData.pei = amf_ue->pei;
     if (amf_ue->num_of_msisdn) {
@@ -110,27 +96,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
      * is absent, the serving core network operator shall be assumed.
      */
     if (ogs_sbi_plmn_id_in_vplmn(&amf_ue->home_plmn_id) == true) {
-        char *home_network_domain = NULL;
-
-        if (sess->lbo_roaming_allowed == false) {
-            ogs_sbi_nf_instance_t *h_smf_instance = NULL;
-            ogs_sbi_client_t *h_smf_client = NULL;
-
-            /* Home-Routed Roaming */
-            h_smf_instance = OGS_SBI_GET_NF_INSTANCE(
-                    sess->sbi.home_nsmf_pdusession);
-            ogs_assert(h_smf_instance);
-            h_smf_client = NF_INSTANCE_CLIENT(h_smf_instance);
-            ogs_assert(h_smf_client);
-
-            SmContextCreateData.h_smf_id = h_smf_instance->id;
-
-            SmContextCreateData.h_smf_uri =
-                ogs_sbi_client_apiroot(h_smf_client);
-            ogs_assert(SmContextCreateData.h_smf_uri);
-        }
-
-        home_network_domain =
+        char *home_network_domain =
             ogs_home_network_domain_from_plmn_id(&amf_ue->home_plmn_id);
         ogs_assert(home_network_domain);
 
@@ -157,35 +123,35 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
         SmContextCreateData.hplmn_snssai = &hplmnSnssai;
     }
 
+    SmContextCreateData.serving_nf_id =
+        NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
+    if (!SmContextCreateData.serving_nf_id) {
+        ogs_error("No serving_nf_id");
+        goto end;
+    }
+
     SmContextCreateData.guami = ogs_sbi_build_guami(amf_ue->guami);
     if (!SmContextCreateData.guami) {
         ogs_error("No guami");
         goto end;
     }
-    SmContextCreateData.an_type = amf_ue->nas.access_type; 
 
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_CALLBACK;
-    header.api.version = (char *)OGS_SBI_API_V1;
-    header.resource.component[0] = amf_ue->supi;
-    header.resource.component[1] =
-        (char *)OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS;
-    header.resource.component[2] = ogs_msprintf("%d", sess->psi);
-    if (!header.resource.component[2]) {
-        ogs_error("No header.resource.component[2]");
+    SmContextCreateData.serving_network =
+        ogs_sbi_build_plmn_id_nid(&amf_ue->nr_tai.plmn_id);
+    if (!SmContextCreateData.serving_network) {
+        ogs_error("No serving_network");
         goto end;
     }
 
-    server = ogs_sbi_server_first();
-    if (!server) {
-        ogs_error("No server");
-        goto end;
-    }
-    SmContextCreateData.sm_context_status_uri =
-        ogs_sbi_server_uri(server, &header);
+    if (sess->request_type >= OpenAPI_request_type_INITIAL_REQUEST &&
+            sess->request_type <=
+            OpenAPI_request_type_EXISTING_EMERGENCY_PDU_SESSION)
+        SmContextCreateData.request_type = sess->request_type;
 
     n1SmMsg.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
     SmContextCreateData.n1_sm_msg = &n1SmMsg;
 
+    SmContextCreateData.an_type = amf_ue->nas.access_type;
     SmContextCreateData.rat_type = amf_ue_rat_type(amf_ue);
 
     ueLocation.nr_location = ogs_sbi_build_nr_location(
@@ -206,6 +172,54 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     if (!SmContextCreateData.ue_time_zone) {
         ogs_error("No ue_time_zone");
         goto end;
+    }
+
+    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_CALLBACK;
+    header.api.version = (char *)OGS_SBI_API_V1;
+    header.resource.component[0] = amf_ue->supi;
+    header.resource.component[1] =
+        (char *)OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS;
+    header.resource.component[2] = ogs_msprintf("%d", sess->psi);
+    if (!header.resource.component[2]) {
+        ogs_error("No header.resource.component[2]");
+        goto end;
+    }
+
+    server = ogs_sbi_server_first();
+    if (!server) {
+        ogs_error("No server");
+        goto end;
+    }
+    SmContextCreateData.sm_context_status_uri =
+        ogs_sbi_server_uri(server, &header);
+
+    if (ogs_sbi_plmn_id_in_vplmn(&amf_ue->home_plmn_id) == true) {
+        if (sess->lbo_roaming_allowed == false) {
+            ogs_sbi_nf_instance_t *h_smf_instance = NULL;
+            ogs_sbi_client_t *h_smf_client = NULL;
+            char *apiroot = NULL;
+
+            /* Home-Routed Roaming */
+            h_smf_instance = OGS_SBI_GET_NF_INSTANCE(
+                    sess->sbi.home_nsmf_pdusession);
+            ogs_assert(h_smf_instance);
+            h_smf_client = NF_INSTANCE_CLIENT(h_smf_instance);
+            ogs_assert(h_smf_client);
+
+            SmContextCreateData.h_smf_id = h_smf_instance->id;
+
+            apiroot = ogs_sbi_client_apiroot(h_smf_client);
+            ogs_assert(apiroot);
+
+            SmContextCreateData.h_smf_uri =
+                ogs_msprintf("%s/%s/%s/%s", apiroot,
+                        (char *)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION,
+                        (char *)OGS_SBI_API_V1,
+                        (char *)OGS_SBI_RESOURCE_NAME_PDU_SESSIONS);
+            ogs_assert(SmContextCreateData.h_smf_uri);
+
+            ogs_free(apiroot);
+        }
     }
 
     /*
@@ -305,14 +319,14 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
 
     ogs_assert(param);
     ogs_assert(sess);
-    ogs_assert(sess->sm_context.resource_uri);
+    ogs_assert(sess->sm_context_resource_uri);
     amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
     ogs_assert(amf_ue);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.uri = ogs_msprintf("%s/%s",
-            sess->sm_context.resource_uri, OGS_SBI_RESOURCE_NAME_MODIFY);
+            sess->sm_context_resource_uri, OGS_SBI_RESOURCE_NAME_MODIFY);
     ogs_assert(message.h.uri);
 
     memset(&ueLocation, 0, sizeof(ueLocation));
@@ -438,12 +452,12 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_release_sm_context(
     OpenAPI_user_location_t ueLocation;
 
     ogs_assert(sess);
-    ogs_assert(sess->sm_context.resource_uri);
+    ogs_assert(sess->sm_context_resource_uri);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.uri = ogs_msprintf("%s/%s",
-            sess->sm_context.resource_uri, OGS_SBI_RESOURCE_NAME_RELEASE);
+            sess->sm_context_resource_uri, OGS_SBI_RESOURCE_NAME_RELEASE);
     ogs_assert(message.h.uri);
 
     memset(&SmContextReleaseData, 0, sizeof(SmContextReleaseData));

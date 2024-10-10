@@ -119,6 +119,9 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_MODIFY                "modify"
 #define OGS_SBI_RESOURCE_NAME_RELEASE               "release"
 
+#define OGS_SBI_RESOURCE_NAME_PDU_SESSIONS          "pdu-sessions"
+#define OGS_SBI_RESOURCE_NAME_PDU_SESSION_STATUS    "pdu-session-status"
+
 #define OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY      "sm-policy-notify"
 #define OGS_SBI_RESOURCE_NAME_N1_N2_FAILURE_NOTIFY  "n1-n2-failure-notify"
 
@@ -536,6 +539,17 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_sm_context_update_error_t *SmContextUpdateError;
     OpenAPI_sm_context_release_data_t *SmContextReleaseData;
     OpenAPI_sm_context_released_data_t *SmContextReleasedData;
+    OpenAPI_pdu_session_create_data_t *PduSessionCreateData;
+    OpenAPI_pdu_session_created_data_t *PduSessionCreatedData;
+    OpenAPI_pdu_session_create_error_t *PduSessionCreateError;
+    OpenAPI_hsmf_update_data_t *HsmfUpdateData;
+    OpenAPI_hsmf_updated_data_t *HsmfUpdatedData;
+    OpenAPI_hsmf_update_error_t *HsmfUpdateError;
+    OpenAPI_vsmf_update_data_t *VsmfUpdateData;
+    OpenAPI_vsmf_updated_data_t *VsmfUpdatedData;
+    OpenAPI_vsmf_update_error_t *VsmfUpdateError;
+    OpenAPI_release_data_t *ReleaseData;
+    OpenAPI_released_data_t *ReleasedData;
     OpenAPI_list_t *SessionManagementSubscriptionDataList;
     OpenAPI_n1_n2_message_transfer_req_data_t *N1N2MessageTransferReqData;
     OpenAPI_n1_n2_message_transfer_rsp_data_t *N1N2MessageTransferRspData;

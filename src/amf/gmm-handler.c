@@ -1135,6 +1135,7 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
     ogs_nas_payload_container_type_t *payload_container_type = NULL;
     ogs_nas_payload_container_t *payload_container = NULL;
     ogs_nas_pdu_session_identity_2_t *pdu_session_id = NULL;
+    ogs_nas_request_type_t *request_type = NULL;
     ogs_nas_s_nssai_t *nas_s_nssai = NULL;
     ogs_nas_dnn_t *dnn = NULL;
     ogs_nas_5gsm_header_t *gsm_header = NULL;
@@ -1196,6 +1197,8 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
         return OGS_ERROR;
     }
 
+    request_type = &ul_nas_transport->request_type;
+
     switch (payload_container_type->value) {
     case OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION:
         gsm_header = (ogs_nas_5gsm_header_t *)payload_container->buffer;
@@ -1223,7 +1226,6 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
              */
                 sess->pdu_session_resource_release_response_received = false;
                 sess->pdu_session_release_complete_received = false;
-
             }
         } else {
             sess = amf_sess_find_by_psi(amf_ue, *pdu_session_id);
@@ -1237,6 +1239,8 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                 return OGS_ERROR;
             }
         }
+
+        sess->request_type = request_type->value;
 
         /*
          * To check if Reactivation Request has been used.
@@ -1372,9 +1376,9 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                     "smContextRef[%s] smContextResourceURI[%s]",
                 amf_ue->supi, sess->dnn, sess->lbo_roaming_allowed,
                 sess->s_nssai.sst, sess->s_nssai.sd.v,
-                sess->sm_context.ref ? sess->sm_context.ref : "NULL",
-                sess->sm_context.resource_uri ?
-                    sess->sm_context.resource_uri : "NULL");
+                sess->sm_context_ref ? sess->sm_context_ref : "NULL",
+                sess->sm_context_resource_uri ?
+                    sess->sm_context_resource_uri : "NULL");
 
             if (!SESSION_CONTEXT_IN_SMF(sess)) {
                 ogs_sbi_nf_instance_t *v_smf_instance = NULL;

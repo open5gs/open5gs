@@ -28,8 +28,8 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     smf_ue_t *smf_ue = NULL;
     int rv, i;
 
-    uint32_t gnb_n3_teid;
-    ogs_ip_t gnb_n3_ip;
+    uint32_t remote_dl_teid;
+    ogs_ip_t remote_dl_ip;
 
     bool far_update = false;
 
@@ -92,7 +92,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     }
 
     rv = ogs_asn_BIT_STRING_to_ip(
-            &gTPTunnel->transportLayerAddress, &gnb_n3_ip);
+            &gTPTunnel->transportLayerAddress, &remote_dl_ip);
     if (rv != OGS_OK) {
         ogs_error("[%s:%d] No transportLayerAddress", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error_log(
@@ -100,16 +100,16 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
                 "No transportLayerAddress", smf_ue->supi);
         goto cleanup;
     }
-    ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &gnb_n3_teid);
+    ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &remote_dl_teid);
 
     /* Need to Update? */
-    if (memcmp(&sess->gnb_n3_ip, &gnb_n3_ip, sizeof(sess->gnb_n3_ip)) != 0 ||
-        sess->gnb_n3_teid != gnb_n3_teid)
+    if (memcmp(&sess->remote_dl_ip, &remote_dl_ip, sizeof(sess->remote_dl_ip)) != 0 ||
+        sess->remote_dl_teid != remote_dl_teid)
         far_update = true;
 
     /* Setup FAR */
-    memcpy(&sess->gnb_n3_ip, &gnb_n3_ip, sizeof(sess->gnb_n3_ip));
-    sess->gnb_n3_teid = gnb_n3_teid;
+    memcpy(&sess->remote_dl_ip, &remote_dl_ip, sizeof(sess->remote_dl_ip));
+    sess->remote_dl_teid = remote_dl_teid;
 
     associatedQosFlowList = &dLQosFlowPerTNLInformation->associatedQosFlowList;
     for (i = 0; i < associatedQosFlowList->list.count; i++) {
@@ -131,10 +131,10 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
                 dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
                 ogs_assert(OGS_OK ==
                     ogs_pfcp_ip_to_outer_header_creation(
-                            &sess->gnb_n3_ip,
+                            &sess->remote_dl_ip,
                             &dl_far->outer_header_creation,
                             &dl_far->outer_header_creation_len));
-                dl_far->outer_header_creation.teid = sess->gnb_n3_teid;
+                dl_far->outer_header_creation.teid = sess->remote_dl_teid;
             } else {
                 ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
                 smf_sbi_send_sm_context_update_error_log(
@@ -148,8 +148,13 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     if (far_update) {
         ogs_assert(OGS_OK ==
             smf_5gc_pfcp_send_all_pdr_modification_request(
-                sess, stream, OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE,
-                0));
+                sess, stream,
+                HOME_ROUTED_ROAMING_IN_VSMF(sess) ?
+                    (OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+                     OGS_PFCP_MODIFY_DL_ONLY|
+                     OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL|
+                     OGS_PFCP_MODIFY_ACTIVATE) :
+                    (OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE), 0));
     } else {
 #if 0 /* Modified by pull request #1729 */
         /* ACTIVATED Is NOT Included in RESPONSE */
@@ -334,10 +339,10 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
                     dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
                     ogs_assert(OGS_OK ==
                         ogs_pfcp_ip_to_outer_header_creation(
-                            &sess->gnb_n3_ip,
+                            &sess->remote_dl_ip,
                             &dl_far->outer_header_creation,
                             &dl_far->outer_header_creation_len));
-                    dl_far->outer_header_creation.teid = sess->gnb_n3_teid;
+                    dl_far->outer_header_creation.teid = sess->remote_dl_teid;
 
                     ogs_list_add(&sess->qos_flow_to_modify_list,
                                     &qos_flow->to_modify_node);
@@ -373,8 +378,8 @@ int ngap_handle_path_switch_request_transfer(
     smf_ue_t *smf_ue = NULL;
     int rv, i;
 
-    uint32_t gnb_n3_teid;
-    ogs_ip_t gnb_n3_ip;
+    uint32_t remote_dl_teid;
+    ogs_ip_t remote_dl_ip;
 
     bool far_update = false;
 
@@ -430,7 +435,7 @@ int ngap_handle_path_switch_request_transfer(
     }
 
     rv = ogs_asn_BIT_STRING_to_ip(
-            &gTPTunnel->transportLayerAddress, &gnb_n3_ip);
+            &gTPTunnel->transportLayerAddress, &remote_dl_ip);
     if (rv != OGS_OK) {
         ogs_error("[%s:%d] No transportLayerAddress", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error_log(
@@ -438,16 +443,16 @@ int ngap_handle_path_switch_request_transfer(
                 "No transportLayerAddress", smf_ue->supi);
         goto cleanup;
     }
-    ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &gnb_n3_teid);
+    ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &remote_dl_teid);
 
     /* Need to Update? */
-    if (memcmp(&sess->gnb_n3_ip, &gnb_n3_ip, sizeof(sess->gnb_n3_ip)) != 0 ||
-        sess->gnb_n3_teid != gnb_n3_teid)
+    if (memcmp(&sess->remote_dl_ip, &remote_dl_ip, sizeof(sess->remote_dl_ip)) != 0 ||
+        sess->remote_dl_teid != remote_dl_teid)
         far_update = true;
 
     /* Setup FAR */
-    memcpy(&sess->gnb_n3_ip, &gnb_n3_ip, sizeof(sess->gnb_n3_ip));
-    sess->gnb_n3_teid = gnb_n3_teid;
+    memcpy(&sess->remote_dl_ip, &remote_dl_ip, sizeof(sess->remote_dl_ip));
+    sess->remote_dl_teid = remote_dl_teid;
 
     qosFlowAcceptedList = &message.qosFlowAcceptedList;
     for (i = 0; i < qosFlowAcceptedList->list.count; i++) {
@@ -467,10 +472,10 @@ int ngap_handle_path_switch_request_transfer(
                 dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
                 ogs_assert(OGS_OK ==
                     ogs_pfcp_ip_to_outer_header_creation(
-                        &sess->gnb_n3_ip,
+                        &sess->remote_dl_ip,
                         &dl_far->outer_header_creation,
                         &dl_far->outer_header_creation_len));
-                dl_far->outer_header_creation.teid = sess->gnb_n3_teid;
+                dl_far->outer_header_creation.teid = sess->remote_dl_teid;
             } else {
                 ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
                 smf_sbi_send_sm_context_update_error_log(
@@ -609,7 +614,7 @@ int ngap_handle_handover_request_ack(
     }
 
     rv = ogs_asn_BIT_STRING_to_ip(&gTPTunnel->transportLayerAddress,
-            &sess->handover.gnb_n3_ip);
+            &sess->handover.remote_dl_ip);
     if (rv != OGS_OK) {
         ogs_error("[%s:%d] No transportLayerAddress", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error_log(
@@ -618,7 +623,7 @@ int ngap_handle_handover_request_ack(
         goto cleanup;
     }
     ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID,
-            &sess->handover.gnb_n3_teid);
+            &sess->handover.remote_dl_teid);
 
     qosFlowSetupResponseList = &message.qosFlowSetupResponseList;
     for (i = 0; i < qosFlowSetupResponseList->list.count; i++) {
@@ -668,7 +673,7 @@ int ngap_handle_handover_request_ack(
         }
 
         rv = ogs_asn_BIT_STRING_to_ip(&gTPTunnel->transportLayerAddress,
-                &sess->handover.gnb_dl_ip);
+                &sess->handover.remote_dl_ip);
         if (rv != OGS_OK) {
             ogs_error("[%s:%d] No transportLayerAddress",
                     smf_ue->supi, sess->psi);
@@ -678,7 +683,7 @@ int ngap_handle_handover_request_ack(
             goto cleanup;
         }
         ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID,
-                &sess->handover.gnb_dl_teid);
+                &sess->handover.remote_dl_teid);
 
         sess->handover.indirect_data_forwarding = true;
     }

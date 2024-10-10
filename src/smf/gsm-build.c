@@ -26,7 +26,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     smf_bearer_t *qos_flow = NULL;
-    int num_of_param, rv;
+    int rv;
 
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_pdu_session_establishment_accept_t *
@@ -90,55 +90,27 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     selected_pdu_session_type->type = sess->session.ssc_mode;
     selected_pdu_session_type->value = sess->session.session_type;
 
-    /*
-     * TS23.501
-     * 5.7.1.3 QoS Rules
-     *
-     * A default QoS rule is required to be sent to the UE for every PDU
-     * Session establishment and it is associated with a QoS Flow. For IP type
-     * PDU Session or Ethernet type PDU Session, the default QoS rule is
-     * the only QoS rule of a PDU Session which may contain a Packet Filter
-     * Set that allows all UL packets, and in this case, the highest
-     * precedence value shall be used for the QoS rule.
-     *
-     * As long as the default QoS rule does not contain a Packet Filter Set or
-     * contains a Packet Filter Set that allows all UL packets, Reflective QoS
-     * should not be applied for the QoS Flow which the default QoS rule is
-     * associated with and the RQA should not be sent for this QoS Flow.
-     */
-    memset(qos_rule, 0, sizeof(qos_rule));
-    qos_rule[0].identifier = qos_flow->qfi; /* Use QFI in Open5GS */
-    qos_rule[0].code = OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE;
-    qos_rule[0].DQR_bit = 1;
-    qos_rule[0].num_of_packet_filter = 1;
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        ogs_assert(sess->h_smf_authorized_qos_rules.buffer);
+        ogs_assert(sess->h_smf_authorized_qos_rules.length);
+        OGS_NAS_STORE_DATA(
+                authorized_qos_rules, &sess->h_smf_authorized_qos_rules);
+    } else if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
+        ogs_fatal("This should not be invoked from H-SMF during HR-Roaming");
+        ogs_assert_if_reached();
+    } else {
+        memset(qos_rule, 0, sizeof(qos_rule));
+        encode_default_qos_rule(&qos_rule[0], qos_flow);
 
-    qos_rule[0].pf[0].direction = OGS_NAS_QOS_DIRECTION_BIDIRECTIONAL;
-    qos_rule[0].pf[0].identifier = 1;
-    qos_rule[0].pf[0].content.length = 1;
-    qos_rule[0].pf[0].content.num_of_component = 1;
-    qos_rule[0].pf[0].content.component[0].type = OGS_PACKET_FILTER_MATCH_ALL;
-
-    /*
-     * TS23.501
-     * 5.7.1.9 Precedence Value
-     *
-     * The QoS rule precedence value and the PDR precedence value determine
-     * the order in which a QoS rule or a PDR, respectively, shall be evaluated.
-     * The evaluation of the QoS rules or PDRs is performed in increasing order
-     * of their precedence value.
-     */
-    qos_rule[0].precedence = 255; /* lowest precedence */
-    qos_rule[0].flow.segregation = 0;
-    qos_rule[0].flow.identifier = qos_flow->qfi;
-
-    rv = ogs_nas_build_qos_rules(authorized_qos_rules, qos_rule, 1);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_nas_build_qos_rules() failed");
-        goto cleanup;
-    }
-    if (!authorized_qos_rules->length) {
-        ogs_error("No length");
-        goto cleanup;
+        rv = ogs_nas_build_qos_rules(authorized_qos_rules, qos_rule, 1);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_nas_build_qos_rules() failed");
+            goto cleanup;
+        }
+        if (!authorized_qos_rules->length) {
+            ogs_error("No length");
+            goto cleanup;
+        }
     }
 
     /* Session-AMBR */
@@ -171,15 +143,27 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     }
 
     /* GSM cause */
-    if (sess->ue_session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        if (pdu_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV4) {
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        if (sess->h_smf_gsm_cause) {
             pdu_session_establishment_accept->presencemask |=
                 OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_5GSM_CAUSE_PRESENT;
-            *gsm_cause = OGS_5GSM_CAUSE_PDU_SESSION_TYPE_IPV4_ONLY_ALLOWED;
-        } else if (pdu_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV6) {
-            pdu_session_establishment_accept->presencemask |=
-                OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_5GSM_CAUSE_PRESENT;
-            *gsm_cause = OGS_5GSM_CAUSE_PDU_SESSION_TYPE_IPV6_ONLY_ALLOWED;
+            *gsm_cause =  sess->h_smf_gsm_cause;
+        }
+        sess->h_smf_gsm_cause = 0; /* Clear GSM Cause */
+    } else if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
+        ogs_fatal("This should not be invoked from H-SMF during HR-Roaming");
+        ogs_assert_if_reached();
+    } else {
+        if (sess->ue_session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+            if (pdu_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV4) {
+                pdu_session_establishment_accept->presencemask |=
+                    OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_5GSM_CAUSE_PRESENT;
+                *gsm_cause = OGS_5GSM_CAUSE_PDU_SESSION_TYPE_IPV4_ONLY_ALLOWED;
+            } else if (pdu_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV6) {
+                pdu_session_establishment_accept->presencemask |=
+                    OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_5GSM_CAUSE_PRESENT;
+                *gsm_cause = OGS_5GSM_CAUSE_PDU_SESSION_TYPE_IPV6_ONLY_ALLOWED;
+            }
         }
     }
 
@@ -189,46 +173,61 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     ogs_nas_build_s_nssai2(nas_s_nssai, &sess->s_nssai, &sess->mapped_hplmn);
 
     /* QoS flow descriptions */
-    memset(&qos_flow_description, 0, sizeof(qos_flow_description));
-    qos_flow_description[0].identifier = qos_flow->qfi;
-    qos_flow_description[0].code = OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION;
-    qos_flow_description[0].E_bit = 1;
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        if (sess->h_smf_authorized_qos_flow_descriptions.buffer &&
+            sess->h_smf_authorized_qos_flow_descriptions.length) {
+            pdu_session_establishment_accept->presencemask |=
+                OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT;
+            OGS_NAS_STORE_DATA(
+                    authorized_qos_flow_descriptions,
+                    &sess->h_smf_authorized_qos_flow_descriptions);
+        }
+    } else if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
+        ogs_fatal("This should not be invoked from H-SMF during HR-Roaming");
+        ogs_assert_if_reached();
+    } else {
+        memset(&qos_flow_description, 0, sizeof(qos_flow_description));
+        encode_default_qos_flow_description(&qos_flow_description[0], qos_flow);
 
-    num_of_param = 0;
-
-    qos_flow_description[0].param[num_of_param].identifier =
-        OGS_NAX_QOS_FLOW_PARAMETER_ID_5QI;
-    qos_flow_description[0].param[num_of_param].len =
-        sizeof(qos_flow_description[0].param[num_of_param].qos_index);
-    qos_flow_description[0].param[num_of_param].qos_index = qos_flow->qos.index;
-    num_of_param++;
-
-    qos_flow_description[0].num_of_parameter = num_of_param;
-
-    pdu_session_establishment_accept->presencemask |=
-        OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT;
-    rv = ogs_nas_build_qos_flow_descriptions(
-            authorized_qos_flow_descriptions, qos_flow_description, 1);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_nas_build_qos_flow_descriptions() failed");
-        goto cleanup;
-    }
-    if (!authorized_qos_flow_descriptions->length) {
-        ogs_error("No length");
-        goto cleanup;
+        pdu_session_establishment_accept->presencemask |=
+            OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT;
+        rv = ogs_nas_build_qos_flow_descriptions(
+                authorized_qos_flow_descriptions, qos_flow_description, 1);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_nas_build_qos_flow_descriptions() failed");
+            goto cleanup;
+        }
+        if (!authorized_qos_flow_descriptions->length) {
+            ogs_error("No length");
+            goto cleanup;
+        }
     }
 
     /* Extended protocol configuration options */
-    if (sess->nas.ue_epco.buffer && sess->nas.ue_epco.length) {
-        epco_buf = ogs_calloc(OGS_MAX_EPCO_LEN, sizeof(uint8_t));
-        ogs_assert(epco_buf);
-        epco_len = smf_pco_build(epco_buf,
-                sess->nas.ue_epco.buffer, sess->nas.ue_epco.length);
-        ogs_assert(epco_len > 0);
-        pdu_session_establishment_accept->presencemask |=
-            OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
-        extended_protocol_configuration_options->buffer = epco_buf;
-        extended_protocol_configuration_options->length = epco_len;
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        if (sess->h_smf_extended_protocol_configuration_options.buffer &&
+            sess->h_smf_extended_protocol_configuration_options.length) {
+            pdu_session_establishment_accept->presencemask |=
+                OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+            OGS_NAS_STORE_DATA(
+                    extended_protocol_configuration_options,
+                    &sess->h_smf_extended_protocol_configuration_options);
+        }
+    } else if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
+        ogs_fatal("This should not be invoked from H-SMF during HR-Roaming");
+        ogs_assert_if_reached();
+    } else {
+        if (sess->nas.ue_epco.buffer && sess->nas.ue_epco.length) {
+            epco_buf = ogs_calloc(OGS_MAX_EPCO_LEN, sizeof(uint8_t));
+            ogs_assert(epco_buf);
+            epco_len = smf_pco_build(epco_buf,
+                    sess->nas.ue_epco.buffer, sess->nas.ue_epco.length);
+            ogs_assert(epco_len > 0);
+            pdu_session_establishment_accept->presencemask |=
+                OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+            extended_protocol_configuration_options->buffer = epco_buf;
+            extended_protocol_configuration_options->length = epco_len;
+        }
     }
 
     /* DNN */
@@ -243,13 +242,16 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     ogs_assert(pkbuf);
 
 cleanup:
-    if (epco_buf)
-        ogs_free(epco_buf);
-
     if (authorized_qos_rules->buffer)
         ogs_free(authorized_qos_rules->buffer);
     if (authorized_qos_flow_descriptions->buffer)
         ogs_free(authorized_qos_flow_descriptions->buffer);
+    if (extended_protocol_configuration_options->buffer)
+        ogs_free(extended_protocol_configuration_options->buffer);
+
+    OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_rules);
+    OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_flow_descriptions);
+    OGS_NAS_CLEAR_DATA(&sess->h_smf_extended_protocol_configuration_options);
 
     return pkbuf;
 }
@@ -275,41 +277,6 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_reject(
     pdu_session_establishment_reject->gsm_cause = gsm_cause;
 
     return ogs_nas_5gs_plain_encode(&message);
-}
-
-static void encode_qos_rule_packet_filter(
-        ogs_nas_qos_rule_t *qos_rule, smf_bearer_t *qos_flow)
-{
-    int i;
-    smf_pf_t *pf = NULL;
-
-    ogs_assert(qos_rule);
-    ogs_assert(qos_flow);
-
-    if (qos_rule->code == OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS) {
-
-        for (i = 0; i < qos_flow->num_of_pf_to_delete; i++) {
-            qos_rule->pf[i].identifier = qos_flow->pf_to_delete[i];
-        }
-        qos_rule->num_of_packet_filter = qos_flow->num_of_pf_to_delete;
-
-    } else {
-
-        i = 0;
-        ogs_list_for_each_entry(&qos_flow->pf_to_add_list, pf, to_add_node) {
-            ogs_assert(i < OGS_MAX_NUM_OF_FLOW_IN_NAS);
-            qos_rule->pf[i].direction = pf->direction;
-            qos_rule->pf[i].identifier = pf->identifier;
-
-            ogs_pf_content_from_ipfw_rule(
-                    pf->direction, &qos_rule->pf[i].content, &pf->ipfw_rule,
-                    ogs_global_conf()->parameter.
-                    no_ipv4v6_local_addr_in_packet_filter);
-            i++;
-        }
-        qos_rule->num_of_packet_filter = i;
-
-    }
 }
 
 ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
@@ -567,4 +534,111 @@ ogs_pkbuf_t *gsm_build_pdu_session_release_reject(
     pdu_session_release_reject->gsm_cause = gsm_cause;
 
     return ogs_nas_5gs_plain_encode(&message);
+}
+
+void encode_default_qos_rule(
+        ogs_nas_qos_rule_t *qos_rule, smf_bearer_t *qos_flow)
+{
+    ogs_assert(qos_rule);
+    ogs_assert(qos_flow);
+
+    /*
+     * TS23.501
+     * 5.7.1.3 QoS Rules
+     *
+     * A default QoS rule is required to be sent to the UE for every PDU
+     * Session establishment and it is associated with a QoS Flow. For IP type
+     * PDU Session or Ethernet type PDU Session, the default QoS rule is
+     * the only QoS rule of a PDU Session which may contain a Packet Filter
+     * Set that allows all UL packets, and in this case, the highest
+     * precedence value shall be used for the QoS rule.
+     *
+     * As long as the default QoS rule does not contain a Packet Filter Set or
+     * contains a Packet Filter Set that allows all UL packets, Reflective QoS
+     * should not be applied for the QoS Flow which the default QoS rule is
+     * associated with and the RQA should not be sent for this QoS Flow.
+     */
+    qos_rule->identifier = qos_flow->qfi; /* Use QFI in Open5GS */
+    qos_rule->code = OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE;
+    qos_rule->DQR_bit = 1;
+    qos_rule->num_of_packet_filter = 1;
+
+    qos_rule->pf[0].direction = OGS_NAS_QOS_DIRECTION_BIDIRECTIONAL;
+    qos_rule->pf[0].identifier = 1;
+    qos_rule->pf[0].content.length = 1;
+    qos_rule->pf[0].content.num_of_component = 1;
+    qos_rule->pf[0].content.component[0].type = OGS_PACKET_FILTER_MATCH_ALL;
+
+    /*
+     * TS23.501
+     * 5.7.1.9 Precedence Value
+     *
+     * The QoS rule precedence value and the PDR precedence value determine
+     * the order in which a QoS rule or a PDR, respectively, shall be evaluated.
+     * The evaluation of the QoS rules or PDRs is performed in increasing order
+     * of their precedence value.
+     */
+    qos_rule->precedence = 255; /* lowest precedence */
+    qos_rule->flow.segregation = 0;
+    qos_rule->flow.identifier = qos_flow->qfi;
+}
+
+void encode_default_qos_flow_description(
+        ogs_nas_qos_flow_description_t *qos_flow_description,
+        smf_bearer_t *qos_flow)
+{
+    int num_of_param;
+
+    ogs_assert(qos_flow_description);
+    ogs_assert(qos_flow);
+
+    qos_flow_description->identifier = qos_flow->qfi;
+    qos_flow_description->code = OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION;
+    qos_flow_description->E_bit = 1;
+
+    num_of_param = 0;
+
+    qos_flow_description->param[num_of_param].identifier =
+        OGS_NAX_QOS_FLOW_PARAMETER_ID_5QI;
+    qos_flow_description->param[num_of_param].len =
+        sizeof(qos_flow_description->param[num_of_param].qos_index);
+    qos_flow_description->param[num_of_param].qos_index = qos_flow->qos.index;
+    num_of_param++;
+
+    qos_flow_description->num_of_parameter = num_of_param;
+}
+
+void encode_qos_rule_packet_filter(
+        ogs_nas_qos_rule_t *qos_rule, smf_bearer_t *qos_flow)
+{
+    int i;
+    smf_pf_t *pf = NULL;
+
+    ogs_assert(qos_rule);
+    ogs_assert(qos_flow);
+
+    if (qos_rule->code == OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS) {
+
+        for (i = 0; i < qos_flow->num_of_pf_to_delete; i++) {
+            qos_rule->pf[i].identifier = qos_flow->pf_to_delete[i];
+        }
+        qos_rule->num_of_packet_filter = qos_flow->num_of_pf_to_delete;
+
+    } else {
+
+        i = 0;
+        ogs_list_for_each_entry(&qos_flow->pf_to_add_list, pf, to_add_node) {
+            ogs_assert(i < OGS_MAX_NUM_OF_FLOW_IN_NAS);
+            qos_rule->pf[i].direction = pf->direction;
+            qos_rule->pf[i].identifier = pf->identifier;
+
+            ogs_pf_content_from_ipfw_rule(
+                    pf->direction, &qos_rule->pf[i].content, &pf->ipfw_rule,
+                    ogs_global_conf()->parameter.
+                    no_ipv4v6_local_addr_in_packet_filter);
+            i++;
+        }
+        qos_rule->num_of_packet_filter = i;
+
+    }
 }

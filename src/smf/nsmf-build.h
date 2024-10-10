@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -21,12 +21,13 @@
 #define SMF_NSMF_BUILD_H
 
 #include "context.h"
+#include "gsmue-message.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-ogs_sbi_request_t *smf_nsmf_pdusession_build_create_sm_context(
+ogs_sbi_request_t *smf_nsmf_pdusession_build_create_pdu_session(
         smf_sess_t *sess, void *data);
 
 #ifdef __cplusplus

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SMF_NSMF_HANDLER_H
-#define SMF_NSMF_HANDLER_H
+#ifndef GSM_MESSAGE_H
+#define GSM_MESSAGE_H
 
 #include "context.h"
 
@@ -26,20 +26,13 @@
 extern "C" {
 #endif
 
-bool smf_nsmf_handle_create_sm_context(
-    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
-bool smf_nsmf_handle_update_sm_context(
-    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
-bool smf_nsmf_handle_release_sm_context(
-    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
+ogs_pkbuf_t *gsmue_encode_n1_sm_info(ogs_nas_5gs_message_t *message);
+int gsmue_decode_n1_sm_info(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf);
 
-bool smf_nsmf_handle_create_pdu_session_in_hsmf(
-    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
-bool smf_nsmf_handle_create_pdu_session_in_vsmf(
-    smf_sess_t *sess, ogs_sbi_message_t *recvmsg);
+ogs_pkbuf_t *gsmue_build_pdu_session_establishment_accept(smf_sess_t *sess);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SMF_NSMF_HANDLER_H */
+#endif /* GSM_MESSAGE_H */

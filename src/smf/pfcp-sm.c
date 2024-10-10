@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -495,7 +495,8 @@ static void pfcp_restoration(ogs_pfcp_node_t *node)
                             OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
                     ogs_assert(OGS_OK ==
                             smf_5gc_pfcp_send_session_establishment_request(
-                                sess, OGS_PFCP_CREATE_RESTORATION_INDICATION));
+                                sess, NULL,
+                                OGS_PFCP_CREATE_RESTORATION_INDICATION));
                 }
             }
         }

@@ -287,7 +287,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                 header.resource.component[1] = amf_ue->supi;
                 header.resource.component[2] =
                     (char *)OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES;
-                header.resource.component[3] = sess->sm_context.ref;
+                header.resource.component[3] = sess->sm_context_ref;
 
                 sendmsg.http.location = ogs_sbi_server_uri(server, &header);
 
@@ -349,7 +349,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             header.resource.component[1] = amf_ue->supi;
             header.resource.component[2] =
                 (char *)OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES;
-            header.resource.component[3] = sess->sm_context.ref;
+            header.resource.component[3] = sess->sm_context_ref;
 
             sendmsg.http.location = ogs_sbi_server_uri(server, &header);
 
@@ -423,7 +423,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                 header.resource.component[1] = amf_ue->supi;
                 header.resource.component[2] =
                     (char *)OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES;
-                header.resource.component[3] = sess->sm_context.ref;
+                header.resource.component[3] = sess->sm_context_ref;
 
                 sendmsg.http.location = ogs_sbi_server_uri(server, &header);
 
@@ -1458,9 +1458,9 @@ static OpenAPI_list_t *amf_namf_comm_encode_ue_session_context_list(
         ogs_assert(sNSSAI);
 
         PduSessionContext->pdu_session_id = sess->psi;
-        ogs_assert(sess->sm_context.resource_uri);
+        ogs_assert(sess->sm_context_resource_uri);
         PduSessionContext->sm_context_ref =
-            ogs_strdup(sess->sm_context.resource_uri);
+            ogs_strdup(sess->sm_context_resource_uri);
 
         sNSSAI->sst = sess->s_nssai.sst;
         sNSSAI->sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
@@ -1785,9 +1785,9 @@ static void amf_namf_comm_decode_ue_session_context_list(
         ogs_freeaddrinfo(addr);
         ogs_freeaddrinfo(addr6);
 
-        sess->sm_context.resource_uri =
+        sess->sm_context_resource_uri =
             ogs_strdup(PduSessionContext->sm_context_ref);
-        sess->sm_context.ref =
+        sess->sm_context_ref =
             ogs_strdup(message.h.resource.component[1]);
 
         memset(&sess->s_nssai, 0, sizeof(sess->s_nssai));

@@ -586,36 +586,37 @@ typedef struct amf_sess_s {
 
     uint8_t psi;            /* PDU Session Identity */
     uint8_t pti;            /* Procedure Trasaction Identity */
+    uint8_t request_type;   /* Request type */
 
 #define SESSION_CONTEXT_IN_SMF(__sESS)  \
-    ((__sESS) && (__sESS)->sm_context.ref)
+    ((__sESS) && (__sESS)->sm_context_ref)
 #define STORE_SESSION_CONTEXT(__sESS, __rESOURCE_URI, __rEF) \
     do { \
         ogs_assert(__sESS); \
         ogs_assert(__rESOURCE_URI); \
         ogs_assert(__rEF); \
         CLEAR_SESSION_CONTEXT(__sESS); \
-        (__sESS)->sm_context.resource_uri = ogs_strdup(__rESOURCE_URI); \
-        ogs_assert((__sESS)->sm_context.resource_uri); \
-        (__sESS)->sm_context.ref = ogs_strdup(__rEF); \
-        ogs_assert((__sESS)->sm_context.ref); \
+        (__sESS)->sm_context_resource_uri = ogs_strdup(__rESOURCE_URI); \
+        ogs_assert((__sESS)->sm_context_resource_uri); \
+        (__sESS)->sm_context_ref = ogs_strdup(__rEF); \
+        ogs_assert((__sESS)->sm_context_ref); \
     } while(0);
 #define CLEAR_SESSION_CONTEXT(__sESS) \
     do { \
         ogs_assert(__sESS); \
-        if ((__sESS)->sm_context.ref) \
-            ogs_free((__sESS)->sm_context.ref); \
-        (__sESS)->sm_context.ref = NULL; \
-        if ((__sESS)->sm_context.resource_uri) \
-            ogs_free((__sESS)->sm_context.resource_uri); \
-        (__sESS)->sm_context.resource_uri = NULL; \
+        if ((__sESS)->sm_context_ref) \
+            ogs_free((__sESS)->sm_context_ref); \
+        (__sESS)->sm_context_ref = NULL; \
+        if ((__sESS)->sm_context_resource_uri) \
+            ogs_free((__sESS)->sm_context_resource_uri); \
+        (__sESS)->sm_context_resource_uri = NULL; \
     } while(0);
 
     /* SMF sends the RESPONSE
      * of [POST] /nsmf-pdusession/v1/sm-contexts */
+    char *sm_context_resource_uri;
+    char *sm_context_ref;
     struct {
-        char *resource_uri;
-        char *ref;
         ogs_sbi_client_t *client;
     } sm_context;
 

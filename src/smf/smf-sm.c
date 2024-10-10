@@ -29,6 +29,7 @@
 #include "nnrf-handler.h"
 #include "namf-handler.h"
 #include "npcf-handler.h"
+#include "nsmf-handler.h"
 
 void smf_state_initial(ogs_fsm_t *s, smf_event_t *e)
 {
@@ -72,6 +73,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *sbi_request = NULL;
+    int state = 0;
+    bool unknown_res_status = false;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_subscription_data_t *subscription_data = NULL;
@@ -560,7 +563,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         break;
 
                     DEFAULT
-                        sess = smf_sess_add_by_sbi_message(&sbi_message);
+                        sess = smf_sess_add_by_sm_context(&sbi_message);
                         if (!sess) {
                             ogs_error("smf_sess_add_by_sbi_message() failed");
                             smf_sbi_send_sm_context_create_error(stream,
@@ -568,6 +571,72 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     OGS_SBI_APP_ERRNO_NULL,
                                     "smf_sess_add_by_sbi_message() failed",
                                     NULL, NULL);
+                            break;
+                        }
+
+                        smf_metrics_inst_by_slice_add(NULL, NULL,
+                                SMF_METR_CTR_SM_PDUSESSIONCREATIONREQ, 1);
+                    END
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                            "Invalid HTTP method", sbi_message.h.method,
+                            NULL));
+                    break;
+                END
+
+                if (sess) {
+                    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+                    ogs_assert(smf_ue);
+                    ogs_assert(OGS_FSM_STATE(&sess->sm));
+
+                    e->sess_id = sess->id;
+                    e->h.sbi.message = &sbi_message;
+                    ogs_fsm_dispatch(&sess->sm, e);
+                }
+                break;
+
+            CASE(OGS_SBI_RESOURCE_NAME_PDU_SESSIONS)
+                SWITCH(sbi_message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    SWITCH(sbi_message.h.resource.component[2])
+                    CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+                    CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
+                        if (!sbi_message.h.resource.component[1]) {
+                            ogs_error("No pduSessionRef [%s]",
+                                    sbi_message.h.resource.component[1]);
+                            smf_sbi_send_sm_context_update_error_log(
+                                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                    "No pduSessionRef",
+                                    sbi_message.h.resource.component[1]);
+                            break;
+                        }
+
+                        sess = smf_sess_find_by_pdu_session_ref(
+                                sbi_message.h.resource.component[1]);
+
+                        if (!sess) {
+                            ogs_warn("Not found [%s]", sbi_message.h.uri);
+                            smf_sbi_send_sm_context_update_error_log(
+                                    stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                                    "Not found", sbi_message.h.uri);
+                        }
+                        break;
+
+                    DEFAULT
+                        sess = smf_sess_add_by_pdu_session(&sbi_message);
+                        if (!sess) {
+                            ogs_error("smf_sess_add_by_sbi_message() failed");
+                            smf_sbi_send_pdu_session_create_error(stream,
+                                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                OGS_SBI_APP_ERRNO_NULL,
+                                OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                                "smf_sess_add_by_sbi_message() failed",
+                                NULL, NULL);
                             break;
                         }
 
@@ -860,9 +929,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UECM)
-            int state = 0;
-            bool unknown_res_status = false;
-
             sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
             ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
                     sbi_xact_id <= OGS_MAX_POOL_ID);
@@ -897,7 +963,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
             ogs_assert(smf_ue);
 
-            if (state == SMF_UECM_STATE_REGISTERED) {
+            if (state == SMF_UECM_STATE_REGISTERED ||
+                state ==SMF_UECM_STATE_REGISTERED_BY_HOME_ROUTED_ROAMING) {
                 /* SMF Registration */
                 if (sbi_message.res_status != OGS_SBI_HTTP_STATUS_OK &&
                     sbi_message.res_status != OGS_SBI_HTTP_STATUS_CREATED)
@@ -932,6 +999,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 /* SMF Registration */
                 ogs_assert(stream);
                 ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+            } else if (state ==
+                    SMF_UECM_STATE_REGISTERED_BY_HOME_ROUTED_ROAMING) {
+                smf_sbi_send_pdu_session_created_data(sess, stream);
+                smf_metrics_inst_by_slice_add(
+                        &sess->serving_plmn_id, &sess->s_nssai,
+                        SMF_METR_CTR_SM_PDUSESSIONCREATIONSUCC, 1);
             } else if (state == SMF_UECM_STATE_DEREGISTERED_BY_AMF) {
                 /* SMF Deregistration */
                 ogs_assert(stream);
@@ -943,6 +1016,69 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 SMF_SESS_CLEAR(sess);
             }
 
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
+            SWITCH(sbi_message.h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_PDU_SESSIONS)
+                SWITCH(sbi_message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+                    ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                            sbi_xact_id <= OGS_MAX_POOL_ID);
+
+                    sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
+                    if (!sbi_xact) {
+                        /* CLIENT_WAIT timer could remove SBI transaction
+                         * before receiving SBI message */
+                        ogs_error(
+                                "SBI transaction has already been removed [%d]",
+                                sbi_xact_id);
+                        break;
+                    }
+
+                    sbi_object_id = sbi_xact->sbi_object_id;
+                    ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
+                            sbi_object_id <= OGS_MAX_POOL_ID);
+
+                    ogs_sbi_xact_remove(sbi_xact);
+
+                    sess = smf_sess_find_by_id(sbi_object_id);
+                    if (!sess) {
+                        ogs_error("Session has already been removed");
+                        break;
+                    }
+                    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+                    ogs_assert(smf_ue);
+
+                    SWITCH(sbi_message.h.resource.component[2])
+                    CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+                    CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
+                        ogs_error("Not Implemented");
+                        break;
+                    DEFAULT
+                        if (smf_nsmf_handle_create_pdu_session_in_vsmf(
+                                    sess, &sbi_message) == false) {
+                            ogs_error("[%s:%d] create_pdu_session "
+                                    "failed() [%d]",
+                                    smf_ue->supi, sess->psi,
+                                    sbi_message.res_status);
+                            SMF_SESS_CLEAR(sess);
+                        }
+                    END
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message.h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
             break;
 
         DEFAULT

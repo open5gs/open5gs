@@ -30,7 +30,7 @@
 extern "C" {
 #endif
 
-/* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
+/* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM.
  * When calculating AES_CMAC, we need to use the headroom of the packet. */
 #define OGS_NAS_HEADROOM 16
 

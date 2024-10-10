@@ -170,7 +170,7 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
 
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
 
-    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM.
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
     nasbuf = ogs_pkbuf_alloc(NULL, OGS_NAS_HEADROOM+nasPdu->size);
     ogs_assert(nasbuf);

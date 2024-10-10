@@ -1453,6 +1453,10 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     sess->sm_context_ref = ogs_msprintf("%d", sess->index);
     ogs_assert(sess->sm_context_ref);
 
+    /* Set PduSessionRef in 5GC */
+    sess->pdu_session_ref = ogs_msprintf("%d", sess->index);
+    ogs_assert(sess->pdu_session_ref);
+
     /* Create BAR in PFCP Session */
     ogs_pfcp_bar_new(&sess->pfcp);
 
@@ -1481,7 +1485,7 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     return sess;
 }
 
-smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
+smf_sess_t *smf_sess_add_by_sm_context(ogs_sbi_message_t *message)
 {
     smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
@@ -1524,6 +1528,54 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
     }
 
     sess = smf_sess_add_by_psi(smf_ue, SmContextCreateData->pdu_session_id);
+
+    return sess;
+}
+
+smf_sess_t *smf_sess_add_by_pdu_session(ogs_sbi_message_t *message)
+{
+    smf_ue_t *smf_ue = NULL;
+    smf_sess_t *sess = NULL;
+
+    OpenAPI_pdu_session_create_data_t *PduSessionCreateData = NULL;
+
+    ogs_assert(message);
+    PduSessionCreateData = message->PduSessionCreateData;
+    if (!PduSessionCreateData) {
+        ogs_error("No PduSessionCreateData");
+        return NULL;
+    }
+
+    if (!PduSessionCreateData->supi) {
+        ogs_error("No SUPI");
+        return NULL;
+    }
+
+    if (PduSessionCreateData->is_pdu_session_id == false) {
+        ogs_error("PDU session identitiy is unassigned");
+        return NULL;
+    }
+
+    smf_ue = smf_ue_find_by_supi(PduSessionCreateData->supi);
+    if (!smf_ue) {
+        smf_ue = smf_ue_add_by_supi(PduSessionCreateData->supi);
+        if (!smf_ue) {
+            ogs_error("smf_ue_add_by_supi() failed");
+            return NULL;
+        }
+    }
+
+    sess = smf_sess_find_by_psi(smf_ue, PduSessionCreateData->pdu_session_id);
+    if (sess) {
+        ogs_warn("OLD Session Will Release [SUPI:%s,PDU Session identity:%d]",
+                PduSessionCreateData->supi,
+                PduSessionCreateData->pdu_session_id);
+        smf_metrics_inst_by_slice_add(&sess->serving_plmn_id, &sess->s_nssai,
+                SMF_METR_GAUGE_SM_SESSIONNBR, -1);
+        smf_sess_remove(sess);
+    }
+
+    sess = smf_sess_add_by_psi(smf_ue, PduSessionCreateData->pdu_session_id);
 
     return sess;
 }
@@ -1735,11 +1787,14 @@ void smf_sess_remove(smf_sess_t *sess)
 
     if (sess->sm_context_ref)
         ogs_free(sess->sm_context_ref);
-
     if (sess->sm_context_status_uri)
         ogs_free(sess->sm_context_status_uri);
     if (sess->namf.client)
         ogs_sbi_client_remove(sess->namf.client);
+
+    CLEAR_PDU_SESSION(sess);
+    if (sess->pdu_session.client)
+        ogs_sbi_client_remove(sess->pdu_session.client);
 
     PCF_SM_POLICY_CLEAR(sess);
     if (sess->policy_association.client)
@@ -1767,22 +1822,39 @@ void smf_sess_remove(smf_sess_t *sess)
         ogs_free(sess->session.ipv6_framed_routes);
     }
 
-    if (sess->upf_n3_addr)
-        ogs_freeaddrinfo(sess->upf_n3_addr);
-    if (sess->upf_n3_addr6)
-        ogs_freeaddrinfo(sess->upf_n3_addr6);
+    if (sess->handover.local_dl_addr)
+        ogs_freeaddrinfo(sess->handover.local_dl_addr);
+    if (sess->handover.local_dl_addr6)
+        ogs_freeaddrinfo(sess->handover.local_dl_addr6);
 
-    if (sess->handover.upf_dl_addr)
-        ogs_freeaddrinfo(sess->handover.upf_dl_addr);
-    if (sess->handover.upf_dl_addr6)
-        ogs_freeaddrinfo(sess->handover.upf_dl_addr6);
+    if (sess->local_dl_addr)
+        ogs_freeaddrinfo(sess->local_dl_addr);
+    if (sess->local_dl_addr6)
+        ogs_freeaddrinfo(sess->local_dl_addr6);
+    if (sess->local_ul_addr)
+        ogs_freeaddrinfo(sess->local_ul_addr);
+    if (sess->local_ul_addr6)
+        ogs_freeaddrinfo(sess->local_ul_addr6);
 
-    if (sess->h_smf_uri)
-        ogs_free(sess->h_smf_uri);
     if (sess->pcf_id)
         ogs_free(sess->pcf_id);
-    if (sess->serving_nf_id)
-        ogs_free(sess->serving_nf_id);
+    if (sess->amf_nf_id)
+        ogs_free(sess->amf_nf_id);
+
+    /* H-SMF */
+    if (sess->h_smf_uri)
+        ogs_free(sess->h_smf_uri);
+    if (sess->h_smf.client)
+        ogs_sbi_client_remove(sess->h_smf.client);
+    if (sess->vsmf_pdu_session_uri)
+        ogs_free(sess->vsmf_pdu_session_uri);
+    if (sess->v_smf.client)
+        ogs_sbi_client_remove(sess->v_smf.client);
+
+    OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_rules);
+    OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_flow_descriptions);
+    OGS_NAS_CLEAR_DATA(&sess->h_smf_extended_protocol_configuration_options);
+    sess->h_smf_gsm_cause = 0;
 
     /* Free SBI object memory */
     ogs_sbi_object_free(&sess->sbi);
@@ -1878,6 +1950,12 @@ smf_sess_t *smf_sess_find_by_sm_context_ref(char *sm_context_ref)
 {
     ogs_assert(sm_context_ref);
     return smf_sess_find(atoll(sm_context_ref));
+}
+
+smf_sess_t *smf_sess_find_by_pdu_session_ref(char *pdu_session_ref)
+{
+    ogs_assert(pdu_session_ref);
+    return smf_sess_find(atoll(pdu_session_ref));
 }
 
 smf_sess_t *smf_sess_find_by_ipv4(uint32_t addr)
@@ -2041,6 +2119,91 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     return qos_flow;
 }
 
+smf_bearer_t *smf_vcn_tunnel_add(smf_sess_t *sess)
+{
+    smf_bearer_t *qos_flow = NULL;
+
+    ogs_pfcp_pdr_t *dl_pdr = NULL;
+    ogs_pfcp_pdr_t *ul_pdr = NULL;
+    ogs_pfcp_far_t *dl_far = NULL;
+    ogs_pfcp_far_t *ul_far = NULL;
+
+    ogs_assert(sess);
+
+    ogs_pool_id_calloc(&smf_bearer_pool, &qos_flow);
+    ogs_assert(qos_flow);
+
+    /*
+     * Since smf_pf_identifier_pool_final() is executed by smf_bearer_remove(),
+     * so even if there is no PF Rule in vcnTunnel,
+     * we at least need to initialize it using smf_pf_identifier_pool_init().
+     */
+    smf_pf_identifier_pool_init(qos_flow);
+
+    ogs_list_init(&qos_flow->pf_list);
+
+    /* PDR */
+    dl_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
+    ogs_assert(dl_pdr);
+    qos_flow->dl_pdr = dl_pdr;
+
+    ogs_assert(sess->session.name);
+    dl_pdr->apn = ogs_strdup(sess->session.name);
+    ogs_assert(dl_pdr->apn);
+
+    dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
+
+    ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
+    ogs_assert(ul_pdr);
+    qos_flow->ul_pdr = ul_pdr;
+
+    ogs_assert(sess->session.name);
+    ul_pdr->apn = ogs_strdup(sess->session.name);
+    ogs_assert(ul_pdr->apn);
+
+    ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
+
+    /* FAR */
+    dl_far = ogs_pfcp_far_add(&sess->pfcp);
+    ogs_assert(dl_far);
+    qos_flow->dl_far = dl_far;
+
+    ogs_assert(sess->session.name);
+    dl_far->apn = ogs_strdup(sess->session.name);
+    ogs_assert(dl_far->apn);
+
+    dl_far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+    ogs_pfcp_pdr_associate_far(dl_pdr, dl_far);
+
+    ogs_assert(sess->pfcp.bar);
+    dl_far->apply_action =
+        OGS_PFCP_APPLY_ACTION_BUFF| OGS_PFCP_APPLY_ACTION_NOCP;
+
+    ul_far = ogs_pfcp_far_add(&sess->pfcp);
+    ogs_assert(ul_far);
+    qos_flow->ul_far = ul_far;
+
+    ogs_assert(sess->session.name);
+    ul_far->apn = ogs_strdup(sess->session.name);
+    ogs_assert(ul_far->apn);
+
+    ul_far->dst_if = OGS_PFCP_INTERFACE_CORE;
+    ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
+
+    ul_far->apply_action =
+        OGS_PFCP_APPLY_ACTION_BUFF| OGS_PFCP_APPLY_ACTION_NOCP;
+
+    /* URR --- SKIPPED */
+
+    /* QER --- SKIPPED */
+
+    qos_flow->sess_id = sess->id;
+
+    ogs_list_add(&sess->bearer_list, qos_flow);
+
+    return qos_flow;
+}
+
 void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
 {
     smf_bearer_t *qos_flow = NULL;
@@ -2122,17 +2285,17 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
              * CHOOSE_ID is set in INDIRECT so that all PDRs must be set
              * to the same TEID.
              *
-             * If sess->handover.upf_dl_teid is set in the PDR of
+             * If sess->handover.local_dl_teid is set in the PDR of
              * the first QoS flow, the PDRs of the remaining QoS flows use
              * the same TEID.
              */
             if (ogs_list_first(&sess->bearer_list) == qos_flow) {
                 ogs_gtpu_resource_t *resource = NULL;
 
-                if (sess->handover.upf_dl_addr)
-                    ogs_freeaddrinfo(sess->handover.upf_dl_addr);
-                if (sess->handover.upf_dl_addr6)
-                    ogs_freeaddrinfo(sess->handover.upf_dl_addr6);
+                if (sess->handover.local_dl_addr)
+                    ogs_freeaddrinfo(sess->handover.local_dl_addr);
+                if (sess->handover.local_dl_addr6)
+                    ogs_freeaddrinfo(sess->handover.local_dl_addr6);
 
                 resource = ogs_pfcp_find_gtpu_resource(
                         &sess->pfcp_node->gtpu_resource_list,
@@ -2140,44 +2303,44 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
 
                 if (resource) {
                     ogs_user_plane_ip_resource_info_to_sockaddr(&resource->info,
-                        &sess->handover.upf_dl_addr,
-                        &sess->handover.upf_dl_addr6);
+                        &sess->handover.local_dl_addr,
+                        &sess->handover.local_dl_addr6);
                     if (resource->info.teidri)
-                        sess->handover.upf_dl_teid =
+                        sess->handover.local_dl_teid =
                             OGS_PFCP_GTPU_INDEX_TO_TEID(
                                 pdr->teid, resource->info.teidri,
                                 resource->info.teid_range);
                     else
-                        sess->handover.upf_dl_teid = pdr->teid;
+                        sess->handover.local_dl_teid = pdr->teid;
                 } else {
                     if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
                         ogs_assert(OGS_OK == ogs_copyaddrinfo(
-                            &sess->handover.upf_dl_addr,
+                            &sess->handover.local_dl_addr,
                             &sess->pfcp_node->addr));
                     else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
                         ogs_assert(OGS_OK == ogs_copyaddrinfo(
-                            &sess->handover.upf_dl_addr6,
+                            &sess->handover.local_dl_addr6,
                             &sess->pfcp_node->addr));
                     else
                         ogs_assert_if_reached();
 
-                    sess->handover.upf_dl_teid = pdr->teid;
+                    sess->handover.local_dl_teid = pdr->teid;
                 }
             }
 
             ogs_assert(OGS_OK ==
                 ogs_pfcp_sockaddr_to_f_teid(
-                    sess->handover.upf_dl_addr, sess->handover.upf_dl_addr6,
+                    sess->handover.local_dl_addr, sess->handover.local_dl_addr6,
                     &pdr->f_teid, &pdr->f_teid_len));
-            pdr->f_teid.teid = sess->handover.upf_dl_teid;
+            pdr->f_teid.teid = sess->handover.local_dl_teid;
         }
 
         ogs_assert(OGS_OK ==
             ogs_pfcp_ip_to_outer_header_creation(
-                    &sess->handover.gnb_dl_ip,
+                    &sess->handover.remote_dl_ip,
                     &far->outer_header_creation,
                     &far->outer_header_creation_len));
-        far->outer_header_creation.teid = sess->handover.gnb_dl_teid;
+        far->outer_header_creation.teid = sess->handover.remote_dl_teid;
 
         /* Indirect Data Forwarding PDRs is set to highest precedence
          * (lowest precedence value) */

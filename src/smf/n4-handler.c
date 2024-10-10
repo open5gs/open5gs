@@ -197,23 +197,38 @@ uint8_t smf_5gc_n4_handle_session_establishment_response(
         far = pdr->far;
         ogs_assert(far);
 
-        if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) {
+        if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) {
+            ogs_assert(sess->pfcp_node);
+            if (sess->pfcp_node->up_function_features.ftup &&
+                pdr->f_teid_len) {
+                if (sess->local_dl_addr)
+                    ogs_freeaddrinfo(sess->local_dl_addr);
+                if (sess->local_dl_addr6)
+                    ogs_freeaddrinfo(sess->local_dl_addr6);
+
+                ogs_assert(OGS_OK ==
+                    ogs_pfcp_f_teid_to_sockaddr(
+                        &pdr->f_teid, pdr->f_teid_len,
+                        &sess->local_dl_addr, &sess->local_dl_addr6));
+                sess->local_dl_teid = pdr->f_teid.teid;
+            }
+        } else if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) {
             if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
                 ogs_pfcp_far_teid_hash_set(far);
 
             ogs_assert(sess->pfcp_node);
             if (sess->pfcp_node->up_function_features.ftup &&
                 pdr->f_teid_len) {
-                if (sess->upf_n3_addr)
-                    ogs_freeaddrinfo(sess->upf_n3_addr);
-                if (sess->upf_n3_addr6)
-                    ogs_freeaddrinfo(sess->upf_n3_addr6);
+                if (sess->local_ul_addr)
+                    ogs_freeaddrinfo(sess->local_ul_addr);
+                if (sess->local_ul_addr6)
+                    ogs_freeaddrinfo(sess->local_ul_addr6);
 
                 ogs_assert(OGS_OK ==
                     ogs_pfcp_f_teid_to_sockaddr(
                         &pdr->f_teid, pdr->f_teid_len,
-                        &sess->upf_n3_addr, &sess->upf_n3_addr6));
-                sess->upf_n3_teid = pdr->f_teid.teid;
+                        &sess->local_ul_addr, &sess->local_ul_addr6));
+                sess->local_ul_teid = pdr->f_teid.teid;
             }
         } else if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
             ogs_assert(OGS_ERROR != ogs_pfcp_setup_pdr_gtpu_node(pdr));
@@ -225,7 +240,7 @@ uint8_t smf_5gc_n4_handle_session_establishment_response(
         return cause_value;
     }
 
-    if (sess->upf_n3_addr == NULL && sess->upf_n3_addr6 == NULL) {
+    if (sess->local_ul_addr == NULL && sess->local_ul_addr6 == NULL) {
         ogs_error("No UP F-TEID");
         return OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
     }
@@ -314,7 +329,22 @@ void smf_5gc_n4_handle_session_modification_response(
             far = pdr->far;
             ogs_assert(far);
 
-            if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) {
+            if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) {
+                ogs_assert(sess->pfcp_node);
+                if (sess->pfcp_node->up_function_features.ftup &&
+                    pdr->f_teid_len) {
+                    if (sess->local_dl_addr)
+                        ogs_freeaddrinfo(sess->local_dl_addr);
+                    if (sess->local_dl_addr6)
+                        ogs_freeaddrinfo(sess->local_dl_addr6);
+
+                    ogs_assert(OGS_OK ==
+                        ogs_pfcp_f_teid_to_sockaddr(
+                            &pdr->f_teid, pdr->f_teid_len,
+                            &sess->local_dl_addr, &sess->local_dl_addr6));
+                    sess->local_dl_teid = pdr->f_teid.teid;
+                }
+            } else if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) {
                 if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
                     ogs_pfcp_far_teid_hash_set(far);
 
@@ -323,28 +353,28 @@ void smf_5gc_n4_handle_session_modification_response(
                     pdr->f_teid_len) {
 
                     if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {
-                        if (sess->upf_n3_addr)
-                            ogs_freeaddrinfo(sess->upf_n3_addr);
-                        if (sess->upf_n3_addr6)
-                            ogs_freeaddrinfo(sess->upf_n3_addr6);
+                        if (sess->local_ul_addr)
+                            ogs_freeaddrinfo(sess->local_ul_addr);
+                        if (sess->local_ul_addr6)
+                            ogs_freeaddrinfo(sess->local_ul_addr6);
 
                         ogs_assert(OGS_OK ==
                             ogs_pfcp_f_teid_to_sockaddr(
                                 &pdr->f_teid, pdr->f_teid_len,
-                                &sess->upf_n3_addr, &sess->upf_n3_addr6));
-                        sess->upf_n3_teid = pdr->f_teid.teid;
+                                &sess->local_ul_addr, &sess->local_ul_addr6));
+                        sess->local_ul_teid = pdr->f_teid.teid;
                     } else if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
-                        if (sess->handover.upf_dl_addr)
-                            ogs_freeaddrinfo(sess->handover.upf_dl_addr);
-                        if (sess->handover.upf_dl_addr6)
-                            ogs_freeaddrinfo(sess->handover.upf_dl_addr6);
+                        if (sess->handover.local_dl_addr)
+                            ogs_freeaddrinfo(sess->handover.local_dl_addr);
+                        if (sess->handover.local_dl_addr6)
+                            ogs_freeaddrinfo(sess->handover.local_dl_addr6);
 
                         ogs_assert(OGS_OK ==
                             ogs_pfcp_f_teid_to_sockaddr(
                                 &pdr->f_teid, pdr->f_teid_len,
-                                &sess->handover.upf_dl_addr,
-                                &sess->handover.upf_dl_addr6));
-                        sess->handover.upf_dl_teid = pdr->f_teid.teid;
+                                &sess->handover.local_dl_addr,
+                                &sess->handover.local_dl_addr6));
+                        sess->handover.local_dl_teid = pdr->f_teid.teid;
                     }
                 }
             } else if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
@@ -368,7 +398,7 @@ void smf_5gc_n4_handle_session_modification_response(
 
     ogs_assert(sess);
 
-    if (sess->upf_n3_addr == NULL && sess->upf_n3_addr6 == NULL) {
+    if (sess->local_ul_addr == NULL && sess->local_ul_addr6 == NULL) {
         if (stream)
             smf_sbi_send_sm_context_update_error_log(
                     stream, status, "No UP F_TEID", NULL);
@@ -395,7 +425,34 @@ void smf_5gc_n4_handle_session_modification_response(
 
             smf_sbi_send_sm_context_updated_data_ho_state(
                     sess, stream, OpenAPI_ho_state_COMPLETED);
+        } else if (flags & OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING) {
+            if (flags & OGS_PFCP_MODIFY_DL_ONLY) {
+                if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING) {
+                    sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+                    smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                            sess, stream, OpenAPI_up_cnx_state_ACTIVATED);
+                } else {
+                    ogs_assert(true ==
+                            ogs_sbi_send_http_status_no_content(stream));
+                }
+            } else if (flags & OGS_PFCP_MODIFY_UL_ONLY) {
+                smf_n1_n2_message_transfer_param_t param;
 
+                memset(&param, 0, sizeof(param));
+                param.state = SMF_UE_REQUESTED_PDU_SESSION_ESTABLISHMENT;
+                param.n1smbuf =
+                    gsm_build_pdu_session_establishment_accept(sess);
+                ogs_assert(param.n1smbuf);
+                param.n2smbuf =
+                    ngap_build_pdu_session_resource_setup_request_transfer(
+                            sess);
+                ogs_assert(param.n2smbuf);
+
+                smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+            } else {
+                ogs_fatal("Invalid flags [0x%lx]", flags);
+                ogs_assert_if_reached();
+            }
         } else {
             if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING) {
                 sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;

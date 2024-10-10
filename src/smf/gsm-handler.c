@@ -47,10 +47,34 @@ int gsm_handle_pdu_session_establishment_request(
     ogs_assert(pdu_session_type);
     ssc_mode = &pdu_session_establishment_request->ssc_mode;
 
-    sess->integrity_protection.mbr_dl =
-            integrity_protection_maximum_data_rate->dl;
-    sess->integrity_protection.mbr_ul =
-            integrity_protection_maximum_data_rate->ul;
+    switch (integrity_protection_maximum_data_rate->dl) {
+    case OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_64KBPS:
+        sess->integrity_protection.mbr_dl =
+            OpenAPI_max_integrity_protected_data_rate__64_KBPS;
+        break;
+    case OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_FULL:
+        sess->integrity_protection.mbr_dl =
+            OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_FULL;
+        break;
+    default:
+        sess->integrity_protection.mbr_dl =
+            OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_NULL;
+        break;
+    }
+    switch (integrity_protection_maximum_data_rate->ul) {
+    case OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_64KBPS:
+        sess->integrity_protection.mbr_ul =
+            OpenAPI_max_integrity_protected_data_rate__64_KBPS;
+        break;
+    case OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_FULL:
+        sess->integrity_protection.mbr_ul =
+            OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_FULL;
+        break;
+    default:
+        sess->integrity_protection.mbr_ul =
+            OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_NULL;
+        break;
+    }
 
     if (pdu_session_establishment_request->presencemask &
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_PDU_SESSION_TYPE_PRESENT)

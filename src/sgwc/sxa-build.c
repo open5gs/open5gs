@@ -263,6 +263,9 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
         }
     }
 
+    ogs_assert(num_of_remove_pdr + num_of_remove_far + num_of_create_pdr +
+            num_of_create_far + num_of_update_far);
+
     pfcp_message->h.type = type;
     pkbuf = ogs_pfcp_build_msg(pfcp_message);
     ogs_expect(pkbuf);
