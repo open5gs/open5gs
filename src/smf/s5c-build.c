@@ -433,7 +433,17 @@ ogs_pkbuf_t *smf_s5c_build_create_bearer_request(
 
     /* Data Plane(UL) : PGW-S5U */
     memset(&pgw_s5u_teid, 0, sizeof(ogs_gtp2_f_teid_t));
-    pgw_s5u_teid.interface_type = OGS_GTP2_F_TEID_S5_S8_PGW_GTP_U;
+    switch (sess->gtp_rat_type) {
+    case OGS_GTP2_RAT_TYPE_EUTRAN:
+        pgw_s5u_teid.interface_type = OGS_GTP2_F_TEID_S5_S8_PGW_GTP_U;
+        break;
+    case OGS_GTP2_RAT_TYPE_WLAN:
+        pgw_s5u_teid.interface_type = OGS_GTP2_F_TEID_S2B_U_PGW_GTP_U;
+        break;
+    default:
+        ogs_error("Unknown RAT Type [%d]", sess->gtp_rat_type);
+        ogs_assert_if_reached();
+    }
     pgw_s5u_teid.teid = htobe32(bearer->pgw_s5u_teid);
     ogs_assert(bearer->pgw_s5u_addr || bearer->pgw_s5u_addr6);
     rv = ogs_gtp2_sockaddr_to_f_teid(
