@@ -410,7 +410,7 @@ int gsm_handle_pdu_session_modification_request(
                     if (pf) {
                         qos_flow->pf_to_delete
                             [qos_flow->num_of_pf_to_delete++] =
-                                qos_rule[i].pf[j].identifier;
+                                qos_rule[i].pf[j].identifier-1;
                         smf_pf_remove(pf);
                     }
                 }
