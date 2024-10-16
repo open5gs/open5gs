@@ -113,7 +113,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     qos_rule[0].num_of_packet_filter = 1;
 
     qos_rule[0].pf[0].direction = OGS_NAS_QOS_DIRECTION_BIDIRECTIONAL;
-    qos_rule[0].pf[0].identifier = 0;
+    qos_rule[0].pf[0].identifier = 1;
     qos_rule[0].pf[0].content.length = 1;
     qos_rule[0].pf[0].content.num_of_component = 1;
     qos_rule[0].pf[0].content.component[0].type = OGS_PACKET_FILTER_MATCH_ALL;
@@ -299,7 +299,7 @@ static void encode_qos_rule_packet_filter(
         ogs_list_for_each_entry(&qos_flow->pf_to_add_list, pf, to_add_node) {
             ogs_assert(i < OGS_MAX_NUM_OF_FLOW_IN_NAS);
             qos_rule->pf[i].direction = pf->direction;
-            qos_rule->pf[i].identifier = pf->identifier-1;
+            qos_rule->pf[i].identifier = pf->identifier;
 
             ogs_pf_content_from_ipfw_rule(
                     pf->direction, &qos_rule->pf[i].content, &pf->ipfw_rule,
