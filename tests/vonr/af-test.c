@@ -498,7 +498,7 @@ static void test1_func(abts_case *tc, void *data)
     gsmbuf = testgsm_build_pdu_session_modification_request(
         qos_flow,
         0,
-        OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_PACKET_FILTERS,
+        OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_ALL_PACKET_FILTERS,
         0);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
     gmmbuf = testgmm_build_ul_nas_transport(sess,
