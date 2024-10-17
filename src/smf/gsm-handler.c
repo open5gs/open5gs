@@ -252,86 +252,20 @@ int gsm_handle_pdu_session_modification_request(
                 qos_flow_find_or_add(&sess->qos_flow_to_modify_list,
                                         qos_flow, to_modify_node);
             } else if (qos_rule[i].code ==
-                OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_PACKET_FILTERS) {
-                for (j = 0; j < qos_rule[i].num_of_packet_filter &&
-                            j < OGS_MAX_NUM_OF_FLOW_IN_NAS; j++) {
-
-                    pf = smf_pf_find_by_identifier(
-                            qos_flow, qos_rule[i].pf[j].identifier);
-                    if (pf) {
-                        ogs_assert(
-                            reconfigure_packet_filter(pf, &qos_rule[i], i) > 0);
-            /*
-             * Refer to lib/ipfw/ogs-ipfw.h
-             * Issue #338
-             *
-             * <DOWNLINK/BI-DIRECTIONAL>
-             * TFT : Local <UE_IP> <UE_PORT> REMOTE <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
-             * -->
-             * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
-             *
-             * <UPLINK>
-             * TFT : Local <UE_IP> <UE_PORT> REMOTE <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
-             * -->
-             * RULE : Source <UE_IP> <UE_PORT> Destination <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
-             */
-                        if (pf->direction == OGS_FLOW_DOWNLINK_ONLY)
-                            ogs_ipfw_rule_swap(&pf->ipfw_rule);
-
-                        if (pf->flow_description)
-                            ogs_free(pf->flow_description);
-
-            /*
-             * Issue #338
-             *
-             * <DOWNLINK/BI-DIRECTIONAL>
-             * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
-             * -->
-             * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
-             * PFCP : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
-             *
-             * <UPLINK>
-             * RULE : Source <UE_IP> <UE_PORT> Destination <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
-             * -->
-             * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
-             * PFCP : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
-             */
-                        if (pf->direction == OGS_FLOW_UPLINK_ONLY) {
-                            ogs_ipfw_rule_t tmp;
-                            ogs_ipfw_copy_and_swap(&tmp, &pf->ipfw_rule);
-                            pf->flow_description =
-                                ogs_ipfw_encode_flow_description(&tmp);
-                            ogs_assert(pf->flow_description);
-                        } else {
-                            pf->flow_description =
-                                ogs_ipfw_encode_flow_description(
-                                        &pf->ipfw_rule);
-                            ogs_assert(pf->flow_description);
-                        }
-
-                        pfcp_flags |= OGS_PFCP_MODIFY_TFT_REPLACE;
-                        qos_flow_find_or_add(&sess->qos_flow_to_modify_list,
-                                                qos_flow, to_modify_node);
-
-                        ogs_list_add(
-                                &qos_flow->pf_to_add_list, &pf->to_add_node);
-                    }
-                }
-            } else if (qos_rule[i].code ==
                 OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE ||
                         qos_rule[i].code ==
-                OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS) {
+                OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS ||
+                        qos_rule[i].code ==
+                OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_ALL_PACKET_FILTERS) {
 
-                if (qos_rule[i].code == OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE)
+                if (qos_rule[i].code == OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE ||
+                    qos_rule[i].code == OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_ALL_PACKET_FILTERS)
                     smf_pf_remove_all(qos_flow);
 
                 for (j = 0; j < qos_rule[i].num_of_packet_filter &&
                             j < OGS_MAX_NUM_OF_FLOW_IN_NAS; j++) {
 
-                    pf = smf_pf_find_by_identifier(
-                            qos_flow, qos_rule[i].pf[j].identifier);
-                    if (!pf)
-                        pf = smf_pf_add(qos_flow);
+                    pf = smf_pf_add(qos_flow);
                     ogs_assert(pf);
 
                     ogs_assert(
@@ -389,6 +323,9 @@ int gsm_handle_pdu_session_modification_request(
                     } else if (qos_rule[i].code ==
                             OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS) {
                         pfcp_flags |= OGS_PFCP_MODIFY_TFT_ADD;
+                    } else if (qos_rule[i].code ==
+                            OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_ALL_PACKET_FILTERS) {
+                        pfcp_flags |= OGS_PFCP_MODIFY_TFT_REPLACE;
                     } else
                         ogs_assert_if_reached();
 
