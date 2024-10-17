@@ -114,6 +114,8 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     }
 
     if (nas_mobile_identity_tmsi) {
+        mme_p_tmsi_t old_p_tmsi = mme_ue->p_tmsi;
+
         if (nas_mobile_identity_tmsi->type == OGS_NAS_MOBILE_IDENTITY_TMSI) {
             mme_ue->p_tmsi = be32toh(nas_mobile_identity_tmsi->tmsi);
         } else {
@@ -121,7 +123,17 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                     nas_mobile_identity_tmsi->type);
             goto error;
         }
-        ogs_debug("    P-TMSI[0x%08x]", mme_ue->p_tmsi);
+        if (old_p_tmsi == mme_ue->p_tmsi) {
+            ogs_info("    P-TMSI [0x%08x]", mme_ue->p_tmsi);
+        } else {
+            ogs_info("    P-TMSI Updated [0x%08x->0x%08x]",
+                    old_p_tmsi, mme_ue->p_tmsi);
+            if (!mme_ue->next.m_tmsi) {
+                mme_ue_new_guti(mme_ue);
+                ogs_info("    New GUTI Allocated [0x%08x]",
+                        mme_ue->next.guti.m_tmsi);
+            }
+        }
     }
 
     if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
