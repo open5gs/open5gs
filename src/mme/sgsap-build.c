@@ -34,6 +34,8 @@ ogs_pkbuf_t *sgsap_build_location_update_request(mme_ue_t *mme_ue)
     served_gummei_t *served_gummei = &mme_self()->served_gummei[0];
     char eps_update_type;
     ogs_nas_lai_t lai;
+    ogs_eps_tai_t tai;
+    ogs_e_cgi_t e_cgi;
 
     ogs_assert(mme_ue);
     csmap = mme_ue->csmap;
@@ -58,6 +60,20 @@ ogs_pkbuf_t *sgsap_build_location_update_request(mme_ue_t *mme_ue)
     lai.lac = htobe16(lai.lac);
     ogs_tlv_add(root, OGS_TLV_MODE_T1_L1, SGSAP_IE_LAI_TYPE,
             SGSAP_IE_LAI_LEN, 0, &lai);
+
+   /*
+    * TS 29.118 5.2.2.2.1
+    * The MME shall add the UE's current TAI and E-CGI
+    * to the SGsAP-LOCATION-UPDATE-REQUEST message.
+    */
+    memcpy(&tai, &mme_ue->tai, sizeof(ogs_eps_tai_t));
+    tai.tac = htobe16(tai.tac);
+    ogs_tlv_add(root, OGS_TLV_MODE_T1_L1, SGSAP_IE_TAI_TYPE,
+            SGSAP_IE_TAI_LEN, 0, &tai);
+    memcpy(&e_cgi, &mme_ue->e_cgi, sizeof(ogs_e_cgi_t));
+    e_cgi.cell_id = htobe32(e_cgi.cell_id);
+    ogs_tlv_add(root, OGS_TLV_MODE_T1_L1, SGSAP_IE_E_CGI_TYPE,
+            SGSAP_IE_E_CGI_LEN, 0, &e_cgi);
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     if (!pkbuf) {
