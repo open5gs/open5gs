@@ -1035,6 +1035,10 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             CLEAR_MME_UE_TIMER(mme_ue->t3450);
 #endif
 
+            /* Confirm GUTI */
+            if (mme_ue->next.m_tmsi)
+                mme_ue_confirm_guti(mme_ue);
+
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue))
                 ogs_assert(OGS_OK ==
                     sgsap_send_tmsi_reallocation_complete(mme_ue));
