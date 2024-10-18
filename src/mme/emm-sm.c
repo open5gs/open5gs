@@ -635,6 +635,19 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
              * 10. UplinkNASTransport + Tracking area update complete (Target)
              */
 
+            /* Tracking Area Update Request TYPE */
+            if (e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage)
+                mme_ue->tracking_area_update_request_type =
+                    MME_TAU_TYPE_INITIAL_UE_MESSAGE;
+            else if (e->s1ap_code ==
+                    S1AP_ProcedureCode_id_uplinkNASTransport)
+                mme_ue->tracking_area_update_request_type =
+                    MME_TAU_TYPE_UPLINK_NAS_TRANPORT;
+            else {
+                ogs_error("Invalid Procedure Code[%d]", (int)e->s1ap_code);
+                break;
+            }
+
             /* Update CSMAP from Tracking area update request */
             mme_ue->csmap = mme_csmap_find_by_tai(&mme_ue->tai);
             if (mme_ue->csmap &&
@@ -645,24 +658,13 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                  mme_ue->nas_eps.update.value ==
                  OGS_NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING_WITH_IMSI_ATTACH)) {
 
-                if (e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage)
-                    mme_ue->tracking_area_update_request_type =
-                        MME_TAU_TYPE_INITIAL_UE_MESSAGE;
-                else if (e->s1ap_code ==
-                        S1AP_ProcedureCode_id_uplinkNASTransport)
-                    mme_ue->tracking_area_update_request_type =
-                        MME_TAU_TYPE_UPLINK_NAS_TRANPORT;
-                else {
-                    ogs_error("Invalid Procedure Code[%d]", (int)e->s1ap_code);
-                    break;
-                }
-
                 ogs_assert(OGS_OK ==
                     sgsap_send_location_update_request(mme_ue));
 
             } else {
 
-                if (e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage) {
+                if (mme_ue->tracking_area_update_request_type ==
+                        MME_TAU_TYPE_INITIAL_UE_MESSAGE) {
                     ogs_debug("    Iniital UE Message");
                     if (mme_ue->nas_eps.update.active_flag) {
 
@@ -691,9 +693,36 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                                 S1AP_ProcedureCode_id_downlinkNASTransport);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
+
+    /*
+     * TS23.401
+     * 5.3.3Tracking Area Update procedures
+     * 5.3.3.0Triggers for tracking area update
+     *
+     * When the "Active flag" is not set in the TAU Request message
+     * and the Tracking Area Update was not initiated in ECM-CONNECTED state,
+     * the new MME releases the signalling connection with UE, according to
+     * clause 5.3.5. For a UE using Control Plane CIoT EPS Optimisation,
+     * when the "Signalling active flag" is set, the new MME shall not release
+     * the NAS signalling connection with the UE immediately
+     * after the TAU procedure is completed
+     *
+     * -----------------------------------------------------------------------
+     * When active_flag is 0 and the GUTI has changed during a TAU procedure,
+     * we must wait to receive the TAU Complete message from the UE before
+     * sending the UEContextReleaseCommand. This ensures that the UE has
+     * acknowledged the new GUTI, allowing the TAU procedure to complete
+     * successfully and maintaining synchronization
+     * between the UE and the network.
+     */
+                        enb_ue->relcause.group = S1AP_Cause_PR_nas;
+                        enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
+                        if (!mme_ue->next.m_tmsi)
+                            mme_send_release_access_bearer_or_ue_context_release(
+                                enb_ue);
                     }
-                } else if (e->s1ap_code ==
-                        S1AP_ProcedureCode_id_uplinkNASTransport) {
+                } else if (mme_ue->tracking_area_update_request_type ==
+                        MME_TAU_TYPE_UPLINK_NAS_TRANPORT) {
                     ogs_debug("    Uplink NAS Transport");
                     r = nas_eps_send_tau_accept(mme_ue,
                             S1AP_ProcedureCode_id_downlinkNASTransport);
@@ -702,13 +731,6 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                 } else {
                     ogs_error("Invalid Procedure Code[%d]", (int)e->s1ap_code);
                     break;
-                }
-
-                if (!mme_ue->nas_eps.update.active_flag) {
-                    enb_ue->relcause.group = S1AP_Cause_PR_nas;
-                    enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
-                    mme_send_release_access_bearer_or_ue_context_release(
-                            enb_ue);
                 }
             }
 
@@ -1036,8 +1058,36 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
 #endif
 
             /* Confirm GUTI */
-            if (mme_ue->next.m_tmsi)
+            if (mme_ue->next.m_tmsi) {
                 mme_ue_confirm_guti(mme_ue);
+    /*
+     * TS23.401
+     * 5.3.3Tracking Area Update procedures
+     * 5.3.3.0Triggers for tracking area update
+     *
+     * When the "Active flag" is not set in the TAU Request message
+     * and the Tracking Area Update was not initiated in ECM-CONNECTED state,
+     * the new MME releases the signalling connection with UE, according to
+     * clause 5.3.5. For a UE using Control Plane CIoT EPS Optimisation,
+     * when the "Signalling active flag" is set, the new MME shall not release
+     * the NAS signalling connection with the UE immediately
+     * after the TAU procedure is completed
+     *
+     * -----------------------------------------------------------------------
+     * When active_flag is 0 and the GUTI has changed during a TAU procedure,
+     * we must wait to receive the TAU Complete message from the UE before
+     * sending the UEContextReleaseCommand. This ensures that the UE has
+     * acknowledged the new GUTI, allowing the TAU procedure to complete
+     * successfully and maintaining synchronization
+     * between the UE and the network.
+     */
+                if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST &&
+                    mme_ue->tracking_area_update_request_type ==
+                        MME_TAU_TYPE_INITIAL_UE_MESSAGE &&
+                    mme_ue->nas_eps.update.active_flag == 0)
+                    mme_send_release_access_bearer_or_ue_context_release(
+                            enb_ue);
+            }
 
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue))
                 ogs_assert(OGS_OK ==
@@ -1616,8 +1666,36 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             CLEAR_MME_UE_TIMER(mme_ue->t3450);
 
             /* Confirm GUTI */
-            if (mme_ue->next.m_tmsi)
+            if (mme_ue->next.m_tmsi) {
                 mme_ue_confirm_guti(mme_ue);
+    /*
+     * TS23.401
+     * 5.3.3Tracking Area Update procedures
+     * 5.3.3.0Triggers for tracking area update
+     *
+     * When the "Active flag" is not set in the TAU Request message
+     * and the Tracking Area Update was not initiated in ECM-CONNECTED state,
+     * the new MME releases the signalling connection with UE, according to
+     * clause 5.3.5. For a UE using Control Plane CIoT EPS Optimisation,
+     * when the "Signalling active flag" is set, the new MME shall not release
+     * the NAS signalling connection with the UE immediately
+     * after the TAU procedure is completed
+     *
+     * -----------------------------------------------------------------------
+     * When active_flag is 0 and the GUTI has changed during a TAU procedure,
+     * we must wait to receive the TAU Complete message from the UE before
+     * sending the UEContextReleaseCommand. This ensures that the UE has
+     * acknowledged the new GUTI, allowing the TAU procedure to complete
+     * successfully and maintaining synchronization
+     * between the UE and the network.
+     */
+                if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST &&
+                    mme_ue->tracking_area_update_request_type ==
+                        MME_TAU_TYPE_INITIAL_UE_MESSAGE &&
+                    mme_ue->nas_eps.update.active_flag == 0)
+                    mme_send_release_access_bearer_or_ue_context_release(
+                            enb_ue);
+            }
 
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue))
                 ogs_assert(OGS_OK ==

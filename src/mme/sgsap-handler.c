@@ -171,6 +171,32 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                         S1AP_ProcedureCode_id_downlinkNASTransport);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
+    /*
+     * TS23.401
+     * 5.3.3Tracking Area Update procedures
+     * 5.3.3.0Triggers for tracking area update
+     *
+     * When the "Active flag" is not set in the TAU Request message
+     * and the Tracking Area Update was not initiated in ECM-CONNECTED state,
+     * the new MME releases the signalling connection with UE, according to
+     * clause 5.3.5. For a UE using Control Plane CIoT EPS Optimisation,
+     * when the "Signalling active flag" is set, the new MME shall not release
+     * the NAS signalling connection with the UE immediately
+     * after the TAU procedure is completed
+     *
+     * -----------------------------------------------------------------------
+     * When active_flag is 0 and the GUTI has changed during a TAU procedure,
+     * we must wait to receive the TAU Complete message from the UE before
+     * sending the UEContextReleaseCommand. This ensures that the UE has
+     * acknowledged the new GUTI, allowing the TAU procedure to complete
+     * successfully and maintaining synchronization
+     * between the UE and the network.
+     */
+                enb_ue->relcause.group = S1AP_Cause_PR_nas;
+                enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
+                if (!mme_ue->next.m_tmsi)
+                    mme_send_release_access_bearer_or_ue_context_release(
+                            enb_ue);
             }
         } else if (mme_ue->tracking_area_update_request_type ==
                 MME_TAU_TYPE_UPLINK_NAS_TRANPORT) {
@@ -189,13 +215,6 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
             ogs_error("Invalid TAU Type[%d]",
                     mme_ue->tracking_area_update_request_type);
             return;
-        }
-
-        if (!mme_ue->nas_eps.update.active_flag) {
-            enb_ue->relcause.group = S1AP_Cause_PR_nas;
-            enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
-            mme_send_release_access_bearer_or_ue_context_release(
-                    enb_ue);
         }
     } else {
         ogs_fatal("[%s] Invalid EPS-Type[%d]",
@@ -347,6 +366,32 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                         S1AP_ProcedureCode_id_downlinkNASTransport);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
+    /*
+     * TS23.401
+     * 5.3.3Tracking Area Update procedures
+     * 5.3.3.0Triggers for tracking area update
+     *
+     * When the "Active flag" is not set in the TAU Request message
+     * and the Tracking Area Update was not initiated in ECM-CONNECTED state,
+     * the new MME releases the signalling connection with UE, according to
+     * clause 5.3.5. For a UE using Control Plane CIoT EPS Optimisation,
+     * when the "Signalling active flag" is set, the new MME shall not release
+     * the NAS signalling connection with the UE immediately
+     * after the TAU procedure is completed
+     *
+     * -----------------------------------------------------------------------
+     * When active_flag is 0 and the GUTI has changed during a TAU procedure,
+     * we must wait to receive the TAU Complete message from the UE before
+     * sending the UEContextReleaseCommand. This ensures that the UE has
+     * acknowledged the new GUTI, allowing the TAU procedure to complete
+     * successfully and maintaining synchronization
+     * between the UE and the network.
+     */
+                enb_ue->relcause.group = S1AP_Cause_PR_nas;
+                enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
+                if (!mme_ue->next.m_tmsi)
+                    mme_send_release_access_bearer_or_ue_context_release(
+                            enb_ue);
             }
         } else if (mme_ue->tracking_area_update_request_type ==
                 MME_TAU_TYPE_UPLINK_NAS_TRANPORT) {
@@ -365,13 +410,6 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
             ogs_error("Invalid TAU Type[%d]",
                     mme_ue->tracking_area_update_request_type);
             return;
-        }
-
-        if (!mme_ue->nas_eps.update.active_flag) {
-            enb_ue->relcause.group = S1AP_Cause_PR_nas;
-            enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
-            mme_send_release_access_bearer_or_ue_context_release(
-                    enb_ue);
         }
     } else {
         ogs_fatal("[%s] Invalid EPS-Type[%d]",

@@ -120,7 +120,6 @@ typedef struct ogs_local_conf_s {
 
         struct {
             ogs_time_t duration;
-            ogs_time_t complete_delay;
         } handover;
 
     } time;
