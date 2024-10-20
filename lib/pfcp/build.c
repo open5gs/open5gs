@@ -355,6 +355,11 @@ void ogs_pfcp_build_create_pdr(
     message->pdi.source_interface.presence = 1;
     message->pdi.source_interface.u8 = pdr->src_if;
 
+    if (pdr->src_if_type_presence) {
+        message->pdi.source_interface_type.presence = 1;
+        message->pdi.source_interface_type.u8 = pdr->src_if_type;
+    }
+
     if (pdr->dnn) {
         message->pdi.network_instance.presence = 1;
         message->pdi.network_instance.len = ogs_fqdn_build(
@@ -504,6 +509,11 @@ void ogs_pfcp_build_update_pdr(
         message->pdi.source_interface.presence = 1;
         message->pdi.source_interface.u8 = pdr->src_if;
 
+        if (pdr->src_if_type_presence) {
+            message->pdi.source_interface_type.presence = 1;
+            message->pdi.source_interface_type.u8 = pdr->src_if_type;
+        }
+
         memset(pfcp_sdf_filter, 0, sizeof(pfcp_sdf_filter));
         for (j = 0; j < pdr->num_of_flow && j < OGS_MAX_NUM_OF_FLOW_IN_PDR; j++) {
             ogs_assert(pdr->flow[j].fd || pdr->flow[j].bid);
@@ -565,6 +575,13 @@ void ogs_pfcp_build_create_far(
         message->forwarding_parameters.destination_interface.presence = 1;
         message->forwarding_parameters.destination_interface.u8 =
             far->dst_if;
+
+        if (far->dst_if_type_presence) {
+            message->forwarding_parameters.destination_interface_type.
+                presence = 1;
+            message->forwarding_parameters.destination_interface_type.
+                u8 = far->dst_if_type;
+        }
 
         if (far->dnn) {
             message->forwarding_parameters.network_instance.presence = 1;
@@ -636,6 +653,13 @@ void ogs_pfcp_build_update_far_activate(
     message->update_forwarding_parameters.destination_interface.presence = 1;
     message->update_forwarding_parameters.
         destination_interface.u8 = far->dst_if;
+
+    if (far->dst_if_type_presence) {
+        message->update_forwarding_parameters.destination_interface_type.
+            presence = 1;
+        message->update_forwarding_parameters.destination_interface_type.
+            u8 = far->dst_if_type;
+    }
 
     if (far->dnn) {
         message->update_forwarding_parameters.network_instance.presence = 1;

@@ -156,6 +156,9 @@ typedef struct ogs_pfcp_pdr_s {
     ogs_pfcp_precedence_t   precedence;
     ogs_pfcp_interface_t    src_if;
 
+    bool src_if_type_presence;
+    ogs_pfcp_3gpp_interface_type_t src_if_type;
+
     union {
         char *apn;
         char *dnn;
@@ -238,6 +241,10 @@ typedef struct ogs_pfcp_far_s {
     ogs_pfcp_far_id_t       id;
     ogs_pfcp_apply_action_t apply_action;
     ogs_pfcp_interface_t    dst_if;
+
+    bool dst_if_type_presence;
+    ogs_pfcp_3gpp_interface_type_t dst_if_type;
+
     ogs_pfcp_outer_header_creation_t outer_header_creation;
     int                     outer_header_creation_len;
 

@@ -1955,6 +1955,9 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
 
     dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
 
+    dl_pdr->src_if_type_presence = true;
+    dl_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N6;
+
     ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(ul_pdr);
     qos_flow->ul_pdr = ul_pdr;
@@ -1964,6 +1967,9 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     ogs_assert(ul_pdr->apn);
 
     ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
+
+    ul_pdr->src_if_type_presence = true;
+    ul_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
 
     ul_pdr->outer_header_removal_len = 1;
     if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
@@ -1990,6 +1996,10 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     ogs_assert(dl_far->apn);
 
     dl_far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+
+    dl_far->dst_if_type_presence = true;
+    dl_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
+
     ogs_pfcp_pdr_associate_far(dl_pdr, dl_far);
 
     dl_far->apply_action =
@@ -2005,6 +2015,10 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     ogs_assert(ul_far->apn);
 
     ul_far->dst_if = OGS_PFCP_INTERFACE_CORE;
+
+    ul_far->dst_if_type_presence = true;
+    ul_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N6;
+
     ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
 
     ul_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
@@ -2067,6 +2081,10 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
 
         pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
 
+        pdr->src_if_type_presence = true;
+        pdr->src_if_type =
+            OGS_PFCP_3GPP_INTERFACE_TYPE_SGW_UPF_GTP_U_FOR_UL_DATA_FORWARDING;
+
         pdr->outer_header_removal_len = 1;
         if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
             pdr->outer_header_removal.description =
@@ -2090,6 +2108,11 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
         ogs_assert(far->apn);
 
         far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+
+        far->dst_if_type_presence = true;
+        far->dst_if_type =
+            OGS_PFCP_3GPP_INTERFACE_TYPE_SGW_UPF_GTP_U_FOR_DL_DATA_FORWARDING;
+
         ogs_pfcp_pdr_associate_far(pdr, far);
 
         far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
@@ -2284,6 +2307,9 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
 
     up2cp_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
 
+    up2cp_pdr->src_if_type_presence = true;
+    up2cp_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
+
     up2cp_pdr->outer_header_removal_len = 1;
     if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
         up2cp_pdr->outer_header_removal.description =
@@ -2421,6 +2447,9 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
 
     dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
 
+    dl_pdr->src_if_type_presence = true;
+    dl_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N6;
+
     ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(ul_pdr);
     bearer->ul_pdr = ul_pdr;
@@ -2430,6 +2459,9 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     ogs_assert(ul_pdr->apn);
 
     ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
+
+    ul_pdr->src_if_type_presence = true;
+    ul_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
 
     ul_pdr->outer_header_removal_len = 1;
     if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
@@ -2456,6 +2488,10 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     ogs_assert(dl_far->apn);
 
     dl_far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+
+    dl_far->dst_if_type_presence = true;
+    dl_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
+
     ogs_pfcp_pdr_associate_far(dl_pdr, dl_far);
 
     dl_far->apply_action =
@@ -2471,6 +2507,10 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     ogs_assert(ul_far->apn);
 
     ul_far->dst_if = OGS_PFCP_INTERFACE_CORE;
+
+    ul_far->dst_if_type_presence = true;
+    ul_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N6;
+
     ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
 
     ul_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;

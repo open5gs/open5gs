@@ -413,6 +413,11 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
 
     pdr->src_if = message->pdi.source_interface.u8;
 
+    if (message->pdi.source_interface_type.presence) {
+        pdr->src_if_type_presence = true;
+        pdr->src_if_type = message->pdi.source_interface_type.u8;
+    }
+
     ogs_pfcp_rule_remove_all(pdr);
 
     for (i = 0; i < OGS_MAX_NUM_OF_FLOW_IN_PDR; i++) {
@@ -758,6 +763,11 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
 
         pdr->src_if = message->pdi.source_interface.u8;
 
+        if (message->pdi.source_interface_type.presence) {
+            pdr->src_if_type_presence = true;
+            pdr->src_if_type = message->pdi.source_interface_type.u8;
+        }
+
         ogs_pfcp_rule_remove_all(pdr);
 
         for (i = 0; i < OGS_MAX_NUM_OF_FLOW_IN_PDR; i++) {
@@ -971,6 +981,13 @@ ogs_pfcp_far_t *ogs_pfcp_handle_create_far(ogs_pfcp_sess_t *sess,
                 message->forwarding_parameters.destination_interface.u8;
         }
 
+        if (message->forwarding_parameters.destination_interface_type.
+                presence) {
+            far->dst_if_type_presence = true;
+            far->dst_if_type = message->forwarding_parameters.
+                destination_interface_type.u8;
+        }
+
         if (message->forwarding_parameters.network_instance.presence) {
             char dnn[OGS_MAX_DNN_LEN+1];
 
@@ -1076,6 +1093,13 @@ ogs_pfcp_far_t *ogs_pfcp_handle_update_far(ogs_pfcp_sess_t *sess,
                 destination_interface.presence) {
             far->dst_if =
                 message->update_forwarding_parameters.destination_interface.u8;
+        }
+
+        if (message->update_forwarding_parameters.destination_interface_type.
+                presence) {
+            far->dst_if_type_presence = true;
+            far->dst_if_type = message->update_forwarding_parameters.
+                destination_interface_type.u8;
         }
 
         if (message->update_forwarding_parameters.network_instance.presence) {
