@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2024-01-19 23:36:01.327925 by acetcom
+ * Created on: 2024-10-20 22:37:02.530796 by acetcom
  * from 29244-h71-modified.docx
  ******************************************************************************/
 
@@ -885,7 +885,7 @@ typedef ogs_tlv_octet_t ogs_pfcp_tlv_time_stamp_t;
 typedef ogs_tlv_uint32_t ogs_pfcp_tlv_averaging_window_t;
 typedef ogs_tlv_uint8_t ogs_pfcp_tlv_paging_policy_indicator_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_apn_dnn_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv__interface_type_t;
+typedef ogs_tlv_uint8_t ogs_pfcp_tlv__interface_type_t;
 typedef ogs_tlv_uint8_t ogs_pfcp_tlv_pfcpsrreq_flags_t;
 typedef ogs_tlv_uint8_t ogs_pfcp_tlv_pfcpaureq_flags_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_activation_time_t;

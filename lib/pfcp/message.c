@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2024-01-19 23:36:01.346970 by acetcom
+ * Created on: 2024-10-20 22:37:02.550243 by acetcom
  * from 29244-h71-modified.docx
  ******************************************************************************/
 
@@ -1348,10 +1348,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_apn_dnn =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc__interface_type =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT8,
     "3GPP Interface Type",
     OGS_PFCP__INTERFACE_TYPE_TYPE,
-    0,
+    1,
     0,
     sizeof(ogs_pfcp_tlv__interface_type_t),
     { NULL }
