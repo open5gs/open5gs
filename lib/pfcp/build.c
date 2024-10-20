@@ -476,7 +476,8 @@ bool ogs_pfcp_build_created_pdr(
 }
 
 void ogs_pfcp_build_update_pdr(
-    ogs_pfcp_tlv_update_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr)
+    ogs_pfcp_tlv_update_pdr_t *message, int i,
+    ogs_pfcp_pdr_t *pdr, uint64_t modify_flags)
 {
     ogs_pfcp_sdf_filter_t pfcp_sdf_filter[OGS_MAX_NUM_OF_FLOW_IN_PDR];
     int j = 0;
@@ -485,64 +486,55 @@ void ogs_pfcp_build_update_pdr(
     ogs_assert(message);
     ogs_assert(pdr);
 
+    ogs_assert(modify_flags &
+            (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
+             OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE|
+             OGS_PFCP_MODIFY_EPC_TFT_UPDATE|
+             OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL));
+
     message->presence = 1;
     message->pdr_id.presence = 1;
     message->pdr_id.u16 = pdr->id;
 
-    message->pdi.presence = 1;
-    message->pdi.source_interface.presence = 1;
-    message->pdi.source_interface.u8 = pdr->src_if;
+    if (modify_flags &
+            (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
+             OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE|
+             OGS_PFCP_MODIFY_EPC_TFT_UPDATE)) {
+        message->pdi.presence = 1;
+        message->pdi.source_interface.presence = 1;
+        message->pdi.source_interface.u8 = pdr->src_if;
 
-    if (pdr->dnn) {
-        message->pdi.network_instance.presence = 1;
-        message->pdi.network_instance.len = ogs_fqdn_build(
-            pdrbuf[i].dnn, pdr->dnn, strlen(pdr->dnn));
-        message->pdi.network_instance.data = pdrbuf[i].dnn;
-    }
+        memset(pfcp_sdf_filter, 0, sizeof(pfcp_sdf_filter));
+        for (j = 0; j < pdr->num_of_flow && j < OGS_MAX_NUM_OF_FLOW_IN_PDR; j++) {
+            ogs_assert(pdr->flow[j].fd || pdr->flow[j].bid);
 
-    memset(pfcp_sdf_filter, 0, sizeof(pfcp_sdf_filter));
-    for (j = 0; j < pdr->num_of_flow && j < OGS_MAX_NUM_OF_FLOW_IN_PDR; j++) {
-        ogs_assert(pdr->flow[j].fd || pdr->flow[j].bid);
+            if (pdr->flow[j].fd) {
+                pfcp_sdf_filter[j].fd = 1;
+                pfcp_sdf_filter[j].flow_description_len =
+                        strlen(pdr->flow[j].description);
+                pfcp_sdf_filter[j].flow_description = pdr->flow[j].description;
+            }
+            if (pdr->flow[j].bid) {
+                pfcp_sdf_filter[j].bid = 1;
+                pfcp_sdf_filter[j].sdf_filter_id = pdr->flow[j].sdf_filter_id;
+            }
 
-        if (pdr->flow[j].fd) {
-            pfcp_sdf_filter[j].fd = 1;
-            pfcp_sdf_filter[j].flow_description_len =
-                    strlen(pdr->flow[j].description);
-            pfcp_sdf_filter[j].flow_description = pdr->flow[j].description;
+            len = sizeof(ogs_pfcp_sdf_filter_t) +
+                    pfcp_sdf_filter[j].flow_description_len;
+
+            message->pdi.sdf_filter[j].presence = 1;
+            pdrbuf[i].sdf_filter[j] = ogs_calloc(1, len);
+            ogs_assert(pdrbuf[i].sdf_filter[j]);
+            ogs_pfcp_build_sdf_filter(&message->pdi.sdf_filter[j],
+                    &pfcp_sdf_filter[j], pdrbuf[i].sdf_filter[j], len);
         }
-        if (pdr->flow[j].bid) {
-            pfcp_sdf_filter[j].bid = 1;
-            pfcp_sdf_filter[j].sdf_filter_id = pdr->flow[j].sdf_filter_id;
+    }
+    if (modify_flags & OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL) {
+        if (pdr->outer_header_removal_len) {
+            message->outer_header_removal.presence = 1;
+            message->outer_header_removal.data = &pdr->outer_header_removal;
+            message->outer_header_removal.len = pdr->outer_header_removal_len;
         }
-
-        len = sizeof(ogs_pfcp_sdf_filter_t) +
-                pfcp_sdf_filter[j].flow_description_len;
-
-        message->pdi.sdf_filter[j].presence = 1;
-        pdrbuf[i].sdf_filter[j] = ogs_calloc(1, len);
-        ogs_assert(pdrbuf[i].sdf_filter[j]);
-        ogs_pfcp_build_sdf_filter(&message->pdi.sdf_filter[j],
-                &pfcp_sdf_filter[j], pdrbuf[i].sdf_filter[j], len);
-    }
-
-    if (pdr->ue_ip_addr_len) {
-        message->pdi.ue_ip_address.presence = 1;
-        message->pdi.ue_ip_address.data = &pdr->ue_ip_addr;
-        message->pdi.ue_ip_address.len = pdr->ue_ip_addr_len;
-    }
-
-    if (pdr->f_teid_len) {
-        memcpy(&pdrbuf[i].f_teid, &pdr->f_teid, pdr->f_teid_len);
-        pdrbuf[i].f_teid.teid = htobe32(pdr->f_teid.teid);
-
-        message->pdi.local_f_teid.presence = 1;
-        message->pdi.local_f_teid.data = &pdrbuf[i].f_teid;
-        message->pdi.local_f_teid.len = pdr->f_teid_len;
-    }
-
-    if (pdr->qfi) {
-        message->pdi.qfi.presence = 1;
-        message->pdi.qfi.u8 = pdr->qfi;
     }
 }
 
