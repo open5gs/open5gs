@@ -1,0 +1,53 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+    "docker-in-docker": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/common-utils:1": {},
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "streetsidesoftware.code-spell-checker",
+        "yzhang.markdown-all-in-one",
+        "dbaeumer.vscode-eslint",
+        "oderwat.indent-rainbow",
+        "eamodio.gitlens"
+      ]
+    }
+  },
+  "workspaceFolder": "/workspace",
+  "remoteUser": "root",
+  "postCreateCommand": "apt-get update && apt-get install -y build-essential cmake pkg-config git libgnutls28-dev libsctp-dev libssl-dev mongo-tools mongodb libcurl4-openssl-dev libsctp1 lksctp-tools iproute2 && npm install -g npm@latest",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+  ],
+  "onCreateCommand": [
+    "git clone https://github.com/open5gs/open5gs.git /workspace/open5gs",
+    "cd /workspace/open5gs && meson build && ninja -C build",
+    "mkdir /workspace/neonbot",
+    "cd /workspace/neonbot && npm init -y && npm install axios ws discord.js"
+  ],
+  "forwardPorts": [3000, 3001, 27017, 5000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Web UI",
+      "onAutoForward": "notify"
+    },
+    "3001": {
+      "label": "Web Console",
+      "onAutoForward": "notify"
+    },
+    "27017": {
+      "label": "MongoDB",
+      "onAutoForward": "silent"
+    },
+    "5000": {
+      "label": "API Server",
+      "onAutoForward": "notify"
+    }
+  }
+}
