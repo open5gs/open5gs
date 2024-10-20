@@ -43,7 +43,8 @@ void ogs_pfcp_build_create_pdr(
 bool ogs_pfcp_build_created_pdr(
     ogs_pfcp_tlv_created_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr);
 void ogs_pfcp_build_update_pdr(
-    ogs_pfcp_tlv_update_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr);
+    ogs_pfcp_tlv_update_pdr_t *message, int i,
+    ogs_pfcp_pdr_t *pdr, uint64_t modify_flags);
 
 void ogs_pfcp_build_create_far(
     ogs_pfcp_tlv_create_far_t *message, int i, ogs_pfcp_far_t *far);

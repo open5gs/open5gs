@@ -76,6 +76,7 @@ void sgwc_s5c_handle_create_session_response(
     sgwc_ue_t *sgwc_ue = NULL;
     sgwc_bearer_t *bearer = NULL;
     sgwc_tunnel_t *ul_tunnel = NULL;
+    ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
 
     ogs_gtp2_f_teid_t *pgw_s5c_teid = NULL;
@@ -145,6 +146,17 @@ void sgwc_s5c_handle_create_session_response(
     if (rsp->pdn_address_allocation.presence == 0) {
         ogs_error("No PDN Address Allocation [Cause:%d]", session_cause);
         cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
+    } else {
+        memcpy(&sess->paa, rsp->pdn_address_allocation.data,
+                rsp->pdn_address_allocation.len);
+        sess->session.session_type = sess->paa.session_type;
+        if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
+        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+        } else {
+            ogs_error("Unknown session-type [%d]", sess->session.session_type);
+            cause_value = OGS_GTP2_CAUSE_PREFERRED_PDN_TYPE_NOT_SUPPORTED;
+        }
     }
 
     if (rsp->cause.presence == 0) {
@@ -253,6 +265,24 @@ void sgwc_s5c_handle_create_session_response(
             return;
         }
 
+        pdr = ul_tunnel->pdr;
+        ogs_assert(pdr);
+
+        pdr->outer_header_removal_len = 1;
+        if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+            pdr->outer_header_removal.description =
+                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
+        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
+            pdr->outer_header_removal.description =
+                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
+        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+            pdr->outer_header_removal.description =
+                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+        } else {
+            ogs_error("Invalid session_type [%d]", sess->session.session_type);
+            ogs_assert_if_reached();
+        }
+
         far = ul_tunnel->far;
         ogs_assert(far);
 
@@ -286,7 +316,9 @@ void sgwc_s5c_handle_create_session_response(
     ogs_assert(OGS_OK ==
         sgwc_pfcp_send_session_modification_request(
             sess, s11_xact->id, gtpbuf,
-            OGS_PFCP_MODIFY_UL_ONLY|OGS_PFCP_MODIFY_ACTIVATE));
+            OGS_PFCP_MODIFY_UL_ONLY|
+            OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL|
+            OGS_PFCP_MODIFY_ACTIVATE));
 }
 
 void sgwc_s5c_handle_modify_bearer_response(
@@ -536,6 +568,7 @@ void sgwc_s5c_handle_create_bearer_request(
     sgwc_ue_t *sgwc_ue = NULL;
     sgwc_bearer_t *bearer = NULL;
     sgwc_tunnel_t *ul_tunnel = NULL;
+    ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
 
     ogs_gtp2_create_bearer_request_t *req = NULL;
@@ -628,6 +661,25 @@ void sgwc_s5c_handle_create_bearer_request(
                 OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE,
                 OGS_GTP2_CAUSE_MANDATORY_IE_MISSING);
         return;
+    }
+
+    pdr = ul_tunnel->pdr;
+    ogs_assert(pdr);
+
+    pdr->outer_header_removal_len = 1;
+    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+        pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
+    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
+        pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
+    } else if (sess->session.session_type ==
+            OGS_PDU_SESSION_TYPE_IPV4V6) {
+        pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+    } else {
+        ogs_error("Invalid session_type [%d]", sess->session.session_type);
+        ogs_assert_if_reached();
     }
 
     far = ul_tunnel->far;

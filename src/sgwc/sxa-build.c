@@ -131,6 +131,7 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
     int num_of_remove_far = 0;
     int num_of_create_pdr = 0;
     int num_of_create_far = 0;
+    int num_of_update_pdr = 0;
     int num_of_update_far = 0;
 
     uint64_t modify_flags = 0;
@@ -259,9 +260,24 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
                         ogs_assert_if_reached();
 
                 }
+
+                if (modify_flags & OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL) {
+                    /* Update PDR */
+                    pdr = tunnel->pdr;
+                    if (pdr) {
+                        ogs_pfcp_build_update_pdr(
+                                &req->update_pdr[num_of_update_pdr],
+                                num_of_update_pdr, pdr, modify_flags);
+                        num_of_update_pdr++;
+                    } else
+                        ogs_assert_if_reached();
+                }
             }
         }
     }
+
+    ogs_assert(num_of_remove_pdr + num_of_remove_far + num_of_create_pdr +
+            num_of_create_far + num_of_update_pdr + num_of_update_far);
 
     pfcp_message->h.type = type;
     pkbuf = ogs_pfcp_build_msg(pfcp_message);
