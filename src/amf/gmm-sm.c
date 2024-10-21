@@ -2474,10 +2474,21 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_INIT_SUCC);
                 break;
             case OGS_NAS_5GS_REGISTRATION_TYPE_MOBILITY_UPDATING:
-                amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_MOB_SUCC);
-                break;
             case OGS_NAS_5GS_REGISTRATION_TYPE_PERIODIC_UPDATING:
-                amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_PERIOD_SUCC);
+                if (amf_ue->nas.registration.value ==
+                        OGS_NAS_5GS_REGISTRATION_TYPE_MOBILITY_UPDATING)
+                    amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_MOB_SUCC);
+                else
+                    amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_PERIOD_SUCC);
+
+                if (!amf_ue->nas.registration.follow_on_request) {
+                    r = ngap_send_ran_ue_context_release_command(
+                            ran_ue_find_by_id(amf_ue->ran_ue_id),
+                            NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+                            NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                }
                 break;
             case OGS_NAS_5GS_REGISTRATION_TYPE_EMERGENCY:
                 amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_EMERG_SUCC);
