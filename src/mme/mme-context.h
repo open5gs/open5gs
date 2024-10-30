@@ -204,8 +204,6 @@ typedef struct mme_pgw_s {
 #define MME_SGSAP_IS_CONNECTED(__mME) \
     ((__mME) && ((__mME)->csmap) && ((__mME)->csmap->vlr) && \
      (OGS_FSM_CHECK(&(__mME)->csmap->vlr->sm, sgsap_state_connected)))
-#define MME_P_TMSI_IS_AVAILABLE(__mME) \
-    (MME_SGSAP_IS_CONNECTED(__mME) && (__mME)->p_tmsi)
 
 typedef struct mme_vlr_s {
     ogs_lnode_t     lnode;
@@ -363,6 +361,11 @@ struct mme_ue_s {
         ogs_nas_detach_type_t detach;
     } nas_eps;
 
+#define MME_TAU_TYPE_INITIAL_UE_MESSAGE    1
+#define MME_TAU_TYPE_UPLINK_NAS_TRANPORT   2
+#define MME_TAU_TYPE_UNPROTECTED_INGERITY  3
+    uint8_t tracking_area_update_request_type;
+
     /* 1. MME initiated detach request to the UE.
      *    (nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE)
      * 2. If UE is IDLE, Paging sent to the UE
@@ -403,7 +406,6 @@ struct mme_ue_s {
     int             a_msisdn_len;
     char            a_msisdn_bcd[OGS_MAX_MSISDN_BCD_LEN+1];
 
-    mme_p_tmsi_t    p_tmsi;
     struct {
         ogs_pool_id_t   *mme_gn_teid_node; /* A node of MME-Gn-TEID */
         uint32_t        mme_gn_teid;   /* MME-Gn-TEID is derived from NODE */
@@ -416,8 +418,15 @@ struct mme_ue_s {
     } gn;
 
     struct {
+#define MME_NEXT_GUTI_IS_AVAILABLE(__mME) ((__mME)->next.m_tmsi)
+#define MME_CURRENT_GUTI_IS_AVAILABLE(__mME) ((__mME)->current.m_tmsi)
         mme_m_tmsi_t *m_tmsi;
         ogs_nas_eps_guti_t guti;
+#define MME_NEXT_P_TMSI_IS_AVAILABLE(__mME) \
+    (MME_SGSAP_IS_CONNECTED(__mME) && (__mME)->next.p_tmsi)
+#define MME_CURRENT_P_TMSI_IS_AVAILABLE(__mME) \
+    (MME_SGSAP_IS_CONNECTED(__mME) && (__mME)->current.p_tmsi)
+        mme_p_tmsi_t    p_tmsi;
     } current, next;
 
     ogs_pool_id_t   *mme_s11_teid_node; /* A node of MME-S11-TEID */
@@ -659,10 +668,10 @@ struct mme_ue_s {
     } while(0);
 
 #define CS_CALL_SERVICE_INDICATOR(__mME) \
-    (MME_P_TMSI_IS_AVAILABLE(__mME) && \
+    (MME_CURRENT_P_TMSI_IS_AVAILABLE(__mME) && \
      ((__mME)->service_indicator) == SGSAP_CS_CALL_SERVICE_INDICATOR)
 #define SMS_SERVICE_INDICATOR(__mME) \
-    (MME_P_TMSI_IS_AVAILABLE(__mME) && \
+    (MME_CURRENT_P_TMSI_IS_AVAILABLE(__mME) && \
      ((__mME)->service_indicator) == SGSAP_SMS_SERVICE_INDICATOR)
     uint8_t         service_indicator;
 
@@ -980,6 +989,12 @@ sgw_relocation_e sgw_ue_check_if_relocated(mme_ue_t *mme_ue);
 
 void mme_ue_new_guti(mme_ue_t *mme_ue);
 void mme_ue_confirm_guti(mme_ue_t *mme_ue);
+
+#define INVALID_P_TMSI 0
+void mme_ue_set_p_tmsi(
+        mme_ue_t *mme_ue,
+        ogs_nas_mobile_identity_tmsi_t *nas_mobile_identity_tmsi);
+void mme_ue_confirm_p_tmsi(mme_ue_t *mme_ue);
 
 mme_ue_t *mme_ue_add(enb_ue_t *enb_ue);
 void mme_ue_remove(mme_ue_t *mme_ue);

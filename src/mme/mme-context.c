@@ -3300,7 +3300,7 @@ void mme_ue_new_guti(mme_ue_t *mme_ue)
     ogs_assert(served_gummei->num_of_mme_gid > 0);
     ogs_assert(served_gummei->num_of_mme_code > 0);
 
-    if (mme_ue->next.m_tmsi) {
+    if (MME_NEXT_GUTI_IS_AVAILABLE(mme_ue)) {
         ogs_warn("GUTI has already been allocated");
         return;
     }
@@ -3320,9 +3320,9 @@ void mme_ue_new_guti(mme_ue_t *mme_ue)
 
 void mme_ue_confirm_guti(mme_ue_t *mme_ue)
 {
-    ogs_assert(mme_ue->next.m_tmsi);
+    ogs_assert(MME_NEXT_GUTI_IS_AVAILABLE(mme_ue));
 
-    if (mme_ue->current.m_tmsi) {
+    if (MME_CURRENT_GUTI_IS_AVAILABLE(mme_ue)) {
         /* MME has a VALID GUTI
          * As such, we need to remove previous GUTI in hash table */
         ogs_hash_set(self.guti_ue_hash,
@@ -3346,6 +3346,37 @@ void mme_ue_confirm_guti(mme_ue_t *mme_ue)
               mme_ue->current.guti.mme_gid,
               mme_ue->current.guti.mme_code,
               mme_ue->current.guti.m_tmsi);
+}
+
+void mme_ue_set_p_tmsi(
+        mme_ue_t *mme_ue,
+        ogs_nas_mobile_identity_tmsi_t *nas_mobile_identity_tmsi)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(nas_mobile_identity_tmsi);
+
+    /*
+     * If the P-TMSI received from MSC/VLR is different from the current P-TMSI
+     * known by the MME, store this new P-TMSI as 'Next P-TMSI'. This value will
+     * be sent to the UE through the Attach Accept or TAU Accept message.
+     *
+     * When the UE sends an Attach Complete or TAU Complete message,
+     * the MME updates the 'Current P-TMSI' with the value in 'Next P-TMSI',
+     * thereby confirming and saving the new P-TMSI.
+     */
+    mme_ue->next.p_tmsi = be32toh(nas_mobile_identity_tmsi->tmsi);
+    if (mme_ue->next.p_tmsi != INVALID_P_TMSI) {
+        if (mme_ue->current.p_tmsi == mme_ue->next.p_tmsi)
+            mme_ue->next.p_tmsi = INVALID_P_TMSI;
+    }
+}
+void mme_ue_confirm_p_tmsi(mme_ue_t *mme_ue)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(mme_ue->next.p_tmsi);
+
+    mme_ue->current.p_tmsi = mme_ue->next.p_tmsi;
+    mme_ue->next.p_tmsi = INVALID_P_TMSI;
 }
 
 static bool compare_ue_info(mme_sgw_t *node, enb_ue_t *enb_ue)
@@ -3567,14 +3598,15 @@ void mme_ue_remove(mme_ue_t *mme_ue)
         ogs_hash_set(mme_self()->imsi_ue_hash,
                 mme_ue->imsi, mme_ue->imsi_len, NULL);
 
-    if (mme_ue->current.m_tmsi) {
+    if (MME_CURRENT_GUTI_IS_AVAILABLE(mme_ue)) {
         ogs_hash_set(self.guti_ue_hash,
                 &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), NULL);
         ogs_assert(mme_m_tmsi_free(mme_ue->current.m_tmsi) == OGS_OK);
     }
 
-    if (mme_ue->next.m_tmsi)
+    if (MME_NEXT_GUTI_IS_AVAILABLE(mme_ue)) {
         ogs_assert(mme_m_tmsi_free(mme_ue->next.m_tmsi) == OGS_OK);
+    }
 
     /* Clear the saved PDN Connectivity Request */
     OGS_NAS_CLEAR_DATA(&mme_ue->pdn_connectivity_request);

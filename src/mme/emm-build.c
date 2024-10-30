@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -163,7 +163,7 @@ ogs_pkbuf_t *emm_build_attach_accept(
     attach_accept->esm_message_container.buffer = esmbuf->data;
     attach_accept->esm_message_container.length = esmbuf->len;
 
-    if (mme_ue->next.m_tmsi) {
+    if (MME_NEXT_GUTI_IS_AVAILABLE(mme_ue)) {
         attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_GUTI_PRESENT;
 
         ogs_debug("    [%s]    GUTI[G:%d,C:%d,M_TMSI:0x%x]",
@@ -207,9 +207,9 @@ ogs_pkbuf_t *emm_build_attach_accept(
     eps_network_feature_support->ims_voice_over_ps_session_in_s1_mode = 1;
     eps_network_feature_support->extended_protocol_configuration_options = 1;
 
-    if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+    if (MME_NEXT_P_TMSI_IS_AVAILABLE(mme_ue)) {
         ogs_assert(mme_ue->csmap);
-        ogs_assert(mme_ue->p_tmsi);
+        ogs_assert(mme_ue->next.p_tmsi);
 
         attach_accept->presencemask |=
             OGS_NAS_EPS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT;
@@ -224,7 +224,7 @@ ogs_pkbuf_t *emm_build_attach_accept(
         tmsi->spare = 0xf;
         tmsi->odd_even = 0;
         tmsi->type = OGS_NAS_MOBILE_IDENTITY_TMSI;
-        tmsi->tmsi = mme_ue->p_tmsi;
+        tmsi->tmsi = mme_ue->next.p_tmsi;
         ogs_debug("    P-TMSI: 0x%08x", tmsi->tmsi);
     }
 
@@ -494,6 +494,10 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
     ogs_nas_eps_tracking_area_update_accept_t *tau_accept =
         &message.emm.tracking_area_update_accept;
     ogs_nas_eps_mobile_identity_t *nas_guti = &tau_accept->guti;
+    ogs_nas_location_area_identification_t *lai =
+        &tau_accept->location_area_identification;
+    ogs_nas_mobile_identity_t *ms_identity = &tau_accept->ms_identity;
+    ogs_nas_mobile_identity_tmsi_t *tmsi = &ms_identity->tmsi;;
     ogs_nas_gprs_timer_t *t3412_value = &tau_accept->t3412_value;
     ogs_nas_gprs_timer_t *t3402_value = &tau_accept->t3402_value;
     ogs_nas_gprs_timer_t *t3423_value = &tau_accept->t3423_value;
@@ -530,7 +534,7 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
             OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3412_VALUE_PRESENT ;
     }
 
-    if (mme_ue->next.m_tmsi) {
+    if (MME_NEXT_GUTI_IS_AVAILABLE(mme_ue)) {
         tau_accept->presencemask |=
             OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_GUTI_PRESENT;
 
@@ -593,6 +597,27 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
             bearer = mme_bearer_next(bearer);
         }
         sess = mme_sess_next(sess);
+    }
+
+    /* Location Area Identification & MS Identity */
+    if (MME_NEXT_P_TMSI_IS_AVAILABLE(mme_ue)) {
+        ogs_assert(mme_ue->csmap);
+        ogs_assert(mme_ue->next.p_tmsi);
+
+        tau_accept->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT;
+        lai->nas_plmn_id = mme_ue->csmap->lai.nas_plmn_id;
+        lai->lac = mme_ue->csmap->lai.lac;
+        ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
+                ogs_plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
+
+        tau_accept->presencemask |=
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_MS_IDENTITY_PRESENT;
+        ms_identity->length = 5;
+        tmsi->spare = 0xf;
+        tmsi->odd_even = 0;
+        tmsi->type = OGS_NAS_MOBILE_IDENTITY_TMSI;
+        tmsi->tmsi = mme_ue->next.p_tmsi;
+        ogs_debug("    P-TMSI: 0x%08x", tmsi->tmsi);
     }
 
     /* Set T3402 */
