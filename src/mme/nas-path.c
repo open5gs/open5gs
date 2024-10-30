@@ -857,17 +857,15 @@ int nas_eps_send_tau_accept(
         return OGS_ERROR;
     }
 
-    if (mme_ue->next.m_tmsi) {
-        CLEAR_MME_UE_TIMER(mme_ue->t3450);
-        mme_ue->t3450.pkbuf = ogs_pkbuf_copy(emmbuf);
-        if (!mme_ue->t3450.pkbuf) {
-            ogs_error("ogs_pkbuf_copy(mme_ue->t3450.pkbuf) failed");
-            ogs_pkbuf_free(emmbuf);
-            return OGS_ERROR;
-        }
-        ogs_timer_start(mme_ue->t3450.timer,
-                mme_timer_cfg(MME_TIMER_T3450)->duration);
+    CLEAR_MME_UE_TIMER(mme_ue->t3450);
+    mme_ue->t3450.pkbuf = ogs_pkbuf_copy(emmbuf);
+    if (!mme_ue->t3450.pkbuf) {
+        ogs_error("ogs_pkbuf_copy(mme_ue->t3450.pkbuf) failed");
+        ogs_pkbuf_free(emmbuf);
+        return OGS_ERROR;
     }
+    ogs_timer_start(mme_ue->t3450.timer,
+            mme_timer_cfg(MME_TIMER_T3450)->duration);
 
     if (procedureCode == S1AP_ProcedureCode_id_InitialContextSetup) {
         ogs_pkbuf_t *s1apbuf = NULL;

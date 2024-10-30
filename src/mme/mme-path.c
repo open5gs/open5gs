@@ -302,7 +302,7 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
             r = nas_eps_send_detach_request(mme_ue);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
-            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+            if (MME_CURRENT_P_TMSI_IS_AVAILABLE(mme_ue)) {
                 ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
             } else {
                 enb_ue_t *enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
