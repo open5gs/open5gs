@@ -176,11 +176,28 @@ void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact)
     ret = fd_msg_add_origin(req, 0);
     ogs_assert(ret == 0);
 
+    /* Set the Destination-Host AVP */
+    if (sess->aaa_server_identifier.name) {
+        ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
+        ogs_assert(ret == 0);
+        val.os.data = (unsigned char *)sess->aaa_server_identifier.name;
+        val.os.len  = strlen(sess->aaa_server_identifier.name);
+        ret = fd_msg_avp_setvalue(avp, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);
+    }
+
     /* Set the Destination-Realm AVP */
     ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    if (sess->aaa_server_identifier.realm) {
+        val.os.data = (unsigned char *)(sess->aaa_server_identifier.realm);
+        val.os.len  = strlen(sess->aaa_server_identifier.realm);
+    } else {
+        val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
+        val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    }
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);

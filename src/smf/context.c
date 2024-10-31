@@ -1791,6 +1791,11 @@ void smf_sess_remove(smf_sess_t *sess)
     /* Free SBI object memory */
     ogs_sbi_object_free(&sess->sbi);
 
+    if (sess->aaa_server_identifier.name)
+        ogs_free(sess->aaa_server_identifier.name);
+    if (sess->aaa_server_identifier.realm)
+        ogs_free(sess->aaa_server_identifier.realm);
+
     smf_bearer_remove_all(sess);
 
     ogs_assert(sess->pfcp.bar);
