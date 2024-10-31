@@ -445,6 +445,34 @@ uint8_t smf_s5c_handle_create_session_request(
             smf_ue->imeisv, smf_ue->imeisv_len, smf_ue->imeisv_bcd);
     }
 
+    /* Set Node Identifier */
+    if (req->_aaa_server_identifier.presence) {
+        ogs_gtp2_node_identifier_t node_identifier;
+        decoded = ogs_gtp2_parse_node_identifier(
+                &node_identifier, &req->_aaa_server_identifier);
+        if (req->_aaa_server_identifier.len == decoded) {
+            if (sess->aaa_server_identifier.name)
+                ogs_free(sess->aaa_server_identifier.name);
+            sess->aaa_server_identifier.name = ogs_memdup(
+                node_identifier.name, node_identifier.name_len+1);
+            ogs_assert(sess->aaa_server_identifier.name);
+            sess->aaa_server_identifier.name[node_identifier.name_len] = 0;
+
+            if (sess->aaa_server_identifier.realm)
+                ogs_free(sess->aaa_server_identifier.realm);
+            sess->aaa_server_identifier.realm = ogs_memdup(
+                node_identifier.realm, node_identifier.realm_len+1);
+            ogs_assert(sess->aaa_server_identifier.realm);
+            sess->aaa_server_identifier.realm[node_identifier.realm_len] = 0;
+        } else {
+            ogs_error("Invalid AAA Server Identifier [%d != %d]",
+                    req->_aaa_server_identifier.len, decoded);
+            ogs_log_hexdump(OGS_LOG_ERROR,
+                    req->_aaa_server_identifier.data,
+                    req->_aaa_server_identifier.len);
+        }
+    }
+
     return OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 }
 

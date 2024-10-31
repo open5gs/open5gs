@@ -486,6 +486,12 @@ typedef struct smf_sess_s {
         uint32_t id;
     } charging;
 
+    /* AAA Node Identifier */
+    struct {
+        char *name;
+        char *realm;
+    } aaa_server_identifier;
+
     /* Data Forwarding between the CP and UP functions */
     ogs_pfcp_pdr_t  *cp2up_pdr;
     ogs_pfcp_pdr_t  *up2cp_pdr;

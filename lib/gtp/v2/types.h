@@ -571,6 +571,20 @@ ED5(uint8_t spare1:1;,
     uint8_t pre_emption_capability:1;)
 } __attribute__ ((packed)) ogs_gtp2_arp_t;
 
+/* 8.107 Node Identifier */
+#define OGS_GTP2_MAX_NODE_IDENTIFIER_LEN (1+OGS_MAX_FQDN_LEN)*2
+typedef struct ogs_gtp2_node_identifier_s {
+    uint8_t name_len;
+    char *name;
+    uint8_t realm_len;
+    char *realm;
+} ogs_gtp2_node_identifier_t;
+
+int16_t ogs_gtp2_parse_node_identifier(
+    ogs_gtp2_node_identifier_t *node_identifier, ogs_tlv_octet_t *octet);
+int16_t ogs_gtp2_build_node_identifier(ogs_tlv_octet_t *octet,
+    ogs_gtp2_node_identifier_t *node_identifier, void *data, int data_len);
+
 #ifdef __cplusplus
 }
 #endif
