@@ -435,14 +435,13 @@ static int response_handler(
 
         sepp_assoc_remove(assoc);
 
-        if (!stream) {
+        if (stream) {
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
+                    "response_handler() failed", NULL, NULL));
+        } else
             ogs_error("STREAM has already been removed [%d]", stream_id);
-            return OGS_ERROR;
-        }
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                "response_handler() failed", NULL, NULL));
 
         return OGS_ERROR;
     }
@@ -453,6 +452,7 @@ static int response_handler(
 
     if (!stream) {
         ogs_error("STREAM has already been removed [%d]", stream_id);
+        ogs_sbi_response_free(response);
         return OGS_ERROR;
     }
     ogs_expect(true == ogs_sbi_server_send_response(stream, response));

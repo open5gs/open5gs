@@ -647,14 +647,13 @@ static int response_handler(
 
         scp_assoc_remove(assoc);
 
-        if (!stream) {
+        if (stream) {
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
+                    "response_handler() failed", NULL, NULL));
+        } else
             ogs_error("STREAM has already been removed [%d]", stream_id);
-            return OGS_ERROR;
-        }
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                "response_handler() failed", NULL, NULL));
 
         return OGS_ERROR;
     }
@@ -673,6 +672,7 @@ static int response_handler(
 
     if (!stream) {
         ogs_error("STREAM has already been removed [%d]", stream_id);
+        ogs_sbi_response_free(response);
         return OGS_ERROR;
     }
     ogs_expect(true == ogs_sbi_server_send_response(stream, response));
@@ -727,14 +727,13 @@ static int nf_discover_handler(
 
         scp_assoc_remove(assoc);
 
-        if (!stream) {
+        if (stream) {
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
+                    "nf_discover_handler() failed", NULL, NULL));
+        } else
             ogs_error("STREAM has already been removed [%d]", stream_id);
-            return OGS_ERROR;
-        }
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                "nf_discover_handler() failed", NULL, NULL));
 
         return OGS_ERROR;
     }
@@ -820,14 +819,13 @@ cleanup:
 
     scp_assoc_remove(assoc);
 
-    if (!stream) {
+    if (stream) {
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL,
+                NULL));
+    } else
         ogs_error("STREAM has already been removed [%d]", stream_id);
-        return OGS_ERROR;
-    }
-    ogs_assert(true ==
-        ogs_sbi_server_send_error(
-            stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL,
-            NULL));
 
     ogs_free(strerror);
 
@@ -866,14 +864,13 @@ static int sepp_discover_handler(
 
         scp_assoc_remove(assoc);
 
-        if (!stream) {
+        if (stream) {
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
+                    "sepp_discover_handler() failed", NULL, NULL));
+        } else
             ogs_error("STREAM has already been removed [%d]", stream_id);
-            return OGS_ERROR;
-        }
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                "sepp_discover_handler() failed", NULL, NULL));
 
         return OGS_ERROR;
     }
@@ -928,14 +925,13 @@ cleanup:
 
     scp_assoc_remove(assoc);
 
-    if (!stream) {
+    if (stream) {
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL,
+                NULL));
+    } else
         ogs_error("STREAM has already been removed [%d]", stream_id);
-        return OGS_ERROR;
-    }
-    ogs_assert(true ==
-        ogs_sbi_server_send_error(
-            stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL,
-            NULL));
 
     ogs_free(strerror);
 
