@@ -257,8 +257,13 @@ static int read_config(void)
 
 static int context_prepare(void)
 {
+    int rv;
+
 #define USRSCTP_LOCAL_UDP_PORT      9899
     ogs_app()->usrsctp.udp_port = USRSCTP_LOCAL_UDP_PORT;
+
+    rv = ogs_app_global_conf_prepare();
+    if (rv != OGS_OK) return rv;
 
     return OGS_OK;
 }

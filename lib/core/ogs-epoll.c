@@ -75,7 +75,8 @@ static void epoll_init(ogs_pollset_t *pollset)
 
     context->epfd = epoll_create(pollset->capacity);
     if (context->epfd < 0) {
-        ogs_log_message(OGS_LOG_FATAL, ogs_errno, "epoll_create() failed");
+        ogs_log_message(OGS_LOG_FATAL, ogs_errno,
+                "epoll_create() failed [%d]", pollset->capacity);
         ogs_assert_if_reached();
         return;
     }

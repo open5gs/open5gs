@@ -105,7 +105,7 @@ ogs_app_local_conf_t *ogs_local_conf(void)
     return &local_conf;
 }
 
-static int global_conf_prepare(void)
+int ogs_app_global_conf_prepare(void)
 {
     global_conf.sockopt.no_delay = true;
 
@@ -164,9 +164,6 @@ int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent)
     ogs_yaml_iter_t global_iter;
 
     ogs_assert(parent);
-
-    rv = global_conf_prepare();
-    if (rv != OGS_OK) return rv;
 
     ogs_yaml_iter_recurse(parent, &global_iter);
     while (ogs_yaml_iter_next(&global_iter)) {

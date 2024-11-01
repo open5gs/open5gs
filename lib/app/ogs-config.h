@@ -174,6 +174,7 @@ ogs_app_global_conf_t *ogs_global_conf(void);
 ogs_app_local_conf_t *ogs_local_conf(void);
 
 int ogs_app_count_nf_conf_sections(const char *conf_section);
+int ogs_app_global_conf_prepare(void);
 int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent);
 int ogs_app_parse_local_conf(const char *local);
 
