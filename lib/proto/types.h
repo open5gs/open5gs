@@ -699,7 +699,7 @@ typedef struct ogs_pco_id_s {
     void *data;
 } ogs_pco_id_t;
 
-#define OGS_MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID    16
+#define OGS_MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID    32
 typedef struct ogs_pco_s {
 ED3(uint8_t ext:1;,
     uint8_t spare:4;,
