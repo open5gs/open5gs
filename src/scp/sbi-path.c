@@ -186,7 +186,39 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
          *  and the field value. Field names are case-insensitive.
          */
         if (!strcasecmp(key, OGS_SBI_USER_AGENT)) {
-            if (val) requester_nf_type = OpenAPI_nf_type_FromString(val);
+            /*
+             * TS29.500
+             * 5.2 HTTP/2 Protocol
+             * 5.2.2.2 Mandatory to support HTTP standard headers
+             *
+             * Table 5.2.2.2-1
+             * Mandatory to support HTTP request standard headers
+             *
+             * Name: User-Agent
+             * Reference: IETF RFC 7231 [11]
+             * Description:
+             * This header shall be mainly used to identify the NF type of the
+             * HTTP/2 client. This header should be included in every HTTP/2
+             * request sent over any SBI; This header shall be included in
+             * every HTTP/2 request sent using indirect communication when
+             * target NF (re-)selection is to be performed at SCP.
+             *
+             * For Indirect communications, the User-Agent header in a
+             * request that is:
+             *  - forwarded by the SCP (with or without delegated
+             *    discovery) shall identify the NF type of the original NF
+             *    that issued the request (i.e. the SCP shall forward the
+             *    header received in the incoming request);
+             *  - originated by the SCP towards the NRF (e.g. NF Discovery or
+             *    Access Token Request) shall identify the SCP.
+             *
+             * The pattern of the content should start with the value of NF type
+             * (e.g. "UDM", see NOTE 1) or "SCP" (for a request originated by
+             * an SCP) and followed by a "-" and any other specific information
+             * if needed afterwards.
+             */
+            char *v = strsep(&val, "-");
+            if (v) requester_nf_type = OpenAPI_nf_type_FromString(v);
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_TARGET_APIROOT)) {
             headers.target_apiroot = val;
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_CALLBACK)) {
