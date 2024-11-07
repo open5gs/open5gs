@@ -39,9 +39,9 @@ static OGS_POOL(sess_state_pool, struct sess_state);
 static ogs_thread_mutex_t sess_state_mutex;
 
 static struct session_handler *pcrf_rx_reg = NULL;
-static struct disp_hdl *hdl_rx_fb = NULL; 
-static struct disp_hdl *hdl_rx_aar = NULL; 
-static struct disp_hdl *hdl_rx_str = NULL; 
+static struct disp_hdl *hdl_rx_fb = NULL;
+static struct disp_hdl *hdl_rx_aar = NULL;
+static struct disp_hdl *hdl_rx_str = NULL;
 
 static void pcrf_rx_asa_cb(void *data, struct msg **msg);
 
@@ -91,16 +91,20 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
     ogs_thread_mutex_unlock(&sess_state_mutex);
 }
 
-static int pcrf_rx_fb_cb(struct msg **msg, struct avp *avp, 
+static int pcrf_rx_fb_cb(struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
     /* This CB should never be called */
     ogs_warn("Unexpected message received!");
 
+    OGS_DIAM_STATS_MTX(
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_unknown);
+    )
+
     return ENOTSUP;
 }
 
-static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp, 
+static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
     int rv;
@@ -122,7 +126,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     os0_t gx_sid = NULL;
     uint32_t result_code = OGS_DIAM_RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
 
-    ogs_debug("[PCRF] AA-Request");
+    ogs_debug("[PCRF] Rx AA-Request");
 
     ogs_assert(msg);
     ogs_assert(sess);
@@ -410,15 +414,17 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("[PCRF] AA-Answer");
+    ogs_debug("[PCRF] Tx AA-Answer");
 
     /* Add this value to the stats */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_echoed++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_echoed);
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_aar);
+        PCRF_DIAM_PRIV_STATS_INC(rx.tx_aaa);
+    )
 
     ogs_ims_data_free(&rx_message.ims_data);
-    
+
     return 0;
 
 out:
@@ -438,9 +444,14 @@ out:
         ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
         ogs_assert(ret == 0);
     }
-    
+
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
+
+    OGS_DIAM_STATS_MTX(
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_aar);
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_aar_error);
+    )
 
     state_cleanup(sess_data, NULL, NULL);
     ogs_ims_data_free(&rx_message.ims_data);
@@ -462,7 +473,7 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
 
     ogs_assert(rx_sid);
 
-    ogs_debug("[PCRF] Abort-Session-Request");
+    ogs_debug("[PCRF] Tx Abort-Session-Request");
 
     /* Retrieve session by Session-Id */
     sidlen = strlen((char *)rx_sid);
@@ -504,7 +515,7 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
     /* Update State */
     sess_data->state = SESSION_ABORTED;
     sess_data->abort_cause = abort_cause;
-    
+
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
     ogs_assert(ret == 0);
@@ -547,23 +558,24 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
-    /* Keep a pointer to the session data for debug purpose, 
+    /* Keep a pointer to the session data for debug purpose,
      * in real life we would not need it */
     svg = sess_data;
-    
+
     /* Store this value in the session */
     ret = fd_sess_state_store(pcrf_rx_reg, session, &sess_data);
     ogs_assert(ret == 0);
     ogs_assert(sess_data == NULL);
-    
+
     /* Send the request */
     ret = fd_msg_send(&req, pcrf_rx_asa_cb, svg);
     ogs_assert(ret == 0);
 
     /* Increment the counter */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_sent++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_sent);
+        PCRF_DIAM_PRIV_STATS_INC(rx.tx_sar);
+    )
 
     return OGS_OK;
 }
@@ -578,13 +590,13 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     int new;
     int result_code = 0;
 
-    ogs_debug("[PCRF] Abort-Session-Answer");
+    ogs_debug("[PCRF] Rx Abort-Session-Answer");
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
     ogs_assert(ret == 0);
     ogs_assert(new == 0);
-    
+
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
     ogs_assert(ret == 0);
@@ -639,6 +651,10 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
         ogs_error("ERROR DIAMETER Result Code(%d)", result_code);
     }
 
+    OGS_DIAM_STATS_MTX(
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_asa);
+    )
+
     ret = fd_msg_free(*msg);
     ogs_assert(ret == 0);
     *msg = NULL;
@@ -646,7 +662,7 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     return;
 }
 
-static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp, 
+static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
     int rv;
@@ -661,7 +677,7 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
 
     uint32_t result_code = OGS_DIAM_RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
 
-    ogs_debug("[PCRF] Session-Termination-Request");
+    ogs_debug("[PCRF] Rx Session-Termination-Request");
 
     ogs_assert(msg);
     ogs_assert(sess);
@@ -743,16 +759,18 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("[PCRF] Session-Termination-Answer");
+    ogs_debug("[PCRF] Tx Session-Termination-Answer");
 
     /* Add this value to the stats */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_echoed++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_echoed);
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_str);
+        PCRF_DIAM_PRIV_STATS_INC(rx.tx_sta);
+    )
 
     state_cleanup(sess_data, NULL, NULL);
     ogs_ims_data_free(&rx_message.ims_data);
-    
+
     return 0;
 
 out:
@@ -773,10 +791,16 @@ out:
                     (char *)"DIAMETER_MISSING_AVP", NULL, NULL, 1);
         ogs_assert(ret == 0);
     }
-    
+
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
-    ogs_debug("[PCRF] Session-Termination-Answer");
+    ogs_debug("[PCRF] Tx Session-Termination-Answer");
+
+    OGS_DIAM_STATS_MTX(
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_str);
+        PCRF_DIAM_PRIV_STATS_INC(rx.rx_str_error);
+        PCRF_DIAM_PRIV_STATS_INC(rx.tx_sta);
+    )
 
     if (sess_data)
         state_cleanup(sess_data, NULL, NULL);

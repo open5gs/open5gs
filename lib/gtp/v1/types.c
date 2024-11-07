@@ -921,6 +921,12 @@ int ogs_gtp1_parse_pdp_context(
     CHECK_SPACE_ERR(1 + *ptr);
     rv = ogs_fqdn_parse(decoded->apn, (const char *)ptr + 1,
                         ogs_min(*ptr, sizeof(decoded->apn)));
+    /* Clang scan-build SA: Value stored is not used: add check for rv error. */
+    if (rv < 0) {
+        ogs_error("ogs_fqdn_parse() failed");
+        return OGS_ERROR;
+    }
+
     ptr += 1 + *ptr;
 
     CHECK_SPACE_ERR(2);

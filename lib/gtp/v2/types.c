@@ -26,12 +26,14 @@
 int16_t ogs_gtp2_parse_bearer_qos(
     ogs_gtp2_bearer_qos_t *bearer_qos, ogs_tlv_octet_t *octet)
 {
-    ogs_gtp2_bearer_qos_t *source = (ogs_gtp2_bearer_qos_t *)octet->data;
+    ogs_gtp2_bearer_qos_t *source = NULL;
     int16_t size = 0;
 
     ogs_assert(bearer_qos);
     ogs_assert(octet);
     ogs_assert(octet->len == GTP2_BEARER_QOS_LEN);
+
+    source = (ogs_gtp2_bearer_qos_t *)octet->data;
 
     memset(bearer_qos, 0, sizeof(ogs_gtp2_bearer_qos_t));
 
@@ -201,12 +203,14 @@ uint64_t ogs_gtp2_qos_to_kbps(uint8_t br, uint8_t extended, uint8_t extended2)
 int16_t ogs_gtp2_parse_flow_qos(
     ogs_gtp2_flow_qos_t *flow_qos, ogs_tlv_octet_t *octet)
 {
-    ogs_gtp2_flow_qos_t *source = (ogs_gtp2_flow_qos_t *)octet->data;
+    ogs_gtp2_flow_qos_t *source = NULL;
     int16_t size = 0;
 
     ogs_assert(flow_qos);
     ogs_assert(octet);
     ogs_assert(octet->len == GTP2_FLOW_QOS_LEN);
+
+    source = (ogs_gtp2_flow_qos_t *)octet->data;
 
     memset(flow_qos, 0, sizeof(ogs_gtp2_flow_qos_t));
 
@@ -617,11 +621,13 @@ int16_t ogs_gtp2_build_tft(
 /* 8.21 User Location Information (ULI) */
 int16_t ogs_gtp2_parse_uli(ogs_gtp2_uli_t *uli, ogs_tlv_octet_t *octet)
 {
-    ogs_gtp2_uli_t *source = (ogs_gtp2_uli_t *)octet->data;
+    ogs_gtp2_uli_t *source = NULL;
     int16_t size = 0;
 
     ogs_assert(uli);
     ogs_assert(octet);
+
+    source = (ogs_gtp2_uli_t *)octet->data;
 
     memset(uli, 0, sizeof(ogs_gtp2_uli_t));
 
@@ -791,6 +797,98 @@ int16_t ogs_gtp2_build_uli(
     if (uli->flags.ext_enodeb_id) { /* TODO */
         ogs_error("Extended Macro eNodeB ID in ULI not implemented! see 3GPP TS 29.274 8.21.8");
     }
+
+    octet->len = size;
+
+    return octet->len;
+}
+
+int16_t ogs_gtp2_parse_node_identifier(
+    ogs_gtp2_node_identifier_t *node_identifier, ogs_tlv_octet_t *octet)
+{
+    int16_t size = 0;
+
+    ogs_assert(node_identifier);
+    ogs_assert(octet);
+
+    memset(node_identifier, 0, sizeof(ogs_gtp2_node_identifier_t));
+
+    if (size + sizeof(node_identifier->name_len) > octet->len) {
+        ogs_error("Invalid TLV length [%d != %d]", size, octet->len);
+        ogs_log_hexdump(OGS_LOG_ERROR, octet->data, octet->len);
+        return size;
+    }
+    memcpy(&node_identifier->name_len,
+            (unsigned char *)octet->data + size,
+            sizeof(node_identifier->name_len));
+    size += sizeof(node_identifier->name_len);
+
+    if (size + node_identifier->name_len > octet->len) {
+        ogs_error("Invalid TLV length [%d != %d]", size, octet->len);
+        ogs_log_hexdump(OGS_LOG_ERROR, octet->data, octet->len);
+        return size;
+    }
+    node_identifier->name = (char *)octet->data + size;
+    size += node_identifier->name_len;
+
+    if (size + sizeof(node_identifier->realm_len) > octet->len) {
+        ogs_error("Invalid TLV length [%d != %d]", size, octet->len);
+        ogs_log_hexdump(OGS_LOG_ERROR, octet->data, octet->len);
+        return size;
+    }
+    memcpy(&node_identifier->realm_len,
+            (unsigned char *)octet->data + size,
+            sizeof(node_identifier->realm_len));
+    size += sizeof(node_identifier->realm_len);
+
+    if (size + node_identifier->realm_len > octet->len) {
+        ogs_error("Invalid TLV length [%d != %d]", size, octet->len);
+        ogs_log_hexdump(OGS_LOG_ERROR, octet->data, octet->len);
+        return size;
+    }
+    node_identifier->realm = (char *)octet->data + size;
+    size += node_identifier->realm_len;
+
+    if (size != octet->len) {
+        ogs_error("Invalid TLV length [%d != %d]", size, octet->len);
+        ogs_log_hexdump(OGS_LOG_ERROR, octet->data, octet->len);
+    }
+
+    return size;
+}
+int16_t ogs_gtp2_build_node_identifier(ogs_tlv_octet_t *octet,
+    ogs_gtp2_node_identifier_t *node_identifier, void *data, int data_len)
+{
+    int16_t size = 0;
+
+    ogs_assert(node_identifier);
+    ogs_assert(octet);
+    ogs_assert(data);
+    ogs_assert(data_len);
+
+    octet->data = data;
+
+    ogs_assert(size + sizeof(node_identifier->name_len) <= data_len);
+    memcpy((unsigned char *)octet->data + size,
+            &node_identifier->name_len,
+            sizeof(node_identifier->name_len));
+    size += sizeof(node_identifier->name_len);
+
+    ogs_assert(size + node_identifier->name_len <= data_len);
+    memcpy((unsigned char *)octet->data + size,
+            node_identifier->name, node_identifier->name_len);
+    size += node_identifier->name_len;
+
+    ogs_assert(size + sizeof(node_identifier->realm_len) <= data_len);
+    memcpy((unsigned char *)octet->data + size,
+            &node_identifier->realm_len,
+            sizeof(node_identifier->realm_len));
+    size += sizeof(node_identifier->realm_len);
+
+    ogs_assert(size + node_identifier->realm_len <= data_len);
+    memcpy((unsigned char *)octet->data + size,
+            node_identifier->realm, node_identifier->realm_len);
+    size += node_identifier->realm_len;
 
     octet->len = size;
 

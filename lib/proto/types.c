@@ -146,6 +146,13 @@ char *ogs_home_network_domain_from_plmn_id(const ogs_plmn_id_t *plmn_id)
             ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
 }
 
+char *ogs_epc_domain_from_plmn_id(const ogs_plmn_id_t *plmn_id)
+{
+    ogs_assert(plmn_id);
+    return ogs_msprintf("epc.mnc%03d.mcc%03d" FQDN_3GPPNETWORK_ORG,
+            ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
+}
+
 char *ogs_nrf_fqdn_from_plmn_id(const ogs_plmn_id_t *plmn_id)
 {
     return ogs_msprintf("nrf.5gc.mnc%03d.mcc%03d" FQDN_3GPPNETWORK_ORG,
@@ -416,13 +423,13 @@ int ogs_fqdn_parse(char *dst, const char *src, int length)
     int i = 0, j = 0;
     uint8_t len = 0;
 
-    while (i+1 < length) {
+    while (i+1 <= length) {
         len = src[i++];
         if ((j + len + 1) > length) {
             ogs_error("Invalid FQDN encoding[j:%d+len:%d] + 1 > length[%d]",
                     j, len, length);
             ogs_log_hexdump(OGS_LOG_ERROR, (unsigned char *)src, length);
-            return 0;
+            return -EINVAL;
         }
         memcpy(&dst[j], &src[i], len);
 

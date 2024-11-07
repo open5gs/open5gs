@@ -280,8 +280,9 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             e->h.sbi.message = &message;
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
+                /* Clang scan-build SA: NULL pointer dereference: pcf_ue=NULL, remove logging of pcf_ue->supi. */
                 ogs_error("[%s:%d] State machine exception",
-                        pcf_ue->supi, sess->psi);
+                        pcf_ue ? pcf_ue->supi : "Unknown", sess->psi);
                 pcf_sess_remove(sess);
             }
             break;
@@ -331,8 +332,9 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             e->h.sbi.message = &message;
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
+                /* Clang scan-build SA: NULL pointer dereference: pcf_ue=NULL, remove logging of pcf_ue->supi. */
                 ogs_error("[%s:%d] State machine exception",
-                        pcf_ue->supi, sess->psi);
+                        pcf_ue ? pcf_ue->supi : "Unknown", sess->psi);
                 pcf_sess_remove(sess);
             }
             break;

@@ -43,6 +43,7 @@ static OGS_POOL(mme_sgw_pool, mme_sgw_t);
 static OGS_POOL(mme_pgw_pool, mme_pgw_t);
 static OGS_POOL(mme_vlr_pool, mme_vlr_t);
 static OGS_POOL(mme_csmap_pool, mme_csmap_t);
+static OGS_POOL(mme_hssmap_pool, mme_hssmap_t);
 
 static OGS_POOL(mme_enb_pool, mme_enb_t);
 static OGS_POOL(mme_ue_pool, mme_ue_t);
@@ -97,6 +98,7 @@ void mme_context_init(void)
     ogs_list_init(&self.enb_list);
     ogs_list_init(&self.vlr_list);
     ogs_list_init(&self.csmap_list);
+    ogs_list_init(&self.hssmap_list);
 
     ogs_pool_init(&mme_sgsn_route_pool, ogs_app()->pool.nf);
     ogs_pool_init(&mme_sgsn_pool, ogs_app()->pool.nf);
@@ -104,6 +106,7 @@ void mme_context_init(void)
     ogs_pool_init(&mme_pgw_pool, ogs_app()->pool.nf);
     ogs_pool_init(&mme_vlr_pool, ogs_app()->pool.nf);
     ogs_pool_init(&mme_csmap_pool, ogs_app()->pool.csmap);
+    ogs_pool_init(&mme_hssmap_pool, ogs_app()->pool.nf);
 
     /* Allocate TWICE the pool to check if maximum number of eNBs is reached */
     ogs_pool_init(&mme_enb_pool, ogs_global_conf()->max.peer*2);
@@ -155,6 +158,7 @@ void mme_context_final(void)
     mme_csmap_remove_all();
     mme_vlr_remove_all();
     mme_sgsn_remove_all();
+    mme_hssmap_remove_all();
 
     ogs_assert(self.enb_addr_hash);
     ogs_hash_destroy(self.enb_addr_hash);
@@ -187,6 +191,7 @@ void mme_context_final(void)
     ogs_pool_final(&mme_pgw_pool);
     ogs_pool_final(&mme_csmap_pool);
     ogs_pool_final(&mme_vlr_pool);
+    ogs_pool_final(&mme_hssmap_pool);
 
     context_initialized = 0;
 }
@@ -1832,6 +1837,73 @@ int mme_context_parse_config(void)
 
                     } while (ogs_yaml_iter_type(&access_control_array) ==
                             YAML_SEQUENCE_NODE);
+                } else if (!strcmp(mme_key, "hss_map")) {
+                    ogs_yaml_iter_t hss_map_array, hss_map_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &hss_map_array);
+                    do {
+                        if (ogs_yaml_iter_type(&hss_map_array) ==
+                                YAML_MAPPING_NODE) {
+                            memcpy(&hss_map_iter, &hss_map_array,
+                                    sizeof(ogs_yaml_iter_t));
+                        } else if (ogs_yaml_iter_type(&hss_map_array) ==
+                            YAML_SEQUENCE_NODE) {
+                            if (!ogs_yaml_iter_next(&hss_map_array))
+                                break;
+                            ogs_yaml_iter_recurse(&hss_map_array,
+                                    &hss_map_iter);
+                        } else if (ogs_yaml_iter_type(&hss_map_array) ==
+                            YAML_SCALAR_NODE) {
+                            break;
+                        } else
+                            ogs_assert_if_reached();
+
+                        while (ogs_yaml_iter_next(&hss_map_iter)) {
+                            const char *mnc = NULL, *mcc = NULL, *realm = NULL, *host = NULL;
+                            const char *hss_map_key =
+                                ogs_yaml_iter_key(&hss_map_iter);
+                            ogs_assert(hss_map_key);
+                            if (!strcmp(hss_map_key, "plmn_id")) {
+                                ogs_yaml_iter_t plmn_id_iter;
+
+                                ogs_yaml_iter_recurse(&hss_map_iter,
+                                        &plmn_id_iter);
+                                while (ogs_yaml_iter_next(&plmn_id_iter)) {
+                                    const char *plmn_id_key =
+                                        ogs_yaml_iter_key(&plmn_id_iter);
+                                    ogs_assert(plmn_id_key);
+                                    if (!strcmp(plmn_id_key, "host")) {
+                                        const char *v = ogs_yaml_iter_value(
+                                                &plmn_id_iter);
+                                        if (v) host = ogs_strndup(v, OGS_MAX_FQDN_LEN);
+                                    } else if (!strcmp(plmn_id_key, "realm")) {
+                                        const char *v = ogs_yaml_iter_value(
+                                                &plmn_id_iter);
+                                        if (v) realm = ogs_strndup(v, OGS_MAX_FQDN_LEN);
+                                    } else if (!strcmp(plmn_id_key, "mcc")) {
+                                        mcc = ogs_yaml_iter_value(
+                                                &plmn_id_iter);
+                                    } else if (!strcmp(plmn_id_key, "mnc")) {
+                                        mnc = ogs_yaml_iter_value(
+                                                &plmn_id_iter);
+                                    }
+                                }
+
+                                if (mcc && mnc) {
+                                    ogs_plmn_id_t plmn_id;
+                                    mme_hssmap_t *hssmap = NULL;
+
+                                    ogs_plmn_id_build(&plmn_id,
+                                        atoi(mcc), atoi(mnc), strlen(mnc));
+
+                                    hssmap = mme_hssmap_add(&plmn_id, realm, host);
+                                    ogs_assert(hssmap);
+                                }
+                            } else
+                                ogs_warn("unknown key `%s`",
+                                        hss_map_key);
+                        }
+                    } while (ogs_yaml_iter_type(&hss_map_array) ==
+                            YAML_SEQUENCE_NODE);
                 } else if (!strcmp(mme_key, "security")) {
                     ogs_yaml_iter_t security_iter;
                     ogs_yaml_iter_recurse(&mme_iter, &security_iter);
@@ -2798,6 +2870,73 @@ mme_csmap_t *mme_csmap_find_by_nas_lai(const ogs_nas_lai_t *lai)
     return NULL;
 }
 
+mme_hssmap_t *mme_hssmap_add(ogs_plmn_id_t *plmn_id, const char *realm,
+                             const char *host)
+{
+    mme_hssmap_t *hssmap = NULL;
+
+    ogs_assert(plmn_id);
+
+    ogs_pool_alloc(&mme_hssmap_pool, &hssmap);
+    ogs_assert(hssmap);
+    memset(hssmap, 0, sizeof *hssmap);
+
+    hssmap->plmn_id = *plmn_id;
+    if (realm)
+        hssmap->realm = ogs_strdup(realm);
+    else
+        hssmap->realm = ogs_epc_domain_from_plmn_id(plmn_id);
+
+    if (host)
+        hssmap->host = ogs_strdup(host);
+    else
+        hssmap->host = NULL;
+
+    ogs_list_add(&self.hssmap_list, hssmap);
+
+    return hssmap;
+}
+
+void mme_hssmap_remove(mme_hssmap_t *hssmap)
+{
+    ogs_assert(hssmap);
+
+    ogs_list_remove(&self.hssmap_list, hssmap);
+
+    if (hssmap->realm != NULL)
+        ogs_free(hssmap->realm);
+
+    if (hssmap->host != NULL)
+        ogs_free(hssmap->host);
+
+    ogs_pool_free(&mme_hssmap_pool, hssmap);
+}
+
+void mme_hssmap_remove_all(void)
+{
+    mme_hssmap_t *hssmap = NULL, *next_hssmap = NULL;
+
+    ogs_list_for_each_safe(&self.hssmap_list, next_hssmap, hssmap)
+        mme_hssmap_remove(hssmap);
+}
+
+mme_hssmap_t *mme_hssmap_find_by_imsi_bcd(const char *imsi_bcd)
+{
+    mme_hssmap_t *hssmap = NULL;
+    ogs_assert(imsi_bcd);
+
+    ogs_list_for_each(&self.hssmap_list, hssmap) {
+        char plmn_id_str[OGS_PLMNIDSTRLEN] = "";
+
+        ogs_plmn_id_to_string(&hssmap->plmn_id, plmn_id_str);
+        if (strncmp(plmn_id_str, imsi_bcd, strlen(plmn_id_str)) == 0) {
+            return hssmap;
+        }
+    }
+
+    return NULL;
+}
+
 mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 {
     mme_enb_t *enb = NULL;
@@ -3161,7 +3300,7 @@ void mme_ue_new_guti(mme_ue_t *mme_ue)
     ogs_assert(served_gummei->num_of_mme_gid > 0);
     ogs_assert(served_gummei->num_of_mme_code > 0);
 
-    if (mme_ue->next.m_tmsi) {
+    if (MME_NEXT_GUTI_IS_AVAILABLE(mme_ue)) {
         ogs_warn("GUTI has already been allocated");
         return;
     }
@@ -3181,9 +3320,9 @@ void mme_ue_new_guti(mme_ue_t *mme_ue)
 
 void mme_ue_confirm_guti(mme_ue_t *mme_ue)
 {
-    ogs_assert(mme_ue->next.m_tmsi);
+    ogs_assert(MME_NEXT_GUTI_IS_AVAILABLE(mme_ue));
 
-    if (mme_ue->current.m_tmsi) {
+    if (MME_CURRENT_GUTI_IS_AVAILABLE(mme_ue)) {
         /* MME has a VALID GUTI
          * As such, we need to remove previous GUTI in hash table */
         ogs_hash_set(self.guti_ue_hash,
@@ -3207,6 +3346,37 @@ void mme_ue_confirm_guti(mme_ue_t *mme_ue)
               mme_ue->current.guti.mme_gid,
               mme_ue->current.guti.mme_code,
               mme_ue->current.guti.m_tmsi);
+}
+
+void mme_ue_set_p_tmsi(
+        mme_ue_t *mme_ue,
+        ogs_nas_mobile_identity_tmsi_t *nas_mobile_identity_tmsi)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(nas_mobile_identity_tmsi);
+
+    /*
+     * If the P-TMSI received from MSC/VLR is different from the current P-TMSI
+     * known by the MME, store this new P-TMSI as 'Next P-TMSI'. This value will
+     * be sent to the UE through the Attach Accept or TAU Accept message.
+     *
+     * When the UE sends an Attach Complete or TAU Complete message,
+     * the MME updates the 'Current P-TMSI' with the value in 'Next P-TMSI',
+     * thereby confirming and saving the new P-TMSI.
+     */
+    mme_ue->next.p_tmsi = be32toh(nas_mobile_identity_tmsi->tmsi);
+    if (mme_ue->next.p_tmsi != INVALID_P_TMSI) {
+        if (mme_ue->current.p_tmsi == mme_ue->next.p_tmsi)
+            mme_ue->next.p_tmsi = INVALID_P_TMSI;
+    }
+}
+void mme_ue_confirm_p_tmsi(mme_ue_t *mme_ue)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(mme_ue->next.p_tmsi);
+
+    mme_ue->current.p_tmsi = mme_ue->next.p_tmsi;
+    mme_ue->next.p_tmsi = INVALID_P_TMSI;
 }
 
 static bool compare_ue_info(mme_sgw_t *node, enb_ue_t *enb_ue)
@@ -3354,6 +3524,7 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
         ogs_pool_id_free(&mme_ue_pool, mme_ue);
         return NULL;
     }
+    mme_ue->gn.gtp_xact_id = OGS_INVALID_POOL_ID;
 
     mme_ebi_pool_init(mme_ue);
 
@@ -3427,14 +3598,15 @@ void mme_ue_remove(mme_ue_t *mme_ue)
         ogs_hash_set(mme_self()->imsi_ue_hash,
                 mme_ue->imsi, mme_ue->imsi_len, NULL);
 
-    if (mme_ue->current.m_tmsi) {
+    if (MME_CURRENT_GUTI_IS_AVAILABLE(mme_ue)) {
         ogs_hash_set(self.guti_ue_hash,
                 &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), NULL);
         ogs_assert(mme_m_tmsi_free(mme_ue->current.m_tmsi) == OGS_OK);
     }
 
-    if (mme_ue->next.m_tmsi)
+    if (MME_NEXT_GUTI_IS_AVAILABLE(mme_ue)) {
         ogs_assert(mme_m_tmsi_free(mme_ue->next.m_tmsi) == OGS_OK);
+    }
 
     /* Clear the saved PDN Connectivity Request */
     OGS_NAS_CLEAR_DATA(&mme_ue->pdn_connectivity_request);
@@ -3807,6 +3979,18 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
                 mme_ue->imsi, mme_ue->imsi_len, NULL);
 
     ogs_hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
+
+    mme_ue->hssmap = mme_hssmap_find_by_imsi_bcd(mme_ue->imsi_bcd);
+    if (mme_ue->hssmap) {
+        char plmn_id_str[OGS_PLMNIDSTRLEN];
+        const char *realm = mme_ue->hssmap->realm ? mme_ue->hssmap->realm : "NULL";
+        const char *host = mme_ue->hssmap->host ? mme_ue->hssmap->host : "NULL";
+
+        ogs_plmn_id_to_string(&mme_ue->hssmap->plmn_id, plmn_id_str);
+        ogs_debug("[%s]: HSS Map HPLMN[%s] Realm[%s] Host[%s]",
+                   mme_ue->imsi_bcd, plmn_id_str, realm, host);
+
+    }
 
     return OGS_OK;
 }

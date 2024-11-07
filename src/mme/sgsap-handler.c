@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -33,6 +33,7 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     int r;
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
 
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
@@ -100,6 +101,12 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
         goto error;
     }
 
+    enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+    if (!enb_ue) {
+        ogs_error("!enb_ue");
+        goto error;
+    }
+
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
     if (lai) {
         ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
@@ -108,29 +115,125 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     if (nas_mobile_identity_tmsi) {
         if (nas_mobile_identity_tmsi->type == OGS_NAS_MOBILE_IDENTITY_TMSI) {
-            mme_ue->p_tmsi = be32toh(nas_mobile_identity_tmsi->tmsi);
+            mme_ue_set_p_tmsi(mme_ue, nas_mobile_identity_tmsi);
         } else {
             ogs_error("Not supported Identity type[%d]",
                     nas_mobile_identity_tmsi->type);
             goto error;
         }
-        ogs_debug("    P-TMSI[0x%08x]", mme_ue->p_tmsi);
+        ogs_debug("    P-TMSI[0x%08x]", mme_ue->next.p_tmsi);
     }
 
-    r = nas_eps_send_attach_accept(mme_ue);
-    ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
+    if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
+        r = nas_eps_send_attach_accept(mme_ue);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+    } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
+        if (mme_ue->tracking_area_update_request_type ==
+                MME_TAU_TYPE_INITIAL_UE_MESSAGE) {
+            ogs_debug("    Iniital UE Message");
+            if (mme_ue->nas_eps.update.active_flag) {
+
+/*
+* TS33.401
+* 7 Security procedures between UE and EPS access network elements
+* 7.2 Handling of user-related keys in E-UTRAN
+* 7.2.7 Key handling for the TAU procedure when registered in E-UTRAN
+*
+* If the "active flag" is set in the TAU request message or
+* the MME chooses to establish radio bearers when there is pending downlink
+* UP data or pending downlink signalling, radio bearers will be established
+* as part of the TAU procedure and a KeNB derivation is necessary.
+*/
+                ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32,
+                        mme_ue->kenb);
+                ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+                mme_ue->nhcc = 1;
+
+                r = nas_eps_send_tau_accept(mme_ue,
+                        S1AP_ProcedureCode_id_InitialContextSetup);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            } else {
+                r = nas_eps_send_tau_accept(mme_ue,
+                        S1AP_ProcedureCode_id_downlinkNASTransport);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            }
+        } else if (mme_ue->tracking_area_update_request_type ==
+                MME_TAU_TYPE_UPLINK_NAS_TRANPORT) {
+            ogs_debug("    Uplink NAS Transport");
+            r = nas_eps_send_tau_accept(mme_ue,
+                    S1AP_ProcedureCode_id_downlinkNASTransport);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        } else if (mme_ue->tracking_area_update_request_type ==
+                MME_TAU_TYPE_UNPROTECTED_INGERITY) {
+            ogs_debug("    Unprotected Integrity");
+            r = nas_eps_send_tau_accept(mme_ue,
+                    S1AP_ProcedureCode_id_InitialContextSetup);
+            ogs_expect(r == OGS_OK);
+        } else {
+            ogs_error("Invalid TAU Type[%d]",
+                    mme_ue->tracking_area_update_request_type);
+            return;
+        }
+
+        /*
+         * When active_flag is 0, check if the P-TMSI has been updated.
+         * If the P-TMSI has changed, wait to receive the TAU Complete message
+         * from the UE before sending the UEContextReleaseCommand.
+         *
+         * This ensures that the UE has acknowledged the new P-TMSI,
+         * allowing the TAU procedure to complete successfully
+         * and maintaining synchronization between the UE and the network.
+         */
+        if (!mme_ue->nas_eps.update.active_flag &&
+            !MME_NEXT_P_TMSI_IS_AVAILABLE(mme_ue)) {
+            enb_ue->relcause.group = S1AP_Cause_PR_nas;
+            enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
+            mme_send_release_access_bearer_or_ue_context_release(enb_ue);
+        }
+    } else {
+        ogs_fatal("[%s] Invalid EPS-Type[%d]",
+                mme_ue->imsi_bcd, mme_ue->nas_eps.type);
+        ogs_assert_if_reached();
+    }
 
     return;
 
 error:
-    r = nas_eps_send_attach_reject(
-            enb_ue_find_by_id(mme_ue->enb_ue_id), mme_ue,
-            OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-            OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-    ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
-    mme_send_delete_session_or_mme_ue_context_release(mme_ue);
+    /* Clang scan-build SA:
+     * NULL pointer dereference: mme_ue=NULL if root=NULL. */
+    if (!mme_ue) {
+        ogs_error("!mme_ue");
+        return;
+    }
+    enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+    if (!enb_ue) {
+        ogs_error("ENB-S1 Context has already been removed");
+        return;
+    }
+
+    if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
+        r = nas_eps_send_attach_reject(
+                enb_ue, mme_ue,
+                OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+    } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
+        r = nas_eps_send_tau_reject(
+                enb_ue, mme_ue,
+                OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+    } else {
+        ogs_fatal("[%s] Invalid EPS-Type[%d]",
+                mme_ue->imsi_bcd, mme_ue->nas_eps.type);
+        ogs_assert_if_reached();
+    }
+    mme_send_delete_session_or_mme_ue_context_release(enb_ue, mme_ue);
 }
 
 void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
@@ -138,6 +241,7 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     int r;
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
 
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
@@ -205,15 +309,94 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
         return;
     }
 
+    enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+    if (!enb_ue) {
+        ogs_error("!enb_ue");
+        goto error;
+    }
+
     ogs_debug("    IMSI[%s] CAUSE[%d]", mme_ue->imsi_bcd, emm_cause);
     if (lai) {
         ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
                     ogs_plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
     }
 
-    r = nas_eps_send_attach_accept(mme_ue);
-    ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
+    if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
+        r = nas_eps_send_attach_accept(mme_ue);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+    } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
+        if (mme_ue->tracking_area_update_request_type ==
+                MME_TAU_TYPE_INITIAL_UE_MESSAGE) {
+            ogs_debug("    Iniital UE Message");
+            if (mme_ue->nas_eps.update.active_flag) {
+
+/*
+* TS33.401
+* 7 Security procedures between UE and EPS access network elements
+* 7.2 Handling of user-related keys in E-UTRAN
+* 7.2.7 Key handling for the TAU procedure when registered in E-UTRAN
+*
+* If the "active flag" is set in the TAU request message or
+* the MME chooses to establish radio bearers when there is pending downlink
+* UP data or pending downlink signalling, radio bearers will be established
+* as part of the TAU procedure and a KeNB derivation is necessary.
+*/
+                ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32,
+                        mme_ue->kenb);
+                ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+                mme_ue->nhcc = 1;
+
+                r = nas_eps_send_tau_accept(mme_ue,
+                        S1AP_ProcedureCode_id_InitialContextSetup);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            } else {
+                r = nas_eps_send_tau_accept(mme_ue,
+                        S1AP_ProcedureCode_id_downlinkNASTransport);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            }
+        } else if (mme_ue->tracking_area_update_request_type ==
+                MME_TAU_TYPE_UPLINK_NAS_TRANPORT) {
+            ogs_debug("    Uplink NAS Transport");
+            r = nas_eps_send_tau_accept(mme_ue,
+                    S1AP_ProcedureCode_id_downlinkNASTransport);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        } else if (mme_ue->tracking_area_update_request_type ==
+                MME_TAU_TYPE_UNPROTECTED_INGERITY) {
+            ogs_debug("    Unprotected Integrity");
+            r = nas_eps_send_tau_accept(mme_ue,
+                    S1AP_ProcedureCode_id_InitialContextSetup);
+            ogs_expect(r == OGS_OK);
+        } else {
+            ogs_error("Invalid TAU Type[%d]",
+                    mme_ue->tracking_area_update_request_type);
+            return;
+        }
+
+        /*
+         * When active_flag is 0, check if the P-TMSI has been updated.
+         * If the P-TMSI has changed, wait to receive the TAU Complete message
+         * from the UE before sending the UEContextReleaseCommand.
+         *
+         * This ensures that the UE has acknowledged the new P-TMSI,
+         * allowing the TAU procedure to complete successfully
+         * and maintaining synchronization between the UE and the network.
+         */
+        if (!mme_ue->nas_eps.update.active_flag &&
+            !MME_NEXT_P_TMSI_IS_AVAILABLE(mme_ue)) {
+            ogs_fatal("NEXT = %d", MME_NEXT_P_TMSI_IS_AVAILABLE(mme_ue));
+            enb_ue->relcause.group = S1AP_Cause_PR_nas;
+            enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
+            mme_send_release_access_bearer_or_ue_context_release(enb_ue);
+        }
+    } else {
+        ogs_fatal("[%s] Invalid EPS-Type[%d]",
+                mme_ue->imsi_bcd, mme_ue->nas_eps.type);
+        ogs_assert_if_reached();
+    }
 
     return;
 
@@ -226,6 +409,7 @@ void sgsap_handle_detach_ack(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 {
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
 
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
@@ -295,7 +479,11 @@ void sgsap_handle_detach_ack(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
-    mme_send_delete_session_or_detach(mme_ue);
+    enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+    if (enb_ue)
+        mme_send_delete_session_or_detach(enb_ue, mme_ue);
+    else
+        ogs_error("ENB-S1 Context has already been removed");
 }
 
 void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)

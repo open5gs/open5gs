@@ -206,6 +206,7 @@ int amf_context_parse_config(void)
     int rv;
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
+    int idx = 0;
 
     document = ogs_app()->document;
     ogs_assert(document);
@@ -217,7 +218,8 @@ int amf_context_parse_config(void)
     while (ogs_yaml_iter_next(&root_iter)) {
         const char *root_key = ogs_yaml_iter_key(&root_iter);
         ogs_assert(root_key);
-        if (!strcmp(root_key, "amf")) {
+        if ((!strcmp(root_key, "amf")) &&
+            (idx++ == ogs_app()->config_section_id)) {
             ogs_yaml_iter_t amf_iter;
             ogs_yaml_iter_recurse(&root_iter, &amf_iter);
             while (ogs_yaml_iter_next(&amf_iter)) {
@@ -1509,7 +1511,7 @@ void amf_ue_confirm_guti(amf_ue_t *amf_ue)
      * by performing the generic UE configuration update procedure.
      */
 
-    /* Copying from Current to Next Guti */
+    /* Copying from Next to Current Guti */
     amf_ue->current.m_tmsi = amf_ue->next.m_tmsi;
     memcpy(&amf_ue->current.guti,
             &amf_ue->next.guti, sizeof(ogs_nas_5gs_guti_t));
@@ -1622,6 +1624,7 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
             OGS_SBI_NPCF_AM_POLICY_CONTROL_UE_AMBR_AUTHORIZATION);
 
     amf_ue->rat_restrictions = OpenAPI_list_create();
+    amf_ue->to_release_session_list = OpenAPI_list_create();
 
     ogs_list_init(&amf_ue->sess_list);
 
@@ -1661,6 +1664,7 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
 
     OpenAPI_list_free(amf_ue->rat_restrictions);
+    OpenAPI_list_free(amf_ue->to_release_session_list);
 
     /* Remove all session context */
     amf_sess_remove_all(amf_ue);
@@ -2976,4 +2980,35 @@ bool amf_ue_is_rat_restricted(amf_ue_t *amf_ue)
         }
     }
     return false;
+}
+
+void amf_ue_save_to_release_session_list(amf_ue_t *amf_ue)
+{
+    amf_sess_t *sess = NULL;
+
+    OpenAPI_list_clear(amf_ue->to_release_session_list);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        bool supported_s_nssai = false;
+        int i;
+        for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
+            int j;
+            for (j = 0; j < amf_self()->plmn_support[i].num_of_s_nssai; j++) {
+                if (memcmp(&sess->s_nssai,
+                        &amf_self()->plmn_support[i].s_nssai[j],
+                        sizeof(ogs_s_nssai_t)) == 0) {
+                    supported_s_nssai = true;
+                    break;
+                }
+            }
+            if (supported_s_nssai)
+                break;
+        }
+        if (!supported_s_nssai) {
+            double *psi = ogs_calloc(1, sizeof(*psi));
+            ogs_assert(psi);
+            *psi = (double)sess->psi;
+            OpenAPI_list_add(amf_ue->to_release_session_list, psi);
+        }
+    }
 }

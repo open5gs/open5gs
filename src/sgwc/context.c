@@ -163,7 +163,8 @@ int sgwc_context_parse_config(void)
 sgwc_ue_t *sgwc_ue_add_by_message(ogs_gtp2_message_t *message)
 {
     sgwc_ue_t *sgwc_ue = NULL;
-    ogs_gtp2_create_session_request_t *req = &message->create_session_request;
+    /* Clang scan-build SA: Dead initialization: Don't set req before message is checked for NULL. */
+    ogs_gtp2_create_session_request_t *req;
 
     ogs_assert(message);
 
@@ -647,8 +648,12 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
 
-    uint8_t src_if = OGS_PFCP_INTERFACE_UNKNOWN;
-    uint8_t dst_if = OGS_PFCP_INTERFACE_UNKNOWN;
+    ogs_pfcp_interface_t src_if = OGS_PFCP_INTERFACE_UNKNOWN;
+    ogs_pfcp_interface_t dst_if = OGS_PFCP_INTERFACE_UNKNOWN;
+    ogs_pfcp_3gpp_interface_type_t src_if_type =
+        OGS_PFCP_3GPP_INTERFACE_TYPE_UNKNOWN;
+    ogs_pfcp_3gpp_interface_type_t dst_if_type =
+        OGS_PFCP_3GPP_INTERFACE_TYPE_UNKNOWN;
 
     ogs_assert(bearer);
     sess = sgwc_sess_find_by_id(bearer->sess_id);
@@ -658,20 +663,28 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     /* Downlink */
     case OGS_GTP2_F_TEID_S5_S8_SGW_GTP_U:
         src_if = OGS_PFCP_INTERFACE_CORE;
+        src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_S5_S8_U;
         dst_if = OGS_PFCP_INTERFACE_ACCESS;
+        dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_S1_U;
         break;
 
     /* Uplink */
     case OGS_GTP2_F_TEID_S1_U_SGW_GTP_U:
         src_if = OGS_PFCP_INTERFACE_ACCESS;
+        src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_S1_U;
         dst_if = OGS_PFCP_INTERFACE_CORE;
+        dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_S5_S8_U;
         break;
 
     /* Indirect */
     case OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING:
     case OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING:
         src_if = OGS_PFCP_INTERFACE_ACCESS;
+        src_if_type =
+            OGS_PFCP_3GPP_INTERFACE_TYPE_SGW_UPF_GTP_U_FOR_UL_DATA_FORWARDING;
         dst_if = OGS_PFCP_INTERFACE_ACCESS;
+        dst_if_type =
+            OGS_PFCP_3GPP_INTERFACE_TYPE_SGW_UPF_GTP_U_FOR_DL_DATA_FORWARDING;
         break;
     default:
         ogs_fatal("Invalid interface type = %d", interface_type);
@@ -692,6 +705,9 @@ sgwc_tunnel_t *sgwc_tunnel_add(
 
     pdr->src_if = src_if;
 
+    pdr->src_if_type_presence = true;
+    pdr->src_if_type = src_if_type;
+
     far = ogs_pfcp_far_add(&sess->pfcp);
     ogs_assert(far);
 
@@ -700,6 +716,10 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     ogs_assert(far->apn);
 
     far->dst_if = dst_if;
+
+    far->dst_if_type_presence = true;
+    far->dst_if_type = dst_if_type;
+
     ogs_pfcp_pdr_associate_far(pdr, far);
 
     far->apply_action =

@@ -28,32 +28,8 @@
 extern "C" {
 #endif
 
-struct ogs_diam_logger_t {
-
-#define FD_MODE_SERVER   0x1
-#define FD_MODE_CLIENT   0x2
-    int mode;        /* default FD_MODE_SERVER | FD_MODE_CLIENT */
-
-    int duration; /* default 10 */
-    struct fd_stats {
-        unsigned long long nb_echoed; /* server */
-        unsigned long long nb_sent;   /* client */
-        unsigned long long nb_recv;   /* client */
-        unsigned long long nb_errs;   /* client */
-        unsigned long shortest;  /* fastest answer, in microseconds */
-        unsigned long longest;   /* slowest answer, in microseconds */
-        unsigned long avg;       /* average answer time, in microseconds */
-    } stats;
-
-    pthread_mutex_t stats_lock;
-};
-
-int ogs_diam_logger_init(int mode);
+int ogs_diam_logger_init(void);
 void ogs_diam_logger_final(void);
-
-struct ogs_diam_logger_t* ogs_diam_logger_self(void);
-
-int ogs_diam_logger_stats_start(void);
 
 typedef void (*ogs_diam_logger_user_handler)(
     enum fd_hook_type type, struct msg *msg, struct peer_hdr *peer,

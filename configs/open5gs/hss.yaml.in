@@ -11,5 +11,9 @@ global:
 
 hss:
   freeDiameter: @sysconfdir@/freeDiameter/hss.conf
+  metrics:
+    server:
+      - address: 127.0.0.8
+        port: 9090
 #  sms_over_ims: "sip:smsc.mnc001.mcc001.3gppnetwork.org:7060;transport=tcp"
 #  use_mongodb_change_stream: true

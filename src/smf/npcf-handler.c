@@ -524,9 +524,16 @@ bool smf_npcf_smpolicycontrol_handle_create(
             &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len));
     dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
 
+#if 0
+    /* DEPRECATED:
+     *
+     * The UE IP Address is unnecessary in the PDI of the UL PDR
+     * because the PDR can be found using the TEID.
+     */
     ogs_assert(OGS_OK ==
         ogs_pfcp_paa_to_ue_ip_addr(&sess->paa,
             &ul_pdr->ue_ip_addr, &ul_pdr->ue_ip_addr_len));
+#endif
 
     if (sess->session.ipv4_framed_routes &&
         sess->pfcp_node->up_function_features.frrt) {

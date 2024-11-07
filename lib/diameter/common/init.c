@@ -28,6 +28,8 @@ int ogs_diam_init(int mode, const char *conffile, ogs_diam_config_t *fd_config)
 {
     int ret;
 
+    ogs_assert(fd_config);
+
     gnutls_global_set_log_level(0);
     gnutls_global_set_log_function(diam_gnutls_log_func);
 
@@ -36,14 +38,14 @@ int ogs_diam_init(int mode, const char *conffile, ogs_diam_config_t *fd_config)
     if (ret != 0) {
         ogs_error("fd_log_handler_register() failed");
         return ret;
-    } 
+    }
 
     ret = fd_core_initialize();
     if (ret != 0) {
         ogs_error("fd_core_initialize() failed");
         return ret;
-    } 
-    
+    }
+
     /* Parse the configuration file */
     if (conffile) {
         CHECK_FCT_DO( fd_core_parseconf(conffile), goto error );
@@ -55,7 +57,10 @@ int ogs_diam_init(int mode, const char *conffile, ogs_diam_config_t *fd_config)
     CHECK_FCT( ogs_diam_message_init() );
 
     /* Initialize FD logger */
-    CHECK_FCT_DO( ogs_diam_logger_init(mode), goto error );
+    CHECK_FCT_DO( ogs_diam_logger_init(), goto error );
+
+    /* Initialize FD stats */
+    CHECK_FCT_DO( ogs_diam_stats_init(mode, &fd_config->stats), goto error );
 
     return 0;
 error:
@@ -72,7 +77,7 @@ int ogs_diam_start(void)
 
     CHECK_FCT_DO( fd_core_waitstartcomplete(), goto error );
 
-    CHECK_FCT( ogs_diam_logger_stats_start() );
+    CHECK_FCT( ogs_diam_stats_start() );
 
     return 0;
 error:
@@ -84,6 +89,7 @@ error:
 
 void ogs_diam_final()
 {
+    ogs_diam_stats_final();
     ogs_diam_logger_final();
 
     CHECK_FCT_DO( fd_core_shutdown(), ogs_error("fd_core_shutdown() failed") );
@@ -118,12 +124,12 @@ static void diam_log_func(int printlevel, const char *format, va_list ap)
     ogs_log_printf(level, OGS_LOG_DOMAIN, 0, NULL, 0, NULL, 0, __VA_ARGS__)
 
     switch(printlevel) {
-    case FD_LOG_ANNOYING: 
+    case FD_LOG_ANNOYING:
         diam_log_printf(OGS_LOG_TRACE, "[%d] %s\n", printlevel, buffer);
-        break;  
+        break;
     case FD_LOG_DEBUG:
         diam_log_printf(OGS_LOG_TRACE, "[%d] %s\n", printlevel, buffer);
-        break;  
+        break;
     case FD_LOG_INFO:
         diam_log_printf(OGS_LOG_TRACE, "[%d] %s\n", printlevel, buffer);
         break;

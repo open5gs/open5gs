@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -347,7 +347,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         ogs_fsm_dispatch(&mme_ue->sm, e);
         if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_exception)) {
-            mme_send_delete_session_or_mme_ue_context_release(mme_ue);
+            mme_send_delete_session_or_mme_ue_context_release(enb_ue, mme_ue);
         }
 
         ogs_pkbuf_free(pkbuf);
@@ -580,22 +580,61 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         switch (s6a_message->cmd_code) {
         case OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION:
             ogs_debug("OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION");
+            if (e->gtp_xact_id != OGS_INVALID_POOL_ID)
+                xact = ogs_gtp_xact_find_by_id(e->gtp_xact_id);
+            else
+                xact = NULL;
             emm_cause = mme_s6a_handle_aia(mme_ue, s6a_message);
             if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
-                ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
-                        mme_ue->imsi_bcd, emm_cause);
-                r = nas_eps_send_attach_reject(
-                        enb_ue, mme_ue, emm_cause,
-                        OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
+                /* If authentication was triggered due to subscriber coming from
+                 * an SGSN, report to it that something went wrong: */
+                if (xact) {
+                    rv = mme_gtp1_send_sgsn_context_ack(mme_ue, OGS_GTP1_CAUSE_AUTHENTICATION_FAILURE, xact);
+                    if (rv != OGS_OK)
+                        ogs_warn("Failed to send SGSN Context Ack (rv %d)", rv);
+                } else
+                    ogs_warn("Originating SGSN Context xact no longer valid (%d)", e->gtp_xact_id);
+
+                /* Finally reject the UE: */
+                if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
+                    ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
+                            mme_ue->imsi_bcd, emm_cause);
+                    r = nas_eps_send_attach_reject(
+                            enb_ue, mme_ue, emm_cause,
+                            OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
+                    /* This is usually an UE coming from 2G (Cell reselection),
+                     * which we decided to re-authenticate */
+                    ogs_info("[%s] TAU reject [OGS_NAS_EMM_CAUSE:%d]",
+                            mme_ue->imsi_bcd, emm_cause);
+                    r = nas_eps_send_tau_reject(
+                            enb_ue, mme_ue, emm_cause);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else
+                    ogs_error("Invalid Type[%d]", mme_ue->nas_eps.type);
 
                 r = s1ap_send_ue_context_release_command(enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
+                break;
             }
+
+            if (xact) {
+                /* Subscriber coming from SGSN, store info so we can SGSN
+                 * Context Ack after authenticating the UE: */
+                mme_ue->gn.gtp_xact_id = e->gtp_xact_id;
+            }
+
+            /* Auth-Info accepted from HSS, now authenticate the UE: */
+            r = nas_eps_send_authentication_request(mme_ue);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+
             break;
         case OGS_DIAM_S6A_CMD_CODE_UPDATE_LOCATION:
             ogs_debug("OGS_DIAM_S6A_CMD_CODE_UPDATE_LOCATION");
@@ -802,10 +841,15 @@ cleanup:
                 GTP_COUNTER_INCREMENT(
                     mme_ue, GTP_COUNTER_DELETE_SESSION_BY_PATH_SWITCH);
 
-                ogs_assert(OGS_OK ==
-                    mme_gtp_send_delete_session_request(
-                        sgw_ue, sess,
-                        OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST));
+                enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+                if (enb_ue) {
+                    ogs_assert(OGS_OK ==
+                        mme_gtp_send_delete_session_request(
+                            enb_ue, sgw_ue, sess,
+                            OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST));
+                } else
+                    ogs_error("ENB-S1 Context has already been removed");
+
             }
             break;
 
@@ -854,12 +898,22 @@ cleanup:
             mme_gn_handle_sgsn_context_request(xact, &gtp1_message.sgsn_context_request);
             break;
         case OGS_GTP1_SGSN_CONTEXT_RESPONSE_TYPE:
+            /* Clang scan-build SA: NULL pointer dereference: mme_ue=NULL if both gtp1_message.h.teid=0 and
+             * xact->local_teid=0. The following function mme_gn_handle_sgsn_context_response() handles the NULL
+             * but the later calls to OGS_FSM_TRAN() to change state will be a NULL pointer dereference. */
+            ogs_assert(mme_ue);
+            enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+            if (!enb_ue) {
+                ogs_error("ENB-S1 Context has already been removed");
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+                break;
+            }
+
             /* 3GPP TS 23.401 Figure D.3.6-1 step 5 */
             rv = mme_gn_handle_sgsn_context_response(xact, mme_ue, &gtp1_message.sgsn_context_response);
-            if (rv == OGS_GTP1_CAUSE_ACCEPT) {
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_initial_context_setup);
-            } else if (rv == OGS_GTP1_CAUSE_REQUEST_IMEI) {
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
+            if (rv == OGS_GTP1_CAUSE_ACCEPT || rv == OGS_GTP1_CAUSE_REQUEST_IMEI) {
+                mme_s6a_send_air_from_gn(enb_ue, mme_ue, xact);
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
             } else {
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
             }
@@ -895,10 +949,15 @@ cleanup:
             ogs_list_for_each(&mme_ue->sess_list, sess) {
                 GTP_COUNTER_INCREMENT(
                     mme_ue, GTP_COUNTER_DELETE_SESSION_BY_PATH_SWITCH);
-                ogs_assert(OGS_OK ==
-                    mme_gtp_send_delete_session_request(
-                        sgw_ue, sess,
-                        OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST));
+
+                enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+                if (enb_ue) {
+                    ogs_assert(OGS_OK ==
+                        mme_gtp_send_delete_session_request(
+                            enb_ue, sgw_ue, sess,
+                            OGS_GTP_DELETE_IN_PATH_SWITCH_REQUEST));
+                } else
+                    ogs_error("ENB-S1 Context has already been removed");
             }
             break;
 

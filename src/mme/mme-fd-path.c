@@ -37,6 +37,7 @@ struct sess_state {
     ogs_pool_id_t mme_ue_id;
     ogs_pool_id_t enb_ue_id;
     struct timespec ts; /* Time of sending the message */
+    ogs_pool_id_t gtp_xact_id; /* GTPv1C (Gn) xact originating this session */
 };
 
 static void mme_s6a_aia_cb(void *data, struct msg **msg);
@@ -51,6 +52,45 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
     }
 
     ogs_free(sess_data);
+}
+
+static void mme_add_hss_destination(mme_ue_t *mme_ue, struct msg *req)
+{
+    int ret;
+    struct avp *avp;
+    union avp_value val;
+    const char *realm = NULL, *host = NULL;
+
+    ogs_assert(mme_ue);
+    ogs_assert(req);
+
+    if (mme_ue->hssmap) {
+        realm = mme_ue->hssmap->realm;
+        host = mme_ue->hssmap->host;
+    }
+
+    if (realm == NULL)
+        realm = fd_g_config->cnf_diamrlm;
+
+    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = (unsigned char *)realm;
+    val.os.len  = strlen(realm);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    if (host != NULL) {
+        ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
+        ogs_assert(ret == 0);
+        val.os.data = (unsigned char *)host;
+        val.os.len  = strlen(host);
+        ret = fd_msg_avp_setvalue(avp, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);
+    }
 }
 
 /* s6a process Subscription-Data from avp */
@@ -134,18 +174,20 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
     }
 
     /* AVP: '3GPP-Charging-Characteristics'(13)
-     * For GGSN, it contains the charging characteristics for 
-     * this PDP Context received in the Create PDP Context 
-     * Request Message (only available in R99 and later releases). 
-     * For PGW, it contains the charging characteristics for the 
+     * For GGSN, it contains the charging characteristics for
+     * this PDP Context received in the Create PDP Context
+     * Request Message (only available in R99 and later releases).
+     * For PGW, it contains the charging characteristics for the
      * IP-CAN bearer.
      * Reference: 3GPP TS 29.061 16.4.7.2 13
      */
-    ret = fd_avp_search_avp(avp, ogs_diam_s6a_3gpp_charging_characteristics, 
+    ret = fd_avp_search_avp(avp, ogs_diam_s6a_3gpp_charging_characteristics,
         &avpch1);
     ogs_assert(ret == 0);
     if (avpch1) {
         ret = fd_msg_avp_hdr(avpch1, &hdr);
+        /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+        ogs_assert(ret == 0);
         ogs_ascii_to_hex(
             (char*)hdr->avp_value->os.data, (int)hdr->avp_value->os.len,
             buf, sizeof(buf));
@@ -292,6 +334,8 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
                 ogs_assert(ret == 0);
                 if (avpch3) {
                     ret = fd_msg_avp_hdr(avpch3, &hdr);
+                    /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+                    ogs_assert(ret == 0);
                     session->name = ogs_strndup(
                                     (char*)hdr->avp_value->os.data,
                                     hdr->avp_value->os.len);
@@ -339,14 +383,14 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
                 }
 
                 /* AVP: '3GPP-Charging-Characteristics'(13)
-                 * For GGSN, it contains the charging characteristics for 
-                 * this PDP Context received in the Create PDP Context 
-                 * Request Message (only available in R99 and later releases). 
-                 * For PGW, it contains the charging characteristics for the 
+                 * For GGSN, it contains the charging characteristics for
+                 * this PDP Context received in the Create PDP Context
+                 * Request Message (only available in R99 and later releases).
+                 * For PGW, it contains the charging characteristics for the
                  * IP-CAN bearer.
                  * Reference: 3GPP TS 29.061 16.4.7.2 13
                  */
-                ret = fd_avp_search_avp(avpch2, 
+                ret = fd_avp_search_avp(avpch2,
                         ogs_diam_s6a_3gpp_charging_characteristics, &avpch3);
                 ogs_assert(ret == 0);
                 if (avpch3) {
@@ -359,7 +403,7 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
                             buf, OGS_CHRGCHARS_LEN);
                     session->charging_characteristics_presence = true;
                 } else {
-                    memcpy(session->charging_characteristics, 
+                    memcpy(session->charging_characteristics,
                         (uint8_t *)"\x00\x00", OGS_CHRGCHARS_LEN);
                     session->charging_characteristics_presence = false;
                 }
@@ -565,6 +609,8 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
                     ogs_assert(ret == 0);
                     while (avpch4) {
                         ret = fd_msg_avp_hdr(avpch4, &hdr);
+                        /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+                        ogs_assert(ret == 0);
                         switch(hdr->avp_code) {
                         case OGS_DIAM_S6A_AVP_CODE_MIP_HOME_AGENT_ADDRESS:
                             ret = fd_msg_avp_value_interpret(avpch4,
@@ -594,7 +640,7 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
                             ogs_error("Unknown AVP-Code:%d",
                                     hdr->avp_code);
                             error++;
-                            break; 
+                            break;
                         }
                         fd_msg_browse(avpch4, MSG_BRW_NEXT,
                                 &avpch4, NULL);
@@ -667,9 +713,9 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
 }
 
 /* MME Sends Authentication Information Request to HSS */
-void mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
-    ogs_nas_authentication_failure_parameter_t
-        *authentication_failure_parameter)
+static void _mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
+    ogs_nas_authentication_failure_parameter_t *authentication_failure_parameter,
+    ogs_gtp_xact_t *gtp_xact)
 {
     int ret;
 
@@ -704,6 +750,7 @@ void mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
 
     sess_data->mme_ue_id = mme_ue->id;
     sess_data->enb_ue_id = enb_ue->id;
+    sess_data->gtp_xact_id = gtp_xact ? gtp_xact->id : OGS_INVALID_POOL_ID;
 
     /* Create the request */
     ret = fd_msg_new(ogs_diam_s6a_cmd_air, MSGFL_ALLOC_ETEID, &req);
@@ -711,7 +758,7 @@ void mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
 
     /* Create a new session */
     #define OGS_DIAM_S6A_APP_SID_OPT  "app_s6a"
-    ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_S6A_APP_SID_OPT, 
+    ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_S6A_APP_SID_OPT,
             CONSTSTRLEN(OGS_DIAM_S6A_APP_SID_OPT));
     ogs_assert(ret == 0);
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
@@ -730,15 +777,8 @@ void mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
     ret = fd_msg_add_origin(req, 0);
     ogs_assert(ret == 0);
 
-    /* Set the Destination-Realm AVP */
-    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
-    ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
+    /* Set the Destination-Realm & Destination-Host */
+    mme_add_hss_destination(mme_ue, req);
 
     /* Set the User-Name AVP */
     ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
@@ -800,7 +840,7 @@ void mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
     ret = ogs_diam_message_vendor_specific_appid_set(
             req, OGS_DIAM_S6A_APPLICATION_ID);
     ogs_assert(ret == 0);
-    
+
     ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
     ogs_assert(ret == 0);
 
@@ -818,16 +858,29 @@ void mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
     ogs_assert(ret == 0);
 
     /* Increment the counter */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_sent++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    ogs_diam_stats_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 }
+
+void mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
+    ogs_nas_authentication_failure_parameter_t
+        *authentication_failure_parameter)
+{
+    _mme_s6a_send_air(enb_ue, mme_ue, authentication_failure_parameter, NULL);
+};
+
+/* Trigger authentication for session/bearer/PdpCtx coming from Gn: */
+void mme_s6a_send_air_from_gn(enb_ue_t *enb_ue, mme_ue_t *mme_ue, ogs_gtp_xact_t *gtp_xact)
+{
+    _mme_s6a_send_air(enb_ue, mme_ue, NULL, gtp_xact);
+};
 
 /* MME received Authentication Information Answer from HSS */
 static void mme_s6a_aia_cb(void *data, struct msg **msg)
 {
     int ret;
-    
+
     struct sess_state *sess_data = NULL;
     struct timespec ts;
     struct session *session;
@@ -846,7 +899,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     ogs_diam_e_utran_vector_t *e_utran_vector = NULL;
 
     ogs_debug("[MME] Authentication-Information-Answer");
-    
+
     ret = clock_gettime(CLOCK_REALTIME, &ts);
     ogs_assert(ret == 0);
 
@@ -860,7 +913,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
         ogs_error("fd_msg_sess_get() failed");
         return;
     }
-    
+
     ret = fd_sess_state_retrieve(mme_s6a_reg, session, &sess_data);
     if (ret != 0) {
         ogs_error("fd_sess_state_retrieve() failed");
@@ -896,7 +949,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     ogs_assert(aia_message);
     e_utran_vector = &aia_message->e_utran_vector;
     ogs_assert(e_utran_vector);
-    
+
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
     ogs_assert(ret == 0);
@@ -1018,8 +1071,12 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
 
 
     ret = fd_avp_search_avp(avp_e_utran_vector, ogs_diam_s6a_rand, &avp_rand);
+    /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+    ogs_assert(ret == 0);
     if (avp) {
         ret = fd_msg_avp_hdr(avp_rand, &hdr);
+        /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+        ogs_assert(ret == 0);
         memcpy(e_utran_vector->rand, hdr->avp_value->os.data,
                 ogs_min(hdr->avp_value->os.len,
                     OGS_ARRAY_SIZE(e_utran_vector->rand)));
@@ -1048,6 +1105,7 @@ out:
         ogs_assert(e);
         e->mme_ue_id = mme_ue->id;
         e->enb_ue_id = enb_ue->id;
+        e->gtp_xact_id = sess_data->gtp_xact_id;
         e->s6a_message = s6a_message;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
@@ -1060,41 +1118,41 @@ out:
     }
 
     /* Free the message */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) + 
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (ogs_diam_logger_self()->stats.nb_recv) {
+    if (ogs_diam_stats_self()->stats.nb_recv) {
         /* Ponderate in the avg */
-        ogs_diam_logger_self()->stats.avg = (ogs_diam_logger_self()->stats.avg * 
-            ogs_diam_logger_self()->stats.nb_recv + dur) /
-            (ogs_diam_logger_self()->stats.nb_recv + 1);
+        ogs_diam_stats_self()->stats.avg = (ogs_diam_stats_self()->stats.avg *
+            ogs_diam_stats_self()->stats.nb_recv + dur) /
+            (ogs_diam_stats_self()->stats.nb_recv + 1);
         /* Min, max */
-        if (dur < ogs_diam_logger_self()->stats.shortest)
-            ogs_diam_logger_self()->stats.shortest = dur;
-        if (dur > ogs_diam_logger_self()->stats.longest)
-            ogs_diam_logger_self()->stats.longest = dur;
+        if (dur < ogs_diam_stats_self()->stats.shortest)
+            ogs_diam_stats_self()->stats.shortest = dur;
+        if (dur > ogs_diam_stats_self()->stats.longest)
+            ogs_diam_stats_self()->stats.longest = dur;
     } else {
-        ogs_diam_logger_self()->stats.shortest = dur;
-        ogs_diam_logger_self()->stats.longest = dur;
-        ogs_diam_logger_self()->stats.avg = dur;
+        ogs_diam_stats_self()->stats.shortest = dur;
+        ogs_diam_stats_self()->stats.longest = dur;
+        ogs_diam_stats_self()->stats.avg = dur;
     }
     if (error)
-        ogs_diam_logger_self()->stats.nb_errs++;
-    else 
-        ogs_diam_logger_self()->stats.nb_recv++;
+        ogs_diam_stats_self()->stats.nb_errs++;
+    else
+        ogs_diam_stats_self()->stats.nb_recv++;
 
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
-    
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
+
     /* Display how long it took */
     if (ts.tv_nsec > sess_data->ts.tv_nsec)
-        ogs_trace("in %d.%06ld sec", 
+        ogs_trace("in %d.%06ld sec",
                 (int)(ts.tv_sec - sess_data->ts.tv_sec),
                 (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
     else
-        ogs_trace("in %d.%06ld sec", 
+        ogs_trace("in %d.%06ld sec",
                 (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
                 (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    
+
     ret = fd_msg_free(*msg);
     ogs_assert(ret == 0);
     *msg = NULL;
@@ -1139,7 +1197,7 @@ void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
 
     /* Create a new session */
     #define OGS_DIAM_S6A_APP_SID_OPT  "app_s6a"
-    ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_S6A_APP_SID_OPT, 
+    ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_S6A_APP_SID_OPT,
             CONSTSTRLEN(OGS_DIAM_S6A_APP_SID_OPT));
     ogs_assert(ret == 0);
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
@@ -1158,15 +1216,8 @@ void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     ret = fd_msg_add_origin(req, 0);
     ogs_assert(ret == 0);
 
-    /* Set the Destination-Realm AVP */
-    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
-    ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
+    /* Set the Destination-Realm & Destination-Host */
+    mme_add_hss_destination(mme_ue, req);
 
     /* Set the User-Name AVP */
     ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
@@ -1255,7 +1306,7 @@ void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     svg = sess_data;
 
     /* Store this value in the session */
-    ret = fd_sess_state_store(mme_s6a_reg, session, &sess_data); 
+    ret = fd_sess_state_store(mme_s6a_reg, session, &sess_data);
     ogs_assert(ret == 0);
     ogs_assert(sess_data == 0);
 
@@ -1264,9 +1315,9 @@ void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     ogs_assert(ret == 0);
 
     /* Increment the counter */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_sent++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    ogs_diam_stats_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 }
 
 /* MME received Update Location Answer from HSS */
@@ -1305,7 +1356,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
         ogs_error("fd_msg_sess_get() failed");
         return;
     }
-    
+
     ret = fd_sess_state_retrieve(mme_s6a_reg, session, &sess_data);
     if (ret != 0) {
         ogs_error("fd_sess_state_retrieve() failed");
@@ -1440,6 +1491,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
         uint32_t subdatamask = 0;
         ret = mme_s6a_subscription_data_from_avp(avp, subscription_data, mme_ue,
             &subdatamask);
+        /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+        ogs_assert(ret == 0);
 
         if (!(subdatamask & OGS_DIAM_S6A_SUBDATA_NAM)) {
             mme_ue->network_access_mode = 0;
@@ -1447,7 +1500,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                 "PACKET_AND_CIRCUIT (0)");
         }
         if (!(subdatamask & OGS_DIAM_S6A_SUBDATA_CC)) {
-            memcpy(mme_ue->charging_characteristics, (uint8_t *)"\x00\x00", 
+            memcpy(mme_ue->charging_characteristics, (uint8_t *)"\x00\x00",
                 OGS_CHRGCHARS_LEN);
             mme_ue->charging_characteristics_presence = false;
         }
@@ -1490,31 +1543,31 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     }
 
     /* Free the message */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
     dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (ogs_diam_logger_self()->stats.nb_recv) {
+    if (ogs_diam_stats_self()->stats.nb_recv) {
         /* Ponderate in the avg */
-        ogs_diam_logger_self()->stats.avg =
-            (ogs_diam_logger_self()->stats.avg *
-            ogs_diam_logger_self()->stats.nb_recv + dur) /
-            (ogs_diam_logger_self()->stats.nb_recv + 1);
+        ogs_diam_stats_self()->stats.avg =
+            (ogs_diam_stats_self()->stats.avg *
+            ogs_diam_stats_self()->stats.nb_recv + dur) /
+            (ogs_diam_stats_self()->stats.nb_recv + 1);
         /* Min, max */
-        if (dur < ogs_diam_logger_self()->stats.shortest)
-            ogs_diam_logger_self()->stats.shortest = dur;
-        if (dur > ogs_diam_logger_self()->stats.longest)
-            ogs_diam_logger_self()->stats.longest = dur;
+        if (dur < ogs_diam_stats_self()->stats.shortest)
+            ogs_diam_stats_self()->stats.shortest = dur;
+        if (dur > ogs_diam_stats_self()->stats.longest)
+            ogs_diam_stats_self()->stats.longest = dur;
     } else {
-        ogs_diam_logger_self()->stats.shortest = dur;
-        ogs_diam_logger_self()->stats.longest = dur;
-        ogs_diam_logger_self()->stats.avg = dur;
+        ogs_diam_stats_self()->stats.shortest = dur;
+        ogs_diam_stats_self()->stats.longest = dur;
+        ogs_diam_stats_self()->stats.avg = dur;
     }
     if (error)
-        ogs_diam_logger_self()->stats.nb_errs++;
-    else 
-        ogs_diam_logger_self()->stats.nb_recv++;
+        ogs_diam_stats_self()->stats.nb_errs++;
+    else
+        ogs_diam_stats_self()->stats.nb_recv++;
 
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
     /* Display how long it took */
     if (ts.tv_nsec > sess_data->ts.tv_nsec)
@@ -1588,15 +1641,8 @@ void mme_s6a_send_pur(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     ret = fd_msg_add_origin(req, 0);
     ogs_assert(ret == 0);
 
-    /* Set the Destination-Realm AVP */
-    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
-    ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
+    /* Set the Destination-Realm & Destination-Host */
+    mme_add_hss_destination(mme_ue, req);
 
     /* Set the User-Name AVP */
     ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
@@ -1630,9 +1676,9 @@ void mme_s6a_send_pur(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     ogs_assert(ret == 0);
 
     /* Increment the counter */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_sent++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    ogs_diam_stats_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 }
 
 /* MME received Purge UE Answer from HSS */
@@ -1809,31 +1855,31 @@ static void mme_s6a_pua_cb(void *data, struct msg **msg)
     }
 
     /* Free the message */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
     dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (ogs_diam_logger_self()->stats.nb_recv) {
+    if (ogs_diam_stats_self()->stats.nb_recv) {
         /* Ponderate in the avg */
-        ogs_diam_logger_self()->stats.avg =
-            (ogs_diam_logger_self()->stats.avg *
-            ogs_diam_logger_self()->stats.nb_recv + dur) /
-            (ogs_diam_logger_self()->stats.nb_recv + 1);
+        ogs_diam_stats_self()->stats.avg =
+            (ogs_diam_stats_self()->stats.avg *
+            ogs_diam_stats_self()->stats.nb_recv + dur) /
+            (ogs_diam_stats_self()->stats.nb_recv + 1);
         /* Min, max */
-        if (dur < ogs_diam_logger_self()->stats.shortest)
-            ogs_diam_logger_self()->stats.shortest = dur;
-        if (dur > ogs_diam_logger_self()->stats.longest)
-            ogs_diam_logger_self()->stats.longest = dur;
+        if (dur < ogs_diam_stats_self()->stats.shortest)
+            ogs_diam_stats_self()->stats.shortest = dur;
+        if (dur > ogs_diam_stats_self()->stats.longest)
+            ogs_diam_stats_self()->stats.longest = dur;
     } else {
-        ogs_diam_logger_self()->stats.shortest = dur;
-        ogs_diam_logger_self()->stats.longest = dur;
-        ogs_diam_logger_self()->stats.avg = dur;
+        ogs_diam_stats_self()->stats.shortest = dur;
+        ogs_diam_stats_self()->stats.longest = dur;
+        ogs_diam_stats_self()->stats.avg = dur;
     }
     if (error)
-        ogs_diam_logger_self()->stats.nb_errs++;
+        ogs_diam_stats_self()->stats.nb_errs++;
     else
-        ogs_diam_logger_self()->stats.nb_recv++;
+        ogs_diam_stats_self()->stats.nb_recv++;
 
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
     /* Display how long it took */
     if (ts.tv_nsec > sess_data->ts.tv_nsec)
@@ -1858,12 +1904,12 @@ static int mme_ogs_diam_s6a_clr_cb( struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
     int ret, rv;
-    
+
     mme_event_t *e = NULL;
     mme_ue_t *mme_ue = NULL;
 
     struct msg *ans, *qry;
-    ogs_diam_s6a_clr_message_t *clr_message = NULL;    
+    ogs_diam_s6a_clr_message_t *clr_message = NULL;
 
     struct avp_hdr *hdr;
     union avp_value val;
@@ -1945,9 +1991,9 @@ static int mme_ogs_diam_s6a_clr_cb( struct msg **msg, struct avp *avp,
     ogs_debug("Cancel-Location-Answer");
 
     /* Add this value to the stats */
-    ogs_assert( pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_echoed++;
-    ogs_assert( pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert( pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    ogs_diam_stats_self()->stats.nb_echoed++;
+    ogs_assert( pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
     e = mme_event_new(MME_EVENT_S6A_MESSAGE);
     ogs_assert(e);
@@ -1976,7 +2022,7 @@ out:
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
-    
+
     /* Set Vendor-Specific-Application-Id AVP */
     ret = ogs_diam_message_vendor_specific_appid_set(
             ans, OGS_DIAM_S6A_APPLICATION_ID);
@@ -1999,7 +2045,8 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
     int ret;
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
     uint32_t result_code = 0;
-    bool has_subscriber_data;
+    /* Clang scan-build SA: Branch condition evaluates to a garbage value: has_subscriber_data can be used uninitialized. */
+    bool has_subscriber_data = false;
 
     struct msg *ans, *qry;
 
@@ -2062,8 +2109,10 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
         } else {
             has_subscriber_data = true;
             uint32_t subdatamask = 0;
-            ret = mme_s6a_subscription_data_from_avp(avp, subscription_data, 
+            ret = mme_s6a_subscription_data_from_avp(avp, subscription_data,
                 mme_ue, &subdatamask);
+            /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+            ogs_assert(ret == 0);
             idr_message->subdatamask = subdatamask;
             ogs_info("[%s] Subscription-Data Processed.", imsi_bcd);
         }
@@ -2235,9 +2284,9 @@ static int mme_ogs_diam_s6a_idr_cb( struct msg **msg, struct avp *avp,
     ogs_debug("Insert-Subscriber-Data-Answer");
 
     /* Add this value to the stats */
-    ogs_assert( pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_echoed++;
-    ogs_assert( pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert( pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    ogs_diam_stats_self()->stats.nb_echoed++;
+    ogs_assert( pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
     int rv;
     e = mme_event_new(MME_EVENT_S6A_MESSAGE);
@@ -2268,7 +2317,7 @@ outnoexp:
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
-    
+
     /* Set Vendor-Specific-Application-Id AVP */
     ret = ogs_diam_message_vendor_specific_appid_set(
             ans, OGS_DIAM_S6A_APPLICATION_ID);
@@ -2311,7 +2360,7 @@ int mme_fd_init(void)
     data.command = ogs_diam_s6a_cmd_idr;
     ret = fd_disp_register(mme_ogs_diam_s6a_idr_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_s6a_idr);
-    ogs_assert(ret == 0);    
+    ogs_assert(ret == 0);
 
     /* Advertise the support for the application in the peer */
     ret = fd_disp_app_support(ogs_diam_s6a_application, ogs_diam_vendor, 1, 0);

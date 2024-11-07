@@ -35,6 +35,9 @@ static int hss_ogs_diam_swx_fb_cb(struct msg **msg, struct avp *avp,
 {
     /* This CB should never be called */
     ogs_warn("Unexpected message received!");
+    OGS_DIAM_STATS_MTX(
+        HSS_DIAM_PRIV_STATS_INC(swx.rx_unknown);
+    )
 
     return ENOTSUP;
 }
@@ -80,7 +83,7 @@ static int hss_ogs_diam_swx_mar_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Multimedia-Auth-Request");
+    ogs_debug("Rx Multimedia-Auth-Request");
 
     /* Create answer header */
     qry = *msg;
@@ -331,12 +334,14 @@ static int hss_ogs_diam_swx_mar_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("Multimedia-Auth-Answer");
+    ogs_debug("Tx Multimedia-Auth-Answer");
 
     /* Add this value to the stats */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_echoed++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_echoed);
+        HSS_DIAM_PRIV_STATS_INC(swx.rx_mar);
+        HSS_DIAM_PRIV_STATS_INC(swx.tx_maa);
+    )
 
     if (authentication_scheme)
         ogs_free(authentication_scheme);
@@ -377,6 +382,11 @@ out:
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
+    OGS_DIAM_STATS_MTX(
+        HSS_DIAM_PRIV_STATS_INC(swx.rx_mar);
+        HSS_DIAM_PRIV_STATS_INC(swx.rx_mar_error);
+    )
+
     if (authentication_scheme)
         ogs_free(authentication_scheme);
 
@@ -408,7 +418,7 @@ static int hss_ogs_diam_swx_sar_cb( struct msg **msg, struct avp *avp,
 
     ogs_assert(msg);
 
-    ogs_debug("Server-Assignment-Request");
+    ogs_debug("Rx Server-Assignment-Request");
 
     memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
 
@@ -854,12 +864,14 @@ static int hss_ogs_diam_swx_sar_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("Server-Assignment-Answer");
+    ogs_debug("Tx Server-Assignment-Answer");
 
     /* Add this value to the stats */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_echoed++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_echoed);
+        HSS_DIAM_PRIV_STATS_INC(swx.rx_sar);
+        HSS_DIAM_PRIV_STATS_INC(swx.tx_saa);
+    )
 
     ogs_subscription_data_free(&subscription_data);
     ogs_free(user_name);
@@ -897,6 +909,11 @@ out:
 
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
+
+    OGS_DIAM_STATS_MTX(
+        HSS_DIAM_PRIV_STATS_INC(swx.rx_sar);
+        HSS_DIAM_PRIV_STATS_INC(swx.rx_sar_error);
+    )
 
     ogs_subscription_data_free(&subscription_data);
     ogs_free(user_name);

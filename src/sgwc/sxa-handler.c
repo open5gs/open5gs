@@ -865,6 +865,8 @@ void sgwc_sxa_handle_session_modification_response(
             pgw_s5u_teid.teid = htobe32(ul_tunnel->remote_teid);
             rv = ogs_gtp2_ip_to_f_teid(
                     &ul_tunnel->remote_ip, &pgw_s5u_teid, &len);
+            /* Clang scan-build SA: Value stored is not used: add ogs_assert(). */
+            ogs_assert(rv == OGS_OK);
             gtp_rsp->bearer_contexts.s5_s8_u_pgw_f_teid.presence = 1;
             gtp_rsp->bearer_contexts.s5_s8_u_pgw_f_teid.data = &pgw_s5u_teid;
             gtp_rsp->bearer_contexts.s5_s8_u_pgw_f_teid.len = len;

@@ -111,7 +111,7 @@ static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
         if (!node) {
             ogs_error("No memory: ogs_pfcp_node_add() failed");
             ogs_pkbuf_free(e->pkbuf);
-            ogs_event_free(e);
+            upf_event_free(e);
             return;
         }
 

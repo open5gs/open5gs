@@ -70,8 +70,8 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
 {
     int r, rv;
     mme_ue_t *mme_ue = NULL;
-    sgw_ue_t *sgw_ue = NULL;
     enb_ue_t *enb_ue = NULL;
+    sgw_ue_t *sgw_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
     ogs_nas_eps_message_t *message = NULL;
@@ -102,13 +102,16 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
         message = e->nas_message;
         ogs_assert(message);
 
+        enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+        ogs_assert(enb_ue);
+
         switch (message->esm.h.message_type) {
         case OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST:
             ogs_debug("PDN Connectivity request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             rv = esm_handle_pdn_connectivity_request(
-                    bearer, &message->esm.pdn_connectivity_request,
+                    enb_ue, bearer, &message->esm.pdn_connectivity_request,
                     e->create_action);
             if (rv != OGS_OK) {
                 OGS_FSM_TRAN(s, esm_state_exception);
@@ -124,7 +127,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
                 ogs_assert(sgw_ue);
 
                 ogs_assert(OGS_OK ==
-                    mme_gtp_send_delete_session_request(sgw_ue, sess,
+                    mme_gtp_send_delete_session_request(enb_ue, sgw_ue, sess,
                         OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST));
             } else {
                 r = nas_eps_send_deactivate_bearer_context_request(bearer);
@@ -186,7 +189,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             }
 
             rv = esm_handle_information_response(
-                    sess, &message->esm.esm_information_response);
+                    enb_ue, sess, &message->esm.esm_information_response);
             if (rv != OGS_OK) {
                 OGS_FSM_TRAN(s, esm_state_exception);
                 break;
@@ -203,7 +206,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
                 ogs_list_add(&mme_ue->bearer_to_modify_list,
                                 &bearer->to_modify_node);
                 ogs_assert(OGS_OK ==
-                    mme_gtp_send_modify_bearer_request(mme_ue, 0, 0));
+                    mme_gtp_send_modify_bearer_request(enb_ue, mme_ue, 0, 0));
             }
 
             nas_eps_send_activate_all_dedicated_bearers(bearer);
@@ -278,6 +281,7 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
 {
     int r, rv;
     mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     sgw_ue_t *sgw_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
@@ -304,13 +308,16 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
         message = e->nas_message;
         ogs_assert(message);
 
+        enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+
         switch (message->esm.h.message_type) {
         case OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST:
             ogs_debug("PDN Connectivity request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+            ogs_assert(enb_ue);
             rv = esm_handle_pdn_connectivity_request(
-                    bearer, &message->esm.pdn_connectivity_request,
+                    enb_ue, bearer, &message->esm.pdn_connectivity_request,
                     e->create_action);
             if (rv != OGS_OK) {
                 OGS_FSM_TRAN(s, esm_state_exception);
@@ -323,12 +330,14 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("PDN disconnect request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+
+            ogs_assert(enb_ue);
             if (MME_HAVE_SGW_S1U_PATH(sess)) {
                 sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
                 ogs_assert(sgw_ue);
 
                 ogs_assert(OGS_OK ==
-                    mme_gtp_send_delete_session_request(sgw_ue, sess,
+                    mme_gtp_send_delete_session_request(enb_ue, sgw_ue, sess,
                     OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST));
             } else {
                 r = nas_eps_send_deactivate_bearer_context_request(bearer);
@@ -364,13 +373,17 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("Bearer resource allocation request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
-            esm_handle_bearer_resource_allocation_request(bearer, message);
+            ogs_assert(enb_ue);
+            esm_handle_bearer_resource_allocation_request(
+                    enb_ue, bearer, message);
             break;
         case OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST:
             ogs_debug("Bearer resource modification request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
-            esm_handle_bearer_resource_modification_request(bearer, message);
+            ogs_assert(enb_ue);
+            esm_handle_bearer_resource_modification_request(
+                    enb_ue, bearer, message);
             break;
         default:
             ogs_error("Unknown message(type:%d)", 
@@ -388,6 +401,7 @@ void esm_state_pdn_will_disconnect(ogs_fsm_t *s, mme_event_t *e)
 {
     int rv;
     mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
     ogs_nas_eps_message_t *message = NULL;
@@ -413,6 +427,9 @@ void esm_state_pdn_will_disconnect(ogs_fsm_t *s, mme_event_t *e)
         message = e->nas_message;
         ogs_assert(message);
 
+        enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+        ogs_assert(enb_ue);
+
         switch (message->esm.h.message_type) {
         case OGS_NAS_EPS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:
             ogs_debug("[D] Deactivate EPS bearer "
@@ -426,7 +443,7 @@ void esm_state_pdn_will_disconnect(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             rv = esm_handle_pdn_connectivity_request(
-                    bearer, &message->esm.pdn_connectivity_request,
+                    enb_ue, bearer, &message->esm.pdn_connectivity_request,
                     e->create_action);
             if (rv != OGS_OK) {
                 OGS_FSM_TRAN(s, esm_state_exception);

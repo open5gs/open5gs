@@ -27,6 +27,36 @@ extern "C" {
 struct sess_state;
 typedef struct ogs_diam_rx_message_s ogs_diam_rx_message_t;
 
+typedef struct pcrf_diam_stats_gx_s {
+    unsigned long long rx_unknown;
+    unsigned long long rx_ccr;
+    unsigned long long rx_ccr_error;
+    unsigned long long rx_raa;
+    unsigned long long tx_cca;
+    unsigned long long tx_rar;
+    unsigned long long tx_rar_error;
+} pcrf_diam_stats_gx_t;
+
+typedef struct pcrf_diam_stats_rx_s {
+    unsigned long long rx_unknown;
+    unsigned long long rx_aar;
+    unsigned long long rx_aar_error;
+    unsigned long long rx_asa;
+    unsigned long long rx_str;
+    unsigned long long rx_str_error;
+    unsigned long long tx_aaa;
+    unsigned long long tx_sar;
+    unsigned long long tx_sta;
+} pcrf_diam_stats_rx_t;
+
+typedef struct pcrf_diam_stats_s {
+    pcrf_diam_stats_gx_t gx;
+    pcrf_diam_stats_rx_t rx;
+} pcrf_diam_stats_t;
+
+#define PCRF_DIAM_PRIV_STATS_ADD(field, val) ((pcrf_diam_stats_t *)ogs_diam_stats_self()->priv_stats)->field += val
+#define PCRF_DIAM_PRIV_STATS_INC(field) PCRF_DIAM_PRIV_STATS_ADD(field, 1)
+
 int pcrf_fd_init(void);
 void pcrf_fd_final(void);
 

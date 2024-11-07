@@ -377,8 +377,9 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
             case OpenAPI_n2_sm_info_type_PDU_RES_MOD_REQ:
                 if (!n1smbuf) {
-                    ogs_error("[%s:%d] No N1 SM Content [%s]",
-                            amf_ue->supi, sess->psi, n1SmMsg->content_id);
+                    /* Clang scan-build SA: NULL pointer deference: n1SmMsg=NULL, remove logging of n1SmMsg->content_id. */
+                    ogs_error("[%s:%d] No N1 SM Content",
+                            amf_ue->supi, sess->psi);
                     r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                             AMF_NAS_BACKOFF_TIME);
@@ -419,8 +420,9 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
             case OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD:
                 if (!n1smbuf) {
-                    ogs_error("[%s:%d] No N1 SM Content [%s]",
-                            amf_ue->supi, sess->psi, n1SmMsg->content_id);
+                    /* Clang scan-build SA: NULL pointer deference: n1SmMsg=NULL, remove logging of n1SmMsg->content_id. */
+                    ogs_error("[%s:%d] No N1 SM Content",
+                            amf_ue->supi, sess->psi);
                     r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                             AMF_NAS_BACKOFF_TIME);
@@ -584,11 +586,12 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  * 6. UEContextReleaseComplete
                  */
                 ogs_warn("PDUSessionResourceSetupResponse(Unsuccessful)");
-                ogs_assert(amf_ue->deactivation.group);
+                ogs_assert(ran_ue);
+                ogs_assert(ran_ue->deactivation.group);
 
-                r = ngap_send_amf_ue_context_release_command(amf_ue,
-                        amf_ue->deactivation.group,
-                        amf_ue->deactivation.cause,
+                r = ngap_send_ran_ue_context_release_command(ran_ue,
+                        ran_ue->deactivation.group,
+                        ran_ue->deactivation.cause,
                         NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
@@ -622,11 +625,12 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  */
 
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
-                    ogs_assert(amf_ue->deactivation.group);
+                    ogs_assert(ran_ue);
+                    ogs_assert(ran_ue->deactivation.group);
 
-                    r = ngap_send_amf_ue_context_release_command(amf_ue,
-                            amf_ue->deactivation.group,
-                            amf_ue->deactivation.cause,
+                    r = ngap_send_ran_ue_context_release_command(ran_ue,
+                            ran_ue->deactivation.group,
+                            ran_ue->deactivation.cause,
                             NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
@@ -1188,20 +1192,7 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
 
         if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
 
-            if (state == AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE) {
-                /*
-                 * 1. Initial context setup failure
-                 * 2. Release All SM contexts
-                 * 3. UE Context release command
-                 * 4. UE Context release complete
-                 */
-                r = ngap_send_amf_ue_context_release_command(amf_ue,
-                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-
-            } else if (state == AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) {
+            if (state == AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) {
 
                 /* Not reached here */
                 ogs_assert_if_reached();
@@ -1386,7 +1377,8 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                      * 3. UE Context release command
                      * 4. UE Context release complete
                      */
-                    r = ngap_send_amf_ue_context_release_command(amf_ue,
+                    r = ngap_send_ran_ue_context_release_command(
+                            ran_ue_find_by_id(amf_ue->ran_ue_id),
                             NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
                             NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
                     ogs_expect(r == OGS_OK);

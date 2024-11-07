@@ -692,7 +692,7 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
     ogs_log_hexdump(OGS_LOG_DEBUG, SecurityKey->buf, SecurityKey->size);
 
     if (mme_ue->nas_eps.type == MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST &&
-        MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+        MME_CURRENT_P_TMSI_IS_AVAILABLE(mme_ue)) {
 
         /* Set CS-Fallback */
         S1AP_CSFallbackIndicator_t *CSFallbackIndicator = NULL;
@@ -727,7 +727,7 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
         ogs_s1ap_buffer_to_OCTET_STRING(
             &mme_ue->tai.plmn_id, sizeof(ogs_plmn_id_t), &LAI->pLMNidentity);
         ogs_assert(mme_ue->csmap);
-        ogs_assert(mme_ue->p_tmsi);
+        ogs_assert(mme_ue->current.p_tmsi);
         ogs_asn_uint16_to_OCTET_STRING(mme_ue->csmap->lai.lac, &LAI->lAC);
 
     }
@@ -891,7 +891,7 @@ ogs_pkbuf_t *s1ap_build_ue_context_modification_request(mme_ue_t *mme_ue)
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     if (mme_ue->nas_eps.type == MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST &&
-        MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+        MME_CURRENT_P_TMSI_IS_AVAILABLE(mme_ue)) {
         ie = CALLOC(1, sizeof(S1AP_UEContextModificationRequestIEs_t));
         ASN_SEQUENCE_ADD(&UEContextModificationRequest->protocolIEs, ie);
 
@@ -919,7 +919,7 @@ ogs_pkbuf_t *s1ap_build_ue_context_modification_request(mme_ue_t *mme_ue)
         ogs_s1ap_buffer_to_OCTET_STRING(
             &mme_ue->tai.plmn_id, sizeof(ogs_plmn_id_t), &LAI->pLMNidentity);
         ogs_assert(mme_ue->csmap);
-        ogs_assert(mme_ue->p_tmsi);
+        ogs_assert(mme_ue->current.p_tmsi);
         ogs_asn_uint16_to_OCTET_STRING(mme_ue->csmap->lai.lac, &LAI->lAC);
 
     } else {

@@ -29,7 +29,7 @@ extern ogs_sockaddr_t ogs_test_sctp_last_addr;
 ogs_socknode_t *testsctp_server(const char *ipstr, int port);
 ogs_socknode_t *testsctp_client(const char *ipstr, int port);
 ogs_socknode_t *tests1ap_client(int family);
-ogs_socknode_t *testngap_client(int family);
+ogs_socknode_t *testngap_client(int index, int family);
 
 int testsctp_send(ogs_socknode_t *node, ogs_pkbuf_t *pkbuf,
         int ppid, uint16_t stream_no, int type);

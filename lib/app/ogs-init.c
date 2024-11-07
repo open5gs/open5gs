@@ -35,6 +35,7 @@ int ogs_app_initialize(
         char *log_file;
         char *log_level;
         char *domain_mask;
+        char *config_section_id;
     } optarg;
 
     ogs_core_initialize();
@@ -50,7 +51,7 @@ int ogs_app_initialize(
     memset(&optarg, 0, sizeof(optarg));
 
     ogs_getopt_init(&options, (char**)argv);
-    while ((opt = ogs_getopt(&options, "c:l:e:m:")) != -1) {
+    while ((opt = ogs_getopt(&options, "c:l:e:m:k:")) != -1) {
         switch (opt) {
         case 'c':
             optarg.config_file = options.optarg;
@@ -63,6 +64,9 @@ int ogs_app_initialize(
             break;
         case 'm':
             optarg.domain_mask = options.optarg;
+            break;
+        case 'k':
+            optarg.config_section_id = options.optarg;
             break;
         case '?':
         default:
@@ -124,7 +128,14 @@ int ogs_app_initialize(
         ogs_app()->db_uri = ogs_env_get("DB_URI");
 
     /**************************************************************************
-     * Stage 6 : Print Banner
+     * Stage 6 : Setup configuration section ID for running multiple NF from
+     * same config file
+     */
+    if (optarg.config_section_id)
+        ogs_app()->config_section_id = atoi(optarg.config_section_id);
+
+    /**************************************************************************
+     * Stage 7 : Print Banner
      */
     if (ogs_app()->version) {
         ogs_log_print(OGS_LOG_INFO,
@@ -144,7 +155,7 @@ int ogs_app_initialize(
     }
 
     /**************************************************************************
-     * Stage 7 : Queue, Timer and Poll
+     * Stage 8 : Queue, Timer and Poll
      */
     ogs_app()->queue = ogs_queue_create(ogs_app()->pool.event);
     ogs_assert(ogs_app()->queue);
@@ -246,8 +257,13 @@ static int read_config(void)
 
 static int context_prepare(void)
 {
+    int rv;
+
 #define USRSCTP_LOCAL_UDP_PORT      9899
     ogs_app()->usrsctp.udp_port = USRSCTP_LOCAL_UDP_PORT;
+
+    rv = ogs_app_global_conf_prepare();
+    if (rv != OGS_OK) return rv;
 
     return OGS_OK;
 }
@@ -345,6 +361,12 @@ static int parse_config(void)
             rv = ogs_app_parse_global_conf(&root_iter);
             if (rv != OGS_OK) {
                 ogs_error("ogs_global_conf_parse_config() failed");
+                return rv;
+            }
+        } else {
+            rv = ogs_app_count_nf_conf_sections(root_key);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_app_count_nf_conf_sections() failed");
                 return rv;
             }
         }

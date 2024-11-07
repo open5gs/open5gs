@@ -1279,8 +1279,8 @@ void ngap_handle_initial_context_setup_failure(
 
         old_xact_count = amf_sess_xact_count(amf_ue);
 
-        amf_ue->deactivation.group = NGAP_Cause_PR_nas;
-        amf_ue->deactivation.cause = NGAP_CauseNas_normal_release;
+        ran_ue->deactivation.group = NGAP_Cause_PR_nas;
+        ran_ue->deactivation.cause = NGAP_CauseNas_normal_release;
 
         amf_sbi_send_deactivate_all_sessions(
                 ran_ue, amf_ue, AMF_UPDATE_SM_CONTEXT_DEACTIVATED,
@@ -1566,8 +1566,13 @@ void ngap_handle_ue_context_release_request(
         ogs_warn("NAS-Cause[%d]", (int)Cause->choice.nas);
         break;
     default:
-        ogs_warn("Invalid cause group[%d]", Cause->present);
-        break;
+        ogs_error("Invalid cause group [%d]", Cause->present);
+        r = ngap_send_error_indication(
+                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
     }
 
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
@@ -1582,8 +1587,8 @@ void ngap_handle_ue_context_release_request(
     } else {
         int xact_count = amf_sess_xact_count(amf_ue);
 
-        amf_ue->deactivation.group = Cause->present;
-        amf_ue->deactivation.cause = (int)Cause->choice.radioNetwork;
+        ran_ue->deactivation.group = Cause->present;
+        ran_ue->deactivation.cause = (int)Cause->choice.radioNetwork;
 
         if (!PDUSessionList) {
             amf_sbi_send_deactivate_all_sessions(
@@ -1626,7 +1631,7 @@ void ngap_handle_ue_context_release_request(
         }
  
         if (amf_sess_xact_count(amf_ue) == xact_count) {
-            r = ngap_send_amf_ue_context_release_command(amf_ue,
+            r = ngap_send_ran_ue_context_release_command(ran_ue,
                     Cause->present, (int)Cause->choice.radioNetwork,
                     NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
             ogs_expect(r == OGS_OK);
@@ -2154,8 +2159,8 @@ void ngap_handle_pdu_session_resource_setup_response(
             param.n2SmInfoType = OpenAPI_n2_sm_info_type_PDU_RES_SETUP_FAIL;
             ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 
-            amf_ue->deactivation.group = NGAP_Cause_PR_nas;
-            amf_ue->deactivation.cause = NGAP_CauseNas_normal_release;
+            ran_ue->deactivation.group = NGAP_Cause_PR_nas;
+            ran_ue->deactivation.cause = NGAP_CauseNas_normal_release;
 
             r = amf_sess_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,

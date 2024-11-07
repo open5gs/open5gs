@@ -89,6 +89,9 @@ typedef struct sgwc_sess_s {
     /* APN Configuration */
     ogs_session_t   session;
 
+    /* PDN Address Allocation (PAA) */
+    ogs_paa_t       paa;
+
     ogs_list_t      bearer_list;
 
     /* Related Context */

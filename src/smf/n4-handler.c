@@ -659,7 +659,7 @@ void smf_5gc_n4_handle_session_modification_response(
         } else if (flags & OGS_PFCP_MODIFY_TFT_ADD) {
             qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS;
         } else if (flags & OGS_PFCP_MODIFY_TFT_REPLACE) {
-            qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_PACKET_FILTERS;
+            qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_ALL_PACKET_FILTERS;
         } else if (flags & OGS_PFCP_MODIFY_TFT_DELETE) {
             qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS;
         }

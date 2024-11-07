@@ -214,6 +214,10 @@ static int pcrf_gx_fb_cb(struct msg **msg, struct avp *avp,
     /* This CB should never be called */
     ogs_warn("Unexpected message received!");
 
+    OGS_DIAM_STATS_MTX(
+        PCRF_DIAM_PRIV_STATS_INC(gx.rx_unknown);
+    )
+
     return ENOTSUP;
 }
 
@@ -235,7 +239,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     uint32_t cc_request_number = 0;
     uint32_t result_code = OGS_DIAM_MISSING_AVP;
 
-    ogs_debug("[Credit-Control-Request]");
+    ogs_debug("Rx Credit-Control-Request");
 
     ogs_assert(msg);
 
@@ -618,12 +622,14 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("[Credit-Control-Answer]");
+    ogs_debug("Tx Credit-Control-Answer");
 
     /* Add this value to the stats */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_echoed++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) ==0);
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_echoed);
+        PCRF_DIAM_PRIV_STATS_INC(gx.rx_ccr);
+        PCRF_DIAM_PRIV_STATS_INC(gx.tx_cca);
+    )
 
     OGS_SESSION_DATA_FREE(&gx_message.session_data);
 
@@ -662,6 +668,11 @@ out:
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
+    OGS_DIAM_STATS_MTX(
+        PCRF_DIAM_PRIV_STATS_INC(gx.rx_ccr);
+        PCRF_DIAM_PRIV_STATS_INC(gx.rx_ccr_error);
+    )
+
     OGS_SESSION_DATA_FREE(&gx_message.session_data);
 
     return 0;
@@ -689,7 +700,7 @@ int pcrf_gx_send_rar(
     ogs_assert(rx_sid);
     ogs_assert(rx_message);
 
-    ogs_debug("[PCRF] Re-Auth-Request");
+    ogs_debug("[PCRF] Tx Re-Auth-Request");
 
     /* Initialize Message */
     memset(&gx_message, 0, sizeof(ogs_diam_gx_message_t));
@@ -1013,9 +1024,10 @@ int pcrf_gx_send_rar(
     ogs_assert(ret == 0);
 
     /* Increment the counter */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_sent++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_sent);
+        PCRF_DIAM_PRIV_STATS_INC(gx.tx_rar);
+    )
 
     /* Set no error */
     rx_message->result_code = ER_DIAMETER_SUCCESS;
@@ -1028,6 +1040,11 @@ out:
     /* Store this value in the session */
     ret = fd_sess_state_store(pcrf_gx_reg, session, &sess_data);
     ogs_assert(sess_data == NULL);
+
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_sent);
+        PCRF_DIAM_PRIV_STATS_INC(gx.tx_rar_error);
+    )
 
     OGS_SESSION_DATA_FREE(&gx_message.session_data);
 
@@ -1049,7 +1066,7 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
 
     uint32_t result_code;
 
-    ogs_debug("[PCRF] Re-Auth-Answer");
+    ogs_debug("[PCRF] Rx Re-Auth-Answer");
 
     ret = clock_gettime(CLOCK_REALTIME, &ts);
     ogs_assert(ret == 0);
@@ -1121,30 +1138,31 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
     }
 
     /* Free the message */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
-        ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (ogs_diam_logger_self()->stats.nb_recv) {
-        /* Ponderate in the avg */
-        ogs_diam_logger_self()->stats.avg = (ogs_diam_logger_self()->stats.avg *
-            ogs_diam_logger_self()->stats.nb_recv + dur) /
-            (ogs_diam_logger_self()->stats.nb_recv + 1);
-        /* Min, max */
-        if (dur < ogs_diam_logger_self()->stats.shortest)
-            ogs_diam_logger_self()->stats.shortest = dur;
-        if (dur > ogs_diam_logger_self()->stats.longest)
-            ogs_diam_logger_self()->stats.longest = dur;
-    } else {
-        ogs_diam_logger_self()->stats.shortest = dur;
-        ogs_diam_logger_self()->stats.longest = dur;
-        ogs_diam_logger_self()->stats.avg = dur;
-    }
-    if (error)
-        ogs_diam_logger_self()->stats.nb_errs++;
-    else
-        ogs_diam_logger_self()->stats.nb_recv++;
+    OGS_DIAM_STATS_MTX(
+        dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
+            ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+        if (ogs_diam_stats_self()->stats.nb_recv) {
+            /* Ponderate in the avg */
+            ogs_diam_stats_self()->stats.avg = (ogs_diam_stats_self()->stats.avg *
+                ogs_diam_stats_self()->stats.nb_recv + dur) /
+                (ogs_diam_stats_self()->stats.nb_recv + 1);
+            /* Min, max */
+            if (dur < ogs_diam_stats_self()->stats.shortest)
+                ogs_diam_stats_self()->stats.shortest = dur;
+            if (dur > ogs_diam_stats_self()->stats.longest)
+                ogs_diam_stats_self()->stats.longest = dur;
+        } else {
+            ogs_diam_stats_self()->stats.shortest = dur;
+            ogs_diam_stats_self()->stats.longest = dur;
+            ogs_diam_stats_self()->stats.avg = dur;
+        }
+        if (error)
+            ogs_diam_stats_self()->stats.nb_errs++;
+        else
+            ogs_diam_stats_self()->stats.nb_recv++;
 
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+        PCRF_DIAM_PRIV_STATS_INC(gx.rx_raa);
+    )
 
     /* Display how long it took */
     if (ts.tv_nsec > sess_data->ts.tv_nsec)

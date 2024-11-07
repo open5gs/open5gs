@@ -50,17 +50,29 @@ extern "C" {
  * coded as 0. For all other operations, the number of packet filters
  * shall be greater than 0 and less than or equal to 15.
  *
- * The array of TLV messages is limited to 16.
- * So, Flow(PDI.SDF_Filter) in PDR is limited to 16.
+ * TS24.501
+ * 9.11.4.13 QoS rules
+ * Table 9.11.4.13.1: QoS rules information element
  *
- * Therefore, we defined the maximum number of flows as 16.
+ * For the "delete existing QoS rule" operation and for the "modify existing
+ * QoS rule without modifying packet filters" operation, the number of packet
+ * filters shall be coded as 0. For the "create new QoS rule" operation
+ * and the "modify existing QoS rule and replace all packet filters" operation,
+ * the number of packet filters shall be greater than or equal to 0
+ * and less than or equal to 15. For all other operations, the number of packet
+ * filters shall be greater than 0 and less than or equal to 15.
+ *
+ * The array of TLV messages is limited to 15.
+ * So, Flow(PDI.SDF_Filter) in PDR is limited to 15.
+ *
+ * Therefore, we defined the maximum number of flows as 15.
  */
-#define OGS_MAX_NUM_OF_FLOW_IN_PDR      16
+#define OGS_MAX_NUM_OF_FLOW_IN_PDR      15
 #define OGS_MAX_NUM_OF_FLOW_IN_GTP      OGS_MAX_NUM_OF_FLOW_IN_PDR
 #define OGS_MAX_NUM_OF_FLOW_IN_NAS      OGS_MAX_NUM_OF_FLOW_IN_PDR
 #define OGS_MAX_NUM_OF_FLOW_IN_PCC_RULE OGS_MAX_NUM_OF_FLOW_IN_PDR
 #define OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT OGS_MAX_NUM_OF_FLOW_IN_PDR
-#define OGS_MAX_NUM_OF_FLOW_IN_BEARER   16
+#define OGS_MAX_NUM_OF_FLOW_IN_BEARER   15
 
 #define OGS_MAX_NUM_OF_GTPU_RESOURCE    4
 #define OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI 8
@@ -231,6 +243,7 @@ char *ogs_plmn_id_to_string(const ogs_plmn_id_t *plmn_id, char *buf);
 
 char *ogs_serving_network_name_from_plmn_id(const ogs_plmn_id_t *plmn_id);
 char *ogs_home_network_domain_from_plmn_id(const ogs_plmn_id_t *plmn_id);
+char *ogs_epc_domain_from_plmn_id(const ogs_plmn_id_t *plmn_id);
 char *ogs_nrf_fqdn_from_plmn_id(const ogs_plmn_id_t *plmn_id);
 char *ogs_nssf_fqdn_from_plmn_id(const ogs_plmn_id_t *plmn_id);
 char *ogs_home_network_domain_from_fqdn(char *fqdn);
@@ -689,7 +702,7 @@ typedef struct ogs_pco_id_s {
     void *data;
 } ogs_pco_id_t;
 
-#define OGS_MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID    16
+#define OGS_MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID    32
 typedef struct ogs_pco_s {
 ED3(uint8_t ext:1;,
     uint8_t spare:4;,

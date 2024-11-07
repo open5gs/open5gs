@@ -10,6 +10,10 @@ global:
 #    peer: 64
 pcrf:
   freeDiameter: @sysconfdir@/freeDiameter/pcrf.conf
+  metrics:
+    server:
+      - address: 127.0.0.9
+        port: 9090
 
 ################################################################################
 # Locally configured policy

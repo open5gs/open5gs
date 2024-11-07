@@ -44,6 +44,7 @@
 #include "diameter/common/message.h"
 #include "diameter/common/logger.h"
 #include "diameter/common/base.h"
+#include "diameter/common/stats.h"
 
 #undef OGS_DIAMETER_INSIDE
 

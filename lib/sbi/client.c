@@ -250,9 +250,15 @@ ogs_sbi_client_t *ogs_sbi_client_find(
         if (fqdn) {
             if (!client->fqdn)
                 continue;
-            if (strcmp(client->fqdn, fqdn) != 0 ||
-                client->fqdn_port != fqdn_port)
+            if (strcmp(client->fqdn, fqdn) != 0)
                 continue;
+
+            if (fqdn_port) {
+                if (!client->fqdn_port)
+                    continue;
+                if (client->fqdn_port != fqdn_port)
+                    continue;
+            }
         }
         if (addr) {
             if (!client->addr)

@@ -516,6 +516,7 @@ type_list["Event Quota"]["size"] = 4                        # Type 148
 type_list["Event Threshold"]["size"] = 4                    # Type 149
 type_list["Averaging Window"]["size"] = 4                   # Type 157
 type_list["Paging Policy Indicator"]["size"] = 1            # Type 158
+type_list["3GPP Interface Type"]["size"] = 1                # Type 160
 type_list["PFCPSRReq-Flags"]["size"] = 1                    # Type 161
 type_list["PFCPAUReq-Flags"]["size"] = 1                    # Type 162
 type_list["Quota Validity Time"]["size"] = 4                # Type 181

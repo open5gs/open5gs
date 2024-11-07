@@ -20,12 +20,14 @@ libdiameter_common_sources = files('''
 
     message.h
     logger.h
+    stats.h
     base.h
 
     libapp_sip.c
     dict.c
     message.c
     logger.c
+    stats.c
     config.c
     util.c
     init.c
@@ -51,10 +53,10 @@ libdiameter_common = library('ogsdiameter-common',
     version : libogslib_version,
     c_args : libdiameter_common_cc_flags,
     include_directories : [libdiameter_common_inc, libinc],
-    dependencies : [libcore_dep, libfdcore_dep],
+    dependencies : [libcore_dep, libfdcore_dep, libapp_dep],
     install : true)
 
 libdiameter_common_dep = declare_dependency(
     link_with : libdiameter_common,
     include_directories : [libdiameter_common_inc, libinc],
-    dependencies : [libcore_dep, libfdcore_dep])
+    dependencies : [libcore_dep, libfdcore_dep, libapp_dep])
