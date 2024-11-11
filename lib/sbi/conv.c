@@ -103,7 +103,7 @@ char *ogs_supi_from_suci(char *suci)
 
     p = tmp;
     i = 0;
-    while((array[i++] = strsep(&p, "-"))) {
+    while((i < MAX_SUCI_TOKEN) && (array[i++] = strsep(&p, "-"))) {
         /* Empty Body */
     }
 
