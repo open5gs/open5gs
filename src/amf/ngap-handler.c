@@ -38,14 +38,16 @@ static bool maximum_number_of_gnbs_is_reached(void)
 
 static bool gnb_plmn_id_is_foreign(amf_gnb_t *gnb)
 {
-    int i, j;
-
-    for (i = 0; i < gnb->num_of_supported_ta_list; i++) {
-        for (j = 0; j < gnb->supported_ta_list[i].num_of_bplmn_list; j++) {
-            if (memcmp(&gnb->plmn_id,
-                        &gnb->supported_ta_list[i].bplmn_list[j].plmn_id,
-                        OGS_PLMN_ID_LEN) == 0)
-                return false;
+    int i, j, k;
+    for (k = 0; k < amf_self()->num_of_plmn_support; k++) {
+        for (i = 0; i < gnb->num_of_supported_ta_list; i++) {
+            for (j = 0; j < gnb->supported_ta_list[i].num_of_bplmn_list; j++) {
+                if (memcmp(&amf_self()->plmn_support[k].plmn_id,
+                           &gnb->supported_ta_list[i].bplmn_list[j].plmn_id,
+                           OGS_PLMN_ID_LEN) == 0){
+                    return false;
+                }
+            }
         }
     }
 
