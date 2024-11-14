@@ -991,6 +991,6 @@ cleanup:
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
-    return OGS_OK;
+    return true;
 }
 
