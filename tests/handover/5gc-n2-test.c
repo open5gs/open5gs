@@ -515,7 +515,7 @@ static void direct_complete_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, gtpu2);
 
     /* NG-Setup Reqeust/Response for Source gNB */
-    sendbuf = testngap_build_ng_setup_request(0x4000, 28);
+    sendbuf = testngap_build_ng_setup_request(0, 28);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -769,7 +769,7 @@ static void direct_complete_func(abts_case *tc, void *data)
 
     /* Send UplinkRANConfigurationTransfer */
     sendbuf = testngap_build_uplink_ran_configuration_transfer(
-            0x4000, 28, 0x4001, 28);
+            0, 28, 0x4001, 28);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -781,7 +781,7 @@ static void direct_complete_func(abts_case *tc, void *data)
 
     /* Send UplinkRANConfigurationTransfer */
     sendbuf = testngap_build_uplink_ran_configuration_transfer(
-            0x4001, 28, 0x4000, 28);
+            0x4001, 28, 0, 28);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -911,7 +911,7 @@ static void direct_complete_func(abts_case *tc, void *data)
     /* Send HandoverRequired */
     sendbuf = testngap_build_handover_required(
             test_ue, NGAP_HandoverType_intra5gs,
-            0x4000, 28,
+            0, 28,
             NGAP_Cause_PR_radioNetwork,
             NGAP_CauseRadioNetwork_handover_desirable_for_radio_reason,
             true);
