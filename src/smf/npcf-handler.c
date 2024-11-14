@@ -344,7 +344,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
         ogs_error("[%s:%d] Invalid URI [%s]",
                 smf_ue->supi, sess->psi, header.uri);
         ogs_sbi_header_free(&header);
-        return OGS_ERROR;
+        return false;
     }
 
     client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
@@ -360,7 +360,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
             ogs_freeaddrinfo(addr);
             ogs_freeaddrinfo(addr6);
 
-            return OGS_ERROR;
+            return false;
         }
     }
 
