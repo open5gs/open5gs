@@ -447,7 +447,7 @@ $ cp open5gs* /usr/bin/
 For convenience, you can execute all NFs at once by using the following command.
 ```bash
 $ ./build/tests/app/5gc ## 5G Core Only with ./build/configs/sample.yaml
-$ ./build/tests/app/epc -c ./build/configs/srslte.yaml ## EPC Only with ./build/configs/srslte.yaml
+$ ./build/tests/app/epc -c ./build/configs/srsenb.yaml ## EPC Only with ./build/configs/srsenb.yaml
 $ ./build/tests/app/app ## Both 5G Core and EPC with ./build/configs/sample.yaml
 ```
 
