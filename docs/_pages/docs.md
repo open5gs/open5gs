@@ -20,7 +20,7 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
 
 - In the lab
   - [A Demonstration of 30 Gbps Load Testing for Accelerated UPF with Open5gs](https://nextepc.com/technology)
-  - [Measurement of UPF Performance](https://github.com/s5uishida/simple_measurement_of_upf_performance)
+  - [Measurement of UPF Performance](https://github.com/s5uishida/sample_config_misc_for_mobile_network#performance_measurement)
 
 - Troubleshooting
   - [Simple Issues](troubleshoot/01-simple-issues)
