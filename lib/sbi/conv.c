@@ -722,12 +722,12 @@ char *ogs_sbi_bitrate_to_string(uint64_t bitrate, int unit)
 uint64_t ogs_sbi_bitrate_from_string(char *str)
 {
     char *unit = NULL;
-    uint64_t bitrate = 0;
+    double bitrate = 0;
     ogs_assert(str);
     uint64_t mul = 1;
 
     unit = strrchr(str, ' ');
-    bitrate = atoll(str);
+    bitrate = atof(str);
 
     if (!unit) {
         ogs_error("No Unit [%s]", str);
@@ -755,7 +755,7 @@ uint64_t ogs_sbi_bitrate_from_string(char *str)
     else
         bitrate *= mul;
 
-    return bitrate;
+    return (uint64_t) bitrate;
 }
 
 #define MAX_TIMESTR_LEN 128
