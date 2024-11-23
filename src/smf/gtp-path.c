@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -710,17 +710,17 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
         if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION && pdr->gnode) {
             ogs_gtp2_header_desc_t header_desc;
-            ogs_pkbuf_t *newbuf = NULL;
+            ogs_gtp_node_t *gnode = pdr->gnode;
+            ogs_assert(gnode);
+            ogs_assert(gnode->sock);
 
             memset(&header_desc, 0, sizeof(header_desc));
-
             header_desc.type = OGS_GTPU_MSGTYPE_GPDU;
-            header_desc.teid = pdr->f_teid.teid;
 
-            newbuf = ogs_pkbuf_copy(pkbuf);
-            ogs_assert(newbuf);
+            ogs_gtp2_encapsulate_header(&header_desc, pkbuf);
 
-            ogs_gtp2_send_user_plane(pdr->gnode, &header_desc, newbuf);
+            ogs_gtp_send_with_teid(
+                    gnode->sock, pkbuf, pdr->f_teid.teid, &gnode->addr);
 
             ogs_debug("      Send Router Advertisement");
             break;

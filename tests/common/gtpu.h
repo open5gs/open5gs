@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -40,6 +40,8 @@ int test_gtpu_send_ping(
         ogs_socknode_t *node, test_bearer_t *bearer, const char *dst_ip);
 int test_gtpu_send_slacc_rs(ogs_socknode_t *node, test_bearer_t *bearer);
 int test_gtpu_send_slacc_rs_with_unspecified_source_address(
+        ogs_socknode_t *node, test_bearer_t *bearer);
+int test_gtpu_send_end_marker(
         ogs_socknode_t *node, test_bearer_t *bearer);
 int test_gtpu_send_error_indication(
         ogs_socknode_t *node, test_bearer_t *bearer);

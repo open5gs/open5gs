@@ -450,7 +450,7 @@ void smf_5gc_n4_handle_session_modification_response(
 
                 smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
             } else {
-                ogs_fatal("Invalid flags [0x%lx]", flags);
+                ogs_fatal("Invalid flags [0x%llx]", (long long)flags);
                 ogs_assert_if_reached();
             }
         } else {

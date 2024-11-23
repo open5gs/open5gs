@@ -1495,6 +1495,13 @@ bool smf_nsmf_handle_create_pdu_session_in_hsmf(
         ogs_sbi_time_from_string(&sess->ue_location_timestamp,
                 NrLocation->ue_location_timestamp);
 
+    if (sess->amf_nf_id)
+        ogs_free(sess->amf_nf_id);
+    sess->amf_nf_id = ogs_strdup(PduSessionCreateData->amf_nf_id);
+    ogs_assert(sess->amf_nf_id);
+
+    ogs_sbi_parse_guami(&sess->guami, PduSessionCreateData->guami);
+
     sess->s_nssai.sst = sNssai->sst;
     sess->s_nssai.sd = ogs_s_nssai_sd_from_string(sNssai->sd);
     if (PduSessionCreateData->hplmn_snssai) {

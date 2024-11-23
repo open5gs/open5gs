@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -343,17 +343,12 @@ int ogs_pfcp_up_send_association_setup_response(ogs_pfcp_xact_t *xact,
     return rv;
 }
 
-void ogs_pfcp_send_g_pdu(
-        ogs_pfcp_pdr_t *pdr,
-        ogs_gtp2_header_desc_t *sendhdr, ogs_pkbuf_t *sendbuf)
+void ogs_pfcp_send_gtpu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
 {
     ogs_gtp_node_t *gnode = NULL;
     ogs_pfcp_far_t *far = NULL;
 
-    ogs_gtp2_header_desc_t header_desc;
-
     ogs_assert(pdr);
-    ogs_assert(sendhdr);
     ogs_assert(sendbuf);
 
     far = pdr->far;
@@ -370,80 +365,26 @@ void ogs_pfcp_send_g_pdu(
     }
 
     gnode = far->gnode;
-    ogs_assert(gnode);
-    ogs_assert(gnode->sock);
-
-    memset(&header_desc, 0, sizeof(header_desc));
-
-    header_desc.type = sendhdr->type;
-    header_desc.teid = far->outer_header_creation.teid;
-
-    if (pdr->qer && pdr->qer->qfi) {
-        header_desc.pdu_type =
-            OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION;
-        header_desc.qos_flow_identifier = pdr->qer->qfi;
-    }
-
-    if (sendhdr->udp.presence == true) {
-        header_desc.udp.presence = sendhdr->udp.presence;
-        header_desc.udp.port = sendhdr->udp.port;
-    }
-
-    if (sendhdr->pdcp_number_presence == true) {
-        header_desc.pdcp_number_presence = sendhdr->pdcp_number_presence;
-        header_desc.pdcp_number = sendhdr->pdcp_number;
-    }
-
-    ogs_gtp2_send_user_plane(gnode, &header_desc, sendbuf);
-}
-
-int ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr)
-{
-    ogs_gtp_node_t *gnode = NULL;
-    ogs_pfcp_far_t *far = NULL;
-
-    ogs_pkbuf_t *sendbuf = NULL;
-
-    ogs_gtp2_header_desc_t header_desc;
-
-    ogs_assert(pdr);
-    far = pdr->far;
-    ogs_assert(far);
-
-    gnode = far->gnode;
     if (!gnode) {
         ogs_error("No GTP Node Setup");
-        return OGS_DONE;
+        ogs_pkbuf_free(sendbuf);
+        return;
     }
     if (!gnode->sock) {
         ogs_error("No GTP Socket Setup");
-        return OGS_DONE;
+        ogs_pkbuf_free(sendbuf);
+        return;
     }
 
-    sendbuf = ogs_pkbuf_alloc(NULL, OGS_GTPV1U_5GC_HEADER_LEN);
-    if (!sendbuf) {
-        ogs_error("ogs_pkbuf_alloc() failed");
-        return OGS_ERROR;
-    }
-    ogs_pkbuf_reserve(sendbuf, OGS_GTPV1U_5GC_HEADER_LEN);
+    ogs_gtp_send_with_teid(
+            gnode->sock,
+            sendbuf, far->outer_header_creation.teid,
+            &gnode->addr);
 
-    memset(&header_desc, 0, sizeof(header_desc));
-
-    header_desc.type = OGS_GTPU_MSGTYPE_END_MARKER;
-    header_desc.teid = far->outer_header_creation.teid;
-
-    if (pdr->qer && pdr->qer->qfi) {
-        header_desc.pdu_type =
-            OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION;
-        header_desc.qos_flow_identifier = pdr->qer->qfi;
-    }
-
-    ogs_gtp2_send_user_plane(gnode, &header_desc, sendbuf);
-
-    return OGS_OK;
+    ogs_pkbuf_free(sendbuf);
 }
 
-void ogs_pfcp_send_buffered_packet(ogs_pfcp_pdr_t *pdr)
+void ogs_pfcp_send_buffered_gtpu(ogs_pfcp_pdr_t *pdr)
 {
     ogs_pfcp_far_t *far = NULL;
     int i;
@@ -453,18 +394,42 @@ void ogs_pfcp_send_buffered_packet(ogs_pfcp_pdr_t *pdr)
 
     if (far && far->gnode) {
         if (far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) {
-            for (i = 0; i < far->num_of_buffered_packet; i++) {
-                ogs_gtp2_header_desc_t sendhdr;
-
-                memset(&sendhdr, 0, sizeof(sendhdr));
-                sendhdr.type = OGS_GTPU_MSGTYPE_GPDU;
-
-                ogs_pfcp_send_g_pdu(
-                        pdr, &sendhdr, far->buffered_packet[i]);
+            for (i = 0; i < far->num_of_buffered_gtpu; i++) {
+                ogs_pfcp_send_gtpu(pdr, far->buffered_gtpu[i]);
             }
-            far->num_of_buffered_packet = 0;
+            far->num_of_buffered_gtpu = 0;
         }
     }
+}
+
+int ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr)
+{
+    ogs_pkbuf_t *sendbuf = NULL;
+    ogs_gtp2_header_desc_t header_desc;
+
+    ogs_assert(pdr);
+
+    sendbuf = ogs_pkbuf_alloc(NULL, OGS_GTPV1U_5GC_HEADER_LEN);
+    if (!sendbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        return OGS_ERROR;
+    }
+    ogs_pkbuf_reserve(sendbuf, OGS_GTPV1U_5GC_HEADER_LEN);
+
+    memset(&header_desc, 0, sizeof(header_desc));
+    header_desc.type = OGS_GTPU_MSGTYPE_END_MARKER;
+
+    if (pdr->qer && pdr->qer->qfi) {
+        header_desc.pdu_type =
+            OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION;
+        header_desc.qos_flow_identifier = pdr->qer->qfi;
+    }
+
+    ogs_gtp2_encapsulate_header(&header_desc, sendbuf);
+
+    ogs_pfcp_send_gtpu(pdr, sendbuf);
+
+    return OGS_OK;
 }
 
 void ogs_pfcp_send_error_message(

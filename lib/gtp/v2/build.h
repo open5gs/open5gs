@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -36,6 +36,8 @@ ogs_pkbuf_t *ogs_gtp2_build_echo_response(
 ogs_pkbuf_t *ogs_gtp1_build_error_indication(
         uint32_t teid, ogs_sockaddr_t *addr);
 
+void ogs_gtp2_encapsulate_header(
+        ogs_gtp2_header_desc_t *header_desc, ogs_pkbuf_t *pkbuf);
 void ogs_gtp2_fill_header(
         ogs_gtp2_header_t *gtp_hdesc, ogs_gtp2_extension_header_t *ext_hdesc,
         ogs_pkbuf_t *pkbuf);

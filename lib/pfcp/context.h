@@ -250,8 +250,8 @@ typedef struct ogs_pfcp_far_s {
 
     ogs_pfcp_smreq_flags_t  smreq_flags;
 
-    uint32_t                num_of_buffered_packet;
-    ogs_pkbuf_t             *buffered_packet[OGS_MAX_NUM_OF_PACKET_BUFFER];
+    uint32_t                num_of_buffered_gtpu;
+    ogs_pkbuf_t             *buffered_gtpu[OGS_MAX_NUM_OF_GTPU_BUFFER];
 
     struct {
         bool prepared;

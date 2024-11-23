@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -117,6 +117,51 @@ ogs_pkbuf_t *ogs_gtp1_build_error_indication(
     return pkbuf;
 }
 
+void ogs_gtp2_encapsulate_header(
+        ogs_gtp2_header_desc_t *header_desc, ogs_pkbuf_t *pkbuf)
+{
+    int i;
+
+    ogs_gtp2_header_t gtp_hdesc;
+    ogs_gtp2_extension_header_t ext_hdesc;
+
+    ogs_assert(header_desc);
+
+    memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));
+    memset(&ext_hdesc, 0, sizeof(ext_hdesc));
+
+    gtp_hdesc.flags = header_desc->flags;
+    gtp_hdesc.type = header_desc->type;
+
+    i = 0;
+
+    if (header_desc->qos_flow_identifier) {
+        ext_hdesc.array[i].type =
+            OGS_GTP2_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
+        ext_hdesc.array[i].len = 1;
+        ext_hdesc.array[i].pdu_type = header_desc->pdu_type;
+        ext_hdesc.array[i].qos_flow_identifier =
+            header_desc->qos_flow_identifier;
+        i++;
+    }
+
+    if (header_desc->udp.presence == true) {
+        ext_hdesc.array[i].type = OGS_GTP2_EXTENSION_HEADER_TYPE_UDP_PORT;
+        ext_hdesc.array[i].len = 1;
+        ext_hdesc.array[i].udp_port = htobe16(header_desc->udp.port);
+        i++;
+    }
+
+    if (header_desc->pdcp_number_presence == true) {
+        ext_hdesc.array[i].type = OGS_GTP2_EXTENSION_HEADER_TYPE_PDCP_NUMBER;
+        ext_hdesc.array[i].len = 1;
+        ext_hdesc.array[i].pdcp_number = htobe16(header_desc->pdcp_number);
+        i++;
+    }
+
+    ogs_gtp2_fill_header(&gtp_hdesc, &ext_hdesc, pkbuf);
+}
+
 void ogs_gtp2_fill_header(
         ogs_gtp2_header_t *gtp_hdesc, ogs_gtp2_extension_header_t *ext_hdesc,
         ogs_pkbuf_t *pkbuf)
@@ -174,10 +219,7 @@ void ogs_gtp2_fill_header(
          * - The Error Indication message where the Tunnel Endpoint Identifier
          *   shall be set to all zeros.
          */
-        ogs_assert(gtp_hdesc->teid == 0);
     }
-
-    gtp_h->teid = htobe32(gtp_hdesc->teid);
 
     /*
      * TS29.281 5.1 General format in GTP-U header

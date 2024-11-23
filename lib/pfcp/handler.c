@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -226,11 +226,13 @@ bool ogs_pfcp_up_handle_association_setup_response(
 }
 
 bool ogs_pfcp_up_handle_pdr(
-        ogs_pfcp_pdr_t *pdr, uint8_t type,
+        ogs_pfcp_pdr_t *pdr, uint8_t type, int len,
         ogs_gtp2_header_desc_t *recvhdr, ogs_pkbuf_t *sendbuf,
         ogs_pfcp_user_plane_report_t *report)
 {
     ogs_pfcp_far_t *far = NULL;
+
+    ogs_gtp2_header_desc_t sendhdr;
     bool buffering;
 
     ogs_assert(sendbuf);
@@ -241,36 +243,109 @@ bool ogs_pfcp_up_handle_pdr(
     far = pdr->far;
     ogs_assert(far);
 
-    memset(report, 0, sizeof(*report));
-
     buffering = false;
 
+    memset(report, 0, sizeof(*report));
+
+    if ((pdr->src_if == OGS_PFCP_INTERFACE_CORE &&
+         pdr->src_if_type_presence == true &&
+         pdr->src_if_type ==
+             OGS_PFCP_3GPP_INTERFACE_TYPE_N9_FOR_ROAMING) ||
+        (far->dst_if == OGS_PFCP_INTERFACE_CORE &&
+         far->dst_if_type_presence == true &&
+         far->dst_if_type ==
+             OGS_PFCP_3GPP_INTERFACE_TYPE_N9_FOR_ROAMING)) {
+    /*
+     * <Home Routed Roaming>
+     * - VPLMN
+     * o DL
+     *  PDR->src : Core/N9-for-roaming
+     *  FAT->dst : Access/N3
+     * o UL
+     *  PDR->src : Access/N3
+     *  FAT->dst : Core/N9-for-roaming
+     * - HPLMN
+     * o DL
+     *  PDR->src : Core/N6
+     *  FAT->dst : Access/N9-for-roaming
+     * o UL
+     *  PDR->src : Access/N9-for-roaming
+     *  FAT->dst : Core/N6
+     */
+
+    /*
+     * For Home Routed Roaming, when the UPF is located in the VPLMN,
+     * only the TEID in the GTP header is modified. Since the TEID
+     * can only exist in the Outer Header Creator during the Activation
+     * process, it is not filled in at this stage.
+     *
+     * The TEID might be determined later due to buffering, so it is
+     * filled in during the GPDU transmission stage.
+     */
+        ogs_pkbuf_push(sendbuf, len);
+
+    } else {
+    /*
+     * <Normal>
+     * o DL
+     *  PDR->src : Core/N6
+     *  FAT->dst : Access/N3
+     * o UL
+     *  PDR->src : Access/N3
+     *  FAT->dst : Core/N6
+     * o CP2UP
+     *  PDR->src : CP-function
+     *  FAT->dst : Access/N3
+     * o UP2CP
+     *  PDR->src : Access/N3
+     *  FAT->dst : CP-function
+     *
+     * <Indirect>
+     *  PDR->src : Access/UL-Forwarding
+     *  FAT->dst : Access/DL-Forwarding
+     */
+        memset(&sendhdr, 0, sizeof(sendhdr));
+
+        sendhdr.type = type;
+        sendhdr.teid = far->outer_header_creation.teid;
+
+        if (pdr->qer && pdr->qer->qfi) {
+            sendhdr.pdu_type =
+                OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION;
+            sendhdr.qos_flow_identifier = pdr->qer->qfi;
+        }
+
+        if (recvhdr) {
+            /*
+             * Issue #2584
+             * Discussion #2477
+             *
+             * Forward PDCP Number via Indirect Tunnel during Handover
+             */
+            if (recvhdr->pdcp_number_presence == true) {
+                sendhdr.pdcp_number_presence = recvhdr->pdcp_number_presence;
+                sendhdr.pdcp_number = recvhdr->pdcp_number;
+            }
+
+            if (recvhdr->udp.presence == true) {
+                sendhdr.udp.presence = recvhdr->udp.presence;
+                sendhdr.udp.port = recvhdr->udp.port;
+            }
+        }
+
+        ogs_gtp2_encapsulate_header(&sendhdr, sendbuf);
+
+        ogs_trace("ENCAP GTP-U[%d], TEID[0x%x]", sendhdr.type, sendhdr.teid);
+    }
+
     if (!far->gnode) {
+
         buffering = true;
 
     } else {
         if (far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) {
-            ogs_gtp2_header_desc_t sendhdr;
 
-            /* Forward packet */
-            memset(&sendhdr, 0, sizeof(sendhdr));
-            sendhdr.type = type;
-
-            if (recvhdr) {
-                /*
-                 * Issue #2584
-                 * Discussion #2477
-                 *
-                 * Forward PDCP Number via Indirect Tunnel during Handover
-                 */
-                if (recvhdr->pdcp_number_presence == true) {
-                    sendhdr.pdcp_number_presence =
-                        recvhdr->pdcp_number_presence;
-                    sendhdr.pdcp_number = recvhdr->pdcp_number;
-                }
-            }
-
-            ogs_pfcp_send_g_pdu(pdr, &sendhdr, sendbuf);
+            ogs_pfcp_send_gtpu(pdr, sendbuf);
 
         } else if (far->apply_action & OGS_PFCP_APPLY_ACTION_BUFF) {
 
@@ -284,14 +359,14 @@ bool ogs_pfcp_up_handle_pdr(
 
     if (buffering == true) {
 
-        if (far->num_of_buffered_packet == 0) {
+        if (far->num_of_buffered_gtpu == 0) {
             /* Only the first time a packet is buffered,
              * it reports downlink notifications. */
             report->type.downlink_data_report = 1;
         }
 
-        if (far->num_of_buffered_packet < OGS_MAX_NUM_OF_PACKET_BUFFER) {
-            far->buffered_packet[far->num_of_buffered_packet++] = sendbuf;
+        if (far->num_of_buffered_gtpu < OGS_MAX_NUM_OF_GTPU_BUFFER) {
+            far->buffered_gtpu[far->num_of_buffered_gtpu++] = sendbuf;
         } else {
             ogs_pkbuf_free(sendbuf);
         }

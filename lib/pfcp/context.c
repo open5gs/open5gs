@@ -1648,8 +1648,8 @@ void ogs_pfcp_far_remove(ogs_pfcp_far_t *far)
     if (far->dnn)
         ogs_free(far->dnn);
 
-    for (i = 0; i < far->num_of_buffered_packet; i++)
-        ogs_pkbuf_free(far->buffered_packet[i]);
+    for (i = 0; i < far->num_of_buffered_gtpu; i++)
+        ogs_pkbuf_free(far->buffered_gtpu[i]);
 
     if (far->id_node)
         ogs_pool_free(&far->sess->far_id_pool, far->id_node);

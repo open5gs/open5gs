@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -189,6 +189,7 @@ int test_gtpu_send(
 
     gnode.addr.ogs_sin_port = htobe16(OGS_GTPV1_U_UDP_PORT);
     gnode.sock = node->sock;
+    ogs_assert(gnode.sock);
 
     if (bearer->qfi) {
         if (sess->upf_n3_ip.ipv4) {
@@ -220,7 +221,14 @@ int test_gtpu_send(
         ogs_assert_if_reached();
     }
 
-    return ogs_gtp2_send_user_plane(&gnode, header_desc, pkbuf);
+    ogs_gtp2_encapsulate_header(header_desc, pkbuf);
+
+    ogs_assert(OGS_OK == ogs_gtp_send_with_teid(
+            gnode.sock, pkbuf, header_desc->teid, &gnode.addr));
+
+    ogs_pkbuf_free(pkbuf);
+
+    return OGS_OK;
 }
 
 int test_gtpu_send_ping(
@@ -464,6 +472,45 @@ int test_gtpu_send_slacc_rs_with_unspecified_source_address(
     return test_gtpu_send(node, bearer, &header_desc, pkbuf);
 }
 
+int test_gtpu_send_end_marker(
+        ogs_socknode_t *node, test_bearer_t *bearer)
+{
+    test_sess_t *sess = NULL;
+
+    ogs_gtp2_header_desc_t header_desc;
+
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_GTPV1U_5GC_HEADER_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_reserve(pkbuf, OGS_GTPV1U_5GC_HEADER_LEN);
+
+    memset(&header_desc, 0, sizeof(header_desc));
+
+    header_desc.type = OGS_GTPU_MSGTYPE_END_MARKER;
+
+    if (bearer->qfi) {
+        /* 5GC */
+        header_desc.teid = sess->upf_n3_teid;
+        header_desc.pdu_type =
+            OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
+        header_desc.qos_flow_identifier = bearer->qfi;
+
+    } else if (bearer->ebi) {
+        /* EPC */
+        header_desc.teid = bearer->sgw_s1u_teid;
+
+    } else {
+        ogs_fatal("No QFI[%d] and EBI[%d]", bearer->qfi, bearer->ebi);
+        ogs_assert_if_reached();
+    }
+
+    return test_gtpu_send(node, bearer, &header_desc, pkbuf);
+}
 
 int test_gtpu_send_error_indication(
         ogs_socknode_t *node, test_bearer_t *bearer)

@@ -46,7 +46,7 @@ bool ogs_pfcp_up_handle_association_setup_response(
         ogs_pfcp_association_setup_response_t *req);
 
 bool ogs_pfcp_up_handle_pdr(
-        ogs_pfcp_pdr_t *pdr, uint8_t type,
+        ogs_pfcp_pdr_t *pdr, uint8_t type, int len,
         ogs_gtp2_header_desc_t *recvhdr, ogs_pkbuf_t *recvbuf,
         ogs_pfcp_user_plane_report_t *report);
 bool ogs_pfcp_up_handle_error_indication(

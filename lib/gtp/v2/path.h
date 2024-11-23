@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -29,11 +29,6 @@ extern "C" {
 #endif
 
 typedef struct ogs_gtp_xact_s ogs_gtp_xact_t;
-
-int ogs_gtp2_send_user_plane(
-        ogs_gtp_node_t *gnode,
-        ogs_gtp2_header_desc_t *header_desc,
-        ogs_pkbuf_t *pkbuf);
 
 ogs_pkbuf_t *ogs_gtp2_handle_echo_req(ogs_pkbuf_t *pkb);
 void ogs_gtp2_send_error_message(

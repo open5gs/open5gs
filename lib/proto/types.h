@@ -31,7 +31,7 @@ extern "C" {
 #define OGS_MAX_NUM_OF_SESS             4   /* Num of APN(Session) per UE */
 #define OGS_MAX_NUM_OF_BEARER           4   /* Num of Bearer per Session */
 #define OGS_BEARER_PER_UE               8   /* Num of Bearer per UE */
-#define OGS_MAX_NUM_OF_PACKET_BUFFER    64  /* Num of PacketBuffer per UE */
+#define OGS_MAX_NUM_OF_GTPU_BUFFER      64  /* Num of GTPU Buffer per UE */
 
 /*
  * TS24.008

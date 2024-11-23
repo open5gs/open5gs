@@ -2054,7 +2054,10 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
 
     ul_pdr->src_if_type_presence = true;
-    ul_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
+    if (HOME_ROUTED_ROAMING_IN_HSMF(sess))
+        ul_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N9_FOR_ROAMING;
+    else
+        ul_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
 
     ul_pdr->outer_header_removal_len = 1;
     if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
@@ -2083,7 +2086,10 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     dl_far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
 
     dl_far->dst_if_type_presence = true;
-    dl_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
+    if (HOME_ROUTED_ROAMING_IN_HSMF(sess))
+        dl_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N9_FOR_ROAMING;
+    else
+        dl_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
 
     ogs_pfcp_pdr_associate_far(dl_pdr, dl_far);
 
@@ -2178,6 +2184,9 @@ smf_bearer_t *smf_vcn_tunnel_add(smf_sess_t *sess)
 
     dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
 
+    dl_pdr->src_if_type_presence = true;
+    dl_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N9_FOR_ROAMING;
+
     ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(ul_pdr);
     qos_flow->ul_pdr = ul_pdr;
@@ -2187,6 +2196,9 @@ smf_bearer_t *smf_vcn_tunnel_add(smf_sess_t *sess)
     ogs_assert(ul_pdr->apn);
 
     ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
+
+    ul_pdr->src_if_type_presence = true;
+    ul_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
 
     /* FAR */
     dl_far = ogs_pfcp_far_add(&sess->pfcp);
@@ -2198,6 +2210,10 @@ smf_bearer_t *smf_vcn_tunnel_add(smf_sess_t *sess)
     ogs_assert(dl_far->apn);
 
     dl_far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+
+    dl_far->dst_if_type_presence = true;
+    dl_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
+
     ogs_pfcp_pdr_associate_far(dl_pdr, dl_far);
 
     ogs_assert(sess->pfcp.bar);
@@ -2213,6 +2229,10 @@ smf_bearer_t *smf_vcn_tunnel_add(smf_sess_t *sess)
     ogs_assert(ul_far->apn);
 
     ul_far->dst_if = OGS_PFCP_INTERFACE_CORE;
+
+    ul_far->dst_if_type_presence = true;
+    ul_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N9_FOR_ROAMING;
+
     ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
 
     ul_far->apply_action =
@@ -2478,7 +2498,10 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     up2cp_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
 
     up2cp_pdr->src_if_type_presence = true;
-    up2cp_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
+    if (HOME_ROUTED_ROAMING_IN_HSMF(sess))
+        up2cp_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N9_FOR_ROAMING;
+    else
+        up2cp_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
 
     up2cp_pdr->outer_header_removal_len = 1;
     if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {

@@ -60,8 +60,8 @@ void ogs_app_config_final(void)
 
 static void recalculate_pool_size(void)
 {
-    ogs_app()->pool.packet =
-        global_conf.max.ue * OGS_MAX_NUM_OF_PACKET_BUFFER;
+    ogs_app()->pool.gtpu =
+        global_conf.max.ue * OGS_MAX_NUM_OF_GTPU_BUFFER;
 
 #define MAX_NUM_OF_TUNNEL       3   /* Num of Tunnel per Bearer */
     ogs_app()->pool.sess = global_conf.max.ue * OGS_MAX_NUM_OF_SESS;
