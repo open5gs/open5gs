@@ -69,6 +69,7 @@ typedef struct ogs_global_conf_s {
         int multicast;
 
         int use_openair;
+        int use_upg_vpp;
         int no_ipv4v6_local_addr_in_packet_filter;
 
         int no_pfcp_rr_select;

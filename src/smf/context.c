@@ -2268,6 +2268,7 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     ogs_pfcp_far_t *up2cp_far = NULL;
 
     ogs_assert(sess);
+    ogs_assert(sess->session.name);
 
     smf_sess_delete_cp_up_data_forwarding(sess);
 
@@ -2275,15 +2276,10 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     ogs_assert(cp2up_pdr);
     sess->cp2up_pdr = cp2up_pdr;
 
-#if 0
-    /*
-     * DEPRECATED:
-     * In PDR, no need to distinguish the Network Instance from CP to UP.
-     */
-    ogs_assert(sess->session.name);
-    cp2up_pdr->apn = ogs_strdup(sess->session.name);
-    ogs_assert(cp2up_pdr->apn);
-#endif
+    if (ogs_global_conf()->parameter.use_upg_vpp == true) {
+        cp2up_pdr->apn = ogs_strdup(sess->session.name);
+        ogs_assert(cp2up_pdr->apn);
+    }
 
     cp2up_pdr->src_if = OGS_PFCP_INTERFACE_CP_FUNCTION;
 
@@ -2306,7 +2302,6 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     ogs_assert(up2cp_pdr);
     sess->up2cp_pdr = up2cp_pdr;
 
-    ogs_assert(sess->session.name);
     up2cp_pdr->apn = ogs_strdup(sess->session.name);
     ogs_assert(up2cp_pdr->apn);
 
@@ -2344,15 +2339,10 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     ogs_assert(up2cp_far);
     sess->up2cp_far = up2cp_far;
 
-    ogs_assert(sess->session.name);
-#if 0
-    /*
-     * DEPRECATED:
-     * In FAR, no need to distinguish the Network Instance from CP to UP.
-     */
-    up2cp_far->apn = ogs_strdup(sess->session.name);
-    ogs_assert(up2cp_far->apn);
-#endif
+    if (ogs_global_conf()->parameter.use_upg_vpp == true) {
+        up2cp_far->apn = ogs_strdup(sess->session.name);
+        ogs_assert(up2cp_far->apn);
+    }
 
     up2cp_far->dst_if = OGS_PFCP_INTERFACE_CP_FUNCTION;
     ogs_pfcp_pdr_associate_far(up2cp_pdr, up2cp_far);
