@@ -299,6 +299,7 @@ typedef struct ogs_sbi_subscription_data_s {
     struct {
         OpenAPI_nf_type_e nf_type;          /* nfType */
         char *service_name;                 /* ServiceName */
+        char *nf_instance_id;               /* NF Instance Id */
     } subscr_cond;
 
     uint64_t requester_features;

@@ -2514,6 +2514,9 @@ void ogs_sbi_subscription_data_remove(
 
     if (subscription_data->subscr_cond.service_name)
         ogs_free(subscription_data->subscr_cond.service_name);
+        
+    if (subscription_data->subscr_cond.nf_instance_id)
+        ogs_free(subscription_data->subscr_cond.nf_instance_id);
 
     if (subscription_data->t_validity)
         ogs_timer_delete(subscription_data->t_validity);

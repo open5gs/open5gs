@@ -386,6 +386,9 @@ bool nrf_nnrf_handle_nf_status_subscribe(
         else if (SubscrCond->service_name)
             subscription_data->subscr_cond.service_name =
                 ogs_strdup(SubscrCond->service_name);
+        else if (SubscrCond->nf_instance_id)
+            subscription_data->subscr_cond.nf_instance_id = 
+                ogs_strdup(SubscrCond->nf_instance_id);
         else {
             ogs_error("No SubscrCond");
             ogs_sbi_subscription_data_remove(subscription_data);
