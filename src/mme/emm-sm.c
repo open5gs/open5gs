@@ -667,7 +667,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             } else {
 
                 if (e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage) {
-                    ogs_debug("    Iniital UE Message");
+                    ogs_debug("    Initial UE Message");
                     if (mme_ue->nas_eps.update.active_flag) {
 
     /*
