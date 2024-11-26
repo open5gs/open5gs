@@ -1252,7 +1252,6 @@ ogs_app_slice_conf_t *ogs_app_slice_conf_add(
 
     ogs_assert(policy_conf);
     ogs_assert(s_nssai);
-    ogs_assert(s_nssai->sst);
 
     ogs_pool_alloc(&slice_conf_pool, &slice_conf);
     if (!slice_conf) {
@@ -1283,7 +1282,6 @@ ogs_app_slice_conf_t *ogs_app_slice_conf_find_by_s_nssai(
 
     ogs_assert(policy_conf);
     ogs_assert(s_nssai);
-    ogs_assert(s_nssai->sst);
 
     ogs_list_for_each(&policy_conf->slice_list, slice_conf) {
         if (slice_conf->data.s_nssai.sst == s_nssai->sst &&

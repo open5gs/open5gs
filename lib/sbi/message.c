@@ -613,11 +613,6 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         char *v = NULL;
         cJSON *item = NULL;
 
-        if (!message->param.s_nssai.sst) {
-            ogs_error("No S-NSSAI SST");
-            ogs_sbi_request_free(request);
-            return NULL;
-        }
         if (!message->param.roaming_indication) {
             ogs_error("No Roaming Indication");
             ogs_sbi_request_free(request);
