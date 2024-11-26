@@ -132,12 +132,6 @@ static int parse_slice_conf(
                 const char *v = ogs_yaml_iter_value(&slice_iter);
                 if (v) {
                     s_nssai.sst = atoi(v);
-                    if (s_nssai.sst == 1 || s_nssai.sst == 2 ||
-                            s_nssai.sst == 3 || s_nssai.sst == 4) {
-                    } else {
-                        ogs_error("Unknown SST [%d]", s_nssai.sst);
-                        return OGS_ERROR;
-                    }
                 }
             } else if (!strcmp(slice_key, OGS_SD_STRING)) {
                 const char *v = ogs_yaml_iter_value(&slice_iter);
@@ -147,18 +141,13 @@ static int parse_slice_conf(
             }
         }
 
-        if (s_nssai.sst) {
-            slice_conf = ogs_app_slice_conf_add(policy_conf, &s_nssai);
-            if (!slice_conf) {
-                ogs_error("ogs_app_slice_conf_add() failed [SST:%d,SD:0x%x]",
-                        s_nssai.sst, s_nssai.sd.v);
-                return OGS_ERROR;
-            }
-            slice_conf->data.default_indicator = default_indicator;
-        } else {
-            ogs_error("No SST");
+        slice_conf = ogs_app_slice_conf_add(policy_conf, &s_nssai);
+        if (!slice_conf) {
+            ogs_error("ogs_app_slice_conf_add() failed [SST:%d,SD:0x%x]",
+                    s_nssai.sst, s_nssai.sd.v);
             return OGS_ERROR;
         }
+        slice_conf->data.default_indicator = default_indicator;
 
         OGS_YAML_ARRAY_RECURSE(&slice_array, &slice_iter);
         while (ogs_yaml_iter_next(&slice_iter)) {

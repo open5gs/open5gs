@@ -115,11 +115,9 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     AscReqData.ev_subsc = &evSubsc;
 
     memset(&sNssai, 0, sizeof(sNssai));
-    if (sess->s_nssai.sst) {
-        sNssai.sst = sess->s_nssai.sst;
-        sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
-        AscReqData.slice_info = &sNssai;
-    }
+    sNssai.sst = sess->s_nssai.sst;
+    sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
+    AscReqData.slice_info = &sNssai;
 
     AscReqData.spon_status = OpenAPI_sponsoring_status_SPONSOR_DISABLED;
 
@@ -709,11 +707,10 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
     AscReqData.ev_subsc = &evSubsc;
 
     memset(&sNssai, 0, sizeof(sNssai));
-    if (sess->s_nssai.sst) {
-        sNssai.sst = sess->s_nssai.sst;
-        sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
-        AscReqData.slice_info = &sNssai;
-    }
+
+    sNssai.sst = sess->s_nssai.sst;
+    sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
+    AscReqData.slice_info = &sNssai;
 
     AscReqData.spon_status = OpenAPI_sponsoring_status_SPONSOR_DISABLED;
 

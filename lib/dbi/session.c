@@ -109,11 +109,6 @@ int ogs_dbi_session_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
                     }
                 }
 
-                if (!sst) {
-                    ogs_error("No SST");
-                    continue;
-                }
-
                 if (s_nssai && s_nssai->sst != sst) continue;
 
                 if (s_nssai &&
