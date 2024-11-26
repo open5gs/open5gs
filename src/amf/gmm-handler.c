@@ -1287,6 +1287,9 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                         if (ie.sst == amf_ue->slice[i].s_nssai.sst &&
                             ie.sd.v == amf_ue->slice[i].s_nssai.sd.v) {
 
+                            sess->mapped_hplmn.sst = ie.mapped_hplmn_sst;
+                            sess->mapped_hplmn.sd.v = ie.mapped_hplmn_sd.v;
+
                             /* PASS */
 
                         } else {
