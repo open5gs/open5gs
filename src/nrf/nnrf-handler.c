@@ -930,9 +930,6 @@ bool nrf_nnrf_handle_nf_discover(
         if (!NFProfile) {
             ogs_error("No NFProfile");
             continue;
-        } else {
-            //This line is added to not include nfProfileChangesSupportInd in a discovery response which should not have it    
-        	NFProfile->is_nf_profile_changes_support_ind = false;
         }
 
         OpenAPI_list_add(SearchResult->nf_instances, NFProfile);
