@@ -80,6 +80,8 @@ typedef struct ogs_sbi_context_s {
         } client;
     } tls;
 
+    const char *source_interface;
+
     ogs_list_t server_list;
     ogs_list_t client_list;
 
