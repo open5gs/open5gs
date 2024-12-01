@@ -168,6 +168,11 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
     ogs_assert(ran_ue);
     ogs_assert(nasPdu);
 
+    if (nasPdu->size == 0) {
+        ogs_error("Empty NAS PDU");
+        return OGS_ERROR;
+    }
+
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
