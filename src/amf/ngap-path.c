@@ -170,6 +170,7 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
 
     if (nasPdu->size == 0) {
         ogs_error("Empty NAS PDU");
+        ran_ue_remove(ran_ue);
         return OGS_ERROR;
     }
 

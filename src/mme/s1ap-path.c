@@ -173,6 +173,12 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     ogs_assert(enb_ue);
     ogs_assert(nasPdu);
 
+    if (nasPdu->size == 0) {
+        ogs_error("Empty NAS PDU");
+        enb_ue_remove(enb_ue);
+        return OGS_ERROR;
+    }
+
     mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM.
