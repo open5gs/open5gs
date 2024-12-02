@@ -95,7 +95,17 @@ void sgwu_sxa_handle_session_establishment_request(
             pdr = created_pdr[i];
             ogs_assert(pdr);
 
-            if (pdr->f_teid_len)
+    /*
+     * Only perform TEID restoration via swap when F-TEID.ch is false.
+     *
+     * When F-TEID.ch is false, it means the TEID has already been assigned, and
+     * the restoration process can safely perform the swap.
+     *
+     * If F-TEID.ch is true, it indicates that the UPF needs to assign
+     * a new TEID for the first time, so performing a swap is not appropriate
+     * in this case.
+     */
+            if (pdr->f_teid.ch == false && pdr->f_teid_len)
                 ogs_pfcp_pdr_swap_teid(pdr);
         }
         restoration_indication = true;
