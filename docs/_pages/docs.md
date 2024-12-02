@@ -43,6 +43,7 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [SMF Code Explanation](https://medium.com/@aditya.koranga/open5gs-smf-code-explanation-with-flow-charts-a3b3cd38c991)
 
 - @infinitydon
+  - [OAI's O-RAN Integration With Open5gs 5G Core](https://futuredon.medium.com/integrating-disaggregated-openairinterface-o-ran-components-with-open5gs-5g-core-76e5deac1730)
   - [Open5GS on Amazon Elastic Kubernetes Service](https://aws.amazon.com/blogs/opensource/open-source-mobile-core-network-implementation-on-amazon-elastic-kubernetes-service/)
   - [Kubernetes Open5GS Deployment](https://dev.to/infinitydon/virtual-4g-simulation-using-kubernetes-and-gns3-3b7k?fbclid=IwAR1p99h13a-mCfejanbBQe0H0-jp5grXkn5mWf1WrTHf47UtegB2-UHGGZQ)
   - [5G Core SBI mTLS Using External Certificate PKI](https://futuredon.medium.com/5g-core-sbi-mtls-using-external-certificate-pki-4ffc02ac7728)
