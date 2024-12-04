@@ -3765,7 +3765,12 @@ int ogs_nas_5gs_encode_priority_indicator(ogs_pkbuf_t *pkbuf, ogs_nas_priority_i
 /* 9.11.3.9A 5GS update type
  * O TLV 3 */
 int ogs_nas_5gs_decode_5gs_update_type(ogs_nas_5gs_update_type_t *update_type, ogs_pkbuf_t *pkbuf)
-{
+{    
+    if (pkbuf->len == 0) {
+       ogs_error("Invalid buffer length: %d", pkbuf->len);
+       return -1;
+    }
+    
     int size = 0;
     ogs_nas_5gs_update_type_t *source = (ogs_nas_5gs_update_type_t *)pkbuf->data;
 
