@@ -299,13 +299,6 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
-    if (!sliceInfo->sst) {
-        strerror = ogs_msprintf("[%s:%d] No sliceInfo->sst",
-                pcf_ue->supi, sess->psi);
-        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-        goto cleanup;
-    }
-
     servingNetwork = SmPolicyContextData->serving_network;
     if (servingNetwork) {
         if (!servingNetwork->mcc) {

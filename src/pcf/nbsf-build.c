@@ -127,10 +127,6 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
         }
     }
 
-    if (!sess->s_nssai.sst) {
-        ogs_error("No SST");
-        goto end;
-    }
     if (PcfIpEndPointList->count)
         PcfBinding.pcf_ip_end_points = PcfIpEndPointList;
     else

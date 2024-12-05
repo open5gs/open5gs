@@ -285,7 +285,6 @@ nssf_nsi_t *nssf_nsi_add(char *nrf_id, uint8_t sst, ogs_uint24_t sd)
     nssf_nsi_t *nsi = NULL;
 
     ogs_assert(nrf_id);
-    ogs_assert(sst);
 
     ogs_pool_alloc(&nssf_nsi_pool, &nsi);
     ogs_assert(nsi);
