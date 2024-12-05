@@ -547,60 +547,63 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
             SWITCH(sbi_message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
                 SWITCH(sbi_message->h.resource.component[2])
-                    CASE(OGS_SBI_RESOURCE_NAME_TRANSFER)
+                CASE(OGS_SBI_RESOURCE_NAME_TRANSFER)
 
-                        r = OGS_ERROR;
+                    r = OGS_ERROR;
 
-                        if (sbi_message->res_status == OGS_SBI_HTTP_STATUS_OK) {
-                            amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_TRANSFER_NEW_AMF_STATE;
-                            r = amf_namf_comm_handle_ue_context_transfer_response(
-                                    sbi_message, amf_ue);
-                            if (r != OGS_OK) {
-                                ogs_error("failed to handle "
-                                        "UE_CONTEXT_TRANSFER response");
-                                amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_INITIAL_STATE;
-                            }
-                        } else {
-                            ogs_error("[%s] HTTP response error [%d]",
-                                amf_ue->suci, sbi_message->res_status);
-                            amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_INITIAL_STATE;
-                        }
-
+                    if (sbi_message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                        amf_ue->amf_ue_context_transfer_state =
+                            UE_CONTEXT_TRANSFER_NEW_AMF_STATE;
+                        r = amf_namf_comm_handle_ue_context_transfer_response(
+                                sbi_message, amf_ue);
                         if (r != OGS_OK) {
-                            if (!(AMF_UE_HAVE_SUCI(amf_ue) ||
-                                    AMF_UE_HAVE_SUPI(amf_ue))) {
-                                CLEAR_AMF_UE_TIMER(amf_ue->t3570);
-                                r = nas_5gs_send_identity_request(amf_ue);
-                                ogs_expect(r == OGS_OK);
-                                ogs_assert(r != OGS_ERROR);
-                                break;
-                            }
+                            ogs_error("failed to handle "
+                                    "UE_CONTEXT_TRANSFER response");
+                            amf_ue->amf_ue_context_transfer_state =
+                                UE_CONTEXT_INITIAL_STATE;
                         }
+                    } else {
+                        ogs_error("[%s] HTTP response error [%d]",
+                            amf_ue->suci, sbi_message->res_status);
+                        amf_ue->amf_ue_context_transfer_state =
+                            UE_CONTEXT_INITIAL_STATE;
+                    }
 
-                        xact_count = amf_sess_xact_count(amf_ue);
-                        amf_sbi_send_release_all_sessions(
-                                ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
-                                AMF_RELEASE_SM_CONTEXT_NO_STATE);
-
-                        if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
-                            amf_sess_xact_count(amf_ue) == xact_count) {
-                            r = amf_ue_sbi_discover_and_send(
-                                    OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
-                                    amf_nausf_auth_build_authenticate,
-                                    amf_ue, 0, NULL);
+                    if (r != OGS_OK) {
+                        if (!(AMF_UE_HAVE_SUCI(amf_ue) ||
+                                AMF_UE_HAVE_SUPI(amf_ue))) {
+                            CLEAR_AMF_UE_TIMER(amf_ue->t3570);
+                            r = nas_5gs_send_identity_request(amf_ue);
                             ogs_expect(r == OGS_OK);
                             ogs_assert(r != OGS_ERROR);
+                            break;
                         }
+                    }
 
-                        OGS_FSM_TRAN(s, &gmm_state_authentication);
-                        break;
+                    xact_count = amf_sess_xact_count(amf_ue);
+                    amf_sbi_send_release_all_sessions(
+                            ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
+                            AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
-                    DEFAULT
-                        ogs_error("Invalid resource name [%s]",
-                                sbi_message->h.resource.component[2]);
-                        ogs_assert_if_reached();
-                    END
+                    if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
+                        amf_sess_xact_count(amf_ue) == xact_count) {
+                        r = amf_ue_sbi_discover_and_send(
+                                OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
+                                amf_nausf_auth_build_authenticate,
+                                amf_ue, 0, NULL);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                    }
+
+                    OGS_FSM_TRAN(s, &gmm_state_authentication);
                     break;
+
+                DEFAULT
+                    ogs_error("Invalid resource name [%s]",
+                            sbi_message->h.resource.component[2]);
+                    ogs_assert_if_reached();
+                END
+                break;
 
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
@@ -1162,6 +1165,75 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
 
                 DEFAULT
                     ogs_error("Unknown method [%s]", sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
+                SWITCH(sbi_message->h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_TRANSFER)
+
+                    r = OGS_ERROR;
+
+                    if (sbi_message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                        amf_ue->amf_ue_context_transfer_state =
+                            UE_CONTEXT_TRANSFER_NEW_AMF_STATE;
+                        r = amf_namf_comm_handle_ue_context_transfer_response(
+                                sbi_message, amf_ue);
+                        if (r != OGS_OK) {
+                            ogs_error("failed to handle "
+                                    "UE_CONTEXT_TRANSFER response");
+                            amf_ue->amf_ue_context_transfer_state =
+                                UE_CONTEXT_INITIAL_STATE;
+                        }
+                    } else {
+                        ogs_error("[%s] HTTP response error [%d]",
+                            amf_ue->suci, sbi_message->res_status);
+                        amf_ue->amf_ue_context_transfer_state =
+                            UE_CONTEXT_INITIAL_STATE;
+                    }
+
+                    if (r != OGS_OK) {
+                        if (!(AMF_UE_HAVE_SUCI(amf_ue) ||
+                                AMF_UE_HAVE_SUPI(amf_ue))) {
+                            CLEAR_AMF_UE_TIMER(amf_ue->t3570);
+                            r = nas_5gs_send_identity_request(amf_ue);
+                            ogs_expect(r == OGS_OK);
+                            ogs_assert(r != OGS_ERROR);
+                            break;
+                        }
+                    }
+
+                    xact_count = amf_sess_xact_count(amf_ue);
+                    amf_sbi_send_release_all_sessions(
+                            ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
+                            AMF_RELEASE_SM_CONTEXT_NO_STATE);
+
+                    if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
+                        amf_sess_xact_count(amf_ue) == xact_count) {
+                        r = amf_ue_sbi_discover_and_send(
+                                OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
+                                amf_nausf_auth_build_authenticate,
+                                amf_ue, 0, NULL);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                    }
+
+                    OGS_FSM_TRAN(s, &gmm_state_authentication);
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid resource name [%s]",
+                            sbi_message->h.resource.component[2]);
                     ogs_assert_if_reached();
                 END
                 break;
