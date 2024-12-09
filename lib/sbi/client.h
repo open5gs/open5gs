@@ -82,6 +82,8 @@ typedef struct ogs_sbi_client_s {
     bool insecure_skip_verify;
     char *cacert, *private_key, *cert;
 
+    char *source_interface;
+
     char *fqdn;
     uint16_t fqdn_port;
     ogs_sockaddr_t  *addr;

@@ -85,6 +85,13 @@ scp:
 #      nrf:
 #        - uri: http://127.0.0.10:7777
 #
+#  o Specify source address or interface for SBI client
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#          source_interface: 127.0.0.200
+#
 ################################################################################
 # HTTPS scheme with TLS
 ################################################################################
