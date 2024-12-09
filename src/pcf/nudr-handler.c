@@ -203,9 +203,6 @@ bool pcf_nudr_dr_handle_query_sm_data(
 
     SWITCH(recvmsg->h.resource.component[3])
     CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
-        ogs_sbi_nf_instance_t *nf_instance = NULL;
-        ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
-
         if (!recvmsg->SmPolicyData) {
             strerror = ogs_msprintf("[%s:%d] No SmPolicyData",
                     pcf_ue->supi, sess->psi);
@@ -213,34 +210,12 @@ bool pcf_nudr_dr_handle_query_sm_data(
             goto cleanup;
         }
 
-        service_type = OGS_SBI_SERVICE_TYPE_NPCF_POLICYAUTHORIZATION;
-
-        nf_instance = OGS_SBI_GET_NF_INSTANCE(
-                sess->sbi.service_type_array[service_type]);
-        if (!nf_instance) {
-            OpenAPI_nf_type_e requester_nf_type =
-                        NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);
-            ogs_assert(requester_nf_type);
-            nf_instance = ogs_sbi_nf_instance_find_by_service_type(
-                            service_type, requester_nf_type);
-            if (nf_instance)
-                OGS_SBI_SETUP_NF_INSTANCE(
-                        sess->sbi.service_type_array[service_type],
-                        nf_instance);
-        }
-
-        if (nf_instance) {
-            r = pcf_sess_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
-                        pcf_nbsf_management_build_register,
-                        sess, stream, nf_instance);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-        } else {
-            r = pcf_sess_sbi_discover_only(sess, stream, service_type);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-        }
+        r = pcf_sess_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
+                    pcf_nbsf_management_build_register,
+                    sess, stream, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
 
         return true;
 
