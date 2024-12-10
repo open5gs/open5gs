@@ -3116,7 +3116,10 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
             /* TODO */
             break;
         case OGS_PCO_ID_MS_SUPPORT_LOCAL_ADDR_TFT_INDICATOR:
-            /* TODO */
+            smf.ids[smf.num_of_id].id = ue.ids[i].id;
+            smf.ids[smf.num_of_id].len = 0;
+            smf.ids[smf.num_of_id].data = 0;
+            smf.num_of_id++;
             break;
         case OGS_PCO_ID_P_CSCF_RE_SELECTION_SUPPORT:
             /* TODO */
