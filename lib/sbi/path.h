@@ -38,9 +38,10 @@ bool ogs_sbi_send_request_to_nf_instance(
 bool ogs_sbi_send_request_to_client(
         ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
         ogs_sbi_request_t *request, void *data);
-bool ogs_sbi_send_notification_request(
-        ogs_sbi_service_type_e service_type,
+bool ogs_sbi_send_request_to_nrf(
+        ogs_sbi_service_type_e nrf_service_type,
         ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_client_cb_f client_cb,
         ogs_sbi_request_t *request, void *data);
 
 #define ogs_sbi_send_http_status_no_content(__sTREAM) \

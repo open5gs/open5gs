@@ -584,16 +584,6 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
             return OGS_ERROR;
         }
 
-        assoc->request = request;
-        ogs_assert(assoc->request);
-        assoc->service_type = service_type;
-        ogs_assert(assoc->service_type);
-
-        assoc->target_nf_type = target_nf_type;
-        ogs_assert(assoc->target_nf_type);
-        assoc->requester_nf_type = requester_nf_type;
-        ogs_assert(assoc->requester_nf_type);
-
         if (!discovery_option->num_of_service_names) {
             ogs_error("No service names");
             scp_assoc_remove(assoc);
@@ -623,6 +613,16 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                     "corresponds to the first service name in the header "
                     "in TS29.500");
         }
+
+        assoc->request = request;
+        ogs_assert(assoc->request);
+        assoc->service_type = service_type;
+        ogs_assert(assoc->service_type);
+
+        assoc->target_nf_type = target_nf_type;
+        ogs_assert(assoc->target_nf_type);
+        assoc->requester_nf_type = requester_nf_type;
+        ogs_assert(assoc->requester_nf_type);
 
         if (false == send_discover(nrf_client, nf_discover_handler, assoc)) {
             ogs_error("send_discover() failed");
