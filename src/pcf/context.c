@@ -834,3 +834,25 @@ int pcf_db_qos_data(char *supi,
 
     return rv;
 }
+
+void pcf_sbi_select_nf(
+        ogs_sbi_object_t *sbi_object,
+        ogs_sbi_service_type_e service_type,
+        OpenAPI_nf_type_e requester_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option)
+{
+    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
+    ogs_assert(sbi_object);
+    ogs_assert(service_type);
+    target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
+    ogs_assert(target_nf_type);
+    ogs_assert(requester_nf_type);
+
+    nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
+                    target_nf_type, requester_nf_type, discovery_option);
+    if (nf_instance)
+        OGS_SBI_SETUP_NF_INSTANCE(
+                sbi_object->service_type_array[service_type], nf_instance);
+}

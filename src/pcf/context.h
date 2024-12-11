@@ -218,6 +218,12 @@ int pcf_db_qos_data(char *supi,
         ogs_plmn_id_t *plmn_id, ogs_s_nssai_t *s_nssai, char *dnn,
         ogs_session_data_t *session_data);
 
+void pcf_sbi_select_nf(
+        ogs_sbi_object_t *sbi_object,
+        ogs_sbi_service_type_e service_type,
+        OpenAPI_nf_type_e requester_nf_type,
+        ogs_sbi_discovery_option_t *discovery_option);
+
 #ifdef __cplusplus
 }
 #endif

@@ -186,11 +186,16 @@ cleanup:
 bool pcf_nudr_dr_handle_query_sm_data(
     pcf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
-    int status = 0;
+    int r, status = 0;
     char *strerror = NULL;
     pcf_ue_t *pcf_ue = NULL;
     ogs_sbi_server_t *server = NULL;
-    int r;
+
+#if 0
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+    ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
+    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
+#endif
 
     ogs_assert(sess);
     pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
@@ -210,12 +215,36 @@ bool pcf_nudr_dr_handle_query_sm_data(
             goto cleanup;
         }
 
+#if 0
+        service_type = OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT;
+        requester_nf_type = NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);
+        ogs_assert(requester_nf_type);
+
+        pcf_sbi_select_nf(
+                &sess->sbi, service_type, requester_nf_type, NULL);
+        nf_instance = OGS_SBI_GET_NF_INSTANCE(
+                sess->sbi.service_type_array[service_type]);
+
+        if (!nf_instance) {
+            r = pcf_sess_sbi_bsf_discover(sess, stream);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        } else {
+            r = pcf_sess_sbi_discover_and_send(
+                        service_type, NULL,
+                        pcf_nbsf_management_build_register,
+                        sess, stream, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        }
+#else
         r = pcf_sess_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
                     pcf_nbsf_management_build_register,
                     sess, stream, NULL);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
+#endif
 
         return true;
 

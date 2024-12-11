@@ -189,21 +189,193 @@ int pcf_ue_sbi_discover_and_send(
     return OGS_OK;
 }
 
-int pcf_sess_sbi_discover_only(
-        pcf_sess_t *sess, ogs_sbi_stream_t *stream,
-        ogs_sbi_service_type_e service_type)
+static int bsf_discover_handler(
+        int status, ogs_sbi_response_t *response, void *data)
 {
+    int r, rv;
+    char *strerror = NULL;
+    ogs_sbi_message_t message;
+
     ogs_sbi_xact_t *xact = NULL;
+    ogs_pool_id_t xact_id = OGS_INVALID_POOL_ID;
+
+    ogs_sbi_stream_t *stream = NULL;
+
+    ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
+    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
+
+    pcf_ue_t *pcf_ue = NULL;
+    pcf_sess_t *sess = NULL;
+
+    xact_id = OGS_POINTER_TO_UINT(data);
+    ogs_assert(xact_id >= OGS_MIN_POOL_ID && xact_id <= OGS_MAX_POOL_ID);
+
+    xact = ogs_sbi_xact_find_by_id(xact_id);
+    if (!xact) {
+        ogs_error("SBI transaction has already been removed");
+        if (response)
+            ogs_sbi_response_free(response);
+        return OGS_ERROR;
+    }
+
+    if (xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+        xact->assoc_stream_id <= OGS_MAX_POOL_ID)
+        stream = ogs_sbi_stream_find_by_id(xact->assoc_stream_id);
+
+    service_type = xact->service_type;
+    ogs_assert(service_type);
+    requester_nf_type = xact->requester_nf_type;
+    ogs_assert(requester_nf_type);
+    discovery_option = xact->discovery_option;
+
+    sess = pcf_sess_find_by_id(xact->sbi_object_id);
+    if (!sess) {
+        strerror = ogs_msprintf("Session has already been removed");
+        ogs_assert(strerror);
+        ogs_error("%s", strerror);
+
+        if (stream) {
+            ogs_assert(true == ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    NULL, strerror, NULL, NULL));
+        }
+
+        ogs_free(strerror);
+
+        ogs_sbi_xact_remove(xact);
+        if (response)
+            ogs_sbi_response_free(response);
+
+        return OGS_ERROR;
+    }
+
+    ogs_assert(sess->sbi.type == OGS_SBI_OBJ_SESS_TYPE);
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
+    if (!pcf_ue) {
+        strerror = ogs_msprintf("UE(pcf-ue) context has already been removed");
+        ogs_assert(strerror);
+        ogs_error("%s", strerror);
+
+        if (stream) {
+            ogs_assert(true == ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    NULL, strerror, NULL, NULL));
+        }
+
+        ogs_free(strerror);
+
+        ogs_sbi_xact_remove(xact);
+        if (response)
+            ogs_sbi_response_free(response);
+        return OGS_ERROR;
+    }
+
+    if (status != OGS_OK) {
+        ogs_log_message(
+                status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
+                "client_discover_cb() failed [%d]", status);
+
+        if (stream) {
+            ogs_assert(true == ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    NULL, NULL, NULL, NULL));
+        }
+
+        ogs_sbi_xact_remove(xact);
+        if (response)
+            ogs_sbi_response_free(response);
+        return OGS_ERROR;
+    }
+
+    ogs_assert(response);
+
+    rv = ogs_sbi_parse_response(&message, response);
+    if (rv != OGS_OK) {
+        strerror = ogs_msprintf("[%s:%d] cannot parse HTTP response",
+                pcf_ue->supi, sess->psi);
+        goto cleanup;
+    }
+
+    if (message.res_status != OGS_SBI_HTTP_STATUS_OK) {
+        strerror = ogs_msprintf("[%s:%d] NF-Discover failed [%d]",
+                pcf_ue->supi, sess->psi, message.res_status);
+        goto cleanup;
+    }
+
+    if (!message.SearchResult) {
+        strerror = ogs_msprintf("[%s:%d] No SearchResult",
+                pcf_ue->supi, sess->psi);
+        goto cleanup;
+    }
+
+    ogs_nnrf_disc_handle_nf_discover_search_result(message.SearchResult);
+
+    pcf_sbi_select_nf(&sess->sbi,
+            service_type, requester_nf_type, discovery_option);
+
+    if (!OGS_SBI_GET_NF_INSTANCE(
+                sess->sbi.service_type_array[service_type])) {
+        strerror = ogs_msprintf("[%s:%d] (NF discover) No [%s]",
+                    pcf_ue->supi, sess->psi,
+                    ogs_sbi_service_type_to_name(service_type));
+        goto cleanup;
+    }
+
+    r = pcf_sess_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
+                pcf_nbsf_management_build_register,
+                sess, stream, NULL);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
+
+    ogs_sbi_xact_remove(xact);
+
+    ogs_sbi_message_free(&message);
+    ogs_sbi_response_free(response);
+
+    return OGS_OK;
+
+cleanup:
+    ogs_assert(strerror);
+    ogs_error("%s", strerror);
+
+    if (stream) {
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message, strerror,
+                NULL, NULL));
+    }
+    ogs_free(strerror);
+
+    ogs_sbi_xact_remove(xact);
+
+    ogs_sbi_message_free(&message);
+    ogs_sbi_response_free(response);
+
+    return OGS_ERROR;
+}
+
+int pcf_sess_sbi_bsf_discover(pcf_sess_t *sess, ogs_sbi_stream_t *stream)
+{
+    bool rc;
+    ogs_sbi_xact_t *xact = NULL;
+    ogs_sbi_request_t *request = NULL;
+
+    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
 
     ogs_assert(sess);
-    ogs_assert(service_type);
 
     xact = ogs_sbi_xact_add(
-            0, &sess->sbi, service_type, NULL, NULL, NULL, NULL);
+            sess->id, &sess->sbi, OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT,
+            NULL, NULL, NULL, NULL);
     if (!xact) {
         ogs_error("ogs_sbi_xact_add() failed");
         return OGS_ERROR;
     }
+
+    target_nf_type = ogs_sbi_service_type_to_nf_type(xact->service_type);
+    ogs_assert(target_nf_type);
 
     if (stream) {
         xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
@@ -211,7 +383,22 @@ int pcf_sess_sbi_discover_only(
                 xact->assoc_stream_id <= OGS_MAX_POOL_ID);
     }
 
-    return ogs_sbi_discover_only(xact);
+    request = ogs_nnrf_disc_build_discover(
+                target_nf_type, xact->requester_nf_type, NULL);
+    if (!request) {
+        ogs_error("amf_nnrf_disc_build_discover() failed");
+        ogs_sbi_xact_remove(xact);
+        return OGS_ERROR;
+    }
+
+    rc = ogs_sbi_send_request_to_nrf(
+            OGS_SBI_SERVICE_TYPE_NNRF_DISC, NULL,
+            bsf_discover_handler, request, OGS_UINT_TO_POINTER(xact->id));
+    ogs_expect(rc == true);
+
+    ogs_sbi_request_free(request);
+
+    return (rc == true) ? OGS_OK : OGS_ERROR;
 }
 
 int pcf_sess_sbi_discover_and_send(
