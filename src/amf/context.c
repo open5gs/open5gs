@@ -2365,7 +2365,6 @@ void amf_sbi_select_nf(
 {
     OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-    amf_sess_t *sess = NULL;
 
     ogs_assert(sbi_object);
     ogs_assert(service_type);
@@ -2373,35 +2372,11 @@ void amf_sbi_select_nf(
     ogs_assert(target_nf_type);
     ogs_assert(requester_nf_type);
 
-    switch(sbi_object->type) {
-    case OGS_SBI_OBJ_UE_TYPE:
-        nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
-                        target_nf_type, requester_nf_type, discovery_option);
-        if (nf_instance)
-            OGS_SBI_SETUP_NF_INSTANCE(
-                    sbi_object->service_type_array[service_type], nf_instance);
-        break;
-    case OGS_SBI_OBJ_SESS_TYPE:
-        sess = (amf_sess_t *)sbi_object;
-        ogs_assert(sess);
-
-        ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
-            if (ogs_sbi_discovery_param_is_matched(
-                    nf_instance,
-                    target_nf_type, requester_nf_type, discovery_option) ==
-                        false)
-                continue;
-
-            OGS_SBI_SETUP_NF_INSTANCE(
-                    sbi_object->service_type_array[service_type], nf_instance);
-            break;
-        }
-        break;
-    default:
-        ogs_fatal("(NF discover search result) Not implemented [%d]",
-                    sbi_object->type);
-        ogs_assert_if_reached();
-    }
+    nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
+                    target_nf_type, requester_nf_type, discovery_option);
+    if (nf_instance)
+        OGS_SBI_SETUP_NF_INSTANCE(
+                sbi_object->service_type_array[service_type], nf_instance);
 }
 
 int amf_sess_xact_count(amf_ue_t *amf_ue)

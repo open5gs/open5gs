@@ -779,57 +779,48 @@ bool ogs_sbi_send_request_to_client(
     return rc;
 }
 
-bool ogs_sbi_send_notification_request(
-        ogs_sbi_service_type_e service_type,
+bool ogs_sbi_send_request_to_nrf(
+        ogs_sbi_service_type_e nrf_service_type,
         ogs_sbi_discovery_option_t *discovery_option,
+        ogs_sbi_client_cb_f client_cb,
         ogs_sbi_request_t *request, void *data)
 {
     bool rc;
-    ogs_sbi_client_t *client = NULL, *scp_client = NULL;
-    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
+    ogs_sbi_client_t *nrf_client = NULL, *scp_client = NULL;
 
-    ogs_assert(service_type);
-    target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
-    ogs_assert(target_nf_type);
+    ogs_assert(nrf_service_type);
     ogs_assert(request);
 
     scp_client = NF_INSTANCE_CLIENT(ogs_sbi_self()->scp_instance);
-    if (target_nf_type == OpenAPI_nf_type_NRF)
-        client = NF_INSTANCE_CLIENT(ogs_sbi_self()->nrf_instance);
-    else {
-        ogs_fatal("Not implemented[%s]",
-                ogs_sbi_service_type_to_name(service_type));
-        ogs_assert_if_reached();
-    }
+    nrf_client = NF_INSTANCE_CLIENT(ogs_sbi_self()->nrf_instance);
 
     if (scp_client) {
         /*************************
          * INDIRECT COMMUNICATION
          *************************/
         build_default_discovery_parameter(
-            request, service_type, discovery_option);
+            request, nrf_service_type, discovery_option);
 
         rc = ogs_sbi_client_send_via_scp_or_sepp(
-                scp_client, ogs_sbi_client_handler, request, data);
+                scp_client, client_cb, request, data);
         ogs_expect(rc == true);
 
-    } else if (client) {
+    } else if (nrf_client) {
 
         /***********************
          * DIRECT COMMUNICATION
          ***********************/
 
         /* NRF is available */
-        rc = ogs_sbi_client_send_request(
-                client, ogs_sbi_client_handler, request, data);
+        rc = ogs_sbi_client_send_request(nrf_client, client_cb, request, data);
         ogs_expect(rc == true);
 
 
     } else {
         ogs_fatal("[%s:%s] Cannot send request [%s:%s:%s]",
-                client ? "CLIENT" : "No-CLIENT",
+                nrf_client ? "NRF" : "No-NRF",
                 scp_client ? "SCP" : "No-SCP",
-                ogs_sbi_service_type_to_name(service_type),
+                ogs_sbi_service_type_to_name(nrf_service_type),
                 request->h.service.name, request->h.api.version);
         rc = false;
         ogs_assert_if_reached();
