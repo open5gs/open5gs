@@ -291,8 +291,22 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                 } else {
                     SWITCH(message->h.method)
                     CASE(OGS_SBI_HTTP_METHOD_POST)
-                        pcf_nbsf_management_handle_register(
-                                sess, stream, message);
+                        if (message->res_status ==
+                                OGS_SBI_HTTP_STATUS_CREATED) {
+                            pcf_nbsf_management_handle_register(
+                                    sess, stream, message);
+                        } else {
+                            ogs_error("[%s:%d] HTTP response error [%d]",
+                                pcf_ue->supi, sess->psi, message->res_status);
+
+                            /*
+                             * Send Response
+                             * for SM Policy Association establishment
+                             */
+                            ogs_expect(true ==
+                                pcf_sbi_send_smpolicycontrol_create_response(
+                                    sess, stream));
+                        }
                         break;
                     DEFAULT
                         ogs_error("[%s:%d] Unknown method [%s]",

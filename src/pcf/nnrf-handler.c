@@ -23,13 +23,11 @@
 void pcf_nnrf_handle_nf_discover(
         ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg)
 {
-    int r;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_pool_id_t sbi_object_id = OGS_INVALID_POOL_ID;
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
-    ogs_sbi_stream_t *stream = NULL;
 
     pcf_ue_t *pcf_ue = NULL;
     pcf_sess_t *sess = NULL;
@@ -54,10 +52,6 @@ void pcf_nnrf_handle_nf_discover(
             sbi_object_id <= OGS_MAX_POOL_ID);
 
     discovery_option = xact->discovery_option;
-
-    if (xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
-        xact->assoc_stream_id <= OGS_MAX_POOL_ID)
-        stream = ogs_sbi_stream_find_by_id(xact->assoc_stream_id);
 
     SearchResult = recvmsg->SearchResult;
     if (!SearchResult) {
@@ -89,28 +83,28 @@ void pcf_nnrf_handle_nf_discover(
                     sess ? sess->psi : 0,
                     ogs_sbi_service_type_to_name(service_type),
                     OpenAPI_nf_type_ToString(requester_nf_type));
+
+        /* If BSF is not reachable, we ignore NBSF_MANAGMENT service */
+        if (service_type == OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT) {
+            ogs_sbi_stream_t *stream = NULL;
+
+            ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                    xact->assoc_stream_id <= OGS_MAX_POOL_ID);
+            stream = ogs_sbi_stream_find_by_id(xact->assoc_stream_id);
+            ogs_assert(stream);
+
+            /* Send Response for SM Policy Association establishment */
+            ogs_expect(true ==
+                    pcf_sbi_send_smpolicycontrol_create_response(sess, stream));
+
+            ogs_sbi_xact_remove(xact);
+        }
         return;
     }
 
     OGS_SBI_SETUP_NF_INSTANCE(
             sbi_object->service_type_array[service_type], nf_instance);
 
-    switch (service_type) {
-    case OGS_SBI_SERVICE_TYPE_NPCF_POLICYAUTHORIZATION:
-        ogs_sbi_xact_remove(xact);
-
-        ogs_assert(sess);
-        ogs_assert(stream);
-        r = pcf_sess_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
-                    pcf_nbsf_management_build_register,
-                    sess, stream, nf_instance);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        break;
-    default:
-        ogs_assert(xact->request);
-        ogs_expect(true == pcf_sbi_send_request(nf_instance, xact));
-        break;
-    }
+    ogs_assert(xact->request);
+    ogs_expect(true == pcf_sbi_send_request(nf_instance, xact));
 }
