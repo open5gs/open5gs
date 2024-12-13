@@ -19,7 +19,7 @@
 
 #include "ogs-diameter-common.h"
 
-bool ogs_diam_app_connected(uint32_t app_id)
+bool ogs_diam_is_relay_or_app_advertised(uint32_t app_id)
 {
     struct fd_list *li = NULL;
     struct fd_app *found = NULL;
@@ -36,18 +36,23 @@ bool ogs_diam_app_connected(uint32_t app_id)
         if (state == STATE_OPEN) {
             ogs_debug("'%s' STATE is OPEN", p->info.pi_diamid);
 
-            /* Check if the remote peer advertised the message's appli */
-            fd_app_check(&p->info.runtime.pir_apps, app_id, &found);
-
-            if (found) break;
+            if (p->info.runtime.pir_relay) {
+                ogs_debug("'%s' RELAY is enabled", p->info.pi_diamid);
+                CHECK_POSIX( pthread_rwlock_unlock(&fd_g_peers_rw) );
+                return true;
+            } else {
+                /* Check if the remote peer advertised the message's appli */
+                fd_app_check(&p->info.runtime.pir_apps, app_id, &found);
+                if (found) {
+                    CHECK_POSIX( pthread_rwlock_unlock(&fd_g_peers_rw) );
+                    return true;
+                }
+            }
         } else {
             ogs_debug("'%s' STATE[%d] is NOT open ", p->info.pi_diamid, state);
         }
     }
     CHECK_POSIX( pthread_rwlock_unlock(&fd_g_peers_rw) );
 
-    if (found)
-        return true;
-    else
-        return false;
+    return false;
 }

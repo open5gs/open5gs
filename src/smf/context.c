@@ -53,9 +53,11 @@ int smf_use_gy_iface(void)
 {
     switch (smf_self()->ctf_config.enabled) {
     case SMF_CTF_ENABLED_AUTO:
-        return ogs_diam_app_connected(OGS_DIAM_GY_APPLICATION_ID) ? 1 : 0;
+        return ogs_diam_is_relay_or_app_advertised(
+                OGS_DIAM_GY_APPLICATION_ID) ? 1 : 0;
     case SMF_CTF_ENABLED_YES:
-        return ogs_diam_app_connected(OGS_DIAM_GY_APPLICATION_ID) ? 1 : -1;
+        return ogs_diam_is_relay_or_app_advertised(
+                OGS_DIAM_GY_APPLICATION_ID) ? 1 : -1;
     case SMF_CTF_ENABLED_NO:
         return 0;
     default:
