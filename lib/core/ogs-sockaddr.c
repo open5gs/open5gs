@@ -419,6 +419,20 @@ socklen_t ogs_sockaddr_len(const void *sa)
     }
 }
 
+int ogs_sockaddr_count(ogs_sockaddr_t *sa_list)
+{
+    ogs_sockaddr_t *addr = NULL;
+    int count = 0;
+
+    addr = sa_list;
+    while (addr) {
+        addr = addr->next;
+        count++;
+    }
+
+    return count;
+}
+
 bool ogs_sockaddr_is_equal(const void *p, const void *q)
 {
     const ogs_sockaddr_t *a, *b;

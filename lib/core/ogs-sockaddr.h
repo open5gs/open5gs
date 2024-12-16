@@ -118,6 +118,7 @@ const char *ogs_inet_ntop(void *sa, char *buf, int buflen);
 int ogs_inet_pton(int family, const char *src, void *sa);
 
 socklen_t ogs_sockaddr_len(const void *sa);
+int ogs_sockaddr_count(ogs_sockaddr_t *sa_list);
 bool ogs_sockaddr_is_equal(const void *p, const void *q);
 
 int ogs_ipsubnet(ogs_ipsubnet_t *ipsub,

@@ -164,8 +164,9 @@ mme:
 ################################################################################
 #  o MSC/VLR
 #  sgsap:
-#    server:
-#      - address: 127.0.0.2
+#    client:
+#      - address: msc.open5gs.org # SCTP server address configured on the MSC/VLR
+#        local_address: 127.0.0.2 # SCTP local IP addresses to be bound in the MME
 #        map:
 #          tai:
 #            plmn_id:
@@ -188,7 +189,15 @@ mme:
 #              mcc: 002
 #              mnc: 02
 #            lac: 43692
-#      - address: msc.open5gs.org
+#      - address:       # SCTP server address configured on the MSC/VLR
+#          - 127.0.0.88
+#          - 10.0.0.88
+#          - 172.16.0.88
+#          - 2001:db8:babe::88
+#        local_address: # SCTP local IP addresses to be bound in the MME
+#          - 127.0.0.2
+#          - 192.168.1.4
+#          - 2001:db8:cafe::2
 #        map:
 #          tai:
 #            plmn_id:

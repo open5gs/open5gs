@@ -59,7 +59,7 @@ mme:
       smf:
         - address: 127.0.0.4
   sgsap:
-    server:
+    client:
       - address: 127.0.0.2
         map:
           tai:

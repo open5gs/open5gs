@@ -77,7 +77,7 @@ static void test2_main(void *data)
 
     rv = ogs_getaddrinfo(&addr, AF_UNSPEC, NULL, TEST2_PORT, 0);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    sctp = ogs_sctp_client(SOCK_SEQPACKET, addr, NULL);
+    sctp = ogs_sctp_client(SOCK_SEQPACKET, addr, NULL, NULL);
     ABTS_PTR_NOTNULL(tc, sctp);
 
     size = ogs_sctp_recvdata(sctp, str, STRLEN, &from, &sinfo);
@@ -192,7 +192,7 @@ static void test4_main(void *data)
 
     rv = ogs_getaddrinfo(&addr, AF_UNSPEC, NULL, TEST4_PORT, 0);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    sctp = ogs_sctp_client(SOCK_STREAM, addr, NULL);
+    sctp = ogs_sctp_client(SOCK_STREAM, addr, NULL, NULL);
     ABTS_PTR_NOTNULL(tc, sctp);
 
     size = ogs_sctp_sendmsg(sctp, DATASTR, strlen(DATASTR), NULL, PPID, 0);
