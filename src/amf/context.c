@@ -2265,6 +2265,7 @@ amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi)
 
     sess->s_nssai.sst = 0;
     sess->s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+    sess->mapped_hplmn_presence = false;
     sess->mapped_hplmn.sst = 0;
     sess->mapped_hplmn.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
 
@@ -2887,6 +2888,8 @@ bool amf_update_allowed_nssai(amf_ue_t *amf_ue)
 
                 allowed->sst = requested->sst;
                 allowed->sd.v = requested->sd.v;
+                allowed->mapped_hplmn_sst_presence =
+                        requested->mapped_hplmn_sst_presence;
                 allowed->mapped_hplmn_sst = requested->mapped_hplmn_sst;
                 allowed->mapped_hplmn_sd.v = requested->mapped_hplmn_sd.v;
 
@@ -2923,6 +2926,7 @@ bool amf_update_allowed_nssai(amf_ue_t *amf_ue)
 
                 allowed->sst = slice->s_nssai.sst;
                 allowed->sd.v = slice->s_nssai.sd.v;
+                allowed->mapped_hplmn_sst_presence = false;
                 allowed->mapped_hplmn_sst = 0;
                 allowed->mapped_hplmn_sd.v = OGS_S_NSSAI_NO_SD_VALUE;
 

@@ -66,6 +66,7 @@ typedef struct ogs_nas_s_nssai_ie_s {
     uint8_t sst;
     ogs_uint24_t sd;
     uint8_t mapped_hplmn_sst;
+    bool mapped_hplmn_sst_presence;
     ogs_uint24_t mapped_hplmn_sd;
 } __attribute__ ((packed)) ogs_nas_s_nssai_ie_t;
 
