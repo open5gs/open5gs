@@ -186,7 +186,8 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     /* S-NSSAI */
     pdu_session_establishment_accept->presencemask |=
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_S_NSSAI_PRESENT;
-    ogs_nas_build_s_nssai2(nas_s_nssai, &sess->s_nssai, &sess->mapped_hplmn);
+    ogs_nas_build_s_nssai2(nas_s_nssai, &sess->s_nssai,
+        (sess->mapped_hplmn_presence) ? &sess->mapped_hplmn : NULL);
 
     /* QoS flow descriptions */
     memset(&qos_flow_description, 0, sizeof(qos_flow_description));

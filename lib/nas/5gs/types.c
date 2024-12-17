@@ -147,7 +147,8 @@ void ogs_nas_build_s_nssai(
         pos += 3;
     }
 
-    nas_s_nssai->buffer[pos++] = nas_s_nssai_ie->mapped_hplmn_sst;
+    if (nas_s_nssai_ie->mapped_hplmn_sst_presence)
+        nas_s_nssai->buffer[pos++] = nas_s_nssai_ie->mapped_hplmn_sst;
 
     if (nas_s_nssai_ie->mapped_hplmn_sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
         v = ogs_htobe24(nas_s_nssai_ie->mapped_hplmn_sd);
@@ -166,14 +167,19 @@ void ogs_nas_build_s_nssai2(
 
     ogs_assert(nas_s_nssai);
     ogs_assert(s_nssai);
-    ogs_assert(mapped_hplmn);
 
     memset(&ie, 0, sizeof(ie));
 
     ie.sst = s_nssai->sst;
     ie.sd.v = s_nssai->sd.v;
-    ie.mapped_hplmn_sst = mapped_hplmn->sst;
-    ie.mapped_hplmn_sd.v = mapped_hplmn->sd.v;
+
+    if (mapped_hplmn) {
+        ie.mapped_hplmn_sst_presence = true;
+        ie.mapped_hplmn_sst = mapped_hplmn->sst;
+        ie.mapped_hplmn_sd.v = mapped_hplmn->sd.v;
+    } else {
+        ie.mapped_hplmn_sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+    }
 
     ogs_nas_build_s_nssai(nas_s_nssai, &ie);
 }
@@ -237,8 +243,10 @@ int ogs_nas_parse_s_nssai(
         pos += 3;
     }
 
-    if (mapped_hplmn_sst)
+    if (mapped_hplmn_sst) {
         nas_s_nssai_ie->mapped_hplmn_sst = nas_s_nssai->buffer[pos++];
+        nas_s_nssai_ie->mapped_hplmn_sst_presence = true;
+    }
 
     if (mapped_hplmn_sd) {
         memcpy(&v, nas_s_nssai->buffer+pos, 3);

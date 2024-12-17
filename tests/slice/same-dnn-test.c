@@ -427,6 +427,8 @@ static void test2_func(abts_case *tc, void *data)
     test_ue->requested_nssai.s_nssai[test_ue->requested_nssai.num_of_s_nssai].
         sd.v = OGS_S_NSSAI_NO_SD_VALUE;
     test_ue->requested_nssai.s_nssai[test_ue->requested_nssai.num_of_s_nssai].
+        mapped_hplmn_sst_presence = false;
+    test_ue->requested_nssai.s_nssai[test_ue->requested_nssai.num_of_s_nssai].
         mapped_hplmn_sst = 0;
     test_ue->requested_nssai.s_nssai[test_ue->requested_nssai.num_of_s_nssai].
         mapped_hplmn_sd.v = OGS_S_NSSAI_NO_SD_VALUE;
@@ -436,6 +438,8 @@ static void test2_func(abts_case *tc, void *data)
         sst = 3;
     test_ue->requested_nssai.s_nssai[test_ue->requested_nssai.num_of_s_nssai].
         sd.v = 0x000080;
+    test_ue->requested_nssai.s_nssai[test_ue->requested_nssai.num_of_s_nssai].
+        mapped_hplmn_sst_presence = false;
     test_ue->requested_nssai.s_nssai[test_ue->requested_nssai.num_of_s_nssai].
         mapped_hplmn_sst = 0;
     test_ue->requested_nssai.s_nssai[test_ue->requested_nssai.num_of_s_nssai].
