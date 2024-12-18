@@ -30,6 +30,8 @@
 #include "sgsap-path.h"
 #include "mme-gtp-path.h"
 #include "metrics.h"
+#include "real-mme-connection.h" // Real MME connection functions
+#include "mme-init.h"            // MME initialization prototypes
 
 static ogs_thread_t *thread;
 static void mme_main(void *data);
@@ -64,6 +66,10 @@ int mme_initialize(void)
 
     rv = mme_context_parse_config();
     if (rv != OGS_OK) return rv;
+
+    ogs_info("Initializing MME...");
+    connect_to_real_mme(); // Establish persistent connection to real MME
+
 
     ogs_metrics_context_open(ogs_metrics_self());
 
@@ -156,4 +162,9 @@ static void mme_main(void *data)
 done:
 
     ogs_fsm_fini(&mme_sm, 0);
+}
+
+void mme_finalize(void) {
+    ogs_info("Finalizing MME...");
+    // Connection will remain open for persistence
 }

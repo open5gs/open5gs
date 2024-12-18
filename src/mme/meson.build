@@ -45,6 +45,7 @@ libmme_sources = files('''
     mme-path.h
     metrics.h
 
+    real-mme-connection.c
     mme-init.c
     mme-event.c
     mme-timer.c
