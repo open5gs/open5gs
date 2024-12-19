@@ -90,7 +90,8 @@ bool udm_nudr_dr_handle_subscription_authentication(
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(
                         stream, recvmsg->res_status, recvmsg, strerror, NULL,
-                        recvmsg->ProblemDetails->cause));
+                        (recvmsg->ProblemDetails) ?
+                                recvmsg->ProblemDetails->cause : NULL));
                 ogs_free(strerror);
                 return false;
             }
@@ -195,7 +196,8 @@ bool udm_nudr_dr_handle_subscription_authentication(
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(
                         stream, recvmsg->res_status, recvmsg, strerror, NULL,
-                        recvmsg->ProblemDetails->cause));
+                        (recvmsg->ProblemDetails) ?
+                                recvmsg->ProblemDetails->cause : NULL));
                 ogs_free(strerror);
                 return false;
             }
@@ -284,7 +286,8 @@ bool udm_nudr_dr_handle_subscription_authentication(
             ogs_assert(true ==
                 ogs_sbi_server_send_error(
                     stream, recvmsg->res_status, recvmsg, strerror, NULL,
-                    recvmsg->ProblemDetails->cause));
+                    (recvmsg->ProblemDetails) ?
+                            recvmsg->ProblemDetails->cause : NULL));
             ogs_free(strerror);
             return false;
         }
@@ -416,7 +419,8 @@ bool udm_nudr_dr_handle_subscription_context(
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, recvmsg->res_status,
                 NULL, "HTTP response error", udm_ue->supi,
-                recvmsg->ProblemDetails->cause));
+                (recvmsg->ProblemDetails) ?
+                        recvmsg->ProblemDetails->cause : NULL));
         return false;
     }
 
@@ -793,7 +797,8 @@ bool udm_nudr_dr_handle_smf_registration(
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, recvmsg->res_status,
                 NULL, "HTTP response error", udm_ue->supi,
-                recvmsg->ProblemDetails->cause));
+                (recvmsg->ProblemDetails) ?
+                        recvmsg->ProblemDetails->cause : NULL));
         return false;
     }
 
