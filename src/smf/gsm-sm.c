@@ -532,7 +532,8 @@ void smf_gsm_state_wait_5gc_sm_policy_association(ogs_fsm_t *s, smf_event_t *e)
                         ogs_sbi_server_send_error(
                             stream, sbi_message->res_status,
                             sbi_message, strerror, NULL,
-                            sbi_message->ProblemDetails->cause));
+                            (sbi_message->ProblemDetails) ?
+                                    sbi_message->ProblemDetails->cause : NULL));
                     ogs_free(strerror);
 
                     OGS_FSM_TRAN(s, smf_gsm_state_exception);
@@ -1018,7 +1019,8 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         ogs_sbi_server_send_error(
                             stream, sbi_message->res_status,
                             sbi_message, strerror, NULL,
-                            sbi_message->ProblemDetails->cause));
+                            (sbi_message->ProblemDetails) ?
+                                    sbi_message->ProblemDetails->cause : NULL));
                     ogs_free(strerror);
 
                     OGS_FSM_TRAN(s, smf_gsm_state_exception);
