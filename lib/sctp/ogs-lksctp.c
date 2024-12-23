@@ -53,138 +53,332 @@ ogs_sock_t *ogs_sctp_socket(int family, int type)
     return new;
 }
 
-ogs_sock_t *ogs_sctp_server(
-        int type, ogs_sockaddr_t *sa_list, ogs_sockopt_t *socket_option)
+/**
+ * @brief
+ *   1) Count the number of addresses in sa_list and determine the total
+ *      buffer size.
+ *   2) Allocate a single continuous buffer (unsigned char).
+ *   3) Copy each address (sockaddr_in or sockaddr_in6) into this continuous
+ *      buffer.
+ *
+ * @param sa_list       Linked list of ogs_sockaddr_t structures.
+ * @param out_count     [OUT] Receives the number of addresses.
+ * @param out_total_len [OUT] Receives the total bytes for the continuous
+ *                            buffer.
+ *
+ * @return
+ *   On success, returns a pointer to the allocated buffer containing all
+ *   addresses. On failure, logs an error and returns NULL.
+ */
+static unsigned char *create_continuous_address_buffer(
+    ogs_sockaddr_t *sa_list,
+    int *out_count,
+    int *out_total_len)
 {
-    int rv;
-    char buf[OGS_ADDRSTRLEN];
-
-    ogs_sock_t *new = NULL;
     ogs_sockaddr_t *addr;
-    ogs_sockopt_t option;
+    int addr_count = 0;
+    int total_len = 0;
+    unsigned char *addr_buf = NULL;
+    int offset = 0;
 
-    ogs_assert(sa_list);
-
-    ogs_sockopt_init(&option);
-    if (socket_option)
-        memcpy(&option, socket_option, sizeof option);
-
-    addr = sa_list;
-    while (addr) {
-        new = ogs_sctp_socket(addr->ogs_sa_family, type);
-        if (new) {
-            rv = ogs_sctp_peer_addr_params(new, &option);
-            ogs_assert(rv == OGS_OK);
-
-            rv = ogs_sctp_rto_info(new, &option);
-            ogs_assert(rv == OGS_OK);
-
-            rv = ogs_sctp_initmsg(new, &option);
-            ogs_assert(rv == OGS_OK);
-
-            if (option.sctp_nodelay == true) {
-                rv = ogs_sctp_nodelay(new, true);
-                ogs_assert(rv == OGS_OK);
-            } else
-                ogs_warn("SCTP NO_DELAY Disabled");
-
-            if (option.so_linger.l_onoff == true) {
-                rv = ogs_sctp_so_linger(new, option.so_linger.l_linger);
-                ogs_assert(rv == OGS_OK);
-            }
-
-            rv = ogs_listen_reusable(new->fd, true);
-            ogs_assert(rv == OGS_OK);
-
-            if (ogs_sock_bind(new, addr) == OGS_OK) {
-                ogs_debug("sctp_server() [%s]:%d",
-                        OGS_ADDR(addr, buf), OGS_PORT(addr));
-                break;
-            }
-
-            ogs_sock_destroy(new);
-        }
-
-        addr = addr->next;
+    /* 1) Count addresses and total buffer size needed. */
+    for (addr = sa_list; addr; addr = addr->next) {
+        addr_count++;
+        /* E.g., sizeof(sockaddr_in) or sizeof(sockaddr_in6). */
+        total_len += ogs_sockaddr_len(addr);
     }
 
-    if (addr == NULL) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "sctp_server() [%s]:%d failed",
-                OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
+    if (addr_count == 0) {
+        ogs_error("No valid address in sa_list");
         return NULL;
     }
 
-    ogs_assert(new);
+    /* 2) Allocate the continuous buffer (unsigned char). */
+    addr_buf = ogs_calloc(1, total_len);
+    if (!addr_buf) {
+        ogs_error("Failed to allocate memory for addr_buf");
+        return NULL;
+    }
 
-    rv = ogs_sock_listen(new);
+    /* 3) Copy each address structure into addr_buf. */
+    offset = 0;
+    for (addr = sa_list; addr; addr = addr->next) {
+        socklen_t socklen = ogs_sockaddr_len(addr);
+        memcpy(addr_buf + offset, &addr->sa, socklen);
+        offset += socklen;
+    }
+
+    /* Pass back the number of addresses and total length. */
+    *out_count = addr_count;
+    *out_total_len = total_len;
+
+    return addr_buf;
+}
+
+/**
+ * @brief Create an SCTP server socket and bind multiple addresses at once
+ *        using sctp_bindx().
+ *
+ * @param type             SCTP socket type (e.g., SOCK_SEQPACKET or SOCK_STREAM)
+ * @param sa_list          Linked list of ogs_sockaddr_t structures
+ * @param socket_option    Additional socket/SCTP options
+ *
+ * @return
+ *   On success, returns a pointer to an ogs_sock_t instance; on failure,
+ *   returns NULL.
+ */
+ogs_sock_t *ogs_sctp_server(
+    int type,
+    ogs_sockaddr_t *sa_list,
+    ogs_sockopt_t *socket_option)
+{
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
+    ogs_sock_t *new_sock = NULL;
+    ogs_sockopt_t option;
+
+    /* Variables for sctp_bindx() usage. */
+    unsigned char *addr_buf = NULL;
+    int addr_count = 0;
+    int total_len = 0;
+
+    ogs_assert(sa_list);
+
+    /* Initialize socket options. */
+    ogs_sockopt_init(&option);
+    if (socket_option)
+        memcpy(&option, socket_option, sizeof(option));
+
+    /*
+     * Obtain a contiguous buffer for all addresses:
+     *   1) Count the addresses.
+     *   2) Allocate the buffer.
+     *   3) Copy the addresses into the buffer.
+     */
+    addr_buf = create_continuous_address_buffer(
+                   sa_list, &addr_count, &total_len);
+    if (!addr_buf) {
+        /* The helper logs errors, so just return. */
+        return NULL;
+    }
+
+    /*
+     * Create an SCTP socket using the family of the first address
+     * in sa_list.
+     */
+    new_sock = ogs_sctp_socket(sa_list->ogs_sa_family, type);
+    if (!new_sock) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                        "sctp_server() Failed to create SCTP socket");
+        goto err;
+    }
+
+    /* Configure SCTP-specific options. */
+    rv = ogs_sctp_peer_addr_params(new_sock, &option);
     ogs_assert(rv == OGS_OK);
 
-    return new;
+    rv = ogs_sctp_rto_info(new_sock, &option);
+    ogs_assert(rv == OGS_OK);
+
+    rv = ogs_sctp_initmsg(new_sock, &option);
+    ogs_assert(rv == OGS_OK);
+
+    if (option.sctp_nodelay == true) {
+        rv = ogs_sctp_nodelay(new_sock, true);
+        ogs_assert(rv == OGS_OK);
+    } else {
+        ogs_warn("SCTP NO_DELAY Disabled");
+    }
+
+    if (option.so_linger.l_onoff == true) {
+        rv = ogs_sctp_so_linger(new_sock, option.so_linger.l_linger);
+        ogs_assert(rv == OGS_OK);
+    }
+
+    /* Enable address reuse if needed. */
+    rv = ogs_listen_reusable(new_sock->fd, true);
+    ogs_assert(rv == OGS_OK);
+
+    /*
+     * Bind all addresses at once using sctp_bindx().
+     * (struct sockaddr *)addr_buf points to the contiguous buffer.
+     */
+    rv = sctp_bindx(new_sock->fd, (struct sockaddr *)addr_buf,
+                    addr_count, SCTP_BINDX_ADD_ADDR);
+    if (rv < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                        "sctp_bindx() failed to bind multiple addresses");
+        goto err;
+    }
+
+    /*
+     * Log debug info: only the first address is shown here as an example.
+     */
+    ogs_debug("sctp_server() [%s]:%d (bound %d addresses)",
+              OGS_ADDR(sa_list, buf), OGS_PORT(sa_list), addr_count);
+
+    /* Start listening for connections. */
+    rv = ogs_sock_listen(new_sock);
+    ogs_assert(rv == OGS_OK);
+
+    /* Success: free the buffer and return the socket. */
+    ogs_free(addr_buf);
+    return new_sock;
+
+err:
+    if (addr_buf)
+        ogs_free(addr_buf);
+    if (new_sock)
+        ogs_sock_destroy(new_sock);
+
+    /*
+     * On failure, log an error based on the first address
+     * in sa_list (customize as needed).
+     */
+    ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                    "sctp_server() [%s]:%d failed",
+                    OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
+    return NULL;
 }
 
 ogs_sock_t *ogs_sctp_client(
-        int type, ogs_sockaddr_t *sa_list, ogs_sockopt_t *socket_option)
+    int type,
+    ogs_sockaddr_t *sa_list,
+    ogs_sockaddr_t *local_sa_list,
+    ogs_sockopt_t *socket_option)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
-
-    ogs_sock_t *new = NULL;
-    ogs_sockaddr_t *addr;
+    ogs_sock_t *new_sock = NULL;
     ogs_sockopt_t option;
+
+    /* Buffers and counters for remote addresses. */
+    unsigned char *remote_buf = NULL;
+    int remote_count = 0;
+    int remote_len = 0;
+
+    /* Buffers and counters for local addresses (if provided). */
+    unsigned char *local_buf = NULL;
+    int local_count = 0;
+    int local_len = 0;
 
     ogs_assert(sa_list);
 
+    /* Initialize socket options and copy user-provided options if present. */
     ogs_sockopt_init(&option);
     if (socket_option)
-        memcpy(&option, socket_option, sizeof option);
+        memcpy(&option, socket_option, sizeof(option));
 
-    addr = sa_list;
-    while (addr) {
-        new = ogs_sctp_socket(addr->ogs_sa_family, type);
-        if (new) {
-            rv = ogs_sctp_peer_addr_params(new, &option);
-            ogs_assert(rv == OGS_OK);
-
-            rv = ogs_sctp_rto_info(new, &option);
-            ogs_assert(rv == OGS_OK);
-
-            rv = ogs_sctp_initmsg(new, &option);
-            ogs_assert(rv == OGS_OK);
-
-            if (option.sctp_nodelay == true) {
-                rv = ogs_sctp_nodelay(new, true);
-                ogs_assert(rv == OGS_OK);
-            } else
-                ogs_warn("SCTP NO_DELAY Disabled");
-
-            if (option.so_linger.l_onoff == true) {
-                rv = ogs_sctp_so_linger(new, option.so_linger.l_linger);
-                ogs_assert(rv == OGS_OK);
-            }
-
-            if (ogs_sock_connect(new, addr) == OGS_OK) {
-                ogs_debug("sctp_client() [%s]:%d",
-                        OGS_ADDR(addr, buf), OGS_PORT(addr));
-                break;
-            }
-
-            ogs_sock_destroy(new);
-        }
-
-        addr = addr->next;
-    }
-
-    if (addr == NULL) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "sctp_client() [%s]:%d failed",
-                OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
+    /*
+     * Build the contiguous buffer for REMOTE addresses using our helper
+     * function. This will be used later by sctp_connectx().
+     */
+    remote_buf = create_continuous_address_buffer(
+                     sa_list, &remote_count, &remote_len);
+    if (!remote_buf) {
+        /* Logs and returns NULL on failure. */
         return NULL;
     }
 
-    ogs_assert(new);
+    /*
+     * Create the SCTP socket using the address family of the first remote
+     * address.
+     */
+    new_sock = ogs_sctp_socket(sa_list->ogs_sa_family, type);
+    if (!new_sock) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                        "sctp_client() Failed to create SCTP socket");
+        goto err;
+    }
 
-    return new;
+    /* Configure SCTP-specific options. */
+    rv = ogs_sctp_peer_addr_params(new_sock, &option);
+    ogs_assert(rv == OGS_OK);
+
+    rv = ogs_sctp_rto_info(new_sock, &option);
+    ogs_assert(rv == OGS_OK);
+
+    rv = ogs_sctp_initmsg(new_sock, &option);
+    ogs_assert(rv == OGS_OK);
+
+    if (option.sctp_nodelay == true) {
+        rv = ogs_sctp_nodelay(new_sock, true);
+        ogs_assert(rv == OGS_OK);
+    } else {
+        ogs_warn("SCTP NO_DELAY Disabled");
+    }
+
+    if (option.so_linger.l_onoff == true) {
+        rv = ogs_sctp_so_linger(new_sock, option.so_linger.l_linger);
+        ogs_assert(rv == OGS_OK);
+    }
+
+    /*
+     * If local_sa_list is provided, bind those addresses before connecting.
+     * (Optional: some clients do not need explicit local bind.)
+     */
+    if (local_sa_list) {
+        local_buf = create_continuous_address_buffer(
+                        local_sa_list, &local_count, &local_len);
+        if (!local_buf) {
+            /* Error already logged. */
+            goto err;
+        }
+        /* We can bind them using sctp_bindx() if desired. */
+        rv = sctp_bindx(new_sock->fd,
+                        (struct sockaddr *)local_buf,
+                        local_count,
+                        SCTP_BINDX_ADD_ADDR);
+        if (rv < 0) {
+            ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                            "sctp_client() bind local addresses failed");
+            goto err;
+        }
+        ogs_debug("sctp_client() bound %d local addresses", local_count);
+    }
+
+    /*
+     * Connect to the REMOTE addresses using sctp_connectx().
+     * (struct sockaddr *)remote_buf is the contiguous buffer.
+     */
+    rv = sctp_connectx(new_sock->fd,
+                       (struct sockaddr *)remote_buf,
+                       remote_count,
+                       NULL /* assoc_id */);
+    if (rv < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                        "sctp_connectx() failed to connect");
+        goto err;
+    }
+
+    /* Debug log for the first remote address. */
+    ogs_debug("sctp_client() connected to [%s]:%d",
+              OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
+
+    /* Success: free buffers and return the new socket. */
+    if (local_buf)
+        ogs_free(local_buf);
+    if (remote_buf)
+        ogs_free(remote_buf);
+    return new_sock;
+
+err:
+    if (local_buf)
+        ogs_free(local_buf);
+    if (remote_buf)
+        ogs_free(remote_buf);
+    if (new_sock)
+        ogs_sock_destroy(new_sock);
+
+    /*
+     * On failure, log an error based on the first remote address.
+     * Adjust to your needs, e.g., log local too if necessary.
+     */
+    ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                    "sctp_client() [%s]:%d failed",
+                    OGS_ADDR(sa_list, buf),
+                    OGS_PORT(sa_list));
+    return NULL;
 }
 
 int ogs_sctp_connect(ogs_sock_t *sock, ogs_sockaddr_t *sa_list)
