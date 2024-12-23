@@ -109,7 +109,9 @@ ogs_sock_t *ogs_sctp_socket(int family, int type);
 ogs_sock_t *ogs_sctp_server(
         int type, ogs_sockaddr_t *sa_list, ogs_sockopt_t *socket_option);
 ogs_sock_t *ogs_sctp_client(
-        int type, ogs_sockaddr_t *sa_list, ogs_sockopt_t *socket_option);
+        int type,
+        ogs_sockaddr_t *sa_list, ogs_sockaddr_t *local_sa_list,
+        ogs_sockopt_t *socket_option);
 
 int ogs_sctp_bind(ogs_sock_t *sock, ogs_sockaddr_t *sa_list);
 int ogs_sctp_connect(ogs_sock_t *sock, ogs_sockaddr_t *sa_list);
