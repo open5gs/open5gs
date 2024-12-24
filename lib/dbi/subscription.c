@@ -39,9 +39,16 @@ int ogs_dbi_auth_info(char *supi, ogs_dbi_auth_info_t *auth_info)
     ogs_assert(auth_info);
 
     supi_type = ogs_id_get_type(supi);
-    ogs_assert(supi_type);
+    if (!supi_type) {
+        ogs_error("Invalid supi=%s", supi);
+        return OGS_ERROR;
+    }
     supi_id = ogs_id_get_value(supi);
-    ogs_assert(supi_id);
+    if (!supi_id) {
+        ogs_error("Invalid supi=%s", supi);
+        ogs_free(supi_type);
+        return OGS_ERROR;
+    }
 
     query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
 #if MONGOC_CHECK_VERSION(1, 5, 0)
