@@ -1049,7 +1049,7 @@ typedef struct ogs_nas_qos_rule_s {
         struct {
         ED3(uint8_t spare:1;,
             uint8_t segregation:1;,
-            uint8_t identifier:4;)
+            uint8_t identifier:6;)
         };
         uint8_t flags;
     } flow;

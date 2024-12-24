@@ -682,8 +682,11 @@ uint8_t upf_sess_set_ue_ipv6_framed_routes(upf_sess_t *sess,
 
 void upf_sess_urr_acc_add(upf_sess_t *sess, ogs_pfcp_urr_t *urr, size_t size, bool is_uplink)
 {
-    upf_sess_urr_acc_t *urr_acc = &sess->urr_acc[urr->id];
+    upf_sess_urr_acc_t *urr_acc = &sess->urr_acc[urr->id-1];
     uint64_t vol;
+
+    ogs_assert(urr->id > 0 && urr->id <= OGS_MAX_NUM_OF_URR);
+    urr_acc = &sess->urr_acc[urr->id-1];
 
     /* Increment total & ul octets + pkts */
     urr_acc->total_octets += size;
