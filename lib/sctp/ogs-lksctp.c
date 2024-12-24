@@ -54,6 +54,41 @@ ogs_sock_t *ogs_sctp_socket(int family, int type)
 }
 
 /**
+ * Creates an SCTP socket using the appropriate address family.
+ * If there is an IPv6 address in sa_list, it will use AF_INET6,
+ * otherwise, it will use AF_INET.
+ *
+ * @param sa_list List of addresses to check.
+ * @param type The type of the socket (e.g., SOCK_STREAM).
+ * @return The created SCTP socket, or NULL if creation failed.
+ */
+static ogs_sock_t *create_sctp_socket_from_addr_list(
+        ogs_sockaddr_t *sa_list, int type)
+{
+    ogs_sockaddr_t *addr = sa_list;
+    ogs_sock_t *new_sock = NULL;
+
+    ogs_assert(sa_list);
+
+    /* Check for the presence of an IPv6 address in sa_list */
+    while (addr != NULL) {
+        if (addr->ogs_sa_family == AF_INET6) {
+            // If an IPv6 address is found, use AF_INET6
+            new_sock = ogs_sctp_socket(AF_INET6, type);
+            break;
+        }
+        addr = addr->next;
+    }
+
+    /* If no IPv6 address is found, default to AF_INET */
+    if (!new_sock) {
+        new_sock = ogs_sctp_socket(AF_INET, type);
+    }
+
+    return new_sock;
+}
+
+/**
  * @brief
  *   1) Count the number of addresses in sa_list and determine the total
  *      buffer size.
@@ -166,7 +201,7 @@ ogs_sock_t *ogs_sctp_server(
      * Create an SCTP socket using the family of the first address
      * in sa_list.
      */
-    new_sock = ogs_sctp_socket(sa_list->ogs_sa_family, type);
+    new_sock = create_sctp_socket_from_addr_list(sa_list, type);
     if (!new_sock) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
                         "sctp_server() Failed to create SCTP socket");
@@ -284,7 +319,7 @@ ogs_sock_t *ogs_sctp_client(
      * Create the SCTP socket using the address family of the first remote
      * address.
      */
-    new_sock = ogs_sctp_socket(sa_list->ogs_sa_family, type);
+    new_sock = create_sctp_socket_from_addr_list(sa_list, type);
     if (!new_sock) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
                         "sctp_client() Failed to create SCTP socket");
