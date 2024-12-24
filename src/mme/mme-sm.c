@@ -978,11 +978,13 @@ cleanup:
 
         max_num_of_ostreams = e->max_num_of_ostreams;
 
-        vlr = mme_vlr_find_by_addr(addr);
-        ogs_free(addr);
-
+        vlr = mme_vlr_find_by_sock(sock);
         ogs_assert(vlr);
         ogs_assert(OGS_FSM_STATE(&vlr->sm));
+
+        if (vlr->addr)
+            ogs_free(vlr->addr);
+        vlr->addr = addr;
 
         vlr->max_num_of_ostreams =
                 ogs_min(max_num_of_ostreams, vlr->max_num_of_ostreams);
@@ -1003,11 +1005,13 @@ cleanup:
         ogs_assert(addr->ogs_sa_family == AF_INET ||
                 addr->ogs_sa_family == AF_INET6);
 
-        vlr = mme_vlr_find_by_addr(addr);
-        ogs_free(addr);
-
+        vlr = mme_vlr_find_by_sock(sock);
         ogs_assert(vlr);
         ogs_assert(OGS_FSM_STATE(&vlr->sm));
+
+        if (vlr->addr)
+            ogs_free(vlr->addr);
+        vlr->addr = addr;
 
         if (OGS_FSM_CHECK(&vlr->sm, sgsap_state_connected)) {
             e->vlr = vlr;
@@ -1033,11 +1037,13 @@ cleanup:
         ogs_assert(addr->ogs_sa_family == AF_INET ||
                 addr->ogs_sa_family == AF_INET6);
 
-        vlr = mme_vlr_find_by_addr(addr);
-        ogs_free(addr);
-
+        vlr = mme_vlr_find_by_sock(sock);
         ogs_assert(vlr);
         ogs_assert(OGS_FSM_STATE(&vlr->sm));
+
+        if (vlr->addr)
+            ogs_free(vlr->addr);
+        vlr->addr = addr;
 
         e->vlr = vlr;
         ogs_fsm_dispatch(&vlr->sm, e);

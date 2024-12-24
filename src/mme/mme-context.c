@@ -2816,6 +2816,8 @@ void mme_vlr_remove(mme_vlr_t *vlr)
 
     ogs_freeaddrinfo(vlr->sa_list);
     ogs_freeaddrinfo(vlr->local_sa_list);
+    if (vlr->addr)
+        ogs_free(vlr->addr);
     if (vlr->option)
         ogs_free(vlr->option);
 
@@ -2840,13 +2842,13 @@ void mme_vlr_close(mme_vlr_t *vlr)
         ogs_sctp_destroy(vlr->sock);
 }
 
-mme_vlr_t *mme_vlr_find_by_addr(const ogs_sockaddr_t *addr)
+mme_vlr_t *mme_vlr_find_by_sock(const ogs_sock_t *sock)
 {
     mme_vlr_t *vlr = NULL;
-    ogs_assert(addr);
+    ogs_assert(sock);
 
     ogs_list_for_each(&self.vlr_list, vlr) {
-        if (ogs_sockaddr_is_equal(vlr->addr, addr) == true)
+        if (vlr->sock == sock)
             return vlr;
     }
 

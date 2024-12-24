@@ -44,33 +44,15 @@ ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
     if (sock) {
         vlr->sock = sock;
 #if HAVE_USRSCTP
-        vlr->addr = vlr->sa_list;
         usrsctp_set_non_blocking((struct socket *)sock, 1);
         usrsctp_set_upcall((struct socket *)sock, usrsctp_recv_handler, NULL);
 #else
-
-/*
- * Originally, the code assigned vlr->addr to the address of sock->remote_addr:
- *   vlr->addr = &sock->remote_addr;
- * However, when using sctp_connectx, it was not easy to set remote_addr.
- * Therefore, at this point, vlr->addr is now assigned to vlr->sa_list,
- * utilizing the initially used address:
- *   vlr->addr = vlr->sa_list;
- *
- * This approach may lead to issues when connecting to multiple addresses,
- * as subsequent addresses cannot be accurately compared using the 'from'
- * parameter in sctp_recvmsg.
- *
- * Since a proper solution is deferred, it is recommended to avoid using
- * sctp_connectx with multiple addresses for the time being.
- */
-        vlr->addr = vlr->sa_list;
         vlr->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, lksctp_recv_handler, sock);
         ogs_assert(vlr->poll);
 #endif
         ogs_info("sgsap client() [%s]:%d",
-                OGS_ADDR(vlr->addr, buf), OGS_PORT(vlr->addr));
+                OGS_ADDR(vlr->sa_list, buf), OGS_PORT(vlr->sa_list));
     }
 
     return sock;
