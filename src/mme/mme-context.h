@@ -219,7 +219,6 @@ typedef struct mme_vlr_s {
     ogs_sockaddr_t  *local_sa_list;   /* VLR SGsAP Socket Local Address List */
 
     ogs_sock_t      *sock;      /* VLR SGsAP Socket */
-    ogs_sockaddr_t  *addr;      /* VLR SGsAP Socket Address */
     ogs_sockopt_t   *option;    /* VLR SGsAP Socket Option */
     ogs_poll_t      *poll;      /* VLR SGsAP Poll */
 } mme_vlr_t;

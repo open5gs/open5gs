@@ -2816,8 +2816,6 @@ void mme_vlr_remove(mme_vlr_t *vlr)
 
     ogs_freeaddrinfo(vlr->sa_list);
     ogs_freeaddrinfo(vlr->local_sa_list);
-    if (vlr->addr)
-        ogs_free(vlr->addr);
     if (vlr->option)
         ogs_free(vlr->option);
 

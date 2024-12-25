@@ -93,6 +93,7 @@ ogs_sock_t *ogs_sctp_server(
         int type, ogs_sockaddr_t *sa_list, ogs_sockopt_t *socket_option)
 {
     int rv;
+    char *sa_list_str = NULL;
     char buf[OGS_ADDRSTRLEN];
 
     ogs_sock_t *new = NULL;
@@ -142,8 +143,10 @@ ogs_sock_t *ogs_sctp_server(
     }
 
     if (addr == NULL) {
-        ogs_error("sctp_server [%s]:%d failed",
-                OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
+        sa_list_str = ogs_sockaddr_strdup(sa_list);
+        ogs_error("sctp_server %s failed", sa_list_str);
+        ogs_free(sa_list_str);
+
         return NULL;
     }
 
@@ -161,6 +164,7 @@ ogs_sock_t *ogs_sctp_client(
         ogs_sockopt_t *socket_option)
 {
     int rv;
+    char *sa_list_str = NULL;
     char buf[OGS_ADDRSTRLEN];
 
     ogs_sock_t *new = NULL;
@@ -210,8 +214,10 @@ ogs_sock_t *ogs_sctp_client(
     }
 
     if (addr == NULL) {
-        ogs_error("sctp_client [%s]:%d failed", 
-                OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
+        sa_list_str = ogs_sockaddr_strdup(sa_list);
+        ogs_error("sctp_client %s failed", sa_list_str);
+        ogs_free(sa_list_str);
+
         return NULL;
     }
 
@@ -221,7 +227,7 @@ ogs_sock_t *ogs_sctp_client(
 int ogs_sctp_bind(ogs_sock_t *sock, ogs_sockaddr_t *sa_list)
 {
     struct socket *socket = (struct socket *)sock;
-    char buf[OGS_ADDRSTRLEN];
+    char *sa_list_str = NULL;
     socklen_t addrlen;
 
     ogs_assert(socket);
@@ -231,13 +237,16 @@ int ogs_sctp_bind(ogs_sock_t *sock, ogs_sockaddr_t *sa_list)
     ogs_assert(addrlen);
 
     if (usrsctp_bind(socket, &sa_list->sa, addrlen) != 0) {
-        ogs_error("sctp_bind() [%s]:%d failed",
-                OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
+        sa_list_str = ogs_sockaddr_strdup(sa_list);
+        ogs_error("sctp_bind() %s failed", sa_list_str);
+        ogs_free(sa_list_str);
+
         return OGS_ERROR;
     }
 
-    ogs_debug("sctp_bind() [%s]:%d",
-            OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
+    sa_list_str = ogs_sockaddr_strdup(sa_list);
+    ogs_debug("sctp_bind() %s", sa_list_str);
+    ogs_free(sa_list_str);
 
     return OGS_OK;
 }
@@ -245,7 +254,7 @@ int ogs_sctp_bind(ogs_sock_t *sock, ogs_sockaddr_t *sa_list)
 int ogs_sctp_connect(ogs_sock_t *sock, ogs_sockaddr_t *sa_list)
 {
     struct socket *socket = (struct socket *)sock;
-    char buf[OGS_ADDRSTRLEN];
+    char *sa_list_str = NULL;
     socklen_t addrlen;
 
     ogs_assert(socket);
@@ -255,13 +264,16 @@ int ogs_sctp_connect(ogs_sock_t *sock, ogs_sockaddr_t *sa_list)
     ogs_assert(addrlen);
 
     if (usrsctp_connect(socket, &sa_list->sa, addrlen) != 0) {
-        ogs_error("sctp_connect() [%s]:%d",
-                OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
+        sa_list_str = ogs_sockaddr_strdup(sa_list);
+        ogs_error("sctp_connect() %s", sa_list_str);
+        ogs_free(sa_list_str);
+
         return OGS_ERROR;
     }
 
-    ogs_debug("sctp_connect() [%s]:%d",
-            OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
+    sa_list_str = ogs_sockaddr_strdup(sa_list);
+    ogs_debug("sctp_connect() %s", sa_list_str);
+    ogs_free(sa_list_str);
 
     return OGS_OK;
 }
