@@ -98,6 +98,8 @@ OpenAPI_list_t *ogs_sbi_build_plmn_list(
 int ogs_sbi_parse_plmn_list(
         ogs_plmn_id_t *plmn_list, OpenAPI_list_t *PlmnList);
 void ogs_sbi_free_plmn_list(OpenAPI_list_t *PlmnList);
+bool ogs_sbi_compare_plmn_list(
+        ogs_plmn_id_t *plmn_id, OpenAPI_plmn_id_t *PlmnId);
 
 OpenAPI_plmn_id_nid_t *ogs_sbi_build_plmn_id_nid(ogs_plmn_id_t *plmn_id);
 bool ogs_sbi_parse_plmn_id_nid(
