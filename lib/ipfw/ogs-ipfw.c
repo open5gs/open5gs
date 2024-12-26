@@ -61,20 +61,20 @@ int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description)
     ogs_assert(description);
 
     token = ogs_strtok_r(description, " ", &saveptr);
-    if (strcmp(token, "permit") != 0) {
-        ogs_error("Not begins with reserved keyword : 'permit'");
-        ogs_free(description);
-        return OGS_ERROR;
-    }
+//    if (strcmp(token, "permit") != 0) {
+//        ogs_error("Not begins with reserved keyword : 'permit'");
+//        ogs_free(description);
+//        return OGS_ERROR;
+//    }
     av[1] = token;
 
     /* Save DIRECTION */
     dir = token = ogs_strtok_r(NULL, " ", &saveptr);
-    if (strcmp(token, "out") != 0) {
-        ogs_error("Not begins with reserved keyword : 'permit out'");
-        ogs_free(description);
-        return OGS_ERROR;
-    }
+//    if (strcmp(token, "out") != 0) {
+//        ogs_error("Not begins with reserved keyword : 'permit out'");
+//        ogs_free(description);
+//        return OGS_ERROR;
+//    }
 
     /* ADDR */
     i = 2;
