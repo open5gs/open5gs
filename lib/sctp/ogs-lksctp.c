@@ -54,6 +54,37 @@ ogs_sock_t *ogs_sctp_socket(int family, int type)
 }
 
 /**
+ * Determines the appropriate SCTP socket family based on the provided
+ * address list.
+ * Returns AF_INET6 if any address in sa_list is IPv6, otherwise AF_INET.
+ * Returns AF_UNSPEC if sa_list is NULL or no suitable family is found.
+ *
+ * @param sa_list List of addresses to check.
+ * @return AF_INET6, AF_INET, or AF_UNSPEC if no suitable family is found.
+ */
+static int sctp_socket_family_from_addr_list(const ogs_sockaddr_t *sa_list)
+{
+    const ogs_sockaddr_t *addr = sa_list;
+
+    if (!sa_list) {
+        ogs_error("Address list is NULL");
+        return AF_UNSPEC;
+    }
+
+    /* Iterate through the address list to find an IPv6 address */
+    while (addr != NULL) {
+        if (addr->ogs_sa_family == AF_INET6) {
+            return AF_INET6;
+        }
+        addr = addr->next;
+    }
+
+    /* Default to AF_INET if no IPv6 address is found */
+    return AF_INET;
+}
+
+
+/**
  * @brief
  *   1) Count the number of addresses in sa_list and determine the total
  *      buffer size.
@@ -133,7 +164,8 @@ ogs_sock_t *ogs_sctp_server(
     ogs_sockopt_t *socket_option)
 {
     int rv;
-    char buf[OGS_ADDRSTRLEN];
+    char *sa_list_str = NULL;
+    int sa_family;
     ogs_sock_t *new_sock = NULL;
     ogs_sockopt_t option;
 
@@ -143,6 +175,7 @@ ogs_sock_t *ogs_sctp_server(
     int total_len = 0;
 
     ogs_assert(sa_list);
+    sa_list_str = ogs_sockaddr_strdup(sa_list);
 
     /* Initialize socket options. */
     ogs_sockopt_init(&option);
@@ -159,19 +192,21 @@ ogs_sock_t *ogs_sctp_server(
                    sa_list, &addr_count, &total_len);
     if (!addr_buf) {
         /* The helper logs errors, so just return. */
-        return NULL;
-    }
-
-    /*
-     * Create an SCTP socket using the family of the first address
-     * in sa_list.
-     */
-    new_sock = ogs_sctp_socket(sa_list->ogs_sa_family, type);
-    if (!new_sock) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                        "sctp_server() Failed to create SCTP socket");
+        ogs_error("create_continuous_address_buffer() failed");
         goto err;
     }
+
+    /* Determine the appropriate address family from sa_list */
+    sa_family = sctp_socket_family_from_addr_list(sa_list);
+    if (sa_family == AF_UNSPEC) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                        "sctp_client() No suitable address family found "
+                        "in sa_list");
+        goto err;
+    }
+
+    /* Create the SCTP socket using the determined address family */
+    new_sock = ogs_sctp_socket(sa_family, type);
 
     /* Configure SCTP-specific options. */
     rv = ogs_sctp_peer_addr_params(new_sock, &option);
@@ -214,8 +249,8 @@ ogs_sock_t *ogs_sctp_server(
     /*
      * Log debug info: only the first address is shown here as an example.
      */
-    ogs_debug("sctp_server() [%s]:%d (bound %d addresses)",
-              OGS_ADDR(sa_list, buf), OGS_PORT(sa_list), addr_count);
+    ogs_debug("sctp_server() %s (bound %d addresses)", sa_list_str, addr_count);
+    ogs_free(sa_list_str);
 
     /* Start listening for connections. */
     rv = ogs_sock_listen(new_sock);
@@ -236,8 +271,9 @@ err:
      * in sa_list (customize as needed).
      */
     ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                    "sctp_server() [%s]:%d failed",
-                    OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
+                    "sctp_server() %s failed", sa_list_str);
+    ogs_free(sa_list_str);
+
     return NULL;
 }
 
@@ -248,7 +284,8 @@ ogs_sock_t *ogs_sctp_client(
     ogs_sockopt_t *socket_option)
 {
     int rv;
-    char buf[OGS_ADDRSTRLEN];
+    char *sa_list_str = NULL;
+    int sa_family;
     ogs_sock_t *new_sock = NULL;
     ogs_sockopt_t option;
 
@@ -263,6 +300,7 @@ ogs_sock_t *ogs_sctp_client(
     int local_len = 0;
 
     ogs_assert(sa_list);
+    sa_list_str = ogs_sockaddr_strdup(sa_list);
 
     /* Initialize socket options and copy user-provided options if present. */
     ogs_sockopt_init(&option);
@@ -276,20 +314,21 @@ ogs_sock_t *ogs_sctp_client(
     remote_buf = create_continuous_address_buffer(
                      sa_list, &remote_count, &remote_len);
     if (!remote_buf) {
-        /* Logs and returns NULL on failure. */
-        return NULL;
-    }
-
-    /*
-     * Create the SCTP socket using the address family of the first remote
-     * address.
-     */
-    new_sock = ogs_sctp_socket(sa_list->ogs_sa_family, type);
-    if (!new_sock) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                        "sctp_client() Failed to create SCTP socket");
+        ogs_error("create_continuous_address_buffer() failed");
         goto err;
     }
+
+    /* Determine the appropriate address family from sa_list */
+    sa_family = sctp_socket_family_from_addr_list(sa_list);
+    if (sa_family == AF_UNSPEC) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                    "sctp_client() No suitable address family found "
+                    "in sa_list");
+        goto err;
+    }
+
+    /* Create the SCTP socket using the determined address family */
+    new_sock = ogs_sctp_socket(sa_family, type);
 
     /* Configure SCTP-specific options. */
     rv = ogs_sctp_peer_addr_params(new_sock, &option);
@@ -352,8 +391,8 @@ ogs_sock_t *ogs_sctp_client(
     }
 
     /* Debug log for the first remote address. */
-    ogs_debug("sctp_client() connected to [%s]:%d",
-              OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
+    ogs_debug("sctp_client() connected to %s", sa_list_str);
+    ogs_free(sa_list_str);
 
     /* Success: free buffers and return the new socket. */
     if (local_buf)
@@ -375,15 +414,16 @@ err:
      * Adjust to your needs, e.g., log local too if necessary.
      */
     ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                    "sctp_client() [%s]:%d failed",
-                    OGS_ADDR(sa_list, buf),
-                    OGS_PORT(sa_list));
+                    "sctp_client() %s failed", sa_list_str);
+    ogs_free(sa_list_str);
+
     return NULL;
 }
 
 int ogs_sctp_connect(ogs_sock_t *sock, ogs_sockaddr_t *sa_list)
 {
     ogs_sockaddr_t *addr;
+    char *sa_list_str = NULL;
     char buf[OGS_ADDRSTRLEN];
 
     ogs_assert(sock);
@@ -404,9 +444,11 @@ int ogs_sctp_connect(ogs_sock_t *sock, ogs_sockaddr_t *sa_list)
     }
 
     if (addr == NULL) {
+        sa_list_str = ogs_sockaddr_strdup(sa_list);
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "sctp_connect() [%s]:%d failed",
-                OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
+                "sctp_connect() %s failed", sa_list_str);
+        ogs_free(sa_list_str);
+
         return OGS_ERROR;
     }
 
