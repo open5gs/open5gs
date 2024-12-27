@@ -599,19 +599,19 @@ void smf_qos_flow_binding(smf_sess_t *sess)
             } else {
                 ogs_assert(strcmp(qos_flow->pcc_rule.id, pcc_rule->id) == 0);
 
-                if ((pcc_rule->qos.mbr.downlink &&
-                    qos_flow->qos.mbr.downlink != pcc_rule->qos.mbr.downlink) ||
-                    (pcc_rule->qos.mbr.uplink &&
-                     qos_flow->qos.mbr.uplink != pcc_rule->qos.mbr.uplink) ||
-                    (pcc_rule->qos.gbr.downlink &&
-                    qos_flow->qos.gbr.downlink != pcc_rule->qos.gbr.downlink) ||
-                    (pcc_rule->qos.gbr.uplink &&
-                    qos_flow->qos.gbr.uplink != pcc_rule->qos.gbr.uplink)) {
-                    /* Update QoS parameter */
-                    memcpy(&qos_flow->qos, &pcc_rule->qos, sizeof(ogs_qos_t));
+                if (pcc_rule->qos.mbr.downlink || pcc_rule->qos.mbr.uplink ||
+                    pcc_rule->qos.gbr.downlink || pcc_rule->qos.gbr.uplink) {
 
-                    /* Update Bearer Request encodes updated QoS parameter */
-                    qos_presence = true;
+                    if ((ogs_list_count(&qos_flow->pf_to_add_list) > 0) ||
+                        (qos_flow->qos.mbr.downlink != pcc_rule->qos.mbr.downlink) ||
+                        (qos_flow->qos.mbr.uplink != pcc_rule->qos.mbr.uplink) ||
+                        (qos_flow->qos.gbr.downlink != pcc_rule->qos.gbr.downlink) ||
+                        (qos_flow->qos.gbr.uplink != pcc_rule->qos.gbr.uplink)) {
+                        /* Update QoS parameter */
+                        memcpy(&qos_flow->qos, &pcc_rule->qos, sizeof(ogs_qos_t));
+                        /* Update Bearer Request encodes updated QoS parameter */
+                        qos_presence = true;
+                    }
                 }
             }
 
