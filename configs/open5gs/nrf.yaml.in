@@ -51,6 +51,24 @@ nrf:
 #    server:
 #      - address: nrf.localdomain
 #
+#  o Enable SSL key logging for Wireshark
+#    - This configuration allows capturing SSL/TLS session keys
+#      for debugging or analysis purposes using Wireshark.
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/nrf.key
+#        cert: @sysconfdir@/open5gs/tls/nrf.crt
+#        sslkeylogfile: @localstatedir@/log/open5gs/tls/nrf-server-sslkeylog.log
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_sslkeylogfile: @localstatedir@/log/open5gs/tls/nrf-client-sslkeylog.log
+#  sbi:
+#    server:
+#      - address: nrf.localdomain
+#
 #  o Add client TLS verification
 #  default:
 #    tls:

@@ -80,7 +80,7 @@ typedef struct ogs_sbi_client_s {
 
     OpenAPI_uri_scheme_e scheme;
     bool insecure_skip_verify;
-    char *cacert, *private_key, *cert;
+    char *cacert, *private_key, *cert, *sslkeylog;
 
     char *fqdn;
     uint16_t fqdn_port;

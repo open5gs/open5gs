@@ -81,6 +81,27 @@ udr:
 #      nrf:
 #        - uri: https://nrf.localdomain
 #
+#  o Enable SSL key logging for Wireshark
+#    - This configuration allows capturing SSL/TLS session keys
+#      for debugging or analysis purposes using Wireshark.
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/udr.key
+#        cert: @sysconfdir@/open5gs/tls/udr.crt
+#        sslkeylogfile: @localstatedir@/log/open5gs/tls/udr-server-sslkeylog.log
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_sslkeylogfile: @localstatedir@/log/open5gs/tls/udr-client-sslkeylog.log
+#  sbi:
+#    server:
+#      - address: udr.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
+#
 #  o Add client TLS verification
 #  default:
 #    tls:
