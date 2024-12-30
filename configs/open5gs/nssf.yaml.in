@@ -110,6 +110,31 @@ nssf:
 #          s_nssai:
 #            sst: 1
 #
+#  o Enable SSL key logging for Wireshark
+#    - This configuration allows capturing SSL/TLS session keys
+#      for debugging or analysis purposes using Wireshark.
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/nssf.key
+#        cert: @sysconfdir@/open5gs/tls/nssf.crt
+#        sslkeylogfile: @localstatedir@/log/open5gs/tls/nssf-server-sslkeylog.log
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_sslkeylogfile: @localstatedir@/log/open5gs/tls/nssf-client-sslkeylog.log
+#  sbi:
+#    server:
+#      - address: nssf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
+#      nsi:
+#        - uri: https://nrf.localdomain
+#          s_nssai:
+#            sst: 1
+#
 #  o Add client TLS verification
 #  default:
 #    tls:

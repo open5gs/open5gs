@@ -14,8 +14,10 @@ sepp:
       server:
         private_key: @sysconfdir@/open5gs/tls/sepp2.key
         cert: @sysconfdir@/open5gs/tls/sepp2.crt
+#        sslkeylogfile: @localstatedir@/log/open5gs/tls/sepp2-server-sslkeylog.log
       client:
         cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        sslkeylogfile: @localstatedir@/log/open5gs/tls/sepp2-client-sslkeylog.log
   sbi:
     server:
       - address: 127.0.2.250
@@ -130,6 +132,36 @@ sepp:
 #        cert: @sysconfdir@/open5gs/tls/sepp2.crt
 #      client:
 #        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: 127.0.2.250
+#        port: 7777
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#  n32:
+#    server:
+#      - sender: sepp2.localdomain
+#        scheme: https
+#        address: 127.0.2.251
+#    client:
+#      sepp:
+#        - receiver: sepp1.localdomain
+#          uri: https://sepp1.localdomain
+#          resolve: 127.0.1.251
+#
+#  o Enable SSL key logging for Wireshark
+#    - This configuration allows capturing SSL/TLS session keys
+#      for debugging or analysis purposes using Wireshark.
+#  default:
+#    tls:
+#      server:
+#        private_key: @sysconfdir@/open5gs/tls/sepp2.key
+#        cert: @sysconfdir@/open5gs/tls/sepp2.crt
+#        sslkeylogfile: @localstatedir@/log/open5gs/tls/sepp2-server-sslkeylog.log
+#      client:
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_sslkeylogfile: @localstatedir@/log/open5gs/tls/sepp2-client-sslkeylog.log
 #  sbi:
 #    server:
 #      - address: 127.0.2.250

@@ -282,6 +282,11 @@ int ogs_sbi_context_parse_config(
                                                 ogs_yaml_iter_value(
                                                         &server_iter);
                                         } else if (!strcmp(server_key,
+                                                    "sslkeylogfile")) {
+                                            self.tls.server.sslkeylog =
+                                                ogs_yaml_iter_value(
+                                                        &server_iter);
+                                        } else if (!strcmp(server_key,
                                                     "verify_client")) {
                                             self.tls.server.verify_client =
                                                 ogs_yaml_iter_bool(
@@ -338,6 +343,11 @@ int ogs_sbi_context_parse_config(
                                         } else if (!strcmp(client_key,
                                                     "client_cert")) {
                                             self.tls.client.cert =
+                                                ogs_yaml_iter_value(
+                                                        &client_iter);
+                                        } else if (!strcmp(client_key,
+                                                    "client_sslkeylogfile")) {
+                                            self.tls.client.sslkeylog =
                                                 ogs_yaml_iter_value(
                                                         &client_iter);
                                         }
@@ -664,7 +674,7 @@ int ogs_sbi_context_parse_server_config(
         const char *dev = NULL;
         ogs_sockaddr_t *addr = NULL;
 
-        const char *private_key = NULL, *cert = NULL;
+        const char *private_key = NULL, *cert = NULL, *sslkeylog = NULL;
 
         bool verify_client = false;
         const char *verify_client_cacert = NULL;
@@ -759,6 +769,8 @@ int ogs_sbi_context_parse_server_config(
                 private_key = ogs_yaml_iter_value(&server_iter);
             } else if (!strcmp(server_key, "cert")) {
                 cert = ogs_yaml_iter_value(&server_iter);
+            } else if (!strcmp(server_key, "sslkeylogfile")) {
+                sslkeylog = ogs_yaml_iter_value(&server_iter);
             } else if (!strcmp(server_key, "verify_client")) {
                 verify_client = ogs_yaml_iter_bool(&server_iter);
             } else if (!strcmp(server_key, "verify_client_cacert")) {
@@ -853,6 +865,12 @@ int ogs_sbi_context_parse_server_config(
                 server->cert = ogs_strdup(cert);
                 ogs_assert(server->cert);
             }
+            if (sslkeylog) {
+                if (server->sslkeylog)
+                    ogs_free(server->sslkeylog);
+                server->sslkeylog = ogs_strdup(sslkeylog);
+                ogs_assert(server->sslkeylog);
+            }
 
             if (scheme == OpenAPI_uri_scheme_https) {
                 if (!server->private_key) {
@@ -902,6 +920,12 @@ int ogs_sbi_context_parse_server_config(
                 server->cert = ogs_strdup(cert);
                 ogs_assert(server->cert);
             }
+            if (sslkeylog) {
+                if (server->sslkeylog)
+                    ogs_free(server->sslkeylog);
+                server->sslkeylog = ogs_strdup(sslkeylog);
+                ogs_assert(server->sslkeylog);
+            }
 
             if (scheme == OpenAPI_uri_scheme_https) {
                 if (!server->private_key) {
@@ -939,6 +963,7 @@ ogs_sbi_client_t *ogs_sbi_context_parse_client_config(ogs_yaml_iter_t *iter)
 
     const char *client_private_key = NULL;
     const char *client_cert = NULL;
+    const char *client_sslkeylog = NULL;
 
     bool rc;
 
@@ -980,6 +1005,8 @@ ogs_sbi_client_t *ogs_sbi_context_parse_client_config(ogs_yaml_iter_t *iter)
             client_private_key = ogs_yaml_iter_value(iter);
         } else if (!strcmp(key, "client_cert")) {
             client_cert = ogs_yaml_iter_value(iter);
+        } else if (!strcmp(key, "client_sslkeylogfile")) {
+            client_sslkeylog = ogs_yaml_iter_value(iter);
         }
     }
 
@@ -1047,6 +1074,13 @@ ogs_sbi_client_t *ogs_sbi_context_parse_client_config(ogs_yaml_iter_t *iter)
             ogs_free(client->cert);
         client->cert = ogs_strdup(client_cert);
         ogs_assert(client->cert);
+    }
+
+    if (client_sslkeylog) {
+        if (client->sslkeylog)
+            ogs_free(client->sslkeylog);
+        client->sslkeylog = ogs_strdup(client_sslkeylog);
+        ogs_assert(client->sslkeylog);
     }
 
     if ((!client_private_key && client_cert) ||
@@ -2668,4 +2702,30 @@ bool ogs_sbi_fqdn_in_vplmn(char *fqdn)
         return true;
 
     return false;
+}
+
+/* OpenSSL Key Log Callback */
+void ogs_sbi_keylog_callback(const SSL *ssl, const char *line)
+{
+    SSL_CTX *ctx = NULL;
+    FILE *file = NULL;
+    const char *sslkeylog_file = NULL;
+
+    ogs_assert(ssl);
+    ogs_assert(line);
+
+    /* Retrieve SSL_CTX from SSL object */
+    ctx = SSL_get_SSL_CTX(ssl);
+    ogs_assert(ctx);
+
+    sslkeylog_file = (const char *)SSL_CTX_get_app_data(ctx);
+    ogs_assert(sslkeylog_file);
+
+    file = fopen(sslkeylog_file, "a");
+    if (file) {
+        fprintf(file, "%s\n", line);
+        fclose(file);
+    } else {
+        ogs_error("Failed to open SSL key log file: %s", sslkeylog_file);
+    }
 }

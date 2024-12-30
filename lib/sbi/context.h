@@ -65,6 +65,7 @@ typedef struct ogs_sbi_context_s {
 
             const char *private_key;
             const char *cert;
+            const char *sslkeylog;
 
             bool verify_client;
             const char *verify_client_cacert;
@@ -77,6 +78,7 @@ typedef struct ogs_sbi_context_s {
 
             const char *private_key;
             const char *cert;
+            const char *sslkeylog;
         } client;
     } tls;
 
@@ -569,6 +571,8 @@ ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_find(char *id);
 bool ogs_sbi_supi_in_vplmn(char *supi);
 bool ogs_sbi_plmn_id_in_vplmn(ogs_plmn_id_t *plmn_id);
 bool ogs_sbi_fqdn_in_vplmn(char *fqdn);
+
+void ogs_sbi_keylog_callback(const SSL *ssl, const char *line);
 
 #ifdef __cplusplus
 }

@@ -57,7 +57,7 @@ if clangtidy.found() != true
 endif
 
 meson.add_install_script(python3_exe, '-c',
-        mkdir_p.format(join_paths(localstatedir, 'log', 'open5gs')))
+        mkdir_p.format(join_paths(localstatedir, 'log', 'open5gs', 'tls')))
 
 # Compiler flags
 if cc.get_id() == 'gcc' or cc.get_id() == 'clang'
