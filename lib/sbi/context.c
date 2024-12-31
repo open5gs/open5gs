@@ -823,9 +823,38 @@ int ogs_sbi_context_parse_server_config(
         }
 
         addr = NULL;
+        /* ----- Process advertise (Host+Port Parsing Logic) ----- */
         for (i = 0; i < num_of_advertise; i++) {
-            rv = ogs_addaddrinfo(&addr, family, advertise[i], port, 0);
+            uint16_t adv_port = port; /* Default to server's port */
+            char *hostbuf = NULL;
+            const char *colon_pos = strchr(advertise[i], ':');
+
+            if (colon_pos) {
+                /* If a colon exists, split host and port */
+                size_t host_len = colon_pos - advertise[i];
+
+                /* Allocate memory for the host part */
+                hostbuf = (char *)ogs_malloc(host_len + 1);
+                ogs_assert(hostbuf);
+
+                /* Copy the host part into hostbuf */
+                memcpy(hostbuf, advertise[i], host_len);
+                hostbuf[host_len] = '\0';
+
+                /* Parse the port part */
+                adv_port = (uint16_t)atoi(colon_pos + 1);
+            } else {
+                /* If no colon, treat the entire string as the host */
+                hostbuf = ogs_strdup(advertise[i]);
+                ogs_assert(hostbuf);
+            }
+
+            /* Add the parsed address info */
+            rv = ogs_addaddrinfo(&addr, family, hostbuf, adv_port, 0);
             ogs_assert(rv == OGS_OK);
+
+            /* Free the allocated memory */
+            ogs_free(hostbuf);
         }
 
         node = ogs_list_first(&list);
@@ -1752,11 +1781,8 @@ void ogs_sbi_nf_instance_build_default(ogs_sbi_nf_instance_t *nf_instance)
         ogs_assert(advertise);
 
         /* First FQDN is selected */
-        if (!hostname) {
+        if (!hostname)
             hostname = ogs_gethostname(advertise);
-            if (hostname)
-                continue;
-        }
 
         if (nf_instance->num_of_ipv4 < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
             ogs_sockaddr_t *addr = NULL;
@@ -1826,11 +1852,8 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
         ogs_assert(advertise);
 
         /* First FQDN is selected */
-        if (!hostname) {
+        if (!hostname)
             hostname = ogs_gethostname(advertise);
-            if (hostname)
-                continue;
-        }
 
         if (nf_service->num_of_addr < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
             bool is_port = true;
@@ -1943,6 +1966,7 @@ static void nf_service_associate_client(ogs_sbi_nf_service_t *nf_service)
 {
     ogs_sbi_client_t *client = NULL;
     ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+    uint16_t port = 0;
 
     ogs_assert(nf_service->scheme);
 
@@ -1950,15 +1974,28 @@ static void nf_service_associate_client(ogs_sbi_nf_service_t *nf_service)
     if (nf_service->num_of_addr) {
         addr = nf_service->addr[0].ipv4;
         addr6 = nf_service->addr[0].ipv6;
+
+        /*
+         * Added support for using custom port numbers with FQDN.
+         *
+         * This code checks if a user-defined port number is provided in the
+         * NFService structure. If the is_port flag is set, the port is
+         * assigned the specified value.
+         *
+         * This ensures that services using non-default ports can be accessed
+         * correctly, regardless of whether TLS is enabled or not.
+         */
+        if (nf_service->addr[0].is_port)
+            port = nf_service->addr[0].port;
     }
 
     if (nf_service->fqdn || addr || addr6) {
         client = ogs_sbi_client_find(
-                nf_service->scheme, nf_service->fqdn, 0, addr, addr6);
+                nf_service->scheme, nf_service->fqdn, port, addr, addr6);
         if (!client) {
             ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
             client = ogs_sbi_client_add(
-                    nf_service->scheme, nf_service->fqdn, 0, addr, addr6);
+                    nf_service->scheme, nf_service->fqdn, port, addr, addr6);
             if (!client) {
                 ogs_error("%s: ogs_sbi_client_add() failed", OGS_FUNC);
                 return;

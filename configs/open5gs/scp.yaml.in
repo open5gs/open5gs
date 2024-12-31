@@ -63,18 +63,31 @@ scp:
 ################################################################################
 # SBI Server
 ################################################################################
-#  o Override SBI address to be advertised to NRF
+#  o Bind to the address on the eth0 and advertise as open5gs-scp.svc.local
 #  sbi:
 #    server:
-#      - dev: eth0
+#      - dev:eth0
 #        advertise: open5gs-scp.svc.local
 #
+#  o Specify a custom port number 7777 while binding to the given address
 #  sbi:
 #    server:
-#      - address: localhost
-#        advertise:
-#          - 127.0.0.99
-#          - ::1
+#      - address: scp.localdomain
+#        port: 7777
+#
+#  o Bind to 127.0.0.200 and advertise as open5gs-scp.svc.local
+#  sbi:
+#    server:
+#      - address: 127.0.0.200
+#        port: 7777
+#        advertise: open5gs-scp.svc.local
+#
+#  o Bind to port 7777 but advertise with a different port number 8888
+#  sbi:
+#    server:
+#      - address: 127.0.0.200
+#        port: 7777
+#        advertise: open5gs-scp.svc.local:8888
 #
 ################################################################################
 # SBI Client
