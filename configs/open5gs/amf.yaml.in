@@ -164,8 +164,8 @@ amf:
 #    tls:
 #      server:
 #        scheme: https
-#        private_key: @sysconfdir@/open5gs/tls/nrf.key
-#        cert: @sysconfdir@/open5gs/tls/nrf.crt
+#        private_key: @sysconfdir@/open5gs/tls/amf.key
+#        cert: @sysconfdir@/open5gs/tls/amf.crt
 #        sslkeylogfile: @localstatedir@/log/open5gs/tls/amf-server-sslkeylog.log
 #      client:
 #        scheme: https
@@ -173,7 +173,10 @@ amf:
 #        client_sslkeylogfile: @localstatedir@/log/open5gs/tls/amf-client-sslkeylog.log
 #  sbi:
 #    server:
-#      - address: nrf.localdomain
+#      - address: amf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
 #
 #  o Add client TLS verification
 #  default:
