@@ -36,19 +36,25 @@ typedef struct ogs_sbi_smf_info_s ogs_sbi_smf_info_t;
 typedef struct ogs_sbi_nf_instance_s ogs_sbi_nf_instance_t;
 
 typedef enum {
-    OGS_SBI_DISCOVERY_DELEGATED_AUTO = 0,
-    OGS_SBI_DISCOVERY_DELEGATED_YES,
-    OGS_SBI_DISCOVERY_DELEGATED_NO,
-} ogs_sbi_discovery_delegated_mode;
+    OGS_SBI_CLIENT_DELEGATED_AUTO = 0,
+    OGS_SBI_CLIENT_DELEGATED_YES,
+    OGS_SBI_CLIENT_DELEGATED_NO,
+} ogs_sbi_client_delegated_mode_e;
 
-typedef struct ogs_sbi_discovery_config_s {
-    ogs_sbi_discovery_delegated_mode delegated;
-    bool no_service_names;
-    bool prefer_requester_nf_instance_id;
-} ogs_sbi_discovery_config_t;
+/* To hold all delegated config under sbi.client.delegated */
+typedef struct ogs_sbi_client_delegated_config_s {
+    struct {
+        ogs_sbi_client_delegated_mode_e nfm;  /* e.g. Registration, Heartbeat */
+        ogs_sbi_client_delegated_mode_e disc; /* NF discovery */
+    } nrf;
+    struct {
+        ogs_sbi_client_delegated_mode_e next; /* Next-hop SCP delegation */
+    } scp;
+} ogs_sbi_client_delegated_config_t;
 
 typedef struct ogs_sbi_context_s {
-    ogs_sbi_discovery_config_t discovery_config; /* SCP Discovery Delegated */
+    /* For sbi.client.delegated */
+    ogs_sbi_client_delegated_config_t client_delegated_config;
 
 #define OGS_HOME_NETWORK_PKI_VALUE_MIN 1
 #define OGS_HOME_NETWORK_PKI_VALUE_MAX 254

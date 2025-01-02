@@ -412,8 +412,7 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
                                 &discovery_option->guami.amf_id));
             }
         }
-        if (ogs_sbi_self()->discovery_config.no_service_names == false &&
-            discovery_option->num_of_service_names) {
+        if (discovery_option->num_of_service_names) {
 
     /*
      * Issues #1730
