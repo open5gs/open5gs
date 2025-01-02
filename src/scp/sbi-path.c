@@ -68,11 +68,11 @@ int scp_sbi_open(void)
     }
 
     /* Check if Next-SCP's client */
-    if (ogs_sbi_self()->discovery_config.delegated ==
-            OGS_SBI_DISCOVERY_DELEGATED_AUTO) {
+    if (ogs_sbi_self()->client_delegated_config.scp.next ==
+            OGS_SBI_CLIENT_DELEGATED_AUTO) {
         next_scp = NF_INSTANCE_CLIENT(ogs_sbi_self()->scp_instance);
-    } else if (ogs_sbi_self()->discovery_config.delegated ==
-            OGS_SBI_DISCOVERY_DELEGATED_YES) {
+    } else if (ogs_sbi_self()->client_delegated_config.scp.next ==
+            OGS_SBI_CLIENT_DELEGATED_YES) {
         next_scp = NF_INSTANCE_CLIENT(ogs_sbi_self()->scp_instance);
         ogs_assert(next_scp);
     }
@@ -153,11 +153,11 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
     }
 
     /* Next-SCP client */
-    if (ogs_sbi_self()->discovery_config.delegated ==
-            OGS_SBI_DISCOVERY_DELEGATED_AUTO) {
+    if (ogs_sbi_self()->client_delegated_config.scp.next ==
+            OGS_SBI_CLIENT_DELEGATED_AUTO) {
         next_scp = NF_INSTANCE_CLIENT(ogs_sbi_self()->scp_instance);
-    } else if (ogs_sbi_self()->discovery_config.delegated ==
-            OGS_SBI_DISCOVERY_DELEGATED_YES) {
+    } else if (ogs_sbi_self()->client_delegated_config.scp.next ==
+            OGS_SBI_CLIENT_DELEGATED_YES) {
         next_scp = NF_INSTANCE_CLIENT(ogs_sbi_self()->scp_instance);
         ogs_assert(next_scp);
     }
