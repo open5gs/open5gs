@@ -371,6 +371,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                                 server_key);
                                 }
 
+                                /* Add address information */
                                 addr = NULL;
                                 for (i = 0; i < num; i++) {
                                     rv = ogs_addaddrinfo(&addr,
@@ -378,20 +379,34 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                     ogs_assert(rv == OGS_OK);
                                 }
 
+                                /* Add each address as a separate socknode */
                                 if (addr) {
-                                    if (ogs_global_conf()->
-                                            parameter.no_ipv4 == 0)
-                                        ogs_socknode_add(
-                                            &self.pfcp_list, AF_INET, addr,
-                                            is_option ? &option : NULL);
-                                    if (ogs_global_conf()->
-                                            parameter.no_ipv6 == 0)
-                                        ogs_socknode_add(
-                                            &self.pfcp_list6, AF_INET6, addr,
-                                            is_option ? &option : NULL);
+                                    ogs_sockaddr_t *current = addr;
+                                    while (current) {
+                                        if (current->ogs_sa_family ==
+                                                AF_INET &&
+                                            ogs_global_conf()->
+                                                parameter.no_ipv4 == 0) {
+                                            ogs_socknode_add(&self.pfcp_list,
+                                                             AF_INET, current,
+                                                             is_option ?
+                                                             &option : NULL);
+                                        }
+                                        if (current->ogs_sa_family ==
+                                                AF_INET6 &&
+                                            ogs_global_conf()->
+                                                parameter.no_ipv6 == 0) {
+                                            ogs_socknode_add(&self.pfcp_list6,
+                                                             AF_INET6, current,
+                                                             is_option ?
+                                                             &option : NULL);
+                                        }
+                                        current = current->next;
+                                    }
                                     ogs_freeaddrinfo(addr);
                                 }
 
+                                /* Process advertise addresses if needed */
                                 addr = NULL;
                                 for (i = 0; i < num_of_advertise; i++) {
                                     rv = ogs_addaddrinfo(&addr,
@@ -420,6 +435,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                     ogs_freeaddrinfo(addr);
                                 }
 
+                                /* Bind to device if specified */
                                 if (dev) {
                                     rv = ogs_socknode_probe(
                                             ogs_global_conf()->
