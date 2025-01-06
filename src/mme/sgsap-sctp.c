@@ -34,7 +34,6 @@ static void recv_handler(ogs_sock_t *sock);
 
 ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
 {
-    char *sa_list_str = NULL;
     ogs_sock_t *sock = NULL;
 
     ogs_assert(vlr);
@@ -51,9 +50,8 @@ ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
                 OGS_POLLIN, sock->fd, lksctp_recv_handler, sock);
         ogs_assert(vlr->poll);
 #endif
-        sa_list_str = ogs_sockaddr_strdup(vlr->sa_list);
-        ogs_info("sgsap client() %s", sa_list_str);
-        ogs_free(sa_list_str);
+        ogs_info("sgsap client() %s",
+                ogs_sockaddr_to_string_static(vlr->sa_list));
     }
 
     return sock;

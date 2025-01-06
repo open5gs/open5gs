@@ -54,7 +54,6 @@ void mme_state_final(ogs_fsm_t *s, mme_event_t *e)
 void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 {
     int rv;
-    char *sa_list_str = NULL;
     char buf[OGS_ADDRSTRLEN];
 
     ogs_sock_t *sock = NULL;
@@ -981,10 +980,9 @@ cleanup:
         vlr->max_num_of_ostreams =
                 ogs_min(max_num_of_ostreams, vlr->max_num_of_ostreams);
 
-        sa_list_str = ogs_sockaddr_strdup(vlr->sa_list);
         ogs_debug("VLR-SGs SCTP_COMM_UP %s Max Num of Outbound Streams[%d]",
-                sa_list_str, vlr->max_num_of_ostreams);
-        ogs_free(sa_list_str);
+                ogs_sockaddr_to_string_static(vlr->sa_list),
+                vlr->max_num_of_ostreams);
 
         e->vlr = vlr;
         ogs_fsm_dispatch(&vlr->sm, e);
@@ -998,18 +996,17 @@ cleanup:
         ogs_assert(vlr);
         ogs_assert(OGS_FSM_STATE(&vlr->sm));
 
-        sa_list_str = ogs_sockaddr_strdup(vlr->sa_list);
         if (OGS_FSM_CHECK(&vlr->sm, sgsap_state_connected)) {
             e->vlr = vlr;
             ogs_fsm_dispatch(&vlr->sm, e);
 
-            ogs_info("VLR-SGs %s connection refused!!!", sa_list_str);
+            ogs_info("VLR-SGs %s connection refused!!!",
+                    ogs_sockaddr_to_string_static(vlr->sa_list));
 
         } else {
             ogs_warn("VLR-SGs %s connection refused, Already Removed!",
-                    sa_list_str);
+                    ogs_sockaddr_to_string_static(vlr->sa_list));
         }
-        ogs_free(sa_list_str);
 
         break;
     case MME_EVENT_SGSAP_MESSAGE:

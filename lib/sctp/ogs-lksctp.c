@@ -164,7 +164,6 @@ ogs_sock_t *ogs_sctp_server(
     ogs_sockopt_t *socket_option)
 {
     int rv;
-    char *sa_list_str = NULL;
     int sa_family;
     ogs_sock_t *new_sock = NULL;
     ogs_sockopt_t option;
@@ -175,7 +174,6 @@ ogs_sock_t *ogs_sctp_server(
     int total_len = 0;
 
     ogs_assert(sa_list);
-    sa_list_str = ogs_sockaddr_strdup(sa_list);
 
     /* Initialize socket options. */
     ogs_sockopt_init(&option);
@@ -249,8 +247,8 @@ ogs_sock_t *ogs_sctp_server(
     /*
      * Log debug info: only the first address is shown here as an example.
      */
-    ogs_debug("sctp_server() %s (bound %d addresses)", sa_list_str, addr_count);
-    ogs_free(sa_list_str);
+    ogs_debug("sctp_server() %s (bound %d addresses)",
+            ogs_sockaddr_to_string_static(sa_list), addr_count);
 
     /* Start listening for connections. */
     rv = ogs_sock_listen(new_sock);
@@ -271,8 +269,8 @@ err:
      * in sa_list (customize as needed).
      */
     ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                    "sctp_server() %s failed", sa_list_str);
-    ogs_free(sa_list_str);
+                    "sctp_server() %s failed",
+                    ogs_sockaddr_to_string_static(sa_list));
 
     return NULL;
 }
@@ -284,7 +282,6 @@ ogs_sock_t *ogs_sctp_client(
     ogs_sockopt_t *socket_option)
 {
     int rv;
-    char *sa_list_str = NULL;
     int sa_family;
     ogs_sock_t *new_sock = NULL;
     ogs_sockopt_t option;
@@ -300,7 +297,6 @@ ogs_sock_t *ogs_sctp_client(
     int local_len = 0;
 
     ogs_assert(sa_list);
-    sa_list_str = ogs_sockaddr_strdup(sa_list);
 
     /* Initialize socket options and copy user-provided options if present. */
     ogs_sockopt_init(&option);
@@ -391,8 +387,8 @@ ogs_sock_t *ogs_sctp_client(
     }
 
     /* Debug log for the first remote address. */
-    ogs_debug("sctp_client() connected to %s", sa_list_str);
-    ogs_free(sa_list_str);
+    ogs_debug("sctp_client() connected to %s",
+            ogs_sockaddr_to_string_static(sa_list));
 
     /* Success: free buffers and return the new socket. */
     if (local_buf)
@@ -414,8 +410,8 @@ err:
      * Adjust to your needs, e.g., log local too if necessary.
      */
     ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                    "sctp_client() %s failed", sa_list_str);
-    ogs_free(sa_list_str);
+                    "sctp_client() %s failed",
+                    ogs_sockaddr_to_string_static(sa_list));
 
     return NULL;
 }
@@ -423,7 +419,6 @@ err:
 int ogs_sctp_connect(ogs_sock_t *sock, ogs_sockaddr_t *sa_list)
 {
     ogs_sockaddr_t *addr;
-    char *sa_list_str = NULL;
     char buf[OGS_ADDRSTRLEN];
 
     ogs_assert(sock);
@@ -444,10 +439,9 @@ int ogs_sctp_connect(ogs_sock_t *sock, ogs_sockaddr_t *sa_list)
     }
 
     if (addr == NULL) {
-        sa_list_str = ogs_sockaddr_strdup(sa_list);
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "sctp_connect() %s failed", sa_list_str);
-        ogs_free(sa_list_str);
+                "sctp_connect() %s failed",
+                ogs_sockaddr_to_string_static(sa_list));
 
         return OGS_ERROR;
     }

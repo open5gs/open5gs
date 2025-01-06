@@ -76,7 +76,6 @@ int sgsap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 int sgsap_send_to_vlr_with_sid(
         mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 {
-    char *sa_list_str = NULL;
     ogs_sock_t *sock = NULL;;
 
     ogs_assert(vlr);
@@ -84,9 +83,8 @@ int sgsap_send_to_vlr_with_sid(
     sock = vlr->sock;
     ogs_assert(sock);
 
-    sa_list_str = ogs_sockaddr_strdup(vlr->sa_list);
-    ogs_debug("    StreamNO[%d] VLR-IP[%s]", stream_no, sa_list_str);
-    ogs_free(sa_list_str);
+    ogs_debug("    StreamNO[%d] VLR-IP[%s]",
+            stream_no, ogs_sockaddr_to_string_static(vlr->sa_list));
 
     return sgsap_send(sock, pkbuf, stream_no);
 }
