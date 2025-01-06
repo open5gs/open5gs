@@ -667,9 +667,9 @@ char *ogs_ipstrdup(ogs_sockaddr_t *addr)
     return ogs_strdup(buf);
 }
 
-char *ogs_sockaddr_strdup(ogs_sockaddr_t *sa_list)
+char *ogs_sockaddr_to_string_static(ogs_sockaddr_t *sa_list)
 {
-    char dumpstr[OGS_HUGE_LEN];
+    static char dumpstr[OGS_HUGE_LEN];
     char *p, *last;
     ogs_sockaddr_t *addr = NULL;
 
@@ -688,7 +688,7 @@ char *ogs_sockaddr_strdup(ogs_sockaddr_t *sa_list)
         /* If there is more than one addr, remove the last character */
         *(p-1) = 0;
 
-        return ogs_strdup(dumpstr);
+        return dumpstr;
     }
 
     /* No address */
