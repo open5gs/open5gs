@@ -1184,8 +1184,6 @@ static ogs_pfcp_node_t *selected_upf_node(
 
 void smf_sess_select_upf(smf_sess_t *sess)
 {
-    char buf[OGS_ADDRSTRLEN];
-
     ogs_assert(sess);
 
     /*
@@ -1201,8 +1199,9 @@ void smf_sess_select_upf(smf_sess_t *sess)
         selected_upf_node(ogs_pfcp_self()->pfcp_node, sess);
     ogs_assert(ogs_pfcp_self()->pfcp_node);
     OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->pfcp_node);
-    ogs_debug("UE using UPF on IP[%s]",
-            OGS_ADDR(&ogs_pfcp_self()->pfcp_node->addr, buf));
+    ogs_debug("UE using UPF on IP %s",
+            ogs_sockaddr_to_string_static(
+                ogs_pfcp_self()->pfcp_node->addr_list));
 }
 
 smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type)
@@ -2186,14 +2185,16 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
                     else
                         sess->handover.upf_dl_teid = pdr->teid;
                 } else {
-                    if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+                    ogs_assert(sess->pfcp_node->addr_list);
+                    if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET)
                         ogs_assert(OGS_OK == ogs_copyaddrinfo(
                             &sess->handover.upf_dl_addr,
-                            &sess->pfcp_node->addr));
-                    else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+                            sess->pfcp_node->addr_list));
+                    else if (sess->pfcp_node->addr_list->ogs_sa_family ==
+                            AF_INET6)
                         ogs_assert(OGS_OK == ogs_copyaddrinfo(
                             &sess->handover.upf_dl_addr6,
-                            &sess->pfcp_node->addr));
+                            sess->pfcp_node->addr_list));
                     else
                         ogs_assert_if_reached();
 

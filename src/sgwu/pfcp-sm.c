@@ -25,7 +25,6 @@ static void node_timeout(ogs_pfcp_xact_t *xact, void *data);
 
 void sgwu_pfcp_state_initial(ogs_fsm_t *s, sgwu_event_t *e)
 {
-    int rv;
     ogs_pfcp_node_t *node = NULL;
 
     ogs_assert(s);
@@ -35,10 +34,6 @@ void sgwu_pfcp_state_initial(ogs_fsm_t *s, sgwu_event_t *e)
 
     node = e->pfcp_node;
     ogs_assert(node);
-
-    rv = ogs_pfcp_connect(
-            ogs_pfcp_self()->pfcp_sock, ogs_pfcp_self()->pfcp_sock6, node);
-    ogs_assert(rv == OGS_OK);
 
     node->t_no_heartbeat = ogs_timer_add(ogs_app()->timer_mgr,
             sgwu_timer_no_heartbeat, node);
@@ -63,12 +58,9 @@ void sgwu_pfcp_state_final(ogs_fsm_t *s, sgwu_event_t *e)
 
 void sgwu_pfcp_state_will_associate(ogs_fsm_t *s, sgwu_event_t *e)
 {
-    char buf[OGS_ADDRSTRLEN];
-
     ogs_pfcp_node_t *node = NULL;
     ogs_pfcp_xact_t *xact = NULL;
     ogs_pfcp_message_t *message = NULL;
-    ogs_sockaddr_t *addr = NULL;
     ogs_assert(s);
     ogs_assert(e);
 
@@ -96,11 +88,8 @@ void sgwu_pfcp_state_will_associate(ogs_fsm_t *s, sgwu_event_t *e)
     case SGWU_EVT_SXA_TIMER:
         switch(e->timer_id) {
         case SGWU_TIMER_ASSOCIATION:
-            addr = node->sa_list;
-            ogs_assert(addr);
-
-            ogs_warn("Retry association with peer [%s]:%d failed",
-                        OGS_ADDR(addr, buf), OGS_PORT(addr));
+            ogs_warn("Retry association with peer failed %s",
+                    ogs_sockaddr_to_string_static(node->addr_list));
 
             ogs_assert(node->t_association);
             ogs_timer_start(node->t_association,
@@ -155,13 +144,10 @@ void sgwu_pfcp_state_will_associate(ogs_fsm_t *s, sgwu_event_t *e)
 
 void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
 {
-    char buf[OGS_ADDRSTRLEN];
-
     ogs_pfcp_node_t *node = NULL;
     ogs_pfcp_xact_t *xact = NULL;
     ogs_pfcp_message_t *message = NULL;
 
-    ogs_sockaddr_t *addr = NULL;
     sgwu_sess_t *sess = NULL;
 
     ogs_assert(s);
@@ -171,14 +157,11 @@ void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
 
     node = e->pfcp_node;
     ogs_assert(node);
-    addr = node->sa_list;
-    ogs_assert(addr);
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        ogs_info("PFCP associated [%s]:%d",
-            OGS_ADDR(&node->addr, buf),
-            OGS_PORT(&node->addr));
+        ogs_info("PFCP associated %s",
+                ogs_sockaddr_to_string_static(node->addr_list));
         ogs_timer_start(node->t_no_heartbeat,
                 ogs_local_conf()->time.message.pfcp.no_heartbeat_duration);
         ogs_assert(OGS_OK ==
@@ -191,9 +174,8 @@ void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
         }
         break;
     case OGS_FSM_EXIT_SIG:
-        ogs_info("PFCP de-associated [%s]:%d",
-            OGS_ADDR(&node->addr, buf),
-            OGS_PORT(&node->addr));
+        ogs_info("PFCP de-associated %s",
+                ogs_sockaddr_to_string_static(node->addr_list));
         ogs_timer_stop(node->t_no_heartbeat);
         break;
     case SGWU_EVT_SXA_MESSAGE:
@@ -263,16 +245,14 @@ void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
             }
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:
-            ogs_warn("PFCP[REQ] has already been associated [%s]:%d",
-                OGS_ADDR(&node->addr, buf),
-                OGS_PORT(&node->addr));
+            ogs_warn("PFCP[REQ] has already been associated %s",
+                ogs_sockaddr_to_string_static(node->addr_list));
             ogs_pfcp_up_handle_association_setup_request(node, xact,
                     &message->pfcp_association_setup_request);
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE:
-            ogs_warn("PFCP[RSP] has already been associated [%s]:%d",
-                OGS_ADDR(&node->addr, buf),
-                OGS_PORT(&node->addr));
+            ogs_warn("PFCP[RSP] has already been associated %s",
+                ogs_sockaddr_to_string_static(node->addr_list));
             ogs_pfcp_up_handle_association_setup_response(node, xact,
                     &message->pfcp_association_setup_response);
             break;
@@ -318,8 +298,8 @@ void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
         }
         break;
     case SGWU_EVT_SXA_NO_HEARTBEAT:
-        ogs_warn("No Heartbeat from SGW-C [%s]:%d",
-                    OGS_ADDR(addr, buf), OGS_PORT(addr));
+        ogs_warn("No Heartbeat from SGW-C %s",
+                ogs_sockaddr_to_string_static(node->addr_list));
         OGS_FSM_TRAN(s, sgwu_pfcp_state_will_associate);
         break;
     default:

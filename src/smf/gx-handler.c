@@ -210,14 +210,15 @@ uint32_t smf_gx_handle_cca_initial_request(
             else
                 bearer->pgw_s5u_teid = ul_pdr->teid;
         } else {
-            if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+            ogs_assert(sess->pfcp_node->addr_list);
+            if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET)
                 ogs_assert(OGS_OK ==
                     ogs_copyaddrinfo(
-                        &bearer->pgw_s5u_addr, &sess->pfcp_node->addr));
-            else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+                        &bearer->pgw_s5u_addr, sess->pfcp_node->addr_list));
+            else if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET6)
                 ogs_assert(OGS_OK ==
                     ogs_copyaddrinfo(
-                        &bearer->pgw_s5u_addr6, &sess->pfcp_node->addr));
+                        &bearer->pgw_s5u_addr6, sess->pfcp_node->addr_list));
             else
                 ogs_assert_if_reached();
 

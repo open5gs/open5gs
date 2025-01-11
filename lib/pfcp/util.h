@@ -29,26 +29,30 @@ extern "C" {
 #endif
 
 typedef enum {
-    /* Operation was successful */
+    /* Success with actual Node ID */
     OGS_PFCP_STATUS_SUCCESS = 0,
 
-    /* The message type is unknown */
-    OGS_PFCP_ERROR_UNKNOWN_MESSAGE,
+    /* Success with no Node ID (NONE type) */
+    OGS_PFCP_STATUS_NODE_ID_NONE,
 
-    /* The message is semantically incorrect */
+    /* Success with OPTIONAL node_id_tlv, but presence=0 */
+    OGS_PFCP_STATUS_NODE_ID_OPTIONAL_ABSENT,
+
+    /* Error codes */
     OGS_PFCP_ERROR_SEMANTIC_INCORRECT_MESSAGE,
-
-    /* The node ID is not present in the message */
     OGS_PFCP_ERROR_NODE_ID_NOT_PRESENT,
-
-    /* The node ID was not found in the expected location */
     OGS_PFCP_ERROR_NODE_ID_NOT_FOUND,
+    OGS_PFCP_ERROR_UNKNOWN_MESSAGE
 
-    /* Add additional error codes as needed */
 } ogs_pfcp_status_e;
 
-ogs_pfcp_status_e ogs_pfcp_get_node_id(
-        ogs_pfcp_node_id_t *node_id, ogs_pfcp_message_t *message);
+ogs_pfcp_status_e
+ogs_pfcp_extract_node_id(ogs_pfcp_message_t *message,
+                         ogs_pfcp_node_id_t *node_id);
+
+ogs_sockaddr_t *ogs_pfcp_node_id_to_addrinfo(const ogs_pfcp_node_id_t *node_id);
+const char *ogs_pfcp_node_id_to_string_static(
+        const ogs_pfcp_node_id_t *node_id);
 
 #ifdef __cplusplus
 }

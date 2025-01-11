@@ -64,7 +64,11 @@ static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_sockaddr_t from;
     ogs_pfcp_node_t *node = NULL;
+    ogs_pfcp_message_t *message = NULL;
     ogs_pfcp_header_t *h = NULL;
+
+    ogs_pfcp_status_e pfcp_status;;
+    ogs_pfcp_node_id_t node_id;
 
     ogs_assert(fd != INVALID_SOCKET);
 
@@ -105,28 +109,105 @@ static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
     e = upf_event_new(UPF_EVT_N4_MESSAGE);
     ogs_assert(e);
 
-    node = ogs_pfcp_node_find(&ogs_pfcp_self()->pfcp_peer_list, &from);
-    if (!node) {
-        node = ogs_pfcp_node_add(&ogs_pfcp_self()->pfcp_peer_list, &from);
-        if (!node) {
-            ogs_error("No memory: ogs_pfcp_node_add() failed");
-            ogs_pkbuf_free(e->pkbuf);
-            upf_event_free(e);
-            return;
-        }
-
-        node->sock = data;
-        pfcp_node_fsm_init(node, false);
+    /*
+     * Issue #1911
+     *
+     * Because ogs_pfcp_message_t is over 80kb in size,
+     * it can cause stack overflow.
+     * To avoid this, the pfcp_message structure uses heap memory.
+     */
+    if ((message = ogs_pfcp_parse_msg(pkbuf)) == NULL) {
+        ogs_error("ogs_pfcp_parse_msg() failed");
+        ogs_pkbuf_free(pkbuf);
+        upf_event_free(e);
+        return;
     }
+
+    pfcp_status = ogs_pfcp_extract_node_id(message, &node_id);
+    switch (pfcp_status) {
+    case OGS_PFCP_STATUS_SUCCESS:
+    case OGS_PFCP_STATUS_NODE_ID_NONE:
+    case OGS_PFCP_STATUS_NODE_ID_OPTIONAL_ABSENT:
+        ogs_debug("ogs_pfcp_extract_node_id() "
+                "type [%d] pfcp_status [%d] node_id [%s] from %s",
+                message->h.type, pfcp_status,
+                pfcp_status == OGS_PFCP_STATUS_SUCCESS ?
+                    ogs_pfcp_node_id_to_string_static(&node_id) :
+                    "NULL",
+                ogs_sockaddr_to_string_static(&from));
+        break;
+
+    case OGS_PFCP_ERROR_SEMANTIC_INCORRECT_MESSAGE:
+    case OGS_PFCP_ERROR_NODE_ID_NOT_PRESENT:
+    case OGS_PFCP_ERROR_NODE_ID_NOT_FOUND:
+    case OGS_PFCP_ERROR_UNKNOWN_MESSAGE:
+        ogs_error("ogs_pfcp_extract_node_id() failed "
+                "type [%d] pfcp_status [%d] from %s",
+                message->h.type, pfcp_status,
+                ogs_sockaddr_to_string_static(&from));
+        goto cleanup;
+
+    default:
+        ogs_error("Unexpected pfcp_status "
+                "type [%d] pfcp_status [%d] from %s",
+                message->h.type, pfcp_status,
+                ogs_sockaddr_to_string_static(&from));
+        goto cleanup;
+    }
+
+    node = ogs_pfcp_node_find(&ogs_pfcp_self()->pfcp_peer_list,
+            pfcp_status == OGS_PFCP_STATUS_SUCCESS ? &node_id : NULL, &from);
+    if (!node) {
+        if (message->h.type == OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE ||
+            message->h.type == OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE) {
+            ogs_assert(pfcp_status == OGS_PFCP_STATUS_SUCCESS);
+            node = ogs_pfcp_node_add(&ogs_pfcp_self()->pfcp_peer_list,
+                    &node_id, &from);
+            if (!node) {
+                ogs_error("No memory: ogs_pfcp_node_add() failed");
+                goto cleanup;
+            }
+            ogs_debug("Added PFCP-Node: addr_list %s",
+                    ogs_sockaddr_to_string_static(node->addr_list));
+
+            pfcp_node_fsm_init(node, false);
+
+        } else {
+            ogs_error("Cannot find PFCP-Node: type [%d] node_id %s from %s",
+                    message->h.type,
+                    pfcp_status == OGS_PFCP_STATUS_SUCCESS ?
+                        ogs_pfcp_node_id_to_string_static(&node_id) :
+                        "NULL",
+                    ogs_sockaddr_to_string_static(&from));
+            goto cleanup;
+        }
+    } else {
+        ogs_debug("Found PFCP-Node: addr_list %s",
+                ogs_sockaddr_to_string_static(node->addr_list));
+        ogs_expect(OGS_OK == ogs_pfcp_node_merge(
+                    node,
+                    pfcp_status == OGS_PFCP_STATUS_SUCCESS ?  &node_id : NULL,
+                    &from));
+        ogs_debug("Merged PFCP-Node: addr_list %s",
+                ogs_sockaddr_to_string_static(node->addr_list));
+    }
+
     e->pfcp_node = node;
     e->pkbuf = pkbuf;
+    e->pfcp_message = message;
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        ogs_pkbuf_free(e->pkbuf);
-        upf_event_free(e);
+        goto cleanup;
     }
+
+    return;
+
+cleanup:
+    ogs_pkbuf_free(pkbuf);
+    ogs_pfcp_message_free(message);
+    upf_event_free(e);
 }
 
 int upf_pfcp_open(void)

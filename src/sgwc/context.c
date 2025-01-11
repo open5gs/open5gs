@@ -408,8 +408,6 @@ static ogs_pfcp_node_t *selected_sgwu_node(
 
 void sgwc_sess_select_sgwu(sgwc_sess_t *sess)
 {
-    char buf[OGS_ADDRSTRLEN];
-
     ogs_assert(sess);
 
     /*
@@ -425,8 +423,9 @@ void sgwc_sess_select_sgwu(sgwc_sess_t *sess)
         selected_sgwu_node(ogs_pfcp_self()->pfcp_node, sess);
     ogs_assert(ogs_pfcp_self()->pfcp_node);
     OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->pfcp_node);
-    ogs_debug("UE using SGW-U on IP[%s]",
-            OGS_ADDR(&ogs_pfcp_self()->pfcp_node->addr, buf));
+    ogs_debug("UE using SGW-U on IP %s",
+            ogs_sockaddr_to_string_static(
+                ogs_pfcp_self()->pfcp_node->addr_list));
 }
 
 int sgwc_sess_remove(sgwc_sess_t *sess)
@@ -761,14 +760,15 @@ sgwc_tunnel_t *sgwc_tunnel_add(
             else
                 tunnel->local_teid = pdr->teid;
         } else {
-            if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+            ogs_assert(sess->pfcp_node->addr_list);
+            if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET)
                 ogs_assert(OGS_OK ==
                     ogs_copyaddrinfo(
-                        &tunnel->local_addr, &sess->pfcp_node->addr));
-            else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+                        &tunnel->local_addr, sess->pfcp_node->addr_list));
+            else if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET6)
                 ogs_assert(OGS_OK ==
                     ogs_copyaddrinfo(
-                        &tunnel->local_addr6, &sess->pfcp_node->addr));
+                        &tunnel->local_addr6, sess->pfcp_node->addr_list));
             else
                 ogs_assert_if_reached();
 

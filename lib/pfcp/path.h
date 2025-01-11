@@ -56,10 +56,6 @@ extern "C" {
 typedef struct ogs_pfcp_xact_s ogs_pfcp_xact_t;
 
 ogs_sock_t *ogs_pfcp_server(ogs_socknode_t *node);
-int ogs_pfcp_connect(
-    ogs_sock_t *ipv4, ogs_sock_t *ipv6, ogs_pfcp_node_t *node);
-
-int ogs_pfcp_send(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf);
 int ogs_pfcp_sendto(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf);
 
 ogs_pkbuf_t *ogs_pfcp_handle_echo_req(ogs_pkbuf_t *pkt);
