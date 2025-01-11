@@ -130,14 +130,9 @@ bool ogs_pfcp_cp_handle_association_setup_request(
         }
     }
 
-    if (node->up_function_features.ftup == 0) {
-        char buf[OGS_ADDRSTRLEN];
-        ogs_sockaddr_t *addr = node->sa_list;
-        ogs_assert(addr);
-
-        ogs_warn("F-TEID allocation/release not supported with peer [%s]:%d",
-                OGS_ADDR(addr, buf), OGS_PORT(addr));
-    }
+    if (node->up_function_features.ftup == 0)
+        ogs_warn("F-TEID allocation/release not supported with peer %s",
+                ogs_sockaddr_to_string_static(node->addr_list));
 
     return true;
 }
@@ -182,14 +177,9 @@ bool ogs_pfcp_cp_handle_association_setup_response(
         }
     }
 
-    if (node->up_function_features.ftup == 0) {
-        char buf[OGS_ADDRSTRLEN];
-        ogs_sockaddr_t *addr = node->sa_list;
-        ogs_assert(addr);
-
-        ogs_warn("F-TEID allocation/release not supported with peer [%s]:%d",
-                OGS_ADDR(addr, buf), OGS_PORT(addr));
-    }
+    if (node->up_function_features.ftup == 0)
+        ogs_warn("F-TEID allocation/release not supported with peer %s",
+                ogs_sockaddr_to_string_static(node->addr_list));
 
     return true;
 }
