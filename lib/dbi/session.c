@@ -85,6 +85,7 @@ int ogs_dbi_session_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
         if (!strcmp(key, OGS_SLICE_STRING) && BSON_ITER_HOLDS_ARRAY(&iter)) {
             bson_iter_recurse(&iter, &child1_iter);
             while (bson_iter_next(&child1_iter)) {
+                bool sst_presence = false;
                 uint8_t sst;
                 ogs_uint24_t sd;
 
@@ -97,6 +98,7 @@ int ogs_dbi_session_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
 
                     if (!strcmp(child2_key, OGS_SST_STRING) &&
                         BSON_ITER_HOLDS_INT32(&child2_iter)) {
+                        sst_presence = true;
                         sst = bson_iter_int32(&child2_iter);
                     } else if (!strcmp(child2_key, OGS_SD_STRING) &&
                         BSON_ITER_HOLDS_UTF8(&child2_iter)) {
@@ -107,6 +109,11 @@ int ogs_dbi_session_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
                         BSON_ITER_HOLDS_ARRAY(&child2_iter)) {
                         bson_iter_recurse(&child2_iter, &child3_iter);
                     }
+                }
+
+                if (!sst_presence) {
+                    ogs_error("No SST");
+                    continue;
                 }
 
                 if (s_nssai && s_nssai->sst != sst) continue;

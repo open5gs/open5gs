@@ -140,6 +140,7 @@ void ogs_nas_build_s_nssai(
          * "no SD value associated with the SST".
          */
         (nas_s_nssai_ie->sd.v == OGS_S_NSSAI_NO_SD_VALUE &&
+         nas_s_nssai_ie->mapped_hplmn_sst_presence &&
          nas_s_nssai_ie->mapped_hplmn_sd.v != OGS_S_NSSAI_NO_SD_VALUE)) {
 
         v = ogs_htobe24(nas_s_nssai_ie->sd);
