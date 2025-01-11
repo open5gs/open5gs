@@ -834,6 +834,7 @@ typedef struct amf_sess_s {
 
     ogs_s_nssai_t s_nssai;
     ogs_s_nssai_t mapped_hplmn;
+    bool mapped_hplmn_presence;
     char *dnn;
 
 } amf_sess_t;

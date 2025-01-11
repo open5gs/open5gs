@@ -133,7 +133,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
     SmContextCreateData.s_nssai = &sNssai;
 
-    if (sess->mapped_hplmn.sst) {
+    if (sess->mapped_hplmn_presence) {
         hplmnSnssai.sst = sess->mapped_hplmn.sst;
         hplmnSnssai.sd = ogs_s_nssai_sd_to_string(sess->mapped_hplmn.sd);
         SmContextCreateData.hplmn_snssai = &hplmnSnssai;
