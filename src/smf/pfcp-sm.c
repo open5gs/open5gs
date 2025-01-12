@@ -197,11 +197,15 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             node->restoration_required = false;
             ogs_error("PFCP restoration");
         }
+
+        smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_PFCP_PEERS_ACTIVE);
         break;
     case OGS_FSM_EXIT_SIG:
         ogs_info("PFCP de-associated %s",
             ogs_sockaddr_to_string_static(node->addr_list));
         ogs_timer_stop(node->t_no_heartbeat);
+
+        smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_PFCP_PEERS_ACTIVE);
         break;
     case SMF_EVT_N4_MESSAGE:
         message = e->pfcp_message;
