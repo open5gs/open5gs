@@ -730,6 +730,26 @@ int ogs_ipsubnet(ogs_ipsubnet_t *ipsub,
     return OGS_OK;
 }
 
+int ogs_macaddress(uint8_t *mac_addr,
+        const char *macaddressstr)
+{
+    if(strlen(macaddressstr) != 17) {
+        ogs_error("Bad ether address %s", macaddressstr);
+        return OGS_ERROR;
+    }
+    if(sscanf(macaddressstr, "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx",
+        mac_addr + 0,
+        mac_addr + 1,
+        mac_addr + 2,
+        mac_addr + 3,
+        mac_addr + 4,
+        mac_addr + 5) != 6) {
+        ogs_error("Bad ether address %s", macaddressstr);
+        return OGS_ERROR;
+    }
+    return OGS_OK;
+}
+
 char *ogs_gethostname(ogs_sockaddr_t *addr)
 {
     return addr->hostname;

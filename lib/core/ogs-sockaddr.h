@@ -116,6 +116,9 @@ bool ogs_sockaddr_is_equal_addr(const void *p, const void *q);
 int ogs_ipsubnet(ogs_ipsubnet_t *ipsub,
         const char *ipstr, const char *mask_or_numbits);
 
+int ogs_macaddress(uint8_t *mac_addr,
+        const char *macaddressstr);
+
 char *ogs_gethostname(ogs_sockaddr_t *addr);
 char *ogs_ipstrdup(ogs_sockaddr_t *addr);
 char *ogs_sockaddr_to_string_static(ogs_sockaddr_t *sa_list);
