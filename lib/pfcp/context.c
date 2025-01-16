@@ -2031,10 +2031,10 @@ void ogs_pfcp_bar_delete(ogs_pfcp_bar_t *bar)
     if (bar->id_node)
         ogs_pool_free(&bar->sess->bar_id_pool, bar->id_node);
 
-    ogs_pool_free(&ogs_pfcp_bar_pool, bar);
-
     bar->sess = NULL;
     sess->bar = NULL;
+
+    ogs_pool_free(&ogs_pfcp_bar_pool, bar);
 }
 
 ogs_pfcp_rule_t *ogs_pfcp_rule_add(ogs_pfcp_pdr_t *pdr)
