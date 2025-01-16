@@ -26,7 +26,6 @@ static int context_initialized = 0;
 
 static OGS_POOL(ogs_pfcp_node_pool, ogs_pfcp_node_t);
 
-static OGS_POOL(ogs_pfcp_sess_pool, ogs_pfcp_sess_t);
 static OGS_POOL(ogs_pfcp_far_pool, ogs_pfcp_far_t);
 static OGS_POOL(ogs_pfcp_urr_pool, ogs_pfcp_urr_t);
 static OGS_POOL(ogs_pfcp_qer_pool, ogs_pfcp_qer_t);
@@ -54,8 +53,6 @@ void ogs_pfcp_context_init(void)
     ogs_log_install_domain(&__ogs_pfcp_domain, "pfcp", ogs_core()->log.level);
 
     ogs_pool_init(&ogs_pfcp_node_pool, ogs_app()->pool.nf);
-
-    ogs_pool_init(&ogs_pfcp_sess_pool, ogs_app()->pool.sess);
 
     ogs_pool_init(&ogs_pfcp_far_pool,
             ogs_app()->pool.sess * OGS_MAX_NUM_OF_FAR);
@@ -116,7 +113,6 @@ void ogs_pfcp_context_final(void)
     ogs_pool_final(&ogs_pfcp_pdr_teid_pool);
     ogs_free(pdr_random_to_index);
 
-    ogs_pool_final(&ogs_pfcp_sess_pool);
     ogs_pool_final(&ogs_pfcp_far_pool);
     ogs_pool_final(&ogs_pfcp_urr_pool);
     ogs_pool_final(&ogs_pfcp_qer_pool);
