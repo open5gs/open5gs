@@ -250,7 +250,7 @@ ogs_sockaddr_t *ogs_pfcp_node_id_to_addrinfo(const ogs_pfcp_node_id_t *node_id)
         /* Copy 16 bytes of IPv6 address */
         memcpy(&p->sin6.sin6_addr, node_id->addr6, 16);
         p->next = NULL;
-        return OGS_OK;
+        return p;
 
     /*------------------------------------------------
      * 3) FQDN
