@@ -113,6 +113,10 @@ socklen_t ogs_sockaddr_len(const void *sa);
 bool ogs_sockaddr_is_equal(const void *p, const void *q);
 bool ogs_sockaddr_is_equal_addr(const void *p, const void *q);
 
+bool ogs_sockaddr_check_any_match(
+        ogs_sockaddr_t *base,
+        ogs_sockaddr_t *list, const ogs_sockaddr_t *single, bool compare_port);
+
 int ogs_ipsubnet(ogs_ipsubnet_t *ipsub,
         const char *ipstr, const char *mask_or_numbits);
 

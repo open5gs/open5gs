@@ -550,9 +550,17 @@ typedef struct ogs_pfcp_outer_header_removal_s {
     uint8_t gtpu_extheader_deletion;
 } ogs_pfcp_outer_header_removal_t;
 
+/******************************************************************************
+ * PFCP Node ID structure
+ ******************************************************************************/
 #define OGS_PFCP_NODE_ID_IPV4   0
 #define OGS_PFCP_NODE_ID_IPV6   1
 #define OGS_PFCP_NODE_ID_FQDN   2
+
+/******************************************************************************
+ * Add this line to define the UNKNOWN type. We use '3' since 0,1,2 are taken.
+ ******************************************************************************/
+#define OGS_PFCP_NODE_ID_UNKNOWN 0xf
 typedef struct ogs_pfcp_node_id_s {
 ED2(uint8_t     spare:4;,
     uint8_t     type:4;)
