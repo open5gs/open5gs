@@ -386,8 +386,10 @@ static CURLcode sslctx_callback(CURL *curl, void *sslctx, void *userdata)
     /* Ensure app data is set for SSL objects */
     SSL_CTX_set_app_data(ctx, client->sslkeylog);
 
+#if OPENSSL_VERSION_NUMBER >= 0x10101000L
     /* Set the SSL Key Log callback */
     SSL_CTX_set_keylog_callback(ctx, ogs_sbi_keylog_callback);
+#endif
 
     return CURLE_OK;
 }
