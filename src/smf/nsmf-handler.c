@@ -290,6 +290,7 @@ bool smf_nsmf_handle_create_sm_context(
     sess->s_nssai.sst = sNssai->sst;
     sess->s_nssai.sd = ogs_s_nssai_sd_from_string(sNssai->sd);
     if (SmContextCreateData->hplmn_snssai) {
+        sess->mapped_hplmn_presence = true;
         sess->mapped_hplmn.sst = SmContextCreateData->hplmn_snssai->sst;
         sess->mapped_hplmn.sd = ogs_s_nssai_sd_from_string(
                                     SmContextCreateData->hplmn_snssai->sd);
@@ -532,14 +533,15 @@ bool smf_nsmf_handle_create_sm_context(
             else
                 sess->local_dl_teid = dl_pdr->teid;
         } else {
-            if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+            ogs_assert(sess->pfcp_node->addr_list);
+            if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET)
                 ogs_assert(OGS_OK ==
                     ogs_copyaddrinfo(
-                        &sess->local_dl_addr, &sess->pfcp_node->addr));
-            else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+                        &sess->local_dl_addr, sess->pfcp_node->addr_list));
+            else if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET6)
                 ogs_assert(OGS_OK ==
                     ogs_copyaddrinfo(
-                        &sess->local_dl_addr6, &sess->pfcp_node->addr));
+                        &sess->local_dl_addr6, sess->pfcp_node->addr_list));
             else
                 ogs_assert_if_reached();
 
@@ -565,14 +567,15 @@ bool smf_nsmf_handle_create_sm_context(
             else
                 sess->local_ul_teid = ul_pdr->teid;
         } else {
-            if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+            ogs_assert(sess->pfcp_node->addr_list);
+            if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET)
                 ogs_assert(OGS_OK ==
                     ogs_copyaddrinfo(
-                        &sess->local_ul_addr, &sess->pfcp_node->addr));
-            else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+                        &sess->local_ul_addr, sess->pfcp_node->addr_list));
+            else if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET6)
                 ogs_assert(OGS_OK ==
                     ogs_copyaddrinfo(
-                        &sess->local_ul_addr6, &sess->pfcp_node->addr));
+                        &sess->local_ul_addr6, sess->pfcp_node->addr_list));
             else
                 ogs_assert_if_reached();
 
@@ -2126,5 +2129,5 @@ cleanup:
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
-    return OGS_OK;
+    return true;
 }

@@ -83,6 +83,11 @@ ogs_pkbuf_t *emm_build_attach_accept(
     if (mme_ue->network_access_mode == OGS_NETWORK_ACCESS_MODE_ONLY_PACKET) {
         /* permit only EPS_ATTACH */
         eps_attach_result->result = OGS_NAS_ATTACH_TYPE_EPS_ATTACH;
+        if (ogs_global_conf()->parameter.fake_csfb == true)
+            eps_attach_result->result =
+                OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
+        else
+            eps_attach_result->result = OGS_NAS_ATTACH_TYPE_EPS_ATTACH;
     } else {
         eps_attach_result->result = mme_ue->nas_eps.attach.value;
     }

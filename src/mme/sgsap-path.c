@@ -53,8 +53,7 @@ void sgsap_close(void)
     }
 }
 
-int sgsap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
-        ogs_sockaddr_t *addr, uint16_t stream_no)
+int sgsap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 {
     int sent;
 
@@ -62,7 +61,7 @@ int sgsap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
     ogs_assert(pkbuf);
 
     sent = ogs_sctp_sendmsg(sock, pkbuf->data, pkbuf->len,
-            addr, OGS_SCTP_SGSAP_PPID, stream_no);
+            NULL, OGS_SCTP_SGSAP_PPID, stream_no);
     if (sent < 0 || sent != pkbuf->len) {
         ogs_error("ogs_sctp_sendmsg(len:%d,ssn:%d) error (%d:%s)",
                 pkbuf->len, stream_no, errno, strerror(errno));
@@ -77,7 +76,6 @@ int sgsap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
 int sgsap_send_to_vlr_with_sid(
         mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 {
-    char buf[OGS_ADDRSTRLEN];
     ogs_sock_t *sock = NULL;;
 
     ogs_assert(vlr);
@@ -85,8 +83,10 @@ int sgsap_send_to_vlr_with_sid(
     sock = vlr->sock;
     ogs_assert(sock);
 
-    ogs_debug("    VLR-IP[%s]", OGS_ADDR(vlr->addr, buf));
-    return sgsap_send(sock, pkbuf, vlr->addr, stream_no);
+    ogs_debug("    StreamNO[%d] VLR-IP[%s]",
+            stream_no, ogs_sockaddr_to_string_static(vlr->sa_list));
+
+    return sgsap_send(sock, pkbuf, stream_no);
 }
 
 int sgsap_send_to_vlr(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)

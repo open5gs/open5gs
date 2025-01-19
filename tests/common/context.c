@@ -1174,6 +1174,7 @@ test_ue_t *test_ue_add_by_suci(
 
             s_nssai->sst = 0;
             s_nssai->sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+            s_nssai->mapped_hplmn_sst_presence = false;
             s_nssai->mapped_hplmn_sst = 0;
             s_nssai->mapped_hplmn_sd.v = OGS_S_NSSAI_NO_SD_VALUE;
 

@@ -153,6 +153,7 @@ extern "C" {
 
 #define OGS_SBI_PATCH_PATH_NF_STATUS                "/nfStatus"
 #define OGS_SBI_PATCH_PATH_LOAD                     "/load"
+#define OGS_SBI_PATCH_PATH_PLMN_LIST                "/plmnList"
 #define OGS_SBI_PATCH_PATH_VALIDITY_TIME            "/validityTime"
 
 

@@ -67,7 +67,7 @@ mme:
   tai:
     - plmn_id:
         mcc: 901
-       mnc: 70
+        mnc: 70
       tac: 7
   security:
     integrity_order : [ EIA2, EIA1, EIA0 ]

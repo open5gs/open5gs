@@ -68,11 +68,11 @@ int scp_sbi_open(void)
     }
 
     /* Check if Next-SCP's client */
-    if (ogs_sbi_self()->discovery_config.delegated ==
-            OGS_SBI_DISCOVERY_DELEGATED_AUTO) {
+    if (ogs_sbi_self()->client_delegated_config.scp.next ==
+            OGS_SBI_CLIENT_DELEGATED_AUTO) {
         next_scp = NF_INSTANCE_CLIENT(ogs_sbi_self()->scp_instance);
-    } else if (ogs_sbi_self()->discovery_config.delegated ==
-            OGS_SBI_DISCOVERY_DELEGATED_YES) {
+    } else if (ogs_sbi_self()->client_delegated_config.scp.next ==
+            OGS_SBI_CLIENT_DELEGATED_YES) {
         next_scp = NF_INSTANCE_CLIENT(ogs_sbi_self()->scp_instance);
         ogs_assert(next_scp);
     }
@@ -153,11 +153,11 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
     }
 
     /* Next-SCP client */
-    if (ogs_sbi_self()->discovery_config.delegated ==
-            OGS_SBI_DISCOVERY_DELEGATED_AUTO) {
+    if (ogs_sbi_self()->client_delegated_config.scp.next ==
+            OGS_SBI_CLIENT_DELEGATED_AUTO) {
         next_scp = NF_INSTANCE_CLIENT(ogs_sbi_self()->scp_instance);
-    } else if (ogs_sbi_self()->discovery_config.delegated ==
-            OGS_SBI_DISCOVERY_DELEGATED_YES) {
+    } else if (ogs_sbi_self()->client_delegated_config.scp.next ==
+            OGS_SBI_CLIENT_DELEGATED_YES) {
         next_scp = NF_INSTANCE_CLIENT(ogs_sbi_self()->scp_instance);
         ogs_assert(next_scp);
     }
@@ -586,16 +586,6 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
             return OGS_ERROR;
         }
 
-        assoc->request = request;
-        ogs_assert(assoc->request);
-        assoc->service_type = service_type;
-        ogs_assert(assoc->service_type);
-
-        assoc->target_nf_type = target_nf_type;
-        ogs_assert(assoc->target_nf_type);
-        assoc->requester_nf_type = requester_nf_type;
-        ogs_assert(assoc->requester_nf_type);
-
         if (!discovery_option->num_of_service_names) {
             ogs_error("No service names");
             scp_assoc_remove(assoc);
@@ -625,6 +615,16 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                     "corresponds to the first service name in the header "
                     "in TS29.500");
         }
+
+        assoc->request = request;
+        ogs_assert(assoc->request);
+        assoc->service_type = service_type;
+        ogs_assert(assoc->service_type);
+
+        assoc->target_nf_type = target_nf_type;
+        ogs_assert(assoc->target_nf_type);
+        assoc->requester_nf_type = requester_nf_type;
+        ogs_assert(assoc->requester_nf_type);
 
         if (false == send_discover(nrf_client, nf_discover_handler, assoc)) {
             ogs_error("send_discover() failed");
@@ -717,7 +717,7 @@ static int response_handler(
 static int nf_discover_handler(
         int status, ogs_sbi_response_t *response, void *data)
 {
-    int rv;
+    int rv, res_status;
     char *strerror = NULL;
     ogs_sbi_message_t message;
 
@@ -777,16 +777,19 @@ static int nf_discover_handler(
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
         strerror = ogs_msprintf("cannot parse HTTP response");
+        res_status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
 
     if (message.res_status != OGS_SBI_HTTP_STATUS_OK) {
         strerror = ogs_msprintf("NF-Discover failed [%d]", message.res_status);
+        res_status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
 
     if (!message.SearchResult) {
         strerror = ogs_msprintf("No SearchResult");
+        res_status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
 
@@ -798,7 +801,7 @@ static int nf_discover_handler(
         strerror = ogs_msprintf("(NF discover) No NF-Instance [%s:%s]",
                     ogs_sbi_service_type_to_name(service_type),
                     OpenAPI_nf_type_ToString(requester_nf_type));
-
+        res_status = OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT;
         goto cleanup;
     }
 
@@ -811,7 +814,7 @@ static int nf_discover_handler(
         strerror = ogs_msprintf("(NF discover) No client [%s:%s]",
                     ogs_sbi_service_type_to_name(service_type),
                     OpenAPI_nf_type_ToString(requester_nf_type));
-
+        res_status = OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT;
         goto cleanup;
     }
 
@@ -825,6 +828,7 @@ static int nf_discover_handler(
         if (!sepp_client) {
             ogs_error("No SEPP [%s]", client->fqdn);
             strerror = ogs_msprintf("No SEPP [%s]", client->fqdn);
+            res_status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
             goto cleanup;
         }
 
@@ -839,6 +843,7 @@ static int nf_discover_handler(
     if (false == send_request(
                 client, response_handler, request, false, assoc)) {
         strerror = ogs_msprintf("send_request() failed");
+        res_status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
 
@@ -854,10 +859,8 @@ cleanup:
     scp_assoc_remove(assoc);
 
     if (stream) {
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(
-                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL,
-                NULL));
+        ogs_assert(true == ogs_sbi_server_send_error(
+                stream, res_status, NULL, strerror, NULL, NULL));
     } else
         ogs_error("STREAM has already been removed [%d]", stream_id);
 
@@ -872,7 +875,7 @@ cleanup:
 static int sepp_discover_handler(
         int status, ogs_sbi_response_t *response, void *data)
 {
-    int rv;
+    int rv, res_status;
     char *strerror = NULL;
     ogs_sbi_message_t message;
 
@@ -914,16 +917,19 @@ static int sepp_discover_handler(
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
         strerror = ogs_msprintf("cannot parse HTTP response");
+        res_status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
 
     if (message.res_status != OGS_SBI_HTTP_STATUS_OK) {
         strerror = ogs_msprintf("NF-Discover failed [%d]", message.res_status);
+        res_status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
 
     if (!message.SearchResult) {
         strerror = ogs_msprintf("No SearchResult");
+        res_status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
 
@@ -935,6 +941,7 @@ static int sepp_discover_handler(
     sepp_client = NF_INSTANCE_CLIENT(ogs_sbi_self()->sepp_instance);
     if (!sepp_client) {
         strerror = ogs_msprintf("No SEPP");
+        res_status = OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT;
         goto cleanup;
     }
 
@@ -945,6 +952,7 @@ static int sepp_discover_handler(
     if (false == send_request(
                 sepp_client, response_handler, request, false, assoc)) {
         strerror = ogs_msprintf("send_request() failed");
+        res_status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
 
@@ -960,10 +968,8 @@ cleanup:
     scp_assoc_remove(assoc);
 
     if (stream) {
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(
-                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL,
-                NULL));
+        ogs_assert(true == ogs_sbi_server_send_error(
+                stream, res_status, NULL, strerror, NULL, NULL));
     } else
         ogs_error("STREAM has already been removed [%d]", stream_id);
 

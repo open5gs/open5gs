@@ -61,6 +61,28 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_register(void)
         goto end;
     }
 
+    /*
+     * TS29510
+     * 6.1.6.2 Structured data types
+     * 6.1.6.2.2 Type: NFProfile
+     * Table 6.1.6.2.2-1: Definition of type NFProfile
+     *
+     * NF Profile Changes Support Indicator.
+     * See Annex B.
+     *
+     * This IE may be present in the NFRegister or
+     * NFUpdate (NF Profile Complete Replacement)
+     * request and shall be absent in the response.
+     *
+     * true: the NF Service Consumer supports receiving
+     * NF Profile Changes in the response.
+     *
+     * false (default): the NF Service Consumer does not
+     * support receiving NF Profile Changes in the response.
+     */
+    NFProfile->is_nf_profile_changes_support_ind = true;
+    NFProfile->nf_profile_changes_support_ind = true;
+
     message.NFProfile = NFProfile;
 
     request = ogs_sbi_build_request(&message);
@@ -145,9 +167,6 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         else
             OpenAPI_list_free(PlmnIdList);
     }
-
-    NFProfile->is_nf_profile_changes_support_ind = true;
-    NFProfile->nf_profile_changes_support_ind = true;
 
     if (nf_instance->fqdn)
         NFProfile->fqdn = ogs_strdup(nf_instance->fqdn);

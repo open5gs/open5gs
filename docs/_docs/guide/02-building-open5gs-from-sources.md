@@ -61,7 +61,7 @@ $ sudo ip link set ogstun up
 Install the dependencies for building the source code.
 
 ```bash
-$ sudo apt install python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git cmake libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn11-dev libmongoc-dev libbson-dev libyaml-dev libnghttp2-dev libmicrohttpd-dev libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev meson
+$ sudo apt install python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git cmake libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn-dev libmongoc-dev libbson-dev libyaml-dev libnghttp2-dev libmicrohttpd-dev libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev meson
 ```
 
 Git clone.
@@ -447,7 +447,7 @@ $ cp open5gs* /usr/bin/
 For convenience, you can execute all NFs at once by using the following command.
 ```bash
 $ ./build/tests/app/5gc ## 5G Core Only with ./build/configs/sample.yaml
-$ ./build/tests/app/epc -c ./build/configs/srslte.yaml ## EPC Only with ./build/configs/srslte.yaml
+$ ./build/tests/app/epc -c ./build/configs/srsenb.yaml ## EPC Only with ./build/configs/srsenb.yaml
 $ ./build/tests/app/app ## Both 5G Core and EPC with ./build/configs/sample.yaml
 ```
 

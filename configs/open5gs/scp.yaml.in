@@ -63,27 +63,77 @@ scp:
 ################################################################################
 # SBI Server
 ################################################################################
-#  o Override SBI address to be advertised to NRF
+#  o Bind to the address on the eth0 and advertise as open5gs-scp.svc.local
 #  sbi:
 #    server:
-#      - dev: eth0
+#      - dev:eth0
 #        advertise: open5gs-scp.svc.local
 #
+#  o Specify a custom port number 7777 while binding to the given address
 #  sbi:
 #    server:
-#      - address: localhost
-#        advertise:
-#          - 127.0.0.99
-#          - ::1
+#      - address: scp.localdomain
+#        port: 7777
+#
+#  o Bind to 127.0.0.200 and advertise as open5gs-scp.svc.local
+#  sbi:
+#    server:
+#      - address: 127.0.0.200
+#        port: 7777
+#        advertise: open5gs-scp.svc.local
+#
+#  o Bind to port 7777 but advertise with a different port number 8888
+#  sbi:
+#    server:
+#      - address: 127.0.0.200
+#        port: 7777
+#        advertise: open5gs-scp.svc.local:8888
 #
 ################################################################################
 # SBI Client
 ################################################################################
-#  o Direct communication with NRF interaction
+#  o Direct Communication with NRF
 #  sbi:
 #    client:
 #      nrf:
 #        - uri: http://127.0.0.10:7777
+#
+#  o Indirect Communication by Delegating to Next-SCP
+#  sbi:
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#
+#  o Indirect Communication without Delegation
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#      delegated:
+#        scp:
+#          next: no   # Do not delegate to SCP for next-hop
+#
+#  o Indirect Communication with Delegation
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#      delegated:
+#        scp:
+#          next: yes  # Delegate to SCP for next-hop communications
+#
+#  o Default delegation: all communications are delegated to the Next-SCP
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#      # No 'delegated' section; defaults to AUTO delegation
 #
 ################################################################################
 # HTTPS scheme with TLS
@@ -98,6 +148,27 @@ scp:
 #      client:
 #        scheme: https
 #        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: scp.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
+#
+#  o Enable SSL key logging for Wireshark
+#    - This configuration allows capturing SSL/TLS session keys
+#      for debugging or analysis purposes using Wireshark.
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/scp.key
+#        cert: @sysconfdir@/open5gs/tls/scp.crt
+#        sslkeylogfile: @localstatedir@/log/open5gs/tls/scp-server-sslkeylog.log
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_sslkeylogfile: @localstatedir@/log/open5gs/tls/scp-client-sslkeylog.log
 #  sbi:
 #    server:
 #      - address: scp.localdomain

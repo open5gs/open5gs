@@ -299,13 +299,6 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
-    if (!sliceInfo->sst) {
-        strerror = ogs_msprintf("[%s:%d] No sliceInfo->sst",
-                pcf_ue->supi, sess->psi);
-        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-        goto cleanup;
-    }
-
     servingNetwork = SmPolicyContextData->serving_network;
     if (servingNetwork) {
         if (!servingNetwork->mcc) {
@@ -500,37 +493,12 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
 
     if (ogs_sbi_supi_in_vplmn(pcf_ue->supi) == true) {
         /* Visited PLMN */
-        ogs_sbi_nf_instance_t *nf_instance = NULL;
-        ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
-
-        service_type = OGS_SBI_SERVICE_TYPE_NPCF_POLICYAUTHORIZATION;
-
-        nf_instance = OGS_SBI_GET_NF_INSTANCE(
-                sess->sbi.service_type_array[service_type]);
-        if (!nf_instance) {
-            OpenAPI_nf_type_e requester_nf_type =
-                        NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);
-            ogs_assert(requester_nf_type);
-            nf_instance = ogs_sbi_nf_instance_find_by_service_type(
-                            service_type, requester_nf_type);
-            if (nf_instance)
-                OGS_SBI_SETUP_NF_INSTANCE(
-                        sess->sbi.service_type_array[service_type],
-                        nf_instance);
-        }
-
-        if (nf_instance) {
-            r = pcf_sess_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
-                        pcf_nbsf_management_build_register,
-                        sess, stream, nf_instance);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-        } else {
-            r = pcf_sess_sbi_discover_only(sess, stream, service_type);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-        }
+        r = pcf_sess_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
+                    pcf_nbsf_management_build_register,
+                    sess, stream, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
 
         return (r == OGS_OK);
     } else {
@@ -598,19 +566,17 @@ bool pcf_npcf_smpolicycontrol_handle_delete(pcf_sess_t *sess,
 
     if (pcf_sessions_number_by_snssai_and_dnn(
                 pcf_ue, &sess->s_nssai, sess->dnn) > 1) {
-        ogs_sbi_message_t sendmsg;
-        memset(&sendmsg, 0, sizeof(sendmsg));
-
-        ogs_sbi_response_t *response = ogs_sbi_build_response(
-                &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
-        ogs_assert(response);
-        ogs_assert(true == ogs_sbi_server_send_response(stream, response));
-    } else {
+        ogs_expect(true ==
+                ogs_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT));
+    } else if (sess->binding.resource_uri) {
         r = pcf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
                 pcf_nbsf_management_build_de_register, sess, stream, NULL);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
+    } else {
+        ogs_expect(true ==
+                ogs_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT));
     }
 
     return true;

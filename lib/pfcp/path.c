@@ -36,69 +36,6 @@ ogs_sock_t *ogs_pfcp_server(ogs_socknode_t *node)
     return pfcp;
 }
 
-int ogs_pfcp_connect(
-        ogs_sock_t *ipv4, ogs_sock_t *ipv6, ogs_pfcp_node_t *node)
-{
-    ogs_sockaddr_t *addr;
-    char buf[OGS_ADDRSTRLEN];
-
-    ogs_assert(ipv4 || ipv6);
-    ogs_assert(node);
-    ogs_assert(node->sa_list);
-
-    addr = node->sa_list;
-    while (addr) {
-        ogs_sock_t *sock = NULL;
-
-        if (addr->ogs_sa_family == AF_INET)
-            sock = ipv4;
-        else if (addr->ogs_sa_family == AF_INET6)
-            sock = ipv6;
-        else
-            ogs_assert_if_reached();
-
-        if (sock) {
-            ogs_info("ogs_pfcp_connect() [%s]:%d",
-                    OGS_ADDR(addr, buf), OGS_PORT(addr));
-
-            node->sock = sock;
-            memcpy(&node->addr, addr, sizeof node->addr);
-            break;
-        }
-
-        addr = addr->next;
-    }
-
-    if (addr == NULL) {
-        ogs_error("ogs_pfcp_connect() [%s]:%d failed",
-                OGS_ADDR(node->sa_list, buf), OGS_PORT(node->sa_list));
-        ogs_error("Please check the IP version between SMF and UPF nodes.");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
-
-int ogs_pfcp_send(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf)
-{
-    ssize_t sent;
-    ogs_sock_t *sock = NULL;
-
-    ogs_assert(node);
-    ogs_assert(pkbuf);
-    sock = node->sock;
-    ogs_assert(sock);
-
-    sent = ogs_send(sock->fd, pkbuf->data, pkbuf->len, 0);
-    if (sent < 0 || sent != pkbuf->len) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "ogs_pfcp_send() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
-
 int ogs_pfcp_sendto(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf)
 {
     ssize_t sent;
@@ -107,10 +44,33 @@ int ogs_pfcp_sendto(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf)
 
     ogs_assert(node);
     ogs_assert(pkbuf);
-    sock = node->sock;
-    ogs_assert(sock);
-    addr = &node->addr;
+    ogs_assert(node->addr_list);
+
+    /* Initialize round-robin iterator if needed */
+    if (node->current_addr == NULL) {
+        node->current_addr = node->addr_list;
+    }
+    addr = node->current_addr;
     ogs_assert(addr);
+
+    if (addr->ogs_sa_family == AF_INET) {
+        sock = ogs_pfcp_self()->pfcp_sock;
+        if (!sock) {
+            ogs_error("IPv4 socket (pfcp_sock) is not available. "
+                    "Ensure that 'pfcp.server.address: 127.0.0.1' "
+                    "is set in the YAML configuration file.");
+            return OGS_ERROR;
+        }
+    } else if (addr->ogs_sa_family == AF_INET6) {
+        sock = ogs_pfcp_self()->pfcp_sock6;
+        if (!sock) {
+            ogs_error("IPv6 socket (pfcp_sock) is not available. "
+                    "Ensure that 'pfcp.server.address: [::1]' "
+                    "is set in the YAML configuration file.");
+            return OGS_ERROR;
+        }
+    } else
+        ogs_assert_if_reached();
 
     sent = ogs_sendto(sock->fd, pkbuf->data, pkbuf->len, 0, addr);
     if (sent < 0 || sent != pkbuf->len) {
@@ -124,6 +84,13 @@ int ogs_pfcp_sendto(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf)
         }
         return OGS_ERROR;
     }
+
+    /* Move to next address in round-robin sequence */
+    if (node->current_addr->next)
+        node->current_addr = node->current_addr->next;
+    else
+        /* If end of list reached, wrap around to the start */
+        node->current_addr = node->addr_list;
 
     return OGS_OK;
 }

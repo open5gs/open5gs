@@ -845,6 +845,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             if (!gnb) {
                 ogs_error("amf_gnb_add() failed");
                 ogs_free(addr);
+                break;
             }
         } else {
             ogs_free(addr);

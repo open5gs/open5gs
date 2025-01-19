@@ -75,6 +75,8 @@ ogs_sbi_server_t *ogs_sbi_server_add(
             ogs_strdup(ogs_sbi_self()->tls.server.private_key);
     if (ogs_sbi_self()->tls.server.cert)
         server->cert = ogs_strdup(ogs_sbi_self()->tls.server.cert);
+    if (ogs_sbi_self()->tls.server.sslkeylog)
+        server->sslkeylog = ogs_strdup(ogs_sbi_self()->tls.server.sslkeylog);
 
     server->verify_client = ogs_sbi_self()->tls.server.verify_client;
     if (ogs_sbi_self()->tls.server.verify_client_cacert)
@@ -112,6 +114,8 @@ void ogs_sbi_server_remove(ogs_sbi_server_t *server)
         ogs_free(server->private_key);
     if (server->cert)
         ogs_free(server->cert);
+    if (server->sslkeylog)
+        ogs_free(server->sslkeylog);
 
     ogs_pool_id_free(&server_pool, server);
 }

@@ -2050,9 +2050,9 @@ int mme_context_parse_config(void)
                     while (ogs_yaml_iter_next(&sgsap_iter)) {
                         const char *sgsap_key = ogs_yaml_iter_key(&sgsap_iter);
                         ogs_assert(sgsap_key);
-                        if (!strcmp(sgsap_key, "server")) {
-                            ogs_yaml_iter_t server_iter, server_array;
-                            ogs_yaml_iter_recurse(&sgsap_iter, &server_array);
+                        if (!strcmp(sgsap_key, "client")) {
+                            ogs_yaml_iter_t client_iter, client_array;
+                            ogs_yaml_iter_recurse(&sgsap_iter, &client_array);
                             do {
                                 mme_vlr_t *vlr = NULL;
                                 ogs_plmn_id_t plmn_id;
@@ -2063,38 +2063,39 @@ int mme_context_parse_config(void)
                                     const char *tac, *lac;
                                 } map[MAX_NUM_OF_CSMAP];
                                 int map_num = 0;
-                                ogs_sockaddr_t *addr = NULL;
+                                ogs_sockaddr_t *addr = NULL, *local_addr = NULL;
                                 int family = AF_UNSPEC;
-                                int i, hostname_num = 0;
-                                const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
+                                int i, hostname_num = 0, local_hostname_num = 0;
+                                const char *hostname[OGS_MAX_NUM_OF_HOSTNAME],
+                                    *local_hostname[OGS_MAX_NUM_OF_HOSTNAME];
                                 uint16_t port = self.sgsap_port;
 
                                 ogs_sockopt_t option;
                                 bool is_option = false;
 
-                                if (ogs_yaml_iter_type(&server_array) ==
+                                if (ogs_yaml_iter_type(&client_array) ==
                                         YAML_MAPPING_NODE) {
-                                    memcpy(&server_iter, &server_array,
+                                    memcpy(&client_iter, &client_array,
                                             sizeof(ogs_yaml_iter_t));
-                                } else if (ogs_yaml_iter_type(&server_array) ==
+                                } else if (ogs_yaml_iter_type(&client_array) ==
                                     YAML_SEQUENCE_NODE) {
-                                    if (!ogs_yaml_iter_next(&server_array))
+                                    if (!ogs_yaml_iter_next(&client_array))
                                         break;
                                     ogs_yaml_iter_recurse(
-                                            &server_array, &server_iter);
-                                } else if (ogs_yaml_iter_type(&server_array) ==
+                                            &client_array, &client_iter);
+                                } else if (ogs_yaml_iter_type(&client_array) ==
                                     YAML_SCALAR_NODE) {
                                     break;
                                 } else
                                     ogs_assert_if_reached();
 
-                                while (ogs_yaml_iter_next(&server_iter)) {
-                                    const char *server_key =
-                                        ogs_yaml_iter_key(&server_iter);
-                                    ogs_assert(server_key);
-                                    if (!strcmp(server_key, "family")) {
+                                while (ogs_yaml_iter_next(&client_iter)) {
+                                    const char *client_key =
+                                        ogs_yaml_iter_key(&client_iter);
+                                    ogs_assert(client_key);
+                                    if (!strcmp(client_key, "family")) {
                                         const char *v =
-                                            ogs_yaml_iter_value(&server_iter);
+                                            ogs_yaml_iter_value(&client_iter);
                                         if (v) family = atoi(v);
                                         if (family != AF_UNSPEC &&
                                             family != AF_INET &&
@@ -2106,9 +2107,9 @@ int mme_context_parse_config(void)
                                                 AF_UNSPEC, AF_INET, AF_INET6);
                                             family = AF_UNSPEC;
                                         }
-                                    } else if (!strcmp(server_key, "address")) {
+                                    } else if (!strcmp(client_key, "address")) {
                                         ogs_yaml_iter_t hostname_iter;
-                                        ogs_yaml_iter_recurse(&server_iter,
+                                        ogs_yaml_iter_recurse(&client_iter,
                                                 &hostname_iter);
                                         ogs_assert(ogs_yaml_iter_type(
                                                     &hostname_iter) !=
@@ -2131,26 +2132,53 @@ int mme_context_parse_config(void)
                                         } while (ogs_yaml_iter_type(
                                                     &hostname_iter) ==
                                                 YAML_SEQUENCE_NODE);
-                                    } else if (!strcmp(server_key, "port")) {
+                                    } else if (!strcmp(client_key,
+                                                "local_address")) {
+                                        ogs_yaml_iter_t local_hostname_iter;
+                                        ogs_yaml_iter_recurse(&client_iter,
+                                                &local_hostname_iter);
+                                        ogs_assert(ogs_yaml_iter_type(
+                                                    &local_hostname_iter) !=
+                                                YAML_MAPPING_NODE);
+
+                                        do {
+                                            if (ogs_yaml_iter_type(
+                                                        &local_hostname_iter) ==
+                                                    YAML_SEQUENCE_NODE) {
+                                                if (!ogs_yaml_iter_next(
+                                                        &local_hostname_iter))
+                                                    break;
+                                            }
+
+                                            ogs_assert(local_hostname_num <
+                                                    OGS_MAX_NUM_OF_HOSTNAME);
+                                            local_hostname
+                                                [local_hostname_num++] =
+                                                ogs_yaml_iter_value(
+                                                        &local_hostname_iter);
+                                        } while (ogs_yaml_iter_type(
+                                                    &local_hostname_iter) ==
+                                                YAML_SEQUENCE_NODE);
+                                    } else if (!strcmp(client_key, "port")) {
                                         const char *v =
-                                            ogs_yaml_iter_value(&server_iter);
+                                            ogs_yaml_iter_value(&client_iter);
                                         if (v) {
                                             port = atoi(v);
                                             self.sgsap_port = port;
                                         }
-                                    } else if (!strcmp(server_key, "option")) {
+                                    } else if (!strcmp(client_key, "option")) {
                                         rv = ogs_app_parse_sockopt_config(
-                                                &server_iter, &option);
+                                                &client_iter, &option);
                                         if (rv != OGS_OK) {
                                             ogs_error("ogs_app_parse_sockopt_"
                                                     "config() failed");
                                             return rv;
                                         }
                                         is_option = true;
-                                    } else if (!strcmp(server_key, "map")) {
+                                    } else if (!strcmp(client_key, "map")) {
                                         ogs_yaml_iter_t map_iter;
                                         ogs_yaml_iter_recurse(
-                                                &server_iter, &map_iter);
+                                                &client_iter, &map_iter);
 
                                         map[map_num].tai_mcc = NULL;
                                         map[map_num].tai_mnc = NULL;
@@ -2320,13 +2348,13 @@ int mme_context_parse_config(void)
 
                                         map_num++;
 
-                                    } else if (!strcmp(server_key, "tai")) {
+                                    } else if (!strcmp(client_key, "tai")) {
                                         ogs_error(
                                             "tai/lai configuraton changed to "
                                             "map.tai/map.lai");
                                         ogs_log_print(OGS_LOG_ERROR,
                                             "sgsap:\n"
-                                            "  server\n"
+                                            "  client\n"
                                             "    address: 127.0.0.2\n"
                                             "    map:\n"
                                             "      tai:\n"
@@ -2340,13 +2368,13 @@ int mme_context_parse_config(void)
                                             "          mnc: 01\n"
                                             "        lac: 43691\n");
                                         return OGS_ERROR;
-                                    } else if (!strcmp(server_key, "lai")) {
+                                    } else if (!strcmp(client_key, "lai")) {
                                         ogs_error(
                                             "tai/lai configuraton changed to "
                                             "map.tai/map.lai");
                                         ogs_log_print(OGS_LOG_ERROR,
                                             "sgsap:\n"
-                                            "  server\n"
+                                            "  client\n"
                                             "    address: 127.0.0.2\n"
                                             "    map:\n"
                                             "      tai:\n"
@@ -2362,7 +2390,7 @@ int mme_context_parse_config(void)
                                         return OGS_ERROR;
                                     } else
                                         ogs_warn("unknown key `%s`",
-                                                server_key);
+                                                client_key);
 
                                 }
 
@@ -2386,7 +2414,20 @@ int mme_context_parse_config(void)
 
                                 if (addr == NULL) continue;
 
-                                vlr = mme_vlr_add(addr,
+                                local_addr = NULL;
+                                for (i = 0; i < local_hostname_num; i++) {
+                                    rv = ogs_addaddrinfo(&local_addr,
+                                            family, local_hostname[i], port, 0);
+                                    ogs_assert(rv == OGS_OK);
+                                }
+
+                                ogs_filter_ip_version(&local_addr,
+                                        ogs_global_conf()->parameter.no_ipv4,
+                                        ogs_global_conf()->parameter.no_ipv6,
+                                        ogs_global_conf()->parameter.
+                                        prefer_ipv4);
+
+                                vlr = mme_vlr_add(addr, local_addr,
                                         is_option ? &option : NULL);
                                 ogs_assert(vlr);
 
@@ -2409,7 +2450,7 @@ int mme_context_parse_config(void)
                                             &csmap->lai.nas_plmn_id, &plmn_id);
                                     csmap->lai.lac = atoi(map[i].lac);
                                 }
-                            } while (ogs_yaml_iter_type(&server_array) ==
+                            } while (ogs_yaml_iter_type(&client_array) ==
                                     YAML_SEQUENCE_NODE);
                         } else
                             ogs_warn("unknown key `%s`", sgsap_key);
@@ -2737,7 +2778,10 @@ ogs_sockaddr_t *mme_pgw_addr_find_by_apn_enb(
     return NULL;
 }
 
-mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *sa_list, ogs_sockopt_t *option)
+mme_vlr_t *mme_vlr_add(
+        ogs_sockaddr_t *sa_list,
+        ogs_sockaddr_t *local_sa_list,
+        ogs_sockopt_t *option)
 {
     mme_vlr_t *vlr = NULL;
 
@@ -2751,6 +2795,7 @@ mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *sa_list, ogs_sockopt_t *option)
     vlr->ostream_id = 0;
 
     vlr->sa_list = sa_list;
+    vlr->local_sa_list = local_sa_list;
     if (option) {
         vlr->max_num_of_ostreams = option->sctp.sinit_num_ostreams;
         vlr->option = ogs_memdup(option, sizeof *option);
@@ -2770,6 +2815,7 @@ void mme_vlr_remove(mme_vlr_t *vlr)
     mme_vlr_close(vlr);
 
     ogs_freeaddrinfo(vlr->sa_list);
+    ogs_freeaddrinfo(vlr->local_sa_list);
     if (vlr->option)
         ogs_free(vlr->option);
 
@@ -2794,13 +2840,13 @@ void mme_vlr_close(mme_vlr_t *vlr)
         ogs_sctp_destroy(vlr->sock);
 }
 
-mme_vlr_t *mme_vlr_find_by_addr(const ogs_sockaddr_t *addr)
+mme_vlr_t *mme_vlr_find_by_sock(const ogs_sock_t *sock)
 {
     mme_vlr_t *vlr = NULL;
-    ogs_assert(addr);
+    ogs_assert(sock);
 
     ogs_list_for_each(&self.vlr_list, vlr) {
-        if (ogs_sockaddr_is_equal(vlr->addr, addr) == true)
+        if (vlr->sock == sock)
             return vlr;
     }
 
@@ -2999,7 +3045,8 @@ int mme_enb_remove(mme_enb_t *enb)
 
     ogs_hash_set(self.enb_addr_hash,
             enb->sctp.addr, sizeof(ogs_sockaddr_t), NULL);
-    ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
+    if (enb->enb_id_presence == true)
+        ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
 
     /*
      * CHECK:
@@ -3046,10 +3093,13 @@ int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id)
 {
     ogs_assert(enb);
 
-    ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
+    if (enb->enb_id_presence == true)
+        ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
 
     enb->enb_id = enb_id;
     ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), enb);
+
+    enb->enb_id_presence = true;
 
     return OGS_OK;
 }

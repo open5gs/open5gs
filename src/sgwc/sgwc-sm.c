@@ -89,22 +89,11 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
         ogs_assert(e);
         recvbuf = e->pkbuf;
         ogs_assert(recvbuf);
+        pfcp_message = e->pfcp_message;
+        ogs_assert(pfcp_message);
         pfcp_node = e->pfcp_node;
         ogs_assert(pfcp_node);
         ogs_assert(OGS_FSM_STATE(&pfcp_node->sm));
-
-        /*
-         * Issue #1911
-         *
-         * Because ogs_pfcp_message_t is over 80kb in size,
-         * it can cause stack overflow.
-         * To avoid this, the pfcp_message structure uses heap memory.
-         */
-        if ((pfcp_message = ogs_pfcp_parse_msg(recvbuf)) == NULL) {
-            ogs_error("ogs_pfcp_parse_msg() failed");
-            ogs_pkbuf_free(recvbuf);
-            break;
-        }
 
         rv = ogs_pfcp_xact_receive(pfcp_node, &pfcp_message->h, &pfcp_xact);
         if (rv != OGS_OK) {
@@ -113,7 +102,6 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
             break;
         }
 
-        e->pfcp_message = pfcp_message;
         e->pfcp_xact_id = pfcp_xact ? pfcp_xact->id : OGS_INVALID_POOL_ID;
 
         e->gtp_message = NULL;

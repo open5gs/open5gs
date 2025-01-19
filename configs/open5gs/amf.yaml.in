@@ -59,43 +59,83 @@ amf:
 ################################################################################
 # SBI Server
 ################################################################################
-#  o Override SBI address to be advertised to NRF
+#  o Bind to the address on the eth0 and advertise as open5gs-amf.svc.local
 #  sbi:
 #    server:
 #      - dev:eth0
 #        advertise: open5gs-amf.svc.local
 #
+#  o Specify a custom port number 7777 while binding to the given address
 #  sbi:
 #    server:
-#      - address: localhost
-#        advertise:
-#          - 127.0.0.99
-#          - ::1
+#      - address: amf.localdomain
+#        port: 7777
+#
+#  o Bind to 127.0.0.5 and advertise as open5gs-amf.svc.local
+#  sbi:
+#    server:
+#      - address: 127.0.0.5
+#        port: 7777
+#        advertise: open5gs-amf.svc.local
+#
+#  o Bind to port 7777 but advertise with a different port number 8888
+#  sbi:
+#    server:
+#      - address: 127.0.0.5
+#        port: 7777
+#        advertise: open5gs-amf.svc.local:8888
 #
 ################################################################################
 # SBI Client
 ################################################################################
-#  o Direct communication with NRF interaction
+#  o Direct Communication with NRF
 #  sbi:
 #    client:
 #      nrf:
 #        - uri: http://127.0.0.10:7777
 #
-#  o Indirect communication with delegated discovery
+#  o Indirect Communication by Delegating to SCP
 #  sbi:
 #    client:
 #      scp:
 #        - uri: http://127.0.0.200:7777
 #
-#  o Indirect communication without delegated discovery
+#  o Indirect Communication without Delegation
 #  sbi:
 #    client:
 #      nrf:
 #        - uri: http://127.0.0.10:7777
 #      scp:
 #        - uri: http://127.0.0.200:7777
-#  discovery:
-#    delegated: no
+#      delegated:
+#        nrf:
+#          nfm: no    # Directly communicate NRF management functions
+#          disc: no   # Directly communicate NRF discovery
+#        scp:
+#          next: no   # Do not delegate to SCP for next-hop
+#
+#  o Indirect Communication with Delegated Discovery
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#      delegated:
+#        nrf:
+#          nfm: no    # Directly communicate NRF management functions
+#          disc: yes  # Delegate discovery to SCP
+#        scp:
+#          next: yes  # Delegate to SCP for next-hop communications
+#
+#  o Default delegation: all communications are delegated to the SCP
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#      # No 'delegated' section; defaults to AUTO delegation
 #
 ################################################################################
 # HTTPS scheme with TLS
@@ -110,6 +150,27 @@ amf:
 #      client:
 #        scheme: https
 #        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: amf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
+#
+#  o Enable SSL key logging for Wireshark
+#    - This configuration allows capturing SSL/TLS session keys
+#      for debugging or analysis purposes using Wireshark.
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/amf.key
+#        cert: @sysconfdir@/open5gs/tls/amf.crt
+#        sslkeylogfile: @localstatedir@/log/open5gs/tls/amf-server-sslkeylog.log
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_sslkeylogfile: @localstatedir@/log/open5gs/tls/amf-client-sslkeylog.log
 #  sbi:
 #    server:
 #      - address: amf.localdomain

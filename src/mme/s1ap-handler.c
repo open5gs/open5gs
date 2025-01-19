@@ -50,12 +50,17 @@ static bool maximum_number_of_enbs_is_reached(void)
 
 static bool enb_plmn_id_is_foreign(mme_enb_t *enb)
 {
-    int i;
+    int i, j, k;
 
-    for (i = 0; i < enb->num_of_supported_ta_list; i++) {
-        if (memcmp(&enb->plmn_id, &enb->supported_ta_list[i].plmn_id,
-                    OGS_PLMN_ID_LEN) == 0)
-            return false;
+    for (i = 0; i < mme_self()->num_of_served_gummei; i++) {
+        for (j = 0; j < mme_self()->served_gummei[i].num_of_plmn_id; j++) {
+            for (k = 0; k < enb->num_of_supported_ta_list; k++) {
+                if (memcmp(&mme_self()->served_gummei[i].plmn_id[j],
+                            &enb->supported_ta_list[k].plmn_id,
+                            OGS_PLMN_ID_LEN) == 0)
+                    return false;
+            }
+        }
     }
 
     return true;

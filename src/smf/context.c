@@ -53,9 +53,11 @@ int smf_use_gy_iface(void)
 {
     switch (smf_self()->ctf_config.enabled) {
     case SMF_CTF_ENABLED_AUTO:
-        return ogs_diam_app_connected(OGS_DIAM_GY_APPLICATION_ID) ? 1 : 0;
+        return ogs_diam_is_relay_or_app_advertised(
+                OGS_DIAM_GY_APPLICATION_ID) ? 1 : 0;
     case SMF_CTF_ENABLED_YES:
-        return ogs_diam_app_connected(OGS_DIAM_GY_APPLICATION_ID) ? 1 : -1;
+        return ogs_diam_is_relay_or_app_advertised(
+                OGS_DIAM_GY_APPLICATION_ID) ? 1 : -1;
     case SMF_CTF_ENABLED_NO:
         return 0;
     default:
@@ -1182,8 +1184,6 @@ static ogs_pfcp_node_t *selected_upf_node(
 
 void smf_sess_select_upf(smf_sess_t *sess)
 {
-    char buf[OGS_ADDRSTRLEN];
-
     ogs_assert(sess);
 
     /*
@@ -1199,8 +1199,9 @@ void smf_sess_select_upf(smf_sess_t *sess)
         selected_upf_node(ogs_pfcp_self()->pfcp_node, sess);
     ogs_assert(ogs_pfcp_self()->pfcp_node);
     OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->pfcp_node);
-    ogs_debug("UE using UPF on IP[%s]",
-            OGS_ADDR(&ogs_pfcp_self()->pfcp_node->addr, buf));
+    ogs_debug("UE using UPF on IP %s",
+            ogs_sockaddr_to_string_static(
+                ogs_pfcp_self()->pfcp_node->addr_list));
 }
 
 smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type)
@@ -1482,6 +1483,7 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
 
     ogs_list_add(&smf_ue->sess_list, sess);
 
+    smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_PFCP_SESSIONS_ACTIVE);
     stats_add_smf_session();
 
     return sess;
@@ -1889,6 +1891,7 @@ void smf_sess_remove(smf_sess_t *sess)
         smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_GTP2_SESSIONS_ACTIVE);
         break;
     }
+    smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_PFCP_SESSIONS_ACTIVE);
     stats_remove_smf_session(sess);
 
     ogs_pool_free(&smf_n4_seid_pool, sess->smf_n4_seid_node);
@@ -2369,14 +2372,16 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
                     else
                         sess->handover.local_dl_teid = pdr->teid;
                 } else {
-                    if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+                    ogs_assert(sess->pfcp_node->addr_list);
+                    if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET)
                         ogs_assert(OGS_OK == ogs_copyaddrinfo(
                             &sess->handover.local_dl_addr,
-                            &sess->pfcp_node->addr));
-                    else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+                            sess->pfcp_node->addr_list));
+                    else if (sess->pfcp_node->addr_list->ogs_sa_family ==
+                            AF_INET6)
                         ogs_assert(OGS_OK == ogs_copyaddrinfo(
                             &sess->handover.local_dl_addr6,
-                            &sess->pfcp_node->addr));
+                            sess->pfcp_node->addr_list));
                     else
                         ogs_assert_if_reached();
 
@@ -2453,6 +2458,7 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     ogs_pfcp_far_t *up2cp_far = NULL;
 
     ogs_assert(sess);
+    ogs_assert(sess->session.name);
 
     smf_sess_delete_cp_up_data_forwarding(sess);
 
@@ -2460,15 +2466,10 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     ogs_assert(cp2up_pdr);
     sess->cp2up_pdr = cp2up_pdr;
 
-#if 0
-    /*
-     * DEPRECATED:
-     * In PDR, no need to distinguish the Network Instance from CP to UP.
-     */
-    ogs_assert(sess->session.name);
-    cp2up_pdr->apn = ogs_strdup(sess->session.name);
-    ogs_assert(cp2up_pdr->apn);
-#endif
+    if (ogs_global_conf()->parameter.use_upg_vpp == true) {
+        cp2up_pdr->apn = ogs_strdup(sess->session.name);
+        ogs_assert(cp2up_pdr->apn);
+    }
 
     cp2up_pdr->src_if = OGS_PFCP_INTERFACE_CP_FUNCTION;
 
@@ -2491,7 +2492,6 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     ogs_assert(up2cp_pdr);
     sess->up2cp_pdr = up2cp_pdr;
 
-    ogs_assert(sess->session.name);
     up2cp_pdr->apn = ogs_strdup(sess->session.name);
     ogs_assert(up2cp_pdr->apn);
 
@@ -2532,15 +2532,10 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     ogs_assert(up2cp_far);
     sess->up2cp_far = up2cp_far;
 
-    ogs_assert(sess->session.name);
-#if 0
-    /*
-     * DEPRECATED:
-     * In FAR, no need to distinguish the Network Instance from CP to UP.
-     */
-    up2cp_far->apn = ogs_strdup(sess->session.name);
-    ogs_assert(up2cp_far->apn);
-#endif
+    if (ogs_global_conf()->parameter.use_upg_vpp == true) {
+        up2cp_far->apn = ogs_strdup(sess->session.name);
+        ogs_assert(up2cp_far->apn);
+    }
 
     up2cp_far->dst_if = OGS_PFCP_INTERFACE_CP_FUNCTION;
     ogs_pfcp_pdr_associate_far(up2cp_pdr, up2cp_far);
@@ -3314,7 +3309,10 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
             /* TODO */
             break;
         case OGS_PCO_ID_MS_SUPPORT_LOCAL_ADDR_TFT_INDICATOR:
-            /* TODO */
+            smf.ids[smf.num_of_id].id = ue.ids[i].id;
+            smf.ids[smf.num_of_id].len = 0;
+            smf.ids[smf.num_of_id].data = 0;
+            smf.num_of_id++;
             break;
         case OGS_PCO_ID_P_CSCF_RE_SELECTION_SUPPORT:
             /* TODO */

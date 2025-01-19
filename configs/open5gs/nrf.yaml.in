@@ -21,18 +21,31 @@ nrf:
 ################################################################################
 # SBI Server
 ################################################################################
-#  o Override SBI address to be advertised to NRF
+#  o Bind to the address on the eth0 and advertise as open5gs-nrf.svc.local
 #  sbi:
 #    server:
-#      - dev: eth0
+#      - dev:eth0
 #        advertise: open5gs-nrf.svc.local
 #
+#  o Specify a custom port number 7777 while binding to the given address
 #  sbi:
 #    server:
-#      - address: localhost
-#        advertise:
-#          - 127.0.0.99
-#          - ::1
+#      - address: nrf.localdomain
+#        port: 7777
+#
+#  o Bind to 127.0.0.10 and advertise as open5gs-nrf.svc.local
+#  sbi:
+#    server:
+#      - address: 127.0.0.10
+#        port: 7777
+#        advertise: open5gs-nrf.svc.local
+#
+#  o Bind to port 7777 but advertise with a different port number 8888
+#  sbi:
+#    server:
+#      - address: 127.0.0.10
+#        port: 7777
+#        advertise: open5gs-nrf.svc.local:8888
 #
 ################################################################################
 # HTTPS scheme with TLS
@@ -47,6 +60,24 @@ nrf:
 #      client:
 #        scheme: https
 #        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: nrf.localdomain
+#
+#  o Enable SSL key logging for Wireshark
+#    - This configuration allows capturing SSL/TLS session keys
+#      for debugging or analysis purposes using Wireshark.
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/nrf.key
+#        cert: @sysconfdir@/open5gs/tls/nrf.crt
+#        sslkeylogfile: @localstatedir@/log/open5gs/tls/nrf-server-sslkeylog.log
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_sslkeylogfile: @localstatedir@/log/open5gs/tls/nrf-client-sslkeylog.log
 #  sbi:
 #    server:
 #      - address: nrf.localdomain

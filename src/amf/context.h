@@ -139,6 +139,7 @@ typedef struct amf_gnb_s {
 
     ogs_fsm_t       sm;         /* A state machine */
 
+    bool            gnb_id_presence;
     uint32_t        gnb_id;     /* gNB_ID received from gNB */
     ogs_plmn_id_t   plmn_id;    /* gNB PLMN-ID received from gNB */
     ogs_sctp_sock_t sctp;       /* SCTP socket */
@@ -835,6 +836,7 @@ typedef struct amf_sess_s {
 
     ogs_s_nssai_t s_nssai;
     ogs_s_nssai_t mapped_hplmn;
+    bool mapped_hplmn_presence;
     char *dnn;
     bool lbo_roaming_allowed;
 

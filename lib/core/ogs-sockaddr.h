@@ -67,20 +67,8 @@ struct ogs_sockaddr_s {
      * If there is a name in the configuration file,
      * it is set in the 'hostname' of ogs_sockaddr_t.
      * Then, it immediately call getaddrinfo() to fill addr in ogs_sockaddr_t.
-     *
-     * When it was always possible to convert DNS to addr, that was no problem.
-     * However, in some environments, such as Roaming, there are situations
-     * where it is difficult to always change the DNS to addr.
-     *
-     * So, 'fqdn' was created for the purpose of first use in ogs_sbi_client_t.
-     * 'fqdn' always do not change with addr.
-     * This value is used as it is in the actual client connection.
-     *
-     * Note that 'hostname' is still in use for server or other client
-     * except for ogs_sbi_client_t.
      */
     char *hostname;
-    char *fqdn;
 
     ogs_sockaddr_t *next;
 };
@@ -103,6 +91,10 @@ int ogs_copyaddrinfo(
 int ogs_filteraddrinfo(ogs_sockaddr_t **sa_list, int family);
 int ogs_sortaddrinfo(ogs_sockaddr_t **sa_list, int family);
 
+void ogs_merge_single_addrinfo(
+        ogs_sockaddr_t **dest, const ogs_sockaddr_t *item);
+void ogs_merge_addrinfo(ogs_sockaddr_t **dest, const ogs_sockaddr_t *src);
+
 ogs_sockaddr_t *ogs_link_local_addr(const char *dev, const ogs_sockaddr_t *sa);
 ogs_sockaddr_t *ogs_link_local_addr_by_dev(const char *dev);
 ogs_sockaddr_t *ogs_link_local_addr_by_sa(const ogs_sockaddr_t *sa);
@@ -119,12 +111,18 @@ int ogs_inet_pton(int family, const char *src, void *sa);
 
 socklen_t ogs_sockaddr_len(const void *sa);
 bool ogs_sockaddr_is_equal(const void *p, const void *q);
+bool ogs_sockaddr_is_equal_addr(const void *p, const void *q);
+
+bool ogs_sockaddr_check_any_match(
+        ogs_sockaddr_t *base,
+        ogs_sockaddr_t *list, const ogs_sockaddr_t *single, bool compare_port);
 
 int ogs_ipsubnet(ogs_ipsubnet_t *ipsub,
         const char *ipstr, const char *mask_or_numbits);
 
 char *ogs_gethostname(ogs_sockaddr_t *addr);
 char *ogs_ipstrdup(ogs_sockaddr_t *addr);
+char *ogs_sockaddr_to_string_static(ogs_sockaddr_t *sa_list);
 
 #ifdef __cplusplus
 }

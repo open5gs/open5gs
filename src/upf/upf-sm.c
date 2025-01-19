@@ -63,21 +63,11 @@ void upf_state_operational(ogs_fsm_t *s, upf_event_t *e)
         ogs_assert(e);
         recvbuf = e->pkbuf;
         ogs_assert(recvbuf);
+        pfcp_message = e->pfcp_message;
+        ogs_assert(pfcp_message);
         node = e->pfcp_node;
         ogs_assert(node);
-
-        /*
-         * Issue #1911
-         *
-         * Because ogs_pfcp_message_t is over 80kb in size,
-         * it can cause stack overflow.
-         * To avoid this, the pfcp_message structure uses heap memory.
-         */
-        if ((pfcp_message = ogs_pfcp_parse_msg(recvbuf)) == NULL) {
-            ogs_error("ogs_pfcp_parse_msg() failed");
-            ogs_pkbuf_free(recvbuf);
-            break;
-        }
+        ogs_assert(OGS_FSM_STATE(&node->sm));
 
         rv = ogs_pfcp_xact_receive(node, &pfcp_message->h, &xact);
         if (rv != OGS_OK) {
@@ -86,7 +76,6 @@ void upf_state_operational(ogs_fsm_t *s, upf_event_t *e)
             break;
         }
 
-        e->pfcp_message = pfcp_message;
         e->pfcp_xact_id = xact ? xact->id : OGS_INVALID_POOL_ID;
         ogs_fsm_dispatch(&node->sm, e);
         if (OGS_FSM_CHECK(&node->sm, upf_pfcp_state_exception)) {

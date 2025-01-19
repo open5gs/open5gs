@@ -126,6 +126,16 @@ smf_metrics_spec_def_t smf_metrics_spec_def_global[_SMF_METR_GLOB_MAX] = {
     .name = "gtp_peers_active",
     .description = "Active GTP peers",
 },
+[SMF_METR_GLOB_GAUGE_PFCP_SESSIONS_ACTIVE] = {
+    .type = OGS_METRICS_METRIC_TYPE_GAUGE,
+    .name = "pfcp_sessions_active",
+    .description = "Active PFCP Sessions",
+},
+[SMF_METR_GLOB_GAUGE_PFCP_PEERS_ACTIVE] = {
+    .type = OGS_METRICS_METRIC_TYPE_GAUGE,
+    .name = "pfcp_peers_active",
+    .description = "Active PFCP peers",
+},
 };
 int smf_metrics_init_inst_global(void)
 {

@@ -808,8 +808,7 @@ bool udm_nudr_dr_handle_smf_registration(
                 return false;
             }
 
-            if (!SmfRegistration->single_nssai ||
-                    !SmfRegistration->single_nssai->sst) {
+            if (!SmfRegistration->single_nssai) {
                 ogs_error("[%s:%d] No singleNssai", udm_ue->supi, sess->psi);
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(

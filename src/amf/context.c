@@ -1258,7 +1258,8 @@ void amf_gnb_remove(amf_gnb_t *gnb)
 
     ogs_hash_set(self.gnb_addr_hash,
             gnb->sctp.addr, sizeof(ogs_sockaddr_t), NULL);
-    ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), NULL);
+    if (gnb->gnb_id_presence == true)
+        ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), NULL);
 
     ogs_sctp_flush_and_destroy(&gnb->sctp);
 
@@ -1294,10 +1295,13 @@ int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id)
 {
     ogs_assert(gnb);
 
-    ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), NULL);
+    if (gnb->gnb_id_presence == true)
+        ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), NULL);
 
     gnb->gnb_id = gnb_id;
     ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), gnb);
+
+    gnb->gnb_id_presence = true;
 
     return OGS_OK;
 }
@@ -2261,6 +2265,7 @@ amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi)
 
     sess->s_nssai.sst = 0;
     sess->s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+    sess->mapped_hplmn_presence = false;
     sess->mapped_hplmn.sst = 0;
     sess->mapped_hplmn.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
 
@@ -2863,6 +2868,8 @@ bool amf_update_allowed_nssai(amf_ue_t *amf_ue)
 
                 allowed->sst = requested->sst;
                 allowed->sd.v = requested->sd.v;
+                allowed->mapped_hplmn_sst_presence =
+                        requested->mapped_hplmn_sst_presence;
                 allowed->mapped_hplmn_sst = requested->mapped_hplmn_sst;
                 allowed->mapped_hplmn_sd.v = requested->mapped_hplmn_sd.v;
 
@@ -2899,6 +2906,7 @@ bool amf_update_allowed_nssai(amf_ue_t *amf_ue)
 
                 allowed->sst = slice->s_nssai.sst;
                 allowed->sd.v = slice->s_nssai.sd.v;
+                allowed->mapped_hplmn_sst_presence = false;
                 allowed->mapped_hplmn_sst = 0;
                 allowed->mapped_hplmn_sd.v = OGS_S_NSSAI_NO_SD_VALUE;
 
