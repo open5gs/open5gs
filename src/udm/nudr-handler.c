@@ -636,6 +636,33 @@ bool udm_nudr_dr_handle_subscription_provisioned(
 
         memset(&sendmsg, 0, sizeof(sendmsg));
 
+        // Check if original request was for /nudm-sdm/v2/{supi}/nssai
+        ogs_sbi_request_t *request = NULL;
+        request = ogs_sbi_request_from_stream(stream);
+
+        if (!strcmp(request->h.resource.component[1],
+                OGS_SBI_RESOURCE_NAME_NSSAI)) {
+            OpenAPI_nssai_t *Nssai = NULL;
+            Nssai = AccessAndMobilitySubscriptionData->nssai;
+            if (!Nssai) {
+                ogs_error("[%s] No Nssai", udm_ue->supi);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(
+                        stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        recvmsg, "No Nssai",
+                        udm_ue->supi, NULL));
+                return false;
+            }
+
+            sendmsg.Nssai = OpenAPI_nssai_copy(sendmsg.Nssai, Nssai);
+            response = ogs_sbi_build_response(&sendmsg, recvmsg->res_status);
+            ogs_assert(response);
+            ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+            OpenAPI_nssai_free(sendmsg.Nssai);
+
+            break;
+        }
+
         sendmsg.AccessAndMobilitySubscriptionData =
             OpenAPI_access_and_mobility_subscription_data_copy(
                 sendmsg.AccessAndMobilitySubscriptionData,

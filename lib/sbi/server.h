@@ -67,6 +67,7 @@ typedef struct ogs_sbi_server_actions_s {
             ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
 
     ogs_sbi_server_t *(*server_from_stream)(ogs_sbi_stream_t *stream);
+    ogs_sbi_request_t *(*request_from_stream)(ogs_sbi_stream_t *stream);
 
     ogs_pool_id_t (*id_from_stream)(ogs_sbi_stream_t *stream);
     void *(*stream_find_by_id)(ogs_pool_id_t id);
@@ -101,6 +102,7 @@ bool ogs_sbi_server_send_problem(
         ogs_sbi_stream_t *stream, OpenAPI_problem_details_t *problem);
 
 ogs_sbi_server_t *ogs_sbi_server_from_stream(ogs_sbi_stream_t *stream);
+ogs_sbi_request_t *ogs_sbi_request_from_stream(ogs_sbi_stream_t *stream);
 
 ogs_pool_id_t ogs_sbi_id_from_stream(ogs_sbi_stream_t *stream);
 void *ogs_sbi_stream_find_by_id(ogs_pool_id_t id);

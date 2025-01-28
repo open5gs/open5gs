@@ -244,6 +244,11 @@ ogs_sbi_server_t *ogs_sbi_server_from_stream(ogs_sbi_stream_t *stream)
     return ogs_sbi_server_actions.server_from_stream(stream);
 }
 
+ogs_sbi_request_t *ogs_sbi_request_from_stream(ogs_sbi_stream_t *stream)
+{
+    return ogs_sbi_server_actions.request_from_stream(stream);
+}
+
 ogs_pool_id_t ogs_sbi_id_from_stream(ogs_sbi_stream_t *stream)
 {
     return ogs_sbi_server_actions.id_from_stream(stream);

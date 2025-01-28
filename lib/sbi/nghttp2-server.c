@@ -38,6 +38,7 @@ static bool server_send_response(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
 
 static ogs_sbi_server_t *server_from_stream(ogs_sbi_stream_t *stream);
+static ogs_sbi_request_t *request_from_stream(ogs_sbi_stream_t *stream);
 
 static ogs_pool_id_t id_from_stream(ogs_sbi_stream_t *stream);
 static void *stream_find_by_id(ogs_pool_id_t id);
@@ -53,6 +54,7 @@ const ogs_sbi_server_actions_t ogs_nghttp2_server_actions = {
     server_send_response,
 
     server_from_stream,
+    request_from_stream,
 
     id_from_stream,
     stream_find_by_id,
@@ -715,6 +717,17 @@ static ogs_sbi_server_t *server_from_stream(ogs_sbi_stream_t *stream)
     ogs_assert(sbi_sess->server);
 
     return sbi_sess->server;
+}
+
+static ogs_sbi_request_t *request_from_stream(ogs_sbi_stream_t *stream)
+{
+    ogs_sbi_request_t *sbi_request = NULL;
+
+    ogs_assert(stream);
+    sbi_request = stream->request;
+    ogs_assert(sbi_request);
+
+    return sbi_request;
 }
 
 static ogs_sbi_stream_t *stream_add(
