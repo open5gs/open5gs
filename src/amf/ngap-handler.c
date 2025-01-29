@@ -115,6 +115,20 @@ static bool s_nssai_is_found(amf_gnb_t *gnb)
     return false;
 }
 
+static bool check_amf_gnb_already_exist_by_gnb_id(uint32_t gnb_id)
+{
+    amf_gnb_t *gnb = NULL;
+    if(ogs_list_count(&amf_self()->gnb_list) < 1){
+        return false;
+    }
+    ogs_list_for_each(&amf_self()->gnb_list, gnb) {
+        if (gnb->gnb_id_presence && gnb->gnb_id == gnb_id){
+            return true;
+        }
+    }
+    return false;
+}
+
 void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
@@ -183,6 +197,18 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         return;
     }
 
+    ogs_ngap_GNB_ID_to_uint32(&globalGNB_ID->gNB_ID, &gnb_id);
+    if(check_amf_gnb_already_exist_by_gnb_id(gnb_id)){
+        ogs_error("gNB context duplicated with gNB-id[0x%x]!!!", gnb_id);
+        group = NGAP_Cause_PR_misc;
+        cause = NGAP_CauseMisc_control_processing_overload;
+        r = ngap_send_ng_setup_failure(gnb, group, cause);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+    ogs_debug("    IP[%s] GNB_ID[0x%x]", OGS_ADDR(gnb->sctp.addr, buf), gnb_id);
+
     if (!SupportedTAList) {
         ogs_error("No SupportedTAList");
         group = NGAP_Cause_PR_protocol;
@@ -193,8 +219,6 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         return;
     }
 
-    ogs_ngap_GNB_ID_to_uint32(&globalGNB_ID->gNB_ID, &gnb_id);
-    ogs_debug("    IP[%s] GNB_ID[0x%x]", OGS_ADDR(gnb->sctp.addr, buf), gnb_id);
 
     memcpy(&gnb->plmn_id,
             globalGNB_ID->pLMNIdentity.buf, sizeof(gnb->plmn_id));

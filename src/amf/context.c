@@ -3040,3 +3040,4 @@ void amf_ue_save_to_release_session_list(amf_ue_t *amf_ue)
         }
     }
 }
+
