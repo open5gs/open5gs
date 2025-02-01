@@ -701,7 +701,14 @@ bool udm_nudm_sdm_handle_subscription_create(
     }
 
     sdm_subscription = udm_sdm_subscription_add(udm_ue);
-    ogs_assert(sdm_subscription);
+    if (!sdm_subscription) {
+        ogs_error("[%s] udm_sdm_subscription_add() failed", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "udm_sdm_subscription_add() failed",
+                udm_ue->supi, NULL));
+        return false;
+    }
 
     sdm_subscription->data_change_callback_uri =
         ogs_strdup(SDMSubscription->callback_reference);
