@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -59,50 +59,20 @@ static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
 {
     int rv;
 
-    ssize_t size;
     upf_event_t *e = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_sockaddr_t from;
     ogs_pfcp_node_t *node = NULL;
     ogs_pfcp_message_t *message = NULL;
-    ogs_pfcp_header_t *h = NULL;
 
     ogs_pfcp_status_e pfcp_status;;
     ogs_pfcp_node_id_t node_id;
 
     ogs_assert(fd != INVALID_SOCKET);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_assert(pkbuf);
-    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
-
-    size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, &from);
-    if (size <= 0) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "ogs_recvfrom() failed");
-        ogs_pkbuf_free(pkbuf);
-        return;
-    }
-
-    ogs_pkbuf_trim(pkbuf, size);
-
-    h = (ogs_pfcp_header_t *)pkbuf->data;
-    if (h->version != OGS_PFCP_VERSION) {
-        ogs_pfcp_header_t rsp;
-
-        ogs_error("Not supported version[%d]", h->version);
-
-        memset(&rsp, 0, sizeof rsp);
-        rsp.flags = (OGS_PFCP_VERSION << 5);
-        rsp.type = OGS_PFCP_VERSION_NOT_SUPPORTED_RESPONSE_TYPE;
-        rsp.length = htobe16(4);
-        rsp.sqn_only = h->sqn_only;
-        if (ogs_sendto(fd, &rsp, 8, 0, &from) < 0) {
-            ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                    "ogs_sendto() failed");
-        }
-        ogs_pkbuf_free(pkbuf);
-
+    pkbuf = ogs_pfcp_recvfrom(fd, &from);
+    if (!pkbuf) {
+        ogs_error("ogs_pfcp_recvfrom() failed");
         return;
     }
 
