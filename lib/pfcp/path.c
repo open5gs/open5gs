@@ -82,7 +82,7 @@ ogs_pkbuf_t *ogs_pfcp_recvfrom(ogs_socket_t fd, ogs_sockaddr_t *from)
     /* Check that the data is at least as long as the header */
     if (size < MIN_PFCP_HEADER_LENGTH) {
         ogs_error("Received PFCP message too short: %ld bytes (min %d)",
-            size, MIN_PFCP_HEADER_LENGTH);
+            (long)size, MIN_PFCP_HEADER_LENGTH);
         ogs_pkbuf_free(pkbuf);
         return NULL;
     }
@@ -113,7 +113,7 @@ ogs_pkbuf_t *ogs_pfcp_recvfrom(ogs_socket_t fd, ogs_sockaddr_t *from)
     expected_total_length = pfcp_body_length + 4;
     if ((size_t)size != expected_total_length) {
         ogs_error("Invalid PFCP Header Length: expected %zu bytes, "
-            "received %ld bytes", expected_total_length, size);
+            "received %ld bytes", expected_total_length, (long)size);
         ogs_pkbuf_free(pkbuf);
         return NULL;
     }
