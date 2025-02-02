@@ -111,8 +111,8 @@ ogs_pkbuf_t *ogs_pfcp_recvfrom(ogs_socket_t fd, ogs_sockaddr_t *from)
        excluding the first 4 bytes. */
     pfcp_body_length = be16toh(h->length);
     expected_total_length = pfcp_body_length + 4;
-    if ((size_t)size < expected_total_length) {
-        ogs_error("Incomplete PFCP message: expected %zu bytes, "
+    if ((size_t)size != expected_total_length) {
+        ogs_error("Invalid PFCP Header Length: expected %zu bytes, "
             "received %ld bytes", expected_total_length, size);
         ogs_pkbuf_free(pkbuf);
         return NULL;
