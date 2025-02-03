@@ -1356,7 +1356,7 @@ $ DIST=debian TAG=stretch docker-compose run dev
 ```bash
 $ sudo dpkg --add-architecture armel
 $ sudo apt update
-$ sudo apt install libsctp-dev:armel libyaml-dev:armel libgnutls28-dev:armel libgcrypt-dev:armel libidn11-dev:armel libssl-dev:armel libmongoc-dev:armel libbson-dev:armel
+$ sudo apt install libsctp-dev:armel libyaml-dev:armel libgnutls28-dev:armel libgcrypt-dev:armel libidn-dev:armel libssl-dev:armel libmongoc-dev:armel libbson-dev:armel
 $ sudo apt install crossbuild-essential-armel
 $ sudo apt install qemu
 $ git clone https://github.com/{{ site.github_username }}/open5gs

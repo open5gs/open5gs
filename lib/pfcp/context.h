@@ -84,17 +84,20 @@ typedef struct ogs_pfcp_context_s {
 typedef struct ogs_pfcp_node_s {
     ogs_lnode_t     lnode;          /* A node of list_t */
 
-    ogs_sockaddr_t    *config_addr; /* Configured addresses */
+    ogs_sockaddr_t  *config_addr; /* Configured addresses */
     ogs_pfcp_node_id_t node_id;     /* PFCP node ID */
 
     /* List of addresses:: final merged address list */
-    ogs_sockaddr_t    *addr_list;
+    ogs_sockaddr_t  *addr_list;
 
      /*
      * Iterator for round-robin sendto operations.
      * Points to the current address in the round-robin sequence.
      */
-    ogs_sockaddr_t *current_addr;
+    ogs_sockaddr_t  *current_addr;
+
+    /* Timestamp of last DNS refresh for FQDN nodes. */
+    ogs_time_t      last_dns_refresh;
 
     ogs_list_t      local_list;
     ogs_list_t      remote_list;
@@ -419,7 +422,7 @@ int ogs_pfcp_node_merge(ogs_pfcp_node_t *node,
     ogs_pfcp_node_id_t *node_id, ogs_sockaddr_t *from);
 void ogs_pfcp_node_remove(ogs_list_t *list, ogs_pfcp_node_t *node);
 void ogs_pfcp_node_remove_all(ogs_list_t *list);
-int ogs_pfcp_node_id_compare(
+bool ogs_pfcp_node_id_compare(
         const ogs_pfcp_node_id_t *id1, const ogs_pfcp_node_id_t *id2);
 
 ogs_gtpu_resource_t *ogs_pfcp_find_gtpu_resource(ogs_list_t *list,

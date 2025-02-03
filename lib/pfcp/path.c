@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -34,6 +34,91 @@ ogs_sock_t *ogs_pfcp_server(ogs_socknode_t *node)
     }
 
     return pfcp;
+}
+
+/* Minimum PFCP header length (e.g., 12 bytes) */
+#define MIN_PFCP_HEADER_LENGTH 12
+
+/*
+ * ogs_pfcp_recvfrom
+ *
+ * Receives a PFCP message from the socket 'fd'. It allocates a pkbuf,
+ * receives the message, trims the pkbuf, and verifies the header.
+ * If any error occurs (e.g., too short message, unsupported version, or
+ * incomplete message), the function frees the pkbuf and returns NULL.
+ *
+ * The sender's address is stored in 'from'.
+ *
+ * Returns a pointer to ogs_pkbuf_t on success, or NULL on failure.
+ */
+ogs_pkbuf_t *ogs_pfcp_recvfrom(ogs_socket_t fd, ogs_sockaddr_t *from)
+{
+    ogs_pkbuf_t *pkbuf;
+    ssize_t size;
+    ogs_pfcp_header_t *h;
+    uint16_t pfcp_body_length;
+    size_t expected_total_length;
+
+    ogs_assert(fd != INVALID_SOCKET);
+    ogs_assert(from);
+
+    /* Allocate buffer for maximum SDU length */
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    if (pkbuf == NULL) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        return NULL;
+    }
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
+
+    size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, from);
+    if (size <= 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+            "ogs_recvfrom() failed");
+        ogs_pkbuf_free(pkbuf);
+        return NULL;
+    }
+    ogs_pkbuf_trim(pkbuf, size);
+
+    /* Check that the data is at least as long as the header */
+    if (size < MIN_PFCP_HEADER_LENGTH) {
+        ogs_error("Received PFCP message too short: %ld bytes (min %d)",
+            (long)size, MIN_PFCP_HEADER_LENGTH);
+        ogs_pkbuf_free(pkbuf);
+        return NULL;
+    }
+
+    h = (ogs_pfcp_header_t *)pkbuf->data;
+
+    /* Verify PFCP version */
+    if (h->version != OGS_PFCP_VERSION) {
+        ogs_pfcp_header_t rsp;
+        memset(&rsp, 0, sizeof(rsp));
+        ogs_error("Not supported version[%d]", h->version);
+        rsp.flags = (OGS_PFCP_VERSION << 5);
+        rsp.type = OGS_PFCP_VERSION_NOT_SUPPORTED_RESPONSE_TYPE;
+        rsp.length = htobe16(4);
+        rsp.sqn_only = h->sqn_only;
+        if (ogs_sendto(fd, &rsp, 8, 0, from) < 0) {
+            ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "ogs_sendto() failed");
+        }
+        ogs_pkbuf_free(pkbuf);
+        return NULL;
+    }
+
+    /* Check total PFCP message length.
+       Assume the header's length field indicates the body length,
+       excluding the first 4 bytes. */
+    pfcp_body_length = be16toh(h->length);
+    expected_total_length = pfcp_body_length + 4;
+    if ((size_t)size != expected_total_length) {
+        ogs_error("Invalid PFCP Header Length: expected %zu bytes, "
+            "received %ld bytes", expected_total_length, (long)size);
+        ogs_pkbuf_free(pkbuf);
+        return NULL;
+    }
+
+    return pkbuf;
 }
 
 int ogs_pfcp_sendto(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf)

@@ -530,6 +530,32 @@ bool ogs_sockaddr_is_equal_addr(const void *p, const void *q)
     return ogs_sockaddr_compare(a, b, false);
 }
 
+bool ogs_sockaddr_check_any_match(
+        ogs_sockaddr_t *base,
+        ogs_sockaddr_t *list, const ogs_sockaddr_t *single, bool compare_port)
+{
+    ogs_sockaddr_t *p = NULL;
+
+    while (list) {
+        p = base;
+        while (p) {
+            if (ogs_sockaddr_compare(p, list, compare_port) == true)
+                return true;
+            p = p->next;
+        }
+        list = list->next;
+    }
+    if (single) {
+        p = base;
+        while (p) {
+            if (ogs_sockaddr_compare(p, single, compare_port) == true)
+                return true;
+            p = p->next;
+        }
+    }
+    return false;
+}
+
 static int parse_network(ogs_ipsubnet_t *ipsub, const char *network)
 {
     /* legacy syntax for ip addrs: a.b.c. ==> a.b.c.0/24 for example */

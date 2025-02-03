@@ -216,8 +216,10 @@ static SSL_CTX *create_ssl_ctx(
     if (sslkeylog_file) {
         /* Ensure app data is set for SSL objects */
         SSL_CTX_set_app_data(ssl_ctx, sslkeylog_file);
+#if OPENSSL_VERSION_NUMBER >= 0x10101000L
         /* Set the SSL Key Log callback */
         SSL_CTX_set_keylog_callback(ssl_ctx, ogs_sbi_keylog_callback);
+#endif
     }
 
     ssl_opts = (SSL_OP_ALL & ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS) |
