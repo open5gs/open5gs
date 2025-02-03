@@ -1357,6 +1357,7 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
     if (nf_instance->id) {
         ogs_sbi_subscription_data_remove_all_by_nf_instance_id(nf_instance->id);
         ogs_free(nf_instance->id);
+        nf_instance->id = NULL;
     }
 
     if (nf_instance->client)
