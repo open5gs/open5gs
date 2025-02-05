@@ -70,7 +70,7 @@ bool pcf_nbsf_management_handle_register(
     PcfBinding = recvmsg->PcfBinding;
     if (PcfBinding->supp_feat) {
         uint64_t supported_features =
-            ogs_uint64_from_string(PcfBinding->supp_feat);
+            ogs_uint64_from_string_hexadecimal(PcfBinding->supp_feat);
         sess->management_features &= supported_features;
     }
 

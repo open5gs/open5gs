@@ -116,7 +116,8 @@ void af_npcf_policyauthorization_handle_create(
 
     PCF_APP_SESSION_STORE(sess, header.uri, message.h.resource.component[1]);
 
-    supported_features = ogs_uint64_from_string(AscReqData->supp_feat);
+    supported_features = ogs_uint64_from_string_hexadecimal(
+            AscReqData->supp_feat);
     sess->policyauthorization_features &= supported_features;
 
 cleanup:

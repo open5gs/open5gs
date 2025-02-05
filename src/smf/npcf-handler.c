@@ -377,7 +377,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
     /* SBI Features */
     if (SmPolicyDecision->supp_feat) {
         uint64_t supported_features =
-            ogs_uint64_from_string(SmPolicyDecision->supp_feat);
+            ogs_uint64_from_string_hexadecimal(SmPolicyDecision->supp_feat);
         sess->smpolicycontrol_features &= supported_features;
     } else {
         sess->smpolicycontrol_features = 0;

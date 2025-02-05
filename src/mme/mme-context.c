@@ -889,7 +889,7 @@ int mme_context_parse_config(void)
                                                     if (v) {
                                                         e_cell_id[
                                                             num_of_e_cell_id] =
-                                                        ogs_uint64_from_string(
+                                                        ogs_uint64_from_string_hexadecimal(
                                                                 (char*)v);
                                                         num_of_e_cell_id++;
                                                     }
@@ -1118,7 +1118,7 @@ int mme_context_parse_config(void)
                                                     if (v) {
                                                         e_cell_id[
                                                             num_of_e_cell_id] =
-                                                        ogs_uint64_from_string(
+                                                        ogs_uint64_from_string_hexadecimal(
                                                                 (char*)v);
                                                         num_of_e_cell_id++;
                                                     }
