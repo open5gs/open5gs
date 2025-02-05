@@ -398,7 +398,7 @@ ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex)
     if (hex == NULL)
         return sd;
 
-    return ogs_uint24_from_string((char *)hex);
+    return ogs_uint24_from_string_hexadecimal((char *)hex);
 }
 
 int ogs_fqdn_build(char *dst, const char *src, int length)

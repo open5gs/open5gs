@@ -64,9 +64,9 @@ Install the common dependencies for building the source code.
 $ sudo apt install python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git cmake libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libmongoc-dev libbson-dev libyaml-dev libnghttp2-dev libmicrohttpd-dev libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev meson
 ```
 
-Install libidn-dev or libidn11-dev Depending on Your System
+Install libidn-dev or libidn11-dev depending on your system
 ```bash
-if apt-cache show libidn-dev > /dev/null 2>&1; then
+$ if apt-cache show libidn-dev > /dev/null 2>&1; then
     sudo apt-get install -y --no-install-recommends libidn-dev
 else
     sudo apt-get install -y --no-install-recommends libidn11-dev

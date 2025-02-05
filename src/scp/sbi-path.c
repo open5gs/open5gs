@@ -293,7 +293,7 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                     OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_FEATURES)) {
             if (val)
                 discovery_option->requester_features =
-                    ogs_uint64_from_string(val);
+                    ogs_uint64_from_string_hexadecimal(val);
         } else {
             /* ':scheme' and ':authority' will be automatically filled in later */
         }

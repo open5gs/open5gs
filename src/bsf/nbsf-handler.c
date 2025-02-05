@@ -195,7 +195,8 @@ bool bsf_nbsf_management_handle_pcf_binding(
 
             if (RecvPcfBinding->supp_feat) {
                 uint64_t supported_features =
-                    ogs_uint64_from_string(RecvPcfBinding->supp_feat);
+                    ogs_uint64_from_string_hexadecimal(
+                            RecvPcfBinding->supp_feat);
                 sess->management_features &= supported_features;
 
                 if (sess->management_features != supported_features) {

@@ -140,7 +140,8 @@ bool sepp_n32c_handshake_handle_security_capability_request(
 
     if (SecNegotiateReqData->supported_features) {
         uint64_t supported_features =
-            ogs_uint64_from_string(SecNegotiateReqData->supported_features);
+            ogs_uint64_from_string_hexadecimal(
+                    SecNegotiateReqData->supported_features);
         sepp_node->supported_features &= supported_features;
     } else {
         sepp_node->supported_features = 0;
@@ -209,7 +210,8 @@ bool sepp_n32c_handshake_handle_security_capability_response(
 
     if (SecNegotiateRspData->supported_features) {
         uint64_t supported_features =
-            ogs_uint64_from_string(SecNegotiateRspData->supported_features);
+            ogs_uint64_from_string_hexadecimal(
+                    SecNegotiateRspData->supported_features);
         sepp_node->supported_features &= supported_features;
     } else {
         sepp_node->supported_features = 0;

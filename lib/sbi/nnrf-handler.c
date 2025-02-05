@@ -472,7 +472,7 @@ static void handle_smf_info(
             nr_tai = &nf_info->smf.nr_tai[nf_info->smf.num_of_nr_tai];
             ogs_assert(nr_tai);
             ogs_sbi_parse_plmn_id(&nr_tai->plmn_id, TaiItem->plmn_id);
-            nr_tai->tac = ogs_uint24_from_string(TaiItem->tac);
+            nr_tai->tac = ogs_uint24_from_string_hexadecimal(TaiItem->tac);
 
             nf_info->smf.num_of_nr_tai++;
         }
@@ -507,11 +507,13 @@ static void handle_smf_info(
                     nf_info->smf.nr_tai_range
                         [nf_info->smf.num_of_nr_tai_range].
                             start[tac_index] =
-                                ogs_uint24_from_string(TacRangeItem->start);
+                                ogs_uint24_from_string_hexadecimal(
+                                        TacRangeItem->start);
                     nf_info->smf.nr_tai_range
                         [nf_info->smf.num_of_nr_tai_range].
                             end[tac_index] =
-                                ogs_uint24_from_string(TacRangeItem->end);
+                                ogs_uint24_from_string_hexadecimal(
+                                        TacRangeItem->end);
 
                     nf_info->smf.nr_tai_range
                         [nf_info->smf.num_of_nr_tai_range].
@@ -703,8 +705,10 @@ static void handle_amf_info(
             &nf_instance->nf_info_list, OpenAPI_nf_type_AMF);
     ogs_assert(nf_info);
 
-    nf_info->amf.amf_set_id = ogs_uint64_from_string(AmfInfo->amf_set_id);
-    nf_info->amf.amf_region_id = ogs_uint64_from_string(AmfInfo->amf_region_id);
+    nf_info->amf.amf_set_id = ogs_uint64_from_string_hexadecimal(
+            AmfInfo->amf_set_id);
+    nf_info->amf.amf_region_id = ogs_uint64_from_string_hexadecimal(
+            AmfInfo->amf_region_id);
     GuamiList = AmfInfo->guami_list;
 
     OpenAPI_list_for_each(GuamiList, node) {
@@ -739,7 +743,7 @@ static void handle_amf_info(
             nr_tai = &nf_info->amf.nr_tai[nf_info->amf.num_of_nr_tai];
             ogs_assert(nr_tai);
             ogs_sbi_parse_plmn_id(&nr_tai->plmn_id, TaiItem->plmn_id);
-            nr_tai->tac = ogs_uint24_from_string(TaiItem->tac);
+            nr_tai->tac = ogs_uint24_from_string_hexadecimal(TaiItem->tac);
             nf_info->amf.num_of_nr_tai++;
         }
     }
@@ -774,10 +778,12 @@ static void handle_amf_info(
 
                     nf_info->amf.nr_tai_range
                         [nf_info->amf.num_of_nr_tai_range].start[tac_index] =
-                                ogs_uint24_from_string(TacRangeItem->start);
+                                ogs_uint24_from_string_hexadecimal(
+                                        TacRangeItem->start);
                     nf_info->amf.nr_tai_range
                         [nf_info->amf.num_of_nr_tai_range].end[tac_index] =
-                                ogs_uint24_from_string(TacRangeItem->end);
+                                ogs_uint24_from_string_hexadecimal(
+                                        TacRangeItem->end);
 
                     nf_info->amf.nr_tai_range
                         [nf_info->amf.num_of_nr_tai_range].num_of_tac_range++;
@@ -962,7 +968,8 @@ void ogs_nnrf_nfm_handle_nf_status_subscribe(
     /* SBI Features */
     if (SubscriptionData->nrf_supported_features) {
         subscription_data->nrf_supported_features =
-            ogs_uint64_from_string(SubscriptionData->nrf_supported_features);
+            ogs_uint64_from_string_hexadecimal(
+                    SubscriptionData->nrf_supported_features);
     } else {
         subscription_data->nrf_supported_features = 0;
     }

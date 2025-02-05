@@ -25,73 +25,85 @@ pcf:
         port: 9090
 
 ################################################################################
-# Locally configured policy
-# - The PCF in the VPLMN uses locally configured policies
-#   according to the roaming agreement with the HPLMN operator
-#   as input for PCC Rule generation.
+# PCF Policy Configuration: UE Home PLMN and SUPI Range Based Policies
 ################################################################################
 #
-#  o You don't have to use MongoDB if you use the policy configuration as below.
+# This configuration applies policies based on the UE's home PLMN ID and
+# SUPI range. When both supi_range and plmn_id are specified in a policy,
+# the policy is applied only if both conditions are met.
+#
+# supi_range: Specifies one or more ranges of SUPIs. A maximum of 16 ranges
+#             can be defined.
+# plmn_id  : Specifies the UE's home PLMN using MCC and MNC.
+#
+# Example:
 #
 #  policy:
-#    - plmn_id:
+#    - supi_range:          # Filter policies by SUPI
+#        - 999700000000001-999709999999999
+#        - 315010000000001-315010999999999
+#      plmn_id:             # Filter policies by home PLMN-ID
 #        mcc: 999
 #        mnc: 70
-#      slice:
-#        - sst: 1  # 1,2,3,4
+#      slice:               # Specify slice configuration
+#        - sst: 1          # Allowed values: 1, 2, 3, 4
 #          default_indicator: true
-#          session:
+#          session:          # Define session based on DNN
 #            - name: internet
-#              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+#              type: 3       # 1: IPv4, 2: IPv6, 3: IPv4v6
 #              ambr:
 #                downlink:
 #                  value: 1
-#                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                  unit: 3   # 0: bps, 1: Kbps, 2: Mbps, 3: Gbps, 4: Tbps
 #                uplink:
 #                  value: 1
 #                  unit: 3
 #              qos:
-#                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                index: 9      # Allowed values: 1,2,3,4,65,66,67,75,71,72,
+#                              # 73,74,76,5,6,7,8,9,69,70,79,80,82,83,
+#                              # 84,85,86
 #                arp:
-#                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
-#                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+#                  priority_level: 8   # Allowed values: 1 to 15
+#                  pre_emption_vulnerability: 1  # 1: Disabled, 2: Enabled
+#                  pre_emption_capability: 1     # 1: Disabled, 2: Enabled
 #            - name: ims
-#              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+#              type: 3       # 1: IPv4, 2: IPv6, 3: IPv4v6
 #              ambr:
 #                downlink:
 #                  value: 1
-#                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                  unit: 3   # 0: bps, 1: Kbps, 2: Mbps, 3: Gbps, 4: Tbps
 #                uplink:
 #                  value: 1
-#                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                  unit: 3
 #              qos:
-#                index: 5  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                index: 5      # Allowed values: 1,2,3,4,65,66,67,75,71,72,
+#                              # 73,74,76,5,6,7,8,9,69,70,79,80,82,83,
+#                              # 84,85,86
 #                arp:
-#                  priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
-#                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+#                  priority_level: 1   # Allowed values: 1 to 15
+#                  pre_emption_vulnerability: 1  # 1: Disabled, 2: Enabled
+#                  pre_emption_capability: 1     # 1: Disabled, 2: Enabled
 #              pcc_rule:
 #                - qos:
-#                    index: 1  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                    index: 1   # Allowed values as above
 #                    arp:
-#                      priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                      pre_emption_vulnerability: 1   # 1: Disabled, 2:Enabled
-#                      pre_emption_capability: 1   # 1: Disabled, 2:Enabled
+#                      priority_level: 1   # Allowed values: 1 to 15
+#                      pre_emption_vulnerability: 1  # 1: Disabled, 2: Enabled
+#                      pre_emption_capability: 1     # 1: Disabled, 2: Enabled
 #                    mbr:
 #                      downlink:
 #                        value: 82
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                        unit: 1   # 0: bps, 1: Kbps, 2: Mbps, 3: Gbps, 4: Tbps
 #                      uplink:
 #                        value: 82
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                        unit: 1
 #                    gbr:
 #                      downlink:
 #                        value: 82
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                        unit: 1
 #                      uplink:
 #                        value: 82
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                        unit: 1
 #                  flow:
 #                    - direction: 2
 #                      description: "permit out icmp from any to assigned"
@@ -102,48 +114,48 @@ pcf:
 #                    - direction: 1
 #                      description: "permit out udp from 10.200.136.98/32 1-65535 to assigned 50021"
 #                - qos:
-#                    index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                    index: 2   # Allowed values as above
 #                    arp:
-#                      priority_level: 4  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                      pre_emption_vulnerability: 2   # 1: Disabled, 2:Enabled
-#                      pre_emption_capability: 2   # 1: Disabled, 2:Enabled
+#                      priority_level: 4   # Allowed values: 1 to 15
+#                      pre_emption_vulnerability: 2  # 1: Disabled, 2: Enabled
+#                      pre_emption_capability: 2     # 1: Disabled, 2: Enabled
 #                    mbr:
 #                      downlink:
 #                        value: 802
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                        unit: 1
 #                      uplink:
 #                        value: 802
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                        unit: 1
 #                    gbr:
 #                      downlink:
 #                        value: 802
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                        unit: 1
 #                      uplink:
 #                        value: 802
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#    - plmn_id:
-#        mcc: 001
-#        mnc: 01
-#      slice:
-#        - sst: 1  # 1,2,3,4
+#                        unit: 1
+#
+#    - supi_range:         # Filter policies by SUPI only
+#        - 001010000000001-001019999999999
+#      slice:               # Specify slice configuration
+#        - sst: 1          # Allowed values: 1, 2, 3, 4
 #          sd: 000001
 #          default_indicator: true
-#          session:
+#          session:          # Define session based on DNN
 #            - name: internet
-#              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+#              type: 3       # 1: IPv4, 2: IPv6, 3: IPv4v6
 #              ambr:
 #                downlink:
 #                  value: 1
-#                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                  unit: 3   # 0: bps, 1: Kbps, 2: Mbps, 3: Gbps, 4: Tbps
 #                uplink:
 #                  value: 1
 #                  unit: 3
 #              qos:
-#                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                index: 9      # Allowed values as above
 #                arp:
-#                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
-#                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+#                  priority_level: 8   # Allowed values: 1 to 15
+#                  pre_emption_vulnerability: 1  # 1: Disabled, 2: Enabled
+#                  pre_emption_capability: 1     # 1: Disabled, 2: Enabled
 #
 ################################################################################
 # SBI Server

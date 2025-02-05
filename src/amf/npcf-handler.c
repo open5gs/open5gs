@@ -149,7 +149,8 @@ int amf_npcf_am_policy_control_handle_create(
     PCF_AM_POLICY_STORE(amf_ue, header.uri, message.h.resource.component[1]);
 
     /* SBI Features */
-    supported_features = ogs_uint64_from_string(PolicyAssociation->supp_feat);
+    supported_features = ogs_uint64_from_string_hexadecimal(
+            PolicyAssociation->supp_feat);
     amf_ue->am_policy_control_features &= supported_features;
 
     OpenAPI_list_for_each(PolicyAssociation->triggers, node) {

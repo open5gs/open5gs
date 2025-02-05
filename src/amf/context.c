@@ -759,7 +759,7 @@ int amf_context_parse_config(void)
                                         s_nssai->sst = atoi(sst);
                                         if (sd)
                                             s_nssai->sd =
-                                                ogs_uint24_from_string(
+                                                ogs_uint24_from_string_hexadecimal(
                                                         (char*)sd);
                                         else
                                             s_nssai->sd.v =

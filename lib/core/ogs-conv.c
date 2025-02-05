@@ -214,17 +214,17 @@ char *ogs_uint64_to_string(uint64_t x)
     return dup;
 }
 
-ogs_uint24_t ogs_uint24_from_string(char *str)
+ogs_uint24_t ogs_uint24_from_string(char *str, int base)
 {
     ogs_uint24_t x;
 
     ogs_assert(str);
 
-    x.v = ogs_uint64_from_string(str);
+    x.v = ogs_uint64_from_string(str, base);
     return x;
 }
 
-uint64_t ogs_uint64_from_string(char *str)
+uint64_t ogs_uint64_from_string(char *str, int base)
 {
     uint64_t x;
 
@@ -234,7 +234,7 @@ uint64_t ogs_uint64_from_string(char *str)
         return 0;
 
     errno = 0;
-    x = strtoll(str, NULL, 16);
+    x = strtoll(str, NULL, base);
 
     if ((errno == ERANGE && (x == LONG_MAX || x == LONG_MIN)) ||
             (errno != 0 && x == 0)) {

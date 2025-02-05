@@ -1070,7 +1070,7 @@ bool ogs_sbi_s_nssai_from_string(ogs_s_nssai_t *s_nssai, char *str)
             ogs_error("ogs_strdup[%s:%s] failed", str, token);
             goto cleanup;
         }
-        s_nssai->sd = ogs_uint24_from_string(sd);
+        s_nssai->sd = ogs_uint24_from_string_hexadecimal(sd);
     }
 
     rc = true;
@@ -1414,7 +1414,7 @@ bool ogs_sbi_parse_nr_location(ogs_5gs_tai_t *tai, ogs_nr_cgi_t *nr_cgi,
         if (Tai->plmn_id)
             ogs_sbi_parse_plmn_id(&tai->plmn_id, Tai->plmn_id);
         if (Tai->tac)
-            tai->tac = ogs_uint24_from_string(Tai->tac);
+            tai->tac = ogs_uint24_from_string_hexadecimal(Tai->tac);
     }
 
     Ncgi = NrLocation->ncgi;
@@ -1422,7 +1422,8 @@ bool ogs_sbi_parse_nr_location(ogs_5gs_tai_t *tai, ogs_nr_cgi_t *nr_cgi,
         if (Ncgi->plmn_id)
             ogs_sbi_parse_plmn_id(&nr_cgi->plmn_id, Ncgi->plmn_id);
         if (Ncgi->nr_cell_id)
-            nr_cgi->cell_id = ogs_uint64_from_string(Ncgi->nr_cell_id);
+            nr_cgi->cell_id = ogs_uint64_from_string_hexadecimal(
+                    Ncgi->nr_cell_id);
 
     }
 

@@ -499,7 +499,8 @@ bool nrf_nnrf_handle_nf_status_subscribe(
 
     if (SubscriptionData->requester_features) {
         subscription_data->requester_features =
-            ogs_uint64_from_string(SubscriptionData->requester_features);
+            ogs_uint64_from_string_hexadecimal(
+                    SubscriptionData->requester_features);
 
         /* No need to send SubscriptionData->requester_features to the NF */
         ogs_free(SubscriptionData->requester_features);
