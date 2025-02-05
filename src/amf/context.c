@@ -2079,7 +2079,7 @@ amf_ue_t *amf_ue_find_by_ue_context_id(char *ue_context_id)
     return amf_ue;
 }
 
-void amf_ue_set_suci(amf_ue_t *amf_ue,
+int amf_ue_set_suci(amf_ue_t *amf_ue,
         ogs_nas_5gs_mobile_identity_t *mobile_identity)
 {
     amf_ue_t *old_amf_ue = NULL;
@@ -2090,7 +2090,12 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
     ogs_assert(mobile_identity);
 
     suci = ogs_nas_5gs_suci_from_mobile_identity(mobile_identity);
-    ogs_assert(suci);
+    if (!suci) {
+        ogs_error("Cannot get the SUCI from Mobile Identity");
+        ogs_log_hexdump(OGS_LOG_ERROR,
+                mobile_identity->buffer, mobile_identity->length);
+        return OGS_ERROR;
+    }
 
     /* Check if OLD amf_ue_t is existed */
     old_amf_ue = amf_ue_find_by_suci(suci);
@@ -2150,6 +2155,8 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
     }
     amf_ue->suci = suci;
     ogs_hash_set(self.suci_hash, amf_ue->suci, strlen(amf_ue->suci), amf_ue);
+
+    return OGS_OK;
 }
 
 void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi)

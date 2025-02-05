@@ -170,7 +170,8 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
             return gmm_cause;
         }
 
-        amf_ue_set_suci(amf_ue, mobile_identity);
+        if (amf_ue_set_suci(amf_ue, mobile_identity) != OGS_OK)
+            return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
         ogs_info("[%s]    SUCI", amf_ue->suci);
         break;
     case OGS_NAS_5GS_MOBILE_IDENTITY_GUTI:
@@ -1023,7 +1024,8 @@ ogs_nas_5gmm_cause_t gmm_handle_identity_response(amf_ue_t *amf_ue,
             return gmm_cause;
         }
 
-        amf_ue_set_suci(amf_ue, mobile_identity);
+        if (amf_ue_set_suci(amf_ue, mobile_identity) != OGS_OK)
+            return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
         ogs_info("[%s]    SUCI", amf_ue->suci);
     } else {
         ogs_error("Not supported Identity type[%d]",

@@ -880,7 +880,7 @@ amf_ue_t *amf_ue_find_by_supi(char *supi);
 amf_ue_t *amf_ue_find_by_ue_context_id(char *ue_context_id);
 
 amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message);
-void amf_ue_set_suci(amf_ue_t *amf_ue,
+int amf_ue_set_suci(amf_ue_t *amf_ue,
         ogs_nas_5gs_mobile_identity_t *mobile_identity);
 void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi);
 
