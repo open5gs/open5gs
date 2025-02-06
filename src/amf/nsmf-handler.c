@@ -681,7 +681,29 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 ogs_warn("[%s:%d] Receive Update SM context"
                         "(DUPLICATED_PDU_SESSION_ID)", amf_ue->supi, sess->psi);
 
-                if (ran_ue) {
+            /*
+             * Issue #3710
+             *
+             * A duplicate PDU Session Establishment is received.
+             * The system intends to update the SM context via the SBI.
+             *
+             * The process is as follows:
+             * 1. Log a warning including the SUPI (subscriber ID) and psi.
+             * 2. Call amf_sess_sbi_discover_and_send() with a pointer
+             *    to amf_nsmf_pdusession_build_create_sm_context().
+             * 3. This function (amf_nsmf_pdusession_build_create_sm_context)
+             *    will eventually build the SBI request header and call
+             *    ogs_sbi_server_uri(), which internally calls ogs_uridup().
+             * 4. If the SUPI (used as header.resource.component[0]) is NULL,
+             *    ogs_uridup asserts on the NULL value and causes a crash.
+             *
+             * To prevent this, we check for a NULL SUPI before calling the
+             * update function.
+             */
+                if (!amf_ue->supi) {
+                    ogs_warn("SUPI is NULL. Skipping update SM context for "
+                            "duplicated PDU Session (psi: %d)", sess->psi);
+                } else if (ran_ue) {
                     r = amf_sess_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                             amf_nsmf_pdusession_build_create_sm_context,
