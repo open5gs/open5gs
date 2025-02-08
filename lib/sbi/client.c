@@ -217,6 +217,8 @@ void ogs_sbi_client_remove(ogs_sbi_client_t *client)
         ogs_free(client->cert);
     if (client->sslkeylog)
         ogs_free(client->sslkeylog);
+    if (client->local_if)
+        ogs_free(client->local_if);
 
     if (client->fqdn)
         ogs_free(client->fqdn);
@@ -556,6 +558,10 @@ static connection_t *connection_add(
     if (client->resolve) {
         conn->resolve_list = curl_slist_append(NULL, client->resolve);
         curl_easy_setopt(conn->easy, CURLOPT_RESOLVE, conn->resolve_list);
+    }
+
+    if (client->local_if) {
+        curl_easy_setopt(conn->easy, CURLOPT_INTERFACE, client->local_if);
     }
 
     curl_easy_setopt(conn->easy, CURLOPT_PRIVATE, conn);
