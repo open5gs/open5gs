@@ -75,7 +75,7 @@ bool udm_nudm_ueau_handle_get(
 
         r = udm_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
                 udm_nudr_dr_build_authentication_subscription,
-                udm_ue, stream, UDM_UE_NO_STATE, NULL);
+                udm_ue, stream, UDM_SBI_NO_STATE, NULL);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
 
@@ -165,7 +165,7 @@ bool udm_nudm_ueau_handle_get(
 
         r = udm_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
                 udm_nudr_dr_build_authentication_subscription,
-                udm_ue, stream, UDM_UE_NO_STATE, udm_ue->sqn);
+                udm_ue, stream, UDM_SBI_NO_STATE, udm_ue->sqn);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     }
@@ -237,7 +237,7 @@ bool udm_nudm_ueau_handle_result_confirmation_inform(
 
     r = udm_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
             udm_nudr_dr_build_update_authentication_status,
-            udm_ue, stream, UDM_UE_NO_STATE, NULL);
+            udm_ue, stream, UDM_SBI_NO_STATE, NULL);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 
@@ -347,7 +347,7 @@ bool udm_nudm_uecm_handle_amf_registration(
 
     r = udm_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
             udm_nudr_dr_build_update_amf_context, udm_ue, stream,
-            UDM_UE_NO_STATE, NULL);
+            UDM_SBI_NO_STATE, NULL);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 
@@ -474,7 +474,7 @@ bool udm_nudm_uecm_handle_amf_registration_update(
 
     r = udm_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
             udm_nudr_dr_build_patch_amf_context,
-            udm_ue, stream, UDM_UE_NO_STATE, PatchItemList);
+            udm_ue, stream, UDM_SBI_NO_STATE, PatchItemList);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 

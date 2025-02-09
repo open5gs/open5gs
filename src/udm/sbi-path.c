@@ -178,7 +178,7 @@ int udm_sess_sbi_discover_and_send(
 
     r = udm_sbi_discover_and_send(
             sess->id, &sess->sbi, service_type, discovery_option,
-            (ogs_sbi_build_f)build, sess, stream, UDM_UE_NO_STATE, data);
+            (ogs_sbi_build_f)build, sess, stream, UDM_SBI_NO_STATE, data);
     if (r != OGS_OK) {
         ogs_error("udm_sess_sbi_discover_and_send() failed");
         ogs_assert(true ==
