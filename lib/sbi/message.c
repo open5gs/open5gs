@@ -989,12 +989,17 @@ int ogs_sbi_parse_request(
 
             token = ogs_strtok_r(v, ",", &saveptr);
             while (token != NULL) {
-                message->param.fields
-                    [message->param.num_of_fields] = ogs_strdup(token);
-                ogs_assert(message->param.fields
-                    [message->param.num_of_fields]);
-                message->param.num_of_fields++;
-                token = ogs_strtok_r(NULL, ",", &saveptr);
+                if (message->param.num_of_fields < OGS_SBI_MAX_NUM_OF_FIELDS) {
+                        message->param.fields
+                        [message->param.num_of_fields] = ogs_strdup(token);
+                    ogs_assert(message->param.fields
+                        [message->param.num_of_fields]);
+                    message->param.num_of_fields++;
+                    token = ogs_strtok_r(NULL, ",", &saveptr);
+                } else {
+                    ogs_error("Fields in query exceed MAX_NUM_OF_FIELDS");
+                    break;
+                }
             }
         } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_IPV4ADDR)) {
             message->param.ipv4addr = ogs_hash_this_val(hi);

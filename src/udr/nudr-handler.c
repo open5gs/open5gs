@@ -467,6 +467,9 @@ bool udr_nudr_dr_handle_subscription_provisioned(
     SWITCH(recvmsg->h.resource.component[4])
     CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
         int i;
+        bool processGpsi = false;
+        bool processUeAmbr = false;
+        bool processNssai = false;
 
         OpenAPI_access_and_mobility_subscription_data_t
             AccessAndMobilitySubscriptionData;
@@ -480,32 +483,34 @@ bool udr_nudr_dr_handle_subscription_provisioned(
 
         OpenAPI_lnode_t *node = NULL;
 
-        int amdatamask = OGS_SBI_AM_DATA_FIELDS_ALL;
-
         memset(&AccessAndMobilitySubscriptionData, 0,
                 sizeof(AccessAndMobilitySubscriptionData));
 
-        // Apply filtering based on fields query parameter
+        /* Apply filtering based on fields query parameter */
         if (recvmsg->param.num_of_fields) {
-            amdatamask = OGS_SBI_AM_DATA_FIELDS_NONE;
-            int i;
             for (i = 0; i < recvmsg->param.num_of_fields; i++) {
                 SWITCH(recvmsg->param.fields[i])
                 CASE(OGS_SBI_PARAM_FIELDS_GPSIS)
-                    amdatamask = (amdatamask | OGS_SBI_AM_DATA_FIELDS_GPSIS);
+                    processGpsi = true;
                     break;
                 CASE(OGS_SBI_PARAM_FIELDS_SUBSCRIBED_UE_AMBR)
-                    amdatamask = (amdatamask |
-                            OGS_SBI_AM_DATA_FIELDS_SUBSCRIBED_UE_AMBR);
+                    processUeAmbr = true;
                     break;
                 CASE(OGS_SBI_PARAM_FIELDS_NSSAI)
-                    amdatamask = (amdatamask | OGS_SBI_AM_DATA_FIELDS_NSSAI);
+                    processNssai = true;
                     break;
+                DEFAULT
+                    ogs_error("Unexpected field! [%s]",
+                            recvmsg->param.fields[i]);
                 END
             }
+        } else {
+            processGpsi = true;
+            processUeAmbr = true;
+            processNssai = true;
         }
 
-        if (amdatamask & OGS_SBI_AM_DATA_FIELDS_GPSIS) {
+        if (processGpsi) {
             GpsiList = OpenAPI_list_create();
             for (i = 0; i < subscription_data.num_of_msisdn; i++) {
                 char *gpsi = ogs_msprintf("%s-%s",
@@ -521,7 +526,7 @@ bool udr_nudr_dr_handle_subscription_provisioned(
 
         memset(&SubscribedUeAmbr, 0, sizeof(SubscribedUeAmbr));
 
-        if (amdatamask & OGS_SBI_AM_DATA_FIELDS_SUBSCRIBED_UE_AMBR) {
+        if (processUeAmbr) {
             SubscribedUeAmbr.uplink = ogs_sbi_bitrate_to_string(
                     subscription_data.ambr.uplink, OGS_SBI_BITRATE_KBPS);
             SubscribedUeAmbr.downlink = ogs_sbi_bitrate_to_string(
@@ -531,7 +536,7 @@ bool udr_nudr_dr_handle_subscription_provisioned(
                 &SubscribedUeAmbr;
         }
 
-        if (amdatamask & OGS_SBI_AM_DATA_FIELDS_NSSAI) {
+        if (processNssai) {
             memset(&NSSAI, 0, sizeof(NSSAI));
             DefaultSingleNssaiList = OpenAPI_list_create();
             for (i = 0; i < subscription_data.num_of_slice; i++) {

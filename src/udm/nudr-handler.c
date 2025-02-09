@@ -620,6 +620,7 @@ bool udm_nudr_dr_handle_subscription_provisioned(
     CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
         OpenAPI_access_and_mobility_subscription_data_t
             *AccessAndMobilitySubscriptionData = NULL;
+        ogs_sbi_request_t *request = NULL;
 
         AccessAndMobilitySubscriptionData =
             recvmsg->AccessAndMobilitySubscriptionData;
@@ -636,8 +637,7 @@ bool udm_nudr_dr_handle_subscription_provisioned(
 
         memset(&sendmsg, 0, sizeof(sendmsg));
 
-        // Check if original request was for /nudm-sdm/v2/{supi}/nssai
-        ogs_sbi_request_t *request = NULL;
+        /* Check if original request was for /nudm-sdm/v2/{supi}/nssai */
         request = ogs_sbi_request_from_stream(stream);
 
         if (!strcmp(request->h.resource.component[1],
