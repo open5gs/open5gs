@@ -18,6 +18,7 @@
  */
 
 #include "nudr-handler.h"
+#include "sbi-path.h"
 
 bool udm_nudr_dr_handle_subscription_authentication(
     udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
@@ -601,7 +602,8 @@ bool udm_nudr_dr_handle_subscription_context(
 }
 
 bool udm_nudr_dr_handle_subscription_provisioned(
-    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, int state,
+    ogs_sbi_message_t *recvmsg)
 {
     char *strerror = NULL;
     ogs_sbi_server_t *server = NULL;
@@ -638,10 +640,7 @@ bool udm_nudr_dr_handle_subscription_provisioned(
         memset(&sendmsg, 0, sizeof(sendmsg));
 
         /* Check if original request was for /nudm-sdm/v2/{supi}/nssai */
-        request = ogs_sbi_request_from_stream(stream);
-
-        if (!strcmp(request->h.resource.component[1],
-                OGS_SBI_RESOURCE_NAME_NSSAI)) {
+        if (state == UDM_SBI_UE_PROVISIONED_NSSAI_ONLY) {
             OpenAPI_nssai_t *Nssai = NULL;
             Nssai = AccessAndMobilitySubscriptionData->nssai;
             if (!Nssai) {

@@ -464,6 +464,8 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                         e->h.sbi.data =
                             OGS_UINT_TO_POINTER(sbi_xact->assoc_stream_id);
 
+                    e->h.sbi.state = sbi_xact->state;
+
                     ogs_sbi_xact_remove(sbi_xact);
 
                     udm_ue = udm_ue_find_by_id(udm_ue_id);
