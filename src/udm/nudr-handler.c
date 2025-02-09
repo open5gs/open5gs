@@ -622,7 +622,6 @@ bool udm_nudr_dr_handle_subscription_provisioned(
     CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
         OpenAPI_access_and_mobility_subscription_data_t
             *AccessAndMobilitySubscriptionData = NULL;
-        ogs_sbi_request_t *request = NULL;
 
         AccessAndMobilitySubscriptionData =
             recvmsg->AccessAndMobilitySubscriptionData;
