@@ -31,7 +31,8 @@ bool udm_nudr_dr_handle_subscription_authentication(
 bool udm_nudr_dr_handle_subscription_context(
     udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 bool udm_nudr_dr_handle_subscription_provisioned(
-    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, int state,
+    ogs_sbi_message_t *recvmsg);
 
 bool udm_nudr_dr_handle_smf_registration(
     udm_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
