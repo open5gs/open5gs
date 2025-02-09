@@ -1988,6 +1988,11 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
             ogs_error("No UE(mme-ue) context");
             return;
         }
+        enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+        if (!enb_ue) {
+            ogs_error("No UE(target-enb-ue) context");
+            return;
+        }
         if (mme_ue_have_indirect_tunnel(mme_ue) == true) {
             ogs_assert(OGS_OK ==
                 mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
@@ -2007,6 +2012,11 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
 
         if (!mme_ue) {
             ogs_error("No UE(mme-ue) context");
+            return;
+        }
+        enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+        if (!enb_ue) {
+            ogs_error("No UE(target-enb-ue) context");
             return;
         }
         if (mme_ue_have_indirect_tunnel(mme_ue) == true) {

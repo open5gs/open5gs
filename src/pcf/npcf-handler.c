@@ -118,7 +118,8 @@ bool pcf_npcf_am_policy_control_handle_create(pcf_ue_t *pcf_ue,
     ogs_freeaddrinfo(addr6);
 
     supported_features =
-        ogs_uint64_from_string(PolicyAssociationRequest->supp_feat);
+        ogs_uint64_from_string_hexadecimal(
+                PolicyAssociationRequest->supp_feat);
     pcf_ue->am_policy_control_features &= supported_features;
 
     if (PolicyAssociationRequest->gpsi) {
@@ -328,7 +329,8 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
 
     if (SmPolicyContextData->supp_feat) {
         uint64_t supported_features =
-            ogs_uint64_from_string(SmPolicyContextData->supp_feat);
+            ogs_uint64_from_string_hexadecimal(
+                    SmPolicyContextData->supp_feat);
         sess->smpolicycontrol_features &= supported_features;
     } else {
         sess->smpolicycontrol_features = 0;
@@ -703,7 +705,8 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
-    supported_features = ogs_uint64_from_string(AscReqData->supp_feat);
+    supported_features = ogs_uint64_from_string_hexadecimal(
+            AscReqData->supp_feat);
     sess->policyauthorization_features &= supported_features;
 
     if (sess->policyauthorization_features != supported_features) {

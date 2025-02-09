@@ -1001,7 +1001,7 @@ int ogs_sbi_parse_request(
             char *v = ogs_hash_this_val(hi);
             if (v) {
                 discovery_option->requester_features =
-                    ogs_uint64_from_string(v);
+                    ogs_uint64_from_string_hexadecimal(v);
                 discovery_option_presence = true;
             }
         }
@@ -3690,7 +3690,7 @@ void ogs_sbi_discovery_option_parse_tai(
             if (Tai->plmn_id)
                 ogs_sbi_parse_plmn_id(&tai.plmn_id, Tai->plmn_id);
             if (Tai->tac)
-                tai.tac = ogs_uint24_from_string(Tai->tac);
+                tai.tac = ogs_uint24_from_string_hexadecimal(Tai->tac);
 
             ogs_sbi_discovery_option_set_tai(discovery_option, &tai);
 

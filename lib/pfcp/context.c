@@ -650,7 +650,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                                     if (v) {
                                                         e_cell_id[
                                                             num_of_e_cell_id] =
-                                                        ogs_uint64_from_string(
+                                                        ogs_uint64_from_string_hexadecimal(
                                                                 (char*)v);
                                                         num_of_e_cell_id++;
                                                     }
@@ -686,7 +686,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                                     if (v) {
                                                         nr_cell_id[
                                                             num_of_nr_cell_id] =
-                                                        ogs_uint64_from_string(
+                                                        ogs_uint64_from_string_hexadecimal(
                                                                 (char*)v);
                                                         num_of_nr_cell_id++;
                                                     }
