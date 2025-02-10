@@ -1073,6 +1073,7 @@ ogs_sbi_client_t *ogs_sbi_context_parse_client_config(ogs_yaml_iter_t *iter)
     const char *client_private_key = NULL;
     const char *client_cert = NULL;
     const char *client_sslkeylog = NULL;
+    const char *local_if = NULL;
 
     bool rc;
 
@@ -1116,6 +1117,8 @@ ogs_sbi_client_t *ogs_sbi_context_parse_client_config(ogs_yaml_iter_t *iter)
             client_cert = ogs_yaml_iter_value(iter);
         } else if (!strcmp(key, "client_sslkeylogfile")) {
             client_sslkeylog = ogs_yaml_iter_value(iter);
+        } else if (!strcmp(key, "interface")) {
+            local_if = ogs_yaml_iter_value(iter);
         }
     }
 
@@ -1190,6 +1193,13 @@ ogs_sbi_client_t *ogs_sbi_context_parse_client_config(ogs_yaml_iter_t *iter)
             ogs_free(client->sslkeylog);
         client->sslkeylog = ogs_strdup(client_sslkeylog);
         ogs_assert(client->sslkeylog);
+    }
+
+    if (local_if) {
+        if (client->local_if)
+            ogs_free(client->local_if);
+        client->local_if = ogs_strdup(local_if);
+        ogs_assert(client->local_if);
     }
 
     if ((!client_private_key && client_cert) ||
