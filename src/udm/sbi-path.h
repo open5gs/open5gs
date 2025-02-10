@@ -44,7 +44,7 @@ int udm_sess_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(udm_sess_t *sess, void *data),
-        udm_sess_t *sess, ogs_sbi_stream_t *stream, void *data);
+        udm_sess_t *sess, ogs_sbi_stream_t *stream, int state, void *data);
 
 #ifdef __cplusplus
 }

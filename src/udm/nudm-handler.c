@@ -588,7 +588,8 @@ bool udm_nudm_uecm_handle_smf_registration(
         OpenAPI_smf_registration_copy(sess->smf_registration, SmfRegistration);
 
     r = udm_sess_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
-            udm_nudr_dr_build_update_smf_context, sess, stream, NULL);
+            udm_nudr_dr_build_update_smf_context, sess, stream,
+            UDM_SBI_NO_STATE, NULL);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 
@@ -609,7 +610,8 @@ bool udm_nudm_uecm_handle_smf_deregistration(
     ogs_assert(udm_ue);
 
     r = udm_sess_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
-            udm_nudr_dr_build_delete_smf_context, sess, stream, NULL);
+            udm_nudr_dr_build_delete_smf_context, sess, stream,
+            UDM_SBI_NO_STATE, NULL);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 

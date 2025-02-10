@@ -486,6 +486,9 @@ bool udr_nudr_dr_handle_subscription_provisioned(
         memset(&AccessAndMobilitySubscriptionData, 0,
                 sizeof(AccessAndMobilitySubscriptionData));
 
+        memset(&SubscribedUeAmbr, 0, sizeof(SubscribedUeAmbr));
+        memset(&NSSAI, 0, sizeof(NSSAI));
+
         /* Apply filtering based on fields query parameter */
         if (recvmsg->param.num_of_fields) {
             for (i = 0; i < recvmsg->param.num_of_fields; i++) {
@@ -524,8 +527,6 @@ bool udr_nudr_dr_handle_subscription_provisioned(
                 AccessAndMobilitySubscriptionData.gpsis = GpsiList;
         }
 
-        memset(&SubscribedUeAmbr, 0, sizeof(SubscribedUeAmbr));
-
         if (processUeAmbr) {
             SubscribedUeAmbr.uplink = ogs_sbi_bitrate_to_string(
                     subscription_data.ambr.uplink, OGS_SBI_BITRATE_KBPS);
@@ -537,7 +538,6 @@ bool udr_nudr_dr_handle_subscription_provisioned(
         }
 
         if (processNssai) {
-            memset(&NSSAI, 0, sizeof(NSSAI));
             DefaultSingleNssaiList = OpenAPI_list_create();
             for (i = 0; i < subscription_data.num_of_slice; i++) {
                 slice_data = &subscription_data.slice[i];
