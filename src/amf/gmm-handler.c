@@ -39,6 +39,7 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
         ogs_nas_5gs_registration_request_t *registration_request)
 {
     int served_tai_index = 0;
+    int i;
     uint8_t gmm_cause;
 
     ran_ue_t *ran_ue = NULL;
@@ -163,6 +164,14 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
         }
         ogs_nas_to_plmn_id(&amf_ue->home_plmn_id,
                 &mobile_identity_suci->nas_plmn_id);
+
+        for (i = 0; i < amf_self()->num_of_served_guami; i++) {
+            if (!memcmp(&amf_ue->home_plmn_id,
+                        &amf_self()->served_guami[i].plmn_id,
+                        sizeof(amf_ue->home_plmn_id))) {
+                amf_ue->guami = &amf_self()->served_guami[i];
+            }
+        }
 
         gmm_cause = gmm_cause_from_access_control(&amf_ue->home_plmn_id);
         if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
