@@ -19,6 +19,93 @@
 
 #include "ogs-sbi.h"
 
+static void handle_nf_profile_retrieval(
+        char *nf_instance_id,
+        OpenAPI_nf_profile_t *NFProfile)
+{
+    ogs_sbi_nf_instance_t *nf_instance;
+    ogs_sbi_subscription_spec_t *subscription_spec = NULL;
+    bool save = false;
+
+    ogs_assert(nf_instance_id);
+    ogs_assert(NFProfile);
+
+    nf_instance = ogs_sbi_nf_instance_find(nf_instance_id);
+    if (nf_instance) {
+        /* already have this nf_instance; done */
+        return;
+    }
+
+    if (NF_INSTANCE_ID_IS_SELF(nf_instance_id)) {
+        /* don't save ourselves */
+        return;
+    }
+
+    nf_instance = ogs_sbi_nf_instance_add();
+    ogs_assert(nf_instance);
+
+    ogs_sbi_nf_instance_set_id(nf_instance, nf_instance_id);
+
+    ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile);
+
+    /* verify against our subscription list that we want to save this
+     * nf instance to our context */
+    ogs_list_for_each(&ogs_sbi_self()->subscription_spec_list, subscription_spec) {
+        ogs_sbi_nf_service_t *nf_service = NULL;
+
+        if (subscription_spec->subscr_cond.nf_type == nf_instance->nf_type) {
+            /* ok; save the nf_instance */
+            save = true;
+            break;
+        }
+
+        ogs_list_for_each(&nf_instance->nf_service_list, nf_service) {
+            if (subscription_spec->subscr_cond.service_name &&
+                nf_service->name &&
+                !strcmp(subscription_spec->subscr_cond.service_name, nf_service->name))
+            {
+                /* ok; save the nf_instance */
+                save = true;
+                break;
+            }
+        }
+
+        if (save)
+            break;
+    }
+
+    if (!save) {
+        ogs_sbi_nf_instance_remove(nf_instance);
+    } else {
+        ogs_sbi_nf_fsm_init(nf_instance);
+        ogs_info("[%s] (NRF-profile-get) NF registered", nf_instance->id);
+        ogs_sbi_client_associate(nf_instance);
+    }
+}
+
+static void handle_nf_list_retrieval(ogs_sbi_links_t *links)
+{
+    ogs_sbi_header_t header;
+    ogs_sbi_message_t msg;
+    OpenAPI_lnode_t *node = NULL;
+
+    OpenAPI_list_for_each(links->items, node) {
+
+        memset(&header, 0, sizeof(header));
+        header.uri = node->data;
+
+        if (ogs_sbi_parse_header(&msg, &header) != OGS_OK) {
+            ogs_error("Cannot parse href: %s", header.uri);
+            continue;
+        }
+
+        if (msg.h.resource.component[1])
+            ogs_nnrf_nfm_send_nf_profile_get(msg.h.resource.component[1]);
+
+        ogs_sbi_header_free(&header);
+    }
+}
+
 void ogs_sbi_nf_fsm_init(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_event_t e;
@@ -227,6 +314,8 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
                         subscription_spec->subscr_cond.nf_type,
                         subscription_spec->subscr_cond.service_name);
             }
+
+            ogs_nnrf_nfm_send_nf_list_retrieve();
         }
         break;
 
@@ -252,19 +341,64 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
 
-                if (message->res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT ||
-                    message->res_status == OGS_SBI_HTTP_STATUS_OK) {
-                    if (nf_instance->time.heartbeat_interval)
-                        ogs_timer_start(nf_instance->t_no_heartbeat,
-                            ogs_time_from_sec(
-                                nf_instance->time.heartbeat_interval +
-                                ogs_local_conf()->time.nf_instance.
-                                    no_heartbeat_margin));
+                if (message->h.resource.component[1]) {
+                    SWITCH(message->h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                        if (message->res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT ||
+                            message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+
+                            if (nf_instance->time.heartbeat_interval)
+                                ogs_timer_start(nf_instance->t_no_heartbeat,
+                                    ogs_time_from_sec(
+                                        nf_instance->time.heartbeat_interval +
+                                        ogs_local_conf()->time.nf_instance.
+                                            no_heartbeat_margin));
+
+                        } else {
+                            ogs_warn("[%s] HTTP response error [%d]",
+                                NF_INSTANCE_ID(ogs_sbi_self()->nf_instance),
+                                message->res_status);
+                            OGS_FSM_TRAN(s, &ogs_sbi_nf_state_exception);
+                        }
+                        break;
+
+                    CASE(OGS_SBI_HTTP_METHOD_GET)
+                        if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                            if (!message->h.resource.component[1]) {
+                                ogs_error("No NFInstanceId");
+                                break;
+                            }
+                            if (!message->NFProfile) {
+                                ogs_error("No NFProfile");
+                                break;
+                            }
+                            handle_nf_profile_retrieval(
+                                message->h.resource.component[1],
+                                message->NFProfile);
+                        } else {
+                            ogs_warn("[%s] HTTP response error [%d]",
+                                NF_INSTANCE_ID(ogs_sbi_self()->nf_instance),
+                                message->res_status);
+                            OGS_FSM_TRAN(s, &ogs_sbi_nf_state_exception);
+                        }
+                        break;
+                    DEFAULT
+                        ogs_error("Unknown method [%s]", message->h.method);
+                        break;
+                    END
                 } else {
-                    ogs_warn("[%s] HTTP response error [%d]",
-                            NF_INSTANCE_ID(ogs_sbi_self()->nf_instance),
-                            message->res_status);
-                    OGS_FSM_TRAN(s, &ogs_sbi_nf_state_exception);
+                    if (!message->links) {
+                        ogs_warn("No links");
+                        break;
+                    }
+                    if (message->res_status != OGS_SBI_HTTP_STATUS_OK) {
+                        ogs_warn("[%s] HTTP response error [%d]",
+                                NF_INSTANCE_ID(ogs_sbi_self()->nf_instance),
+                                message->res_status);
+                        break;
+                    }
+
+                    handle_nf_list_retrieval(message->links);
                 }
 
                 break;

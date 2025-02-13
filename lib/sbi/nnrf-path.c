@@ -180,3 +180,45 @@ bool ogs_nnrf_nfm_send_nf_status_unsubscribe(
 
     return rc;
 }
+
+bool ogs_nnrf_nfm_send_nf_list_retrieve(void)
+{
+    bool rc;
+    ogs_sbi_request_t *request = NULL;
+
+    request = ogs_nnrf_nfm_build_nflist_retrieve();
+    if (!request) {
+        ogs_error("No Request");
+        return false;
+    }
+
+    rc = ogs_sbi_send_request_to_nrf(
+            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            ogs_sbi_client_handler, request, ogs_sbi_self()->nf_instance);
+    ogs_expect(rc == true);
+
+    ogs_sbi_request_free(request);
+
+    return rc;
+}
+
+bool ogs_nnrf_nfm_send_nf_profile_get(char *nf_instance_id)
+{
+    bool rc;
+    ogs_sbi_request_t *request = NULL;
+
+    request = ogs_nnrf_nfm_build_profile_retrieve(nf_instance_id);
+    if (!request) {
+        ogs_error("No Request");
+        return false;
+    }
+
+    rc = ogs_sbi_send_request_to_nrf(
+            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            ogs_sbi_client_handler, request, ogs_sbi_self()->nf_instance);
+    ogs_expect(rc == true);
+
+    ogs_sbi_request_free(request);
+
+    return rc;
+}
