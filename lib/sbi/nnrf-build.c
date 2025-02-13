@@ -1817,6 +1817,24 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_profile_retrieve(char *nf_instance_id)
     return request;
 }
 
+ogs_sbi_request_t *ogs_nnrf_nfm_build_nflist_retrieve(void)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+    message.h.resource.component[0] =
+        (char *)OGS_SBI_RESOURCE_NAME_NF_INSTANCES;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+    return request;
+}
+
 ogs_sbi_request_t *ogs_nnrf_disc_build_discover(
         OpenAPI_nf_type_e target_nf_type,
         OpenAPI_nf_type_e requester_nf_type,

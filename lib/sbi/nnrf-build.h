@@ -42,6 +42,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_update(
 ogs_sbi_request_t *ogs_nnrf_nfm_build_status_unsubscribe(
         ogs_sbi_subscription_data_t *subscription_data);
 ogs_sbi_request_t *ogs_nnrf_nfm_build_profile_retrieve(char *nf_instance_id);
+ogs_sbi_request_t *ogs_nnrf_nfm_build_nflist_retrieve(void);
 
 ogs_sbi_request_t *ogs_nnrf_disc_build_discover(
         OpenAPI_nf_type_e target_nf_type,

@@ -203,6 +203,13 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_ue_reg_status_update_req_data_free(message->UeRegStatusUpdateReqData);
     if (message->UeRegStatusUpdateRspData)
         OpenAPI_ue_reg_status_update_rsp_data_free(message->UeRegStatusUpdateRspData);
+    if (message->links) {
+        OpenAPI_clear_and_free_string_list(message->links->items);
+        if (message->links->self)
+            ogs_free(message->links->self);
+
+        ogs_free(message->links);
+    }
 
     /* HTTP Part */
     for (i = 0; i < message->num_of_part; i++) {
@@ -1499,15 +1506,27 @@ static int parse_json(ogs_sbi_message_t *message,
 
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                if (message->res_status < 300) {
-                    message->NFProfile =
-                        OpenAPI_nf_profile_parseFromJSON(item);
-                    if (!message->NFProfile) {
-                        rv = OGS_ERROR;
-                        ogs_error("JSON parse error");
+                if (message->h.resource.component[1]) {
+                    if (message->res_status < 300) {
+                        message->NFProfile =
+                            OpenAPI_nf_profile_parseFromJSON(item);
+                        if (!message->NFProfile) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else {
+                        ogs_error("HTTP ERROR Status : %d", message->res_status);
                     }
                 } else {
-                    ogs_error("HTTP ERROR Status : %d", message->res_status);
+                    if (message->res_status < 300) {
+                        message->links = ogs_sbi_links_parseFromJSON(item);
+                        if (!message->links) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else {
+                        ogs_error("HTTP ERROR Status : %d", message->res_status);
+                    }
                 }
                 break;
 
