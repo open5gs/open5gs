@@ -133,6 +133,9 @@ ogs_sbi_client_t *ogs_sbi_client_add(
         client->sslkeylog =
             ogs_strdup(ogs_sbi_self()->tls.client.sslkeylog);
 
+    if (ogs_sbi_self()->local_if)
+       client->local_if = ogs_strdup(ogs_sbi_self()->local_if);
+
     ogs_debug("ogs_sbi_client_add [%s]", OpenAPI_uri_scheme_ToString(scheme));
     OGS_OBJECT_REF(client);
 
