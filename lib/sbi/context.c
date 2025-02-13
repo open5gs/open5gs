@@ -256,7 +256,9 @@ int ogs_sbi_context_parse_config(
                         const char *default_key =
                             ogs_yaml_iter_key(&default_iter);
                         ogs_assert(default_key);
-                        if (!strcmp(default_key, "tls")) {
+                        if (!strcmp(default_key, "interface")) {
+                           self.local_if = ogs_yaml_iter_value(&default_iter);
+                        } else if (!strcmp(default_key, "tls")) {
                             ogs_yaml_iter_t tls_iter;
                             ogs_yaml_iter_recurse(&default_iter, &tls_iter);
                             while (ogs_yaml_iter_next(&tls_iter)) {
