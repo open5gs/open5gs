@@ -1081,6 +1081,7 @@ int ogs_pfcp_node_merge(ogs_pfcp_node_t *node,
                 ogs_freeaddrinfo(node->addr_list);
                 node->addr_list = tmp_list;
                 node->last_dns_refresh = now;
+                node->current_addr = NULL;
                 tmp_list = NULL;
             }
         }
