@@ -117,7 +117,6 @@ void mme_sctp_event_push(mme_event_e id,
 
     ogs_assert(id);
     ogs_assert(sock);
-    ogs_assert(addr);
 
     e = mme_event_new(id);
     ogs_assert(e);

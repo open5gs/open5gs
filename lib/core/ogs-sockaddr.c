@@ -55,6 +55,10 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __ogs_sock_domain
 
+static bool ogs_sockaddr_compare(const ogs_sockaddr_t *a,
+                                 const ogs_sockaddr_t *b,
+                                 bool compare_port);
+
 /* If you want to use getnameinfo,
  * you need to consider DNS query delay (about 10 seconds) */
 #if 0
@@ -264,6 +268,60 @@ int ogs_sortaddrinfo(ogs_sockaddr_t **sa_list, int family)
     return OGS_OK;
 }
 
+/*--------------------------------------------------------------------------
+ * Merge a single node if not already in "dest" list
+ *--------------------------------------------------------------------------
+ */
+void ogs_merge_single_addrinfo(
+        ogs_sockaddr_t **dest, const ogs_sockaddr_t *item)
+{
+    ogs_sockaddr_t *p;
+    ogs_sockaddr_t *new_sa;
+
+    ogs_assert(dest);
+    ogs_assert(item);
+
+    p = *dest;
+
+    while (p) {
+        if (ogs_sockaddr_is_equal(p, item)) {
+            /* Already exists */
+            return;
+        }
+        p = p->next;
+    }
+    new_sa = (ogs_sockaddr_t *)ogs_malloc(sizeof(*new_sa));
+    ogs_assert(new_sa);
+    memcpy(new_sa, item, sizeof(*new_sa));
+    if (item->hostname) {
+        new_sa->hostname = ogs_strdup(item->hostname);
+        ogs_assert(new_sa->hostname);
+    }
+    new_sa->next = NULL;
+    if (!(*dest)) {
+        *dest = new_sa;
+    } else {
+        p = *dest;
+        while (p->next)
+            p = p->next;
+        p->next = new_sa;
+    }
+}
+
+/*--------------------------------------------------------------------------
+ * Merge an entire src list into dest
+ *--------------------------------------------------------------------------
+ */
+void ogs_merge_addrinfo(ogs_sockaddr_t **dest, const ogs_sockaddr_t *src)
+{
+    const ogs_sockaddr_t *cur;
+    cur = src;
+    while (cur) {
+        ogs_merge_single_addrinfo(dest, cur);
+        cur = cur->next;
+    }
+}
+
 ogs_sockaddr_t *ogs_link_local_addr(const char *dev, const ogs_sockaddr_t *sa)
 {
 #if defined(HAVE_GETIFADDRS)
@@ -419,13 +477,16 @@ socklen_t ogs_sockaddr_len(const void *sa)
     }
 }
 
-bool ogs_sockaddr_is_equal(const void *p, const void *q)
+/*
+ * Helper function to compare two addresses.
+ * If compare_port is true, compare both port and address.
+ * Otherwise, compare address only.
+ */
+static bool ogs_sockaddr_compare(const ogs_sockaddr_t *a,
+                                 const ogs_sockaddr_t *b,
+                                 bool compare_port)
 {
-    const ogs_sockaddr_t *a, *b;
-
-    a = p;
     ogs_assert(a);
-    b = q;
     ogs_assert(b);
 
     if (a->ogs_sa_family != b->ogs_sa_family)
@@ -433,21 +494,66 @@ bool ogs_sockaddr_is_equal(const void *p, const void *q)
 
     switch (a->ogs_sa_family) {
     case AF_INET:
-        if (a->sin.sin_port != b->sin.sin_port)
+        if (compare_port && (a->sin.sin_port != b->sin.sin_port))
             return false;
-        if (memcmp(&a->sin.sin_addr, &b->sin.sin_addr, sizeof(struct in_addr)) != 0)
+        if (memcmp(&a->sin.sin_addr, &b->sin.sin_addr,
+                   sizeof(struct in_addr)) != 0)
             return false;
         return true;
     case AF_INET6:
-        if (a->sin6.sin6_port != b->sin6.sin6_port)
+        if (compare_port && (a->sin6.sin6_port != b->sin6.sin6_port))
             return false;
-        if (memcmp(&a->sin6.sin6_addr, &b->sin6.sin6_addr, sizeof(struct in6_addr)) != 0)
+        if (memcmp(&a->sin6.sin6_addr, &b->sin6.sin6_addr,
+                   sizeof(struct in6_addr)) != 0)
             return false;
         return true;
     default:
-        ogs_error("Unexpected address faimily %u", a->ogs_sa_family);
+        ogs_error("Unexpected address family %u", a->ogs_sa_family);
         ogs_abort();
+        return false; /* Defensive return */
     }
+}
+
+/* Compare addresses including port */
+bool ogs_sockaddr_is_equal(const void *p, const void *q)
+{
+    const ogs_sockaddr_t *a = (const ogs_sockaddr_t *)p;
+    const ogs_sockaddr_t *b = (const ogs_sockaddr_t *)q;
+    return ogs_sockaddr_compare(a, b, true);
+}
+
+/* Compare addresses without considering port */
+bool ogs_sockaddr_is_equal_addr(const void *p, const void *q)
+{
+    const ogs_sockaddr_t *a = (const ogs_sockaddr_t *)p;
+    const ogs_sockaddr_t *b = (const ogs_sockaddr_t *)q;
+    return ogs_sockaddr_compare(a, b, false);
+}
+
+bool ogs_sockaddr_check_any_match(
+        ogs_sockaddr_t *base,
+        ogs_sockaddr_t *list, const ogs_sockaddr_t *single, bool compare_port)
+{
+    ogs_sockaddr_t *p = NULL;
+
+    while (list) {
+        p = base;
+        while (p) {
+            if (ogs_sockaddr_compare(p, list, compare_port) == true)
+                return true;
+            p = p->next;
+        }
+        list = list->next;
+    }
+    if (single) {
+        p = base;
+        while (p) {
+            if (ogs_sockaddr_compare(p, single, compare_port) == true)
+                return true;
+            p = p->next;
+        }
+    }
+    return false;
 }
 
 static int parse_network(ogs_ipsubnet_t *ipsub, const char *network)
@@ -665,4 +771,32 @@ char *ogs_ipstrdup(ogs_sockaddr_t *addr)
     OGS_ADDR(addr, buf);
 
     return ogs_strdup(buf);
+}
+
+char *ogs_sockaddr_to_string_static(ogs_sockaddr_t *sa_list)
+{
+    static char dumpstr[OGS_HUGE_LEN] = { 0, };
+    char *p, *last;
+    ogs_sockaddr_t *addr = NULL;
+
+    last = dumpstr + OGS_HUGE_LEN;
+    p = dumpstr;
+
+    addr = (ogs_sockaddr_t *)sa_list;
+    while (addr) {
+        char buf[OGS_ADDRSTRLEN];
+        p = ogs_slprintf(p, last, "[%s]:%d ",
+                OGS_ADDR(addr, buf), OGS_PORT(addr));
+        addr = addr->next;
+    }
+
+    if (p > dumpstr) {
+        /* If there is more than one addr, remove the last character */
+        *(p-1) = 0;
+
+        return dumpstr;
+    }
+
+    /* No address */
+    return NULL;
 }

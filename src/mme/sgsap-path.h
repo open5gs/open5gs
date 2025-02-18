@@ -36,8 +36,7 @@ void sgsap_close(void);
 
 ogs_sock_t *sgsap_client(mme_vlr_t *vlr);
 
-int sgsap_send(ogs_sock_t *sock,
-        ogs_pkbuf_t *pkbuf, ogs_sockaddr_t *addr, uint16_t stream_no);
+int sgsap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf, uint16_t stream_no);
 
 int sgsap_send_to_vlr_with_sid(
         mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf, uint16_t stream_no);

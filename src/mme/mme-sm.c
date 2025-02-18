@@ -970,25 +970,19 @@ cleanup:
     case MME_EVENT_SGSAP_LO_SCTP_COMM_UP:
         sock = e->sock;
         ogs_assert(sock);
-        addr = e->addr;
-        ogs_assert(addr);
-
-        ogs_assert(addr->ogs_sa_family == AF_INET ||
-                addr->ogs_sa_family == AF_INET6);
 
         max_num_of_ostreams = e->max_num_of_ostreams;
 
-        vlr = mme_vlr_find_by_addr(addr);
-        ogs_free(addr);
-
+        vlr = mme_vlr_find_by_sock(sock);
         ogs_assert(vlr);
         ogs_assert(OGS_FSM_STATE(&vlr->sm));
 
         vlr->max_num_of_ostreams =
                 ogs_min(max_num_of_ostreams, vlr->max_num_of_ostreams);
 
-        ogs_debug("VLR-SGs SCTP_COMM_UP[%s] Max Num of Outbound Streams[%d]",
-            OGS_ADDR(vlr->addr, buf), vlr->max_num_of_ostreams);
+        ogs_debug("VLR-SGs SCTP_COMM_UP %s Max Num of Outbound Streams[%d]",
+                ogs_sockaddr_to_string_static(vlr->sa_list),
+                vlr->max_num_of_ostreams);
 
         e->vlr = vlr;
         ogs_fsm_dispatch(&vlr->sm, e);
@@ -997,15 +991,8 @@ cleanup:
     case MME_EVENT_SGSAP_LO_CONNREFUSED:
         sock = e->sock;
         ogs_assert(sock);
-        addr = e->addr;
-        ogs_assert(addr);
 
-        ogs_assert(addr->ogs_sa_family == AF_INET ||
-                addr->ogs_sa_family == AF_INET6);
-
-        vlr = mme_vlr_find_by_addr(addr);
-        ogs_free(addr);
-
+        vlr = mme_vlr_find_by_sock(sock);
         ogs_assert(vlr);
         ogs_assert(OGS_FSM_STATE(&vlr->sm));
 
@@ -1013,29 +1000,22 @@ cleanup:
             e->vlr = vlr;
             ogs_fsm_dispatch(&vlr->sm, e);
 
-            ogs_info("VLR-SGs[%s] connection refused!!!",
-                    OGS_ADDR(vlr->addr, buf));
+            ogs_info("VLR-SGs %s connection refused!!!",
+                    ogs_sockaddr_to_string_static(vlr->sa_list));
 
         } else {
-            ogs_warn("VLR-SGs[%s] connection refused, Already Removed!",
-                    OGS_ADDR(vlr->addr, buf));
+            ogs_warn("VLR-SGs %s connection refused, Already Removed!",
+                    ogs_sockaddr_to_string_static(vlr->sa_list));
         }
 
         break;
     case MME_EVENT_SGSAP_MESSAGE:
         sock = e->sock;
         ogs_assert(sock);
-        addr = e->addr;
-        ogs_assert(addr);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
 
-        ogs_assert(addr->ogs_sa_family == AF_INET ||
-                addr->ogs_sa_family == AF_INET6);
-
-        vlr = mme_vlr_find_by_addr(addr);
-        ogs_free(addr);
-
+        vlr = mme_vlr_find_by_sock(sock);
         ogs_assert(vlr);
         ogs_assert(OGS_FSM_STATE(&vlr->sm));
 

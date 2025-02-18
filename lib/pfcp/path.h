@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -56,11 +56,9 @@ extern "C" {
 typedef struct ogs_pfcp_xact_s ogs_pfcp_xact_t;
 
 ogs_sock_t *ogs_pfcp_server(ogs_socknode_t *node);
-int ogs_pfcp_connect(
-    ogs_sock_t *ipv4, ogs_sock_t *ipv6, ogs_pfcp_node_t *node);
-
-int ogs_pfcp_send(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf);
 int ogs_pfcp_sendto(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf);
+
+ogs_pkbuf_t *ogs_pfcp_recvfrom(ogs_socket_t fd, ogs_sockaddr_t *from);
 
 ogs_pkbuf_t *ogs_pfcp_handle_echo_req(ogs_pkbuf_t *pkt);
 

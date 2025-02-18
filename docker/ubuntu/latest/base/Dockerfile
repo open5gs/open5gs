@@ -22,7 +22,6 @@ RUN apt-get update && \
         libgnutls28-dev \
         libgcrypt-dev \
         libssl-dev \
-        libidn11-dev \
         libmongoc-dev \
         libbson-dev \
         libyaml-dev \
@@ -35,4 +34,9 @@ RUN apt-get update && \
         ca-certificates \
         netbase \
         pkg-config && \
-    apt-get clean
+    if apt-cache show libidn-dev > /dev/null 2>&1; then \
+        apt-get install -y --no-install-recommends libidn-dev; \
+    else \
+        apt-get install -y --no-install-recommends libidn11-dev; \
+    fi && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*

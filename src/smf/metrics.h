@@ -24,6 +24,8 @@ typedef enum smf_metric_type_global_s {
     SMF_METR_GLOB_GAUGE_GTP1_PDPCTXS_ACTIVE,
     SMF_METR_GLOB_GAUGE_GTP2_SESSIONS_ACTIVE,
     SMF_METR_GLOB_GAUGE_GTP_PEERS_ACTIVE,
+    SMF_METR_GLOB_GAUGE_PFCP_SESSIONS_ACTIVE,
+    SMF_METR_GLOB_GAUGE_PFCP_PEERS_ACTIVE,
     _SMF_METR_GLOB_MAX,
 } smf_metric_type_global_t;
 extern ogs_metrics_inst_t *smf_metrics_inst_global[_SMF_METR_GLOB_MAX];

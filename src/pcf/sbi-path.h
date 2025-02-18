@@ -45,11 +45,10 @@ int pcf_sess_sbi_discover_and_send(
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(pcf_sess_t *sess, void *data),
         pcf_sess_t *sess, ogs_sbi_stream_t *stream, void *data);
-int pcf_sess_sbi_discover_only(
-        pcf_sess_t *sess, ogs_sbi_stream_t *stream,
-        ogs_sbi_service_type_e service_type);
 
 bool pcf_sbi_send_am_policy_control_notify(pcf_ue_t *pcf_ue);
+bool pcf_sbi_send_smpolicycontrol_create_response(
+        pcf_sess_t *sess, ogs_sbi_stream_t *stream);
 bool pcf_sbi_send_smpolicycontrol_update_notify(
         pcf_sess_t *sess, OpenAPI_sm_policy_decision_t *SmPolicyDecision);
 bool pcf_sbi_send_smpolicycontrol_delete_notify(

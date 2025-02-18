@@ -18,6 +18,7 @@
  */
 
 #include "nudr-handler.h"
+#include "sbi-path.h"
 
 bool udm_nudr_dr_handle_subscription_authentication(
     udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
@@ -601,7 +602,8 @@ bool udm_nudr_dr_handle_subscription_context(
 }
 
 bool udm_nudr_dr_handle_subscription_provisioned(
-    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, int state,
+    ogs_sbi_message_t *recvmsg)
 {
     char *strerror = NULL;
     ogs_sbi_server_t *server = NULL;
@@ -635,6 +637,29 @@ bool udm_nudr_dr_handle_subscription_provisioned(
         }
 
         memset(&sendmsg, 0, sizeof(sendmsg));
+
+        /* Check if original request was for /nudm-sdm/v2/{supi}/nssai */
+        if (state == UDM_SBI_UE_PROVISIONED_NSSAI_ONLY) {
+            OpenAPI_nssai_t *Nssai = NULL;
+            Nssai = AccessAndMobilitySubscriptionData->nssai;
+            if (!Nssai) {
+                ogs_error("[%s] No Nssai", udm_ue->supi);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(
+                        stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        recvmsg, "No Nssai",
+                        udm_ue->supi, NULL));
+                return false;
+            }
+
+            sendmsg.Nssai = OpenAPI_nssai_copy(sendmsg.Nssai, Nssai);
+            response = ogs_sbi_build_response(&sendmsg, recvmsg->res_status);
+            ogs_assert(response);
+            ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+            OpenAPI_nssai_free(sendmsg.Nssai);
+
+            break;
+        }
 
         sendmsg.AccessAndMobilitySubscriptionData =
             OpenAPI_access_and_mobility_subscription_data_copy(
@@ -808,8 +833,7 @@ bool udm_nudr_dr_handle_smf_registration(
                 return false;
             }
 
-            if (!SmfRegistration->single_nssai ||
-                    !SmfRegistration->single_nssai->sst) {
+            if (!SmfRegistration->single_nssai) {
                 ogs_error("[%s:%d] No singleNssai", udm_ue->supi, sess->psi);
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(

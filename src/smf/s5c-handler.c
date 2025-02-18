@@ -155,7 +155,7 @@ uint8_t smf_s5c_handle_create_session_request(
         cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
     }
 
-    if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
+    if (!ogs_diam_is_relay_or_app_advertised(OGS_DIAM_GX_APPLICATION_ID)) {
         ogs_error("No Gx Diameter Peer");
         cause_value = OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
     }
@@ -172,7 +172,7 @@ uint8_t smf_s5c_handle_create_session_request(
         }
         break;
     case OGS_GTP2_RAT_TYPE_WLAN:
-        if (!ogs_diam_app_connected(OGS_DIAM_S6B_APPLICATION_ID)) {
+        if (!ogs_diam_is_relay_or_app_advertised(OGS_DIAM_S6B_APPLICATION_ID)) {
             ogs_error("No S6b Diameter Peer");
             cause_value = OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
         }
@@ -485,13 +485,13 @@ uint8_t smf_s5c_handle_delete_session_request(
     ogs_assert(xact);
     ogs_assert(req);
 
-    if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
+    if (!ogs_diam_is_relay_or_app_advertised(OGS_DIAM_GX_APPLICATION_ID)) {
         ogs_error("No Gx Diameter Peer");
         return OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
     }
 
     if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_WLAN) {
-        if (!ogs_diam_app_connected(OGS_DIAM_S6B_APPLICATION_ID)) {
+        if (!ogs_diam_is_relay_or_app_advertised(OGS_DIAM_S6B_APPLICATION_ID)) {
             ogs_error("No S6b Diameter Peer");
             return OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
         }

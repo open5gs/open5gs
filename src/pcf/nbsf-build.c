@@ -35,14 +35,13 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_nf_service_t *nf_service = NULL;
 
+    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
+
     int i;
 
     ogs_assert(sess);
     pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(pcf_ue);
-
-    nf_instance = data;
-    ogs_assert(nf_instance);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
@@ -68,6 +67,13 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
         goto end;
     }
     PcfBinding.dnn = sess->dnn;
+
+    requester_nf_type = NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);
+    ogs_assert(requester_nf_type);
+    nf_instance = ogs_sbi_nf_instance_find_by_service_type(
+                    OGS_SBI_SERVICE_TYPE_NPCF_POLICYAUTHORIZATION,
+                    requester_nf_type);
+    ogs_assert(nf_instance);
 
     nf_service = ogs_sbi_nf_service_find_by_name(
             nf_instance, (char *)OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION);
@@ -127,10 +133,6 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
         }
     }
 
-    if (!sess->s_nssai.sst) {
-        ogs_error("No SST");
-        goto end;
-    }
     if (PcfIpEndPointList->count)
         PcfBinding.pcf_ip_end_points = PcfIpEndPointList;
     else

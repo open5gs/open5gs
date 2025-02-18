@@ -310,7 +310,17 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
         ogs_assert(message);
 
         enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
-        ogs_assert(enb_ue);
+        if (!enb_ue) {
+            ogs_fatal("No S1 Context IMSI[%s] NAS-Type[%d] "
+                    "ENB-UE-ID[%d:%d][%p:%p]",
+                    mme_ue->imsi_bcd, message->emm.h.message_type,
+                    e->enb_ue_id, mme_ue->enb_ue_id,
+                    enb_ue_find_by_id(e->enb_ue_id),
+                    enb_ue_find_by_id(mme_ue->enb_ue_id));
+            ogs_assert(e->pkbuf);
+            ogs_log_hexdump(OGS_LOG_FATAL, e->pkbuf->data, e->pkbuf->len);
+            ogs_assert_if_reached();
+        }
 
         h.type = e->nas_type;
 

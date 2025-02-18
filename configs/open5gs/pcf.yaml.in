@@ -25,73 +25,85 @@ pcf:
         port: 9090
 
 ################################################################################
-# Locally configured policy
-# - The PCF in the VPLMN uses locally configured policies
-#   according to the roaming agreement with the HPLMN operator
-#   as input for PCC Rule generation.
+# PCF Policy Configuration: UE Home PLMN and SUPI Range Based Policies
 ################################################################################
 #
-#  o You don't have to use MongoDB if you use the policy configuration as below.
+# This configuration applies policies based on the UE's home PLMN ID and
+# SUPI range. When both supi_range and plmn_id are specified in a policy,
+# the policy is applied only if both conditions are met.
+#
+# supi_range: Specifies one or more ranges of SUPIs. A maximum of 16 ranges
+#             can be defined.
+# plmn_id  : Specifies the UE's home PLMN using MCC and MNC.
+#
+# Example:
 #
 #  policy:
-#    - plmn_id:
+#    - supi_range:          # Filter policies by SUPI
+#        - 999700000000001-999709999999999
+#        - 315010000000001-315010999999999
+#      plmn_id:             # Filter policies by home PLMN-ID
 #        mcc: 999
 #        mnc: 70
-#      slice:
-#        - sst: 1  # 1,2,3,4
+#      slice:               # Specify slice configuration
+#        - sst: 1          # Allowed values: 1, 2, 3, 4
 #          default_indicator: true
-#          session:
+#          session:          # Define session based on DNN
 #            - name: internet
-#              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+#              type: 3       # 1: IPv4, 2: IPv6, 3: IPv4v6
 #              ambr:
 #                downlink:
 #                  value: 1
-#                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                  unit: 3   # 0: bps, 1: Kbps, 2: Mbps, 3: Gbps, 4: Tbps
 #                uplink:
 #                  value: 1
 #                  unit: 3
 #              qos:
-#                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                index: 9      # Allowed values: 1,2,3,4,65,66,67,75,71,72,
+#                              # 73,74,76,5,6,7,8,9,69,70,79,80,82,83,
+#                              # 84,85,86
 #                arp:
-#                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
-#                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+#                  priority_level: 8   # Allowed values: 1 to 15
+#                  pre_emption_vulnerability: 1  # 1: Disabled, 2: Enabled
+#                  pre_emption_capability: 1     # 1: Disabled, 2: Enabled
 #            - name: ims
-#              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+#              type: 3       # 1: IPv4, 2: IPv6, 3: IPv4v6
 #              ambr:
 #                downlink:
 #                  value: 1
-#                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                  unit: 3   # 0: bps, 1: Kbps, 2: Mbps, 3: Gbps, 4: Tbps
 #                uplink:
 #                  value: 1
-#                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                  unit: 3
 #              qos:
-#                index: 5  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                index: 5      # Allowed values: 1,2,3,4,65,66,67,75,71,72,
+#                              # 73,74,76,5,6,7,8,9,69,70,79,80,82,83,
+#                              # 84,85,86
 #                arp:
-#                  priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
-#                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+#                  priority_level: 1   # Allowed values: 1 to 15
+#                  pre_emption_vulnerability: 1  # 1: Disabled, 2: Enabled
+#                  pre_emption_capability: 1     # 1: Disabled, 2: Enabled
 #              pcc_rule:
 #                - qos:
-#                    index: 1  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                    index: 1   # Allowed values as above
 #                    arp:
-#                      priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                      pre_emption_vulnerability: 1   # 1: Disabled, 2:Enabled
-#                      pre_emption_capability: 1   # 1: Disabled, 2:Enabled
+#                      priority_level: 1   # Allowed values: 1 to 15
+#                      pre_emption_vulnerability: 1  # 1: Disabled, 2: Enabled
+#                      pre_emption_capability: 1     # 1: Disabled, 2: Enabled
 #                    mbr:
 #                      downlink:
 #                        value: 82
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                        unit: 1   # 0: bps, 1: Kbps, 2: Mbps, 3: Gbps, 4: Tbps
 #                      uplink:
 #                        value: 82
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                        unit: 1
 #                    gbr:
 #                      downlink:
 #                        value: 82
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                        unit: 1
 #                      uplink:
 #                        value: 82
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                        unit: 1
 #                  flow:
 #                    - direction: 2
 #                      description: "permit out icmp from any to assigned"
@@ -102,89 +114,129 @@ pcf:
 #                    - direction: 1
 #                      description: "permit out udp from 10.200.136.98/32 1-65535 to assigned 50021"
 #                - qos:
-#                    index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                    index: 2   # Allowed values as above
 #                    arp:
-#                      priority_level: 4  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                      pre_emption_vulnerability: 2   # 1: Disabled, 2:Enabled
-#                      pre_emption_capability: 2   # 1: Disabled, 2:Enabled
+#                      priority_level: 4   # Allowed values: 1 to 15
+#                      pre_emption_vulnerability: 2  # 1: Disabled, 2: Enabled
+#                      pre_emption_capability: 2     # 1: Disabled, 2: Enabled
 #                    mbr:
 #                      downlink:
 #                        value: 802
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                        unit: 1
 #                      uplink:
 #                        value: 802
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                        unit: 1
 #                    gbr:
 #                      downlink:
 #                        value: 802
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                        unit: 1
 #                      uplink:
 #                        value: 802
-#                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-#    - plmn_id:
-#        mcc: 001
-#        mnc: 01
-#      slice:
-#        - sst: 1  # 1,2,3,4
+#                        unit: 1
+#
+#    - supi_range:         # Filter policies by SUPI only
+#        - 001010000000001-001019999999999
+#      slice:               # Specify slice configuration
+#        - sst: 1          # Allowed values: 1, 2, 3, 4
 #          sd: 000001
 #          default_indicator: true
-#          session:
+#          session:          # Define session based on DNN
 #            - name: internet
-#              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
+#              type: 3       # 1: IPv4, 2: IPv6, 3: IPv4v6
 #              ambr:
 #                downlink:
 #                  value: 1
-#                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+#                  unit: 3   # 0: bps, 1: Kbps, 2: Mbps, 3: Gbps, 4: Tbps
 #                uplink:
 #                  value: 1
 #                  unit: 3
 #              qos:
-#                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
+#                index: 9      # Allowed values as above
 #                arp:
-#                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-#                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
-#                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
+#                  priority_level: 8   # Allowed values: 1 to 15
+#                  pre_emption_vulnerability: 1  # 1: Disabled, 2: Enabled
+#                  pre_emption_capability: 1     # 1: Disabled, 2: Enabled
 #
 ################################################################################
 # SBI Server
 ################################################################################
-#  o Override SBI address to be advertised to NRF
+#  o Bind to the address on the eth0 and advertise as open5gs-pcf.svc.local
 #  sbi:
 #    server:
-#      - dev: eth0
+#      - dev:eth0
 #        advertise: open5gs-pcf.svc.local
 #
+#  o Specify a custom port number 7777 while binding to the given address
 #  sbi:
 #    server:
-#      - address: localhost
-#        advertise:
-#          - 127.0.0.99
-#          - ::1
+#      - address: pcf.localdomain
+#        port: 7777
+#
+#  o Bind to 127.0.0.13 and advertise as open5gs-pcf.svc.local
+#  sbi:
+#    server:
+#      - address: 127.0.0.13
+#        port: 7777
+#        advertise: open5gs-pcf.svc.local
+#
+#  o Bind to port 7777 but advertise with a different port number 8888
+#  sbi:
+#    server:
+#      - address: 127.0.0.13
+#        port: 7777
+#        advertise: open5gs-pcf.svc.local:8888
 #
 ################################################################################
 # SBI Client
 ################################################################################
-#  o Direct communication with NRF interaction
+#  o Direct Communication with NRF
 #  sbi:
 #    client:
 #      nrf:
 #        - uri: http://127.0.0.10:7777
 #
-#  o Indirect communication with delegated discovery
+#  o Indirect Communication by Delegating to SCP
 #  sbi:
 #    client:
 #      scp:
 #        - uri: http://127.0.0.200:7777
 #
-#  o Indirect communication without delegated discovery
+#  o Indirect Communication without Delegation
 #  sbi:
 #    client:
 #      nrf:
 #        - uri: http://127.0.0.10:7777
 #      scp:
 #        - uri: http://127.0.0.200:7777
-#  discovery:
-#    delegated: no
+#      delegated:
+#        nrf:
+#          nfm: no    # Directly communicate NRF management functions
+#          disc: no   # Directly communicate NRF discovery
+#        scp:
+#          next: no   # Do not delegate to SCP for next-hop
+#
+#  o Indirect Communication with Delegated Discovery
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#      delegated:
+#        nrf:
+#          nfm: no    # Directly communicate NRF management functions
+#          disc: yes  # Delegate discovery to SCP
+#        scp:
+#          next: yes  # Delegate to SCP for next-hop communications
+#
+#  o Default delegation: all communications are delegated to the SCP
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#      # No 'delegated' section; defaults to AUTO delegation
 #
 ################################################################################
 # HTTPS scheme with TLS
@@ -199,6 +251,27 @@ pcf:
 #      client:
 #        scheme: https
 #        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: pcf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
+#
+#  o Enable SSL key logging for Wireshark
+#    - This configuration allows capturing SSL/TLS session keys
+#      for debugging or analysis purposes using Wireshark.
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/pcf.key
+#        cert: @sysconfdir@/open5gs/tls/pcf.crt
+#        sslkeylogfile: @localstatedir@/log/open5gs/tls/pcf-server-sslkeylog.log
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_sslkeylogfile: @localstatedir@/log/open5gs/tls/pcf-client-sslkeylog.log
 #  sbi:
 #    server:
 #      - address: pcf.localdomain

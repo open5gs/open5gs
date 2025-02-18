@@ -34,26 +34,24 @@ static void recv_handler(ogs_sock_t *sock);
 
 ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
 {
-    char buf[OGS_ADDRSTRLEN];
     ogs_sock_t *sock = NULL;
 
     ogs_assert(vlr);
 
-    sock = ogs_sctp_client(SOCK_SEQPACKET, vlr->sa_list, vlr->option);
+    sock = ogs_sctp_client(SOCK_STREAM,
+            vlr->sa_list, vlr->local_sa_list, vlr->option);
     if (sock) {
         vlr->sock = sock;
 #if HAVE_USRSCTP
-        vlr->addr = vlr->sa_list;
         usrsctp_set_non_blocking((struct socket *)sock, 1);
         usrsctp_set_upcall((struct socket *)sock, usrsctp_recv_handler, NULL);
 #else
-        vlr->addr = &sock->remote_addr;
         vlr->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, lksctp_recv_handler, sock);
         ogs_assert(vlr->poll);
 #endif
-        ogs_info("sgsap client() [%s]:%d",
-                OGS_ADDR(vlr->addr, buf), OGS_PORT(vlr->addr));
+        ogs_info("sgsap client() %s",
+                ogs_sockaddr_to_string_static(vlr->sa_list));
     }
 
     return sock;
@@ -86,8 +84,6 @@ static void recv_handler(ogs_sock_t *sock)
 {
     ogs_pkbuf_t *pkbuf;
     int size;
-    ogs_sockaddr_t *addr = NULL;
-    ogs_sockaddr_t from;
     ogs_sctp_info_t sinfo;
     int flags = 0;
 
@@ -97,7 +93,7 @@ static void recv_handler(ogs_sock_t *sock)
     ogs_assert(pkbuf);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     size = ogs_sctp_recvmsg(
-            sock, pkbuf->data, pkbuf->len, &from, &sinfo, &flags);
+            sock, pkbuf->data, pkbuf->len, NULL, &sinfo, &flags);
     if (size < 0 || size >= OGS_MAX_SDU_LEN) {
         ogs_error("ogs_sctp_recvmsg(%d) failed(%d:%s)",
                 size, errno, strerror(errno));
@@ -122,12 +118,8 @@ static void recv_handler(ogs_sock_t *sock)
             if (not->sn_assoc_change.sac_state == SCTP_COMM_UP) {
                 ogs_debug("SCTP_COMM_UP");
 
-                addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-                ogs_assert(addr);
-                memcpy(addr, &from, sizeof(ogs_sockaddr_t));
-
                 sgsap_event_push(MME_EVENT_SGSAP_LO_SCTP_COMM_UP,
-                        sock, addr, NULL,
+                        sock, NULL, NULL,
                         not->sn_assoc_change.sac_inbound_streams,
                         not->sn_assoc_change.sac_outbound_streams);
             } else if (not->sn_assoc_change.sac_state == SCTP_SHUTDOWN_COMP ||
@@ -138,12 +130,8 @@ static void recv_handler(ogs_sock_t *sock)
                 if (not->sn_assoc_change.sac_state == SCTP_COMM_LOST)
                     ogs_debug("SCTP_COMM_LOST");
 
-                addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-                ogs_assert(addr);
-                memcpy(addr, &from, sizeof(ogs_sockaddr_t));
-
                 sgsap_event_push(MME_EVENT_SGSAP_LO_CONNREFUSED,
-                        sock, addr, NULL, 0, 0);
+                        sock, NULL, NULL, 0, 0);
             }
             break;
         case SCTP_SHUTDOWN_EVENT :
@@ -166,12 +154,8 @@ static void recv_handler(ogs_sock_t *sock)
                         not->sn_send_failed.ssf_error);
 #endif
 
-            addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-            ogs_assert(addr);
-            memcpy(addr, &from, sizeof(ogs_sockaddr_t));
-
             sgsap_event_push(MME_EVENT_SGSAP_LO_CONNREFUSED,
-                    sock, addr, NULL, 0, 0);
+                    sock, NULL, NULL, 0, 0);
             break;
         case SCTP_PEER_ADDR_CHANGE:
             ogs_warn("SCTP_PEER_ADDR_CHANGE:[T:%d, F:0x%x, S:%d]", 
@@ -193,11 +177,7 @@ static void recv_handler(ogs_sock_t *sock)
     } else if (flags & MSG_EOR) {
         ogs_pkbuf_trim(pkbuf, size);
 
-        addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-        ogs_assert(addr);
-        memcpy(addr, &from, sizeof(ogs_sockaddr_t));
-
-        sgsap_event_push(MME_EVENT_SGSAP_MESSAGE, sock, addr, pkbuf, 0, 0);
+        sgsap_event_push(MME_EVENT_SGSAP_MESSAGE, sock, NULL, pkbuf, 0, 0);
         return;
     } else {
         if (ogs_socket_errno != OGS_EAGAIN) {

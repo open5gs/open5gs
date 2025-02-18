@@ -119,6 +119,7 @@ static int parse_slice_conf(
     do {
         ogs_app_slice_conf_t *slice_conf = NULL;
         ogs_s_nssai_t s_nssai;
+        bool sst_presence = false;
         bool default_indicator = false;
 
         s_nssai.sst = 0;
@@ -131,13 +132,8 @@ static int parse_slice_conf(
             if (!strcmp(slice_key, OGS_SST_STRING)) {
                 const char *v = ogs_yaml_iter_value(&slice_iter);
                 if (v) {
+                    sst_presence = true;
                     s_nssai.sst = atoi(v);
-                    if (s_nssai.sst == 1 || s_nssai.sst == 2 ||
-                            s_nssai.sst == 3 || s_nssai.sst == 4) {
-                    } else {
-                        ogs_error("Unknown SST [%d]", s_nssai.sst);
-                        return OGS_ERROR;
-                    }
                 }
             } else if (!strcmp(slice_key, OGS_SD_STRING)) {
                 const char *v = ogs_yaml_iter_value(&slice_iter);
@@ -147,7 +143,7 @@ static int parse_slice_conf(
             }
         }
 
-        if (s_nssai.sst) {
+        if (sst_presence) {
             slice_conf = ogs_app_slice_conf_add(policy_conf, &s_nssai);
             if (!slice_conf) {
                 ogs_error("ogs_app_slice_conf_add() failed [SST:%d,SD:0x%x]",
@@ -213,6 +209,9 @@ static int parse_policy_conf(ogs_yaml_iter_t *parent)
     do {
         const char *mnc = NULL, *mcc = NULL;
         ogs_app_policy_conf_t *policy_conf = NULL;
+        ogs_supi_range_t supi_range;
+
+        memset(&supi_range, 0, sizeof(ogs_supi_range_t));
 
         OGS_YAML_ARRAY_NEXT(&policy_array, &policy_iter);
         while (ogs_yaml_iter_next(&policy_iter)) {
@@ -231,21 +230,31 @@ static int parse_policy_conf(ogs_yaml_iter_t *parent)
                         mnc = ogs_yaml_iter_value(&plmn_id_iter);
                     }
                 }
-
+            } else if (!strcmp(policy_key, "supi_range")) {
+                rv = ogs_app_parse_supi_range_conf(&policy_iter, &supi_range);
+                if (rv != OGS_OK) {
+                    ogs_error("ogs_app_parse_supi_range_conf() failed");
+                    return rv;
+                }
             }
         }
 
-        if (mcc && mnc) {
+        if (supi_range.num || (mcc && mnc)) {
             ogs_plmn_id_t plmn_id;
-            ogs_plmn_id_build(&plmn_id, atoi(mcc), atoi(mnc), strlen(mnc));
-            policy_conf = ogs_app_policy_conf_add(&plmn_id);
+            if (mcc && mnc)
+                ogs_plmn_id_build(&plmn_id, atoi(mcc), atoi(mnc), strlen(mnc));
+            policy_conf = ogs_app_policy_conf_add(
+                    supi_range.num ? &supi_range : NULL,
+                    (mcc && mnc) ? &plmn_id : NULL);
             if (!policy_conf) {
                 ogs_error("ogs_app_policy_conf_add() failed "
-                        "[MCC:%s,MNC:%s]", mcc, mnc);
+                        "[supi_range.num:%d] [MCC:%s, MNC:%s]",
+                        supi_range.num, mcc, mnc);
                 return OGS_ERROR;
             }
         } else {
-            ogs_error("No PLMN-ID [MCC:%s, MNC:%s]", mcc, mnc);
+            ogs_error("No SUPI Range[%d] OR PLMN-ID [MCC:%s, MNC:%s]",
+                    supi_range.num, mcc, mnc);
             return OGS_ERROR;
         }
 
@@ -811,14 +820,10 @@ int pcf_db_qos_data(char *supi,
 
     memset(session_data, 0, sizeof(*session_data));
 
-    if (plmn_id)
-        policy_conf = ogs_app_policy_conf_find_by_plmn_id(plmn_id);
-    else
-        ogs_warn("No PLMN_ID");
-
+    policy_conf = ogs_app_policy_conf_find(supi, plmn_id);
     if (policy_conf) {
         rv = ogs_app_config_session_data(
-                plmn_id, s_nssai, dnn, session_data);
+                supi, plmn_id, s_nssai, dnn, session_data);
         if (rv != OGS_OK)
             ogs_error("ogs_app_config_session_data() failed - "
                     "MCC[%d] MNC[%d] SST[%d] SD[0x%x] DNN[%s]",

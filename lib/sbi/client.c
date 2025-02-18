@@ -129,6 +129,12 @@ ogs_sbi_client_t *ogs_sbi_client_add(
             ogs_strdup(ogs_sbi_self()->tls.client.private_key);
     if (ogs_sbi_self()->tls.client.cert)
         client->cert = ogs_strdup(ogs_sbi_self()->tls.client.cert);
+    if (ogs_sbi_self()->tls.client.sslkeylog)
+        client->sslkeylog =
+            ogs_strdup(ogs_sbi_self()->tls.client.sslkeylog);
+
+    if (ogs_sbi_self()->local_if)
+       client->local_if = ogs_strdup(ogs_sbi_self()->local_if);
 
     ogs_debug("ogs_sbi_client_add [%s]", OpenAPI_uri_scheme_ToString(scheme));
     OGS_OBJECT_REF(client);
@@ -212,6 +218,10 @@ void ogs_sbi_client_remove(ogs_sbi_client_t *client)
         ogs_free(client->private_key);
     if (client->cert)
         ogs_free(client->cert);
+    if (client->sslkeylog)
+        ogs_free(client->sslkeylog);
+    if (client->local_if)
+        ogs_free(client->local_if);
 
     if (client->fqdn)
         ogs_free(client->fqdn);
@@ -369,6 +379,26 @@ static char *add_params_to_uri(CURL *easy, char *uri, ogs_hash_t *params)
     return uri;
 }
 
+/* User-defined SSL_CTX callback function */
+static CURLcode sslctx_callback(CURL *curl, void *sslctx, void *userdata)
+{
+    SSL_CTX *ctx = (SSL_CTX *)sslctx;
+    ogs_sbi_client_t *client = userdata;
+
+    ogs_assert(ctx);
+    ogs_assert(userdata);
+
+    /* Ensure app data is set for SSL objects */
+    SSL_CTX_set_app_data(ctx, client->sslkeylog);
+
+#if OPENSSL_VERSION_NUMBER >= 0x10101000L
+    /* Set the SSL Key Log callback */
+    SSL_CTX_set_keylog_callback(ctx, ogs_sbi_keylog_callback);
+#endif
+
+    return CURLE_OK;
+}
+
 static connection_t *connection_add(
         ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
         ogs_sbi_request_t *request, void *data)
@@ -459,6 +489,7 @@ static connection_t *connection_add(
 
     curl_easy_setopt(conn->easy, CURLOPT_BUFFERSIZE, OGS_MAX_SDU_LEN);
 
+    /* HTTPS certificate-related settings */
     if (client->scheme == OpenAPI_uri_scheme_https) {
         if (client->insecure_skip_verify) {
             curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYPEER, 0);
@@ -468,13 +499,23 @@ static connection_t *connection_add(
                 curl_easy_setopt(conn->easy, CURLOPT_CAINFO, client->cacert);
         }
 
+        /* Set private key & certificate */
         if (client->private_key && client->cert) {
             curl_easy_setopt(conn->easy, CURLOPT_SSLKEY, client->private_key);
             curl_easy_setopt(conn->easy, CURLOPT_SSLCERT, client->cert);
         }
+
+        if (client->sslkeylog) {
+            /* Set SSL_CTX callback */
+            curl_easy_setopt(conn->easy, CURLOPT_SSL_CTX_FUNCTION,
+                    sslctx_callback);
+
+            /* Optionally set additional user data */
+            curl_easy_setopt(conn->easy, CURLOPT_SSL_CTX_DATA, client);
+        }
     }
 
-    /* HTTP Method */
+    /* Configure HTTP Method */
     if (strcmp(request->h.method, OGS_SBI_HTTP_METHOD_PUT) == 0 ||
         strcmp(request->h.method, OGS_SBI_HTTP_METHOD_PATCH) == 0 ||
         strcmp(request->h.method, OGS_SBI_HTTP_METHOD_DELETE) == 0 ||
@@ -520,6 +561,10 @@ static connection_t *connection_add(
     if (client->resolve) {
         conn->resolve_list = curl_slist_append(NULL, client->resolve);
         curl_easy_setopt(conn->easy, CURLOPT_RESOLVE, conn->resolve_list);
+    }
+
+    if (client->local_if) {
+        curl_easy_setopt(conn->easy, CURLOPT_INTERFACE, client->local_if);
     }
 
     curl_easy_setopt(conn->easy, CURLOPT_PRIVATE, conn);

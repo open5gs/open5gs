@@ -356,9 +356,9 @@ pcf:
       - address: 127.0.2.13
         port: 9090
   policy:
-    - plmn_id:
-        mcc: 999
-        mnc: 70
+    - supi_range:
+        - 999700000000001-999709999999999
+        - 315010000000001-315010999999999
       slice:
         - sst: 1  # 1,2,3,4
           default_indicator: true
@@ -434,85 +434,6 @@ pcf:
                       uplink:
                         value: 802
                         unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-    - plmn_id:
-        mcc: 315
-        mnc: 010
-      slice:
-        - sst: 1  # 1,2,3,4
-          default_indicator: true
-          session:
-            - name: internet
-              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
-              ambr:
-                downlink:
-                  value: 1
-                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-                uplink:
-                  value: 1
-                  unit: 3
-              qos:
-                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
-                arp:
-                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
-                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
-            - name: ims
-              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
-              ambr:
-                downlink:
-                  value: 1
-                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-                uplink:
-                  value: 1
-                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-              qos:
-                index: 5  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
-                arp:
-                  priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
-                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
-              pcc_rule:
-                - qos:
-                    index: 1  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
-                    arp:
-                      priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-                      pre_emption_vulnerability: 1   # 1: Disabled, 2:Enabled
-                      pre_emption_capability: 1   # 1: Disabled, 2:Enabled
-                    mbr:
-                      downlink:
-                        value: 82
-                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-                      uplink:
-                        value: 82
-                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-                    gbr:
-                      downlink:
-                        value: 82
-                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-                      uplink:
-                        value: 82
-                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-                - qos:
-                    index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
-                    arp:
-                      priority_level: 4  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-                      pre_emption_vulnerability: 2   # 1: Disabled, 2:Enabled
-                      pre_emption_capability: 2   # 1: Disabled, 2:Enabled
-                    mbr:
-                      downlink:
-                        value: 802
-                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-                      uplink:
-                        value: 802
-                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-                    gbr:
-                      downlink:
-                        value: 802
-                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-                      uplink:
-                        value: 802
-                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
-
 nssf:
   sbi:
     server:

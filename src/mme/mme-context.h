@@ -216,9 +216,9 @@ typedef struct mme_vlr_s {
     uint16_t        ostream_id;     /* vlr_ostream_id generator */
 
     ogs_sockaddr_t  *sa_list;   /* VLR SGsAP Socket Address List */
+    ogs_sockaddr_t  *local_sa_list;   /* VLR SGsAP Socket Local Address List */
 
     ogs_sock_t      *sock;      /* VLR SGsAP Socket */
-    ogs_sockaddr_t  *addr;      /* VLR SGsAP Connected Socket Address */
     ogs_sockopt_t   *option;    /* VLR SGsAP Socket Option */
     ogs_poll_t      *poll;      /* VLR SGsAP Poll */
 } mme_vlr_t;
@@ -938,11 +938,14 @@ void mme_pgw_remove_all(void);
 ogs_sockaddr_t *mme_pgw_addr_find_by_apn_enb(
         ogs_list_t *list, int family, const mme_sess_t *sess);
 
-mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *sa_list, ogs_sockopt_t *option);
+mme_vlr_t *mme_vlr_add(
+        ogs_sockaddr_t *sa_list,
+        ogs_sockaddr_t *local_sa_list,
+        ogs_sockopt_t *option);
 void mme_vlr_remove(mme_vlr_t *vlr);
 void mme_vlr_remove_all(void);
 void mme_vlr_close(mme_vlr_t *vlr);
-mme_vlr_t *mme_vlr_find_by_addr(const ogs_sockaddr_t *addr);
+mme_vlr_t *mme_vlr_find_by_sock(const ogs_sock_t *sock);
 
 mme_csmap_t *mme_csmap_add(mme_vlr_t *vlr);
 void mme_csmap_remove(mme_csmap_t *csmap);

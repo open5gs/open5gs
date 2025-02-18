@@ -63,6 +63,10 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
     if (message->param.discovery_option)
         ogs_sbi_discovery_option_free(message->param.discovery_option);
 
+    /* Query parameters */
+    for (i = 0; i < message->param.num_of_fields; i++)
+        ogs_free(message->param.fields[i]);
+
     /* JSON Data */
     if (message->NFProfile)
         OpenAPI_nf_profile_free(message->NFProfile);
@@ -109,6 +113,8 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
                 message->Amf3GppAccessRegistrationModification);
     if (message->SmfRegistration)
         OpenAPI_smf_registration_free(message->SmfRegistration);
+    if (message->Nssai)
+        OpenAPI_nssai_free(message->Nssai);
     if (message->AccessAndMobilitySubscriptionData)
         OpenAPI_access_and_mobility_subscription_data_free(
                 message->AccessAndMobilitySubscriptionData);
@@ -412,8 +418,7 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
                                 &discovery_option->guami.amf_id));
             }
         }
-        if (ogs_sbi_self()->discovery_config.no_service_names == false &&
-            discovery_option->num_of_service_names) {
+        if (discovery_option->num_of_service_names) {
 
     /*
      * Issues #1730
@@ -613,11 +618,6 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         char *v = NULL;
         cJSON *item = NULL;
 
-        if (!message->param.s_nssai.sst) {
-            ogs_error("No S-NSSAI SST");
-            ogs_sbi_request_free(request);
-            return NULL;
-        }
         if (!message->param.roaming_indication) {
             ogs_error("No Roaming Indication");
             ogs_sbi_request_free(request);
@@ -657,6 +657,26 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
 
         if (sNSSAI.sd)
             ogs_free(sNSSAI.sd);
+    }
+    if (message->param.num_of_fields) {
+        char *fields;
+
+        fields = ogs_strdup(message->param.fields[0]);
+        if (!fields) {
+            ogs_error("ogs_strdup() failed");
+            return NULL;
+        }
+
+        for (i = 1; i < message->param.num_of_fields; i++)
+            fields = ogs_mstrcatf(
+                    fields, ",%s", message->param.fields[i]);
+
+        if (fields) {
+            ogs_sbi_header_set(request->http.params,
+                    OGS_SBI_PARAM_FIELDS, fields);
+            ogs_free(fields);
+        }
+
     }
     if (message->param.ipv4addr) {
         ogs_sbi_header_set(request->http.params,
@@ -881,7 +901,7 @@ int ogs_sbi_parse_request(
             char *v = ogs_hash_this_val(hi);
             if (v) {
                 discovery_option->requester_features =
-                    ogs_uint64_from_string(v);
+                    ogs_uint64_from_string_hexadecimal(v);
                 discovery_option_presence = true;
             }
         }
@@ -962,6 +982,30 @@ int ogs_sbi_parse_request(
                     cJSON_Delete(item);
                 }
             }
+        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_FIELDS)) {
+            char *_v = ogs_hash_this_val(hi), *v = NULL;
+            char *token = NULL;
+            char *saveptr = NULL;
+
+            v = ogs_strdup(_v);
+            ogs_assert(v);
+
+            token = ogs_strtok_r(v, ",", &saveptr);
+            while (token != NULL) {
+                if (message->param.num_of_fields < OGS_SBI_MAX_NUM_OF_FIELDS) {
+                        message->param.fields
+                        [message->param.num_of_fields] = ogs_strdup(token);
+                    ogs_assert(message->param.fields
+                        [message->param.num_of_fields]);
+                    message->param.num_of_fields++;
+                    token = ogs_strtok_r(NULL, ",", &saveptr);
+                } else {
+                    ogs_error("Fields in query exceed MAX_NUM_OF_FIELDS");
+                    break;
+                }
+            }
+
+            ogs_free(v);
         } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_IPV4ADDR)) {
             message->param.ipv4addr = ogs_hash_this_val(hi);
         } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_IPV6PREFIX)) {
@@ -1226,6 +1270,9 @@ static char *build_json(ogs_sbi_message_t *message)
         ogs_assert(item);
     } else if (message->SmfRegistration) {
         item = OpenAPI_smf_registration_convertToJSON(message->SmfRegistration);
+        ogs_assert(item);
+    } else if (message->Nssai) {
+        item = OpenAPI_nssai_convertToJSON(message->Nssai);
         ogs_assert(item);
     } else if (message->AccessAndMobilitySubscriptionData) {
         item = OpenAPI_access_and_mobility_subscription_data_convertToJSON(
@@ -1691,6 +1738,18 @@ static int parse_json(ogs_sbi_message_t *message,
 
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
             SWITCH(message->h.resource.component[1])
+            CASE(OGS_SBI_RESOURCE_NAME_NSSAI)
+                if (message->res_status < 300) {
+                    message->Nssai = OpenAPI_nssai_parseFromJSON(item);
+                    if (!message->Nssai) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
+                }
+                break;
+
             CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
                 if (message->res_status < 300) {
                     message->AccessAndMobilitySubscriptionData =
@@ -3375,7 +3434,7 @@ void ogs_sbi_discovery_option_parse_tai(
             if (Tai->plmn_id)
                 ogs_sbi_parse_plmn_id(&tai.plmn_id, Tai->plmn_id);
             if (Tai->tac)
-                tai.tac = ogs_uint24_from_string(Tai->tac);
+                tai.tac = ogs_uint24_from_string_hexadecimal(Tai->tac);
 
             ogs_sbi_discovery_option_set_tai(discovery_option, &tai);
 

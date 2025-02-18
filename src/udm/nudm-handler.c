@@ -75,7 +75,7 @@ bool udm_nudm_ueau_handle_get(
 
         r = udm_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
                 udm_nudr_dr_build_authentication_subscription,
-                udm_ue, stream, NULL);
+                udm_ue, stream, UDM_SBI_NO_STATE, NULL);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
 
@@ -165,7 +165,7 @@ bool udm_nudm_ueau_handle_get(
 
         r = udm_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
                 udm_nudr_dr_build_authentication_subscription,
-                udm_ue, stream, udm_ue->sqn);
+                udm_ue, stream, UDM_SBI_NO_STATE, udm_ue->sqn);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     }
@@ -237,7 +237,7 @@ bool udm_nudm_ueau_handle_result_confirmation_inform(
 
     r = udm_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
             udm_nudr_dr_build_update_authentication_status,
-            udm_ue, stream, NULL);
+            udm_ue, stream, UDM_SBI_NO_STATE, NULL);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 
@@ -346,7 +346,8 @@ bool udm_nudm_uecm_handle_amf_registration(
                 message->Amf3GppAccessRegistration);
 
     r = udm_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
-            udm_nudr_dr_build_update_amf_context, udm_ue, stream, NULL);
+            udm_nudr_dr_build_update_amf_context, udm_ue, stream,
+            UDM_SBI_NO_STATE, NULL);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 
@@ -473,7 +474,7 @@ bool udm_nudm_uecm_handle_amf_registration_update(
 
     r = udm_ue_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
             udm_nudr_dr_build_patch_amf_context,
-            udm_ue, stream, PatchItemList);
+            udm_ue, stream, UDM_SBI_NO_STATE, PatchItemList);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 
@@ -558,7 +559,7 @@ bool udm_nudm_uecm_handle_smf_registration(
         return false;
     }
 
-    if (!SmfRegistration->single_nssai || !SmfRegistration->single_nssai->sst) {
+    if (!SmfRegistration->single_nssai) {
         ogs_error("[%s:%d] No singleNssai", udm_ue->supi, sess->psi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
@@ -587,7 +588,8 @@ bool udm_nudm_uecm_handle_smf_registration(
         OpenAPI_smf_registration_copy(sess->smf_registration, SmfRegistration);
 
     r = udm_sess_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
-            udm_nudr_dr_build_update_smf_context, sess, stream, NULL);
+            udm_nudr_dr_build_update_smf_context, sess, stream,
+            UDM_SBI_NO_STATE, NULL);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 
@@ -608,7 +610,8 @@ bool udm_nudm_uecm_handle_smf_deregistration(
     ogs_assert(udm_ue);
 
     r = udm_sess_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
-            udm_nudr_dr_build_delete_smf_context, sess, stream, NULL);
+            udm_nudr_dr_build_delete_smf_context, sess, stream,
+            UDM_SBI_NO_STATE, NULL);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 
@@ -701,7 +704,14 @@ bool udm_nudm_sdm_handle_subscription_create(
     }
 
     sdm_subscription = udm_sdm_subscription_add(udm_ue);
-    ogs_assert(sdm_subscription);
+    if (!sdm_subscription) {
+        ogs_error("[%s] udm_sdm_subscription_add() failed", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "udm_sdm_subscription_add() failed",
+                udm_ue->supi, NULL));
+        return false;
+    }
 
     sdm_subscription->data_change_callback_uri =
         ogs_strdup(SDMSubscription->callback_reference);

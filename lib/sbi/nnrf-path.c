@@ -32,8 +32,9 @@ bool ogs_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
         return false;
     }
 
-    rc = ogs_sbi_send_notification_request(
-            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL, request, nf_instance);
+    rc = ogs_sbi_send_request_to_nrf(
+            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            ogs_sbi_client_handler, request, nf_instance);
     ogs_expect(rc == true);
 
     ogs_sbi_request_free(request);
@@ -54,8 +55,9 @@ bool ogs_nnrf_nfm_send_nf_update(ogs_sbi_nf_instance_t *nf_instance)
         return false;
     }
 
-    rc = ogs_sbi_send_notification_request(
-            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL, request, nf_instance);
+    rc = ogs_sbi_send_request_to_nrf(
+            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            ogs_sbi_client_handler, request, nf_instance);
     ogs_expect(rc == true);
 
     ogs_sbi_request_free(request);
@@ -76,8 +78,9 @@ bool ogs_nnrf_nfm_send_nf_de_register(ogs_sbi_nf_instance_t *nf_instance)
         return false;
     }
 
-    rc = ogs_sbi_send_notification_request(
-            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL, request, nf_instance);
+    rc = ogs_sbi_send_request_to_nrf(
+            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            ogs_sbi_client_handler, request, nf_instance);
     ogs_expect(rc == true);
 
     ogs_sbi_request_free(request);
@@ -120,8 +123,9 @@ bool ogs_nnrf_nfm_send_nf_status_subscribe(
         return false;
     }
 
-    rc = ogs_sbi_send_notification_request(
-            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL, request, subscription_data);
+    rc = ogs_sbi_send_request_to_nrf(
+            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            ogs_sbi_client_handler, request, subscription_data);
     ogs_expect(rc == true);
 
     ogs_sbi_request_free(request);
@@ -143,8 +147,9 @@ bool ogs_nnrf_nfm_send_nf_status_update(
         return false;
     }
 
-    rc = ogs_sbi_send_notification_request(
-            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL, request, subscription_data);
+    rc = ogs_sbi_send_request_to_nrf(
+            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            ogs_sbi_client_handler, request, subscription_data);
     ogs_expect(rc == true);
 
     ogs_sbi_request_free(request);
@@ -166,8 +171,9 @@ bool ogs_nnrf_nfm_send_nf_status_unsubscribe(
         return false;
     }
 
-    rc = ogs_sbi_send_notification_request(
-            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL, request, subscription_data);
+    rc = ogs_sbi_send_request_to_nrf(
+            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            ogs_sbi_client_handler, request, subscription_data);
     ogs_expect(rc == true);
 
     ogs_sbi_request_free(request);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -25,6 +25,15 @@ static int discover_handler(
 static void handle_nf_discover_search_result(
         OpenAPI_search_result_t *SearchResult);
 
+/**
+ * Handles NF registration in NRF. Validates the PLMN-ID against configured
+ * serving PLMN-IDs and registers the NF instance if valid.
+ *
+ * @param nf_instance The NF instance being registered.
+ * @param stream The SBI stream for communication.
+ * @param recvmsg The received SBI message.
+ * @return true if registration is successful; otherwise, false.
+ */
 bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
@@ -32,6 +41,10 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
     ogs_sbi_response_t *response = NULL;
 
     OpenAPI_nf_profile_t *NFProfile = NULL;
+
+    OpenAPI_lnode_t *node = NULL;
+    bool plmn_valid = false;
+    int i;
 
     ogs_assert(nf_instance);
     ogs_assert(stream);
@@ -71,6 +84,41 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
                 stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 recvmsg, "No NFProfile.NFStatus", NULL, NULL));
         return false;
+    }
+
+    /* Validate the PLMN-ID against configured serving PLMN-IDs */
+    if (NFProfile->plmn_list) {
+        /* Set PLMN status to invalid */
+        plmn_valid = false;
+
+        if (ogs_local_conf()->num_of_serving_plmn_id > 0 && NFProfile->plmn_list) {
+            OpenAPI_list_for_each(NFProfile->plmn_list, node) {
+                OpenAPI_plmn_id_t *PlmnId = node->data;
+                if (PlmnId == NULL) {
+                    continue;
+                }
+                for (i = 0; i < ogs_local_conf()->num_of_serving_plmn_id; i++) {
+                    if (ogs_sbi_compare_plmn_list(
+                                &ogs_local_conf()->serving_plmn_id[i],
+                                PlmnId) == true) {
+                        plmn_valid = true;
+                        break;
+                    }
+                }
+                if (plmn_valid) {
+                    break;
+                }
+            }
+        }
+
+        /* Reject the registration if PLMN-ID is invalid */
+        if (!plmn_valid) {
+            ogs_error("PLMN-ID in NFProfile is not allowed");
+            ogs_assert(true == ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
+                "PLMN-ID not allowed", NULL, NULL));
+            return false;
+        }
     }
 
     ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile);
@@ -146,7 +194,6 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
         if (ogs_local_conf()->num_of_serving_plmn_id &&
                 NFProfile->plmn_list == NULL) {
             OpenAPI_list_t *PlmnIdList = NULL;
-            int i;
 
             PlmnIdList = OpenAPI_list_create();
             ogs_assert(PlmnIdList);
@@ -208,6 +255,10 @@ bool nrf_nnrf_handle_nf_update(ogs_sbi_nf_instance_t *nf_instance,
     ogs_assert(stream);
     ogs_assert(recvmsg);
 
+    cJSON *plmn_array = NULL, *plmn_item = NULL;
+    bool plmn_valid = false;
+    int i;
+
     SWITCH(recvmsg->h.method)
     CASE(OGS_SBI_HTTP_METHOD_PUT)
         return nrf_nnrf_handle_nf_register(
@@ -224,14 +275,14 @@ bool nrf_nnrf_handle_nf_update(ogs_sbi_nf_instance_t *nf_instance,
             return false;
         }
 
+        /* Iterate through the PatchItemList */
         OpenAPI_list_for_each(PatchItemList, node) {
             OpenAPI_patch_item_t *patch_item = node->data;
             if (!patch_item) {
                 ogs_error("No PatchItem");
-                ogs_assert(true ==
-                    ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        recvmsg, "No PatchItem", NULL, NULL));
+                ogs_assert(true == ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
+                    "No PatchItem", NULL, NULL));
                 return false;
             }
 
@@ -245,6 +296,102 @@ bool nrf_nnrf_handle_nf_update(ogs_sbi_nf_instance_t *nf_instance,
             CASE(OGS_SBI_PATCH_PATH_NF_STATUS)
                 break;
             CASE(OGS_SBI_PATCH_PATH_LOAD)
+                break;
+            CASE(OGS_SBI_PATCH_PATH_PLMN_LIST)
+                /* Ensure the value is not null and is a valid JSON array */
+                if (patch_item->value && patch_item->value->json) {
+                    /* Set PLMN status to invalid */
+                    plmn_valid = false;
+
+                    plmn_array = patch_item->value->json;
+                    if (!cJSON_IsArray(plmn_array)) {
+                        ogs_error("Value for /plmnList is not a JSON array");
+                        ogs_assert(true == ogs_sbi_server_send_error(
+                            stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
+                            "Invalid value for /plmnList", NULL, NULL));
+                        return false;
+                    }
+
+                    /* Clear existing PLMN data in nf_instance */
+                    memset(nf_instance->plmn_id, 0,
+                            sizeof(nf_instance->plmn_id));
+                    nf_instance->num_of_plmn_id = 0;
+
+                    /* Iterate through the JSON array of PLMN IDs */
+                    cJSON_ArrayForEach(plmn_item, plmn_array) {
+                        OpenAPI_plmn_id_t plmn_id;
+                        memset(&plmn_id, 0, sizeof(plmn_id));
+
+                        if (nf_instance->num_of_plmn_id >=
+                                OGS_ARRAY_SIZE(nf_instance->plmn_id)) {
+                            ogs_error("Exceeded maximum number of PLMN IDs");
+                            ogs_assert(true == ogs_sbi_server_send_error(
+                                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                recvmsg,
+                                "Too many PLMN IDs", NULL, NULL));
+                            return false;
+                        }
+
+                        /* Parse the PLMN item */
+                        plmn_id.mcc = cJSON_GetObjectItem(plmn_item, "mcc")
+                                           ? cJSON_GetStringValue(
+                                                 cJSON_GetObjectItem(
+                                                     plmn_item, "mcc"))
+                                           : NULL;
+                        plmn_id.mnc = cJSON_GetObjectItem(plmn_item, "mnc")
+                                           ? cJSON_GetStringValue(
+                                                 cJSON_GetObjectItem(
+                                                     plmn_item, "mnc"))
+                                           : NULL;
+
+                        if (!plmn_id.mcc || !plmn_id.mnc) {
+                            ogs_error(
+                                "Invalid PLMN item in /plmnList update");
+                            ogs_assert(true ==
+                                       ogs_sbi_server_send_error(
+                                           stream,
+                                           OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                           recvmsg,
+                                           "Invalid PLMN item", NULL,
+                                           NULL));
+                            return false;
+                        }
+
+                        /*
+                         * Convert OpenAPI_plmn_id_t to ogs_plmn_id_t
+                         * and store in nf_instance
+                         */
+                        ogs_sbi_parse_plmn_id(
+                                &nf_instance->
+                                    plmn_id[nf_instance->num_of_plmn_id],
+                                &plmn_id);
+                        nf_instance->num_of_plmn_id++;
+
+                        /* Compare with the serving PLMN list */
+                        for (i = 0;
+                             i < ogs_local_conf()->num_of_serving_plmn_id;
+                             i++) {
+                            if (ogs_sbi_compare_plmn_list(
+                                        &ogs_local_conf()->serving_plmn_id[i],
+                                        &plmn_id) == true) {
+                                plmn_valid = true;
+                                break;
+                            }
+                        }
+                        if (plmn_valid) {
+                            break;
+                        }
+                    }
+
+                    /* Reject the update if PLMN-ID is invalid */
+                    if (!plmn_valid) {
+                        ogs_error("PLMN-ID in NFProfile update is not allowed");
+                        ogs_assert(true == ogs_sbi_server_send_error(
+                            stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
+                            "PLMN-ID not allowed", NULL, NULL));
+                        return false;
+                    }
+                }
                 break;
             DEFAULT
                 ogs_error("Unknown PatchItem.Path [%s]", patch_item->path);
@@ -352,7 +499,8 @@ bool nrf_nnrf_handle_nf_status_subscribe(
 
     if (SubscriptionData->requester_features) {
         subscription_data->requester_features =
-            ogs_uint64_from_string(SubscriptionData->requester_features);
+            ogs_uint64_from_string_hexadecimal(
+                    SubscriptionData->requester_features);
 
         /* No need to send SubscriptionData->requester_features to the NF */
         ogs_free(SubscriptionData->requester_features);

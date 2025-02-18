@@ -352,7 +352,7 @@ int amf_nudm_sdm_handle_provisioned(
             }
         }
 
-        OGS_SBI_SETUP_CLIENT(&amf_ue->policy_association, client);
+        OGS_SBI_SETUP_CLIENT(&amf_ue->data_change_subscription, client);
 
         ogs_free(fqdn);
         ogs_freeaddrinfo(addr);

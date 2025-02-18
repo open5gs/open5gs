@@ -196,7 +196,9 @@ static int ssl_ctx_set_proto_versions(SSL_CTX *ssl_ctx, int min, int max)
 #endif /* OPENSSL_VERSION_NUMBER >= 0x1010000fL */
 }
 
-static SSL_CTX *create_ssl_ctx(const char *key_file, const char *cert_file)
+static SSL_CTX *create_ssl_ctx(
+        const char *key_file, const char *cert_file,
+        const char *sslkeylog_file)
 {
     SSL_CTX *ssl_ctx;
     uint64_t ssl_opts;
@@ -208,6 +210,16 @@ static SSL_CTX *create_ssl_ctx(const char *key_file, const char *cert_file)
     if (!ssl_ctx) {
         ogs_error("Could not create SSL/TLS context: %s", ERR_error_string(ERR_get_error(), NULL));
         return NULL;
+    }
+
+    /* Set key log files for each SSL_CTX */
+    if (sslkeylog_file) {
+        /* Ensure app data is set for SSL objects */
+        SSL_CTX_set_app_data(ssl_ctx, sslkeylog_file);
+#if OPENSSL_VERSION_NUMBER >= 0x10101000L
+        /* Set the SSL Key Log callback */
+        SSL_CTX_set_keylog_callback(ssl_ctx, ogs_sbi_keylog_callback);
+#endif
     }
 
     ssl_opts = (SSL_OP_ALL & ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS) |
@@ -322,7 +334,8 @@ static int server_start(ogs_sbi_server_t *server,
     /* Create SSL CTX */
     if (server->scheme == OpenAPI_uri_scheme_https) {
 
-        server->ssl_ctx = create_ssl_ctx(server->private_key, server->cert);
+        server->ssl_ctx = create_ssl_ctx(
+                server->private_key, server->cert, server->sslkeylog);
         if (!server->ssl_ctx) {
             ogs_error("Cannot create SSL CTX");
             return OGS_ERROR;

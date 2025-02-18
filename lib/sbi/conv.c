@@ -1070,7 +1070,7 @@ bool ogs_sbi_s_nssai_from_string(ogs_s_nssai_t *s_nssai, char *str)
             ogs_error("ogs_strdup[%s:%s] failed", str, token);
             goto cleanup;
         }
-        s_nssai->sd = ogs_uint24_from_string(sd);
+        s_nssai->sd = ogs_uint24_from_string_hexadecimal(sd);
     }
 
     rc = true;
@@ -1203,6 +1203,35 @@ void ogs_sbi_free_plmn_list(OpenAPI_list_t *PlmnList)
             ogs_sbi_free_plmn_id(PlmnId);
     }
     OpenAPI_list_free(PlmnList);
+}
+
+/**
+ * Compares an ogs_plmn_id_t structure with an OpenAPI_plmn_id_t structure.
+ *
+ * @param plmn_list The PLMN-ID in ogs_plmn_id_t format.
+ * @param PlmnList The PLMN-ID in OpenAPI_plmn_id_t format.
+ * @return true if the PLMN-IDs are equal; otherwise, false.
+ */
+bool ogs_sbi_compare_plmn_list(
+        ogs_plmn_id_t *plmn_id, OpenAPI_plmn_id_t *PlmnId)
+{
+    ogs_plmn_id_t temp_plmn_id;
+
+    ogs_assert(plmn_id);
+    ogs_assert(PlmnId);
+    ogs_assert(PlmnId->mcc);
+    ogs_assert(PlmnId->mnc);
+
+    /* Convert OpenAPI_plmn_id_t to ogs_plmn_id_t */
+    ogs_sbi_parse_plmn_id(&temp_plmn_id, PlmnId);
+
+    /* Compare MCC and MNC values */
+    if (ogs_plmn_id_mcc(plmn_id) == ogs_plmn_id_mcc(&temp_plmn_id) &&
+        ogs_plmn_id_mnc(plmn_id) == ogs_plmn_id_mnc(&temp_plmn_id)) {
+        return true;
+    }
+
+    return false;
 }
 
 OpenAPI_plmn_id_nid_t *ogs_sbi_build_plmn_id_nid(ogs_plmn_id_t *plmn_id)
@@ -1385,7 +1414,7 @@ bool ogs_sbi_parse_nr_location(ogs_5gs_tai_t *tai, ogs_nr_cgi_t *nr_cgi,
         if (Tai->plmn_id)
             ogs_sbi_parse_plmn_id(&tai->plmn_id, Tai->plmn_id);
         if (Tai->tac)
-            tai->tac = ogs_uint24_from_string(Tai->tac);
+            tai->tac = ogs_uint24_from_string_hexadecimal(Tai->tac);
     }
 
     Ncgi = NrLocation->ncgi;
@@ -1393,7 +1422,8 @@ bool ogs_sbi_parse_nr_location(ogs_5gs_tai_t *tai, ogs_nr_cgi_t *nr_cgi,
         if (Ncgi->plmn_id)
             ogs_sbi_parse_plmn_id(&nr_cgi->plmn_id, Ncgi->plmn_id);
         if (Ncgi->nr_cell_id)
-            nr_cgi->cell_id = ogs_uint64_from_string(Ncgi->nr_cell_id);
+            nr_cgi->cell_id = ogs_uint64_from_string_hexadecimal(
+                    Ncgi->nr_cell_id);
 
     }
 

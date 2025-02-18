@@ -53,8 +53,17 @@ char *ogs_uint36_to_0string(uint64_t x);
 char *ogs_uint64_to_0string(uint64_t x);
 char *ogs_uint64_to_string(uint64_t x);
 
-ogs_uint24_t ogs_uint24_from_string(char *str);
-uint64_t ogs_uint64_from_string(char *str);
+#define ogs_uint24_from_string_decimal(str) \
+    ogs_uint24_from_string((str), 10)
+#define ogs_uint24_from_string_hexadecimal(str) \
+    ogs_uint24_from_string((str), 16)
+ogs_uint24_t ogs_uint24_from_string(char *str, int base);
+
+#define ogs_uint64_from_string_decimal(str) \
+    ogs_uint64_from_string((str), 10)
+#define ogs_uint64_from_string_hexadecimal(str) \
+    ogs_uint64_from_string((str), 16)
+uint64_t ogs_uint64_from_string(char *str, int base);
 
 double *ogs_alloc_double(double value);
 
