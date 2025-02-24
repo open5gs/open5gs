@@ -400,7 +400,6 @@ uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
     uint8_t cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
     ogs_assert(sess);
-    ogs_assert(session_type);
     ogs_assert(pdr);
     ogs_assert(pdr->ue_ip_addr_len);
     ue_ip = &pdr->ue_ip_addr;
@@ -487,9 +486,10 @@ uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
                 pdr->dnn ? pdr->dnn : "");
         }
     } else {
-        ogs_warn("Cannot support PDN-Type[%d], [IPv4:%d IPv6:%d DNN:%s]",
+        ogs_error("Invalid PDN-Type[%d], [IPv4:%d IPv6:%d DNN:%s]",
                 session_type, ue_ip->ipv4, ue_ip->ipv6,
                 pdr->dnn ? pdr->dnn : "");
+        return OGS_PFCP_CAUSE_SERVICE_NOT_SUPPORTED;
     }
 
     ogs_info("UE F-SEID[UP:0x%lx CP:0x%lx] "
