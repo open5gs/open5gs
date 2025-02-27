@@ -182,6 +182,7 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                         stream, message->res_status,
                         NULL, "HTTP response error", ausf_ue->suci,
                         message->ProblemDetails->cause));
+                OGS_FSM_TRAN(s, ausf_ue_state_exception);
                 break;
             }
 
