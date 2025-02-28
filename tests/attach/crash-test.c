@@ -406,6 +406,40 @@ static void test4_func(abts_case *tc, void *data)
     test_ue_remove(test_ue);
 }
 
+static void test5_func(abts_case *tc, void *data)
+{
+    int rv;
+    ogs_socknode_t *s1ap;
+    ogs_pkbuf_t *sendbuf;
+    ogs_pkbuf_t *recvbuf;
+
+    s1ap = tests1ap_client(AF_INET);
+    ABTS_PTR_NOTNULL(tc, s1ap);
+
+    sendbuf = test_s1ap_build_s1_setup_request(
+            S1AP_ENB_ID_PR_macroENB_ID, 0x54f64);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    sendbuf = test_s1ap_build_malformed_enb_direct_information_transfer(0);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    testenb_s1ap_close(s1ap);
+}
+
 abts_suite *test_crash(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -416,6 +450,7 @@ abts_suite *test_crash(abts_suite *suite)
     abts_run_test(suite, test3_func, NULL);
 #endif
     abts_run_test(suite, test4_func, NULL);
+    abts_run_test(suite, test5_func, NULL);
 
     return suite;
 }

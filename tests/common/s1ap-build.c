@@ -2196,3 +2196,28 @@ ogs_pkbuf_t *test_s1ap_build_oversized_message(int i)
 
     return pkbuf;
 }
+
+ogs_pkbuf_t *test_s1ap_build_malformed_enb_direct_information_transfer(int i)
+{
+    ogs_pkbuf_t *pkbuf = NULL;
+    const char *payload[TEST_S1AP_MAX_MESSAGE] = {
+        "0025"
+        "0110000001000000 1000008200000000 1000010000001000 0082000000001000"
+        "00",
+        "",
+    };
+
+    uint16_t len[TEST_S1AP_MAX_MESSAGE] = {
+        35,
+        0,
+    };
+
+    char hexbuf[OGS_HUGE_LEN];
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_put_data(pkbuf,
+        ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
+
+    return pkbuf;
+}
