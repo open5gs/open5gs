@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -282,7 +282,17 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
         ogs_assert(scp_client);
     }
 
-    /* Target NF-Instance */
+/*
+ * Issue #3470
+ *
+ * Previously, nf_instance pointers were stored in nf_type_array and
+ * service_type_array. This led to a dangling pointer problem when an
+ * nf_instance was removed via ogs_sbi_nf_instance_remove().
+ *
+ * To resolve this, we now store nf_instance_id instead, and use
+ * ogs_sbi_nf_instance_find(nf_instance_id) to verify the validity of an
+ * nf_instance.
+ */
     nf_instance = OGS_SBI_GET_NF_INSTANCE(
             sbi_object->service_type_array[service_type]);
     ogs_debug("OGS_SBI_GET_NF_INSTANCE [nf_instance:%p,service_name:%s]",
