@@ -30,6 +30,7 @@ static void server_final(void);
 
 static int server_start(ogs_sbi_server_t *server,
         int (*cb)(ogs_sbi_request_t *request, void *data));
+static void server_graceful_shutdown(ogs_sbi_server_t *server);
 static void server_stop(ogs_sbi_server_t *server);
 
 static bool server_send_rspmem_persistent(
@@ -47,6 +48,7 @@ const ogs_sbi_server_actions_t ogs_nghttp2_server_actions = {
     server_final,
 
     server_start,
+    server_graceful_shutdown,
     server_stop,
 
     server_send_rspmem_persistent,
@@ -440,6 +442,33 @@ static int server_start(ogs_sbi_server_t *server,
                 OGS_ADDR(addr, buf), OGS_PORT(addr));
 
     return OGS_OK;
+}
+
+/* Gracefully shutdown the server by sending GOAWAY to each session. */
+static void server_graceful_shutdown(ogs_sbi_server_t *server)
+{
+    ogs_sbi_session_t *sbi_sess = NULL;
+    ogs_sbi_session_t *next_sbi_sess = NULL;
+    int rv;
+
+    /* Iterate over all active sessions in the server. */
+    ogs_list_for_each_safe(&server->session_list, next_sbi_sess, sbi_sess) {
+        /* Submit a GOAWAY frame using the last stream ID. */
+        rv = nghttp2_submit_goaway(sbi_sess->session,
+                                   NGHTTP2_FLAG_NONE,
+                                   sbi_sess->last_stream_id,
+                                   NGHTTP2_NO_ERROR,
+                                   NULL, 0);
+        if (rv != 0) {
+            ogs_error("nghttp2_submit_goaway() failed (%d:%s)",
+                      rv, nghttp2_strerror(rv));
+        }
+
+        /* Send the GOAWAY frame to the client. */
+        if (session_send(sbi_sess) != OGS_OK) {
+            ogs_error("session_send() failed during graceful shutdown");
+        }
+    }
 }
 
 static void server_stop(ogs_sbi_server_t *server)

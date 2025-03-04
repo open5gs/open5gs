@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2023-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -71,6 +71,9 @@ static void event_termination(void)
     /* Sending N32 Termination to Peer SMF */
     ogs_list_for_each(&sepp_self()->peer_list, sepp_node)
         sepp_handshake_fsm_fini(sepp_node);
+
+    /* Gracefully shutdown the server by sending GOAWAY to each session. */
+    ogs_sbi_server_graceful_shutdown_all();
 
     /* Starting holding timer */
     t_termination_holding = ogs_timer_add(ogs_app()->timer_mgr, NULL, NULL);

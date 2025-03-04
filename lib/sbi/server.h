@@ -59,6 +59,7 @@ typedef struct ogs_sbi_server_actions_s {
 
     int (*start)(ogs_sbi_server_t *server,
             int (*cb)(ogs_sbi_request_t *request, void *data));
+    void (*graceful_shutdown)(ogs_sbi_server_t *server);
     void (*stop)(ogs_sbi_server_t *server);
 
     bool (*send_rspmem_persistent)(
@@ -87,6 +88,7 @@ void ogs_sbi_server_set_advertise(
 
 int ogs_sbi_server_start_all(
         int (*cb)(ogs_sbi_request_t *request, void *data));
+void ogs_sbi_server_graceful_shutdown_all(void);
 void ogs_sbi_server_stop_all(void);
 
 bool ogs_sbi_server_send_rspmem_persistent(
