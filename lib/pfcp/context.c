@@ -1356,14 +1356,30 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
     return pdr;
 }
 
-void ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
+int ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
 {
     int i = 0;
 
     ogs_assert(pdr);
     ogs_assert(!pdr->f_teid.ch);
-    ogs_assert(pdr->f_teid.teid > 0 &&
-            pdr->f_teid.teid <= ogs_pfcp_pdr_teid_pool.size);
+
+    /*
+     * Issues #3747, #3574
+     *
+     * This code validates the F-TEID (Fully encapsulated TEID) information
+     * element within a PDR structure before further processing the PFCP
+     * message. The validation ensures that the F-TEID is present and
+     * within acceptable limits defined by the system.
+     */
+    if (pdr->f_teid_len > 0 &&
+        pdr->f_teid.teid > 0 &&
+        pdr->f_teid.teid <= ogs_pfcp_pdr_teid_pool.size) {
+        /* PASS OK */
+    } else {
+        ogs_error("F-TEID LEN[%d] TEID[0x%x]",
+                pdr->f_teid_len, pdr->f_teid.teid);
+        return OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+    }
 
     /* Find out the Array Index for the restored TEID. */
     i = pdr_random_to_index[pdr->f_teid.teid];
@@ -1379,6 +1395,8 @@ void ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
         ogs_pfcp_pdr_teid_pool.array[i] = *(pdr->teid_node);
         *(pdr->teid_node) = pdr->f_teid.teid;
     }
+
+    return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
 
 void ogs_pfcp_object_teid_hash_set(
