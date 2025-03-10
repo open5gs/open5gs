@@ -78,13 +78,26 @@ int emm_handle_attach_request(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
     memcpy(&mme_ue->nas_eps.attach, eps_attach_type,
             sizeof(ogs_nas_eps_attach_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
-    mme_ue->nas_eps.ksi = eps_attach_type->nas_key_set_identifier;
-    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
-            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
-    ogs_debug("    ATTACH TSC[%d] KSI[%d] VALUE[%d]",
+
+    ogs_debug("    ATTACH TYPE[%d] TSC[%d] KSI[%d] VALUE[%d]",
+            mme_ue->nas_eps.type,
             mme_ue->nas_eps.attach.tsc,
             mme_ue->nas_eps.attach.nas_key_set_identifier,
             mme_ue->nas_eps.attach.value);
+
+    mme_ue->nas_eps.ue.tsc = eps_attach_type->tsc;
+    mme_ue->nas_eps.ue.ksi = eps_attach_type->nas_key_set_identifier;
+    ogs_debug("    OLD TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
+    if (mme_ue->nas_eps.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
+        mme_ue->nas_eps.mme.tsc = mme_ue->nas_eps.ue.tsc;
+        mme_ue->nas_eps.mme.ksi = mme_ue->nas_eps.ue.ksi;
+    }
+    ogs_debug("    NEW TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
+
     switch(mme_ue->nas_eps.attach.value){
         case OGS_NAS_ATTACH_TYPE_EPS_ATTACH:
             ogs_debug("    Requested EPS_ATTACH_TYPE[1, EPS_ATTACH]");
@@ -99,6 +112,7 @@ int emm_handle_attach_request(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
             ogs_error("    Invalid Requested EPS_ATTACH_TYPE[%d]",
                 mme_ue->nas_eps.attach.value);
     }
+
     /*
      * ATTACH_REQUEST
      * TAU_REQUEST
@@ -457,14 +471,25 @@ int emm_handle_detach_request(
     mme_ue->nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_FROM_UE;
     mme_ue->detach_type = MME_DETACH_TYPE_REQUEST_FROM_UE;
 
-    mme_ue->nas_eps.ksi = detach_type->nas_key_set_identifier;
-    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
-            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
-    ogs_debug("    DETACH TSC[%d] KSI[%d] SWITCH_OFF[%d] VALUE[%d]",
-            mme_ue->nas_eps.attach.tsc,
+    ogs_debug("    DETACH TYPE[%d] TSC[%d] KSI[%d] SWITCH_OFF[%d] VALUE[%d]",
+            mme_ue->nas_eps.type,
+            mme_ue->nas_eps.detach.tsc,
             mme_ue->nas_eps.detach.nas_key_set_identifier,
             mme_ue->nas_eps.detach.switch_off,
             mme_ue->nas_eps.attach.value);
+
+    mme_ue->nas_eps.ue.tsc = detach_type->tsc;
+    mme_ue->nas_eps.ue.ksi = detach_type->nas_key_set_identifier;
+    ogs_debug("    OLD TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
+    if (mme_ue->nas_eps.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
+        mme_ue->nas_eps.mme.tsc = mme_ue->nas_eps.ue.tsc;
+        mme_ue->nas_eps.mme.ksi = mme_ue->nas_eps.ue.ksi;
+    }
+    ogs_debug("    NEW TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
 
     switch (detach_request->detach_type.value) {
     /* 0 0 1 : EPS detach */
@@ -517,13 +542,23 @@ int emm_handle_service_request(
 
     /* Set EPS Service */
     mme_ue->nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST;
-    mme_ue->nas_eps.ksi = ksi_and_sequence_number->ksi;
-    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
-            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
-    ogs_debug("    SERVICE TSC[%d] KSI[%d] VALUE[%d]",
+    ogs_debug("    SERVICE TYPE[%d] TSC[%d] KSI[%d] VALUE[%d]",
+            mme_ue->nas_eps.type,
             mme_ue->nas_eps.service.tsc,
             mme_ue->nas_eps.service.nas_key_set_identifier,
             mme_ue->nas_eps.service.value);
+
+    mme_ue->nas_eps.ue.ksi = ksi_and_sequence_number->ksi;
+    ogs_debug("    OLD TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
+    if (mme_ue->nas_eps.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
+        mme_ue->nas_eps.mme.tsc = mme_ue->nas_eps.ue.tsc;
+        mme_ue->nas_eps.mme.ksi = mme_ue->nas_eps.ue.ksi;
+    }
+    ogs_debug("    NEW TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
 
     /*
      * ATTACH_REQUEST
@@ -609,14 +644,25 @@ int emm_handle_tau_request(
     memcpy(&mme_ue->nas_eps.update, eps_update_type,
             sizeof(ogs_nas_eps_update_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_TAU_REQUEST;
-    mme_ue->nas_eps.ksi = eps_update_type->nas_key_set_identifier;
-    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
-            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
-    ogs_debug("    UPDATE TSC[%d] KSI[%d] Active-flag[%d] VALUE[%d]",
+    ogs_debug("    UPDATE TYPE[%d] TSC[%d] KSI[%d] Active-flag[%d] VALUE[%d]",
+            mme_ue->nas_eps.type,
             mme_ue->nas_eps.update.tsc,
             mme_ue->nas_eps.update.nas_key_set_identifier,
             mme_ue->nas_eps.update.active_flag,
             mme_ue->nas_eps.update.value);
+
+    mme_ue->nas_eps.ue.tsc = eps_update_type->tsc;
+    mme_ue->nas_eps.ue.ksi = eps_update_type->nas_key_set_identifier;
+    ogs_debug("    OLD TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
+    if (mme_ue->nas_eps.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
+        mme_ue->nas_eps.mme.tsc = mme_ue->nas_eps.ue.tsc;
+        mme_ue->nas_eps.mme.ksi = mme_ue->nas_eps.ue.ksi;
+    }
+    ogs_debug("    NEW TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
 
     /*
      * ATTACH_REQUEST
@@ -756,9 +802,24 @@ int emm_handle_extended_service_request(
     memcpy(&mme_ue->nas_eps.service, service_type,
             sizeof(ogs_nas_service_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST;
-    mme_ue->nas_eps.ksi = service_type->nas_key_set_identifier;
-    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
-            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
+    ogs_debug("    Extended SERVICE TYPE[%d] TSC[%d] KSI[%d] VALUE[%d]",
+            mme_ue->nas_eps.type,
+            mme_ue->nas_eps.service.tsc,
+            mme_ue->nas_eps.service.nas_key_set_identifier,
+            mme_ue->nas_eps.service.value);
+
+    mme_ue->nas_eps.ue.tsc = service_type->tsc;
+    mme_ue->nas_eps.ue.ksi = service_type->nas_key_set_identifier;
+    ogs_debug("    OLD TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
+    if (mme_ue->nas_eps.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
+        mme_ue->nas_eps.mme.tsc = mme_ue->nas_eps.ue.tsc;
+        mme_ue->nas_eps.mme.ksi = mme_ue->nas_eps.ue.ksi;
+    }
+    ogs_debug("    NEW TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
 
     /*
      * ATTACH_REQUEST

@@ -63,8 +63,12 @@ uint8_t mme_s6a_handle_aia(
 
     CLEAR_MME_UE_TIMER(mme_ue->t3460);
 
-    if (mme_ue->nas_eps.ksi == OGS_NAS_KSI_NO_KEY_IS_AVAILABLE)
-        mme_ue->nas_eps.ksi = 0;
+    if (mme_ue->nas_eps.mme.ksi < (OGS_NAS_KSI_NO_KEY_IS_AVAILABLE - 1))
+        mme_ue->nas_eps.mme.ksi++;
+    else
+        mme_ue->nas_eps.mme.ksi = 0;
+
+    mme_ue->nas_eps.ue.ksi = mme_ue->nas_eps.mme.ksi;
 
     return OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
 }

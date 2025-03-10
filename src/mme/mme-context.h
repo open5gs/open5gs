@@ -355,7 +355,13 @@ struct mme_ue_s {
 #define MME_EPS_TYPE_DETACH_REQUEST_FROM_UE         5
 #define MME_EPS_TYPE_DETACH_REQUEST_TO_UE           6
         uint8_t     type;
-        uint8_t     ksi;
+
+        struct {
+        ED3(uint8_t tsc:1;,
+            uint8_t ksi:3;,
+            uint8_t spare:4;)
+        } mme, ue;
+
         ogs_nas_eps_attach_type_t attach;
         ogs_nas_eps_update_type_t update;
         ogs_nas_service_type_t service;
@@ -446,13 +452,12 @@ struct mme_ue_s {
     ((__mME) && \
     ((__mME)->security_context_available == 1) && \
      ((__mME)->mac_failed == 0) && \
-     ((__mME)->nas_eps.ksi != OGS_NAS_KSI_NO_KEY_IS_AVAILABLE))
+     ((__mME)->nas_eps.ue.ksi != OGS_NAS_KSI_NO_KEY_IS_AVAILABLE))
 #define CLEAR_SECURITY_CONTEXT(__mME) \
     do { \
         ogs_assert((__mME)); \
         (__mME)->security_context_available = 0; \
         (__mME)->mac_failed = 0; \
-        (__mME)->nas_eps.ksi = 0; \
     } while(0)
     int             security_context_available;
     int             mac_failed;
