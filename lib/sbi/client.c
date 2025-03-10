@@ -649,11 +649,19 @@ static void connection_remove_all(ogs_sbi_client_t *client)
 static void connection_timer_expired(void *data)
 {
     connection_t *conn = NULL;
+    CURLcode res;
+    char *effective_url = NULL;
 
     conn = data;
     ogs_assert(conn);
 
-    ogs_error("Connection timer expired");
+    ogs_error("Connection timer expired [METHOD:%s]", conn->method);
+
+    res = curl_easy_getinfo(conn->easy, CURLINFO_EFFECTIVE_URL, &effective_url);
+    if ((res == CURLE_OK) && effective_url)
+        ogs_error("Effective URL: %s", effective_url);
+    else
+        ogs_error("curl_easy_getinfo() failed [%s]", curl_easy_strerror(res));
 
     ogs_assert(conn->client_cb);
     conn->client_cb(OGS_TIMEUP, NULL, conn->data);
