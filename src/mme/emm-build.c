@@ -297,9 +297,10 @@ ogs_pkbuf_t *emm_build_authentication_request(mme_ue_t *mme_ue)
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_AUTHENTICATION_REQUEST;
 
-    authentication_request->nas_key_set_identifierasme.tsc = 0;
+    authentication_request->nas_key_set_identifierasme.tsc =
+        mme_ue->nas_eps.mme.tsc;
     authentication_request->nas_key_set_identifierasme.value =
-        mme_ue->nas_eps.ksi;
+        mme_ue->nas_eps.mme.ksi;
     memcpy(authentication_request->authentication_parameter_rand.rand,
             mme_ue->rand, OGS_RAND_LEN);
     memcpy(authentication_request->authentication_parameter_autn.autn,
@@ -355,8 +356,8 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
     selected_nas_security_algorithms->type_of_ciphering_algorithm =
         mme_ue->selected_enc_algorithm;
 
-    nas_key_set_identifier->tsc = 0;
-    nas_key_set_identifier->value = 0;
+    nas_key_set_identifier->tsc = mme_ue->nas_eps.mme.tsc;
+    nas_key_set_identifier->value = mme_ue->nas_eps.mme.ksi;
 
     replayed_ue_security_capabilities->eea = mme_ue->ue_network_capability.eea;
     replayed_ue_security_capabilities->eia = mme_ue->ue_network_capability.eia;

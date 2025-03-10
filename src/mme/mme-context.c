@@ -3617,6 +3617,9 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     mme_ue->csmap = NULL;
     mme_ue->vlr_ostream_id = 0;
 
+    /* Initialization */
+    mme_ue->nas_eps.mme.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+
     mme_ue_fsm_init(mme_ue);
 
     ogs_list_add(&self.mme_ue_list, mme_ue);

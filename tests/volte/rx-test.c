@@ -59,7 +59,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf;
-    test_ue->nas.ksi = 0;
+    test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
@@ -571,7 +571,7 @@ static void test2_func(abts_case *tc, void *data)
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf;
-    test_ue->nas.ksi = 0;
+    test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
@@ -922,7 +922,7 @@ static void test3_func(abts_case *tc, void *data)
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf;
-    test_ue->nas.ksi = 0;
+    test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
@@ -1270,7 +1270,7 @@ static void test4_func(abts_case *tc, void *data)
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf;
-    test_ue->nas.ksi = 0;
+    test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
@@ -1798,7 +1798,7 @@ static void test5_func(abts_case *tc, void *data)
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf;
-    test_ue->nas.ksi = 0;
+    test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
@@ -2301,7 +2301,7 @@ static void test6_func(abts_case *tc, void *data)
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf;
-    test_ue->nas.ksi = 0;
+    test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
@@ -2723,7 +2723,7 @@ static void test7_func(abts_case *tc, void *data)
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf;
-    test_ue->nas.ksi = 0;
+    test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
@@ -3125,7 +3125,7 @@ static void test_issues3109_func(abts_case *tc, void *data)
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf;
-    test_ue->nas.ksi = 0;
+    test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
@@ -3449,7 +3449,7 @@ static void test_issues3240_func(abts_case *tc, void *data)
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf;
-    test_ue->nas.ksi = 0;
+    test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";

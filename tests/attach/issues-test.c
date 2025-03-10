@@ -1911,7 +1911,7 @@ static void pull_3122_v270_func(abts_case *tc, void *data)
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf0;
-    test_ue->nas.ksi = 0;
+    test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
