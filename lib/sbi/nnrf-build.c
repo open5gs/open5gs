@@ -835,11 +835,7 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
             ogs_uint24_to_0string(nf_info->smf.nr_tai[i].tac);
         if (!TaiItem->tac) {
             ogs_error("No TaiItem->tac");
-            if (TaiItem) {
-                if (TaiItem->plmn_id)
-                    ogs_sbi_free_plmn_id(TaiItem->plmn_id);
-                ogs_free(TaiItem);
-            }
+            OpenAPI_tai_free(TaiItem);
             OpenAPI_smf_info_free(SmfInfo);
             OpenAPI_list_free(TaiList);
             return NULL;
@@ -963,7 +959,7 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
 
         guamiAmfInfoItem = ogs_calloc(1, sizeof(*guamiAmfInfoItem));
         if (!guamiAmfInfoItem) {
-            ogs_error("guamiAmfInfoItem");
+            ogs_error("No guamiAmfInfoItem");
             OpenAPI_amf_info_free(AmfInfo);
             OpenAPI_list_free(guamiAmfInfoList);
             return NULL;
@@ -972,9 +968,8 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
         guamiAmfInfoItem->plmn_id =
                 ogs_sbi_build_plmn_id_nid(&nf_info->amf.guami[i].plmn_id);
         if (!guamiAmfInfoItem->plmn_id) {
-            ogs_error("guamiAmfInfoItem->plmn_id");
-            if (guamiAmfInfoItem)
-                ogs_free(guamiAmfInfoItem);
+            ogs_error("No guamiAmfInfoItem->plmn_id");
+            OpenAPI_guami_free(guamiAmfInfoItem);
             OpenAPI_amf_info_free(AmfInfo);
             OpenAPI_list_free(guamiAmfInfoList);
             return NULL;
@@ -982,12 +977,8 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
         guamiAmfInfoItem->amf_id =
                 ogs_amf_id_to_string(&nf_info->amf.guami[i].amf_id);
         if (!guamiAmfInfoItem->amf_id) {
-            ogs_error("guamiAmfInfoItem->amf_id");
-            if (guamiAmfInfoItem) {
-                if (guamiAmfInfoItem->plmn_id)
-                    ogs_free(guamiAmfInfoItem->plmn_id);
-                ogs_free(guamiAmfInfoItem);
-            }
+            ogs_error("No guamiAmfInfoItem->amf_id");
+            OpenAPI_guami_free(guamiAmfInfoItem);
             OpenAPI_amf_info_free(AmfInfo);
             OpenAPI_list_free(guamiAmfInfoList);
             return NULL;
@@ -1020,21 +1011,15 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
                 &nf_info->amf.nr_tai[i].plmn_id);
         if (!TaiItem->plmn_id) {
             ogs_error("No TaiItem->plmn_id");
-            if (TaiItem)
-                ogs_free(TaiItem);
+            OpenAPI_tai_free(TaiItem);
             OpenAPI_amf_info_free(AmfInfo);
             OpenAPI_list_free(TaiList);
             return NULL;
         }
-        TaiItem->tac =
-            ogs_uint24_to_0string(nf_info->amf.nr_tai[i].tac);
+        TaiItem->tac = ogs_uint24_to_0string(nf_info->amf.nr_tai[i].tac);
         if (!TaiItem->tac) {
             ogs_error("No TaiItem->tac");
-            if (TaiItem) {
-                if (TaiItem->plmn_id)
-                    ogs_sbi_free_plmn_id(TaiItem->plmn_id);
-                ogs_free(TaiItem);
-            }
+            OpenAPI_tai_free(TaiItem);
             OpenAPI_amf_info_free(AmfInfo);
             OpenAPI_list_free(TaiList);
             return NULL;
