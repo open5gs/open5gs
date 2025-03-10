@@ -410,9 +410,9 @@ static void ogs_nas_eps_message_test9(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_MM,
+    ABTS_INT_EQUAL(tc, OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_30_SS,
             gprs_timer.unit);
-    ABTS_INT_EQUAL(tc, 2, gprs_timer.value);
+    ABTS_INT_EQUAL(tc, 4, gprs_timer.value);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*2+1);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
     rv = ogs_nas_gprs_timer_3_from_sec(&gprs_timer, 60*30);
