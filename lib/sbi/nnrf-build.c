@@ -948,6 +948,7 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
         return NULL;
     }
 
+    /* Guami list */
     guamiAmfInfoList = OpenAPI_list_create();
     if (!guamiAmfInfoList) {
         ogs_error("No guamiAmfInfoList");
@@ -992,6 +993,8 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
     else
         OpenAPI_list_free(guamiAmfInfoList);
 
+
+    /* TAI list */
     TaiList = OpenAPI_list_create();
     if (!TaiList) {
         ogs_error("No TaiList");
@@ -1001,7 +1004,7 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
 
     for (i = 0; i < nf_info->amf.num_of_nr_tai; i++) {
         TaiItem = ogs_calloc(1, sizeof(*TaiItem));
-        if (!TaiList) {
+        if (!TaiItem) {
             ogs_error("No TaiItem");
             OpenAPI_amf_info_free(AmfInfo);
             OpenAPI_list_free(TaiList);
@@ -1033,6 +1036,8 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
     else
         OpenAPI_list_free(TaiList);
 
+
+    /* TAI range list */
     TaiRangeList = OpenAPI_list_create();
     if (!TaiRangeList) {
         ogs_error("No TaiRangeList");

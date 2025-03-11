@@ -1104,16 +1104,18 @@ int amf_context_nf_info(void)
         nf_info = ogs_sbi_nf_info_add(
                 &nf_instance->nf_info_list, OpenAPI_nf_type_AMF);
         ogs_assert(nf_info);
+
         nf_info->amf.amf_set_id = self.served_guami[next_new_i].amf_id.set2;
         nf_info->amf.amf_region_id = self.served_guami[next_new_i].amf_id.region;
+
         next_found = false;
         info_i = 0;
         for (served_i = next_new_i; served_i <
                 self.num_of_served_guami; served_i++) {
-            if (self.served_guami[served_i].amf_id.set2 ==
-                    nf_info->amf.amf_set_id &&
-                    self.served_guami[served_i].amf_id.region ==
-                nf_info->amf.amf_region_id) {
+            if ((self.served_guami[served_i].amf_id.set2 ==
+                    nf_info->amf.amf_set_id) &&
+                (self.served_guami[served_i].amf_id.region ==
+                    nf_info->amf.amf_region_id)) {
                 nf_info->amf.guami[info_i] = self.served_guami[served_i];
                 nf_info->amf.num_of_guami++;
                 info_i++;
@@ -1121,21 +1123,21 @@ int amf_context_nf_info(void)
                 if (!next_found) {
                     int handled_i;
                     for (handled_i = 0; handled_i < served_i; handled_i++) {
-                        if (self.served_guami[handled_i].amf_id.set2 ==
-                                self.served_guami[served_i].amf_id.set2 &&
-                            self.served_guami[handled_i].amf_id.region ==
-                                    self.served_guami[served_i].amf_id.region) {
+                        if ((self.served_guami[handled_i].amf_id.set2 ==
+                                self.served_guami[served_i].amf_id.set2) &&
+                            (self.served_guami[handled_i].amf_id.region ==
+                                self.served_guami[served_i].amf_id.region)) {
                             break;
                         }
-                    next_found = true;
-                    next_new_i = served_i;
+                        next_found = true;
+                        next_new_i = served_i;
                     }
                 }
             }
         }
 
-        nf_info->amf.num_of_nr_tai = 0;
-        int i = 0, j = 0, k = 0, info_tai_i = 0;
+
+        int i, j, k;
         for (i = 0; i < self.num_of_served_tai; i++) {
             ogs_5gs_tai0_list_t *list0 = &self.served_tai[i].list0;
             ogs_5gs_tai1_list_t *list1 = &self.served_tai[i].list1;
@@ -1144,47 +1146,72 @@ int amf_context_nf_info(void)
             for (j = 0; list0->tai[j].num; j++) {
                 for (k = 0; k < list0->tai[j].num; k++) {
                     for (served_i = 0; served_i < info_i; served_i++) {
+                        if (nf_info->amf.num_of_nr_tai >= OGS_MAX_NUM_OF_TAI) {
+                            ogs_warn("Maximum number of TAI reached");
+                            break;
+                        }
+
                         if (ogs_plmn_id_hexdump(&list0->tai[j].plmn_id) ==
-                                ogs_plmn_id_hexdump(
-                                    &nf_info->amf.guami[served_i].plmn_id)) {
-                            nf_info->amf.nr_tai[info_tai_i].plmn_id =
-                                    list0->tai[j].plmn_id;
-                            nf_info->amf.nr_tai[info_tai_i].tac =
-                                    list0->tai[j].tac[k];
+                            ogs_plmn_id_hexdump(&nf_info->amf.guami[served_i].plmn_id)) {
+                            ogs_5gs_tai_t *tai =
+                                &nf_info->amf.nr_tai[
+                                    nf_info->amf.num_of_nr_tai];
+
+                            tai->plmn_id = list0->tai[j].plmn_id;
+                            tai->tac = list0->tai[j].tac[k];
+
                             nf_info->amf.num_of_nr_tai++;
-                            info_tai_i++;
                         }
                     }
                 }
             }
+
+
             for (j = 0; list1->tai[j].num; j++) {
-                for (k = 0; k < list1->tai[j].num; k++) {
-                    for (served_i = 0; served_i < info_i; served_i++) {
-                        if (ogs_plmn_id_hexdump(&list1->tai[j].plmn_id) ==
-                                ogs_plmn_id_hexdump(
-                                    &nf_info->amf.guami[served_i].plmn_id)) {
-                            nf_info->amf.nr_tai[info_tai_i].plmn_id =
-                                    list1->tai[j].plmn_id;
-                            nf_info->amf.nr_tai[info_tai_i].tac.v =
-                                    list1->tai[j].tac.v+k;
-                            nf_info->amf.num_of_nr_tai++;
-                            info_tai_i++;
-                        }
+                for (served_i = 0; served_i < info_i; served_i++) {
+                    if (nf_info->amf.num_of_nr_tai_range >= OGS_MAX_NUM_OF_TAI) {
+                        ogs_warn("Maximum number of TAI range reached");
+                        break;
+                    }
+
+                    if (ogs_plmn_id_hexdump(&list1->tai[j].plmn_id) ==
+                        ogs_plmn_id_hexdump(&nf_info->amf.guami[served_i].plmn_id)) {
+                        nf_info->amf.nr_tai_range[
+                            nf_info->amf.num_of_nr_tai_range].plmn_id =
+                                list1->tai[j].plmn_id;
+                        nf_info->amf.nr_tai_range[
+                            nf_info->amf.num_of_nr_tai_range].start[0].v =
+                                list1->tai[j].tac.v;
+                        nf_info->amf.nr_tai_range[
+                            nf_info->amf.num_of_nr_tai_range].end[0].v =
+                                list1->tai[j].tac.v + list1->tai[j].num - 1;
+                        /* Supported is only 1 TAC range per TAI */
+                        nf_info->amf.nr_tai_range[
+                            nf_info->amf.num_of_nr_tai_range].num_of_tac_range = 1;
+
+                        nf_info->amf.num_of_nr_tai_range++;
                     }
                 }
             }
+
             if (list2->num) {
                 for (j = 0; j < list2->num; j++) {
                     for (served_i = 0; served_i < info_i; served_i++) {
+                        if (nf_info->amf.num_of_nr_tai >= OGS_MAX_NUM_OF_TAI) {
+                            ogs_warn("Maximum number of TAI reached");
+                            break;
+                        }
+
                         if (ogs_plmn_id_hexdump(&list2->tai[j].plmn_id) ==
-                                ogs_plmn_id_hexdump(
-                                    &nf_info->amf.guami[served_i].plmn_id)) {
-                            nf_info->amf.nr_tai[info_tai_i].plmn_id =
-                                    list2->tai[j].plmn_id;
-                            nf_info->amf.nr_tai[info_tai_i].tac =
-                                    list2->tai[j].tac;
+                            ogs_plmn_id_hexdump(&nf_info->amf.guami[served_i].plmn_id)) {
+                            ogs_5gs_tai_t *tai =
+                                &nf_info->amf.nr_tai[
+                                    nf_info->amf.num_of_nr_tai];
+
+                            tai->plmn_id = list2->tai[j].plmn_id;
+                            tai->tac = list2->tai[j].tac;
+
                             nf_info->amf.num_of_nr_tai++;
-                            info_tai_i++;
                         }
                     }
                 }
