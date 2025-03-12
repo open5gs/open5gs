@@ -2347,7 +2347,7 @@ ogs_pfcp_dev_t *ogs_pfcp_dev_add(const char *ifname)
     ogs_assert(dev);
     memset(dev, 0, sizeof *dev);
 
-    strcpy(dev->ifname, ifname);
+    ogs_cpystrn(dev->ifname, ifname, OGS_MAX_IFNAME_LEN-1);
 
     ogs_list_add(&self.dev_list, dev);
 
@@ -2453,7 +2453,7 @@ ogs_pfcp_subnet_t *ogs_pfcp_subnet_add(
     }
 
     if (dnn)
-        strcpy(subnet->dnn, dnn);
+        ogs_cpystrn(subnet->dnn, dnn, OGS_MAX_DNN_LEN);
 
     ogs_pool_init(&subnet->pool, ogs_app()->pool.sess);
 
