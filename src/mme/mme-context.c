@@ -5030,6 +5030,64 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue)
     return 0;
 }
 
+/* Backup the sensitive security context fields from the UE context */
+void mme_backup_security_context(
+        mme_ue_t *mme_ue, mme_security_context_t *backup)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(backup);
+
+    memcpy(backup->xres, mme_ue->xres, mme_ue->xres_len);
+    backup->xres_len = mme_ue->xres_len;
+    memcpy(backup->kasme, mme_ue->kasme, OGS_SHA256_DIGEST_SIZE);
+    memcpy(backup->rand, mme_ue->rand, OGS_RAND_LEN);
+    memcpy(backup->autn, mme_ue->autn, OGS_AUTN_LEN);
+    memcpy(backup->knas_int, mme_ue->knas_int,
+           OGS_SHA256_DIGEST_SIZE / 2);
+    memcpy(backup->knas_enc, mme_ue->knas_enc,
+           OGS_SHA256_DIGEST_SIZE / 2);
+    backup->dl_count = mme_ue->dl_count;
+    backup->ul_count = mme_ue->ul_count.i32;
+    memcpy(backup->kenb, mme_ue->kenb, OGS_SHA256_DIGEST_SIZE);
+    memcpy(backup->hash_mme, mme_ue->hash_mme, OGS_HASH_MME_LEN);
+    backup->nonceue = mme_ue->nonceue;
+    backup->noncemme = mme_ue->noncemme;
+    backup->gprs_ciphering_key_sequence_number =
+        mme_ue->gprs_ciphering_key_sequence_number;
+    memcpy(backup->nh, mme_ue->nh, OGS_SHA256_DIGEST_SIZE);
+    backup->selected_enc_algorithm = mme_ue->selected_enc_algorithm;
+    backup->selected_int_algorithm = mme_ue->selected_int_algorithm;
+}
+
+/* Restore the sensitive security context fields into the UE context */
+void mme_restore_security_context(
+        mme_ue_t *mme_ue, const mme_security_context_t *backup)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(backup);
+
+    memcpy(mme_ue->xres, backup->xres, backup->xres_len);
+    mme_ue->xres_len = backup->xres_len;
+    memcpy(mme_ue->kasme, backup->kasme, OGS_SHA256_DIGEST_SIZE);
+    memcpy(mme_ue->rand, backup->rand, OGS_RAND_LEN);
+    memcpy(mme_ue->autn, backup->autn, OGS_AUTN_LEN);
+    memcpy(mme_ue->knas_int, backup->knas_int,
+           OGS_SHA256_DIGEST_SIZE / 2);
+    memcpy(mme_ue->knas_enc, backup->knas_enc,
+           OGS_SHA256_DIGEST_SIZE / 2);
+    mme_ue->dl_count = backup->dl_count;
+    mme_ue->ul_count.i32 = backup->ul_count;
+    memcpy(mme_ue->kenb, backup->kenb, OGS_SHA256_DIGEST_SIZE);
+    memcpy(mme_ue->hash_mme, backup->hash_mme, OGS_HASH_MME_LEN);
+    mme_ue->nonceue = backup->nonceue;
+    mme_ue->noncemme = backup->noncemme;
+    mme_ue->gprs_ciphering_key_sequence_number =
+        backup->gprs_ciphering_key_sequence_number;
+    memcpy(mme_ue->nh, backup->nh, OGS_SHA256_DIGEST_SIZE);
+    mme_ue->selected_enc_algorithm = backup->selected_enc_algorithm;
+    mme_ue->selected_int_algorithm = backup->selected_int_algorithm;
+}
+
 static void stats_add_enb_ue(void)
 {
     mme_metrics_inst_global_inc(MME_METR_GLOB_GAUGE_ENB_UE);

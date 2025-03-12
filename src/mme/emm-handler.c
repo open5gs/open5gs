@@ -379,6 +379,50 @@ int emm_handle_attach_complete(
     return r;
 }
 
+int emm_handle_authentication_response(
+        enb_ue_t *enb_ue, mme_ue_t *mme_ue,
+        ogs_nas_eps_authentication_response_t *authentication_response)
+{
+    ogs_nas_authentication_response_parameter_t
+        *authentication_response_parameter =
+            &authentication_response->authentication_response_parameter;
+
+    ogs_assert(authentication_response);
+
+    ogs_assert(mme_ue);
+    ogs_assert(enb_ue);
+
+    ogs_debug("Authentication response");
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+
+    CLEAR_MME_UE_TIMER(mme_ue->t3460);
+
+    if (authentication_response_parameter->length == 0 ||
+        memcmp(authentication_response_parameter->res, mme_ue->xres,
+        authentication_response_parameter->length) != 0) {
+        ogs_log_hexdump(OGS_LOG_WARN,
+                authentication_response_parameter->res,
+                authentication_response_parameter->length);
+        ogs_log_hexdump(OGS_LOG_WARN,
+                mme_ue->xres, OGS_MAX_RES_LEN);
+        return OGS_ERROR;
+    } else {
+        mme_ue->selected_int_algorithm = mme_selected_int_algorithm(mme_ue);
+        mme_ue->selected_enc_algorithm = mme_selected_enc_algorithm(mme_ue);
+
+        if (mme_ue->selected_int_algorithm ==
+                OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
+            ogs_error("Encrypt[0x%x] can be skipped with EEA0, "
+                "but Integrity[0x%x] cannot be bypassed with EIA0",
+                mme_ue->selected_enc_algorithm,
+                mme_ue->selected_int_algorithm);
+            return OGS_ERROR;
+        }
+    }
+
+    return OGS_OK;
+}
+
 int emm_handle_identity_response(
         enb_ue_t *enb_ue, mme_ue_t *mme_ue,
         ogs_nas_eps_identity_response_t *identity_response)

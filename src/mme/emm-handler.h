@@ -33,6 +33,10 @@ int emm_handle_attach_complete(
         enb_ue_t *enb_ue, mme_ue_t *mme_ue,
         ogs_nas_eps_attach_complete_t *attach_complete);
 
+int emm_handle_authentication_response(
+        enb_ue_t *enb_ue, mme_ue_t *mme_ue,
+        ogs_nas_eps_authentication_response_t *authentication_response);
+
 int emm_handle_identity_response(
         enb_ue_t *enb_ue, mme_ue_t *mme_ue,
         ogs_nas_eps_identity_response_t *identity_response);
