@@ -1105,14 +1105,16 @@ int amf_context_nf_info(void)
                 &nf_instance->nf_info_list, OpenAPI_nf_type_AMF);
         ogs_assert(nf_info);
 
-        nf_info->amf.amf_set_id = self.served_guami[next_new_i].amf_id.set2;
-        nf_info->amf.amf_region_id = self.served_guami[next_new_i].amf_id.region;
+        nf_info->amf.amf_set_id =
+                ogs_amf_set_id(&self.served_guami[next_new_i].amf_id);
+        nf_info->amf.amf_region_id =
+                self.served_guami[next_new_i].amf_id.region;
 
         next_found = false;
         info_i = 0;
         for (served_i = next_new_i; served_i <
                 self.num_of_served_guami; served_i++) {
-            if ((self.served_guami[served_i].amf_id.set2 ==
+            if ((ogs_amf_set_id(&self.served_guami[served_i].amf_id) ==
                     nf_info->amf.amf_set_id) &&
                 (self.served_guami[served_i].amf_id.region ==
                     nf_info->amf.amf_region_id)) {
@@ -1123,8 +1125,8 @@ int amf_context_nf_info(void)
                 if (!next_found) {
                     int handled_i;
                     for (handled_i = 0; handled_i < served_i; handled_i++) {
-                        if ((self.served_guami[handled_i].amf_id.set2 ==
-                                self.served_guami[served_i].amf_id.set2) &&
+                        if ((ogs_amf_set_id(&self.served_guami[handled_i].amf_id) ==
+                                ogs_amf_set_id(&self.served_guami[served_i].amf_id)) &&
                             (self.served_guami[handled_i].amf_id.region ==
                                 self.served_guami[served_i].amf_id.region)) {
                             break;
