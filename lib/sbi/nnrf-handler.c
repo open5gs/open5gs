@@ -709,8 +709,8 @@ static void handle_amf_info(
             AmfInfo->amf_set_id);
     nf_info->amf.amf_region_id = ogs_uint64_from_string_hexadecimal(
             AmfInfo->amf_region_id);
-    GuamiList = AmfInfo->guami_list;
 
+    GuamiList = AmfInfo->guami_list;
     OpenAPI_list_for_each(GuamiList, node) {
         GuamiAmfInfoItem = node->data;
         if (GuamiAmfInfoItem) {
@@ -741,7 +741,7 @@ static void handle_amf_info(
             }
 
             nr_tai = &nf_info->amf.nr_tai[nf_info->amf.num_of_nr_tai];
-            ogs_assert(nr_tai);
+
             ogs_sbi_parse_plmn_id(&nr_tai->plmn_id, TaiItem->plmn_id);
             nr_tai->tac = ogs_uint24_from_string_hexadecimal(TaiItem->tac);
             nf_info->amf.num_of_nr_tai++;
