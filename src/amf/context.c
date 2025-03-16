@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -2651,6 +2651,62 @@ uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue)
     }
 
     return 0;
+}
+
+/* Backup the sensitive security context fields from the UE context */
+void amf_backup_security_context(amf_ue_t *amf_ue,
+                                 amf_security_context_t *backup)
+{
+    ogs_assert(amf_ue);
+    ogs_assert(backup);
+
+    memcpy(&backup->ue_security_capability, &amf_ue->ue_security_capability,
+           sizeof(backup->ue_security_capability));
+    memcpy(&backup->ue_network_capability, &amf_ue->ue_network_capability,
+           sizeof(backup->ue_network_capability));
+    memcpy(backup->rand, amf_ue->rand, OGS_RAND_LEN);
+    memcpy(backup->autn, amf_ue->autn, OGS_AUTN_LEN);
+    memcpy(backup->xres_star, amf_ue->xres_star, OGS_MAX_RES_LEN);
+    memcpy(backup->abba, amf_ue->abba, OGS_NAS_MAX_ABBA_LEN);
+    backup->abba_len = amf_ue->abba_len;
+    memcpy(backup->hxres_star, amf_ue->hxres_star, OGS_MAX_RES_LEN);
+    memcpy(backup->kamf, amf_ue->kamf, OGS_SHA256_DIGEST_SIZE);
+    memcpy(backup->knas_int, amf_ue->knas_int, OGS_SHA256_DIGEST_SIZE/2);
+    memcpy(backup->knas_enc, amf_ue->knas_enc, OGS_SHA256_DIGEST_SIZE/2);
+    backup->dl_count = amf_ue->dl_count;
+    backup->ul_count = amf_ue->ul_count.i32;
+    memcpy(backup->kgnb, amf_ue->kgnb, OGS_SHA256_DIGEST_SIZE);
+    memcpy(backup->nh, amf_ue->nh, OGS_SHA256_DIGEST_SIZE);
+    backup->selected_enc_algorithm = amf_ue->selected_enc_algorithm;
+    backup->selected_int_algorithm = amf_ue->selected_int_algorithm;
+}
+
+/* Restore the sensitive security context fields into the UE context */
+void amf_restore_security_context(amf_ue_t *amf_ue,
+                                  const amf_security_context_t *backup)
+{
+    ogs_assert(amf_ue);
+    ogs_assert(backup);
+
+    memcpy(&amf_ue->ue_security_capability, &backup->ue_security_capability,
+           sizeof(amf_ue->ue_security_capability));
+    memcpy(&amf_ue->ue_network_capability, &backup->ue_network_capability,
+           sizeof(amf_ue->ue_network_capability));
+    memcpy(amf_ue->rand, backup->rand, OGS_RAND_LEN);
+    memcpy(amf_ue->autn, backup->autn, OGS_AUTN_LEN);
+    memcpy(amf_ue->xres_star, backup->xres_star, OGS_MAX_RES_LEN);
+    memcpy(amf_ue->abba, backup->abba, OGS_NAS_MAX_ABBA_LEN);
+    amf_ue->abba_len = backup->abba_len;
+    memcpy(amf_ue->hxres_star, backup->hxres_star, OGS_MAX_RES_LEN);
+    memcpy(amf_ue->kamf, backup->kamf, OGS_SHA256_DIGEST_SIZE);
+    memcpy(amf_ue->knas_int, backup->knas_int, OGS_SHA256_DIGEST_SIZE/2);
+    memcpy(amf_ue->knas_enc, backup->knas_enc, OGS_SHA256_DIGEST_SIZE/2);
+    amf_ue->dl_count = backup->dl_count;
+    amf_ue->ul_count.i32 = backup->ul_count;
+    memcpy(amf_ue->kgnb, backup->kgnb, OGS_SHA256_DIGEST_SIZE);
+    memcpy(amf_ue->nh, backup->nh, OGS_SHA256_DIGEST_SIZE);
+    amf_ue->selected_enc_algorithm = backup->selected_enc_algorithm;
+    amf_ue->selected_int_algorithm = backup->selected_int_algorithm;
 }
 
 void amf_clear_subscribed_info(amf_ue_t *amf_ue)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -1279,6 +1279,16 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
         ogs_assert(amf_ue);
     }
 
+    /* If transition is from REGISTERED, allow restoration */
+    if (state == GMM_COMMON_STATE_REGISTERED) {
+        amf_ue->can_restore_security_context = 1;
+        amf_backup_security_context(amf_ue, &amf_ue->sec_backup);
+    } else if (state == GMM_COMMON_STATE_DEREGISTERED) {
+        /* Transition from de-registered: do not restore */
+        amf_ue->can_restore_security_context = 0;
+    } else
+        ogs_assert_if_reached();
+
     switch (e->h.id) {
     case AMF_EVENT_5GMM_MESSAGE:
         nas_message = e->nas.message;
@@ -1726,10 +1736,11 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                     amf_ue, &nas_message->gmm.authentication_response);
 
             if (rv != OGS_OK) {
+                ogs_error("gmm_handle_authentication_response() failed");
                 r = nas_5gs_send_authentication_reject(amf_ue);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                goto cleanup;
             }
             break;
 
@@ -1740,7 +1751,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 authentication_failure_parameter;
             ogs_assert(authentication_failure_parameter);
 
-            ogs_debug("[%s] Authentication failure [%d]", amf_ue->suci,
+            ogs_warn("[%s] Authentication failure [%d]", amf_ue->suci,
                     authentication_failure->gmm_cause);
 
             amf_metrics_inst_by_cause_add(authentication_failure->gmm_cause,
@@ -1793,9 +1804,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             r = nas_5gs_send_authentication_reject(amf_ue);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
-            OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+            goto cleanup;
 
-            break;
         case OGS_NAS_5GS_REGISTRATION_REQUEST:
             ogs_warn("Registration request");
             gmm_cause = gmm_handle_registration_request(
@@ -1807,8 +1817,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 r = nas_5gs_send_registration_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, gmm_state_exception);
-                break;
+                goto cleanup;
             }
 
             r = amf_ue_sbi_discover_and_send(
@@ -1846,7 +1855,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 r = nas_5gs_send_authentication_reject(amf_ue);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                goto cleanup;
             } else {
                 amf_ue->t3560.retry_count++;
                 r = nas_5gs_send_authentication_request(amf_ue);
@@ -1879,12 +1888,12 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                         ogs_error("[%s] HTTP response error [%d]",
                             amf_ue->suci, sbi_message->res_status);
                     }
+
                     r = nas_5gs_send_gmm_reject_from_sbi(
                             amf_ue, sbi_message->res_status);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
-                    OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
-                    break;
+                    goto cleanup;
                 }
 
                 SWITCH(sbi_message->h.method)
@@ -1897,7 +1906,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                         r = nas_5gs_send_authentication_reject(amf_ue);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
-                        OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                        goto cleanup;
                     }
                     break;
                 CASE(OGS_SBI_HTTP_METHOD_PUT)
@@ -1909,7 +1918,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                         r = nas_5gs_send_authentication_reject(amf_ue);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
-                        OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                        goto cleanup;
                     } else {
                         amf_ue->selected_int_algorithm =
                             amf_selected_int_algorithm(amf_ue);
@@ -1923,8 +1932,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                                 "bypassed with NIA0",
                                 amf_ue->selected_enc_algorithm,
                                 amf_ue->selected_int_algorithm);
-                            OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
-                            break;
+                            goto cleanup;
                         }
 
                         OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_security_mode);
@@ -2034,6 +2042,26 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
     default:
         ogs_error("Unknown event[%s]", amf_event_get_name(e));
         break;
+    }
+
+    return;
+
+cleanup:
+    if (amf_ue->can_restore_security_context) {
+        /* If allowed, restore the security context */
+        amf_restore_security_context(amf_ue, &amf_ue->sec_backup);
+
+        amf_ue->security_context_available = 1;
+        amf_ue->mac_failed = 0;
+
+        OGS_FSM_TRAN(s, &gmm_state_registered);
+        ogs_warn("[%s] Auth failure in registered trans; "
+                 "restoring context and going to REGISTERED.", amf_ue->supi);
+    } else {
+        /* Do not restore; transition to exception state */
+        OGS_FSM_TRAN(s, &gmm_state_exception);
+        ogs_warn("[%s] Auth failure in de-registered trans; "
+                 "no context restoration.", amf_ue->supi);
     }
 }
 
