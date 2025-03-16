@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -303,6 +303,15 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
 
     mme_ue = mme_ue_find_by_id(e->mme_ue_id);
     ogs_assert(mme_ue);
+
+    /* If transition is from REGISTERED, allow restoration */
+    if (state == EMM_COMMON_STATE_REGISTERED) {
+        mme_ue->can_restore_security_context = 1;
+        mme_backup_security_context(mme_ue, &mme_ue->sec_backup);
+    } else if (state == EMM_COMMON_STATE_DEREGISTERED) {
+        /* Transition from de-registered: do not restore */
+        mme_ue->can_restore_security_context = 0;
+    }
 
     switch (e->id) {
     case MME_EVENT_EMM_MESSAGE:
@@ -1060,6 +1069,8 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
     enb_ue_t *enb_ue = NULL;
     ogs_nas_eps_message_t *message = NULL;
 
+    ogs_nas_eps_authentication_failure_t *authentication_failure = NULL;
+
     ogs_assert(s);
     ogs_assert(e);
 
@@ -1082,64 +1093,27 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
 
         switch (message->emm.h.message_type) {
         case OGS_NAS_EPS_AUTHENTICATION_RESPONSE:
-        {
-            ogs_nas_eps_authentication_response_t *authentication_response =
-                &message->emm.authentication_response;
-            ogs_nas_authentication_response_parameter_t
-                *authentication_response_parameter =
-                    &authentication_response->
-                        authentication_response_parameter;
-
-            ogs_debug("Authentication response");
-            ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
-
-            CLEAR_MME_UE_TIMER(mme_ue->t3460);
-
-            if (authentication_response_parameter->length == 0 ||
-                memcmp(authentication_response_parameter->res,
-                mme_ue->xres,
-                authentication_response_parameter->length) != 0) {
-                ogs_log_hexdump(OGS_LOG_WARN,
-                        authentication_response_parameter->res,
-                        authentication_response_parameter->length);
-                ogs_log_hexdump(OGS_LOG_WARN,
-                        mme_ue->xres, OGS_MAX_RES_LEN);
+            rv = emm_handle_authentication_response(enb_ue, mme_ue,
+                    &message->emm.authentication_response);
+            if (rv != OGS_OK) {
+                ogs_error("emm_handle_authentication_response() failed");
                 r = nas_eps_send_authentication_reject(mme_ue);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
-            } else {
-                mme_ue->selected_int_algorithm =
-                    mme_selected_int_algorithm(mme_ue);
-                mme_ue->selected_enc_algorithm =
-                    mme_selected_enc_algorithm(mme_ue);
-
-                if (mme_ue->selected_int_algorithm ==
-                        OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
-                    ogs_error("Encrypt[0x%x] can be skipped with EEA0, "
-                        "but Integrity[0x%x] cannot be bypassed with EIA0",
-                        mme_ue->selected_enc_algorithm,
-                        mme_ue->selected_int_algorithm);
-                    OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
-                    break;
-                }
-
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
+                goto cleanup;
             }
 
+            OGS_FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
             break;
-        }
         case OGS_NAS_EPS_AUTHENTICATION_FAILURE:
-        {
-            ogs_nas_eps_authentication_failure_t *authentication_failure =
-                &message->emm.authentication_failure;
+            authentication_failure = &message->emm.authentication_failure;
             ogs_nas_authentication_failure_parameter_t
                 *authentication_failure_parameter =
                     &authentication_failure->
                         authentication_failure_parameter;
 
-            ogs_debug("Authentication failure");
-            ogs_debug("    IMSI[%s] OGS_NAS_EMM_CAUSE[%d]", mme_ue->imsi_bcd,
+            ogs_warn("Authentication failure");
+            ogs_warn("    IMSI[%s] OGS_NAS_EMM_CAUSE[%d]", mme_ue->imsi_bcd,
                     authentication_failure->emm_cause);
 
             CLEAR_MME_UE_TIMER(mme_ue->t3460);
@@ -1167,18 +1141,15 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             r = nas_eps_send_authentication_reject(mme_ue);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
-            OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+            goto cleanup;
 
-            break;
-        }
         case OGS_NAS_EPS_ATTACH_REQUEST:
             ogs_warn("[%s] Attach request", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     enb_ue, mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_attach_request() failed");
-                OGS_FSM_TRAN(s, emm_state_exception);
-                break;
+                goto cleanup;
             }
 
             mme_s6a_send_air(enb_ue, mme_ue, NULL);
@@ -1194,8 +1165,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                     enb_ue, mme_ue, &message->emm.detach_request_from_ue);
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_detach_request() failed");
-                OGS_FSM_TRAN(s, emm_state_exception);
-                break;
+                goto cleanup;
             }
 
             if (!MME_UE_HAVE_IMSI(mme_ue)) {
@@ -1203,8 +1173,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
-                OGS_FSM_TRAN(s, &emm_state_exception);
-                break;
+                goto cleanup;
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
@@ -1212,8 +1181,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
-                OGS_FSM_TRAN(s, &emm_state_exception);
-                break;
+                goto cleanup;
             }
 
             /*
@@ -1243,11 +1211,10 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                     mme_timer_cfg(MME_TIMER_T3460)->max_count) {
                 ogs_warn("Retransmission of IMSI[%s] failed. "
                         "Stop retransmission", mme_ue->imsi_bcd);
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
-
                 r = nas_eps_send_authentication_reject(mme_ue);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
+                goto cleanup;
             } else {
                 mme_ue->t3460.retry_count++;
                 r = nas_eps_send_authentication_request(mme_ue);
@@ -1264,6 +1231,27 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
     default:
         ogs_error("Unknown event[%s]", mme_event_get_name(e));
         break;
+    }
+
+    return;
+
+cleanup:
+    if (mme_ue->can_restore_security_context) {
+        /* If allowed, restore the security context */
+        mme_restore_security_context(mme_ue, &mme_ue->sec_backup);
+
+        mme_ue->security_context_available = 1;
+        mme_ue->mac_failed = 0;
+
+        OGS_FSM_TRAN(s, &emm_state_registered);
+        ogs_warn("[%s] Auth failure in registered trans; "
+                 "restoring context and going to REGISTERED.",
+                 mme_ue->imsi_bcd);
+    } else {
+        /* Do not restore; transition to exception state */
+        OGS_FSM_TRAN(s, &emm_state_exception);
+        ogs_warn("[%s] Auth failure in de-registered trans; "
+                 "no context restoration.", mme_ue->imsi_bcd);
     }
 }
 
