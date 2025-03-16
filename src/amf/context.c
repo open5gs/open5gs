@@ -1108,7 +1108,7 @@ int amf_context_nf_info(void)
         nf_info->amf.amf_set_id =
                 ogs_amf_set_id(&self.served_guami[next_new_i].amf_id);
         nf_info->amf.amf_region_id =
-                self.served_guami[next_new_i].amf_id.region;
+                ogs_amf_region_id(&self.served_guami[next_new_i].amf_id);
 
         next_found = false;
         info_i = 0;
@@ -1116,7 +1116,7 @@ int amf_context_nf_info(void)
                 self.num_of_served_guami; served_i++) {
             if ((ogs_amf_set_id(&self.served_guami[served_i].amf_id) ==
                     nf_info->amf.amf_set_id) &&
-                (self.served_guami[served_i].amf_id.region ==
+                (ogs_amf_region_id(&self.served_guami[served_i].amf_id) ==
                     nf_info->amf.amf_region_id)) {
                 nf_info->amf.guami[info_i] = self.served_guami[served_i];
                 nf_info->amf.num_of_guami++;
@@ -1125,10 +1125,14 @@ int amf_context_nf_info(void)
                 if (!next_found) {
                     int handled_i;
                     for (handled_i = 0; handled_i < served_i; handled_i++) {
-                        if ((ogs_amf_set_id(&self.served_guami[handled_i].amf_id) ==
-                                ogs_amf_set_id(&self.served_guami[served_i].amf_id)) &&
-                            (self.served_guami[handled_i].amf_id.region ==
-                                self.served_guami[served_i].amf_id.region)) {
+                        if ((ogs_amf_set_id(
+                                &self.served_guami[handled_i].amf_id) ==
+                             ogs_amf_set_id(
+                                &self.served_guami[served_i].amf_id)) &&
+                            (ogs_amf_region_id(
+                                &self.served_guami[handled_i].amf_id) ==
+                             ogs_amf_region_id(
+                                &self.served_guami[served_i].amf_id))) {
                             break;
                         }
                         next_found = true;

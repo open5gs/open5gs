@@ -364,7 +364,7 @@ typedef struct ogs_sbi_sepp_info_s {
 
 typedef struct ogs_sbi_amf_info_s {
     uint16_t amf_set_id;
-    uint16_t amf_region_id;
+    uint8_t amf_region_id;
 
     int num_of_guami;
     ogs_guami_t guami[OGS_MAX_NUM_OF_SERVED_GUAMI];
