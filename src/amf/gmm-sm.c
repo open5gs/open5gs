@@ -35,6 +35,24 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gmm_log_domain
 
+#define AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s) do {                  \
+    if ((amf_ue)->can_restore_context) {                                \
+        /* Restore context if allowed */                                \
+        amf_ue_restore_memento((amf_ue), &((amf_ue)->memento));         \
+        (amf_ue)->security_context_available = 1;                       \
+        (amf_ue)->mac_failed = 0;                                       \
+        if (!OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered))          \
+            OGS_FSM_TRAN((s), &gmm_state_registered);                   \
+        ogs_warn("[%s] Failure in transaction; restoring context and "  \
+                 "transitioning to REGISTERED.", (amf_ue)->supi);       \
+    } else {                                                            \
+        /* Transition to exception state if not allowed */              \
+        OGS_FSM_TRAN((s), &gmm_state_exception);                        \
+        ogs_warn("[%s] Failure in transaction; no context "             \
+                 "restoration.", (amf_ue)->supi);                       \
+    }                                                                   \
+} while (0)
+
 typedef enum {
     GMM_COMMON_STATE_DEREGISTERED,
     GMM_COMMON_STATE_REGISTERED,
@@ -42,7 +60,6 @@ typedef enum {
 
 static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
         gmm_common_state_e state);
-
 
 void gmm_state_initial(ogs_fsm_t *s, amf_event_t *e)
 {
@@ -1281,11 +1298,11 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
 
     /* If transition is from REGISTERED, allow restoration */
     if (state == GMM_COMMON_STATE_REGISTERED) {
-        amf_ue->can_restore_security_context = 1;
-        amf_backup_security_context(amf_ue, &amf_ue->sec_backup);
+        amf_ue->can_restore_context = 1;
+        amf_ue_save_memento(amf_ue, &amf_ue->memento);
     } else if (state == GMM_COMMON_STATE_DEREGISTERED) {
         /* Transition from de-registered: do not restore */
-        amf_ue->can_restore_security_context = 0;
+        amf_ue->can_restore_context = 0;
     } else
         ogs_assert_if_reached();
 
@@ -1331,7 +1348,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 r = nas_5gs_send_registration_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, gmm_state_exception);
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
                 break;
             }
 
@@ -1392,7 +1409,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                             ran_ue, amf_ue, gmm_cause);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
-                    OGS_FSM_TRAN(s, gmm_state_exception);
+                    AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
                     break;
                 }
 
@@ -1405,7 +1422,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                                 OGS_5GMM_CAUSE_NO_NETWORK_SLICES_AVAILABLE);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
-                        OGS_FSM_TRAN(s, gmm_state_exception);
+                        AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
                         break;
                     }
 
@@ -1469,7 +1486,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                     OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, gmm_state_exception);
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
                 break;
             }
 
@@ -1481,7 +1498,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 r = nas_5gs_send_service_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, gmm_state_exception);
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
                 break;
             }
 
@@ -1491,7 +1508,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                     OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, gmm_state_exception);
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
                 break;
             }
 
@@ -1501,7 +1518,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                     OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, gmm_state_exception);
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
                 break;
             }
 
@@ -1520,7 +1537,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 r = nas_5gs_send_service_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, gmm_state_exception);
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
                 break;
             }
 
@@ -1536,7 +1553,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                         NGAP_CauseProtocol_semantic_error);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, gmm_state_exception);
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
                 break;
             }
 
@@ -1552,7 +1569,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 r = nas_5gs_send_gmm_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, gmm_state_exception);
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
                 break;
             }
 
@@ -1561,7 +1578,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 r = nas_5gs_send_gmm_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, gmm_state_exception);
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
                 break;
             }
 
@@ -1591,7 +1608,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
 
             if (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue)) {
                 ogs_error("No Security Context");
-                OGS_FSM_TRAN(s, gmm_state_exception);
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
                 break;
             }
 
@@ -1660,7 +1677,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
         case OGS_NAS_5GS_UL_NAS_TRANSPORT:
             if (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue)) {
                 ogs_error("No Security Context");
-                OGS_FSM_TRAN(s, gmm_state_exception);
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
                 break;
             }
 
@@ -1740,7 +1757,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 r = nas_5gs_send_authentication_reject(amf_ue);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                goto cleanup;
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+                break;
             }
             break;
 
@@ -1804,7 +1822,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             r = nas_5gs_send_authentication_reject(amf_ue);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
-            goto cleanup;
+            AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+            break;
 
         case OGS_NAS_5GS_REGISTRATION_REQUEST:
             ogs_warn("Registration request");
@@ -1817,7 +1836,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 r = nas_5gs_send_registration_reject(ran_ue, amf_ue, gmm_cause);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                goto cleanup;
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+                break;
             }
 
             r = amf_ue_sbi_discover_and_send(
@@ -1855,7 +1875,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 r = nas_5gs_send_authentication_reject(amf_ue);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                goto cleanup;
+                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+                break;
             } else {
                 amf_ue->t3560.retry_count++;
                 r = nas_5gs_send_authentication_request(amf_ue);
@@ -1893,7 +1914,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                             amf_ue, sbi_message->res_status);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
-                    goto cleanup;
+                    AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+                    break;
                 }
 
                 SWITCH(sbi_message->h.method)
@@ -1906,7 +1928,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                         r = nas_5gs_send_authentication_reject(amf_ue);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
-                        goto cleanup;
+                        AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+                        break;
                     }
                     break;
                 CASE(OGS_SBI_HTTP_METHOD_PUT)
@@ -1918,7 +1941,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                         r = nas_5gs_send_authentication_reject(amf_ue);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
-                        goto cleanup;
+                        AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+                        break;
                     } else {
                         amf_ue->selected_int_algorithm =
                             amf_selected_int_algorithm(amf_ue);
@@ -1932,7 +1956,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                                 "bypassed with NIA0",
                                 amf_ue->selected_enc_algorithm,
                                 amf_ue->selected_int_algorithm);
-                            goto cleanup;
+                            AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+                            break;
                         }
 
                         OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_security_mode);
@@ -2042,26 +2067,6 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
     default:
         ogs_error("Unknown event[%s]", amf_event_get_name(e));
         break;
-    }
-
-    return;
-
-cleanup:
-    if (amf_ue->can_restore_security_context) {
-        /* If allowed, restore the security context */
-        amf_restore_security_context(amf_ue, &amf_ue->sec_backup);
-
-        amf_ue->security_context_available = 1;
-        amf_ue->mac_failed = 0;
-
-        OGS_FSM_TRAN(s, &gmm_state_registered);
-        ogs_warn("[%s] Auth failure in registered trans; "
-                 "restoring context and going to REGISTERED.", amf_ue->supi);
-    } else {
-        /* Do not restore; transition to exception state */
-        OGS_FSM_TRAN(s, &gmm_state_exception);
-        ogs_warn("[%s] Auth failure in de-registered trans; "
-                 "no context restoration.", amf_ue->supi);
     }
 }
 

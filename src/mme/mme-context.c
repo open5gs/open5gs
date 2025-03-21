@@ -5030,80 +5030,81 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue)
     return 0;
 }
 
-/* Backup the sensitive security context fields from the UE context */
-void mme_backup_security_context(
-        mme_ue_t *mme_ue, mme_security_context_t *backup)
+/*
+ * Save the sensitive (partial) context fields
+ * from the UE context into the memento
+ */
+void mme_ue_save_memento(mme_ue_t *mme_ue, mme_ue_memento_t *memento)
 {
     ogs_assert(mme_ue);
-    ogs_assert(backup);
+    ogs_assert(memento);
 
-    memcpy(&backup->ue_network_capability,
+    memcpy(&memento->ue_network_capability,
             &mme_ue->ue_network_capability,
-            sizeof(backup->ue_network_capability));
-    memcpy(&backup->ms_network_capability,
+            sizeof(memento->ue_network_capability));
+    memcpy(&memento->ms_network_capability,
             &mme_ue->ms_network_capability,
-            sizeof(backup->ms_network_capability));
-    memcpy(&backup->ue_additional_security_capability,
+            sizeof(memento->ms_network_capability));
+    memcpy(&memento->ue_additional_security_capability,
             &mme_ue->ue_additional_security_capability,
-            sizeof(backup->ue_additional_security_capability));
-    memcpy(backup->xres, mme_ue->xres, OGS_MAX_RES_LEN);
-    backup->xres_len = mme_ue->xres_len;
-    memcpy(backup->kasme, mme_ue->kasme, OGS_SHA256_DIGEST_SIZE);
-    memcpy(backup->rand, mme_ue->rand, OGS_RAND_LEN);
-    memcpy(backup->autn, mme_ue->autn, OGS_AUTN_LEN);
-    memcpy(backup->knas_int, mme_ue->knas_int,
+            sizeof(memento->ue_additional_security_capability));
+    memcpy(memento->xres, mme_ue->xres, OGS_MAX_RES_LEN);
+    memento->xres_len = mme_ue->xres_len;
+    memcpy(memento->kasme, mme_ue->kasme, OGS_SHA256_DIGEST_SIZE);
+    memcpy(memento->rand, mme_ue->rand, OGS_RAND_LEN);
+    memcpy(memento->autn, mme_ue->autn, OGS_AUTN_LEN);
+    memcpy(memento->knas_int, mme_ue->knas_int,
            OGS_SHA256_DIGEST_SIZE / 2);
-    memcpy(backup->knas_enc, mme_ue->knas_enc,
+    memcpy(memento->knas_enc, mme_ue->knas_enc,
            OGS_SHA256_DIGEST_SIZE / 2);
-    backup->dl_count = mme_ue->dl_count;
-    backup->ul_count = mme_ue->ul_count.i32;
-    memcpy(backup->kenb, mme_ue->kenb, OGS_SHA256_DIGEST_SIZE);
-    memcpy(backup->hash_mme, mme_ue->hash_mme, OGS_HASH_MME_LEN);
-    backup->nonceue = mme_ue->nonceue;
-    backup->noncemme = mme_ue->noncemme;
-    backup->gprs_ciphering_key_sequence_number =
+    memento->dl_count = mme_ue->dl_count;
+    memento->ul_count = mme_ue->ul_count.i32;
+    memcpy(memento->kenb, mme_ue->kenb, OGS_SHA256_DIGEST_SIZE);
+    memcpy(memento->hash_mme, mme_ue->hash_mme, OGS_HASH_MME_LEN);
+    memento->nonceue = mme_ue->nonceue;
+    memento->noncemme = mme_ue->noncemme;
+    memento->gprs_ciphering_key_sequence_number =
         mme_ue->gprs_ciphering_key_sequence_number;
-    memcpy(backup->nh, mme_ue->nh, OGS_SHA256_DIGEST_SIZE);
-    backup->selected_enc_algorithm = mme_ue->selected_enc_algorithm;
-    backup->selected_int_algorithm = mme_ue->selected_int_algorithm;
+    memcpy(memento->nh, mme_ue->nh, OGS_SHA256_DIGEST_SIZE);
+    memento->selected_enc_algorithm = mme_ue->selected_enc_algorithm;
+    memento->selected_int_algorithm = mme_ue->selected_int_algorithm;
 }
 
-/* Restore the sensitive security context fields into the UE context */
-void mme_restore_security_context(
-        mme_ue_t *mme_ue, const mme_security_context_t *backup)
+/* Restore the sensitive context fields into the UE context */
+void mme_ue_restore_memento(mme_ue_t *mme_ue, const mme_ue_memento_t *memento)
 {
     ogs_assert(mme_ue);
-    ogs_assert(backup);
+    ogs_assert(memento);
 
     memcpy(&mme_ue->ue_network_capability,
-            &backup->ue_network_capability,
+            &memento->ue_network_capability,
             sizeof(mme_ue->ue_network_capability));
     memcpy(&mme_ue->ms_network_capability,
-            &backup->ms_network_capability,
+            &memento->ms_network_capability,
             sizeof(mme_ue->ms_network_capability));
     memcpy(&mme_ue->ue_additional_security_capability,
-            &backup->ue_additional_security_capability,
+            &memento->ue_additional_security_capability,
             sizeof(mme_ue->ue_additional_security_capability));
-    memcpy(mme_ue->xres, backup->xres, OGS_MAX_RES_LEN);
-    mme_ue->xres_len = backup->xres_len;
-    memcpy(mme_ue->kasme, backup->kasme, OGS_SHA256_DIGEST_SIZE);
-    memcpy(mme_ue->rand, backup->rand, OGS_RAND_LEN);
-    memcpy(mme_ue->autn, backup->autn, OGS_AUTN_LEN);
-    memcpy(mme_ue->knas_int, backup->knas_int,
+    memcpy(mme_ue->xres, memento->xres, OGS_MAX_RES_LEN);
+    mme_ue->xres_len = memento->xres_len;
+    memcpy(mme_ue->kasme, memento->kasme, OGS_SHA256_DIGEST_SIZE);
+    memcpy(mme_ue->rand, memento->rand, OGS_RAND_LEN);
+    memcpy(mme_ue->autn, memento->autn, OGS_AUTN_LEN);
+    memcpy(mme_ue->knas_int, memento->knas_int,
            OGS_SHA256_DIGEST_SIZE / 2);
-    memcpy(mme_ue->knas_enc, backup->knas_enc,
+    memcpy(mme_ue->knas_enc, memento->knas_enc,
            OGS_SHA256_DIGEST_SIZE / 2);
-    mme_ue->dl_count = backup->dl_count;
-    mme_ue->ul_count.i32 = backup->ul_count;
-    memcpy(mme_ue->kenb, backup->kenb, OGS_SHA256_DIGEST_SIZE);
-    memcpy(mme_ue->hash_mme, backup->hash_mme, OGS_HASH_MME_LEN);
-    mme_ue->nonceue = backup->nonceue;
-    mme_ue->noncemme = backup->noncemme;
+    mme_ue->dl_count = memento->dl_count;
+    mme_ue->ul_count.i32 = memento->ul_count;
+    memcpy(mme_ue->kenb, memento->kenb, OGS_SHA256_DIGEST_SIZE);
+    memcpy(mme_ue->hash_mme, memento->hash_mme, OGS_HASH_MME_LEN);
+    mme_ue->nonceue = memento->nonceue;
+    mme_ue->noncemme = memento->noncemme;
     mme_ue->gprs_ciphering_key_sequence_number =
-        backup->gprs_ciphering_key_sequence_number;
-    memcpy(mme_ue->nh, backup->nh, OGS_SHA256_DIGEST_SIZE);
-    mme_ue->selected_enc_algorithm = backup->selected_enc_algorithm;
-    mme_ue->selected_int_algorithm = backup->selected_int_algorithm;
+        memento->gprs_ciphering_key_sequence_number;
+    memcpy(mme_ue->nh, memento->nh, OGS_SHA256_DIGEST_SIZE);
+    mme_ue->selected_enc_algorithm = memento->selected_enc_algorithm;
+    mme_ue->selected_int_algorithm = memento->selected_int_algorithm;
 }
 
 static void stats_add_enb_ue(void)
