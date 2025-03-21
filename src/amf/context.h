@@ -237,7 +237,7 @@ struct ran_ue_s {
     ogs_pool_id_t   amf_ue_id;
 }; 
 
-typedef struct amf_security_context_s {
+typedef struct amf_ue_memento_s {
     /* UE security capability info: supported security features. */
     ogs_nas_ue_security_capability_t ue_security_capability;
     /* UE network capability info: supported network features. */
@@ -296,7 +296,7 @@ typedef struct amf_security_context_s {
     /* Selected algorithms (set by UDM/subscription) */
     uint8_t         selected_enc_algorithm;
     uint8_t         selected_int_algorithm;
-} amf_security_context_t;
+} amf_ue_memento_t;
 
 struct amf_ue_s {
     ogs_sbi_object_t sbi;
@@ -428,11 +428,11 @@ struct amf_ue_s {
     int             security_context_available;
     int             mac_failed;
 
-    /* flag: 1 = allow restoration of security context, 0 = disallow */
-    bool            can_restore_security_context;
+    /* flag: 1 = allow restoration of context, 0 = disallow */
+    bool            can_restore_context;
 
-    /* Backup of security context fields */
-    amf_security_context_t sec_backup;
+    /* Memento of context fields */
+    amf_ue_memento_t memento;
 
     /* Security Context */
     ogs_nas_ue_security_capability_t ue_security_capability;
@@ -1085,10 +1085,8 @@ int amf_m_tmsi_free(amf_m_tmsi_t *tmsi);
 uint8_t amf_selected_int_algorithm(amf_ue_t *amf_ue);
 uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue);
 
-void amf_backup_security_context(
-        amf_ue_t *amf_ue, amf_security_context_t *backup);
-void amf_restore_security_context(
-        amf_ue_t *amf_ue, const amf_security_context_t *backup);
+void amf_ue_save_memento(amf_ue_t *amf_ue, amf_ue_memento_t *memento);
+void amf_ue_restore_memento(amf_ue_t *amf_ue, const amf_ue_memento_t *memento);
 
 void amf_clear_subscribed_info(amf_ue_t *amf_ue);
 

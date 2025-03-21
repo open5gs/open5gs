@@ -103,6 +103,7 @@ static void test3_func(abts_case *tc, void *data)
 }
 #endif
 
+#if 0
 static void test4_func(abts_case *tc, void *data)
 {
     int rv;
@@ -405,6 +406,7 @@ static void test4_func(abts_case *tc, void *data)
 
     test_ue_remove(test_ue);
 }
+#endif
 
 static void test5_func(abts_case *tc, void *data)
 {
@@ -449,7 +451,38 @@ abts_suite *test_crash(abts_suite *suite)
 #if 0 /* Commenting to suppress error messages */
     abts_run_test(suite, test3_func, NULL);
 #endif
+
+/*
+Assume the UE has attached, the session has been created, and is in the
+IDLE state with the UEContextRelease process. This may lead to the following
+call flow:
+1. TAU request without integrity protection
+2. Authentication request/response
+3. Security-mode command/complete
+
+The MME may be processed concurrently by the HSS (S6A) and the UE (S1AP)
+as follows:
+   - Update-Location-Request
+   - Service request
+   - Service reject
+   - Delete Session Request
+   - Delete Session Response
+   - Update-Location-Answer
+   - UEContextReleaseCommand for Service reject
+   - TAU reject
+   - UEContextReleaseCommand for TAU reject
+   - UEContextReleaseComplete (for Service reject)
+   - UEContextReleaseComplete (for TAU reject)
+
+If the Update-Location-Answer is received before the Delete Session Response,
+the session still exists, and a TAU accept may be received. This causes the
+test procedure to wait indefinitely. Due to this issue, the test code has
+been commented out.
+*/
+#if 0
     abts_run_test(suite, test4_func, NULL);
+#endif
+
     abts_run_test(suite, test5_func, NULL);
 
     return suite;

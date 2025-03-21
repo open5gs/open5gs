@@ -342,7 +342,7 @@ struct sgw_ue_s {
     ogs_pool_id_t mme_ue_id;
 };
 
-typedef struct mme_security_context_s {
+typedef struct mme_ue_memento_s {
     /* UE network capability info: supported network features. */
     ogs_nas_ue_network_capability_t ue_network_capability;
     /* MS network capability info: supported network features. */
@@ -403,7 +403,7 @@ typedef struct mme_security_context_s {
     /* Selected algorithms (set by HSS/subscription) */
     uint8_t selected_enc_algorithm;
     uint8_t selected_int_algorithm;
-} mme_security_context_t;
+} mme_ue_memento_t;
 
 struct mme_ue_s {
     ogs_lnode_t     lnode;
@@ -525,11 +525,11 @@ struct mme_ue_s {
     int             security_context_available;
     int             mac_failed;
 
-    /* flag: 1 = allow restoration of security context, 0 = disallow */
-    bool            can_restore_security_context;
+    /* flag: 1 = allow restoration of context, 0 = disallow */
+    bool            can_restore_context;
 
-    /* Backup of security context fields */
-    mme_security_context_t sec_backup;
+    /* Memento of context fields */
+    mme_ue_memento_t memento;
 
     /* Security Context */
     ogs_nas_ue_network_capability_t ue_network_capability;
@@ -1215,10 +1215,8 @@ void mme_ebi_pool_clear(mme_ue_t *mme_ue);
 uint8_t mme_selected_int_algorithm(mme_ue_t *mme_ue);
 uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue);
 
-void mme_backup_security_context(
-        mme_ue_t *mme_ue, mme_security_context_t *backup);
-void mme_restore_security_context(
-        mme_ue_t *mme_ue, const mme_security_context_t *backup);
+void mme_ue_save_memento(mme_ue_t *mme_ue, mme_ue_memento_t *memento);
+void mme_ue_restore_memento(mme_ue_t *mme_ue, const mme_ue_memento_t *memento);
 
 #ifdef __cplusplus
 }
