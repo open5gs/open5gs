@@ -28,6 +28,8 @@ extern "C" {
 
 void amf_nnrf_handle_nf_discover(
         ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg);
+void amf_nnrf_handle_failed_amf_discovery(
+        ogs_sbi_xact_t *sbi_xact);
 
 #ifdef __cplusplus
 }
