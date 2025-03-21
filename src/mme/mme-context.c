@@ -4200,20 +4200,36 @@ void enb_ue_source_deassociate_target(enb_ue_t *enb_ue)
 
         ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
                 source_ue->target_ue_id <= OGS_MAX_POOL_ID);
-        ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
-                target_ue->source_ue_id <= OGS_MAX_POOL_ID);
         source_ue->target_ue_id = OGS_INVALID_POOL_ID;
-        target_ue->source_ue_id = OGS_INVALID_POOL_ID;
+
+        if (target_ue) {
+            ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
+                    target_ue->source_ue_id <= OGS_MAX_POOL_ID);
+            target_ue->source_ue_id = OGS_INVALID_POOL_ID;
+        } else
+            ogs_error("Target-UE-ID [%d] has already been removed "
+                    "(ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d])",
+                    source_ue->target_ue_id,
+                    source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
+
+
     } else if (enb_ue->source_ue_id >= OGS_MIN_POOL_ID &&
                 enb_ue->source_ue_id <= OGS_MAX_POOL_ID) {
         target_ue = enb_ue;
         source_ue = enb_ue_find_by_id(enb_ue->source_ue_id);
 
-        ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
-                source_ue->target_ue_id <= OGS_MAX_POOL_ID);
+        if (source_ue) {
+            ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
+                    source_ue->target_ue_id <= OGS_MAX_POOL_ID);
+            source_ue->target_ue_id = OGS_INVALID_POOL_ID;
+        } else
+            ogs_error("Source-UE-ID [%d] has already been removed "
+                    "(ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d])",
+                    target_ue->source_ue_id,
+                    target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
+
         ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
                 target_ue->source_ue_id <= OGS_MAX_POOL_ID);
-        source_ue->target_ue_id = OGS_INVALID_POOL_ID;
         target_ue->source_ue_id = OGS_INVALID_POOL_ID;
     }
 }
@@ -4253,6 +4269,7 @@ void sgw_ue_source_deassociate_target(sgw_ue_t *sgw_ue)
 {
     sgw_ue_t *source_ue = NULL;
     sgw_ue_t *target_ue = NULL;
+
     ogs_assert(sgw_ue);
 
     if (sgw_ue->target_ue_id >= OGS_MIN_POOL_ID &&
@@ -4262,20 +4279,33 @@ void sgw_ue_source_deassociate_target(sgw_ue_t *sgw_ue)
 
         ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
                 source_ue->target_ue_id <= OGS_MAX_POOL_ID);
-        ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
-                target_ue->source_ue_id <= OGS_MAX_POOL_ID);
         source_ue->target_ue_id = OGS_INVALID_POOL_ID;
-        target_ue->source_ue_id = OGS_INVALID_POOL_ID;
+
+        if (target_ue) {
+            ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
+                    target_ue->source_ue_id <= OGS_MAX_POOL_ID);
+            target_ue->source_ue_id = OGS_INVALID_POOL_ID;
+        } else
+            ogs_error("Target-UE-ID [%d] has already been removed "
+                    "(SGW-S11-TEID[%d])",
+                    source_ue->target_ue_id, source_ue->sgw_s11_teid);
+
     } else if (sgw_ue->source_ue_id >= OGS_MIN_POOL_ID &&
                 sgw_ue->source_ue_id <= OGS_MAX_POOL_ID) {
         target_ue = sgw_ue;
         source_ue = sgw_ue_find_by_id(sgw_ue->source_ue_id);
 
-        ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
-                source_ue->target_ue_id <= OGS_MAX_POOL_ID);
+        if (source_ue) {
+            ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
+                    source_ue->target_ue_id <= OGS_MAX_POOL_ID);
+            source_ue->target_ue_id = OGS_INVALID_POOL_ID;
+        } else
+            ogs_error("Source-UE-ID [%d] has already been removed "
+                    "(SGW-S11-TEID[%d])",
+                    target_ue->source_ue_id, target_ue->sgw_s11_teid);
+
         ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
                 target_ue->source_ue_id <= OGS_MAX_POOL_ID);
-        source_ue->target_ue_id = OGS_INVALID_POOL_ID;
         target_ue->source_ue_id = OGS_INVALID_POOL_ID;
     }
 }
