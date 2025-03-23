@@ -1361,6 +1361,7 @@ int ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
     int i = 0;
 
     ogs_assert(pdr);
+    ogs_assert(pdr->f_teid_len > 0);
     ogs_assert(!pdr->f_teid.ch);
 
     /*
@@ -1371,13 +1372,12 @@ int ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
      * message. The validation ensures that the F-TEID is present and
      * within acceptable limits defined by the system.
      */
-    if (pdr->f_teid_len > 0 &&
-        pdr->f_teid.teid > 0 &&
+    if (pdr->f_teid.teid > 0 &&
         pdr->f_teid.teid <= ogs_pfcp_pdr_teid_pool.size) {
         /* PASS OK */
     } else {
-        ogs_error("F-TEID LEN[%d] TEID[0x%x]",
-                pdr->f_teid_len, pdr->f_teid.teid);
+        ogs_error("PDR-ID[%d] F-TEID LEN[%d] TEID[0x%x]",
+                pdr->id, pdr->f_teid_len, pdr->f_teid.teid);
         return OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
     }
 
