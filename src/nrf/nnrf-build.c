@@ -81,6 +81,17 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
             goto end;
         }
     }
+/*
+ * Callback Header Configuration
+ *
+ * The 3gpp-Sbi-Callback HTTP header (per 3GPP TS 29.500 v17.9.0) indicates that
+ * a message is an asynchronous notification or callback. This header should be
+ * included only in HTTP POST requests that are callbacks (e.g., event or
+ * notification messages) and must not be added to regular service requests,
+ * such as registration (HTTP PUT) or subscription requests.
+ */
+    message.http.custom.callback =
+        (char *)OGS_SBI_CALLBACK_NNRF_NFMANAGEMENT_NF_STATUS_NOTIFY;
 
     message.NotificationData = NotificationData;
 

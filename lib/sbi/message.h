@@ -411,6 +411,8 @@ extern "C" {
     "N5g-ddnmf_Discovery_MonitorUpdateResult"
 #define OGS_SBI_CALLBACK_N5G_DDNMF_DISCOVERY_MATCH_INFORMATION \
     "N5g-ddnmf_Discovery_MatchInformation"
+#define OGS_SBI_CALLBACK_NAMF_COMMUNICATION_ONN1N2TRANSFERFAILURE \
+    "Namf_Communication_onN1N2TransferFailure"
 
 typedef struct ogs_sbi_header_s {
     char *method;
