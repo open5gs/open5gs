@@ -85,9 +85,6 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
 
     message.Amf3GppAccessRegistration = &Amf3GppAccessRegistration;
 
-    message.http.custom.callback =
-        (char *)OGS_SBI_CALLBACK_NUDM_UECM_DEREGISTRATION_NOTIFICATION;
-
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
 
@@ -242,9 +239,6 @@ ogs_sbi_request_t *amf_nudm_sdm_build_subscription(amf_ue_t *amf_ue, void *data)
     SDMSubscription.unique_subscription = 1;
 
     message.SDMSubscription = &SDMSubscription;
-
-    message.http.custom.callback =
-        (char *)OGS_SBI_CALLBACK_NUDM_SDM_NOTIFICATION;
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
