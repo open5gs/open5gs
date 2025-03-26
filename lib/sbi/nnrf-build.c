@@ -1191,7 +1191,7 @@ static OpenAPI_scp_info_t *build_scp_info(ogs_sbi_nf_info_t *nf_info)
 
         if (nf_info->scp.domain[i].http.presence) {
             PortMap = OpenAPI_map_create(
-                        (char *)"http",
+                        ogs_strdup("http"),
                         ogs_alloc_double(nf_info->scp.domain[i].http.port));
             if (!PortMap) {
                 ogs_error("No PortMap");
@@ -1202,7 +1202,7 @@ static OpenAPI_scp_info_t *build_scp_info(ogs_sbi_nf_info_t *nf_info)
         }
         if (nf_info->scp.domain[i].https.presence) {
             PortMap = OpenAPI_map_create(
-                        (char *)"https",
+                        ogs_strdup("https"),
                         ogs_alloc_double(nf_info->scp.domain[i].https.port));
             if (!PortMap) {
                 ogs_error("No PortMap");
@@ -1218,7 +1218,7 @@ static OpenAPI_scp_info_t *build_scp_info(ogs_sbi_nf_info_t *nf_info)
             OpenAPI_list_free(PortList);
 
         DomainInfoMap = OpenAPI_map_create(
-                    nf_info->scp.domain[i].name, DomainInfo);
+                    ogs_strdup(nf_info->scp.domain[i].name), DomainInfo);
         if (!DomainInfoMap) {
             ogs_error("No PortMap");
             OpenAPI_scp_info_free(ScpInfo);
@@ -1259,7 +1259,7 @@ static OpenAPI_sepp_info_t *build_sepp_info(ogs_sbi_nf_info_t *nf_info)
 
     if (nf_info->sepp.http.presence) {
         PortMap = OpenAPI_map_create(
-                    (char *)"http", ogs_alloc_double(nf_info->sepp.http.port));
+                    ogs_strdup("http"), ogs_alloc_double(nf_info->sepp.http.port));
         if (!PortMap) {
             ogs_error("No PortMap");
             OpenAPI_sepp_info_free(SeppInfo);
@@ -1269,7 +1269,7 @@ static OpenAPI_sepp_info_t *build_sepp_info(ogs_sbi_nf_info_t *nf_info)
     }
     if (nf_info->sepp.https.presence) {
         PortMap = OpenAPI_map_create(
-                    (char *)"https", ogs_alloc_double(nf_info->sepp.https.port));
+                    ogs_strdup("https"), ogs_alloc_double(nf_info->sepp.https.port));
         if (!PortMap) {
             ogs_error("No PortMap");
             OpenAPI_sepp_info_free(SeppInfo);
