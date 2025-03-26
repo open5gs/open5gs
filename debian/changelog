@@ -1,3 +1,39 @@
+open5gs (2.7.4) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 27 Mar 2025 04:41:23 +0900
+
+open5gs (2.7.4~oracular) oracular; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 27 Mar 2025 04:39:55 +0900
+
+open5gs (2.7.4~noble) noble; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 27 Mar 2025 04:38:39 +0900
+
+open5gs (2.7.4~jammy) jammy; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 27 Mar 2025 04:37:05 +0900
+
+open5gs (2.7.4~focal) focal; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 27 Mar 2025 04:35:42 +0900
+
+open5gs (2.7.4~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 27 Mar 2025 04:33:19 +0900
+
 open5gs (2.7.3) unstable; urgency=medium
 
   * Bug Fixed
