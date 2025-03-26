@@ -26,6 +26,10 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info);
 static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info);
 static OpenAPI_scp_info_t *build_scp_info(ogs_sbi_nf_info_t *nf_info);
 static OpenAPI_sepp_info_t *build_sepp_info(ogs_sbi_nf_info_t *nf_info);
+static void free_smf_info(OpenAPI_smf_info_t *SmfInfo);
+static void free_amf_info(OpenAPI_amf_info_t *AmfInfo);
+static void free_scp_info(OpenAPI_scp_info_t *ScpInfo);
+static void free_sepp_info(OpenAPI_sepp_info_t *SeppInfo);
 
 ogs_sbi_request_t *ogs_nnrf_nfm_build_register(void)
 {
@@ -460,7 +464,7 @@ void ogs_nnrf_nfm_free_nf_profile(OpenAPI_nf_profile_t *NFProfile)
         if (SmfInfoMap) {
             SmfInfo = SmfInfoMap->value;
             if (SmfInfo)
-                OpenAPI_smf_info_free(SmfInfo);
+                free_smf_info(SmfInfo);
             if (SmfInfoMap->key)
                 ogs_free(SmfInfoMap->key);
             ogs_free(SmfInfoMap);
@@ -469,14 +473,14 @@ void ogs_nnrf_nfm_free_nf_profile(OpenAPI_nf_profile_t *NFProfile)
     OpenAPI_list_free(NFProfile->smf_info_list);
 
     if (NFProfile->smf_info)
-        OpenAPI_smf_info_free(NFProfile->smf_info);
+        free_smf_info(NFProfile->smf_info);
 
     OpenAPI_list_for_each(NFProfile->amf_info_list, node) {
         AmfInfoMap = node->data;
         if (AmfInfoMap) {
             AmfInfo = AmfInfoMap->value;
             if (AmfInfo)
-                OpenAPI_amf_info_free(AmfInfo);
+                free_amf_info(AmfInfo);
             if (AmfInfoMap->key)
                 ogs_free(AmfInfoMap->key);
             ogs_free(AmfInfoMap);
@@ -485,13 +489,13 @@ void ogs_nnrf_nfm_free_nf_profile(OpenAPI_nf_profile_t *NFProfile)
     OpenAPI_list_free(NFProfile->amf_info_list);
 
     if (NFProfile->amf_info)
-        OpenAPI_amf_info_free(NFProfile->amf_info);
+        free_amf_info(NFProfile->amf_info);
 
     if (NFProfile->scp_info)
-        OpenAPI_scp_info_free(NFProfile->scp_info);
+        free_scp_info(NFProfile->scp_info);
 
     if (NFProfile->sepp_info)
-        OpenAPI_sepp_info_free(NFProfile->sepp_info);
+        free_sepp_info(NFProfile->sepp_info);
 
     ogs_free(NFProfile);
 }
@@ -756,7 +760,7 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
     sNssaiSmfInfoList = OpenAPI_list_create();
     if (!sNssaiSmfInfoList) {
         ogs_error("No sNssaiSmfInfoList");
-        OpenAPI_smf_info_free(SmfInfo);
+        free_smf_info(SmfInfo);
         return NULL;
     }
 
@@ -764,7 +768,7 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
         DnnSmfInfoList = OpenAPI_list_create();
         if (!DnnSmfInfoList) {
             ogs_error("No DnnSmfInfoList");
-            OpenAPI_smf_info_free(SmfInfo);
+            free_smf_info(SmfInfo);
             OpenAPI_list_free(sNssaiSmfInfoList);
             return NULL;
         }
@@ -781,7 +785,7 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
             ogs_error("CHECK CONFIGURATION: No DNN");
 
             OpenAPI_list_free(DnnSmfInfoList);
-            OpenAPI_smf_info_free(SmfInfo);
+            free_smf_info(SmfInfo);
             OpenAPI_list_free(sNssaiSmfInfoList);
 
             return NULL;
@@ -809,7 +813,7 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
     TaiList = OpenAPI_list_create();
     if (!TaiList) {
         ogs_error("No TaiList");
-        OpenAPI_smf_info_free(SmfInfo);
+        free_smf_info(SmfInfo);
         return NULL;
     }
 
@@ -817,7 +821,7 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
         TaiItem = ogs_calloc(1, sizeof(*TaiItem));
         if (!TaiItem) {
             ogs_error("No TaiItem");
-            OpenAPI_smf_info_free(SmfInfo);
+            free_smf_info(SmfInfo);
             OpenAPI_list_free(TaiList);
             return NULL;
         }
@@ -827,7 +831,7 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
             ogs_error("No TaiItem->plmn_id");
             if (TaiItem)
                 ogs_free(TaiItem);
-            OpenAPI_smf_info_free(SmfInfo);
+            free_smf_info(SmfInfo);
             OpenAPI_list_free(TaiList);
             return NULL;
         }
@@ -852,7 +856,7 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
     TaiRangeList = OpenAPI_list_create();
     if (!TaiRangeList) {
         ogs_error("No TaiRangeList");
-        OpenAPI_smf_info_free(SmfInfo);
+        free_smf_info(SmfInfo);
         return NULL;
     }
 
@@ -860,7 +864,7 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
         TacRangeList = OpenAPI_list_create();
         if (!TacRangeList) {
             ogs_error("No TacRangeList");
-            OpenAPI_smf_info_free(SmfInfo);
+            free_smf_info(SmfInfo);
             OpenAPI_list_free(TaiRangeList);
             return NULL;
         }
@@ -886,7 +890,7 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
             ogs_error("CHECK CONFIGURATION: No Start/End in TacRange");
 
             OpenAPI_list_free(TacRangeList);
-            OpenAPI_smf_info_free(SmfInfo);
+            free_smf_info(SmfInfo);
             OpenAPI_list_free(TaiRangeList);
 
             return NULL;
@@ -938,13 +942,13 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
     AmfInfo->amf_set_id = ogs_msprintf("%03x", nf_info->amf.amf_set_id);
     if (!AmfInfo->amf_set_id) {
         ogs_error("No amf_set_id");
-        OpenAPI_amf_info_free(AmfInfo);
+        free_amf_info(AmfInfo);
         return NULL;
     }
     AmfInfo->amf_region_id = ogs_msprintf("%02x", nf_info->amf.amf_region_id);
     if (!AmfInfo->amf_region_id) {
         ogs_error("No amf_region_id");
-        OpenAPI_amf_info_free(AmfInfo);
+        free_amf_info(AmfInfo);
         return NULL;
     }
 
@@ -952,7 +956,7 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
     guamiAmfInfoList = OpenAPI_list_create();
     if (!guamiAmfInfoList) {
         ogs_error("No guamiAmfInfoList");
-        OpenAPI_amf_info_free(AmfInfo);
+        free_amf_info(AmfInfo);
         return NULL;
     }
 
@@ -998,7 +1002,7 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
     TaiList = OpenAPI_list_create();
     if (!TaiList) {
         ogs_error("No TaiList");
-        OpenAPI_amf_info_free(AmfInfo);
+        free_amf_info(AmfInfo);
         return NULL;
     }
 
@@ -1006,7 +1010,7 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
         TaiItem = ogs_calloc(1, sizeof(*TaiItem));
         if (!TaiItem) {
             ogs_error("No TaiItem");
-            OpenAPI_amf_info_free(AmfInfo);
+            free_amf_info(AmfInfo);
             OpenAPI_list_free(TaiList);
             return NULL;
         }
@@ -1041,7 +1045,7 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
     TaiRangeList = OpenAPI_list_create();
     if (!TaiRangeList) {
         ogs_error("No TaiRangeList");
-        OpenAPI_amf_info_free(AmfInfo);
+        free_amf_info(AmfInfo);
         return NULL;
     }
 
@@ -1049,7 +1053,7 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
         TacRangeList = OpenAPI_list_create();
         if (!TacRangeList) {
             ogs_error("No TacRangeList");
-            OpenAPI_amf_info_free(AmfInfo);
+            free_amf_info(AmfInfo);
             OpenAPI_list_free(TaiRangeList);
             return NULL;
         }
@@ -1075,7 +1079,7 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
             ogs_error("CHECK CONFIGURATION: No Start/End in TacRange");
 
             OpenAPI_list_free(TacRangeList);
-            OpenAPI_amf_info_free(AmfInfo);
+            free_amf_info(AmfInfo);
             OpenAPI_list_free(TaiRangeList);
 
             return NULL;
@@ -1084,7 +1088,7 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
         TaiRangeItem = ogs_calloc(1, sizeof(*TaiRangeItem));
         if (!TaiRangeItem) {
             ogs_error("No TaiRangeItem");
-            OpenAPI_amf_info_free(AmfInfo);
+            free_amf_info(AmfInfo);
             OpenAPI_list_free(TaiRangeList);
             return NULL;
         }
@@ -1094,7 +1098,7 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
         if (!TaiRangeItem->plmn_id) {
             ogs_error("No TaiRangeItem->plmn_id");
             ogs_free(TaiRangeItem);
-            OpenAPI_amf_info_free(AmfInfo);
+            free_amf_info(AmfInfo);
             OpenAPI_list_free(TaiRangeList);
             return NULL;
         }
@@ -1134,26 +1138,26 @@ static OpenAPI_scp_info_t *build_scp_info(ogs_sbi_nf_info_t *nf_info)
     PortList = OpenAPI_list_create();
     if (!PortList) {
         ogs_error("No PortList");
-        OpenAPI_scp_info_free(ScpInfo);
+        free_scp_info(ScpInfo);
         return NULL;
     }
 
     if (nf_info->scp.http.presence) {
         PortMap = OpenAPI_map_create(
-                ogs_strdup("http"), ogs_alloc_double(nf_info->scp.http.port));
+                    (char *)"http", ogs_alloc_double(nf_info->scp.http.port));
         if (!PortMap) {
             ogs_error("No PortMap");
-            OpenAPI_scp_info_free(ScpInfo);
+            free_scp_info(ScpInfo);
             return NULL;
         }
         OpenAPI_list_add(PortList, PortMap);
     }
     if (nf_info->scp.https.presence) {
         PortMap = OpenAPI_map_create(
-                ogs_strdup("https"), ogs_alloc_double(nf_info->scp.https.port));
+                    (char *)"https", ogs_alloc_double(nf_info->scp.https.port));
         if (!PortMap) {
             ogs_error("No PortMap");
-            OpenAPI_scp_info_free(ScpInfo);
+            free_scp_info(ScpInfo);
             return NULL;
         }
         OpenAPI_list_add(PortList, PortMap);
@@ -1167,7 +1171,7 @@ static OpenAPI_scp_info_t *build_scp_info(ogs_sbi_nf_info_t *nf_info)
     DomainInfoList = OpenAPI_list_create();
     if (!DomainInfoList) {
         ogs_error("No DomainInfoList");
-        OpenAPI_scp_info_free(ScpInfo);
+        free_scp_info(ScpInfo);
         return NULL;
     }
     for (i = 0; i < nf_info->scp.num_of_domain; i++) {
@@ -1176,7 +1180,7 @@ static OpenAPI_scp_info_t *build_scp_info(ogs_sbi_nf_info_t *nf_info)
         DomainInfo = ogs_calloc(1, sizeof(*DomainInfo));
         if (!DomainInfo) {
             ogs_error("No DomainInfo");
-            OpenAPI_scp_info_free(ScpInfo);
+            free_scp_info(ScpInfo);
             return NULL;
         }
 
@@ -1185,7 +1189,7 @@ static OpenAPI_scp_info_t *build_scp_info(ogs_sbi_nf_info_t *nf_info)
         PortList = OpenAPI_list_create();
         if (!PortList) {
             ogs_error("No PortList");
-            OpenAPI_scp_info_free(ScpInfo);
+            free_scp_info(ScpInfo);
             return NULL;
         }
 
@@ -1195,7 +1199,7 @@ static OpenAPI_scp_info_t *build_scp_info(ogs_sbi_nf_info_t *nf_info)
                         ogs_alloc_double(nf_info->scp.domain[i].http.port));
             if (!PortMap) {
                 ogs_error("No PortMap");
-                OpenAPI_scp_info_free(ScpInfo);
+                free_scp_info(ScpInfo);
                 return NULL;
             }
             OpenAPI_list_add(PortList, PortMap);
@@ -1206,7 +1210,7 @@ static OpenAPI_scp_info_t *build_scp_info(ogs_sbi_nf_info_t *nf_info)
                         ogs_alloc_double(nf_info->scp.domain[i].https.port));
             if (!PortMap) {
                 ogs_error("No PortMap");
-                OpenAPI_scp_info_free(ScpInfo);
+                free_scp_info(ScpInfo);
                 return NULL;
             }
             OpenAPI_list_add(PortList, PortMap);
@@ -1221,7 +1225,7 @@ static OpenAPI_scp_info_t *build_scp_info(ogs_sbi_nf_info_t *nf_info)
                     nf_info->scp.domain[i].name, DomainInfo);
         if (!DomainInfoMap) {
             ogs_error("No PortMap");
-            OpenAPI_scp_info_free(ScpInfo);
+            free_scp_info(ScpInfo);
             return NULL;
         }
 
@@ -1253,7 +1257,7 @@ static OpenAPI_sepp_info_t *build_sepp_info(ogs_sbi_nf_info_t *nf_info)
     PortList = OpenAPI_list_create();
     if (!PortList) {
         ogs_error("No PortList");
-        OpenAPI_sepp_info_free(SeppInfo);
+        free_sepp_info(SeppInfo);
         return NULL;
     }
 
@@ -1262,7 +1266,7 @@ static OpenAPI_sepp_info_t *build_sepp_info(ogs_sbi_nf_info_t *nf_info)
                     (char *)"http", ogs_alloc_double(nf_info->sepp.http.port));
         if (!PortMap) {
             ogs_error("No PortMap");
-            OpenAPI_sepp_info_free(SeppInfo);
+            free_sepp_info(SeppInfo);
             return NULL;
         }
         OpenAPI_list_add(PortList, PortMap);
@@ -1272,7 +1276,7 @@ static OpenAPI_sepp_info_t *build_sepp_info(ogs_sbi_nf_info_t *nf_info)
                     (char *)"https", ogs_alloc_double(nf_info->sepp.https.port));
         if (!PortMap) {
             ogs_error("No PortMap");
-            OpenAPI_sepp_info_free(SeppInfo);
+            free_sepp_info(SeppInfo);
             return NULL;
         }
         OpenAPI_list_add(PortList, PortMap);
@@ -1284,6 +1288,230 @@ static OpenAPI_sepp_info_t *build_sepp_info(ogs_sbi_nf_info_t *nf_info)
         OpenAPI_list_free(PortList);
 
     return SeppInfo;
+}
+
+static void free_smf_info(OpenAPI_smf_info_t *SmfInfo)
+{
+    OpenAPI_list_t *sNssaiSmfInfoList = NULL;
+    OpenAPI_snssai_smf_info_item_t *sNssaiSmfInfoItem = NULL;
+    OpenAPI_ext_snssai_t *sNssai = NULL;
+    OpenAPI_list_t *DnnSmfInfoList = NULL;
+    OpenAPI_dnn_smf_info_item_t *DnnSmfInfoItem = NULL;
+
+    OpenAPI_list_t *TaiList = NULL;
+    OpenAPI_tai_t *TaiItem = NULL;
+    OpenAPI_list_t *TaiRangeList = NULL;
+    OpenAPI_tai_range_t *TaiRangeItem = NULL;
+    OpenAPI_list_t *TacRangeList = NULL;
+    OpenAPI_tac_range_t *TacRangeItem = NULL;
+
+    OpenAPI_lnode_t *node = NULL, *node2 = NULL;
+
+    ogs_assert(SmfInfo);
+
+    sNssaiSmfInfoList = SmfInfo->s_nssai_smf_info_list;
+    OpenAPI_list_for_each(sNssaiSmfInfoList, node) {
+        sNssaiSmfInfoItem = node->data;
+        ogs_assert(sNssaiSmfInfoItem);
+
+        DnnSmfInfoList = sNssaiSmfInfoItem->dnn_smf_info_list;
+        OpenAPI_list_for_each(DnnSmfInfoList, node2) {
+            DnnSmfInfoItem = node2->data;
+            ogs_assert(DnnSmfInfoItem);
+            ogs_free(DnnSmfInfoItem);
+        }
+        OpenAPI_list_free(DnnSmfInfoList);
+
+        sNssai = sNssaiSmfInfoItem->s_nssai;
+        if (sNssai) {
+            if (sNssai->sd)
+                ogs_free(sNssai->sd);
+            ogs_free(sNssai);
+        }
+
+        ogs_free(sNssaiSmfInfoItem);
+    }
+    OpenAPI_list_free(sNssaiSmfInfoList);
+
+    TaiList = SmfInfo->tai_list;
+    OpenAPI_list_for_each(TaiList, node) {
+        TaiItem = node->data;
+        ogs_assert(TaiItem);
+        if (TaiItem->plmn_id)
+            ogs_sbi_free_plmn_id(TaiItem->plmn_id);
+        if (TaiItem->tac)
+            ogs_free(TaiItem->tac);
+        ogs_free(TaiItem);
+    }
+    OpenAPI_list_free(TaiList);
+
+    TaiRangeList = SmfInfo->tai_range_list;
+    OpenAPI_list_for_each(TaiRangeList, node) {
+        TaiRangeItem = node->data;
+        ogs_assert(TaiRangeItem);
+
+        if (TaiRangeItem->plmn_id)
+            ogs_sbi_free_plmn_id(TaiRangeItem->plmn_id);
+
+        TacRangeList = TaiRangeItem->tac_range_list;
+        OpenAPI_list_for_each(TacRangeList, node2) {
+            TacRangeItem = node2->data;
+            ogs_assert(TacRangeItem);
+            if (TacRangeItem->start)
+                ogs_free(TacRangeItem->start);
+            if (TacRangeItem->end)
+                ogs_free(TacRangeItem->end);
+
+            ogs_free(TacRangeItem);
+        }
+        OpenAPI_list_free(TacRangeList);
+
+        ogs_free(TaiRangeItem);
+    }
+    OpenAPI_list_free(TaiRangeList);
+
+    ogs_free(SmfInfo);
+}
+
+static void free_amf_info(OpenAPI_amf_info_t *AmfInfo)
+{
+    OpenAPI_list_t *guamiAmfInfoList = NULL;
+    OpenAPI_guami_t *guamiAmfInfoItem = NULL;
+
+    OpenAPI_list_t *TaiList = NULL;
+    OpenAPI_tai_t *TaiItem = NULL;
+    OpenAPI_list_t *TaiRangeList = NULL;
+    OpenAPI_tai_range_t *TaiRangeItem = NULL;
+    OpenAPI_list_t *TacRangeList = NULL;
+    OpenAPI_tac_range_t *TacRangeItem = NULL;
+
+    OpenAPI_lnode_t *node = NULL, *node2 = NULL;
+
+    ogs_assert(AmfInfo);
+
+    if (AmfInfo->amf_set_id)
+        ogs_free(AmfInfo->amf_set_id);
+    if (AmfInfo->amf_region_id)
+        ogs_free(AmfInfo->amf_region_id);
+
+    guamiAmfInfoList = AmfInfo->guami_list;
+    OpenAPI_list_for_each(guamiAmfInfoList, node) {
+        guamiAmfInfoItem = node->data;
+        if (guamiAmfInfoItem) {
+            if (guamiAmfInfoItem->plmn_id) {
+                if (guamiAmfInfoItem->plmn_id->mcc)
+                    ogs_free(guamiAmfInfoItem->plmn_id->mcc);
+                if (guamiAmfInfoItem->plmn_id->mnc)
+                    ogs_free(guamiAmfInfoItem->plmn_id->mnc);
+                ogs_free(guamiAmfInfoItem->plmn_id);
+            }
+            if (guamiAmfInfoItem->amf_id)
+                ogs_free(guamiAmfInfoItem->amf_id);
+        }
+        ogs_free(guamiAmfInfoItem);
+    }
+
+    OpenAPI_list_free(guamiAmfInfoList);
+
+    TaiList = AmfInfo->tai_list;
+    OpenAPI_list_for_each(TaiList, node) {
+        TaiItem = node->data;
+        ogs_assert(TaiItem);
+        if (TaiItem->plmn_id)
+            ogs_sbi_free_plmn_id(TaiItem->plmn_id);
+        if (TaiItem->tac)
+            ogs_free(TaiItem->tac);
+        ogs_free(TaiItem);
+    }
+    OpenAPI_list_free(TaiList);
+
+    TaiRangeList = AmfInfo->tai_range_list;
+    OpenAPI_list_for_each(TaiRangeList, node) {
+        TaiRangeItem = node->data;
+        ogs_assert(TaiRangeItem);
+
+        if (TaiRangeItem->plmn_id)
+            ogs_sbi_free_plmn_id(TaiRangeItem->plmn_id);
+
+        TacRangeList = TaiRangeItem->tac_range_list;
+        OpenAPI_list_for_each(TacRangeList, node2) {
+            TacRangeItem = node2->data;
+            ogs_assert(TacRangeItem);
+            if (TacRangeItem->start)
+                ogs_free(TacRangeItem->start);
+            if (TacRangeItem->end)
+                ogs_free(TacRangeItem->end);
+
+            ogs_free(TacRangeItem);
+        }
+        OpenAPI_list_free(TacRangeList);
+
+        ogs_free(TaiRangeItem);
+    }
+    OpenAPI_list_free(TaiRangeList);
+
+    ogs_free(AmfInfo);
+}
+
+static void free_scp_info(OpenAPI_scp_info_t *ScpInfo)
+{
+    OpenAPI_map_t *PortMap = NULL;
+    OpenAPI_lnode_t *node = NULL, *node2 = NULL;
+
+    OpenAPI_map_t *DomainInfoMap = NULL;
+    OpenAPI_scp_domain_info_t *DomainInfo = NULL;
+
+    ogs_assert(ScpInfo);
+
+    OpenAPI_list_for_each(ScpInfo->scp_ports, node) {
+        PortMap = node->data;
+        if (PortMap) {
+            ogs_free(PortMap->value);
+            OpenAPI_map_free(PortMap);
+        }
+    }
+    OpenAPI_list_free(ScpInfo->scp_ports);
+
+    OpenAPI_list_for_each(ScpInfo->scp_domain_info_list, node) {
+        DomainInfoMap = node->data;
+        if (DomainInfoMap) {
+            DomainInfo = DomainInfoMap->value;
+            if (DomainInfo) {
+                OpenAPI_list_for_each(DomainInfo->scp_ports, node2) {
+                    PortMap = node2->data;
+                    if (PortMap) {
+                        ogs_free(PortMap->value);
+                        OpenAPI_map_free(PortMap);
+                    }
+                }
+                OpenAPI_list_free(DomainInfo->scp_ports);
+                ogs_free(DomainInfo);
+            }
+            OpenAPI_map_free(DomainInfoMap);
+        }
+    }
+    OpenAPI_list_free(ScpInfo->scp_domain_info_list);
+
+    ogs_free(ScpInfo);
+}
+
+static void free_sepp_info(OpenAPI_sepp_info_t *SeppInfo)
+{
+    OpenAPI_map_t *PortMap = NULL;
+    OpenAPI_lnode_t *node = NULL;
+
+    ogs_assert(SeppInfo);
+
+    OpenAPI_list_for_each(SeppInfo->sepp_ports, node) {
+        PortMap = node->data;
+        if (PortMap) {
+            ogs_free(PortMap->value);
+            OpenAPI_map_free(PortMap);
+        }
+    }
+    OpenAPI_list_free(SeppInfo->sepp_ports);
+
+    ogs_free(SeppInfo);
 }
 
 ogs_sbi_request_t *ogs_nnrf_nfm_build_update(void)
