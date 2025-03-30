@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -232,22 +232,7 @@ static int epoll_process(ogs_pollset_t *pollset, ogs_time_t timeout)
 
         received = context->event_list[i].events;
         if (received & EPOLLERR) {
-        /*
-         * The libevent library has OGS_POLLOUT turned on in EPOLLERR.
-         *
-         * However, SIGPIPE can occur if write() is called
-         * when the peer connection is closed.
-         *
-         * Therefore, Open5GS turns off OGS_POLLOUT
-         * so that write() cannot be called in case of EPOLLERR.
-         *
-         * See also #2411 and #2312
-         */
-#if 0
             when = OGS_POLLIN|OGS_POLLOUT;
-#else
-            when = OGS_POLLIN;
-#endif
         } else if ((received & EPOLLHUP) && !(received & EPOLLRDHUP)) {
             when = OGS_POLLIN|OGS_POLLOUT;
         } else {
