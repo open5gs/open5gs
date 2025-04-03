@@ -34,6 +34,7 @@
 #include "mme-fd-path.h"
 #include "mme-s6a-handler.h"
 #include "mme-path.h"
+#include "mme-redis.h"
 
 void mme_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
@@ -351,6 +352,24 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
 
         ogs_pkbuf_free(pkbuf);
+
+        // Added redis logic for UE context management AI
+        switch (nas_message.emm.h.message_type) {
+        case OGS_NAS_EPS_ATTACH_COMPLETE:
+            /* After successful attach */
+            mme_redis_update_ue(mme_ue);
+            break;
+        case OGS_NAS_EPS_DETACH_REQUEST:
+            /* Before processing detach */
+            mme_redis_remove_ue(mme_ue);
+            break;
+        case OGS_NAS_EPS_TRACKING_AREA_UPDATE_COMPLETE:
+            /* After TAU complete */
+            mme_redis_update_ue(mme_ue);
+            break;
+        }
+        // End of redis logic for UE context management AI
+
         break;
     case MME_EVENT_EMM_TIMER:
         mme_ue = mme_ue_find_by_id(e->mme_ue_id);

@@ -30,6 +30,7 @@
 #include "sgsap-path.h"
 #include "mme-gtp-path.h"
 #include "metrics.h"
+#include "mme-redis.h"
 
 static ogs_thread_t *thread;
 static void mme_main(void *data);
@@ -79,6 +80,11 @@ int mme_initialize(void)
     rv = s1ap_open();
     if (rv != OGS_OK) return OGS_ERROR;
 
+    rv = mme_redis_init();
+    if (rv != OGS_OK) {
+        ogs_warn("Redis initialization failed but continuing...");
+    }
+
     thread = ogs_thread_create(mme_main, NULL);
     if (!thread) return OGS_ERROR;
 
@@ -110,6 +116,8 @@ void mme_terminate(void)
     ogs_gtp_xact_final();
 
     mme_metrics_final();
+
+    mme_redis_final();
 }
 
 static void mme_main(void *data)
