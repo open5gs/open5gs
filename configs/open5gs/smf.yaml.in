@@ -1,7 +1,7 @@
 logger:
   file:
     path: @localstatedir@/log/open5gs/smf.log
-#  level: info   # fatal|error|warn|info(default)|debug|trace
+  level: debug   # fatal|error|warn|info(default)|debug|trace
 
 global:
   max:
@@ -50,7 +50,7 @@ smf:
 #    - ::1
 #  ctf:
 #    enabled: auto   # auto(default)|yes|no
-  freeDiameter: @sysconfdir@/freeDiameter/smf.conf
+  freeDiameter: /home/ilinsky/open5gs_build/open5gs/build/configs/freeDiameter/smf.conf
 
 ################################################################################
 # SMF Info
