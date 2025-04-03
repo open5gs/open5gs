@@ -36,6 +36,25 @@ static ogs_thread_t *thread;
 static void mme_main(void *data);
 
 static int initialized = 0;
+static ogs_timer_t *t_redis_init = NULL;
+static void redis_init_retry(void *data);
+
+
+static void redis_init_retry(void *data)
+{
+    int rv;
+
+    rv = mme_redis_init();
+    if (rv != OGS_OK) {
+        ogs_warn("Redis initialization failed, retrying in 10 seconds...");
+        ogs_timer_start(t_redis_init, ogs_time_from_sec(10));
+    } else {
+        ogs_info("Redis initialization successful");
+        ogs_timer_delete(t_redis_init);
+        t_redis_init = NULL;
+    }
+}
+
 
 int mme_initialize(void)
 {
@@ -82,7 +101,18 @@ int mme_initialize(void)
 
     rv = mme_redis_init();
     if (rv != OGS_OK) {
-        ogs_warn("Redis initialization failed but continuing...");
+        ogs_warn("Redis initialization failed, starting retry mechanism...");
+
+        if (!t_redis_init) {
+            t_redis_init = ogs_timer_add(ogs_app()->timer_mgr, redis_init_retry, NULL);
+            ogs_assert(t_redis_init);
+        }
+
+        /* Start timer for first retry */
+        ogs_timer_start(t_redis_init, ogs_time_from_sec(10));
+
+
+
     }
 
     thread = ogs_thread_create(mme_main, NULL);

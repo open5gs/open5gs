@@ -19,6 +19,8 @@ libmme_sources = files('''
     mme-event.h
     mme-timer.h
     mme-context.h
+    mme-redis.h
+    mme-redis.c
     s1ap-build.h
     s1ap-handler.h
     s1ap-path.h
@@ -81,6 +83,10 @@ libmme_sources = files('''
     metrics.c
 '''.split())
 
+redis_dep = dependency('hiredis')
+jsonc_dep = dependency('json-c')
+
+
 libmme = static_library('mme',
     sources : libmme_sources,
     dependencies : [libmetrics_dep,
@@ -98,7 +104,9 @@ libmme_dep = declare_dependency(
                     libs1ap_dep,
                     libnas_eps_dep,
                     libdiameter_s6a_dep,
-                    libgtp_dep])
+                    libgtp_dep, redis_dep, jsonc_dep
+
+    ])
 
 mme_sources = files('''
     app-init.c

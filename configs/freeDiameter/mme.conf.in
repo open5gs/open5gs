@@ -26,7 +26,7 @@ Realm = "epc.mnc001.mcc001.3gppnetwork.org";
 
 # The port this peer is listening on for incoming connections (TCP and SCTP).
 # Default: 3868. Use 0 to disable.
-#Port = 3868;
+Port = 3899;
 
 # The port this peer is listening on for incoming TLS-protected connections (TCP and SCTP).
 # See TLS_old_method for more information about TLS flavours.
@@ -54,7 +54,7 @@ Realm = "epc.mnc001.mcc001.3gppnetwork.org";
 # Prefer TCP instead of SCTP for establishing new connections.
 # This setting may be overwritten per peer in peer configuration blocs.
 # Default : SCTP is attempted first.
-#Prefer_TCP;
+Prefer_TCP;
 
 # Default number of streams per SCTP associations.
 # This setting may be overwritten per peer basis.
@@ -74,10 +74,7 @@ Realm = "epc.mnc001.mcc001.3gppnetwork.org";
 
 # Specify local addresses the server must bind to
 # Default : listen on all addresses available.
-#ListenOn = "202.249.37.5";
-#ListenOn = "2001:200:903:2::202:1";
-#ListenOn = "fe80::21c:5ff:fe98:7d62%eth0";
-ListenOn = "127.0.0.2";
+ListenOn = "127.0.0.1"; # changed MME loopback
 
 
 ##############################################################
