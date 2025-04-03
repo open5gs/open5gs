@@ -15,13 +15,11 @@
 # The Diameter Identity of this daemon.
 # This must be a valid FQDN that resolves to the local host.
 # Default: hostname's FQDN
-#Identity = "aaa.koganei.freediameter.net";
-Identity = "smf.localdomain";
+Identity = "smf.epc.mnc001.mcc001.3gppnetwork.org";
 
 # The Diameter Realm of this daemon.
 # Default: the domain part of Identity (after the first dot).
-#Realm = "koganei.freediameter.net";
-Realm = "localdomain";
+Realm = "epc.mnc001.mcc001.3gppnetwork.org";
 
 ##############################################################
 ##  Transport protocol configuration
@@ -106,7 +104,10 @@ ListenOn = "127.0.0.4";
 # Default : NO DEFAULT
 #TLS_Cred = "<x509 certif file.PEM>" , "<x509 private key file.PEM>";
 #TLS_Cred = "/etc/ssl/certs/freeDiameter.pem", "/etc/ssl/private/freeDiameter.key";
-TLS_Cred = "@sysconfdir@/open5gs/tls/smf.crt", "@sysconfdir@/open5gs/tls/smf.key";
+#TLS_Cred = "@sysconfdir@/open5gs/tls/smf.crt", "@sysconfdir@/open5gs/tls/smf.key";
+
+TLS_Cred = "/etc/open5gs/tls/smf.cert.pem", "/etc/open5gs/tls/smf.key.pem";
+
 
 # Certificate authority / trust anchors
 # The file containing the list of trusted Certificate Authorities (PEM list)
@@ -114,7 +115,9 @@ TLS_Cred = "@sysconfdir@/open5gs/tls/smf.crt", "@sysconfdir@/open5gs/tls/smf.key
 # The directive can appear several times to specify several files.
 # Default : GNUTLS default behavior
 #TLS_CA = "<file.PEM>";
-TLS_CA = "@sysconfdir@/open5gs/tls/ca.crt";
+#TLS_CA = "@sysconfdir@/open5gs/tls/ca.crt";
+TLS_CA = "/etc/open5gs/tls/cacert.pem";
+
 
 # Certificate Revocation List file
 # The information about revoked certificates.
@@ -261,7 +264,9 @@ LoadExtension = "@libdir@/freeDiameter/dict_dcca_3gpp.fdx";
 # Examples:
 #ConnectPeer = "aaa.wide.ad.jp";
 #ConnectPeer = "old.diameter.serv" { TcTimer = 60; TLS_old_method; No_SCTP; Port=3868; } ;
-ConnectPeer = "pcrf.localdomain" { ConnectTo = "127.0.0.9"; No_TLS; };
+# ConnectPeer = "pcrf.localdomain" { ConnectTo = "127.0.0.9"; No_TLS; };
+
+ConnectPeer = "pcrf.epc.mnc001.mcc001.3gppnetwork.org" { ConnectTo = "127.0.0.9"; No_TLS; };
 
 
 ##############################################################
