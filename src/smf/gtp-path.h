@@ -49,20 +49,22 @@ int smf_gtp2_send_delete_bearer_request(
         smf_bearer_t *bearer, uint8_t pti, uint8_t cause_value);
 
 /* S8 interface specific functions */
+/* smf/gtp-path.h */
 int smf_s8_gtp_send_create_session_response(
-        smf_sess_t *sess, ogs_gtp_xact_t *xact);
-int smf_s8_gtp_send_delete_session_response(
-        smf_sess_t *sess, ogs_gtp_xact_t *xact);
-int smf_s8_gtp_send_modify_bearer_response(
-        smf_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp2_modify_bearer_request_t *req);
-int smf_s8_gtp_send_create_bearer_request(
-        smf_bearer_t *bearer, uint8_t pti);
-int smf_s8_gtp_send_update_bearer_request(
-        smf_bearer_t *bearer, uint8_t pti);
-int smf_s8_gtp_send_delete_bearer_request(
-        smf_bearer_t *bearer, uint8_t pti);
+    smf_sess_t *sess, ogs_gtp_xact_t *xact, uint8_t cause);
 
+int smf_s8_gtp_send_delete_session_response(
+    smf_sess_t *sess, ogs_gtp_xact_t *xact, uint8_t cause);
+int smf_s8_gtp_send_modify_bearer_response(
+    smf_sess_t *sess, ogs_gtp_xact_t *xact,
+    ogs_gtp2_modify_bearer_request_t *req);
+
+void smf_s8_gtp_send_create_bearer_request(
+    smf_bearer_t *bearer, uint8_t pti, ogs_gtp2_tft_t *tft);
+void smf_s8_gtp_send_update_bearer_request(
+    smf_bearer_t *bearer, uint8_t pti, ogs_gtp2_tft_t *tft);
+void smf_s8_gtp_send_delete_bearer_request(
+    smf_bearer_t *bearer, uint8_t pti);
 /* Add to smf/gtp-path.h before the #endif */
 
 #ifdef __cplusplus

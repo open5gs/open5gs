@@ -71,6 +71,7 @@ typedef struct smf_context_s {
 
     /* S8 Interface */
     ogs_list_t      sgw_s8_list;      /* SGW GTPC Node List */
+    ogs_list_t      sgw_list;         /* SGW GTP Node List */
 
 #define MAX_NUM_OF_DNS              2
     const char      *dns[MAX_NUM_OF_DNS];
@@ -220,6 +221,9 @@ typedef struct smf_bearer_s {
     /* S8 specific fields */
 
     ogs_qos_t       qos;            /* QoS Information */
+
+    ogs_gtp_node_t  *gnode;         /* S8 GTP Node */
+    smf_sess_t      *sess;          /* S8 Parent Session */
 
     OGS_POOL(pf_identifier_pool, uint8_t);
 
@@ -588,6 +592,9 @@ smf_ue_t *smf_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 smf_sess_t *smf_sess_add_by_gtp1_message(ogs_gtp1_message_t *message);
 smf_sess_t *smf_sess_add_by_gtp2_message(ogs_gtp2_message_t *message);
 smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type);
+
+smf_sess_t *smf_sess_add_by_message(ogs_gtp2_message_t *message);
+
 
 smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message);
 smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi);

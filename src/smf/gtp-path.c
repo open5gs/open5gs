@@ -776,71 +776,74 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
 /* Add to smf/gtp-path.c */
 
 int smf_s8_gtp_send_create_session_response(
-        smf_sess_t *sess, ogs_gtp_xact_t *xact)
+    smf_sess_t *sess, ogs_gtp_xact_t *xact, uint8_t cause)
 {
     int rv;
-    ogs_gtp2_header_t h;
+    ogs_gtp2_message_t message;
     ogs_pkbuf_t *pkbuf = NULL;
+    ogs_gtp2_create_session_response_t *rsp = NULL;
 
-    ogs_assert(sess);
     ogs_assert(xact);
+    ogs_assert(sess);
 
-    /* Initialize GTP header */
-    memset(&h, 0, sizeof(ogs_gtp2_header_t));
-    h.type = OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE;
-    h.teid = sess->sgw_s8_teid;
+    rsp = &message.create_session_response;
+    memset(&message, 0, sizeof(ogs_gtp2_message_t));
 
-    /* Build response message */
-    pkbuf = smf_s8_build_create_session_response(h.type, sess, xact);
-    if (!pkbuf) {
-        ogs_error("smf_s8_build_create_session_response() failed");
-        return OGS_ERROR;
-    }
+    /* Set Cause */
+    rsp->cause.presence = 1;
+    rsp->cause.data = &cause;
+    rsp->cause.len = sizeof(cause);
 
-    rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_gtp_xact_update_tx() failed");
-        return OGS_ERROR;
-    }
+    message.h.type = OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE;
+    message.h.teid = sess->sgw_s8_teid;
+
+    rv = ogs_gtp2_build_msg(&message);
+    ogs_assert(rv == OGS_OK);
+
+    pkbuf = ogs_gtp2_build_msg(&message);
+    ogs_assert(pkbuf);
+
+    rv = ogs_gtp_xact_update_tx(xact, &message.h, pkbuf);
+    ogs_assert(rv == OGS_OK);
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_expect(rv == OGS_OK);
+    ogs_assert(rv == OGS_OK);
 
-    return rv;
+    return OGS_OK;
 }
 
 int smf_s8_gtp_send_delete_session_response(
-        smf_sess_t *sess, ogs_gtp_xact_t *xact)
+    smf_sess_t *sess, ogs_gtp_xact_t *xact, uint8_t cause)
 {
     int rv;
-    ogs_gtp2_header_t h;
+    ogs_gtp2_message_t message;
     ogs_pkbuf_t *pkbuf = NULL;
+    ogs_gtp2_delete_session_response_t *rsp = NULL;
 
-    ogs_assert(sess);
     ogs_assert(xact);
+    ogs_assert(sess);
 
-    /* Initialize GTP header */
-    memset(&h, 0, sizeof(ogs_gtp2_header_t));
-    h.type = OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE;
-    h.teid = sess->sgw_s8_teid;
+    rsp = &message.delete_session_response;
+    memset(&message, 0, sizeof(ogs_gtp2_message_t));
 
-    /* Build response message */
-    pkbuf = smf_s8_build_delete_session_response(h.type, sess, xact);
-    if (!pkbuf) {
-        ogs_error("smf_s8_build_delete_session_response() failed");
-        return OGS_ERROR;
-    }
+    /* Set Cause */
+    rsp->cause.presence = 1;
+    rsp->cause.data = &cause;
+    rsp->cause.len = sizeof(cause);
 
-    rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_gtp_xact_update_tx() failed");
-        return OGS_ERROR;
-    }
+    message.h.type = OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE;
+    message.h.teid = sess->sgw_s8_teid;
+
+    pkbuf = ogs_gtp2_build_msg(&message);
+    ogs_assert(pkbuf);
+
+    rv = ogs_gtp_xact_update_tx(xact, &message.h, pkbuf);
+    ogs_assert(rv == OGS_OK);
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_expect(rv == OGS_OK);
+    ogs_assert(rv == OGS_OK);
 
-    return rv;
+    return OGS_OK;
 }
 
 int smf_s8_gtp_send_modify_bearer_response(
@@ -878,8 +881,8 @@ int smf_s8_gtp_send_modify_bearer_response(
     return rv;
 }
 
-int smf_s8_gtp_send_create_bearer_request(
-        smf_bearer_t *bearer, uint8_t pti)
+void smf_s8_gtp_send_create_bearer_request(
+    smf_bearer_t *bearer, uint8_t pti, ogs_gtp2_tft_t *tft)
 {
     int rv;
     ogs_gtp2_header_t h;
@@ -889,34 +892,29 @@ int smf_s8_gtp_send_create_bearer_request(
     ogs_assert(bearer);
     ogs_assert(bearer->sess);
 
-    /* Initialize GTP header */
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_CREATE_BEARER_REQUEST_TYPE;
     h.teid = bearer->sess->sgw_s8_teid;
 
-    /* Build request message */
-    pkbuf = smf_s8_build_create_bearer_request(h.type, bearer, pti);
+    pkbuf = smf_s8_build_create_bearer_request(bearer, pti, tft);
     if (!pkbuf) {
         ogs_error("smf_s8_build_create_bearer_request() failed");
-        return OGS_ERROR;
+        return;
     }
 
-    /* Create new transaction */
     xact = ogs_gtp_xact_local_create(
             bearer->sess->gnode, &h, pkbuf, bearer_timeout, bearer);
     if (!xact) {
         ogs_error("ogs_gtp_xact_local_create() failed");
-        return OGS_ERROR;
+        return;
     }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
-
-    return rv;
 }
 
-int smf_s8_gtp_send_update_bearer_request(
-        smf_bearer_t *bearer, uint8_t pti)
+void smf_s8_gtp_send_update_bearer_request(
+    smf_bearer_t *bearer, uint8_t pti, ogs_gtp2_tft_t *tft)
 {
     int rv;
     ogs_gtp2_header_t h;
@@ -926,34 +924,29 @@ int smf_s8_gtp_send_update_bearer_request(
     ogs_assert(bearer);
     ogs_assert(bearer->sess);
 
-    /* Initialize GTP header */
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE;
     h.teid = bearer->sess->sgw_s8_teid;
 
-    /* Build request message */
-    pkbuf = smf_s8_build_update_bearer_request(h.type, bearer, pti);
+    pkbuf = smf_s8_build_update_bearer_request(bearer, pti, tft);
     if (!pkbuf) {
         ogs_error("smf_s8_build_update_bearer_request() failed");
-        return OGS_ERROR;
+        return;
     }
 
-    /* Create new transaction */
     xact = ogs_gtp_xact_local_create(
             bearer->sess->gnode, &h, pkbuf, bearer_timeout, bearer);
     if (!xact) {
         ogs_error("ogs_gtp_xact_local_create() failed");
-        return OGS_ERROR;
+        return;
     }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
-
-    return rv;
 }
 
-int smf_s8_gtp_send_delete_bearer_request(
-        smf_bearer_t *bearer, uint8_t pti)
+void smf_s8_gtp_send_delete_bearer_request(
+    smf_bearer_t *bearer, uint8_t pti)
 {
     int rv;
     ogs_gtp2_header_t h;
@@ -963,28 +956,23 @@ int smf_s8_gtp_send_delete_bearer_request(
     ogs_assert(bearer);
     ogs_assert(bearer->sess);
 
-    /* Initialize GTP header */
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
     h.type = OGS_GTP2_DELETE_BEARER_REQUEST_TYPE;
     h.teid = bearer->sess->sgw_s8_teid;
 
-    /* Build request message */
-    pkbuf = smf_s8_build_delete_bearer_request(h.type, bearer, pti);
+    pkbuf = smf_s8_build_delete_bearer_request(bearer, pti);
     if (!pkbuf) {
         ogs_error("smf_s8_build_delete_bearer_request() failed");
-        return OGS_ERROR;
+        return;
     }
 
-    /* Create new transaction */
     xact = ogs_gtp_xact_local_create(
             bearer->sess->gnode, &h, pkbuf, bearer_timeout, bearer);
     if (!xact) {
         ogs_error("ogs_gtp_xact_local_create() failed");
-        return OGS_ERROR;
+        return;
     }
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
-
-    return rv;
 }

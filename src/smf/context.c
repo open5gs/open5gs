@@ -90,6 +90,7 @@ void smf_context_init(void)
             ogs_app()->pool.bearer * OGS_MAX_NUM_OF_FLOW_IN_BEARER);
 
     /* Initialize S8 lists */
+    ogs_list_init(&self.sgw_list);
     ogs_list_init(&self.sgw_s8_list);
 
     ogs_pool_init(&smf_sess_pool, ogs_app()->pool.sess);
@@ -2550,12 +2551,12 @@ int smf_bearer_remove(smf_bearer_t *bearer)
         ogs_debug("Removing S8 bearer");
 
         /* Clean up S8-specific resources if needed */
-        if (bearer->gtp_path) {
-            /* Remove GTP path if no other bearer is using it */
+        if (bearer->gnode) {
+            /* Remove GTP node if no other bearer is using it */
             if (ogs_list_count(&sess->bearer_list) == 0) {
-                ogs_gtp_path_remove(bearer->gtp_path);
+                ogs_gtp_node_remove(&self.sgw_s8_list, bearer->gnode);
             }
-            bearer->gtp_path = NULL;
+            bearer->gnode = NULL;
         }
 
         /* Free PCC rule related items */
@@ -2575,6 +2576,7 @@ int smf_bearer_remove(smf_bearer_t *bearer)
         smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_BEARERS_ACTIVE);
         return OGS_OK;
     }
+
 
     ogs_assert(bearer->dl_pdr);
     ogs_pfcp_pdr_remove(bearer->dl_pdr);
@@ -3294,44 +3296,77 @@ void smf_bearer_update_gtp_path(smf_bearer_t *bearer)
     ogs_assert(bearer);
     ogs_assert(bearer->sess);
 
-    /* Check if this is an S8 session */
     if (bearer->sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN &&
         bearer->sess->sgw_s8_teid) {
+        /* This is an S8 bearer */
+        ogs_sockaddr_t *addr = NULL;
 
-        /* S8 interface */
-        if (!bearer->gtp_path) {
-            bearer->gtp_path = ogs_gtp_path_find_or_add(
-                &bearer->s8.sgw_s8u_ip,
-                &bearer->s8.pgw_s8u_ip);
+        /* Convert IP to sockaddr */
+        ogs_ip_to_sockaddr(&bearer->s8.sgw_s8u_ip, OGS_GTPV2_C_UDP_PORT, &addr);
+        ogs_assert(addr);
 
-            if (!bearer->gtp_path) {
-                ogs_error("No GTP path for S8 bearer");
-                return;
+        if (!bearer->gnode) {
+            bearer->gnode = ogs_gtp_node_find_by_addr(&self.sgw_s8_list, addr);
+            if (!bearer->gnode) {
+                bearer->gnode = ogs_gtp_node_add_by_addr(&self.sgw_s8_list, addr);
+                ogs_assert(bearer->gnode);
             }
         }
 
-        /* Update S8 TEID information */
-        bearer->gtp_path->remote_teid = bearer->s8.sgw_s8u_teid;
-        bearer->gtp_path->local_teid = bearer->s8.pgw_s8u_teid;
-        } else {
-            /* Normal bearer (S5/N3) */
-            if (!bearer->gtp_path) {
-                bearer->gtp_path = ogs_gtp_path_find_or_add(
-                    &bearer->sgw_s5u_ip,
-                    &bearer->pgw_s5u_ip);
+        ogs_free(addr);
 
-                if (!bearer->gtp_path) {
-                    ogs_error("No GTP path for bearer");
-                    return;
+        /* Set TEID */
+        bearer->gnode->remote_teid = bearer->s8.sgw_s8u_teid;
+        } else {
+            /* Normal bearer */
+            ogs_sockaddr_t *addr = NULL;
+
+            /* Convert IP to sockaddr */
+            ogs_ip_to_sockaddr(&bearer->sgw_s5u_ip, OGS_GTPV2_C_UDP_PORT, &addr);
+            ogs_assert(addr);
+
+            if (!bearer->gnode) {
+                bearer->gnode = ogs_gtp_node_find_by_addr(&self.sgw_list, addr);
+                if (!bearer->gnode) {
+                    bearer->gnode = ogs_gtp_node_add_by_addr(&self.sgw_list, addr);
+                    ogs_assert(bearer->gnode);
                 }
             }
 
-            /* Update normal TEID information */
-            bearer->gtp_path->remote_teid = bearer->sgw_s5u_teid;
-            bearer->gtp_path->local_teid = bearer->pgw_s5u_teid;
+            ogs_free(addr);
+
+            /* Set TEID */
+            bearer->gnode->remote_teid = bearer->sgw_s5u_teid;
         }
 
     ogs_debug("Bearer GTP path updated [%s]",
         bearer->sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN &&
         bearer->sess->sgw_s8_teid ? "S8" : "S5/N3");
+}
+
+smf_sess_t *smf_sess_add_by_message(ogs_gtp2_message_t *message)
+{
+    smf_sess_t *sess = NULL;
+    smf_ue_t *smf_ue = NULL;
+
+    ogs_assert(message);
+
+    switch (message->h.type) {
+    case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
+        {
+            ogs_gtp2_create_session_request_t *req = &message->create_session_request;
+            if (req->imsi.presence) {
+                smf_ue = smf_ue_add_by_imsi(req->imsi.data, req->imsi.len);
+                ogs_assert(smf_ue);
+                sess = smf_sess_add_by_gtp2_message(message);
+                ogs_assert(sess);
+            }
+        }
+        break;
+    default:
+        ogs_error("Unknown message type %d", message->h.type);
+        break;
+    }
+
+    return sess;
 }
