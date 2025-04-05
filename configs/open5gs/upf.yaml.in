@@ -18,6 +18,20 @@ upf:
   gtpu:
     server:
       - address: 127.0.0.7
+
+  header_enrichment:
+      ips:
+        - ip: "192.168.1.100"
+          methods:
+            - "GET"
+            - "POST"
+        - ip: "10.0.0.50"
+          methods:
+            - "GET"
+            - "PUT"
+            - "DELETE"
+        - "172.16.0.25"  # All methods enabled by default
+
   session:
     - subnet: 10.45.0.0/16
       gateway: 10.45.0.1

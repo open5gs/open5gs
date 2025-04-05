@@ -1727,8 +1727,10 @@ ED3(uint8_t     spare:6;,
     };
 } __attribute__ ((packed)) ogs_pfcp_sereq_flags_t;
 
+
 #ifdef __cplusplus
 }
 #endif
+
 
 #endif /* OGS_PFCP_TYPES_H */

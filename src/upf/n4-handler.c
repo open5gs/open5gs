@@ -49,11 +49,15 @@ void upf_n4_handle_session_establishment_request(
 {
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
-    ogs_pfcp_pdr_t *created_pdr[OGS_MAX_NUM_OF_PDR];
-    int num_of_created_pdr = 0;
+    //ogs_pfcp_urr_t *urr = NULL;
+    //ogs_pfcp_qer_t *qer = NULL;
+    //ogs_pfcp_bar_t *bar = NULL;
     uint8_t cause_value = 0;
     uint8_t offending_ie_value = 0;
     int i;
+
+    ogs_pfcp_pdr_t *created_pdr[OGS_MAX_NUM_OF_PDR];
+    int num_of_created_pdr = 0;
 
     ogs_pfcp_sereq_flags_t sereq_flags;
     bool restoration_indication = false;
@@ -62,6 +66,7 @@ void upf_n4_handle_session_establishment_request(
 
     ogs_assert(xact);
     ogs_assert(req);
+    ogs_assert(sess);
 
     ogs_debug("Session Establishment Request");
 
@@ -206,6 +211,11 @@ void upf_n4_handle_session_establishment_request(
         if (pdr->f_teid_len)
             ogs_pfcp_object_teid_hash_set(
                     OGS_PFCP_OBJ_SESS_TYPE, pdr, restoration_indication);
+    }
+
+    /* Store UE Identifiers if present in the request */
+    if (req->user_id.presence && req->user_id.data) {
+        upf_sess_set_ue_info(sess, req->user_id.data);
     }
 
     /* Send Buffered Packet to gNB/SGW */

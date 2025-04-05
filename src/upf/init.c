@@ -20,10 +20,29 @@
 #include "context.h"
 #include "gtp-path.h"
 #include "pfcp-path.h"
+#include "upf-redis.h"
 #include "metrics.h"
 
 static ogs_thread_t *thread;
+static ogs_timer_t *t_redis_init = NULL;
+
 static void upf_main(void *data);
+static void redis_init_retry(void *data);
+
+static void redis_init_retry(void *data)
+{
+    int rv;
+
+    rv = upf_redis_init();
+    if (rv != OGS_OK) {
+        ogs_warn("Redis initialization failed, retrying in 10 seconds...");
+        ogs_timer_start(t_redis_init, ogs_time_from_sec(10));
+    } else {
+        ogs_info("Redis initialization successful");
+        ogs_timer_delete(t_redis_init);
+        t_redis_init = NULL;
+    }
+}
 
 static int initialized = 0;
 
@@ -74,6 +93,18 @@ int upf_initialize(void)
     rv = upf_gtp_open();
     if (rv != OGS_OK) return rv;
 
+    rv = upf_redis_init();
+    if (rv != OGS_OK) {
+        ogs_warn("Redis initialization failed, starting retry mechanism...");
+
+        if (!t_redis_init) {
+            t_redis_init = ogs_timer_add(ogs_app()->timer_mgr, redis_init_retry, NULL);
+            ogs_assert(t_redis_init);
+        }
+        /* Start timer for first retry */
+        ogs_timer_start(t_redis_init, ogs_time_from_sec(10));
+    }
+
     thread = ogs_thread_create(upf_main, NULL);
     if (!thread) return OGS_ERROR;
 
@@ -106,6 +137,7 @@ void upf_terminate(void)
     upf_event_final();
 
     upf_metrics_final();
+    upf_redis_final();
 }
 
 static void upf_main(void *data)

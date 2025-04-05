@@ -1,0 +1,11 @@
+Open5GS daemon v2.7.4
+
+04/02 08:25:54.291: [app] INFO: Configuration: '/home/ilinsky/open5gs_build/open5gs/build/configs/open5gs/upf.yaml' (../lib/app/ogs-init.c:144)
+04/02 08:25:54.291: [app] INFO: File Logging: '/home/ilinsky/open5gs_build/open5gs/logs/upf.log' (../lib/app/ogs-init.c:147)
+04/02 08:25:54.312: [metrics] INFO: metrics_server() [http://127.0.0.7]:9090 (../lib/metrics/prometheus/context.c:300)
+04/02 08:25:54.312: [pfcp] INFO: pfcp_server() [127.0.0.7]:8805 (../lib/pfcp/path.c:30)
+04/02 08:25:54.312: [gtp] INFO: gtp_server() [127.0.0.7]:2152 (../lib/gtp/path.c:30)
+04/02 08:25:54.312: [sock] ERROR: ioctl() failed : dev[/dev/net/tun] flags[0x1000] (1:Operation not permitted) (../lib/tun/linux-setup.c:62)
+04/02 08:25:54.312: [upf] ERROR: tun_open(dev:ogstun) failed (../src/upf/gtp-path.c:809)
+04/02 08:25:54.312: [app] ERROR: Failed to initialize UPF (../src/upf/app.c:28)
+04/02 08:25:54.312: [app] FATAL: Open5GS initialization failed. Aborted (../src/main.c:228)

@@ -40,6 +40,12 @@ uint32_t smf_gy_handle_cca_termination_request(
 void smf_gy_handle_re_auth_request(
         smf_sess_t *sess, ogs_diam_gy_message_t *gy_message);
 
+void smf_gy_apply_redirect_action(smf_sess_t *sess,
+                         ogs_diam_gy_redirect_server_t *redirect_server);
+
+void smf_gy_apply_restriction_filters(smf_sess_t *sess,
+                             ogs_diam_gy_restriction_filter_t *restriction);
+
 #ifdef __cplusplus
 }
 #endif

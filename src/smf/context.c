@@ -89,6 +89,9 @@ void smf_context_init(void)
     ogs_pool_init(&smf_pf_pool,
             ogs_app()->pool.bearer * OGS_MAX_NUM_OF_FLOW_IN_BEARER);
 
+    /* Initialize S8 lists */
+    ogs_list_init(&self.sgw_s8_list);
+
     ogs_pool_init(&smf_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&smf_n4_seid_pool, ogs_app()->pool.sess);
     ogs_pool_random_id_generate(&smf_n4_seid_pool);
@@ -2421,7 +2424,6 @@ smf_bearer_t *smf_qos_flow_find_by_pcc_rule_id(
 smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
 {
     smf_bearer_t *bearer = NULL;
-
     ogs_pfcp_pdr_t *dl_pdr = NULL;
     ogs_pfcp_pdr_t *ul_pdr = NULL;
     ogs_pfcp_far_t *dl_far = NULL;
@@ -2433,90 +2435,99 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     ogs_assert(bearer);
 
     smf_pf_identifier_pool_init(bearer);
-
     ogs_list_init(&bearer->pf_list);
-
-    /* PDR */
-    dl_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
-    ogs_assert(dl_pdr);
-    bearer->dl_pdr = dl_pdr;
-
-    ogs_assert(sess->session.name);
-    dl_pdr->apn = ogs_strdup(sess->session.name);
-    ogs_assert(dl_pdr->apn);
-
-    dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
-
-    dl_pdr->src_if_type_presence = true;
-    dl_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N6;
-
-    ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
-    ogs_assert(ul_pdr);
-    bearer->ul_pdr = ul_pdr;
-
-    ogs_assert(sess->session.name);
-    ul_pdr->apn = ogs_strdup(sess->session.name);
-    ogs_assert(ul_pdr->apn);
-
-    ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
-
-    ul_pdr->src_if_type_presence = true;
-    ul_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
-
-    ul_pdr->outer_header_removal_len = 1;
-    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        ul_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
-        ul_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
-    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        ul_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
-    } else {
-        ogs_error("Invalid session_type [%d]", sess->session.session_type);
-        ogs_assert_if_reached();
-    }
-
-    /* FAR */
-    dl_far = ogs_pfcp_far_add(&sess->pfcp);
-    ogs_assert(dl_far);
-    bearer->dl_far = dl_far;
-
-    ogs_assert(sess->session.name);
-    dl_far->apn = ogs_strdup(sess->session.name);
-    ogs_assert(dl_far->apn);
-
-    dl_far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
-
-    dl_far->dst_if_type_presence = true;
-    dl_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
-
-    ogs_pfcp_pdr_associate_far(dl_pdr, dl_far);
-
-    dl_far->apply_action =
-        OGS_PFCP_APPLY_ACTION_BUFF| OGS_PFCP_APPLY_ACTION_NOCP;
-    ogs_assert(sess->pfcp.bar);
-
-    ul_far = ogs_pfcp_far_add(&sess->pfcp);
-    ogs_assert(ul_far);
-    bearer->ul_far = ul_far;
-
-    ogs_assert(sess->session.name);
-    ul_far->apn = ogs_strdup(sess->session.name);
-    ogs_assert(ul_far->apn);
-
-    ul_far->dst_if = OGS_PFCP_INTERFACE_CORE;
-
-    ul_far->dst_if_type_presence = true;
-    ul_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N6;
-
-    ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
-
-    ul_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
-
     bearer->sess_id = sess->id;
 
+    if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN && sess->sgw_s8_teid) {
+        /* This is an S8 bearer */
+        bearer->s8.pgw_s8u_teid = sess->smf_n4_teid + bearer->id;
+        memcpy(&bearer->s8.pgw_s8u_ip, &sess->pgw_s8_ip, sizeof(ogs_ip_t));
+
+        /* For S8 bearers, we don't create PFCP rules as they use direct GTP-U */
+        ogs_debug("Creating S8 bearer with TEID: 0x%x", bearer->s8.pgw_s8u_teid);
+    } else {
+        /* Normal bearer setup - Keep existing logic exactly as is */
+        /* PDR */
+        dl_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
+        ogs_assert(dl_pdr);
+        bearer->dl_pdr = dl_pdr;
+
+        ogs_assert(sess->session.name);
+        dl_pdr->apn = ogs_strdup(sess->session.name);
+        ogs_assert(dl_pdr->apn);
+
+        dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
+
+        dl_pdr->src_if_type_presence = true;
+        dl_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N6;
+
+        ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
+        ogs_assert(ul_pdr);
+        bearer->ul_pdr = ul_pdr;
+
+        ogs_assert(sess->session.name);
+        ul_pdr->apn = ogs_strdup(sess->session.name);
+        ogs_assert(ul_pdr->apn);
+
+        ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
+
+        ul_pdr->src_if_type_presence = true;
+        ul_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
+
+        ul_pdr->outer_header_removal_len = 1;
+        if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+            ul_pdr->outer_header_removal.description =
+                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
+        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
+            ul_pdr->outer_header_removal.description =
+                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
+        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+            ul_pdr->outer_header_removal.description =
+                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+        } else {
+            ogs_error("Invalid session_type [%d]", sess->session.session_type);
+            ogs_assert_if_reached();
+        }
+
+        /* FAR */
+        dl_far = ogs_pfcp_far_add(&sess->pfcp);
+        ogs_assert(dl_far);
+        bearer->dl_far = dl_far;
+
+        ogs_assert(sess->session.name);
+        dl_far->apn = ogs_strdup(sess->session.name);
+        ogs_assert(dl_far->apn);
+
+        dl_far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+
+        dl_far->dst_if_type_presence = true;
+        dl_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
+
+        ogs_pfcp_pdr_associate_far(dl_pdr, dl_far);
+
+        dl_far->apply_action =
+            OGS_PFCP_APPLY_ACTION_BUFF| OGS_PFCP_APPLY_ACTION_NOCP;
+        ogs_assert(sess->pfcp.bar);
+
+        ul_far = ogs_pfcp_far_add(&sess->pfcp);
+        ogs_assert(ul_far);
+        bearer->ul_far = ul_far;
+
+        ogs_assert(sess->session.name);
+        ul_far->apn = ogs_strdup(sess->session.name);
+        ogs_assert(ul_far->apn);
+
+        ul_far->dst_if = OGS_PFCP_INTERFACE_CORE;
+
+        ul_far->dst_if_type_presence = true;
+        ul_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N6;
+
+        ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
+
+        ul_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+    }
+
+    bearer->sess_id = sess->id;
     ogs_list_add(&sess->bearer_list, bearer);
 
     smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_BEARERS_ACTIVE);
@@ -2531,6 +2542,39 @@ int smf_bearer_remove(smf_bearer_t *bearer)
     ogs_assert(sess);
 
     ogs_list_remove(&sess->bearer_list, bearer);
+
+    /* Check if this is an S8 bearer */
+    if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN &&
+        sess->sgw_s8_teid) {
+
+        ogs_debug("Removing S8 bearer");
+
+        /* Clean up S8-specific resources if needed */
+        if (bearer->gtp_path) {
+            /* Remove GTP path if no other bearer is using it */
+            if (ogs_list_count(&sess->bearer_list) == 0) {
+                ogs_gtp_path_remove(bearer->gtp_path);
+            }
+            bearer->gtp_path = NULL;
+        }
+
+        /* Free PCC rule related items */
+        if (bearer->pcc_rule.name)
+            ogs_free(bearer->pcc_rule.name);
+        if (bearer->pcc_rule.id)
+            ogs_free(bearer->pcc_rule.id);
+
+        smf_pf_remove_all(bearer);
+        smf_pf_identifier_pool_final(bearer);
+
+        if (SMF_IS_QOF_FLOW(bearer))
+            ogs_pool_free(&sess->qfi_pool, bearer->qfi_node);
+
+        ogs_pool_id_free(&smf_bearer_pool, bearer);
+
+        smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_BEARERS_ACTIVE);
+        return OGS_OK;
+    }
 
     ogs_assert(bearer->dl_pdr);
     ogs_pfcp_pdr_remove(bearer->dl_pdr);
@@ -3242,4 +3286,52 @@ int smf_maximum_integrity_protected_data_rate_downlink_value2enum(
 {
     ogs_assert(value);
     return smf_maximum_integrity_protected_data_rate_uplink_value2enum(value);
+}
+
+/* Add to smf/context.c S8 */
+void smf_bearer_update_gtp_path(smf_bearer_t *bearer)
+{
+    ogs_assert(bearer);
+    ogs_assert(bearer->sess);
+
+    /* Check if this is an S8 session */
+    if (bearer->sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN &&
+        bearer->sess->sgw_s8_teid) {
+
+        /* S8 interface */
+        if (!bearer->gtp_path) {
+            bearer->gtp_path = ogs_gtp_path_find_or_add(
+                &bearer->s8.sgw_s8u_ip,
+                &bearer->s8.pgw_s8u_ip);
+
+            if (!bearer->gtp_path) {
+                ogs_error("No GTP path for S8 bearer");
+                return;
+            }
+        }
+
+        /* Update S8 TEID information */
+        bearer->gtp_path->remote_teid = bearer->s8.sgw_s8u_teid;
+        bearer->gtp_path->local_teid = bearer->s8.pgw_s8u_teid;
+        } else {
+            /* Normal bearer (S5/N3) */
+            if (!bearer->gtp_path) {
+                bearer->gtp_path = ogs_gtp_path_find_or_add(
+                    &bearer->sgw_s5u_ip,
+                    &bearer->pgw_s5u_ip);
+
+                if (!bearer->gtp_path) {
+                    ogs_error("No GTP path for bearer");
+                    return;
+                }
+            }
+
+            /* Update normal TEID information */
+            bearer->gtp_path->remote_teid = bearer->sgw_s5u_teid;
+            bearer->gtp_path->local_teid = bearer->pgw_s5u_teid;
+        }
+
+    ogs_debug("Bearer GTP path updated [%s]",
+        bearer->sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN &&
+        bearer->sess->sgw_s8_teid ? "S8" : "S5/N3");
 }

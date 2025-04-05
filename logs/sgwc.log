@@ -1,0 +1,22 @@
+Open5GS daemon v2.7.4
+
+04/02 08:27:54.032: [app] INFO: Configuration: '/home/ilinsky/open5gs_build/open5gs/build/configs/open5gs/sgwc.yaml' (../lib/app/ogs-init.c:144)
+04/02 08:27:54.032: [app] INFO: File Logging: '/home/ilinsky/open5gs_build/open5gs/logs/sgwc.log' (../lib/app/ogs-init.c:147)
+04/02 08:27:54.053: [gtp] INFO: gtp_server() [127.0.0.3]:2123 (../lib/gtp/path.c:30)
+04/02 08:27:54.053: [pfcp] INFO: pfcp_server() [127.0.0.3]:8805 (../lib/pfcp/path.c:30)
+04/02 08:27:54.054: [app] INFO: SGW-C initialize...done (../src/sgwc/app.c:31)
+04/02 08:28:01.562: [pfcp] WARNING: [1] LOCAL  No Reponse. Give up! for step 1 type 5 peer [127.0.0.6]:8805 (../lib/pfcp/xact.c:602)
+04/02 08:28:05.059: [sgwc] WARNING: Retry association with peer failed [127.0.0.6]:8805 (../src/sgwc/pfcp-sm.c:95)
+04/02 08:28:06.015: [app] INFO: SIGTERM received (../src/main.c:54)
+04/02 08:28:06.015: [app] INFO: Open5GS daemon terminating... (../src/main.c:235)
+04/02 08:28:06.022: [app] INFO: SGW-C terminate...done (../src/sgwc/app.c:39)
+Open5GS daemon v2.7.4
+
+04/02 08:49:58.824: [app] INFO: Configuration: '/home/ilinsky/open5gs_build/open5gs/build/configs/open5gs/sgwc.yaml' (../lib/app/ogs-init.c:144)
+04/02 08:49:58.824: [app] INFO: File Logging: '/home/ilinsky/open5gs_build/open5gs/logs/sgwc.log' (../lib/app/ogs-init.c:147)
+04/02 08:49:58.844: [gtp] INFO: gtp_server() [127.0.0.3]:2123 (../lib/gtp/path.c:30)
+04/02 08:49:58.844: [pfcp] INFO: pfcp_server() [127.0.0.3]:8805 (../lib/pfcp/path.c:30)
+04/02 08:49:58.844: [app] INFO: SGW-C initialize...done (../src/sgwc/app.c:31)
+04/02 08:50:01.526: [app] INFO: SIGTERM received (../src/main.c:54)
+04/02 08:50:01.526: [app] INFO: Open5GS daemon terminating... (../src/main.c:235)
+04/02 08:50:01.532: [app] INFO: SGW-C terminate...done (../src/sgwc/app.c:39)

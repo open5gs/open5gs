@@ -47,6 +47,25 @@ extern int __upf_log_domain;
 
 struct upf_route_trie_node;
 
+typedef struct upf_header_enrichment_config_s {
+    ogs_list_t ip_list;  // List of IPs to enrich
+} upf_header_enrichment_config_t;
+
+typedef struct upf_http_method_s {
+    bool get;
+    bool post;
+    bool put;
+    bool patch;
+    bool delete;
+} upf_http_method_t;
+
+typedef struct upf_header_enrichment_ip_s {
+    ogs_lnode_t node;
+    uint32_t addr;      // IPv4 address in network byte order
+    uint32_t mask;      // Network mask in network byte order
+    upf_http_method_t methods;
+} upf_header_enrichment_ip_t;
+
 typedef struct upf_context_s {
     ogs_hash_t *upf_n4_seid_hash;   /* hash table (UPF-N4-SEID) */
     ogs_hash_t *smf_n4_seid_hash;   /* hash table (SMF-N4-SEID) */
@@ -60,6 +79,11 @@ typedef struct upf_context_s {
     struct upf_route_trie_node *ipv6_framed_routes;
 
     ogs_list_t sess_list;
+    /* added header enrichment */
+    upf_header_enrichment_config_t *header_enrichment;
+
+    /* Header Enrichment */
+    ogs_list_t header_enrichment_list;
 } upf_context_t;
 
 /* trie mapping from IP framed routes to session. */
@@ -121,6 +145,11 @@ typedef struct upf_sess_s {
     char            *gx_sid;            /* Gx Session ID */
     ogs_pfcp_node_t *pfcp_node;
 
+    /* UE Identifiers */
+    char            *imsi;              /* IMSI in string format */
+    char            *msisdn;            /* MSISDN in string format */
+    char            *imsi_bcd;          /* IMSI in BCD format */
+
     /* Accounting: */
     upf_sess_urr_acc_t urr_acc[OGS_MAX_NUM_OF_URR]; /* FIXME: This probably needs to be mved to a hashtable or alike */
     char            *apn_dnn;            /* APN/DNN Item */
@@ -156,6 +185,9 @@ void upf_sess_urr_acc_fill_usage_report(upf_sess_t *sess, const ogs_pfcp_urr_t *
                                         ogs_pfcp_user_plane_report_t *report, unsigned int idx);
 void upf_sess_urr_acc_snapshot(upf_sess_t *sess, ogs_pfcp_urr_t *urr);
 void upf_sess_urr_acc_timers_setup(upf_sess_t *sess, ogs_pfcp_urr_t *urr);
+
+/*Add UE info into session*/
+void upf_sess_set_ue_info(upf_sess_t *sess, ogs_pfcp_user_id_t *user_id);
 
 #ifdef __cplusplus
 }

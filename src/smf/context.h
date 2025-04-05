@@ -69,6 +69,9 @@ typedef struct smf_context_s {
     const char*         diam_conf_path;   /* SMF Diameter conf path */
     ogs_diam_config_t   *diam_config;     /* SMF Diameter config */
 
+    /* S8 Interface */
+    ogs_list_t      sgw_s8_list;      /* SGW GTPC Node List */
+
 #define MAX_NUM_OF_DNS              2
     const char      *dns[MAX_NUM_OF_DNS];
     const char      *dns6[MAX_NUM_OF_DNS];
@@ -189,6 +192,7 @@ typedef struct smf_bearer_s {
     ogs_pfcp_urr_t  *urr;
     ogs_pfcp_qer_t  *qer;
 
+
 #define SMF_IS_QOF_FLOW(__bEARER) ((__bEARER)->qfi_node)
     uint8_t         *qfi_node;      /* Pool-Node for 5GC-QFI */
     uint8_t         qfi;            /* 5G Core QFI */
@@ -205,6 +209,16 @@ typedef struct smf_bearer_s {
         char        *name;          /* EPC: PCC Rule Name */
         char        *id;            /* 5GC: PCC Rule Id */
     } pcc_rule;
+
+    /* S8 specific fields */
+    struct {
+        uint32_t pgw_s8u_teid;  /* PGW S8-U TEID */
+        ogs_ip_t  pgw_s8u_ip;   /* PGW S8-U IP */
+        uint32_t sgw_s8u_teid;  /* SGW S8-U TEID */
+        ogs_ip_t  sgw_s8u_ip;   /* SGW S8-U IP */
+    } s8;
+    /* S8 specific fields */
+
     ogs_qos_t       qos;            /* QoS Information */
 
     OGS_POOL(pf_identifier_pool, uint8_t);
@@ -245,6 +259,8 @@ typedef struct smf_sess_s {
 
     bool            epc;            /**< EPC or 5GC */
 
+
+
     ogs_pfcp_sess_t pfcp;           /* PFCP session context */
 
     uint64_t        smpolicycontrol_features; /* SBI features */
@@ -267,6 +283,15 @@ typedef struct smf_sess_s {
     char            *gx_sid;        /* Gx Session ID */
     char            *gy_sid;        /* Gx Session ID */
     char            *s6b_sid;       /* S6b Session ID */
+
+    /* S8 Interface */
+    uint32_t        sgw_s8_teid;      /* SGW-S8 Tunnel Endpoint Identifier */
+    ogs_ip_t        sgw_s8_ip;        /* SGW-S8 IPv4/IPv6 Address */
+    uint32_t        pgw_s8_teid;      /* PGW-S8 Tunnel Endpoint Identifier */
+    ogs_ip_t        pgw_s8_ip;        /* PGW-S8 IPv4/IPv6 Address */
+
+    /* S8 GTP Node */
+    ogs_gtp_node_t  *gnode_s8;        /* SGW-S8 GTP Node */
 
     OGS_POOL(pf_precedence_pool, uint8_t);
 
@@ -420,20 +445,36 @@ typedef struct smf_sess_s {
     } gtp; /* Saved from S5-C/Gn */
 
     struct {
+        bool final_unit;
+        ogs_hash_t *urr_by_rating_group;  /* Add this field */
+        uint32_t reporting_reason;
         uint64_t ul_octets;
         uint64_t dl_octets;
-        ogs_time_t duration;
-        uint32_t reporting_reason; /* OGS_DIAM_GY_REPORTING_REASON_* */
-        /* Whether Gy Final-Unit-Indication was received.
-         * Triggers session release upon Rx of next PFCP Report Req */
-        bool final_unit;
-        /* Snapshot of measurement when last report was sent: */
+        uint32_t duration;
         struct {
             uint64_t ul_octets;
             uint64_t dl_octets;
-            ogs_time_t duration;
+            uint32_t duration;
         } last_report;
     } gy;
+
+    /*Rating Group GSU*/
+    struct {
+        struct {
+            uint32_t rating_group;
+            ogs_pfcp_urr_t *urr;  // URR associated with this rating group
+            uint64_t ul_octets;
+            uint64_t dl_octets;
+            ogs_time_t duration;
+            struct {
+                uint64_t ul_octets;
+                uint64_t dl_octets;
+                ogs_time_t duration;
+            } last_report;
+        } groups[OGS_MAX_NUM_OF_URR];  // Support multiple rating groups
+        int num_of_rating_group;
+    } rating_groups;
+    /*Rating Group GSU*/
 
     struct {
         ogs_nas_extended_protocol_configuration_options_t ue_epco;
@@ -513,6 +554,19 @@ typedef struct smf_sess_s {
     bool n2_released;
 } smf_sess_t;
 
+/* Gy Rating Groups */
+typedef struct smf_sess_gy_s {
+    bool final_unit;
+    ogs_hash_t *urr_by_rating_group;  /* Hash table: rating_group -> ogs_pfcp_urr_t */
+    struct {
+        uint32_t duration;
+        uint64_t ul_octets;
+        uint64_t dl_octets;
+    } last_report;
+} smf_sess_gy_t;
+
+/* End Gy Rating Groups */
+
 void smf_context_init(void);
 void smf_context_final(void);
 smf_context_t *smf_self(void);
@@ -584,6 +638,13 @@ smf_bearer_t *smf_bearer_find_by_pdr_id(
         smf_sess_t *sess, ogs_pfcp_pdr_id_t pdr_id);
 smf_bearer_t *smf_default_bearer_in_sess(smf_sess_t *sess);
 
+/* for s8 */
+typedef enum {
+    SMF_BEARER_TYPE_DEFAULT,
+    SMF_BEARER_TYPE_DEDICATED,
+    SMF_BEARER_TYPE_S8,
+} smf_bearer_type_t;
+
 void smf_bearer_tft_update(smf_bearer_t *bearer);
 void smf_bearer_qos_update(smf_bearer_t *bearer);
 
@@ -614,6 +675,8 @@ void smf_pf_identifier_pool_final(smf_bearer_t *bearer);
 void smf_pf_precedence_pool_init(smf_sess_t *sess);
 void smf_pf_precedence_pool_final(smf_sess_t *sess);
 
+void smf_bearer_update_gtp_path(smf_bearer_t *bearer);
+
 int smf_integrity_protection_indication_value2enum(const char *value);
 int smf_confidentiality_protection_indication_value2enum(const char *value);
 int smf_maximum_integrity_protected_data_rate_uplink_value2enum(
@@ -621,7 +684,6 @@ int smf_maximum_integrity_protected_data_rate_uplink_value2enum(
 int smf_maximum_integrity_protected_data_rate_downlink_value2enum(
         const char *value);
 int smf_instance_get_load(void);
-
 #ifdef __cplusplus
 }
 #endif

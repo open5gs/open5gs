@@ -29,8 +29,8 @@
 #include "s1ap-path.h"
 #include "sgsap-path.h"
 #include "mme-gtp-path.h"
-#include "metrics.h"
 #include "mme-redis.h"
+#include "metrics.h"
 
 static ogs_thread_t *thread;
 static void mme_main(void *data);
@@ -107,12 +107,8 @@ int mme_initialize(void)
             t_redis_init = ogs_timer_add(ogs_app()->timer_mgr, redis_init_retry, NULL);
             ogs_assert(t_redis_init);
         }
-
         /* Start timer for first retry */
         ogs_timer_start(t_redis_init, ogs_time_from_sec(10));
-
-
-
     }
 
     thread = ogs_thread_create(mme_main, NULL);

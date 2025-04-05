@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/subprojects/freeDiameter" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/subprojects/libtins" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/subprojects/prometheus-client-c" vcs="Git" />
+  </component>
+</project>

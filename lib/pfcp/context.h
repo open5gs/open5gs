@@ -277,6 +277,8 @@ typedef struct ogs_pfcp_urr_s {
 
     uint8_t                 *id_node;      /* Pool-Node for ID */
     ogs_pfcp_urr_id_t       id;
+    uint32_t                rating_group;
+
 
     ogs_pfcp_measurement_method_t meas_method;
     ogs_pfcp_reporting_triggers_t rep_triggers;

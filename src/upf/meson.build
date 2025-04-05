@@ -50,6 +50,8 @@ libupf_sources = files('''
     timer.h
     metrics.h
     context.h
+    upf-redis.h
+    upf-redis.c
     upf-sm.h
     gtp-path.h
     pfcp-path.h
@@ -95,6 +97,9 @@ libupf = static_library('upf',
     ],
     install : false)
 
+redis_dep = dependency('hiredis')
+jsonc_dep = dependency('json-c')
+
 libupf_dep = declare_dependency(
     link_with : libupf,
     dependencies : [
@@ -102,6 +107,7 @@ libupf_dep = declare_dependency(
         libpfcp_dep,
         libtun_dep,
         libarp_nd_dep,
+        redis_dep, jsonc_dep
     ])
 
 upf_sources = files('''

@@ -1,0 +1,10 @@
+Open5GS daemon v2.7.4
+
+04/02 08:26:57.280: [app] INFO: Configuration: '/home/ilinsky/open5gs_build/open5gs/build/configs/open5gs/sgwu.yaml' (../lib/app/ogs-init.c:144)
+04/02 08:26:57.280: [app] INFO: File Logging: '/home/ilinsky/open5gs_build/open5gs/logs/sgwu.log' (../lib/app/ogs-init.c:147)
+04/02 08:26:57.300: [pfcp] INFO: pfcp_server() [127.0.0.6]:8805 (../lib/pfcp/path.c:30)
+04/02 08:26:57.300: [gtp] INFO: gtp_server() [127.0.0.6]:2152 (../lib/gtp/path.c:30)
+04/02 08:26:57.300: [app] INFO: SGW-U initialize...done (../src/sgwu/app.c:31)
+04/02 08:27:02.844: [app] INFO: SIGTERM received (../src/main.c:54)
+04/02 08:27:02.844: [app] INFO: Open5GS daemon terminating... (../src/main.c:235)
+04/02 08:27:02.848: [app] INFO: SGW-U terminate...done (../src/sgwu/app.c:39)

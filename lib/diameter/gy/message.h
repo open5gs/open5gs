@@ -25,6 +25,14 @@
 #ifndef OGS_DIAM_GY_MESSAGE_H
 #define OGS_DIAM_GY_MESSAGE_H
 
+#ifndef OGS_MAX_NUM_OF_URR
+#define OGS_MAX_NUM_OF_URR 16  /* Adjust this number based on your needs */
+#endif
+
+#ifndef OGS_MAX_NUM_OF_FILTER_ID
+#define OGS_MAX_NUM_OF_FILTER_ID 16
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,6 +40,8 @@ extern "C" {
 /* Gy interface, 3GPP TS 32.299 */
 
 #define OGS_DIAM_GY_APPLICATION_ID 4
+/*Rating groups*/
+#define ER_DIAMETER_CREDIT_LIMIT_REACHED              4012
 
 #define OGS_DIAM_GY_AVP_CODE_RE_AUTH_REQUEST_TYPE           (285)
 #define OGS_DIAM_GY_AVP_CODE_CC_INPUT_OCTETS                (412)
@@ -78,6 +88,9 @@ extern struct dict_object *ogs_diam_gy_multiple_services_cc;
 extern struct dict_object *ogs_diam_gy_requested_service_unit;
 extern struct dict_object *ogs_diam_gy_used_service_unit;
 extern struct dict_object *ogs_diam_gy_cc_time;
+
+extern struct dict_object *ogs_diam_gy_cc_rating_group;
+
 extern struct dict_object *ogs_diam_gy_cc_total_octets;
 extern struct dict_object *ogs_diam_gy_cc_input_octets;
 extern struct dict_object *ogs_diam_gy_cc_output_octets;
@@ -157,11 +170,23 @@ typedef struct ogs_diam_gy_service_unit_s {
     uint64_t cc_output_octets;
 } ogs_diam_gy_service_unit_t;
 
+typedef struct ogs_diam_gy_redirect_server_s {
+        uint32_t redirect_address_type;
+        char *redirect_server_address;
+} ogs_diam_gy_redirect_server_t;
+
+typedef struct ogs_diam_gy_restriction_filter_s {
+    uint32_t num_of_filters;
+    char *filter_id[OGS_MAX_NUM_OF_FILTER_ID];
+} ogs_diam_gy_restriction_filter_t;
+
 typedef struct gs_diam_gy_final_unit_s {
     bool cc_final_action_present;
 #define OGS_DIAM_GY_FINAL_UNIT_ACTION_TERMINATE                 0
 #define OGS_DIAM_GY_FINAL_UNIT_ACTION_REDIRECT                  1
 #define OGS_DIAM_GY_FINAL_UNIT_ACTION_REDIRECT_ACCESS           2
+    ogs_diam_gy_redirect_server_t redirect_server;
+    ogs_diam_gy_restriction_filter_t restriction;
     int32_t cc_final_action;
 } ogs_diam_gy_final_unit_t;
 
@@ -200,6 +225,9 @@ typedef struct ogs_diam_gy_message_s {
             ogs_diam_gy_final_unit_t final;
             uint32_t result_code;
             uint32_t *err;
+            /* Add these new fields for rating groups */
+            uint32_t num_of_rating_group;
+            uint32_t rating_group[OGS_MAX_NUM_OF_URR];
         } cca;
     };
 } ogs_diam_gy_message_t;

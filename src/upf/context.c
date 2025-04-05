@@ -19,6 +19,7 @@
 
 #include "context.h"
 #include "pfcp-path.h"
+#include <inttypes.h>
 
 static upf_context_t self;
 
@@ -63,6 +64,19 @@ void upf_context_init(void)
     ogs_assert(self.ipv4_hash);
     self.ipv6_hash = ogs_hash_make();
     ogs_assert(self.ipv6_hash);
+
+    /*HE start*/
+    if (self.header_enrichment) {
+        upf_header_enrichment_ip_t *ip_entry = NULL, *next = NULL;
+
+        ogs_list_for_each_safe(&self.header_enrichment_list, next, ip_entry) {
+            ogs_list_remove(&self.header_enrichment_list, &ip_entry->node);
+            ogs_free(ip_entry);
+        }
+
+        ogs_free(self.header_enrichment);
+    }
+    /*HE end*/
 
     context_initialized = 1;
 }
@@ -159,6 +173,81 @@ int upf_context_parse_config(void)
                     /* handle config in pfcp library */
                 } else if (!strcmp(upf_key, "metrics")) {
                     /* handle config in metrics library */
+                } else if (!strcmp(upf_key, "header_enrichment")) {
+                    ogs_yaml_iter_t he_iter;
+                    ogs_yaml_iter_recurse(&upf_iter, &he_iter);
+
+                    while (ogs_yaml_iter_next(&he_iter)) {
+                        const char *he_key = ogs_yaml_iter_key(&he_iter);
+                        ogs_assert(he_key);
+
+                        if (!strcmp(he_key, "ips")) {
+                            ogs_yaml_iter_t ip_array, ip_iter;
+                            ogs_yaml_iter_recurse(&he_iter, &ip_array);
+
+                            do {
+                                upf_header_enrichment_ip_t *ip_entry;
+                                ogs_yaml_iter_t method_iter;
+                                const char *ip_str = NULL;
+                                uint32_t addr;
+
+                                if (ogs_yaml_iter_type(&ip_array) == YAML_MAPPING_NODE) {
+                                    ogs_yaml_iter_recurse(&ip_array, &ip_iter);
+
+                                    while (ogs_yaml_iter_next(&ip_iter)) {
+                                        const char *ip_key = ogs_yaml_iter_key(&ip_iter);
+                                        ogs_assert(ip_key);
+
+                                        if (!strcmp(ip_key, "ip")) {
+                                            ip_str = ogs_yaml_iter_value(&ip_iter);
+                                        } else if (!strcmp(ip_key, "methods")) {
+                                            ogs_yaml_iter_recurse(&ip_iter, &method_iter);
+                                        }
+                                    }
+                                } else if (ogs_yaml_iter_type(&ip_array) == YAML_SCALAR_NODE) {
+                                    ip_str = ogs_yaml_iter_value(&ip_array);
+                                }
+
+                                if (!ip_str) continue;
+
+                                ip_entry = ogs_calloc(1, sizeof(upf_header_enrichment_ip_t));
+                                ogs_assert(ip_entry);
+
+                                if (ogs_yaml_iter_type(&ip_array) == YAML_MAPPING_NODE) {
+                                    while (ogs_yaml_iter_next(&method_iter)) {
+                                        const char *method = ogs_yaml_iter_value(&method_iter);
+                                        if (!strcmp(method, "GET"))
+                                            ip_entry->methods.get = true;
+                                        else if (!strcmp(method, "POST"))
+                                            ip_entry->methods.post = true;
+                                        else if (!strcmp(method, "PUT"))
+                                            ip_entry->methods.put = true;
+                                        else if (!strcmp(method, "PATCH"))
+                                            ip_entry->methods.patch = true;
+                                        else if (!strcmp(method, "DELETE"))
+                                            ip_entry->methods.delete = true;
+                                    }
+                                } else {
+                                    /* If no methods specified, enable all */
+                                    ip_entry->methods.get = true;
+                                    ip_entry->methods.post = true;
+                                    ip_entry->methods.put = true;
+                                    ip_entry->methods.patch = true;
+                                    ip_entry->methods.delete = true;
+                                }
+
+                                if (ogs_ipv4_from_string(&addr, ip_str) == OGS_OK) {
+                                    ip_entry->addr = addr;
+                                    ip_entry->mask = 0xffffffff;  // Full mask for exact match
+                                    ogs_list_add(&self.header_enrichment_list, &ip_entry->node);
+                                } else {
+                                    ogs_error("Invalid IP address: %s", ip_str);
+                                    ogs_free(ip_entry);
+                                }
+
+                            } while (ogs_yaml_iter_next(&ip_array));
+                        }
+                    }
                 } else
                     ogs_warn("unknown key `%s`", upf_key);
             }
@@ -220,6 +309,14 @@ int upf_sess_remove(upf_sess_t *sess)
 
     ogs_list_remove(&self.sess_list, sess);
     ogs_pfcp_sess_clear(&sess->pfcp);
+
+    /* Clear UE Identifiers */
+    if (sess->imsi)
+        ogs_free(sess->imsi);
+    if (sess->imsi_bcd)
+        ogs_free(sess->imsi_bcd);
+    if (sess->msisdn)
+        ogs_free(sess->msisdn);
 
     ogs_hash_set(self.upf_n4_seid_hash, &sess->upf_n4_seid,
             sizeof(sess->upf_n4_seid), NULL);
@@ -688,6 +785,11 @@ void upf_sess_urr_acc_add(upf_sess_t *sess, ogs_pfcp_urr_t *urr, size_t size, bo
     ogs_assert(urr->id > 0 && urr->id <= OGS_MAX_NUM_OF_URR);
     urr_acc = &sess->urr_acc[urr->id-1];
 
+    /* Add verbose logging for initial packet tracking */
+    ogs_debug("URR[%d] Rating Group[%d] Adding %zu bytes (%s)",
+              urr->id, urr->rating_group, size,
+              is_uplink ? "Uplink" : "Downlink");
+
     /* Increment total & ul octets + pkts */
     urr_acc->total_octets += size;
     urr_acc->total_pkts++;
@@ -700,23 +802,58 @@ void upf_sess_urr_acc_add(upf_sess_t *sess, ogs_pfcp_urr_t *urr, size_t size, bo
     }
 
     urr_acc->time_of_last_packet = ogs_time_now();
-    if (urr_acc->time_of_first_packet == 0)
+    if (urr_acc->time_of_first_packet == 0) {
         urr_acc->time_of_first_packet = urr_acc->time_of_last_packet;
+        ogs_debug("URR[%d] Rating Group[%d] First packet received",
+                 urr->id, urr->rating_group);
+    }
 
-    /* generate report if volume threshold/quota is reached */
+    /* Calculate current volume and log quota status */
     vol = urr_acc->total_octets - urr_acc->last_report.total_octets;
-    if ((urr->rep_triggers.volume_quota && urr->vol_quota.tovol && vol >= urr->vol_quota.total_volume) ||
-        (urr->rep_triggers.volume_threshold && urr->vol_threshold.tovol && vol >= urr->vol_threshold.total_volume)) {
+
+    /* Log quota status before checking thresholds */
+    if (urr->rep_triggers.volume_quota && urr->vol_quota.tovol) {
+        ogs_debug("URR[%d] Rating Group[%d] Volume Status: Current=[%" PRIu64 "]  Quota=[%" PRIu64 "] ",
+         urr->id, urr->rating_group, vol, urr->vol_quota.total_volume);
+    }
+
+    /* Check if volume threshold/quota is reached */
+    if ((urr->rep_triggers.volume_quota && urr->vol_quota.tovol &&
+         vol >= urr->vol_quota.total_volume) ||
+        (urr->rep_triggers.volume_threshold && urr->vol_threshold.tovol &&
+         vol >= urr->vol_threshold.total_volume)) {
+
+        ogs_info("URR[%d] Rating Group[%d] Quota/Threshold reached",
+                urr->id, urr->rating_group);
+
+        if (urr->rep_triggers.volume_quota &&
+            vol >= urr->vol_quota.total_volume) {
+            ogs_warn("URR[%d] Rating Group[%d] Volume Quota Exhausted - Used=[%" PRIu64 "] Quota=[%" PRIu64 "]",
+                    urr->id, urr->rating_group, vol, urr->vol_quota.total_volume);
+        }
+
+        if (urr->rep_triggers.volume_threshold &&
+            vol >= urr->vol_threshold.total_volume) {
+            ogs_info("URR[%d] Rating Group[%d] Volume Threshold Reached - Used=[%" PRIu64 "] Threshold=[%" PRIu64 "]",
+                    urr->id, urr->rating_group, vol, urr->vol_threshold.total_volume);
+        }
+
         ogs_pfcp_user_plane_report_t report;
         memset(&report, 0, sizeof(report));
         upf_sess_urr_acc_fill_usage_report(sess, urr, &report, 0);
         report.num_of_usage_report = 1;
         upf_sess_urr_acc_snapshot(sess, urr);
 
+        ogs_info("URR[%d] Rating Group[%d] Sending Session Report Request",
+                urr->id, urr->rating_group);
+
         ogs_assert(OGS_OK ==
             upf_pfcp_send_session_report_request(sess, &report));
+
         /* Start new report period/iteration: */
         upf_sess_urr_acc_timers_setup(sess, urr);
+        ogs_debug("URR[%d] Rating Group[%d] New monitoring period started",
+                 urr->id, urr->rating_group);
     }
 }
 
@@ -905,3 +1042,45 @@ static void upf_sess_urr_acc_remove_all(upf_sess_t *sess)
         }
     }
 }
+
+void upf_sess_set_ue_info(upf_sess_t *sess, ogs_pfcp_user_id_t *user_id)
+{
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+    char msisdn_bcd[OGS_MAX_MSISDN_BCD_LEN+1];
+
+    ogs_assert(sess);
+    ogs_assert(user_id);
+
+    /* Clear existing values */
+    if (sess->imsi)
+        ogs_free(sess->imsi);
+    if (sess->imsi_bcd)
+        ogs_free(sess->imsi_bcd);
+    if (sess->msisdn)
+        ogs_free(sess->msisdn);
+
+    sess->imsi = NULL;
+    sess->imsi_bcd = NULL;
+    sess->msisdn = NULL;
+
+    /* Store IMSI if present */
+    if (user_id->imsif) {
+        /* Raw IMSI */
+        sess->imsi = ogs_calloc(1, user_id->imsi_len);
+        ogs_assert(sess->imsi);
+        memcpy(sess->imsi, user_id->imsi, user_id->imsi_len);
+
+        /* BCD IMSI */
+        ogs_buffer_to_bcd(user_id->imsi, user_id->imsi_len, imsi_bcd);
+        sess->imsi_bcd = ogs_strdup(imsi_bcd);
+        ogs_assert(sess->imsi_bcd);
+    }
+
+    /* Store MSISDN if present */
+    if (user_id->msisdnf) {
+        ogs_buffer_to_bcd(user_id->msisdn, user_id->msisdn_len, msisdn_bcd);
+        sess->msisdn = ogs_strdup(msisdn_bcd);
+        ogs_assert(sess->msisdn);
+    }
+}
+

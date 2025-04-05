@@ -30,6 +30,7 @@
 #include "namf-handler.h"
 #include "nsmf-handler.h"
 #include "npcf-handler.h"
+#include "smf-s8.h"
 
 void smf_state_initial(ogs_fsm_t *s, smf_event_t *e)
 {
@@ -1099,6 +1100,85 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
     default:
         ogs_error("No handler for event %s", smf_event_get_name(e));
+        break;
+    }
+}
+
+/* Add to smf/smf-sm.c */
+
+void smf_state_handle_s8_message(smf_sm_t *s, smf_event_t *e)
+{
+    ogs_gtp_xact_t *xact = NULL;
+    smf_sess_t *sess = NULL;
+    ogs_gtp2_message_t *message = NULL;
+    uint8_t cause_value = 0;
+
+    ogs_assert(s);
+    ogs_assert(e);
+
+    xact = e->gtp_xact;
+    ogs_assert(xact);
+    message = e->message;
+    ogs_assert(message);
+
+    switch (message->h.type) {
+    case OGS_GTP2_ECHO_REQUEST_TYPE:
+        smf_s8_handle_echo_request(xact, &message->echo_request);
+        break;
+
+    case OGS_GTP2_ECHO_RESPONSE_TYPE:
+        smf_s8_handle_echo_response(xact, &message->echo_response);
+        break;
+
+    case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
+        sess = smf_sess_find_by_teid(message->h.teid);
+        if (!sess) {
+            sess = smf_sess_add_by_message(message);
+            if (!sess) {
+                ogs_error("S8 No Session Context");
+                cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+            }
+        }
+
+        if (sess)
+            cause_value = smf_s8_handle_create_session_request(
+                sess, xact, &message->create_session_request);
+        else
+            ogs_gtp2_send_error_message(xact, 0,
+                OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
+                cause_value);
+        break;
+
+    case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
+        sess = smf_sess_find_by_teid(message->h.teid);
+        if (!sess) {
+            ogs_error("S8 No Session Context");
+            cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+            ogs_gtp2_send_error_message(xact, 0,
+                OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE,
+                cause_value);
+        } else {
+            cause_value = smf_s8_handle_delete_session_request(
+                sess, xact, &message->delete_session_request);
+        }
+        break;
+
+    case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
+        sess = smf_sess_find_by_teid(message->h.teid);
+        if (!sess) {
+            ogs_error("S8 No Session Context");
+            cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+            ogs_gtp2_send_error_message(xact, 0,
+                OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE,
+                cause_value);
+        } else {
+            smf_s8_handle_modify_bearer_request(
+                sess, xact, &message->modify_bearer_request);
+        }
+        break;
+
+    default:
+        ogs_error("Not implemented(type:%d)", message->h.type);
         break;
     }
 }

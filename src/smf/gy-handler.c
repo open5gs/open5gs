@@ -127,6 +127,8 @@ uint32_t smf_gy_handle_cca_initial_request(
         bool *need_termination)
 {
     smf_bearer_t *bearer;
+    int i;
+
 
     ogs_assert(sess);
     ogs_assert(gy_message);
@@ -157,35 +159,56 @@ uint32_t smf_gy_handle_cca_initial_request(
     bearer = smf_default_bearer_in_sess(sess);
     ogs_assert(bearer);
 
-    if (!bearer->urr)
+    /* Akexey if (!bearer->urr)
         bearer->urr = ogs_pfcp_urr_add(&sess->pfcp);
     ogs_assert(bearer->urr);
 
-    /* Configure based on what we received from OCS: */
+     Configure based on what we received from OCS:
     urr_update_time(sess, bearer->urr, gy_message);
     urr_update_volume(sess, bearer->urr, gy_message);
-    sess->gy.final_unit = gy_message->cca.final.cc_final_action_present;
+    sess->gy.final_unit = gy_message->cca.final.cc_final_action_present; end alexey */
 
     /* Associate acconting URR each direction PDR: */
-    ogs_pfcp_pdr_associate_urr(bearer->ul_pdr, bearer->urr);
-    ogs_pfcp_pdr_associate_urr(bearer->dl_pdr, bearer->urr);
+    //ogs_pfcp_pdr_associate_urr(bearer->ul_pdr, bearer->urr);
+    //ogs_pfcp_pdr_associate_urr(bearer->dl_pdr, bearer->urr);
+
+    /* Create URR for each rating group */
+    for (i = 0; i < gy_message->cca.num_of_rating_group; i++) {
+        ogs_pfcp_urr_t *urr;
+
+        urr = ogs_pfcp_urr_add(&sess->pfcp);
+        ogs_assert(urr);
+
+        /* Set rating group ID */
+        urr->rating_group = gy_message->cca.rating_group[i];
+
+        /* Configure quota and thresholds for this rating group */
+        urr_update_time(sess, urr, gy_message);
+        urr_update_volume(sess, urr, gy_message);
+
+        /* Store URR in session context */
+        if (!sess->gy.urr_by_rating_group)
+            sess->gy.urr_by_rating_group = ogs_hash_make();
+        ogs_hash_set(sess->gy.urr_by_rating_group,
+                    &urr->rating_group, sizeof(urr->rating_group), urr);
+
+        /* Associate URR with PDRs */
+        ogs_pfcp_pdr_associate_urr(bearer->ul_pdr, urr);
+        ogs_pfcp_pdr_associate_urr(bearer->dl_pdr, urr);
+    }
+
+    sess->gy.final_unit = gy_message->cca.final.cc_final_action_present;
     return ER_DIAMETER_SUCCESS;
+
 }
 
 uint32_t smf_gy_handle_cca_update_request(
         smf_sess_t *sess, ogs_diam_gy_message_t *gy_message,
         ogs_pfcp_xact_t *pfcp_xact)
 {
-    ogs_pfcp_urr_t *urr = NULL;
     smf_bearer_t *bearer;
-    int rv;
+    int i;
     uint64_t modify_flags = 0;
-    ogs_pfcp_measurement_method_t prev_meas_method;
-    ogs_pfcp_reporting_triggers_t prev_rep_triggers;
-    ogs_pfcp_quota_validity_time_t prev_quota_validity_time;
-    ogs_pfcp_time_quota_t prev_time_quota;
-    ogs_pfcp_volume_threshold_t prev_vol_threshold;
-    ogs_pfcp_time_threshold_t prev_time_threshold;
 
     ogs_assert(sess);
     ogs_assert(gy_message);
@@ -201,66 +224,78 @@ uint32_t smf_gy_handle_cca_update_request(
         return gy_message->err ? *gy_message->err :
                                  ER_DIAMETER_AUTHENTICATION_REJECTED;
     }
-    if (gy_message->cca.result_code != ER_DIAMETER_SUCCESS) {
-        ogs_warn("Gy CCA Update Diameter Multiple-Services-Credit-Control Result-Code=%u",
-            gy_message->cca.result_code);
-        return gy_message->cca.err ? *gy_message->cca.err :
-                                     ER_DIAMETER_AUTHENTICATION_REJECTED;
-    }
 
     bearer = smf_default_bearer_in_sess(sess);
     ogs_assert(bearer);
 
-    urr = bearer->urr;
-    ogs_assert(urr);
-    prev_meas_method = urr->meas_method;
-    prev_rep_triggers = urr->rep_triggers;
-    prev_quota_validity_time = urr->quota_validity_time;
-    prev_time_quota = urr->time_quota;
-    prev_vol_threshold = urr->vol_threshold;
-    prev_time_threshold = urr->time_threshold;
+    /* Update quotas for each rating group */
+    for (i = 0; i < gy_message->cca.num_of_rating_group; i++) {
+        ogs_pfcp_urr_t *urr;
+        uint32_t rating_group = gy_message->cca.rating_group[i];
 
-    urr_update_time(sess, urr, gy_message);
-    urr_update_volume(sess, urr, gy_message);
-    sess->gy.final_unit = gy_message->cca.final.cc_final_action_present;
-    /* Associate accounting URR each direction PDR: */
-    ogs_pfcp_pdr_associate_urr(bearer->ul_pdr, urr);
-    ogs_pfcp_pdr_associate_urr(bearer->dl_pdr, urr);
+        /* Find URR for this rating group */
+        urr = ogs_hash_get(sess->gy.urr_by_rating_group,
+                          &rating_group, sizeof(rating_group));
+        if (!urr) {
+            ogs_error("No URR found for rating group %u", rating_group);
+            continue;
+        }
 
-    if (urr->meas_method != prev_meas_method)
-        modify_flags |= OGS_PFCP_MODIFY_URR_MEAS_METHOD;
+        /* Store previous values to detect changes */
+        ogs_pfcp_measurement_method_t prev_meas_method = urr->meas_method;
+        ogs_pfcp_reporting_triggers_t prev_rep_triggers = urr->rep_triggers;
+        ogs_pfcp_quota_validity_time_t prev_quota_validity_time = urr->quota_validity_time;
+        ogs_pfcp_time_quota_t prev_time_quota = urr->time_quota;
+        ogs_pfcp_volume_threshold_t prev_vol_threshold = urr->vol_threshold;
+        ogs_pfcp_time_threshold_t prev_time_threshold = urr->time_threshold;
 
-    if (urr->rep_triggers.quota_validity_time != prev_rep_triggers.quota_validity_time ||
-        urr->rep_triggers.time_quota != prev_rep_triggers.time_quota ||
-        urr->rep_triggers.volume_quota != prev_rep_triggers.volume_quota ||
-        urr->rep_triggers.time_threshold != prev_rep_triggers.time_threshold ||
-        urr->rep_triggers.volume_threshold != prev_rep_triggers.volume_threshold)
-        modify_flags |= OGS_PFCP_MODIFY_URR_REPORT_TRIGGER;
+        /* Update quota and thresholds */
+        urr_update_time(sess, urr, gy_message);
+        urr_update_volume(sess, urr, gy_message);
 
-    if (urr->quota_validity_time != prev_quota_validity_time)
-        modify_flags |= OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME;
+        /* Check if quota is exhausted */
+        if (gy_message->cca.final.cc_final_action_present) {
+            sess->gy.final_unit = true;
+            /* Trigger session termination if needed */
+            switch (gy_message->cca.final.cc_final_action) {
+                case OGS_DIAM_GY_FINAL_UNIT_ACTION_TERMINATE:
+                    return ER_DIAMETER_CREDIT_LIMIT_REACHED;
+                case OGS_DIAM_GY_FINAL_UNIT_ACTION_REDIRECT_ACCESS:
+                    // Apply redirect configuration
+                        smf_gy_apply_redirect_action(sess, &gy_message->cca.final.redirect_server);
+                    break;
+                //case OGS_DIAM_GY_FINAL_UNIT_ACTION_RESTRICT_ACCESS:
+                    // Apply restriction filters
+                //        apply_restriction_filters(sess, &gy_message->cca.final.restriction);
+                //    break;
+            }
+        }
 
-    if (urr->time_quota != prev_time_quota)
-        modify_flags |= OGS_PFCP_MODIFY_URR_TIME_QUOTA;
-
-    if (urr->vol_quota.tovol || urr->vol_quota.total_volume)
-        modify_flags |= OGS_PFCP_MODIFY_URR_VOLUME_QUOTA;
-
-    if (urr->time_threshold != prev_time_threshold)
-        modify_flags |= OGS_PFCP_MODIFY_URR_TIME_THRESH;
-
-    if (urr->vol_threshold.tovol != prev_vol_threshold.tovol ||
-        urr->vol_threshold.total_volume != prev_vol_threshold.total_volume)
-        modify_flags |= OGS_PFCP_MODIFY_URR_VOLUME_THRESH;
+        /* Set modification flags if values changed */
+        if (memcmp(&prev_meas_method, &urr->meas_method, sizeof(prev_meas_method)))
+            modify_flags |= OGS_PFCP_MODIFY_URR_MEAS_METHOD;
+        if (memcmp(&prev_rep_triggers, &urr->rep_triggers, sizeof(prev_rep_triggers)))
+            modify_flags |= OGS_PFCP_MODIFY_URR_REPORT_TRIGGER;
+        if (urr->quota_validity_time != prev_quota_validity_time)
+            modify_flags |= OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME;
+        if (urr->time_quota != prev_time_quota)
+            modify_flags |= OGS_PFCP_MODIFY_URR_TIME_QUOTA;
+        if (urr->vol_quota.tovol || urr->vol_quota.total_volume)
+            modify_flags |= OGS_PFCP_MODIFY_URR_VOLUME_QUOTA;
+        if (urr->time_threshold != prev_time_threshold)
+            modify_flags |= OGS_PFCP_MODIFY_URR_TIME_THRESH;
+        if (urr->vol_threshold.tovol != prev_vol_threshold.tovol ||
+            urr->vol_threshold.total_volume != prev_vol_threshold.total_volume)
+            modify_flags |= OGS_PFCP_MODIFY_URR_VOLUME_THRESH;
+    }
 
     /* Send PFCP Session Modification Request if we need to update the params. */
     if (modify_flags) {
         modify_flags |= OGS_PFCP_MODIFY_URR|OGS_PFCP_MODIFY_UL_ONLY;
-        rv = smf_epc_pfcp_send_all_pdr_modification_request(
+        smf_epc_pfcp_send_all_pdr_modification_request(
                 sess, OGS_INVALID_POOL_ID, NULL, modify_flags,
                 OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                 OGS_GTP1_CAUSE_REACTIACTION_REQUESTED);
-        ogs_assert(rv == OGS_OK);
     }
     return ER_DIAMETER_SUCCESS;
 }
@@ -283,4 +318,34 @@ void smf_gy_handle_re_auth_request(
         smf_sess_t *sess, ogs_diam_gy_message_t *gy_message)
 {
     /* TODO: find out what to do here */
+}
+
+void smf_gy_apply_redirect_action(smf_sess_t *sess,
+                         ogs_diam_gy_redirect_server_t *redirect_server)
+{
+    /* Implement redirect action logic here */
+    ogs_debug("Applying redirect action to session");
+    /* TODO: Implement the actual redirect functionality */
+}
+
+void smf_gy_apply_restriction_filters(smf_sess_t *sess,
+                             ogs_diam_gy_restriction_filter_t *restriction)
+{
+    int i;
+
+    ogs_assert(sess);
+    ogs_assert(restriction);
+
+    ogs_debug("Applying restriction filters to session");
+
+    /* Apply each restriction filter */
+    for (i = 0; i < restriction->num_of_filters; i++) {
+        ogs_debug("Applying restriction filter: %s", restriction->filter_id[i]);
+        /* TODO: Implement the actual restriction filter logic */
+        /* This might involve:
+         * 1. Creating or updating PDRs with the filter
+         * 2. Updating FARs to apply the restrictions
+         * 3. Sending PFCP session modification if needed
+         */
+    }
 }

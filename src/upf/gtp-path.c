@@ -35,6 +35,13 @@
 #include <netinet/icmp6.h>
 #endif
 
+#if HAVE_NETINET_TCP_H
+#include <netinet/tcp.h>
+#endif
+
+#include <string.h>
+#include "ogs-core.h"
+
 #if HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
@@ -53,6 +60,7 @@
 #include "pfcp-path.h"
 #include "rule-match.h"
 
+
 #define UPF_GTP_HANDLED     1
 
 const uint8_t proxy_mac_addr[] = { 0x0e, 0x00, 0x00, 0x00, 0x00, 0x01 };
@@ -60,6 +68,11 @@ const uint8_t proxy_mac_addr[] = { 0x0e, 0x00, 0x00, 0x00, 0x00, 0x01 };
 static ogs_pkbuf_pool_t *packet_pool = NULL;
 
 static void upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf);
+
+static bool ip_matches_entry(upf_header_enrichment_ip_t *entry, uint32_t addr)
+{
+    return (addr & entry->mask) == (entry->addr & entry->mask);
+}
 
 static int check_framed_routes(upf_sess_t *sess, int family, uint32_t *addr)
 {
@@ -97,6 +110,99 @@ static uint16_t _get_eth_type(uint8_t *data, uint len) {
         return htobe16(hdr->ether_type);
     }
     return 0;
+}
+
+static void enrich_http_headers(ogs_pkbuf_t *pkbuf, upf_sess_t *sess)
+{
+    struct ip *ip_h = NULL;
+    uint8_t *payload = NULL;
+    uint16_t payload_len = 0;
+    const char *http_method = NULL;
+    upf_header_enrichment_ip_t *ip_entry = NULL;
+    uint32_t addr;
+    bool should_enrich = false;
+    char enriched_headers[512];
+    int enriched_len = 0;
+    upf_context_t *upf = upf_self();
+
+    ip_h = (struct ip *)pkbuf->data;
+    if (ip_h->ip_v == 4) {
+        if (ip_h->ip_p != IPPROTO_TCP)
+            return;
+
+        payload = pkbuf->data + (ip_h->ip_hl << 2) + 20; // IP + TCP header
+        payload_len = pkbuf->len - (ip_h->ip_hl << 2) - 20;
+        addr = ip_h->ip_dst.s_addr;
+    } else {
+        return; // Skip IPv6 for now
+    }
+
+    if (payload_len < 4) // Minimum for HTTP method
+        return;
+
+    // Check if this is an HTTP request
+    if (strncmp((char *)payload, "GET ", 4) == 0) {
+        http_method = "GET";
+    } else if (strncmp((char *)payload, "POST ", 5) == 0) {
+        http_method = "POST";
+    } else if (strncmp((char *)payload, "PUT ", 4) == 0) {
+        http_method = "PUT";
+    } else if (strncmp((char *)payload, "PATCH ", 6) == 0) {
+        http_method = "PATCH";
+    } else if (strncmp((char *)payload, "DELETE ", 7) == 0) {
+        http_method = "DELETE";
+    } else {
+        return; // Not an HTTP method we're interested in
+    }
+
+    ogs_list_for_each(&upf->header_enrichment_list, ip_entry) {
+        if (ip_matches_entry(ip_entry, addr)) {
+            if ((strcmp(http_method, "GET") == 0 && ip_entry->methods.get) ||
+                (strcmp(http_method, "POST") == 0 && ip_entry->methods.post) ||
+                (strcmp(http_method, "PUT") == 0 && ip_entry->methods.put) ||
+                (strcmp(http_method, "PATCH") == 0 && ip_entry->methods.patch) ||
+                (strcmp(http_method, "DELETE") == 0 && ip_entry->methods.delete)) {
+                should_enrich = true;
+                break;
+            }
+        }
+    }
+
+    if (!should_enrich)
+        return;
+
+    // Format enriched headers
+    enriched_len = snprintf(enriched_headers, sizeof(enriched_headers),
+        "X-3GPP-DNN-APN: %s\r\n"
+        "X-3GPP-MSISDN: %s\r\n"
+        "X-3GPP-IMSI: %s\r\n"
+        "X-3GPP-RAT-Type: %d\r\n",
+        sess->apn_dnn,
+        sess->msisdn,
+        sess->imsi,
+        0);             // RAT Type not available in UPF
+
+    if (enriched_len <= 0 || enriched_len >= sizeof(enriched_headers))
+        return;
+
+    // Find the end of the first line (where we'll insert our headers)
+    char *eol = memmem(payload, payload_len, "\r\n", 2);
+    if (!eol)
+        return;
+
+    // Make space for our headers
+    if (pkbuf->len + enriched_len > OGS_MAX_PKT_LEN)
+        return;
+
+    memmove(eol + 2 + enriched_len, eol + 2,
+            payload_len - (eol + 2 - (char *)payload));
+
+    // Insert our headers
+    memcpy(eol + 2, enriched_headers, enriched_len);
+
+    // Update packet length
+    pkbuf->len += enriched_len;
+    ip_h->ip_len = htobe16(be16toh(ip_h->ip_len) + enriched_len);
 }
 
 static void _gtpv1_tun_recv_common_cb(
@@ -166,6 +272,9 @@ static void _gtpv1_tun_recv_common_cb(
     sess = upf_sess_find_by_ue_ip_address(recvbuf);
     if (!sess)
         goto cleanup;
+
+    /* Header enrichment */
+    enrich_http_headers(recvbuf, sess);
 
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
         far = pdr->far;

@@ -52,6 +52,24 @@ smf:
 #    enabled: auto   # auto(default)|yes|no
   freeDiameter: /home/ilinsky/open5gs_build/open5gs/build/configs/freeDiameter/smf.conf
 
+  s8:
+        enabled: true
+        addr: 127.0.0.4      # Local address for S8
+        port: 2123           # GTP-C port for S8
+        authorized_peers:     # List of authorized S8 peers
+          - network: "visited-network-1"
+            addr: 10.0.0.1
+            port: 2123
+            auth_key: "key1"
+          - network: "visited-network-2"
+            addr: 10.0.0.2
+            port: 2123
+            auth_key: "key2"
+        options:
+          max_connections: 100
+          keepalive: 60
+          verify_peers: true
+
 ################################################################################
 # SMF Info
 ################################################################################

@@ -1,0 +1,16 @@
+<toolSet name="External Tools">
+  <tool name="bash " showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="true" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="bash" />
+      <option name="PARAMETERS" value="-c &quot;meson setup --wipe build &amp;&amp; ninja -C build&quot; " />
+      <option name="WORKING_DIRECTORY" value="$ProjectFileDir$ " />
+    </exec>
+  </tool>
+  <tool name="bash clean" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="true" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="bash" />
+      <option name="PARAMETERS" value="-c &quot;rm -rf build&quot; " />
+      <option name="WORKING_DIRECTORY" value="$ProjectFileDir$ " />
+    </exec>
+  </tool>
+</toolSet>

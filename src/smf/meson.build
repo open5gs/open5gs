@@ -38,6 +38,8 @@ libsmf_sources = files('''
     event.h
     timer.h
     context.h
+    smf-redis.h
+    smf-redis.c
     smf-sm.h
     gtp-path.h
     gn-build.h
@@ -108,6 +110,9 @@ libsmf_sources = files('''
     metrics.c
 '''.split())
 
+redis_dep = dependency('hiredis')
+jsonc_dep = dependency('json-c')
+
 libsmf = static_library('smf',
     sources : libsmf_sources,
     dependencies : [libmetrics_dep,
@@ -129,7 +134,7 @@ libsmf_dep = declare_dependency(
                     libdiameter_gx_dep,
                     libdiameter_gy_dep,
                     libdiameter_s6b_dep,
-                    libpfcp_dep])
+                    libpfcp_dep,  redis_dep, jsonc_dep])
 
 smf_sources = files('''
     app.c

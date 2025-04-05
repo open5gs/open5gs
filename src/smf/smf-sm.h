@@ -26,6 +26,11 @@
 extern "C" {
 #endif
 
+typedef struct smf_sm_s {
+    ogs_fsm_t fsm;
+    ogs_timer_t *t_release;
+} smf_sm_t;
+
 void smf_state_initial(ogs_fsm_t *s, smf_event_t *e);
 void smf_state_final(ogs_fsm_t *s, smf_event_t *e);
 void smf_state_operational(ogs_fsm_t *s, smf_event_t *e);
@@ -50,6 +55,7 @@ void smf_pfcp_state_final(ogs_fsm_t *s, smf_event_t *e);
 void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e);
 void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e);
 void smf_pfcp_state_exception(ogs_fsm_t *s, smf_event_t *e);
+void smf_state_handle_s8_message(smf_sm_t *s, smf_event_t *e);
 
 #define smf_sm_debug(__pe) \
     ogs_debug("%s(): %s", __func__, smf_event_get_name(__pe))

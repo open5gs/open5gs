@@ -1007,7 +1007,7 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
     }
     ogs_assert((void *)sess_data == data);
 
-    ogs_debug("    Retrieve its data: [%s]", sess_data->gy_sid);
+    ogs_debug("    Retrieve Session Data Gy (SMF) its data: [%s]", sess_data->gy_sid);
 
     /* Value of CC-Request-Number */
     ret = fd_msg_search_avp(*msg, ogs_diam_gy_cc_request_number, &avp);
@@ -1480,7 +1480,7 @@ static int decode_granted_service_unit(
             su->cc_output_octets = hdr->avp_value->u64;
             break;
         default:
-            ogs_error("Not implemented(%d)", hdr->avp_code);
+            ogs_error("Not implemented decode_granted_service_unit (%d)", hdr->avp_code);
             break;
         }
         fd_msg_browse(avpch2, MSG_BRW_NEXT, &avpch2, NULL);
