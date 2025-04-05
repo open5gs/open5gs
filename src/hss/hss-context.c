@@ -1011,20 +1011,20 @@ char *hss_cx_download_user_data(
             ogs_assert(user_data);
         }
 
-        // IFC data
+        /* IFC data */
         for (int n = 0; n < ims_data->num_of_ifc; n++) {
             user_data = ogs_mstrcatf(user_data, "%s",
                         ogs_diam_cx_xml_ifc_s);
-            ogs_assert(user_data); 
-            
-              // priority
+            ogs_assert(user_data);
+
+              /* priority */
               user_data = ogs_mstrcatf(user_data, "%s%d%s",
                           ogs_diam_cx_xml_priority_s,
                           ims_data->ifc[n].priority,
                           ogs_diam_cx_xml_priority_e);
               ogs_assert(user_data);
-              
-              // trigger point
+
+              /* trigger point */
               user_data = ogs_mstrcatf(user_data, "%s",
                           ogs_diam_cx_xml_tp_s);
               ogs_assert(user_data);
@@ -1035,60 +1035,70 @@ char *hss_cx_download_user_data(
                             ogs_diam_cx_xml_cnf_e);
                 ogs_assert(user_data);
 
-                // SPTs
-                for (int m = 0; m < ims_data->ifc[n].trigger_point.num_of_spt; m++) {
+                /* SPTs */
+                for (int m = 0; m < ims_data->ifc[n].trigger_point.num_of_spt;
+                        m++) {
                     user_data = ogs_mstrcatf(user_data, "%s",
                                 ogs_diam_cx_xml_spt_s);
                     ogs_assert(user_data);
-                      
-                      // condition negated
+
+                      /* condition negated */
                       user_data = ogs_mstrcatf(user_data, "%s%d%s",
                                   ogs_diam_cx_xml_condition_negated_s,
-                                  ims_data->ifc[n].trigger_point.spt[m].condition_negated,
+                                  ims_data->ifc[n].trigger_point.spt[m].
+                                    condition_negated,
                                   ogs_diam_cx_xml_condition_negated_e);
                       ogs_assert(user_data);
-                      
-                      // group
+
+                      /* group */
                       user_data = ogs_mstrcatf(user_data, "%s%d%s",
                                   ogs_diam_cx_xml_group_s,
                                   ims_data->ifc[n].trigger_point.spt[m].group,
                                   ogs_diam_cx_xml_group_e);
                       ogs_assert(user_data);
-                      
-                      // method
-                      if (ims_data->ifc[n].trigger_point.spt[m].type == HAS_METHOD) {
+
+                      /* method */
+                      if (ims_data->ifc[n].trigger_point.spt[m].type ==
+                              OGS_SPT_HAS_METHOD) {
                           user_data = ogs_mstrcatf(user_data, "%s%s%s",
                                       ogs_diam_cx_xml_method_s,
-                                      ims_data->ifc[n].trigger_point.spt[m].method,
+                                      ims_data->ifc[n].trigger_point.spt[m].
+                                          method,
                                       ogs_diam_cx_xml_method_e);
                           ogs_assert(user_data);
                       }
 
-                      // session case
-                      if (ims_data->ifc[n].trigger_point.spt[m].type == HAS_SESSION_CASE) {
+                      /* session case */
+                      if (ims_data->ifc[n].trigger_point.spt[m].type ==
+                              OGS_SPT_HAS_SESSION_CASE) {
                           user_data = ogs_mstrcatf(user_data, "%s%d%s",
                                       ogs_diam_cx_xml_session_case_s,
-                                      ims_data->ifc[n].trigger_point.spt[m].session_case,
+                                      ims_data->ifc[n].trigger_point.spt[m].
+                                          session_case,
                                       ogs_diam_cx_xml_session_case_e);
                           ogs_assert(user_data);
                       }
 
-                      // sip header
-                      if (ims_data->ifc[n].trigger_point.spt[m].type == HAS_SIP_HEADER) {
+                      /* sip header */
+                      if (ims_data->ifc[n].trigger_point.spt[m].type ==
+                              OGS_SPT_HAS_SIP_HEADER) {
                           user_data = ogs_mstrcatf(user_data, "%s",
                                       ogs_diam_cx_xml_sip_hdr_s);
                           ogs_assert(user_data);
 
                             user_data = ogs_mstrcatf(user_data, "%s%s%s",
                                         ogs_diam_cx_xml_header_s,
-                                        ims_data->ifc[n].trigger_point.spt[m].header,
+                                        ims_data->ifc[n].trigger_point.spt[m].
+                                            header,
                                         ogs_diam_cx_xml_header_e);
                             ogs_assert(user_data);
 
-                            if  (ims_data->ifc[n].trigger_point.spt[m].header_content) {
+                            if  (ims_data->ifc[n].trigger_point.spt[m].
+                                    header_content) {
                                 user_data = ogs_mstrcatf(user_data, "%s%s%s",
                                             ogs_diam_cx_xml_content_s,
-                                            ims_data->ifc[n].trigger_point.spt[m].header_content,
+                                            ims_data->ifc[n].trigger_point.
+                                                spt[m].header_content,
                                             ogs_diam_cx_xml_content_e);
                                 ogs_assert(user_data);
                             }
@@ -1097,17 +1107,19 @@ char *hss_cx_download_user_data(
                                       ogs_diam_cx_xml_sip_hdr_e);
                           ogs_assert(user_data);
                       }
-                      
-                      // request uri
-                      if (ims_data->ifc[n].trigger_point.spt[m].type == HAS_REQUEST_URI) {
+
+                      /* request uri */
+                      if (ims_data->ifc[n].trigger_point.spt[m].type ==
+                              OGS_SPT_HAS_REQUEST_URI) {
                           user_data = ogs_mstrcatf(user_data, "%s%s%s",
                                     ogs_diam_cx_xml_req_uri_s,
-                                    ims_data->ifc[n].trigger_point.spt[m].request_uri,
+                                    ims_data->ifc[n].trigger_point.spt[m].
+                                        request_uri,
                                     ogs_diam_cx_xml_req_uri_e);
                           ogs_assert(user_data);
                       }
 
-                      // extension
+                      /* extension */
                       user_data = ogs_mstrcatf(user_data, "%s",
                                   ogs_diam_cx_xml_extension_s);
                       ogs_assert(user_data);
@@ -1120,12 +1132,12 @@ char *hss_cx_download_user_data(
                                 ogs_diam_cx_xml_spt_e);
                     ogs_assert(user_data);
                 }
-            
+
               user_data = ogs_mstrcatf(user_data, "%s",
                           ogs_diam_cx_xml_tp_e);
               ogs_assert(user_data);
 
-              // application server
+              /* application server */
               user_data = ogs_mstrcatf(user_data, "%s",
                           ogs_diam_cx_xml_app_server_s);
               ogs_assert(user_data);
@@ -1135,10 +1147,11 @@ char *hss_cx_download_user_data(
                             ims_data->ifc[n].application_server.server_name,
                             ogs_diam_cx_xml_server_name_e);
                 ogs_assert(user_data);
-                
+
                 user_data = ogs_mstrcatf(user_data, "%s%d%s",
                             ogs_diam_cx_xml_default_handling_s,
-                            ims_data->ifc[n].application_server.default_handling, 
+                            ims_data->ifc[n].application_server.
+                                default_handling,
                             ogs_diam_cx_xml_default_handling_e);
                 ogs_assert(user_data);
 
@@ -1150,8 +1163,8 @@ char *hss_cx_download_user_data(
                         ogs_diam_cx_xml_ifc_e);
             ogs_assert(user_data);
         }
-        
-        if(self.sms_over_ims) {
+
+        if (self.sms_over_ims) {
             user_data = ogs_mstrcatf(user_data, "%s",
                         ogs_diam_cx_xml_ifc_s);
             ogs_assert(user_data);

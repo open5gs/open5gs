@@ -962,68 +962,89 @@ typedef struct ogs_media_component_s {
  * Defines matching mechanism type of SPT
  */
 typedef enum {
-    INVALID_TYPE,
-    HAS_METHOD,
-    HAS_SESSION_CASE,
-    HAS_SIP_HEADER,
-    HAS_SDP_LINE,
-    HAS_REQUEST_URI,
-} spt_type_e;
+    OGS_SPT_INVALID_TYPE,
+    OGS_SPT_HAS_METHOD,
+    OGS_SPT_HAS_SESSION_CASE,
+    OGS_SPT_HAS_SIP_HEADER,
+    OGS_SPT_HAS_SDP_LINE,
+    OGS_SPT_HAS_REQUEST_URI,
+} ogs_spt_type_e;
 
 /**************************************************
  * Service Point Trigger Structure (SPT)         */
-typedef struct _spt_t {
-    spt_type_e type; /* Matching mechanism type of SPT */
-    int        condition_negated; /* Indicates if the Service Point Trigger instance is negated */
-    int        group; /* The SPT group or list of SPT groups assigned to the SPT */
-    const char *method; /* The method of the SIP request */
-    int        session_case; /* The direction of the SIP request as evaluated by the S-CSCF */
-    const char *header; /* A header in the SIP request*/
-	const char *header_content; /* Optionally the value of the header in the SIP request */
-    const char *sdp_line; /* A SDP line within the body (if any) of a SIP request */
-	const char *sdp_line_content; /* Optionally the value in the SDP line of a SIP request */
-    const char *request_uri; /* The request-URI of the SIP request */
-} spt_t;
+typedef struct ogs_spt_s {
+    /* Matching mechanism type of SPT */
+    ogs_spt_type_e type;
+    /* Indicates if the Service Point Trigger instance is negated */
+    int        condition_negated;
+    /* The SPT group or list of SPT groups assigned to the SPT */
+    int        group;
+    /* The method of the SIP request */
+    const char *method;
+    /* The direction of the SIP request as evaluated by the S-CSCF */
+    int        session_case;
+    /* A header in the SIP request*/
+    const char *header;
+    /* Optionally the value of the header in the SIP request */
+	const char *header_content;
+    /* A SDP line within the body (if any) of a SIP request */
+    const char *sdp_line;
+    /* Optionally the value in the SDP line of a SIP request */
+	const char *sdp_line_content;
+    /* The request-URI of the SIP request */
+    const char *request_uri;
+} ogs_spt_t;
 
 /*
  * Defines what logical operators should be used between SPTs belonging to
  * different groups
  */
 typedef enum {
-    DISJUNCTIVE_NORMAL_FORMAT,  /* an ORed set of ANDed subsets */
-    CONJUNCTIVE_NORMAL_FORMAT /* an ANDed set of ORed subsets */
-} condition_type_cnf_e;
+    OGS_DISJUNCTIVE_NORMAL_FORMAT,  /* an ORed set of ANDed subsets */
+    OGS_CONJUNCTIVE_NORMAL_FORMAT   /* an ANDed set of ORed subsets */
+} ogs_condition_type_cnf_e;
 
 /**************************************************
  * Trigger Point Structure
- * Each TriggerPoint is made up of Service Point Trigger (SPTs) which are 
+ * Each TriggerPoint is made up of Service Point Trigger (SPTs) which are
  * individual rules that are matched or not matched, that are either combined
  * as logical AND or logical OR statements when evaluated.
  */
-typedef struct _trigger_point_t {
-    int                  num_of_spt;
-    condition_type_cnf_e condition_type_cnf; 
-    spt_t                spt[OGS_MAX_NUM_OF_SPT];
-} trigger_point_t;
+typedef struct ogs_trigger_point_s {
+    int num_of_spt;
+    ogs_condition_type_cnf_e condition_type_cnf;
+    ogs_spt_t spt[OGS_MAX_NUM_OF_SPT];
+} ogs_trigger_point_t;
 
 /**************************************************
  * Application Server Structure                  */
-typedef struct _application_server_t {
+typedef struct ogs_application_server_s {
     const char *server_name;
     int        default_handling;
-} application_server_t;
+} ogs_application_server_t;
 
 /**************************************************
- * IFC Structure 
+ * IFC Structure
  * 3GPP TS 29.562
  */
-typedef struct _ifc_t {
-    int priority; /* The priority of the IFC. The higher the Priority Number the lower the priority of the Filter
-    Criteria is*/
-    trigger_point_t trigger_point; /* The conditions that should be checked to find out if the indicated Application
-    Server should be contacted or not */
-    application_server_t application_server; /* the Application Server which shall be triggered if the conditions are met */
-} ifc_t;
+typedef struct ogs_ifc_s {
+    /*
+     * The priority of the IFC.
+     * The higher the Priority Number the lower the priority of the Filter
+     * Criteria is
+     */
+    int priority;
+    /*
+     * The conditions that should be checked to find out
+     * if the indicated Application Server should be contacted or not
+     */
+    ogs_trigger_point_t trigger_point;
+    /*
+     * the Application Server which shall be triggered
+     * if the conditions are met
+     */
+    ogs_application_server_t application_server;
+} ogs_ifc_t;
 
 typedef struct ogs_ims_data_s {
     int num_of_msisdn;
@@ -1038,7 +1059,7 @@ typedef struct ogs_ims_data_s {
     int num_of_media_component;
 
     int num_of_ifc;
-    ifc_t ifc[OGS_MAX_NUM_OF_IFC];
+    ogs_ifc_t ifc[OGS_MAX_NUM_OF_IFC];
 } ogs_ims_data_t;
 
 void ogs_ims_data_free(ogs_ims_data_t *ims_data);
