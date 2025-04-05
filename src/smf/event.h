@@ -74,10 +74,6 @@ typedef struct smf_event_s {
     smf_gtp_node_t *gnode;
     ogs_pool_id_t gtp_xact_id;
 
-    /* S8 GTP message */
-    ogs_gtp_xact_t *gtp_xact;        /* Add this field */
-    ogs_gtp2_message_t *message;      /* Add this field */
-
     ogs_pfcp_node_t *pfcp_node;
     ogs_pool_id_t pfcp_xact_id;
     ogs_pfcp_message_t *pfcp_message;

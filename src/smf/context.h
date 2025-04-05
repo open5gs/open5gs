@@ -69,16 +69,6 @@ typedef struct smf_context_s {
     const char*         diam_conf_path;   /* SMF Diameter conf path */
     ogs_diam_config_t   *diam_config;     /* SMF Diameter config */
 
-    struct {
-        ogs_list_t authorized_peers;  // List of authorized S8 peers
-        ogs_sockaddr_t *addr;         // Local address for S8 interface
-        ogs_sockaddr_t *addr6;        // Local IPv6 address for S8 interface
-    } s8_config;
-
-    /* S8 Interface */
-    ogs_list_t      sgw_s8_list;      /* SGW GTPC Node List */
-    ogs_list_t      sgw_list;         /* SGW GTP Node List */
-
 #define MAX_NUM_OF_DNS              2
     const char      *dns[MAX_NUM_OF_DNS];
     const char      *dns6[MAX_NUM_OF_DNS];
@@ -217,19 +207,9 @@ typedef struct smf_bearer_s {
         char        *id;            /* 5GC: PCC Rule Id */
     } pcc_rule;
 
-    /* S8 specific fields */
-    struct {
-        uint32_t pgw_s8u_teid;  /* PGW S8-U TEID */
-        ogs_ip_t  pgw_s8u_ip;   /* PGW S8-U IP */
-        uint32_t sgw_s8u_teid;  /* SGW S8-U TEID */
-        ogs_ip_t  sgw_s8u_ip;   /* SGW S8-U IP */
-    } s8;
-    /* S8 specific fields */
 
     ogs_qos_t       qos;            /* QoS Information */
 
-    ogs_gtp_node_t  *gnode;         /* S8 GTP Node */
-    smf_sess_t      *sess;          /* S8 Parent Session */
 
     OGS_POOL(pf_identifier_pool, uint8_t);
 
@@ -293,15 +273,6 @@ typedef struct smf_sess_s {
     char            *gx_sid;        /* Gx Session ID */
     char            *gy_sid;        /* Gx Session ID */
     char            *s6b_sid;       /* S6b Session ID */
-
-    /* S8 Interface */
-    uint32_t        sgw_s8_teid;      /* SGW-S8 Tunnel Endpoint Identifier */
-    ogs_ip_t        sgw_s8_ip;        /* SGW-S8 IPv4/IPv6 Address */
-    uint32_t        pgw_s8_teid;      /* PGW-S8 Tunnel Endpoint Identifier */
-    ogs_ip_t        pgw_s8_ip;        /* PGW-S8 IPv4/IPv6 Address */
-
-    /* S8 GTP Node */
-    ogs_gtp_node_t  *gnode_s8;        /* SGW-S8 GTP Node */
 
     OGS_POOL(pf_precedence_pool, uint8_t);
 
@@ -650,13 +621,6 @@ smf_bearer_t *smf_bearer_find_by_pcc_rule_name(
 smf_bearer_t *smf_bearer_find_by_pdr_id(
         smf_sess_t *sess, ogs_pfcp_pdr_id_t pdr_id);
 smf_bearer_t *smf_default_bearer_in_sess(smf_sess_t *sess);
-
-/* for s8 */
-typedef enum {
-    SMF_BEARER_TYPE_DEFAULT,
-    SMF_BEARER_TYPE_DEDICATED,
-    SMF_BEARER_TYPE_S8,
-} smf_bearer_type_t;
 
 void smf_bearer_tft_update(smf_bearer_t *bearer);
 void smf_bearer_qos_update(smf_bearer_t *bearer);

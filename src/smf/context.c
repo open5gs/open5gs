@@ -89,10 +89,6 @@ void smf_context_init(void)
     ogs_pool_init(&smf_pf_pool,
             ogs_app()->pool.bearer * OGS_MAX_NUM_OF_FLOW_IN_BEARER);
 
-    /* Initialize S8 lists */
-    ogs_list_init(&self.sgw_list);
-    ogs_list_init(&self.sgw_s8_list);
-
     ogs_pool_init(&smf_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&smf_n4_seid_pool, ogs_app()->pool.sess);
     ogs_pool_random_id_generate(&smf_n4_seid_pool);
@@ -2439,19 +2435,9 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     ogs_list_init(&bearer->pf_list);
     bearer->sess_id = sess->id;
 
-    if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN && sess->sgw_s8_teid) {
-        /* This is an S8 bearer */
-        bearer->s8.pgw_s8u_teid = sess->smf_n4_teid + bearer->id;
-        memcpy(&bearer->s8.pgw_s8u_ip, &sess->pgw_s8_ip, sizeof(ogs_ip_t));
-
-        /* For S8 bearers, we don't create PFCP rules as they use direct GTP-U */
-        ogs_debug("Creating S8 bearer with TEID: 0x%x", bearer->s8.pgw_s8u_teid);
-    } else {
-        /* Normal bearer setup - Keep existing logic exactly as is */
-        /* PDR */
-        dl_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
-        ogs_assert(dl_pdr);
-        bearer->dl_pdr = dl_pdr;
+    dl_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
+    ogs_assert(dl_pdr);
+    bearer->dl_pdr = dl_pdr;
 
         ogs_assert(sess->session.name);
         dl_pdr->apn = ogs_strdup(sess->session.name);
@@ -2490,43 +2476,42 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
             ogs_assert_if_reached();
         }
 
-        /* FAR */
-        dl_far = ogs_pfcp_far_add(&sess->pfcp);
-        ogs_assert(dl_far);
-        bearer->dl_far = dl_far;
+     /* FAR */
+    dl_far = ogs_pfcp_far_add(&sess->pfcp);
+    ogs_assert(dl_far);
+    bearer->dl_far = dl_far;
 
-        ogs_assert(sess->session.name);
-        dl_far->apn = ogs_strdup(sess->session.name);
-        ogs_assert(dl_far->apn);
+    ogs_assert(sess->session.name);
+    dl_far->apn = ogs_strdup(sess->session.name);
+    ogs_assert(dl_far->apn);
 
-        dl_far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+    dl_far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
 
-        dl_far->dst_if_type_presence = true;
-        dl_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
+    dl_far->dst_if_type_presence = true;
+    dl_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
 
-        ogs_pfcp_pdr_associate_far(dl_pdr, dl_far);
+    ogs_pfcp_pdr_associate_far(dl_pdr, dl_far);
 
-        dl_far->apply_action =
-            OGS_PFCP_APPLY_ACTION_BUFF| OGS_PFCP_APPLY_ACTION_NOCP;
-        ogs_assert(sess->pfcp.bar);
+    dl_far->apply_action =
+        OGS_PFCP_APPLY_ACTION_BUFF| OGS_PFCP_APPLY_ACTION_NOCP;
+    ogs_assert(sess->pfcp.bar);
 
-        ul_far = ogs_pfcp_far_add(&sess->pfcp);
-        ogs_assert(ul_far);
-        bearer->ul_far = ul_far;
+    ul_far = ogs_pfcp_far_add(&sess->pfcp);
+    ogs_assert(ul_far);
+    bearer->ul_far = ul_far;
 
-        ogs_assert(sess->session.name);
-        ul_far->apn = ogs_strdup(sess->session.name);
-        ogs_assert(ul_far->apn);
+    ogs_assert(sess->session.name);
+    ul_far->apn = ogs_strdup(sess->session.name);
+    ogs_assert(ul_far->apn);
 
-        ul_far->dst_if = OGS_PFCP_INTERFACE_CORE;
+    ul_far->dst_if = OGS_PFCP_INTERFACE_CORE;
 
-        ul_far->dst_if_type_presence = true;
-        ul_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N6;
+    ul_far->dst_if_type_presence = true;
+    ul_far->dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N6;
 
-        ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
+    ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
 
-        ul_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
-    }
+    ul_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
     bearer->sess_id = sess->id;
     ogs_list_add(&sess->bearer_list, bearer);
@@ -2543,40 +2528,6 @@ int smf_bearer_remove(smf_bearer_t *bearer)
     ogs_assert(sess);
 
     ogs_list_remove(&sess->bearer_list, bearer);
-
-    /* Check if this is an S8 bearer */
-    if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN &&
-        sess->sgw_s8_teid) {
-
-        ogs_debug("Removing S8 bearer");
-
-        /* Clean up S8-specific resources if needed */
-        if (bearer->gnode) {
-            /* Remove GTP node if no other bearer is using it */
-            if (ogs_list_count(&sess->bearer_list) == 0) {
-                ogs_gtp_node_remove(&self.sgw_s8_list, bearer->gnode);
-            }
-            bearer->gnode = NULL;
-        }
-
-        /* Free PCC rule related items */
-        if (bearer->pcc_rule.name)
-            ogs_free(bearer->pcc_rule.name);
-        if (bearer->pcc_rule.id)
-            ogs_free(bearer->pcc_rule.id);
-
-        smf_pf_remove_all(bearer);
-        smf_pf_identifier_pool_final(bearer);
-
-        if (SMF_IS_QOF_FLOW(bearer))
-            ogs_pool_free(&sess->qfi_pool, bearer->qfi_node);
-
-        ogs_pool_id_free(&smf_bearer_pool, bearer);
-
-        smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_BEARERS_ACTIVE);
-        return OGS_OK;
-    }
-
 
     ogs_assert(bearer->dl_pdr);
     ogs_pfcp_pdr_remove(bearer->dl_pdr);
@@ -3288,85 +3239,4 @@ int smf_maximum_integrity_protected_data_rate_downlink_value2enum(
 {
     ogs_assert(value);
     return smf_maximum_integrity_protected_data_rate_uplink_value2enum(value);
-}
-
-/* Add to smf/context.c S8 */
-void smf_bearer_update_gtp_path(smf_bearer_t *bearer)
-{
-    ogs_assert(bearer);
-    ogs_assert(bearer->sess);
-
-    if (bearer->sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN &&
-        bearer->sess->sgw_s8_teid) {
-        /* This is an S8 bearer */
-        ogs_sockaddr_t *addr = NULL;
-
-        /* Convert IP to sockaddr */
-        ogs_ip_to_sockaddr(&bearer->s8.sgw_s8u_ip, OGS_GTPV2_C_UDP_PORT, &addr);
-        ogs_assert(addr);
-
-        if (!bearer->gnode) {
-            bearer->gnode = ogs_gtp_node_find_by_addr(&self.sgw_s8_list, addr);
-            if (!bearer->gnode) {
-                bearer->gnode = ogs_gtp_node_add_by_addr(&self.sgw_s8_list, addr);
-                ogs_assert(bearer->gnode);
-            }
-        }
-
-        ogs_free(addr);
-
-        /* TEIDs are stored in the bearer structure */
-        bearer->s8.pgw_s8u_teid = bearer->sess->smf_n4_teid + bearer->id;
-        } else {
-            /* Normal bearer */
-            ogs_sockaddr_t *addr = NULL;
-
-            /* Convert IP to sockaddr */
-            ogs_ip_to_sockaddr(&bearer->sgw_s5u_ip, OGS_GTPV2_C_UDP_PORT, &addr);
-            ogs_assert(addr);
-
-            if (!bearer->gnode) {
-                bearer->gnode = ogs_gtp_node_find_by_addr(&self.sgw_list, addr);
-                if (!bearer->gnode) {
-                    bearer->gnode = ogs_gtp_node_add_by_addr(&self.sgw_list, addr);
-                    ogs_assert(bearer->gnode);
-                }
-            }
-
-            ogs_free(addr);
-
-            /* TEIDs are stored in the bearer structure */
-            bearer->pgw_s5u_teid = bearer->sess->smf_n4_teid + bearer->id;
-        }
-
-    ogs_debug("Bearer GTP path updated [%s]",
-        bearer->sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN &&
-        bearer->sess->sgw_s8_teid ? "S8" : "S5/N3");
-}
-
-smf_sess_t *smf_sess_add_by_message(ogs_gtp2_message_t *message)
-{
-    smf_sess_t *sess = NULL;
-    smf_ue_t *smf_ue = NULL;
-
-    ogs_assert(message);
-
-    switch (message->h.type) {
-    case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
-        {
-            ogs_gtp2_create_session_request_t *req = &message->create_session_request;
-            if (req->imsi.presence) {
-                smf_ue = smf_ue_add_by_imsi(req->imsi.data, req->imsi.len);
-                ogs_assert(smf_ue);
-                sess = smf_sess_add_by_gtp2_message(message);
-                ogs_assert(sess);
-            }
-        }
-        break;
-    default:
-        ogs_error("Unknown message type %d", message->h.type);
-        break;
-    }
-
-    return sess;
 }

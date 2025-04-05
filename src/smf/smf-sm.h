@@ -55,7 +55,6 @@ void smf_pfcp_state_final(ogs_fsm_t *s, smf_event_t *e);
 void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e);
 void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e);
 void smf_pfcp_state_exception(ogs_fsm_t *s, smf_event_t *e);
-void smf_state_handle_s8_message(smf_sm_t *s, smf_event_t *e);
 
 #define smf_sm_debug(__pe) \
     ogs_debug("%s(): %s", __func__, smf_event_get_name(__pe))
