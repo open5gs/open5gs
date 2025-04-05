@@ -108,6 +108,12 @@ libsmf_sources = files('''
     ngap-handler.c
     ngap-path.c
     metrics.c
+    smf-s8.h
+    smf-s8.c
+    s8-build.h
+    s8-build.c
+    s8-path.h
+    s8-path.c
 '''.split())
 
 redis_dep = dependency('hiredis')

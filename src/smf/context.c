@@ -3315,8 +3315,8 @@ void smf_bearer_update_gtp_path(smf_bearer_t *bearer)
 
         ogs_free(addr);
 
-        /* Set TEID */
-        bearer->gnode->remote_teid = bearer->s8.sgw_s8u_teid;
+        /* TEIDs are stored in the bearer structure */
+        bearer->s8.pgw_s8u_teid = bearer->sess->smf_n4_teid + bearer->id;
         } else {
             /* Normal bearer */
             ogs_sockaddr_t *addr = NULL;
@@ -3335,8 +3335,8 @@ void smf_bearer_update_gtp_path(smf_bearer_t *bearer)
 
             ogs_free(addr);
 
-            /* Set TEID */
-            bearer->gnode->remote_teid = bearer->sgw_s5u_teid;
+            /* TEIDs are stored in the bearer structure */
+            bearer->pgw_s5u_teid = bearer->sess->smf_n4_teid + bearer->id;
         }
 
     ogs_debug("Bearer GTP path updated [%s]",

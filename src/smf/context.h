@@ -69,6 +69,12 @@ typedef struct smf_context_s {
     const char*         diam_conf_path;   /* SMF Diameter conf path */
     ogs_diam_config_t   *diam_config;     /* SMF Diameter config */
 
+    struct {
+        ogs_list_t authorized_peers;  // List of authorized S8 peers
+        ogs_sockaddr_t *addr;         // Local address for S8 interface
+        ogs_sockaddr_t *addr6;        // Local IPv6 address for S8 interface
+    } s8_config;
+
     /* S8 Interface */
     ogs_list_t      sgw_s8_list;      /* SGW GTPC Node List */
     ogs_list_t      sgw_list;         /* SGW GTP Node List */
