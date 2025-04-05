@@ -1116,7 +1116,7 @@ void smf_state_handle_s8_message(smf_sm_t *s, smf_event_t *e)
 
     xact = e->gtp_xact;
     ogs_assert(xact);
-    message = e->gtp_message;
+    message = e->gtp2_message;
     ogs_assert(message);
 
     switch (message->h.type) {
