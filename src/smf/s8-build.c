@@ -6,25 +6,18 @@
 #include "ogs-pkbuf.h"
 
 ogs_pkbuf_t *smf_s8_build_create_session_response(
-    smf_sess_t *sess, ogs_gtp_xact_t *xact,
-    ogs_gtp2_create_session_request_t *req)
+    smf_sess_t *sess, ogs_gtp_xact_t *xact)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_gtp2_create_session_response_t *rsp = NULL;
-    ogs_gtp2_bearer_context_t *bearer = NULL;
+    ogs_gtp2_tlv_bearer_context_t *bearer = NULL;
 
     ogs_assert(sess);
     ogs_assert(xact);
-    ogs_assert(req);
 
     pkbuf = ogs_gtp2_build_create_session_response(
         OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
-        req->bearer_contexts_to_be_created.eps_bearer_id.u8,
-        req->sender_f_teid_for_control_plane.teid,
-        req->sender_f_teid_for_control_plane.ipv4 ?
-            &req->sender_f_teid_for_control_plane.ipv4->addr : NULL,
-        req->sender_f_teid_for_control_plane.ipv6 ?
-            &req->sender_f_teid_for_control_plane.ipv6->addr : NULL);
+        sess->sgw_s5c_teid, 0);
     ogs_assert(pkbuf);
 
     rsp = &pkbuf->gtp2_message->create_session_response;
@@ -35,13 +28,9 @@ ogs_pkbuf_t *smf_s8_build_create_session_response(
     rsp->cause.len = 1;
     rsp->cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 
-    rsp->pgw_s5s8_f_teid.presence = 1;
-    rsp->pgw_s5s8_f_teid.data = &rsp->pgw_s5s8_f_teid_data;
-    rsp->pgw_s5s8_f_teid.len = sizeof(ogs_gtp2_f_teid_t);
-    rsp->pgw_s5s8_f_teid_data.interface_type = OGS_GTP2_F_TEID_S5_S8_SGW_GTP_C;
-    rsp->pgw_s5s8_f_teid_data.teid = sess->pgw_s5c_teid;
-    rsp->pgw_s5s8_f_teid_data.ipv4 = 1;
-    rsp->pgw_s5s8_f_teid_data.addr = sess->pgw_s5c_addr;
+    rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.presence = 1;
+    rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.data = &sess->pgw_s5c_teid;
+    rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.len = sizeof(ogs_gtp2_f_teid_t);
 
     rsp->paa.presence = 1;
     rsp->paa.data = &sess->paa;
@@ -51,38 +40,31 @@ ogs_pkbuf_t *smf_s8_build_create_session_response(
     bearer->eps_bearer_id.presence = 1;
     bearer->eps_bearer_id.data = &bearer->eps_bearer_id_value;
     bearer->eps_bearer_id.len = 1;
-    bearer->eps_bearer_id_value = req->bearer_contexts_to_be_created.eps_bearer_id.u8;
+    bearer->eps_bearer_id_value = sess->bearer[0]->ebi;
 
-    bearer->s1u_sgw_f_teid.presence = 1;
-    bearer->s1u_sgw_f_teid.data = &bearer->s1u_sgw_f_teid_data;
-    bearer->s1u_sgw_f_teid.len = sizeof(ogs_gtp2_f_teid_t);
-    bearer->s1u_sgw_f_teid_data.interface_type = OGS_GTP2_F_TEID_S1U_SGW_GTP_U;
-    bearer->s1u_sgw_f_teid_data.teid = sess->sgw_s1u_teid;
-    bearer->s1u_sgw_f_teid_data.ipv4 = 1;
-    bearer->s1u_sgw_f_teid_data.addr = sess->sgw_s1u_addr;
+    bearer->s5_s8_u_pgw_f_teid.presence = 1;
+    bearer->s5_s8_u_pgw_f_teid.data = &bearer->s5_s8_u_pgw_f_teid_data;
+    bearer->s5_s8_u_pgw_f_teid.len = sizeof(ogs_gtp2_f_teid_t);
+    bearer->s5_s8_u_pgw_f_teid_data.interface_type = OGS_GTP2_F_TEID_S5_S8_PGW_GTP_U;
+    bearer->s5_s8_u_pgw_f_teid_data.teid = sess->bearer[0]->pgw_s5u_teid;
+    bearer->s5_s8_u_pgw_f_teid_data.ipv4 = 1;
+    bearer->s5_s8_u_pgw_f_teid_data.addr = sess->bearer[0]->pgw_s5u_addr;
 
     return pkbuf;
 }
 
 ogs_pkbuf_t *smf_s8_build_delete_session_response(
-    smf_sess_t *sess, ogs_gtp_xact_t *xact,
-    ogs_gtp2_delete_session_request_t *req)
+    smf_sess_t *sess, ogs_gtp_xact_t *xact)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_gtp2_delete_session_response_t *rsp = NULL;
 
     ogs_assert(sess);
     ogs_assert(xact);
-    ogs_assert(req);
 
     pkbuf = ogs_gtp2_build_delete_session_response(
         OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE,
-        req->linked_eps_bearer_id.u8,
-        req->sender_f_teid_for_control_plane.teid,
-        req->sender_f_teid_for_control_plane.ipv4 ?
-            &req->sender_f_teid_for_control_plane.ipv4->addr : NULL,
-        req->sender_f_teid_for_control_plane.ipv6 ?
-            &req->sender_f_teid_for_control_plane.ipv6->addr : NULL);
+        sess->sgw_s5c_teid, 0);
     ogs_assert(pkbuf);
 
     rsp = &pkbuf->gtp2_message->delete_session_response;
@@ -110,12 +92,7 @@ int smf_s8_gtp_send_modify_bearer_response(
 
     pkbuf = ogs_gtp2_build_modify_bearer_response(
         OGS_GTP2_MODIFY_BEARER_RESPONSE_TYPE,
-        req->bearer_contexts_to_be_modified.eps_bearer_id.u8,
-        req->sender_f_teid_for_control_plane.teid,
-        req->sender_f_teid_for_control_plane.ipv4 ?
-            &req->sender_f_teid_for_control_plane.ipv4->addr : NULL,
-        req->sender_f_teid_for_control_plane.ipv6 ?
-            &req->sender_f_teid_for_control_plane.ipv6->addr : NULL);
+        sess->sgw_s5c_teid, 0);
     ogs_assert(pkbuf);
 
     rsp = &pkbuf->gtp2_message->modify_bearer_response;
@@ -137,7 +114,7 @@ int smf_s8_gtp_send_modify_bearer_response(
 
 ogs_pkbuf_t *smf_s8_build_create_bearer_request(
     smf_sess_t *sess, ogs_gtp_xact_t *xact,
-    ogs_gtp2_bearer_context_t *bearer)
+    ogs_gtp2_tlv_bearer_context_t *bearer)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_gtp2_create_bearer_request_t *req = NULL;
@@ -148,10 +125,7 @@ ogs_pkbuf_t *smf_s8_build_create_bearer_request(
 
     pkbuf = ogs_gtp2_build_create_bearer_request(
         OGS_GTP2_CREATE_BEARER_REQUEST_TYPE,
-        bearer->eps_bearer_id_value,
-        sess->pgw_s5c_teid,
-        &sess->pgw_s5c_addr,
-        NULL);
+        sess->sgw_s5c_teid, 0);
     ogs_assert(pkbuf);
 
     req = &pkbuf->gtp2_message->create_bearer_request;
@@ -187,7 +161,7 @@ ogs_pkbuf_t *smf_s8_build_create_bearer_request(
 
 ogs_pkbuf_t *smf_s8_build_update_bearer_request(
     smf_sess_t *sess, ogs_gtp_xact_t *xact,
-    ogs_gtp2_bearer_context_t *bearer)
+    ogs_gtp2_tlv_bearer_context_t *bearer)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_gtp2_update_bearer_request_t *req = NULL;
@@ -198,10 +172,7 @@ ogs_pkbuf_t *smf_s8_build_update_bearer_request(
 
     pkbuf = ogs_gtp2_build_update_bearer_request(
         OGS_GTP2_UPDATE_BEARER_REQUEST_TYPE,
-        bearer->eps_bearer_id_value,
-        sess->pgw_s5c_teid,
-        &sess->pgw_s5c_addr,
-        NULL);
+        sess->sgw_s5c_teid, 0);
     ogs_assert(pkbuf);
 
     req = &pkbuf->gtp2_message->update_bearer_request;
@@ -237,7 +208,7 @@ ogs_pkbuf_t *smf_s8_build_update_bearer_request(
 
 ogs_pkbuf_t *smf_s8_build_delete_bearer_request(
     smf_sess_t *sess, ogs_gtp_xact_t *xact,
-    ogs_gtp2_bearer_context_t *bearer)
+    ogs_gtp2_tlv_bearer_context_t *bearer)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_gtp2_delete_bearer_request_t *req = NULL;
@@ -248,10 +219,7 @@ ogs_pkbuf_t *smf_s8_build_delete_bearer_request(
 
     pkbuf = ogs_gtp2_build_delete_bearer_request(
         OGS_GTP2_DELETE_BEARER_REQUEST_TYPE,
-        bearer->eps_bearer_id_value,
-        sess->pgw_s5c_teid,
-        &sess->pgw_s5c_addr,
-        NULL);
+        sess->sgw_s5c_teid, 0);
     ogs_assert(pkbuf);
 
     req = &pkbuf->gtp2_message->delete_bearer_request;
