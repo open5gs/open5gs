@@ -2,7 +2,7 @@
 #ifndef SMF_S8_H
 #define SMF_S8_H
 
-#include "ogs-gtp.h"
+#include "context.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,10 +12,10 @@ extern "C" {
             ogs_gtp_xact_t *xact, ogs_gtp2_echo_request_t *req);
     void smf_s8_handle_echo_response(
             ogs_gtp_xact_t *xact, ogs_gtp2_echo_response_t *rsp);
-    uint8_t smf_s8_handle_create_session_request(
+    void smf_s8_handle_create_session_request(
             smf_sess_t *sess, ogs_gtp_xact_t *xact,
             ogs_gtp2_create_session_request_t *req);
-    uint8_t smf_s8_handle_delete_session_request(
+    void smf_s8_handle_delete_session_request(
             smf_sess_t *sess, ogs_gtp_xact_t *xact,
             ogs_gtp2_delete_session_request_t *req);
     void smf_s8_handle_modify_bearer_request(

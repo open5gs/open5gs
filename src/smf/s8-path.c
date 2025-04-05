@@ -1,5 +1,6 @@
+#include "context.h"
 #include "s8-path.h"
-#include "gtp-path.h"
+#include "s8-build.h"
 
 int smf_s8_init(void)
 {
@@ -8,7 +9,10 @@ int smf_s8_init(void)
     ogs_list_init(&smf_self()->s8_config.authorized_peers);
 
     rv = smf_s8_listen();
-    if (rv != OGS_OK) return rv;
+    if (rv != OGS_OK) {
+        ogs_error("Failed to initialize S8 interface");
+        return rv;
+    }
 
     ogs_info("Roaming S8 path initialized");
     return OGS_OK;
@@ -17,29 +21,31 @@ int smf_s8_init(void)
 static int smf_s8_listen(void)
 {
     ogs_socknode_t *node = NULL;
-    ogs_sock_t *sock = NULL;
+    ogs_sockaddr_t *addr = NULL;
+    int rv;
 
-    /* Create new socknode for GTP-C */
-    node = ogs_socknode_new(AF_UNSPEC);
+    node = ogs_socknode_new();
     if (!node) {
-        ogs_error("ogs_socknode_new() failed");
+        ogs_error("Failed to create socket node");
         return OGS_ERROR;
     }
 
-    /* Set node addresses */
-    node->addr = smf_self()->s8_config.addr;
-    node->addr6 = smf_self()->s8_config.addr6;
-
-    /* Create GTP-C socket */
-    sock = ogs_gtp_server(node);
-    if (!sock) {
-        ogs_error("ogs_gtp_server() failed");
+    addr = smf_self()->s8_config.addr;
+    if (!addr) {
+        ogs_error("No S8 address configured");
         ogs_socknode_free(node);
         return OGS_ERROR;
     }
 
-    node->sock = sock;
-    ogs_list_add(&smf_self()->sgw_s8_list, node);
+    node->addr = addr;
+    node->option = OGS_SOCKOPT_REUSEADDR;
+
+    rv = ogs_gtp_server(node);
+    if (rv != OGS_OK) {
+        ogs_error("Failed to start S8 server");
+        ogs_socknode_free(node);
+        return rv;
+    }
 
     return OGS_OK;
 }
@@ -58,33 +64,34 @@ void smf_s8_final(void)
     ogs_info("S8 path finalized");
 }
 
-void smf_s8_send_create_session_response(
-        smf_sess_t *sess, ogs_gtp_xact_t *xact, uint8_t cause)
+int smf_s8_send_create_session_response(
+    smf_sess_t *sess,
+    ogs_gtp_xact_t *xact)
 {
-    int rv;
-    ogs_gtp2_header_t h;
     ogs_pkbuf_t *pkbuf = NULL;
+    int rv;
 
     ogs_assert(sess);
     ogs_assert(xact);
 
-    memset(&h, 0, sizeof(ogs_gtp2_header_t));
-    h.type = OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE;
-    h.teid = sess->sgw_s8_teid;
-
     pkbuf = smf_s8_build_create_session_response(sess, xact);
     if (!pkbuf) {
-        ogs_error("smf_s8_build_create_session_response() failed");
-        return;
+        ogs_error("Failed to build Create Session Response");
+        return OGS_ERROR;
     }
 
-    rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
+    rv = ogs_gtp_xact_update_tx(xact, &pkbuf);
     if (rv != OGS_OK) {
-        ogs_error("ogs_gtp_xact_update_tx() failed");
+        ogs_error("Failed to update transaction");
         ogs_pkbuf_free(pkbuf);
-        return;
+        return rv;
     }
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_assert(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("Failed to commit transaction");
+        return rv;
+    }
+
+    return OGS_OK;
 }
