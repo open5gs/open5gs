@@ -407,7 +407,7 @@ int mme_gn_handle_sgsn_context_response(
              ogs_min(gtp1_mm_ctx.ms_network_capability_len, sizeof(mme_ue->ms_network_capability) - 1));
     /* TODO: how to fill first byte of mme_ue->ms_network_capability ? */
 
-    mme_ue->nas_eps.ksi = gtp1_mm_ctx.ksi;
+    mme_ue->nas_eps.mme.ksi = gtp1_mm_ctx.ksi;
     /* 3GPP TS 33.401 A.10, A.11: */
     mme_ue->noncemme = ogs_random32();
     /* 3GPP TS 33.401 7.2.6.2 Establishment of keys for cryptographically protected radio bearers: */

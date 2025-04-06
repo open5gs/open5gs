@@ -256,6 +256,15 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     message.http.accept = (char *)(OGS_SBI_CONTENT_JSON_TYPE ","
         OGS_SBI_CONTENT_NGAP_TYPE "," OGS_SBI_CONTENT_PROBLEM_TYPE);
 
+/*
+ * Callback Header Configuration
+ *
+ * The 3gpp-Sbi-Callback HTTP header (per 3GPP TS 29.500 v17.9.0) indicates that
+ * a message is an asynchronous notification or callback. This header should be
+ * included only in HTTP POST requests that are callbacks (e.g., event or
+ * notification messages) and must not be added to regular service requests,
+ * such as registration (HTTP PUT) or subscription requests.
+ */
     message.http.custom.callback =
         (char *)OGS_SBI_CALLBACK_NSMF_PDUSESSION_STATUS_NOTIFY;
 
@@ -563,6 +572,18 @@ ogs_sbi_request_t *amf_nsmf_callback_build_n1_n2_failure_notify(
     }
 
     message.N1N2MsgTxfrFailureNotification = &N1N2MsgTxfrFailureNotification;
+
+/*
+ * Callback Header Configuration
+ *
+ * The 3gpp-Sbi-Callback HTTP header (per 3GPP TS 29.500 v17.9.0) indicates that
+ * a message is an asynchronous notification or callback. This header should be
+ * included only in HTTP POST requests that are callbacks (e.g., event or
+ * notification messages) and must not be added to regular service requests,
+ * such as registration (HTTP PUT) or subscription requests.
+ */
+    message.http.custom.callback =
+        (char *)OGS_SBI_CALLBACK_NAMF_COMMUNICATION_ONN1N2TRANSFERFAILURE;
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);

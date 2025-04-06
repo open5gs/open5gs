@@ -156,6 +156,14 @@ int ogs_sbi_server_start_all(
     return OGS_OK;
 }
 
+void ogs_sbi_server_graceful_shutdown_all(void)
+{
+    ogs_sbi_server_t *server = NULL, *next_server = NULL;
+
+    ogs_list_for_each_safe(&ogs_sbi_self()->server_list, next_server, server)
+        ogs_sbi_server_actions.graceful_shutdown(server);
+}
+
 void ogs_sbi_server_stop_all(void)
 {
     ogs_sbi_server_t *server = NULL, *next_server = NULL;

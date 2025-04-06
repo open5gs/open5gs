@@ -37,6 +37,8 @@ bool ogs_nnrf_nfm_send_nf_status_update(
         ogs_sbi_subscription_data_t *subscription_data);
 bool ogs_nnrf_nfm_send_nf_status_unsubscribe(
         ogs_sbi_subscription_data_t *subscription_data);
+bool ogs_nnrf_nfm_send_nf_list_retrieve(void);
+bool ogs_nnrf_nfm_send_nf_profile_get(char *nf_instance_id);
 
 bool ogs_nnrf_nfm_send_to_nrf(
         ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -59,10 +59,6 @@ static int check_signal(int signum)
         ogs_info("SIGHUP received");
         ogs_log_cycle();
 
-        break;
-    case SIGWINCH:
-        ogs_info("Signal-NUM[%d] received (%s)",
-                signum, ogs_signal_description_get(signum));
         break;
     case SIGUSR1:
         fprintf(stderr,

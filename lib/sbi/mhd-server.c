@@ -32,6 +32,7 @@ static void server_final(void);
 
 static int server_start(ogs_sbi_server_t *server,
         int (*cb)(ogs_sbi_request_t *request, void *data));
+static void server_graceful_shutdown(ogs_sbi_server_t *server);
 static void server_stop(ogs_sbi_server_t *server);
 
 static bool server_send_rspmem_persistent(
@@ -49,6 +50,7 @@ const ogs_sbi_server_actions_t ogs_mhd_server_actions = {
     server_final,
 
     server_start,
+    server_graceful_shutdown,
     server_stop,
 
     server_send_rspmem_persistent,
@@ -285,6 +287,13 @@ static int server_start(ogs_sbi_server_t *server,
         ogs_info("mhd_server() [%s]:%d", OGS_ADDR(addr, buf), OGS_PORT(addr));
 
     return OGS_OK;
+}
+
+static void server_graceful_shutdown(ogs_sbi_server_t *server)
+{
+    ogs_assert(server);
+
+    /* No need to shutdown gracefully */
 }
 
 static void server_stop(ogs_sbi_server_t *server)

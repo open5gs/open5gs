@@ -1081,6 +1081,7 @@ int ogs_pfcp_node_merge(ogs_pfcp_node_t *node,
                 ogs_freeaddrinfo(node->addr_list);
                 node->addr_list = tmp_list;
                 node->last_dns_refresh = now;
+                node->current_addr = NULL;
                 tmp_list = NULL;
             }
         }
@@ -1355,14 +1356,30 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
     return pdr;
 }
 
-void ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
+int ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
 {
     int i = 0;
 
     ogs_assert(pdr);
+    ogs_assert(pdr->f_teid_len > 0);
     ogs_assert(!pdr->f_teid.ch);
-    ogs_assert(pdr->f_teid.teid > 0 &&
-            pdr->f_teid.teid <= ogs_pfcp_pdr_teid_pool.size);
+
+    /*
+     * Issues #3747, #3574
+     *
+     * This code validates the F-TEID (Fully encapsulated TEID) information
+     * element within a PDR structure before further processing the PFCP
+     * message. The validation ensures that the F-TEID is present and
+     * within acceptable limits defined by the system.
+     */
+    if (pdr->f_teid.teid > 0 &&
+        pdr->f_teid.teid <= ogs_pfcp_pdr_teid_pool.size) {
+        /* PASS OK */
+    } else {
+        ogs_error("PDR-ID[%d] F-TEID LEN[%d] TEID[0x%x]",
+                pdr->id, pdr->f_teid_len, pdr->f_teid.teid);
+        return OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+    }
 
     /* Find out the Array Index for the restored TEID. */
     i = pdr_random_to_index[pdr->f_teid.teid];
@@ -1378,6 +1395,8 @@ void ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
         ogs_pfcp_pdr_teid_pool.array[i] = *(pdr->teid_node);
         *(pdr->teid_node) = pdr->f_teid.teid;
     }
+
+    return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
 
 void ogs_pfcp_object_teid_hash_set(
@@ -2328,7 +2347,7 @@ ogs_pfcp_dev_t *ogs_pfcp_dev_add(const char *ifname)
     ogs_assert(dev);
     memset(dev, 0, sizeof *dev);
 
-    strcpy(dev->ifname, ifname);
+    ogs_cpystrn(dev->ifname, ifname, OGS_MAX_IFNAME_LEN-1);
 
     ogs_list_add(&self.dev_list, dev);
 
@@ -2434,7 +2453,7 @@ ogs_pfcp_subnet_t *ogs_pfcp_subnet_add(
     }
 
     if (dnn)
-        strcpy(subnet->dnn, dnn);
+        ogs_cpystrn(subnet->dnn, dnn, OGS_MAX_DNN_LEN);
 
     ogs_pool_init(&subnet->pool, ogs_app()->pool.sess);
 

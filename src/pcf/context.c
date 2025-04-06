@@ -805,36 +805,45 @@ int pcf_instance_get_load(void)
             ogs_pool_size(&pcf_ue_pool));
 }
 
-int pcf_db_qos_data(char *supi,
-        ogs_plmn_id_t *plmn_id, ogs_s_nssai_t *s_nssai, char *dnn,
-        ogs_session_data_t *session_data)
+int pcf_get_session_data(const char *supi,
+                         const ogs_plmn_id_t *plmn_id,
+                         const ogs_s_nssai_t *s_nssai,
+                         const char *dnn,
+                         ogs_session_data_t *session_data,
+                         int flags)
 {
-    int rv;
-
+    int rv = OGS_OK;
     ogs_app_policy_conf_t *policy_conf = NULL;
 
+    /* Validate input parameters */
     ogs_assert(supi);
     ogs_assert(s_nssai);
     ogs_assert(dnn);
     ogs_assert(session_data);
 
+    /* Initialize the session data structure */
     memset(session_data, 0, sizeof(*session_data));
 
+    /* Attempt to locate a policy configuration */
     policy_conf = ogs_app_policy_conf_find(supi, plmn_id);
     if (policy_conf) {
         rv = ogs_app_config_session_data(
                 supi, plmn_id, s_nssai, dnn, session_data);
-        if (rv != OGS_OK)
-            ogs_error("ogs_app_config_session_data() failed - "
-                    "MCC[%d] MNC[%d] SST[%d] SD[0x%x] DNN[%s]",
-                    ogs_plmn_id_mcc(plmn_id), ogs_plmn_id_mnc(plmn_id),
-                    s_nssai->sst, s_nssai->sd.v, dnn);
+        if (rv != OGS_OK) {
+            if (!(flags & PCF_SESSION_DATA_FLAG_NO_ERROR_LOG))
+                ogs_error("ogs_app_config_session_data() failed - "
+                        "MCC[%d] MNC[%d] SST[%d] SD[0x%x] DNN[%s]",
+                        ogs_plmn_id_mcc(plmn_id), ogs_plmn_id_mnc(plmn_id),
+                        s_nssai->sst, s_nssai->sd.v, dnn);
+        }
     } else {
         rv = ogs_dbi_session_data(supi, s_nssai, dnn, session_data);
-        if (rv != OGS_OK)
-            ogs_error("ogs_dbi_session_data() failed - "
-                    "SUPI[%s] SST[%d] SD[0x%x] DNN[%s]",
-                    supi, s_nssai->sst, s_nssai->sd.v, dnn);
+        if (rv != OGS_OK) {
+            if (!(flags & PCF_SESSION_DATA_FLAG_NO_ERROR_LOG))
+                ogs_error("ogs_dbi_session_data() failed - "
+                        "SUPI[%s] SST[%d] SD[0x%x] DNN[%s]",
+                        supi, s_nssai->sst, s_nssai->sd.v, dnn);
+        }
     }
 
     return rv;

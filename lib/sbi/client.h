@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -40,15 +40,15 @@ extern "C" {
             client = ((__cTX)->client); \
             ogs_assert(client); \
             if (client->fqdn) { \
-                ogs_warn("NF EndPoint(fqdn) updated [%s:%d]", \
+                ogs_warn("UnRef NF EndPoint(fqdn) [%s:%d]", \
                         client->fqdn, client->fqdn_port); \
             } \
             if (client->addr) { \
-                ogs_warn("NF EndPoint(addr) updated [%s:%d]", \
+                ogs_warn("UnRef NF EndPoint(addr) [%s:%d]", \
                     OGS_ADDR(client->addr, buf), OGS_PORT(client->addr)); \
             } \
             if (client->addr6) { \
-                ogs_warn("NF EndPoint(addr6) updated [%s:%d]", \
+                ogs_warn("UnRef NF EndPoint(addr6) [%s:%d]", \
                     OGS_ADDR(client->addr6, buf), OGS_PORT(client->addr6)); \
             } \
             ogs_sbi_client_remove(client); \
@@ -58,15 +58,15 @@ extern "C" {
         ((__cTX)->client) = (__pClient); \
         ogs_debug("CLIENT Ref [%d]", (__pClient)->reference_count); \
         if ((__pClient)->fqdn) { \
-            ogs_info("NF EndPoint(fqdn) setup [%s:%d]", \
+            ogs_info("Setup NF EndPoint(fqdn) [%s:%d]", \
                     (__pClient)->fqdn, (__pClient)->fqdn_port); \
         } \
         if ((__pClient)->addr) { \
-            ogs_info("NF EndPoint(addr) setup [%s:%d]", \
+            ogs_info("Setup NF EndPoint(addr) [%s:%d]", \
                 OGS_ADDR((__pClient)->addr, buf), OGS_PORT((__pClient)->addr)); \
         } \
         if ((__pClient)->addr6) { \
-            ogs_info("NF EndPoint(addr6) setup [%s:%d]", \
+            ogs_info("Setup NF EndPoint(addr6) [%s:%d]", \
                 OGS_ADDR((__pClient)->addr6, buf), \
                 OGS_PORT((__pClient)->addr6)); \
         } \
@@ -81,6 +81,7 @@ typedef struct ogs_sbi_client_s {
     OpenAPI_uri_scheme_e scheme;
     bool insecure_skip_verify;
     char *cacert, *private_key, *cert, *sslkeylog;
+    char *local_if;
 
     char *fqdn;
     uint16_t fqdn_port;

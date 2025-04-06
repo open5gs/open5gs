@@ -46,7 +46,6 @@ typedef struct scp_assoc_s {
     ogs_pool_id_t stream_id;
 
     ogs_sbi_client_t *client;
-    ogs_sbi_client_t *nrf_client;
 
     ogs_sbi_request_t *request;
 

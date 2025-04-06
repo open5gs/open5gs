@@ -339,8 +339,6 @@ void scp_assoc_remove(scp_assoc_t *assoc)
 
     if (assoc->client)
         ogs_sbi_client_remove(assoc->client);
-    if (assoc->nrf_client)
-        ogs_sbi_client_remove(assoc->nrf_client);
 
     if (assoc->target_apiroot)
         ogs_free(assoc->target_apiroot);

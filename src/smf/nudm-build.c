@@ -236,9 +236,6 @@ ogs_sbi_request_t *smf_nudm_sdm_build_subscription(
 
     message.SDMSubscription = &SDMSubscription;
 
-    message.http.custom.callback =
-        (char *)OGS_SBI_CALLBACK_NUDM_SDM_NOTIFICATION;
-
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
 

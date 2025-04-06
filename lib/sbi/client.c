@@ -133,6 +133,9 @@ ogs_sbi_client_t *ogs_sbi_client_add(
         client->sslkeylog =
             ogs_strdup(ogs_sbi_self()->tls.client.sslkeylog);
 
+    if (ogs_sbi_self()->local_if)
+       client->local_if = ogs_strdup(ogs_sbi_self()->local_if);
+
     ogs_debug("ogs_sbi_client_add [%s]", OpenAPI_uri_scheme_ToString(scheme));
     OGS_OBJECT_REF(client);
 
@@ -217,6 +220,8 @@ void ogs_sbi_client_remove(ogs_sbi_client_t *client)
         ogs_free(client->cert);
     if (client->sslkeylog)
         ogs_free(client->sslkeylog);
+    if (client->local_if)
+        ogs_free(client->local_if);
 
     if (client->fqdn)
         ogs_free(client->fqdn);
@@ -558,6 +563,10 @@ static connection_t *connection_add(
         curl_easy_setopt(conn->easy, CURLOPT_RESOLVE, conn->resolve_list);
     }
 
+    if (client->local_if) {
+        curl_easy_setopt(conn->easy, CURLOPT_INTERFACE, client->local_if);
+    }
+
     curl_easy_setopt(conn->easy, CURLOPT_PRIVATE, conn);
     curl_easy_setopt(conn->easy, CURLOPT_WRITEFUNCTION, write_cb);
     curl_easy_setopt(conn->easy, CURLOPT_WRITEDATA, conn);
@@ -640,11 +649,19 @@ static void connection_remove_all(ogs_sbi_client_t *client)
 static void connection_timer_expired(void *data)
 {
     connection_t *conn = NULL;
+    CURLcode res;
+    char *effective_url = NULL;
 
     conn = data;
     ogs_assert(conn);
 
-    ogs_error("Connection timer expired");
+    ogs_error("Connection timer expired [METHOD:%s]", conn->method);
+
+    res = curl_easy_getinfo(conn->easy, CURLINFO_EFFECTIVE_URL, &effective_url);
+    if ((res == CURLE_OK) && effective_url)
+        ogs_error("Effective URL: %s", effective_url);
+    else
+        ogs_error("curl_easy_getinfo() failed [%s]", curl_easy_strerror(res));
 
     ogs_assert(conn->client_cb);
     conn->client_cb(OGS_TIMEUP, NULL, conn->data);

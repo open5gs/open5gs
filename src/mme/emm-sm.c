@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -37,6 +37,24 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __emm_log_domain
 
+#define MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s) do {                  \
+    if ((mme_ue)->can_restore_context) {                                \
+        /* Restore context if allowed */                                \
+        mme_ue_restore_memento((mme_ue), &((mme_ue)->memento));         \
+        (mme_ue)->security_context_available = 1;                       \
+        (mme_ue)->mac_failed = 0;                                       \
+        if (!OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))          \
+            OGS_FSM_TRAN((s), &emm_state_registered);                   \
+        ogs_warn("[%s] Failure in transaction; restoring context and "  \
+                 "transitioning to REGISTERED.", (mme_ue)->imsi_bcd);   \
+    } else {                                                            \
+        /* Transition to exception state if not allowed */              \
+        OGS_FSM_TRAN((s), &emm_state_exception);                        \
+        ogs_warn("[%s] Failure in transaction; no context "             \
+                 "restoration.", (mme_ue)->imsi_bcd);                   \
+    }                                                                   \
+} while (0)
+
 typedef enum {
     EMM_COMMON_STATE_DEREGISTERED,
     EMM_COMMON_STATE_REGISTERED,
@@ -44,7 +62,6 @@ typedef enum {
 
 static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
         emm_common_state_e state);
-
 
 void emm_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
@@ -304,6 +321,15 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
     mme_ue = mme_ue_find_by_id(e->mme_ue_id);
     ogs_assert(mme_ue);
 
+    /* If transition is from REGISTERED, allow restoration */
+    if (state == EMM_COMMON_STATE_REGISTERED) {
+        mme_ue->can_restore_context = 1;
+        mme_ue_save_memento(mme_ue, &mme_ue->memento);
+    } else if (state == EMM_COMMON_STATE_DEREGISTERED) {
+        /* Transition from de-registered: do not restore */
+        mme_ue->can_restore_context = 0;
+    }
+
     switch (e->id) {
     case MME_EVENT_EMM_MESSAGE:
         message = e->nas_message;
@@ -337,7 +363,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, &emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -345,7 +371,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     enb_ue, mme_ue, &message->emm.service_request);
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_service_request() failed");
-                OGS_FSM_TRAN(s, emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -355,7 +381,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, &emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -365,7 +391,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, &emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -375,7 +401,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, &emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -385,7 +411,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                         OGS_NAS_EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, &emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -411,7 +437,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -422,13 +448,13 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     &message->emm.identity_response);
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_identity_response() failed");
-                OGS_FSM_TRAN(s, emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
             if (!MME_UE_HAVE_IMSI(mme_ue)) {
                 ogs_error("No IMSI");
-                OGS_FSM_TRAN(s, emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -450,7 +476,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     enb_ue, mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_attach_request() failed");
-                OGS_FSM_TRAN(s, emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -485,7 +511,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                                 OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
-                        OGS_FSM_TRAN(s, &emm_state_exception);
+                        MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                         break;
                     }
                 }
@@ -513,7 +539,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     &message->emm.tracking_area_update_request, e->pkbuf);
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_tau_request() failed");
-                OGS_FSM_TRAN(s, emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -531,7 +557,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
-                    OGS_FSM_TRAN(s, &emm_state_exception);
+                    MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                     break;
                 }
                 if (message->emm.tracking_area_update_request.presencemask & OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_OLD_P_TMSI_SIGNATURE_TYPE)
@@ -547,7 +573,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, &emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -557,7 +583,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -567,7 +593,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                         OGS_NAS_EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, &emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -752,7 +778,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     enb_ue, mme_ue, &message->emm.extended_service_request);
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_extended_service_request() failed");
-                OGS_FSM_TRAN(s, emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -762,7 +788,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, &emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -772,7 +798,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -782,7 +808,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(s, &emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -831,7 +857,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                         OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
-                    OGS_FSM_TRAN(s, &emm_state_exception);
+                    MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                     break;
                 }
 
@@ -874,7 +900,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                         OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
-                    OGS_FSM_TRAN(s, &emm_state_exception);
+                    MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                     break;
                 }
 
@@ -897,7 +923,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     enb_ue, mme_ue, &message->emm.detach_request_from_ue);
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_detach_request() failed");
-                OGS_FSM_TRAN(s, emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -906,7 +932,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
-                OGS_FSM_TRAN(s, &emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -915,7 +941,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
-                OGS_FSM_TRAN(s, &emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -1060,6 +1086,8 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
     enb_ue_t *enb_ue = NULL;
     ogs_nas_eps_message_t *message = NULL;
 
+    ogs_nas_eps_authentication_failure_t *authentication_failure = NULL;
+
     ogs_assert(s);
     ogs_assert(e);
 
@@ -1082,64 +1110,28 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
 
         switch (message->emm.h.message_type) {
         case OGS_NAS_EPS_AUTHENTICATION_RESPONSE:
-        {
-            ogs_nas_eps_authentication_response_t *authentication_response =
-                &message->emm.authentication_response;
-            ogs_nas_authentication_response_parameter_t
-                *authentication_response_parameter =
-                    &authentication_response->
-                        authentication_response_parameter;
-
-            ogs_debug("Authentication response");
-            ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
-
-            CLEAR_MME_UE_TIMER(mme_ue->t3460);
-
-            if (authentication_response_parameter->length == 0 ||
-                memcmp(authentication_response_parameter->res,
-                mme_ue->xres,
-                authentication_response_parameter->length) != 0) {
-                ogs_log_hexdump(OGS_LOG_WARN,
-                        authentication_response_parameter->res,
-                        authentication_response_parameter->length);
-                ogs_log_hexdump(OGS_LOG_WARN,
-                        mme_ue->xres, OGS_MAX_RES_LEN);
+            rv = emm_handle_authentication_response(enb_ue, mme_ue,
+                    &message->emm.authentication_response);
+            if (rv != OGS_OK) {
+                ogs_error("emm_handle_authentication_response() failed");
                 r = nas_eps_send_authentication_reject(mme_ue);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
-            } else {
-                mme_ue->selected_int_algorithm =
-                    mme_selected_int_algorithm(mme_ue);
-                mme_ue->selected_enc_algorithm =
-                    mme_selected_enc_algorithm(mme_ue);
-
-                if (mme_ue->selected_int_algorithm ==
-                        OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
-                    ogs_error("Encrypt[0x%x] can be skipped with EEA0, "
-                        "but Integrity[0x%x] cannot be bypassed with EIA0",
-                        mme_ue->selected_enc_algorithm,
-                        mme_ue->selected_int_algorithm);
-                    OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
-                    break;
-                }
-
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
+                break;
             }
 
+            OGS_FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
             break;
-        }
         case OGS_NAS_EPS_AUTHENTICATION_FAILURE:
-        {
-            ogs_nas_eps_authentication_failure_t *authentication_failure =
-                &message->emm.authentication_failure;
+            authentication_failure = &message->emm.authentication_failure;
             ogs_nas_authentication_failure_parameter_t
                 *authentication_failure_parameter =
                     &authentication_failure->
                         authentication_failure_parameter;
 
-            ogs_debug("Authentication failure");
-            ogs_debug("    IMSI[%s] OGS_NAS_EMM_CAUSE[%d]", mme_ue->imsi_bcd,
+            ogs_warn("Authentication failure");
+            ogs_warn("    IMSI[%s] OGS_NAS_EMM_CAUSE[%d]", mme_ue->imsi_bcd,
                     authentication_failure->emm_cause);
 
             CLEAR_MME_UE_TIMER(mme_ue->t3460);
@@ -1167,17 +1159,16 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             r = nas_eps_send_authentication_reject(mme_ue);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
-            OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
-
+            MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
             break;
-        }
+
         case OGS_NAS_EPS_ATTACH_REQUEST:
             ogs_warn("[%s] Attach request", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     enb_ue, mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_attach_request() failed");
-                OGS_FSM_TRAN(s, emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -1194,7 +1185,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                     enb_ue, mme_ue, &message->emm.detach_request_from_ue);
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_detach_request() failed");
-                OGS_FSM_TRAN(s, emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -1203,7 +1194,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
-                OGS_FSM_TRAN(s, &emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -1212,7 +1203,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                 ogs_assert(OGS_OK ==
                     nas_eps_send_service_reject(enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK));
-                OGS_FSM_TRAN(s, &emm_state_exception);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
                 break;
             }
 
@@ -1243,11 +1234,11 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                     mme_timer_cfg(MME_TIMER_T3460)->max_count) {
                 ogs_warn("Retransmission of IMSI[%s] failed. "
                         "Stop retransmission", mme_ue->imsi_bcd);
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
-
                 r = nas_eps_send_authentication_reject(mme_ue);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
+                MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, s);
+                break;
             } else {
                 mme_ue->t3460.retry_count++;
                 r = nas_eps_send_authentication_request(mme_ue);

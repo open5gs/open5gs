@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -256,7 +256,9 @@ int ogs_sbi_context_parse_config(
                         const char *default_key =
                             ogs_yaml_iter_key(&default_iter);
                         ogs_assert(default_key);
-                        if (!strcmp(default_key, "tls")) {
+                        if (!strcmp(default_key, "interface")) {
+                           self.local_if = ogs_yaml_iter_value(&default_iter);
+                        } else if (!strcmp(default_key, "tls")) {
                             ogs_yaml_iter_t tls_iter;
                             ogs_yaml_iter_recurse(&default_iter, &tls_iter);
                             while (ogs_yaml_iter_next(&tls_iter)) {
@@ -1073,6 +1075,7 @@ ogs_sbi_client_t *ogs_sbi_context_parse_client_config(ogs_yaml_iter_t *iter)
     const char *client_private_key = NULL;
     const char *client_cert = NULL;
     const char *client_sslkeylog = NULL;
+    const char *local_if = NULL;
 
     bool rc;
 
@@ -1116,6 +1119,8 @@ ogs_sbi_client_t *ogs_sbi_context_parse_client_config(ogs_yaml_iter_t *iter)
             client_cert = ogs_yaml_iter_value(iter);
         } else if (!strcmp(key, "client_sslkeylogfile")) {
             client_sslkeylog = ogs_yaml_iter_value(iter);
+        } else if (!strcmp(key, "interface")) {
+            local_if = ogs_yaml_iter_value(iter);
         }
     }
 
@@ -1190,6 +1195,13 @@ ogs_sbi_client_t *ogs_sbi_context_parse_client_config(ogs_yaml_iter_t *iter)
             ogs_free(client->sslkeylog);
         client->sslkeylog = ogs_strdup(client_sslkeylog);
         ogs_assert(client->sslkeylog);
+    }
+
+    if (local_if) {
+        if (client->local_if)
+            ogs_free(client->local_if);
+        client->local_if = ogs_strdup(local_if);
+        ogs_assert(client->local_if);
     }
 
     if ((!client_private_key && client_cert) ||
@@ -1381,7 +1393,19 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find(char *id)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
-    ogs_assert(id);
+    /*
+     * This is related to Issue #3093.
+     *
+     * We want to be able to use 'ogs_sbi_nf_instance_id_find(char *id)'
+     * even if the 'id' is NULL as in the use case below.
+     *
+     * ogs_sbi_nf_instance_find(
+     *    sess->sbi.service_type_array[service_type].nf_instance_id));
+     *
+     * To do so, we changed the 'assert(id)' to 'if (!id) return NULL',
+     * as shown below.
+     */
+    if (!id) return NULL;
 
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
         if (nf_instance->id && strcmp(nf_instance->id, id) == 0)
@@ -2407,7 +2431,7 @@ ogs_sbi_client_t *ogs_sbi_client_find_by_service_name(
         }
     }
 
-    return nf_instance->client;
+    return NULL;
 }
 
 ogs_sbi_client_t *ogs_sbi_client_find_by_service_type(
@@ -2430,10 +2454,21 @@ ogs_sbi_client_t *ogs_sbi_client_find_by_service_type(
 
 void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object)
 {
+    int i;
+
     ogs_assert(sbi_object);
 
     if (ogs_list_count(&sbi_object->xact_list))
         ogs_error("SBI running [%d]", ogs_list_count(&sbi_object->xact_list));
+
+    for (i = 0; i < OGS_SBI_MAX_NUM_OF_SERVICE_TYPE; i++) {
+        if (sbi_object->service_type_array[i].nf_instance_id)
+            ogs_free(sbi_object->service_type_array[i].nf_instance_id);
+    }
+    for (i = 0; i < OGS_SBI_MAX_NUM_OF_NF_TYPE; i++) {
+        if (sbi_object->nf_type_array[i].nf_instance_id)
+            ogs_free(sbi_object->nf_type_array[i].nf_instance_id);
+    }
 }
 
 ogs_sbi_xact_t *ogs_sbi_xact_add(

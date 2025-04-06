@@ -55,6 +55,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Nokia FW2FA Flexi Zone Mini-Macro Outdoor BTS, 2x20w Band 39
  * Nokia FWGR Flexi Zone Mini-Macro Outdoor BTS, 2x20w Band 1
  * Nokia FWHG Flexi Zone Indoor Pico BTS, 2x250 mW Band 7
+ * Nokia FW2HHD Flexi Zone Multiband Indoor Pico BTS, Band 38/41(S/W TLS18SP_ENB)
  * Ruckus Q710 and Q910
 
 ### 4G/5G Software Stacks + SDRs

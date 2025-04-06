@@ -1360,7 +1360,7 @@ bool smf_nsmf_handle_create_pdu_session_in_hsmf(
     if (sess->remote_dl_ip.ipv4 && sess->remote_dl_ip.ipv6)
         sess->remote_dl_ip.len = OGS_IPV4V6_LEN;
 
-    sess->remote_dl_teid = ogs_uint64_from_string(vcnTunnelInfo->gtp_teid);
+    sess->remote_dl_teid = ogs_uint64_from_string_hexadecimal(vcnTunnelInfo->gtp_teid);
     ogs_debug("vcnTunnelInfo->ipv4 = 0x%x", sess->remote_dl_ip.addr);
     ogs_log_hexdump(OGS_LOG_DEBUG, sess->remote_dl_ip.addr6, OGS_IPV6_LEN);
     ogs_debug("vcnTunnelInfo->gtp_teid = 0x%x", sess->remote_dl_teid);
@@ -1752,7 +1752,7 @@ bool smf_nsmf_handle_create_pdu_session_in_vsmf(
         if (sess->remote_ul_ip.ipv4 && sess->remote_ul_ip.ipv6)
             sess->remote_ul_ip.len = OGS_IPV4V6_LEN;
 
-        sess->remote_ul_teid = ogs_uint64_from_string(hcnTunnelInfo->gtp_teid);
+        sess->remote_ul_teid = ogs_uint64_from_string_hexadecimal(hcnTunnelInfo->gtp_teid);
         ogs_debug("hcnTunnelInfo->ipv4 = 0x%x", sess->remote_ul_ip.addr);
         ogs_log_hexdump(OGS_LOG_DEBUG, sess->remote_ul_ip.addr6, OGS_IPV6_LEN);
         ogs_debug("hcnTunnelInfo->gtp_teid = 0x%x", sess->remote_ul_teid);
@@ -2029,7 +2029,7 @@ bool smf_nsmf_handle_create_pdu_session_in_vsmf(
         }
 
         if (PduSessionCreateError->n1sm_cause)
-            gsm_cause = ogs_uint64_from_string(
+            gsm_cause = ogs_uint64_from_string_hexadecimal(
                     PduSessionCreateError->n1sm_cause);
 
         ogs_error("CreatePduSession() failed [%d] cause [%d]",

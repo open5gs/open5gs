@@ -32,7 +32,7 @@ static int sess_fill_mm_context_decoded(mme_sess_t *sess, ogs_gtp1_mm_context_de
     *mmctx_dec = (ogs_gtp1_mm_context_decoded_t) {
         .gupii = 1, /* Integrity Protection not required */
         .ugipai = 1, /* Ignore "Used GPRS integrity protection algorithm" field" */
-        .ksi = mme_ue->nas_eps.ksi,
+        .ksi = mme_ue->nas_eps.mme.ksi,
         .sec_mode = OGS_GTP1_SEC_MODE_UMTS_KEY_AND_QUINTUPLETS,
         .num_vectors = 0, /* TODO: figure out how to fill the quintuplets */
         .drx_param = {

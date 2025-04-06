@@ -636,6 +636,9 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
                                 error++;
                             }
                             break;
+                        case OGS_DIAM_S6A_AVP_CODE_MIP_HOME_AGENT_HOST:
+                            ogs_error("Ignoring MIP-Home-Agent-Host...");
+                            break;
                         default:
                             ogs_error("Unknown AVP-Code:%d",
                                     hdr->avp_code);

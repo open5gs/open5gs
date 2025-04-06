@@ -19,7 +19,8 @@
 
 #include "ogs-dbi.h"
 
-int ogs_dbi_session_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
+int ogs_dbi_session_data(
+        const char *supi, const ogs_s_nssai_t *s_nssai, const char *dnn,
         ogs_session_data_t *session_data)
 {
     int rv = OGS_OK;

@@ -103,6 +103,7 @@ static void test3_func(abts_case *tc, void *data)
 }
 #endif
 
+#if 0
 static void test4_func(abts_case *tc, void *data)
 {
     int rv;
@@ -140,7 +141,7 @@ static void test4_func(abts_case *tc, void *data)
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf0;
-    test_ue->nas.ksi = 0;
+    test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
@@ -405,6 +406,41 @@ static void test4_func(abts_case *tc, void *data)
 
     test_ue_remove(test_ue);
 }
+#endif
+
+static void test5_func(abts_case *tc, void *data)
+{
+    int rv;
+    ogs_socknode_t *s1ap;
+    ogs_pkbuf_t *sendbuf;
+    ogs_pkbuf_t *recvbuf;
+
+    s1ap = tests1ap_client(AF_INET);
+    ABTS_PTR_NOTNULL(tc, s1ap);
+
+    sendbuf = test_s1ap_build_s1_setup_request(
+            S1AP_ENB_ID_PR_macroENB_ID, 0x54f64);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    sendbuf = test_s1ap_build_malformed_enb_direct_information_transfer(0);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    testenb_s1ap_close(s1ap);
+}
 
 abts_suite *test_crash(abts_suite *suite)
 {
@@ -415,7 +451,39 @@ abts_suite *test_crash(abts_suite *suite)
 #if 0 /* Commenting to suppress error messages */
     abts_run_test(suite, test3_func, NULL);
 #endif
+
+/*
+Assume the UE has attached, the session has been created, and is in the
+IDLE state with the UEContextRelease process. This may lead to the following
+call flow:
+1. TAU request without integrity protection
+2. Authentication request/response
+3. Security-mode command/complete
+
+The MME may be processed concurrently by the HSS (S6A) and the UE (S1AP)
+as follows:
+   - Update-Location-Request
+   - Service request
+   - Service reject
+   - Delete Session Request
+   - Delete Session Response
+   - Update-Location-Answer
+   - UEContextReleaseCommand for Service reject
+   - TAU reject
+   - UEContextReleaseCommand for TAU reject
+   - UEContextReleaseComplete (for Service reject)
+   - UEContextReleaseComplete (for TAU reject)
+
+If the Update-Location-Answer is received before the Delete Session Response,
+the session still exists, and a TAU accept may be received. This causes the
+test procedure to wait indefinitely. Due to this issue, the test code has
+been commented out.
+*/
+#if 0
     abts_run_test(suite, test4_func, NULL);
+#endif
+
+    abts_run_test(suite, test5_func, NULL);
 
     return suite;
 }

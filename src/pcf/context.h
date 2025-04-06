@@ -214,9 +214,42 @@ pcf_app_t *pcf_app_find(uint32_t index);
 pcf_app_t *pcf_app_find_by_app_session_id(char *app_session_id);
 int pcf_instance_get_load(void);
 
-int pcf_db_qos_data(char *supi,
-        ogs_plmn_id_t *plmn_id, ogs_s_nssai_t *s_nssai, char *dnn,
-        ogs_session_data_t *session_data);
+/*------------------------------------------------------------------
+ * Flag definition(s) for pcf_get_session_data().
+ *------------------------------------------------------------------
+ * Use PCF_SESSION_DATA_FLAG_NO_ERROR_LOG to suppress error logs.
+ */
+#define PCF_SESSION_DATA_FLAG_NO_ERROR_LOG 0x01
+
+/*------------------------------------------------------------------
+ * pcf_get_session_data - Retrieve session data from policy config or DB.
+ *
+ * This function retrieves session data for the given subscriber by
+ * first checking for a policy configuration; if none is found, it
+ * falls back to querying the database.
+ *
+ * Parameters:
+ *   supi         - Subscriber identifier (read-only).
+ *   plmn_id      - Pointer to a PLMN ID structure (read-only).
+ *   s_nssai      - Pointer to an S-NSSAI structure (read-only).
+ *   dnn          - Data network name (read-only).
+ *   session_data - Pointer to the session data structure to be filled.
+ *   flags        - Flags to control behavior (e.g., error logging).
+ *
+ * Returns:
+ *   OGS_OK on success, or an error code on failure.
+ *
+ * Note:
+ *   To suppress error logging, pass the flag
+ *   PCF_SESSION_DATA_FLAG_NO_ERROR_LOG in the flags parameter.
+ *------------------------------------------------------------------
+ */
+int pcf_get_session_data(const char *supi,
+                         const ogs_plmn_id_t *plmn_id,
+                         const ogs_s_nssai_t *s_nssai,
+                         const char *dnn,
+                         ogs_session_data_t *session_data,
+                         int flags);
 
 #ifdef __cplusplus
 }

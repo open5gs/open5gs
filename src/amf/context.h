@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -237,6 +237,67 @@ struct ran_ue_s {
     ogs_pool_id_t   amf_ue_id;
 }; 
 
+typedef struct amf_ue_memento_s {
+    /* UE security capability info: supported security features. */
+    ogs_nas_ue_security_capability_t ue_security_capability;
+    /* UE network capability info: supported network features. */
+    ogs_nas_ue_network_capability_t ue_network_capability;
+
+    /* Random challenge value */
+    uint8_t rand[OGS_RAND_LEN];
+    /* Authentication token */
+    uint8_t autn[OGS_AUTN_LEN];
+    /* Expected auth response. */
+    uint8_t xres_star[OGS_MAX_RES_LEN];
+
+    /* NAS backoff parameter value. */
+    uint8_t abba[OGS_NAS_MAX_ABBA_LEN];
+    uint8_t abba_len;
+
+    /* Hash of XRES*. */
+    uint8_t hxres_star[OGS_MAX_RES_LEN];
+    /* Key for AMF derived from NAS key. */
+    uint8_t kamf[OGS_SHA256_DIGEST_SIZE];
+
+    /* Integrity and ciphering keys */
+    uint8_t knas_int[OGS_SHA256_DIGEST_SIZE/2];
+    uint8_t knas_enc[OGS_SHA256_DIGEST_SIZE/2];
+    /* Downlink counter */
+    uint32_t dl_count;
+    /* Uplink counter (24-bit stored in uint32_t) */
+    uint32_t ul_count;
+    /* gNB key derived from kasme */
+    uint8_t kgnb[OGS_SHA256_DIGEST_SIZE];
+
+    /*
+     * Next Hop Channing Counter
+     *
+     * Note that the "nhcc" field is not included in the backup
+     * because it is a transient counter used only during next-hop key
+     * derivation. In our design, only the persistent keying material
+     * and related values that are required to recreate the security context
+     * are backed up. The nhcc value is recalculated or updated dynamically
+     * when the next hop key is derived (e.g. via ogs_kdf_nh_enb()),
+     * so it is not necessary to store it in the backup.
+     *
+     * If there is a requirement to preserve the exact nhcc value across state
+     * transitions, you could add it to the backup structure, but typically
+     * it is treated as a computed, temporary value that can be reinitialized
+     * safely without compromising the security context.
+     * struct {
+     *   ED2(uint8_t nhcc_spare:5;,
+     *   uint8_t nhcc:3;)
+     * };
+     */
+
+    /* Next hop key */
+    uint8_t         nh[OGS_SHA256_DIGEST_SIZE];
+
+    /* Selected algorithms (set by UDM/subscription) */
+    uint8_t         selected_enc_algorithm;
+    uint8_t         selected_int_algorithm;
+} amf_ue_memento_t;
+
 struct amf_ue_s {
     ogs_sbi_object_t sbi;
     ogs_pool_id_t id;
@@ -367,6 +428,12 @@ struct amf_ue_s {
     int             security_context_available;
     int             mac_failed;
 
+    /* flag: 1 = allow restoration of context, 0 = disallow */
+    bool            can_restore_context;
+
+    /* Memento of context fields */
+    amf_ue_memento_t memento;
+
     /* Security Context */
     ogs_nas_ue_security_capability_t ue_security_capability;
     ogs_nas_ue_network_capability_t ue_network_capability;
@@ -391,20 +458,29 @@ struct amf_ue_s {
         char *resource_uri;
         ogs_sbi_client_t *client;
     } confirmation_for_5g_aka;
+    /* Random challenge value */
     uint8_t         rand[OGS_RAND_LEN];
+    /* Authentication token */
     uint8_t         autn[OGS_AUTN_LEN];
+    /* Expected auth response. */
     uint8_t         xres_star[OGS_MAX_RES_LEN];
 
+    /* NAS backoff parameter value. */
     uint8_t         abba[OGS_NAS_MAX_ABBA_LEN];
     uint8_t         abba_len;
 
+    /* Hash of XRES*. */
     uint8_t         hxres_star[OGS_MAX_RES_LEN];
+    /* Key for AMF derived from NAS key. */
     uint8_t         kamf[OGS_SHA256_DIGEST_SIZE];
     OpenAPI_auth_result_e auth_result;
 
+    /* Integrity and ciphering keys */
     uint8_t         knas_int[OGS_SHA256_DIGEST_SIZE/2];
     uint8_t         knas_enc[OGS_SHA256_DIGEST_SIZE/2];
+    /* Downlink counter */
     uint32_t        dl_count;
+    /* Uplink counter (24-bit stored in uint32_t) */
     union {
         struct {
         ED3(uint8_t spare;,
@@ -413,14 +489,17 @@ struct amf_ue_s {
         } __attribute__ ((packed));
         uint32_t i32;
     } ul_count;
+    /* gNB key derived from kasme */
     uint8_t         kgnb[OGS_SHA256_DIGEST_SIZE];
 
     struct {
     ED2(uint8_t nhcc_spare:5;,
         uint8_t nhcc:3;) /* Next Hop Channing Counter */
     };
+    /* Next hop key */
     uint8_t         nh[OGS_SHA256_DIGEST_SIZE]; /* NH Security Key */
 
+    /* Selected algorithms (set by UDM/subscription) */
     /* defined in 'lib/nas/common/types.h'
      * #define OGS_NAS_SECURITY_ALGORITHMS_NEA0        0
      * #define OGS_NAS_SECURITY_ALGORITHMS_128_NEA1    1
@@ -1002,6 +1081,9 @@ int amf_m_tmsi_free(amf_m_tmsi_t *tmsi);
 
 uint8_t amf_selected_int_algorithm(amf_ue_t *amf_ue);
 uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue);
+
+void amf_ue_save_memento(amf_ue_t *amf_ue, amf_ue_memento_t *memento);
+void amf_ue_restore_memento(amf_ue_t *amf_ue, const amf_ue_memento_t *memento);
 
 void amf_clear_subscribed_info(amf_ue_t *amf_ue);
 

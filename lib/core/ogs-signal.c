@@ -15,7 +15,7 @@
  */
 
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -277,9 +277,20 @@ static void remove_sync_sigs(sigset_t *sig_mask)
 #ifdef SIGIOT
     sigdelset(sig_mask, SIGIOT);
 #endif
+
+/*
+ * SIGPIPE can occur if write() is called when the peer connection is closed.
+ *
+ * Therefore, Open5GS ignore SIGPIE signal
+ *
+ * See also #2411 and #2312
+ */
+#if 0
 #ifdef SIGPIPE
     sigdelset(sig_mask, SIGPIPE);
 #endif
+#endif
+
 #ifdef SIGSEGV
     sigdelset(sig_mask, SIGSEGV);
 #endif

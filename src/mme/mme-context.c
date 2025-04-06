@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -3617,6 +3617,9 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     mme_ue->csmap = NULL;
     mme_ue->vlr_ostream_id = 0;
 
+    /* Initialization */
+    mme_ue->nas_eps.mme.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+
     mme_ue_fsm_init(mme_ue);
 
     ogs_list_add(&self.mme_ue_list, mme_ue);
@@ -4197,20 +4200,36 @@ void enb_ue_source_deassociate_target(enb_ue_t *enb_ue)
 
         ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
                 source_ue->target_ue_id <= OGS_MAX_POOL_ID);
-        ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
-                target_ue->source_ue_id <= OGS_MAX_POOL_ID);
         source_ue->target_ue_id = OGS_INVALID_POOL_ID;
-        target_ue->source_ue_id = OGS_INVALID_POOL_ID;
+
+        if (target_ue) {
+            ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
+                    target_ue->source_ue_id <= OGS_MAX_POOL_ID);
+            target_ue->source_ue_id = OGS_INVALID_POOL_ID;
+        } else
+            ogs_error("Target-UE-ID [%d] has already been removed "
+                    "(ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d])",
+                    source_ue->target_ue_id,
+                    source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
+
+
     } else if (enb_ue->source_ue_id >= OGS_MIN_POOL_ID &&
                 enb_ue->source_ue_id <= OGS_MAX_POOL_ID) {
         target_ue = enb_ue;
         source_ue = enb_ue_find_by_id(enb_ue->source_ue_id);
 
-        ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
-                source_ue->target_ue_id <= OGS_MAX_POOL_ID);
+        if (source_ue) {
+            ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
+                    source_ue->target_ue_id <= OGS_MAX_POOL_ID);
+            source_ue->target_ue_id = OGS_INVALID_POOL_ID;
+        } else
+            ogs_error("Source-UE-ID [%d] has already been removed "
+                    "(ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d])",
+                    target_ue->source_ue_id,
+                    target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
+
         ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
                 target_ue->source_ue_id <= OGS_MAX_POOL_ID);
-        source_ue->target_ue_id = OGS_INVALID_POOL_ID;
         target_ue->source_ue_id = OGS_INVALID_POOL_ID;
     }
 }
@@ -4250,6 +4269,7 @@ void sgw_ue_source_deassociate_target(sgw_ue_t *sgw_ue)
 {
     sgw_ue_t *source_ue = NULL;
     sgw_ue_t *target_ue = NULL;
+
     ogs_assert(sgw_ue);
 
     if (sgw_ue->target_ue_id >= OGS_MIN_POOL_ID &&
@@ -4259,20 +4279,33 @@ void sgw_ue_source_deassociate_target(sgw_ue_t *sgw_ue)
 
         ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
                 source_ue->target_ue_id <= OGS_MAX_POOL_ID);
-        ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
-                target_ue->source_ue_id <= OGS_MAX_POOL_ID);
         source_ue->target_ue_id = OGS_INVALID_POOL_ID;
-        target_ue->source_ue_id = OGS_INVALID_POOL_ID;
+
+        if (target_ue) {
+            ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
+                    target_ue->source_ue_id <= OGS_MAX_POOL_ID);
+            target_ue->source_ue_id = OGS_INVALID_POOL_ID;
+        } else
+            ogs_error("Target-UE-ID [%d] has already been removed "
+                    "(SGW-S11-TEID[%d])",
+                    source_ue->target_ue_id, source_ue->sgw_s11_teid);
+
     } else if (sgw_ue->source_ue_id >= OGS_MIN_POOL_ID &&
                 sgw_ue->source_ue_id <= OGS_MAX_POOL_ID) {
         target_ue = sgw_ue;
         source_ue = sgw_ue_find_by_id(sgw_ue->source_ue_id);
 
-        ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
-                source_ue->target_ue_id <= OGS_MAX_POOL_ID);
+        if (source_ue) {
+            ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
+                    source_ue->target_ue_id <= OGS_MAX_POOL_ID);
+            source_ue->target_ue_id = OGS_INVALID_POOL_ID;
+        } else
+            ogs_error("Source-UE-ID [%d] has already been removed "
+                    "(SGW-S11-TEID[%d])",
+                    target_ue->source_ue_id, target_ue->sgw_s11_teid);
+
         ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
                 target_ue->source_ue_id <= OGS_MAX_POOL_ID);
-        source_ue->target_ue_id = OGS_INVALID_POOL_ID;
         target_ue->source_ue_id = OGS_INVALID_POOL_ID;
     }
 }
@@ -5025,6 +5058,83 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue)
     }
 
     return 0;
+}
+
+/*
+ * Save the sensitive (partial) context fields
+ * from the UE context into the memento
+ */
+void mme_ue_save_memento(mme_ue_t *mme_ue, mme_ue_memento_t *memento)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(memento);
+
+    memcpy(&memento->ue_network_capability,
+            &mme_ue->ue_network_capability,
+            sizeof(memento->ue_network_capability));
+    memcpy(&memento->ms_network_capability,
+            &mme_ue->ms_network_capability,
+            sizeof(memento->ms_network_capability));
+    memcpy(&memento->ue_additional_security_capability,
+            &mme_ue->ue_additional_security_capability,
+            sizeof(memento->ue_additional_security_capability));
+    memcpy(memento->xres, mme_ue->xres, OGS_MAX_RES_LEN);
+    memento->xres_len = mme_ue->xres_len;
+    memcpy(memento->kasme, mme_ue->kasme, OGS_SHA256_DIGEST_SIZE);
+    memcpy(memento->rand, mme_ue->rand, OGS_RAND_LEN);
+    memcpy(memento->autn, mme_ue->autn, OGS_AUTN_LEN);
+    memcpy(memento->knas_int, mme_ue->knas_int,
+           OGS_SHA256_DIGEST_SIZE / 2);
+    memcpy(memento->knas_enc, mme_ue->knas_enc,
+           OGS_SHA256_DIGEST_SIZE / 2);
+    memento->dl_count = mme_ue->dl_count;
+    memento->ul_count = mme_ue->ul_count.i32;
+    memcpy(memento->kenb, mme_ue->kenb, OGS_SHA256_DIGEST_SIZE);
+    memcpy(memento->hash_mme, mme_ue->hash_mme, OGS_HASH_MME_LEN);
+    memento->nonceue = mme_ue->nonceue;
+    memento->noncemme = mme_ue->noncemme;
+    memento->gprs_ciphering_key_sequence_number =
+        mme_ue->gprs_ciphering_key_sequence_number;
+    memcpy(memento->nh, mme_ue->nh, OGS_SHA256_DIGEST_SIZE);
+    memento->selected_enc_algorithm = mme_ue->selected_enc_algorithm;
+    memento->selected_int_algorithm = mme_ue->selected_int_algorithm;
+}
+
+/* Restore the sensitive context fields into the UE context */
+void mme_ue_restore_memento(mme_ue_t *mme_ue, const mme_ue_memento_t *memento)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(memento);
+
+    memcpy(&mme_ue->ue_network_capability,
+            &memento->ue_network_capability,
+            sizeof(mme_ue->ue_network_capability));
+    memcpy(&mme_ue->ms_network_capability,
+            &memento->ms_network_capability,
+            sizeof(mme_ue->ms_network_capability));
+    memcpy(&mme_ue->ue_additional_security_capability,
+            &memento->ue_additional_security_capability,
+            sizeof(mme_ue->ue_additional_security_capability));
+    memcpy(mme_ue->xres, memento->xres, OGS_MAX_RES_LEN);
+    mme_ue->xres_len = memento->xres_len;
+    memcpy(mme_ue->kasme, memento->kasme, OGS_SHA256_DIGEST_SIZE);
+    memcpy(mme_ue->rand, memento->rand, OGS_RAND_LEN);
+    memcpy(mme_ue->autn, memento->autn, OGS_AUTN_LEN);
+    memcpy(mme_ue->knas_int, memento->knas_int,
+           OGS_SHA256_DIGEST_SIZE / 2);
+    memcpy(mme_ue->knas_enc, memento->knas_enc,
+           OGS_SHA256_DIGEST_SIZE / 2);
+    mme_ue->dl_count = memento->dl_count;
+    mme_ue->ul_count.i32 = memento->ul_count;
+    memcpy(mme_ue->kenb, memento->kenb, OGS_SHA256_DIGEST_SIZE);
+    memcpy(mme_ue->hash_mme, memento->hash_mme, OGS_HASH_MME_LEN);
+    mme_ue->nonceue = memento->nonceue;
+    mme_ue->noncemme = memento->noncemme;
+    mme_ue->gprs_ciphering_key_sequence_number =
+        memento->gprs_ciphering_key_sequence_number;
+    memcpy(mme_ue->nh, memento->nh, OGS_SHA256_DIGEST_SIZE);
+    mme_ue->selected_enc_algorithm = memento->selected_enc_algorithm;
+    mme_ue->selected_int_algorithm = memento->selected_int_algorithm;
 }
 
 static void stats_add_enb_ue(void)

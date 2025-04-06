@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -87,6 +87,8 @@ typedef struct ogs_sbi_context_s {
             const char *sslkeylog;
         } client;
     } tls;
+
+    const char *local_if;
 
     ogs_list_t server_list;
     ogs_list_t client_list;
@@ -201,8 +203,9 @@ typedef struct ogs_sbi_object_s {
     ogs_sbi_obj_type_e type;
 
     struct {
-        ogs_sbi_nf_instance_t *nf_instance;
+        char *nf_instance_id;
 
+#if ENABLE_VALIDITY_TIMEOUT
         /*
          * Search.Result stored in nf_instance->time.validity_duration;
          *
@@ -212,8 +215,10 @@ typedef struct ogs_sbi_object_s {
          * if no validityPeriod in SearchResult, validity_timeout is 0.
          */
         ogs_time_t validity_timeout;
-    } service_type_array[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE],
-      home_nsmf_pdusession;
+#endif
+      } nf_type_array[OGS_SBI_MAX_NUM_OF_NF_TYPE],
+        service_type_array[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE],
+        home_nsmf_pdusession;
 
     ogs_list_t xact_list;
 
@@ -360,8 +365,8 @@ typedef struct ogs_sbi_sepp_info_s {
 } ogs_sbi_sepp_info_t;
 
 typedef struct ogs_sbi_amf_info_s {
-    uint8_t amf_set_id;
-    uint16_t amf_region_id;
+    uint16_t amf_set_id;
+    uint8_t amf_region_id;
 
     int num_of_guami;
     ogs_guami_t guami[OGS_MAX_NUM_OF_SERVED_GUAMI];
@@ -477,49 +482,77 @@ void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
 
 int ogs_sbi_default_client_port(OpenAPI_uri_scheme_e scheme);
 
+#if ENABLE_VALIDITY_TIMEOUT
 #define OGS_SBI_SETUP_NF_INSTANCE(__cTX, __nFInstance) \
     do { \
         ogs_assert(__nFInstance); \
         ogs_assert((__nFInstance)->id); \
+        ogs_assert((__nFInstance)->nf_type); \
         ogs_assert((__nFInstance)->t_validity); \
         \
-        if ((__cTX).nf_instance) { \
-            ogs_warn("[%s] NF Instance updated [type:%s validity:%ds]", \
-                    ((__cTX).nf_instance)->id, \
-                    OpenAPI_nf_type_ToString(((__cTX).nf_instance)->nf_type), \
-                    ((__cTX).nf_instance)->time.validity_duration); \
+        if ((__cTX).nf_instance_id) { \
+            ogs_warn("[%s] Unlink NF Instance " \
+                    "[type:%s validity:%d timeout:%lds]", \
+                    ((__cTX).nf_instance_id), \
+                    OpenAPI_nf_type_ToString((__nFInstance)->nf_type), \
+                    (__nFInstance)->time.validity_duration, \
+                    (long)((__cTX).validity_timeout)); \
+            ogs_free((__cTX).nf_instance_id); \
         } \
         \
-        ((__cTX).nf_instance) = __nFInstance; \
+        ((__cTX).nf_instance_id) = ogs_strdup((__nFInstance)->id); \
         if ((__nFInstance)->time.validity_duration) { \
             ((__cTX).validity_timeout) = (__nFInstance)->t_validity->timeout; \
         } else { \
             ((__cTX).validity_timeout) = 0; \
         } \
-        ogs_info("[%s] NF Instance setup [type:%s validity:%ds]", \
-                (__nFInstance)->id, \
+        ogs_info("[%s] Setup NF Instance [type:%s validity:%d timeout:%lds]", \
+                ((__cTX).nf_instance_id), \
                 OpenAPI_nf_type_ToString((__nFInstance)->nf_type), \
-                (__nFInstance)->time.validity_duration); \
+                (__nFInstance)->time.validity_duration, \
+                (long)((__cTX).validity_timeout)); \
     } while(0)
+#else
+#define OGS_SBI_SETUP_NF_INSTANCE(__cTX, __nFInstance) \
+    do { \
+        ogs_assert(__nFInstance); \
+        ogs_assert((__nFInstance)->id); \
+        ogs_assert((__nFInstance)->nf_type); \
+        \
+        if ((__cTX).nf_instance_id) { \
+            ogs_warn("[%s] Unlink NF Instance [type:%s]", \
+                    ((__cTX).nf_instance_id), \
+                    OpenAPI_nf_type_ToString((__nFInstance)->nf_type)); \
+            ogs_free((__cTX).nf_instance_id); \
+        } \
+        \
+        ((__cTX).nf_instance_id) = ogs_strdup((__nFInstance)->id); \
+        ogs_info("[%s] Setup NF Instance [type:%s]", \
+                ((__cTX).nf_instance_id), \
+                OpenAPI_nf_type_ToString((__nFInstance)->nf_type)); \
+    } while(0)
+#endif
 
 /*
- * Search.Result stored in nf_instance->time.validity_duration;
+ * Issue #3470
  *
- * validity_timeout = nf_instance->validity->timeout =
- *     ogs_get_monotonic_time() + nf_instance->time.validity_duration;
+ * Previously, nf_instance pointers were stored in nf_type_array and
+ * service_type_array. This led to a dangling pointer problem when an
+ * nf_instance was removed via ogs_sbi_nf_instance_remove().
  *
- * if no validityPeriod in SearchResult, validity_timeout is 0.
+ * To resolve this, we now store nf_instance_id instead, and use
+ * ogs_sbi_nf_instance_find(nf_instance_id) to verify the validity of an
+ * nf_instance.
  */
+#if ENABLE_VALIDITY_TIMEOUT
 #define OGS_SBI_GET_NF_INSTANCE(__cTX) \
     ((__cTX).validity_timeout == 0 || \
      (__cTX).validity_timeout > ogs_get_monotonic_time() ? \
-        ((__cTX).nf_instance) : NULL)
-
-#define OGS_SBI_NF_INSTANCE_VALID(__nFInstance) \
-    (((__nFInstance) && ((__nFInstance)->t_validity) && \
-     ((__nFInstance)->time.validity_duration == 0 || \
-      (__nFInstance)->t_validity->timeout > ogs_get_monotonic_time())) ? \
-         true : false)
+        (ogs_sbi_nf_instance_find((__cTX).nf_instance_id)) : NULL)
+#else
+#define OGS_SBI_GET_NF_INSTANCE(__cTX) \
+        ogs_sbi_nf_instance_find((__cTX).nf_instance_id)
+#endif
 
 bool ogs_sbi_discovery_param_is_matched(
         ogs_sbi_nf_instance_t *nf_instance,

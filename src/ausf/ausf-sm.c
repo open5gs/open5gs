@@ -135,7 +135,8 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             SWITCH(message.h.method)
             CASE(OGS_SBI_HTTP_METHOD_POST)
                 if (message.AuthenticationInfo &&
-                    message.AuthenticationInfo->supi_or_suci) {
+                    message.AuthenticationInfo->supi_or_suci &&
+                    strlen(message.AuthenticationInfo->supi_or_suci)) {
                     ausf_ue = ausf_ue_find_by_suci_or_supi(
                             message.AuthenticationInfo->supi_or_suci);
                     if (!ausf_ue) {
@@ -348,10 +349,10 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
             ogs_fsm_dispatch(&ausf_ue->sm, e);
             if (OGS_FSM_CHECK(&ausf_ue->sm, ausf_ue_state_exception)) {
-                ogs_error("[%s] State machine exception", ausf_ue->suci);
+                ogs_warn("[%s] State machine exception", ausf_ue->suci);
                 ausf_ue_remove(ausf_ue);
             } else if (OGS_FSM_CHECK(&ausf_ue->sm, ausf_ue_state_deleted)) {
-                ogs_debug("[%s] AUSF-UE removed", ausf_ue->supi);
+                ogs_info("[%s] AUSF-UE removed", ausf_ue->supi);
                 ausf_ue_remove(ausf_ue);
             }
             break;

@@ -162,8 +162,11 @@ void upf_n4_handle_session_establishment_request(
      * a new TEID for the first time, so performing a swap is not appropriate
      * in this case.
      */
-            if (pdr->f_teid.ch == false && pdr->f_teid_len)
-                ogs_pfcp_pdr_swap_teid(pdr);
+            if (pdr->f_teid_len > 0 && pdr->f_teid.ch == false) {
+                cause_value = ogs_pfcp_pdr_swap_teid(pdr);
+                if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+                    goto cleanup;
+            }
         }
         restoration_indication = true;
     }

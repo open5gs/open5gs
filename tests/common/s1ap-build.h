@@ -73,6 +73,7 @@ ogs_pkbuf_t *test_s1ap_build_malformed_s1_setup_request(int i);
 ogs_pkbuf_t *test_s1ap_build_malformed_enb_status_transfer(int i);
 ogs_pkbuf_t *test_s1ap_build_malformed_e_rab_modification_indication(int i);
 ogs_pkbuf_t *test_s1ap_build_oversized_message(int i);
+ogs_pkbuf_t *test_s1ap_build_malformed_enb_direct_information_transfer(int i);
 
 #ifdef __cplusplus
 }

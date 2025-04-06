@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -1104,16 +1104,20 @@ int amf_context_nf_info(void)
         nf_info = ogs_sbi_nf_info_add(
                 &nf_instance->nf_info_list, OpenAPI_nf_type_AMF);
         ogs_assert(nf_info);
-        nf_info->amf.amf_set_id = self.served_guami[next_new_i].amf_id.set2;
-        nf_info->amf.amf_region_id = self.served_guami[next_new_i].amf_id.region;
+
+        nf_info->amf.amf_set_id =
+                ogs_amf_set_id(&self.served_guami[next_new_i].amf_id);
+        nf_info->amf.amf_region_id =
+                ogs_amf_region_id(&self.served_guami[next_new_i].amf_id);
+
         next_found = false;
         info_i = 0;
         for (served_i = next_new_i; served_i <
                 self.num_of_served_guami; served_i++) {
-            if (self.served_guami[served_i].amf_id.set2 ==
-                    nf_info->amf.amf_set_id &&
-                    self.served_guami[served_i].amf_id.region ==
-                nf_info->amf.amf_region_id) {
+            if ((ogs_amf_set_id(&self.served_guami[served_i].amf_id) ==
+                    nf_info->amf.amf_set_id) &&
+                (ogs_amf_region_id(&self.served_guami[served_i].amf_id) ==
+                    nf_info->amf.amf_region_id)) {
                 nf_info->amf.guami[info_i] = self.served_guami[served_i];
                 nf_info->amf.num_of_guami++;
                 info_i++;
@@ -1121,21 +1125,25 @@ int amf_context_nf_info(void)
                 if (!next_found) {
                     int handled_i;
                     for (handled_i = 0; handled_i < served_i; handled_i++) {
-                        if (self.served_guami[handled_i].amf_id.set2 ==
-                                self.served_guami[served_i].amf_id.set2 &&
-                            self.served_guami[handled_i].amf_id.region ==
-                                    self.served_guami[served_i].amf_id.region) {
+                        if ((ogs_amf_set_id(
+                                &self.served_guami[handled_i].amf_id) ==
+                             ogs_amf_set_id(
+                                &self.served_guami[served_i].amf_id)) &&
+                            (ogs_amf_region_id(
+                                &self.served_guami[handled_i].amf_id) ==
+                             ogs_amf_region_id(
+                                &self.served_guami[served_i].amf_id))) {
                             break;
                         }
-                    next_found = true;
-                    next_new_i = served_i;
+                        next_found = true;
+                        next_new_i = served_i;
                     }
                 }
             }
         }
 
-        nf_info->amf.num_of_nr_tai = 0;
-        int i = 0, j = 0, k = 0, info_tai_i = 0;
+
+        int i, j, k;
         for (i = 0; i < self.num_of_served_tai; i++) {
             ogs_5gs_tai0_list_t *list0 = &self.served_tai[i].list0;
             ogs_5gs_tai1_list_t *list1 = &self.served_tai[i].list1;
@@ -1144,47 +1152,72 @@ int amf_context_nf_info(void)
             for (j = 0; list0->tai[j].num; j++) {
                 for (k = 0; k < list0->tai[j].num; k++) {
                     for (served_i = 0; served_i < info_i; served_i++) {
+                        if (nf_info->amf.num_of_nr_tai >= OGS_MAX_NUM_OF_TAI) {
+                            ogs_warn("Maximum number of TAI reached");
+                            break;
+                        }
+
                         if (ogs_plmn_id_hexdump(&list0->tai[j].plmn_id) ==
-                                ogs_plmn_id_hexdump(
-                                    &nf_info->amf.guami[served_i].plmn_id)) {
-                            nf_info->amf.nr_tai[info_tai_i].plmn_id =
-                                    list0->tai[j].plmn_id;
-                            nf_info->amf.nr_tai[info_tai_i].tac =
-                                    list0->tai[j].tac[k];
+                            ogs_plmn_id_hexdump(&nf_info->amf.guami[served_i].plmn_id)) {
+                            ogs_5gs_tai_t *tai =
+                                &nf_info->amf.nr_tai[
+                                    nf_info->amf.num_of_nr_tai];
+
+                            tai->plmn_id = list0->tai[j].plmn_id;
+                            tai->tac = list0->tai[j].tac[k];
+
                             nf_info->amf.num_of_nr_tai++;
-                            info_tai_i++;
                         }
                     }
                 }
             }
+
+
             for (j = 0; list1->tai[j].num; j++) {
-                for (k = 0; k < list1->tai[j].num; k++) {
-                    for (served_i = 0; served_i < info_i; served_i++) {
-                        if (ogs_plmn_id_hexdump(&list1->tai[j].plmn_id) ==
-                                ogs_plmn_id_hexdump(
-                                    &nf_info->amf.guami[served_i].plmn_id)) {
-                            nf_info->amf.nr_tai[info_tai_i].plmn_id =
-                                    list1->tai[j].plmn_id;
-                            nf_info->amf.nr_tai[info_tai_i].tac.v =
-                                    list1->tai[j].tac.v+k;
-                            nf_info->amf.num_of_nr_tai++;
-                            info_tai_i++;
-                        }
+                for (served_i = 0; served_i < info_i; served_i++) {
+                    if (nf_info->amf.num_of_nr_tai_range >= OGS_MAX_NUM_OF_TAI) {
+                        ogs_warn("Maximum number of TAI range reached");
+                        break;
+                    }
+
+                    if (ogs_plmn_id_hexdump(&list1->tai[j].plmn_id) ==
+                        ogs_plmn_id_hexdump(&nf_info->amf.guami[served_i].plmn_id)) {
+                        nf_info->amf.nr_tai_range[
+                            nf_info->amf.num_of_nr_tai_range].plmn_id =
+                                list1->tai[j].plmn_id;
+                        nf_info->amf.nr_tai_range[
+                            nf_info->amf.num_of_nr_tai_range].start[0].v =
+                                list1->tai[j].tac.v;
+                        nf_info->amf.nr_tai_range[
+                            nf_info->amf.num_of_nr_tai_range].end[0].v =
+                                list1->tai[j].tac.v + list1->tai[j].num - 1;
+                        /* Supported is only 1 TAC range per TAI */
+                        nf_info->amf.nr_tai_range[
+                            nf_info->amf.num_of_nr_tai_range].num_of_tac_range = 1;
+
+                        nf_info->amf.num_of_nr_tai_range++;
                     }
                 }
             }
+
             if (list2->num) {
                 for (j = 0; j < list2->num; j++) {
                     for (served_i = 0; served_i < info_i; served_i++) {
+                        if (nf_info->amf.num_of_nr_tai >= OGS_MAX_NUM_OF_TAI) {
+                            ogs_warn("Maximum number of TAI reached");
+                            break;
+                        }
+
                         if (ogs_plmn_id_hexdump(&list2->tai[j].plmn_id) ==
-                                ogs_plmn_id_hexdump(
-                                    &nf_info->amf.guami[served_i].plmn_id)) {
-                            nf_info->amf.nr_tai[info_tai_i].plmn_id =
-                                    list2->tai[j].plmn_id;
-                            nf_info->amf.nr_tai[info_tai_i].tac =
-                                    list2->tai[j].tac;
+                            ogs_plmn_id_hexdump(&nf_info->amf.guami[served_i].plmn_id)) {
+                            ogs_5gs_tai_t *tai =
+                                &nf_info->amf.nr_tai[
+                                    nf_info->amf.num_of_nr_tai];
+
+                            tai->plmn_id = list2->tai[j].plmn_id;
+                            tai->tac = list2->tai[j].tac;
+
                             nf_info->amf.num_of_nr_tai++;
-                            info_tai_i++;
                         }
                     }
                 }
@@ -2230,20 +2263,37 @@ void source_ue_deassociate_target_ue(ran_ue_t *ran_ue)
 
         ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
                 source_ue->target_ue_id <= OGS_MAX_POOL_ID);
-        ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
-                target_ue->source_ue_id <= OGS_MAX_POOL_ID);
         source_ue->target_ue_id = OGS_INVALID_POOL_ID;
-        target_ue->source_ue_id = OGS_INVALID_POOL_ID;
+
+        if (target_ue) {
+            ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
+                    target_ue->source_ue_id <= OGS_MAX_POOL_ID);
+            target_ue->source_ue_id = OGS_INVALID_POOL_ID;
+        } else
+            ogs_error("Target-UE-ID [%d] has already been removed "
+                    "(RAN_UE_S1AP_ID[%lld] AMF_UE_S1AP_ID[%lld])",
+                    source_ue->target_ue_id,
+                    (long long)source_ue->ran_ue_ngap_id,
+                    (long long)source_ue->amf_ue_ngap_id);
+
     } else if (ran_ue->source_ue_id >= OGS_MIN_POOL_ID &&
                 ran_ue->source_ue_id <= OGS_MAX_POOL_ID) {
         target_ue = ran_ue;
         source_ue = ran_ue_find_by_id(ran_ue->source_ue_id);
 
-        ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
-                source_ue->target_ue_id <= OGS_MAX_POOL_ID);
+        if (source_ue) {
+            ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
+                    source_ue->target_ue_id <= OGS_MAX_POOL_ID);
+            source_ue->target_ue_id = OGS_INVALID_POOL_ID;
+        } else
+            ogs_error("Source-UE-ID [%d] has already been removed "
+                    "(RAN_UE_S1AP_ID[%lld] AMF_UE_S1AP_ID[%lld])",
+                    target_ue->source_ue_id,
+                    (long long)target_ue->ran_ue_ngap_id,
+                    (long long)target_ue->amf_ue_ngap_id);
+
         ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
                 target_ue->source_ue_id <= OGS_MAX_POOL_ID);
-        source_ue->target_ue_id = OGS_INVALID_POOL_ID;
         target_ue->source_ue_id = OGS_INVALID_POOL_ID;
     }
 }
@@ -2631,6 +2681,63 @@ uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue)
     }
 
     return 0;
+}
+
+/*
+ * Save the sensitive (partial) context fields
+ * from the UE context into the memento
+ */
+void amf_ue_save_memento(amf_ue_t *amf_ue, amf_ue_memento_t *memento)
+{
+    ogs_assert(amf_ue);
+    ogs_assert(memento);
+
+    memcpy(&memento->ue_security_capability, &amf_ue->ue_security_capability,
+           sizeof(memento->ue_security_capability));
+    memcpy(&memento->ue_network_capability, &amf_ue->ue_network_capability,
+           sizeof(memento->ue_network_capability));
+    memcpy(memento->rand, amf_ue->rand, OGS_RAND_LEN);
+    memcpy(memento->autn, amf_ue->autn, OGS_AUTN_LEN);
+    memcpy(memento->xres_star, amf_ue->xres_star, OGS_MAX_RES_LEN);
+    memcpy(memento->abba, amf_ue->abba, OGS_NAS_MAX_ABBA_LEN);
+    memento->abba_len = amf_ue->abba_len;
+    memcpy(memento->hxres_star, amf_ue->hxres_star, OGS_MAX_RES_LEN);
+    memcpy(memento->kamf, amf_ue->kamf, OGS_SHA256_DIGEST_SIZE);
+    memcpy(memento->knas_int, amf_ue->knas_int, OGS_SHA256_DIGEST_SIZE/2);
+    memcpy(memento->knas_enc, amf_ue->knas_enc, OGS_SHA256_DIGEST_SIZE/2);
+    memento->dl_count = amf_ue->dl_count;
+    memento->ul_count = amf_ue->ul_count.i32;
+    memcpy(memento->kgnb, amf_ue->kgnb, OGS_SHA256_DIGEST_SIZE);
+    memcpy(memento->nh, amf_ue->nh, OGS_SHA256_DIGEST_SIZE);
+    memento->selected_enc_algorithm = amf_ue->selected_enc_algorithm;
+    memento->selected_int_algorithm = amf_ue->selected_int_algorithm;
+}
+
+/* Restore the sensitive context fields into the UE context */
+void amf_ue_restore_memento(amf_ue_t *amf_ue, const amf_ue_memento_t *memento)
+{
+    ogs_assert(amf_ue);
+    ogs_assert(memento);
+
+    memcpy(&amf_ue->ue_security_capability, &memento->ue_security_capability,
+           sizeof(amf_ue->ue_security_capability));
+    memcpy(&amf_ue->ue_network_capability, &memento->ue_network_capability,
+           sizeof(amf_ue->ue_network_capability));
+    memcpy(amf_ue->rand, memento->rand, OGS_RAND_LEN);
+    memcpy(amf_ue->autn, memento->autn, OGS_AUTN_LEN);
+    memcpy(amf_ue->xres_star, memento->xres_star, OGS_MAX_RES_LEN);
+    memcpy(amf_ue->abba, memento->abba, OGS_NAS_MAX_ABBA_LEN);
+    amf_ue->abba_len = memento->abba_len;
+    memcpy(amf_ue->hxres_star, memento->hxres_star, OGS_MAX_RES_LEN);
+    memcpy(amf_ue->kamf, memento->kamf, OGS_SHA256_DIGEST_SIZE);
+    memcpy(amf_ue->knas_int, memento->knas_int, OGS_SHA256_DIGEST_SIZE/2);
+    memcpy(amf_ue->knas_enc, memento->knas_enc, OGS_SHA256_DIGEST_SIZE/2);
+    amf_ue->dl_count = memento->dl_count;
+    amf_ue->ul_count.i32 = memento->ul_count;
+    memcpy(amf_ue->kgnb, memento->kgnb, OGS_SHA256_DIGEST_SIZE);
+    memcpy(amf_ue->nh, memento->nh, OGS_SHA256_DIGEST_SIZE);
+    amf_ue->selected_enc_algorithm = memento->selected_enc_algorithm;
+    amf_ue->selected_int_algorithm = memento->selected_int_algorithm;
 }
 
 void amf_clear_subscribed_info(amf_ue_t *amf_ue)
