@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -92,6 +92,10 @@ struct dict_object *ogs_diam_s6a_software_version = NULL;
 struct dict_object *ogs_diam_s6a_msisdn = NULL;
 struct dict_object *ogs_diam_s6a_a_msisdn = NULL;
 
+struct dict_object *ogs_diam_s6a_supported_features = NULL;
+struct dict_object *ogs_diam_s6a_feature_list_id = NULL;
+struct dict_object *ogs_diam_s6a_feature_list = NULL;
+
 extern int ogs_dict_s6a_entry(char *conffile);
 
 int ogs_diam_s6a_init(void)
@@ -175,6 +179,10 @@ int ogs_diam_s6a_init(void)
 
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "MSISDN", &ogs_diam_s6a_msisdn);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "A-MSISDN", &ogs_diam_s6a_a_msisdn);
+
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Supported-Features", &ogs_diam_s6a_supported_features);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Feature-List-ID", &ogs_diam_s6a_feature_list_id);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Feature-List", &ogs_diam_s6a_feature_list);
 
     return 0;
 }
