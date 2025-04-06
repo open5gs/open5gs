@@ -923,7 +923,7 @@ char *hss_cx_download_user_data(
     hss_impu_t *impu = NULL;
 
     bool barring_indication_presence = true;
-    int i;
+    int i, n, m;
 
     ogs_assert(user_name);
     ogs_assert(visited_network_identifier);
@@ -1012,7 +1012,7 @@ char *hss_cx_download_user_data(
         }
 
         /* IFC data */
-        for (int n = 0; n < ims_data->num_of_ifc; n++) {
+        for (n = 0; n < ims_data->num_of_ifc; n++) {
             user_data = ogs_mstrcatf(user_data, "%s",
                         ogs_diam_cx_xml_ifc_s);
             ogs_assert(user_data);
@@ -1036,7 +1036,7 @@ char *hss_cx_download_user_data(
                 ogs_assert(user_data);
 
                 /* SPTs */
-                for (int m = 0; m < ims_data->ifc[n].trigger_point.num_of_spt;
+                for (m = 0; m < ims_data->ifc[n].trigger_point.num_of_spt;
                         m++) {
                     user_data = ogs_mstrcatf(user_data, "%s",
                                 ogs_diam_cx_xml_spt_s);
