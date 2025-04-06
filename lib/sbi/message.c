@@ -739,6 +739,26 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         }
 
     }
+    if (message->param.num_of_fields) {
+        char *fields;
+
+        fields = ogs_strdup(message->param.fields[0]);
+        if (!fields) {
+            ogs_error("ogs_strdup() failed");
+            return NULL;
+        }
+
+        for (i = 1; i < message->param.num_of_fields; i++)
+            fields = ogs_mstrcatf(
+                    fields, ",%s", message->param.fields[i]);
+
+        if (fields) {
+            ogs_sbi_header_set(request->http.params,
+                    OGS_SBI_PARAM_FIELDS, fields);
+            ogs_free(fields);
+        }
+
+    }
     if (message->param.ipv4addr) {
         ogs_sbi_header_set(request->http.params,
                 OGS_SBI_PARAM_IPV4ADDR, message->param.ipv4addr);

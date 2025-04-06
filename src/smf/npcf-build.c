@@ -34,6 +34,7 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     OpenAPI_subscribed_default_qos_t SubsDefQos;
     OpenAPI_arp_t Arp;
     OpenAPI_snssai_t sNssai;
+    OpenAPI_user_location_t ueLocation;
 
     ogs_assert(sess);
     ogs_assert(sess->sm_context_ref);
@@ -50,6 +51,7 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     memset(&SmPolicyContextData, 0, sizeof(SmPolicyContextData));
     memset(&sNssai, 0, sizeof(sNssai));
     memset(&SubsSessAmbr, 0, sizeof(SubsSessAmbr));
+    memset(&ueLocation, 0, sizeof(ueLocation));
 
     SmPolicyContextData.supi = smf_ue->supi;
     if (!SmPolicyContextData.supi) {
@@ -66,6 +68,12 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         ogs_error("No pdu_session_type");
         goto end;
     }
+
+    /*
+     * TODO: Currently hard-coded to "00000800";
+     * replace with dynamic value if needed in future
+     */
+    SmPolicyContextData.chargingcharacteristics = (char *)"00000800";
 
     /*
      * Use ogs_sbi_supi_in_vplmn() instead of ogs_sbi_plmn_id_in_vplmn().
@@ -139,10 +147,34 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         goto end;
     }
 
+    SmPolicyContextData.rat_type = OpenAPI_rat_type_NR;
+
     SmPolicyContextData.serving_network =
         ogs_sbi_build_plmn_id_nid(&sess->serving_plmn_id);
     if (!SmPolicyContextData.serving_network) {
         ogs_error("No serving_network");
+        goto end;
+    }
+
+    ueLocation.nr_location = ogs_sbi_build_nr_location(
+            &sess->nr_tai, &sess->nr_cgi);
+    if (!ueLocation.nr_location) {
+        ogs_error("ueLocation.nr_location");
+        goto end;
+    }
+    ueLocation.nr_location->ue_location_timestamp =
+        ogs_sbi_gmtime_string(sess->ue_location_timestamp);
+    if (!ueLocation.nr_location->ue_location_timestamp) {
+        ogs_error("ueLocation.nr_location->ue_location_timestamp");
+        goto end;
+    }
+
+    SmPolicyContextData.user_location_info = &ueLocation;
+
+    SmPolicyContextData.ue_time_zone =
+        ogs_sbi_timezone_string(ogs_timezone());
+    if (!SmPolicyContextData.ue_time_zone) {
+        ogs_error("SmPolicyContextData.ue_time_zone");
         goto end;
     }
 
@@ -262,6 +294,14 @@ end:
         ogs_free(SmPolicyContextData.dnn);
     if (SmPolicyContextData.serving_network)
         ogs_sbi_free_plmn_id_nid(SmPolicyContextData.serving_network);
+
+    if (ueLocation.nr_location) {
+        if (ueLocation.nr_location->ue_location_timestamp)
+            ogs_free(ueLocation.nr_location->ue_location_timestamp);
+        ogs_sbi_free_nr_location(ueLocation.nr_location);
+    }
+    if (SmPolicyContextData.ue_time_zone)
+        ogs_free(SmPolicyContextData.ue_time_zone);
 
     if (sNssai.sd)
         ogs_free(sNssai.sd);

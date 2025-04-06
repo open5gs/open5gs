@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -158,6 +158,10 @@ extern struct dict_object *ogs_diam_s6a_software_version;
 
 extern struct dict_object *ogs_diam_s6a_msisdn;
 extern struct dict_object *ogs_diam_s6a_a_msisdn;
+
+extern struct dict_object *ogs_diam_s6a_supported_features;
+extern struct dict_object *ogs_diam_s6a_feature_list_id;
+extern struct dict_object *ogs_diam_s6a_feature_list;
 
 typedef struct ogs_diam_e_utran_vector_s {
     uint8_t                 xres[OGS_MAX_RES_LEN];

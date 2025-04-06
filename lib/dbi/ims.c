@@ -120,7 +120,8 @@ int ogs_dbi_ims_data(char *supi, ogs_ims_data_t *ims_data)
     bson_error_t error;
     const bson_t *document;
     bson_iter_t iter;
-    bson_iter_t child1_iter;
+    bson_iter_t child1_iter, child2_iter, child3_iter, child4_iter, child5_iter;
+    bson_iter_t child6_iter, child7_iter, child8_iter, child9_iter;
     const char *utf8 = NULL;
     uint32_t length = 0;
 
@@ -190,6 +191,222 @@ int ogs_dbi_ims_data(char *supi, ogs_ims_data_t *ims_data)
                 }
             }
             ims_data->num_of_msisdn = msisdn_index;
+        } else if (!strcmp(key, "ifc") &&
+            BSON_ITER_HOLDS_ARRAY(&iter)) {
+            int ifc_index = 0;
+            bson_iter_recurse(&iter, &child2_iter);
+            while (bson_iter_next(&child2_iter)) {
+                ogs_assert(ifc_index < OGS_MAX_NUM_OF_IFC);
+                bson_iter_recurse(&child2_iter, &child3_iter);
+                while (bson_iter_next(&child3_iter)) {
+                    const char *child3_key = bson_iter_key(&child3_iter);
+                    if (!strcmp(child3_key, "priority") &&
+                        BSON_ITER_HOLDS_INT32(&child3_iter)) {
+                        ims_data->ifc[ifc_index].priority =
+                            bson_iter_int32(&child3_iter);
+                    } else if (!strcmp(child3_key, "application_server") &&
+                        BSON_ITER_HOLDS_DOCUMENT(&child3_iter)) {
+                        bson_iter_recurse(&child3_iter, &child4_iter);
+                        while (bson_iter_next(&child4_iter)) {
+                            const char *child4_key =
+                                bson_iter_key(&child4_iter);
+                            if (!strcmp(child4_key, "server_name") &&
+                                BSON_ITER_HOLDS_UTF8(&child4_iter)) {
+                                utf8 = bson_iter_utf8(&child4_iter, &length);
+                                ims_data->ifc[ifc_index]
+                                    .application_server.server_name =
+                                    ogs_strndup(utf8, length);
+                            } else if (!strcmp(child4_key, "default_handling")
+                                    && BSON_ITER_HOLDS_INT32(&child4_iter)) {
+                                ims_data->ifc[ifc_index]
+                                    .application_server.default_handling =
+                                    bson_iter_int32(&child4_iter);
+                            }
+                        }
+                    } else if (!strcmp(child3_key, "trigger_point") &&
+                               BSON_ITER_HOLDS_DOCUMENT(&child3_iter)) {
+                        bson_iter_recurse(&child3_iter, &child5_iter);
+                        while (bson_iter_next(&child5_iter)) {
+                            const char *child5_key =
+                                bson_iter_key(&child5_iter);
+                            if (!strcmp(child5_key, "condition_type_cnf") &&
+                                BSON_ITER_HOLDS_INT32(&child5_iter)) {
+                                ims_data->ifc[ifc_index]
+                                    .trigger_point.condition_type_cnf =
+                                    bson_iter_int32(&child5_iter);
+                            } else if (!strcmp(child5_key, "spt") &&
+                                       BSON_ITER_HOLDS_ARRAY(&child5_iter)) {
+                                int spt_index = 0;
+                                bson_iter_recurse(&child5_iter, &child6_iter);
+                                while (bson_iter_next(&child6_iter)) {
+                                    ogs_assert(spt_index < OGS_MAX_NUM_OF_SPT);
+                                    bson_iter_recurse(&child6_iter,
+                                                      &child7_iter);
+                                    while (bson_iter_next(&child7_iter)) {
+                                        const char *child7_key =
+                                            bson_iter_key(&child7_iter);
+                                        if (!strcmp(child7_key,
+                                                    "condition_negated") &&
+                                            BSON_ITER_HOLDS_INT32(
+                                                &child7_iter)) {
+                                            ims_data->ifc[ifc_index]
+                                                .trigger_point
+                                                .spt[spt_index]
+                                                .condition_negated =
+                                                bson_iter_int32(
+                                                    &child7_iter);
+                                        } else if (!strcmp(child7_key, "group")
+                                                && BSON_ITER_HOLDS_INT32(
+                                                       &child7_iter)) {
+                                            ims_data->ifc[ifc_index]
+                                                .trigger_point
+                                                .spt[spt_index]
+                                                .group = bson_iter_int32(
+                                                &child7_iter);
+                                        } else if (!strcmp(child7_key,
+                                                           "method") &&
+                                                   BSON_ITER_HOLDS_UTF8(
+                                                       &child7_iter)) {
+                                            utf8 = bson_iter_utf8(&child7_iter,
+                                                                  &length);
+                                            ims_data->ifc[ifc_index]
+                                                .trigger_point
+                                                .spt[spt_index]
+                                                .method =
+                                                ogs_strndup(utf8, length);
+                                            ims_data->ifc[ifc_index]
+                                                .trigger_point
+                                                .spt[spt_index]
+                                                .type = OGS_SPT_HAS_METHOD;
+                                        } else if (!strcmp(child7_key,
+                                                           "session_case") &&
+                                                   BSON_ITER_HOLDS_INT32(
+                                                       &child7_iter)) {
+                                            ims_data->ifc[ifc_index]
+                                                .trigger_point
+                                                .spt[spt_index]
+                                                .session_case =
+                                                bson_iter_int32(
+                                                    &child7_iter);
+                                            ims_data->ifc[ifc_index]
+                                                .trigger_point
+                                                .spt[spt_index]
+                                                .type =
+                                                    OGS_SPT_HAS_SESSION_CASE;
+                                        } else if (!strcmp(child7_key,
+                                                           "sip_header") &&
+                                                   BSON_ITER_HOLDS_DOCUMENT(
+                                                       &child7_iter)) {
+                                            bson_iter_recurse(&child7_iter,
+                                                              &child8_iter);
+                                            while (bson_iter_next(
+                                                        &child8_iter)) {
+                                                const char *child8_key =
+                                                    bson_iter_key(
+                                                        &child8_iter);
+                                                if (!strcmp(child8_key,
+                                                            "header") &&
+                                                    BSON_ITER_HOLDS_UTF8(
+                                                        &child8_iter)) {
+                                                    utf8 = bson_iter_utf8(
+                                                        &child8_iter,
+                                                        &length);
+                                                    ims_data->ifc[ifc_index]
+                                                        .trigger_point
+                                                        .spt[spt_index]
+                                                        .header =
+                                                        ogs_strndup(utf8,
+                                                                    length);
+                                                } else if (!strcmp(child8_key,
+                                                                   "content") &&
+                                                           BSON_ITER_HOLDS_UTF8(
+                                                               &child8_iter)) {
+                                                    utf8 = bson_iter_utf8(
+                                                        &child8_iter,
+                                                        &length);
+                                                    ims_data->ifc[ifc_index]
+                                                        .trigger_point
+                                                        .spt[spt_index]
+                                                        .header_content =
+                                                        ogs_strndup(utf8,
+                                                                    length);
+                                                }
+                                            }
+                                            ims_data->ifc[ifc_index]
+                                                .trigger_point
+                                                .spt[spt_index]
+                                                .type = OGS_SPT_HAS_SIP_HEADER;
+                                        } else if (!strcmp(child7_key,
+                                                           "sdp_line") &&
+                                                   BSON_ITER_HOLDS_DOCUMENT(
+                                                       &child7_iter)) {
+                                            bson_iter_recurse(&child7_iter,
+                                                              &child9_iter);
+                                            while (bson_iter_next(
+                                                        &child9_iter)) {
+                                                const char *child9_key =
+                                                    bson_iter_key(
+                                                        &child9_iter);
+                                                if (!strcmp(child9_key,
+                                                            "line") &&
+                                                    BSON_ITER_HOLDS_UTF8(
+                                                        &child9_iter)) {
+                                                    utf8 = bson_iter_utf8(
+                                                        &child9_iter,
+                                                        &length);
+                                                    ims_data->ifc[ifc_index]
+                                                        .trigger_point
+                                                        .spt[spt_index]
+                                                        .sdp_line =
+                                                        ogs_strndup(utf8,
+                                                                    length);
+                                                } else if (!strcmp(child9_key,
+                                                                   "content") &&
+                                                           BSON_ITER_HOLDS_UTF8(
+                                                               &child9_iter)) {
+                                                    utf8 = bson_iter_utf8(
+                                                        &child9_iter,
+                                                        &length);
+                                                    ims_data->ifc[ifc_index]
+                                                        .trigger_point
+                                                        .spt[spt_index]
+                                                        .sdp_line_content =
+                                                        ogs_strndup(utf8,
+                                                                    length);
+                                                }
+                                            }
+                                            ims_data->ifc[ifc_index]
+                                                .trigger_point
+                                                .spt[spt_index]
+                                                .type = OGS_SPT_HAS_SDP_LINE;
+                                        } else if (!strcmp(child7_key,
+                                                           "request_uri") &&
+                                                   BSON_ITER_HOLDS_UTF8(
+                                                       &child7_iter)) {
+                                            utf8 = bson_iter_utf8(&child7_iter,
+                                                                  &length);
+                                            ims_data->ifc[ifc_index]
+                                                .trigger_point
+                                                .spt[spt_index]
+                                                .request_uri =
+                                                ogs_strndup(utf8, length);
+                                            ims_data->ifc[ifc_index]
+                                                .trigger_point
+                                                .spt[spt_index]
+                                                .type = OGS_SPT_HAS_REQUEST_URI;
+                                        }
+                                    }
+                                    spt_index++;
+                                }
+                                ims_data->ifc->trigger_point.num_of_spt =
+                                    spt_index;
+                            }
+                        }
+                    }
+                }
+                ifc_index++;
+            }
+            ims_data->num_of_ifc = ifc_index;
         }
     }
 
