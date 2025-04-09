@@ -8,3 +8,4 @@
 .gitignore
 .github
 build
+venv
