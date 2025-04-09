@@ -15677,3 +15677,337 @@ Open5GS daemon v2.7.5
  ((null):0)
 04/03 09:49:25.183: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:         AVP: 'Supported-Vendor-Id'(265) l=12 f=-M val=13019 (0x32db)
  ((null):0)
+Open5GS daemon v2.7.5
+
+04/05 11:24:08.426: [app] INFO: Configuration: '/home/ilinsky/open5gs_build/open5gs/build/configs/open5gs/smf.yaml' (../lib/app/ogs-init.c:144)
+04/05 11:24:08.426: [app] INFO: File Logging: '/home/ilinsky/open5gs_build/open5gs/logs/mme.log' (../lib/app/ogs-init.c:147)
+04/05 11:24:08.426: [app] INFO: LOG-LEVEL: 'debug' (../lib/app/ogs-init.c:150)
+04/05 11:24:08.447: [sock] DEBUG: addr:127.0.0.4, port:2123 (../lib/core/ogs-sockaddr.c:147)
+04/05 11:24:08.447: [sock] DEBUG: addr:127.0.0.4, port:2152 (../lib/core/ogs-sockaddr.c:147)
+04/05 11:24:08.448: [sock] DEBUG: addr:127.0.0.4, port:8805 (../lib/core/ogs-sockaddr.c:147)
+04/05 11:24:08.448: [sock] DEBUG: addr:127.0.0.7, port:8805 (../lib/core/ogs-sockaddr.c:147)
+04/05 11:24:08.448: [sock] DEBUG: addr:127.0.0.4, port:7777 (../lib/core/ogs-sockaddr.c:147)
+04/05 11:24:08.448: [sock] DEBUG: addr:127.0.0.200, port:7777 (../lib/core/ogs-sockaddr.c:147)
+04/05 11:24:08.448: [sbi] DEBUG: ogs_sbi_client_add [http] (../lib/sbi/client.c:139)
+04/05 11:24:08.448: [sbi] DEBUG: [REF] 1 (../lib/sbi/client.c:140)
+04/05 11:24:08.448: [sbi] DEBUG: CLEINT added with Ref [1] (../lib/sbi/client.c:173)
+04/05 11:24:08.448: [sbi] DEBUG: [REF] 2 (../lib/sbi/context.c:507)
+04/05 11:24:08.448: [sbi] DEBUG: CLIENT Ref [2] (../lib/sbi/context.c:507)
+04/05 11:24:08.448: [sbi] INFO: Setup NF EndPoint(addr) [127.0.0.200:7777] (../lib/sbi/context.c:507)
+04/05 11:24:08.448: [sock] DEBUG: addr:127.0.0.4, port:9090 (../lib/core/ogs-sockaddr.c:147)
+04/05 11:24:08.448: [smf] WARNING: unknown key `s8` (../src/smf/context.c:974)
+04/05 11:24:08.448: [metrics] INFO: metrics_server() [http://127.0.0.4]:9090 (../lib/metrics/prometheus/context.c:300)
+04/05 11:24:08.448: [diam] DEBUG: pid:Main in fd_core_initialize@core.c:188: libfdproto '1.5.0' initialized.
+ ((null):0)
+04/05 11:24:08.449: [diam] DEBUG: pid:Main in fd_core_initialize@core.c:223: libfdcore '1.5.0' initialized.
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_ext_load@extensions.c:215: All extensions loaded.
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255: freeDiameter configuration:
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Default trace level .... : +5
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Configuration file ..... : /home/ilinsky/open5gs_build/open5gs/build/configs/freeDiameter/smf.conf
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Diameter Identity ...... : smf.epc.mnc001.mcc001.3gppnetwork.org (l:37)
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Diameter Realm ......... : epc.mnc001.mcc001.3gppnetwork.org (l:33)
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Tc Timer ............... : 30
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Tw Timer ............... : 30
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Local port ............. : 3868
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Local secure port ...... : 5868
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Number of SCTP streams . : 30
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Number of clients thr .. : 5
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Number of app threads .. : 4
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Minimal processing peers : 0
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Number of rtin threads . : 1
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Number of rtout threads  : 1
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Incoming queue limit     : 20
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Outgoing queue limit     : 30
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Local queue limit        : 25
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Local endpoints ........ : 127.0.0.4{C----}
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Local applications ..... : (none)
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Flags : - IP ........... : Enabled
+ ((null):0)
+04/05 11:24:08.471: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - IPv6 ......... : Enabled
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - Relay app .... : DISABLED
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - TCP .......... : Enabled
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - SCTP ......... : Enabled
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - Pref. proto .. : SCTP
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - TLS method ... : Separate port
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - Client bind .. : Enabled
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   TLS :   - Certificate .. : /etc/open5gs/tls/smf.cert.pem
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - Private key .. : /etc/open5gs/tls/smf.key.pem
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - CA (trust) ... : /etc/open5gs/tls/cacert.pem (1 certs)
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - CRL .......... : (none)
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - Priority ..... : (default: 'NORMAL')
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - DH bits ...... : 1024
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Origin-State-Id ........ : 1743852248
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:259: Loaded extensions: '/usr/local/lib/aarch64-linux-gnu/freeDiameter/dbg_msg_dumps.fdx'[0x8888], loaded
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:259: Loaded extensions: '/usr/local/lib/aarch64-linux-gnu/freeDiameter/dict_rfc5777.fdx'[(no config file)], loaded
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:259: Loaded extensions: '/usr/local/lib/aarch64-linux-gnu/freeDiameter/dict_mip6i.fdx'[(no config file)], loaded
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:259: Loaded extensions: '/usr/local/lib/aarch64-linux-gnu/freeDiameter/dict_nasreq.fdx'[(no config file)], loaded
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:259: Loaded extensions: '/usr/local/lib/aarch64-linux-gnu/freeDiameter/dict_nas_mipv6.fdx'[(no config file)], loaded
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:259: Loaded extensions: '/usr/local/lib/aarch64-linux-gnu/freeDiameter/dict_dcca.fdx'[(no config file)], loaded
+ ((null):0)
+04/05 11:24:08.472: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:259: Loaded extensions: '/usr/local/lib/aarch64-linux-gnu/freeDiameter/dict_dcca_3gpp.fdx'[(no config file)], loaded
+ ((null):0)
+04/05 11:24:08.473: [diam] ERROR: pid:Main in fd_tcp_create_bind_server@tcp.c:107: ERROR: in '(bind( *sock, sa, salen ))' :	Address already in use
+ ((null):0)
+04/05 11:24:08.473: [diam] ERROR: pid:Main in fd_cnx_serv_tcp@cnxctx.c:135: ERROR: in '(fd_tcp_create_bind_server( &cnx->cc_socket, sa, ( (socklen_t) ( (((struct sockaddr *)sa)->sa_family == 2) ? (sizeof(struct sockaddr_in)) : ((((struct sockaddr *)sa)->sa_family == 10) ? (sizeof(struct sockaddr_in6)) : 0 ) ) ) ))' :	Address already in use
+ ((null):0)
+04/05 11:24:08.474: [diam] ERROR: pid:Main in fd_servers_start@server.c:433: ERROR: in '(s->conn = fd_cnx_serv_tcp(fd_g_config->cnf_port, sa->sa_family, ep))' :	Transport endpoint is not connected
+ ((null):0)
+04/05 11:24:08.474: [diam] ERROR: pid:Main in fd_core_start_int@core.c:300: ERROR: in '((fd_servers_start()))' :	Transport endpoint is not connected
+ ((null):0)
+04/05 11:24:08.474: [diam] ERROR: pid:Main in ogs_diam_start@init.c:76: ERROR: in '(fd_core_start())' :	Transport endpoint is not connected
+ ((null):0)
+04/05 11:24:08.474: [diam] DEBUG: pid:Main in fd_core_shutdown@core.c:331: Initiating freeDiameter shutdown sequence (2)
+ ((null):0)
+04/05 11:24:08.474: [diam] DEBUG: pid:Main in core_shutdown@core.c:99: freediameterd framework is stopping...
+ ((null):0)
+04/05 11:24:08.475: [diam] DEBUG: pid:PSM/pcrf.epc.mnc001.mcc001.3gppnetwork.org in p_psm_th@p_psm.c:894: pcrf.epc.mnc001.mcc001.3gppnetwork.org: Going to ZOMBIE state (no more activity) after abnormal shutdown
+ ((null):0)
+04/05 11:24:08.582: [smf] FATAL: smf_fd_init: Assertion `rv == 0' failed. (../src/smf/fd-path.c:50)
+04/05 11:24:08.582: [core] FATAL: backtrace() returned 8 addresses (../lib/core/ogs-abort.c:37)
+/home/ilinsky/open5gs_build/open5gs/build/src/smf/open5gs-smfd(+0x4ff20) [0xc1db9b1aff20]
+/home/ilinsky/open5gs_build/open5gs/build/src/smf/open5gs-smfd(+0xe3a0) [0xc1db9b16e3a0]
+/home/ilinsky/open5gs_build/open5gs/build/src/smf/open5gs-smfd(+0xd668) [0xc1db9b16d668]
+/home/ilinsky/open5gs_build/open5gs/build/src/smf/open5gs-smfd(+0xdf20) [0xc1db9b16df20]
+/lib/aarch64-linux-gnu/libc.so.6(+0x284c4) [0xe92c5bd584c4]
+/lib/aarch64-linux-gnu/libc.so.6(__libc_start_main+0x98) [0xe92c5bd58598]
+/home/ilinsky/open5gs_build/open5gs/build/src/smf/open5gs-smfd(+0xd570) [0xc1db9b16d570]
+Open5GS daemon v2.7.5
+
+04/05 11:25:14.820: [app] INFO: Configuration: '/home/ilinsky/open5gs_build/open5gs/build/configs/open5gs/mme.yaml' (../lib/app/ogs-init.c:144)
+04/05 11:25:14.820: [app] INFO: File Logging: '/home/ilinsky/open5gs_build/open5gs/logs/mme.log' (../lib/app/ogs-init.c:147)
+04/05 11:25:14.820: [app] INFO: LOG-LEVEL: 'debug' (../lib/app/ogs-init.c:150)
+04/05 11:25:14.822: [sock] DEBUG: addr:127.0.0.2, port:2123 (../lib/core/ogs-sockaddr.c:147)
+04/05 11:25:14.822: [sock] DEBUG: addr:127.0.0.2, port:9090 (../lib/core/ogs-sockaddr.c:147)
+04/05 11:25:14.822: [sock] DEBUG: addr:127.0.0.2, port:36412 (../lib/core/ogs-sockaddr.c:147)
+04/05 11:25:14.822: [sock] DEBUG: addr:127.0.0.3, port:2123 (../lib/core/ogs-sockaddr.c:147)
+04/05 11:25:14.822: [sock] DEBUG: addr:127.0.0.4, port:2123 (../lib/core/ogs-sockaddr.c:147)
+04/05 11:25:14.822: [metrics] INFO: metrics_server() [http://127.0.0.2]:9090 (../lib/metrics/prometheus/context.c:300)
+04/05 11:25:14.823: [diam] DEBUG: pid:Main in fd_core_initialize@core.c:188: libfdproto '1.5.0' initialized.
+ ((null):0)
+04/05 11:25:14.823: [diam] DEBUG: pid:Main in fd_core_initialize@core.c:223: libfdcore '1.5.0' initialized.
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_ext_load@extensions.c:215: All extensions loaded.
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255: freeDiameter configuration:
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Default trace level .... : +5
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Configuration file ..... : /home/ilinsky/open5gs_build/open5gs/build/configs/freeDiameter/mme.conf
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Diameter Identity ...... : mme.epc.mnc001.mcc001.3gppnetwork.org (l:37)
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Diameter Realm ......... : epc.mnc001.mcc001.3gppnetwork.org (l:33)
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Tc Timer ............... : 30
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Tw Timer ............... : 30
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Local port ............. : 3899
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Local secure port ...... : 5868
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Number of SCTP streams . : 30
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Number of clients thr .. : 5
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Number of app threads .. : 4
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Minimal processing peers : 0
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Number of rtin threads . : 1
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Number of rtout threads  : 1
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Incoming queue limit     : 20
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Outgoing queue limit     : 30
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Local queue limit        : 25
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Local endpoints ........ : 127.0.0.1{C----}
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Local applications ..... : (none)
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Flags : - IP ........... : Enabled
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - IPv6 ......... : Enabled
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - Relay app .... : DISABLED
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - TCP .......... : Enabled
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - SCTP ......... : Enabled
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - Pref. proto .. : TCP
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - TLS method ... : Separate port
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - Client bind .. : Enabled
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   TLS :   - Certificate .. : /etc/open5gs/tls/mme.cert.pem
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - Private key .. : /etc/open5gs/tls/mme.key.pem
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - CA (trust) ... : /etc/open5gs/tls/cacert.pem (1 certs)
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - CRL .......... : (none)
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - Priority ..... : (default: 'NORMAL')
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:           - DH bits ...... : 1024
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:255:   Origin-State-Id ........ : 1743852314
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:259: Loaded extensions: '/usr/local/lib/aarch64-linux-gnu/freeDiameter/dbg_msg_dumps.fdx'[0x8888], loaded
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:259: Loaded extensions: '/usr/local/lib/aarch64-linux-gnu/freeDiameter/dict_rfc5777.fdx'[(no config file)], loaded
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:259: Loaded extensions: '/usr/local/lib/aarch64-linux-gnu/freeDiameter/dict_mip6i.fdx'[(no config file)], loaded
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:259: Loaded extensions: '/usr/local/lib/aarch64-linux-gnu/freeDiameter/dict_nasreq.fdx'[(no config file)], loaded
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:259: Loaded extensions: '/usr/local/lib/aarch64-linux-gnu/freeDiameter/dict_nas_mipv6.fdx'[(no config file)], loaded
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:259: Loaded extensions: '/usr/local/lib/aarch64-linux-gnu/freeDiameter/dict_dcca.fdx'[(no config file)], loaded
+ ((null):0)
+04/05 11:25:14.867: [diam] DEBUG: pid:Main in fd_core_parseconf_int@core.c:259: Loaded extensions: '/usr/local/lib/aarch64-linux-gnu/freeDiameter/dict_dcca_3gpp.fdx'[(no config file)], loaded
+ ((null):0)
+04/05 11:25:14.869: [diam] DEBUG: pid:Main in fd_servers_start@server.c:464: Local server address(es): 127.0.0.1{C----}
+ ((null):0)
+04/05 11:25:14.869: [app] INFO: Polling freeDiameter stats every 60000000 usecs (../lib/diameter/common/stats.c:77)
+04/05 11:25:14.869: [sock] DEBUG: socket create(2:2:17) (../lib/core/ogs-socket.c:97)
+04/05 11:25:14.869: [sock] DEBUG: socket bind 127.0.0.2:2123 (../lib/core/ogs-socket.c:122)
+04/05 11:25:14.869: [sock] DEBUG: udp_server() [127.0.0.2]:2123 (../lib/core/ogs-udp.c:52)
+04/05 11:25:14.869: [gtp] INFO: gtp_server() [127.0.0.2]:2123 (../lib/gtp/path.c:30)
+04/05 11:25:14.869: [gtp] INFO: gtp_connect() [127.0.0.3]:2123 (../lib/gtp/path.c:60)
+04/05 11:25:14.869: [sock] DEBUG: socket create(2:1:132) (../lib/core/ogs-socket.c:97)
+04/05 11:25:14.869: [sock] DEBUG: sizes of 'struct sctp_event_subscribe': compile-time 14, kernel: 14 (../lib/sctp/ogs-lksctp.c:551)
+04/05 11:25:14.869: [sock] DEBUG: OLD spp_flags = 0x29 hbinter = 30000 pathmax = 5, sackdelay = 200 (../lib/sctp/ogs-lksctp.c:747)
+04/05 11:25:14.869: [sock] DEBUG: sizes of 'struct sctp_paddrparams': compile-time 156, kernel: 156 (../lib/sctp/ogs-lksctp.c:678)
+04/05 11:25:14.869: [sock] DEBUG: NEW spp_flags = 0x29 hbinter = 5000 pathmax = 5, sackdelay = 200 (../lib/sctp/ogs-lksctp.c:779)
+04/05 11:25:14.869: [sock] DEBUG: OLD RTO (initial:3000 max:60000 min:1000) (../lib/sctp/ogs-lksctp.c:811)
+04/05 11:25:14.869: [sock] DEBUG: New RTO (initial:3000 max:5000 min:1000) (../lib/sctp/ogs-lksctp.c:827)
+04/05 11:25:14.869: [sock] DEBUG: Old INITMSG (numout:10 maxin:65535 maxattempt:8 maxinit_to:60000) (../lib/sctp/ogs-lksctp.c:853)
+04/05 11:25:14.869: [sock] DEBUG: New INITMSG (numout:30 maxin:65535 maxattempt:4 maxinit_to:8000) (../lib/sctp/ogs-lksctp.c:871)
+04/05 11:25:14.869: [sock] DEBUG: Turn on SCTP_NODELAY (../lib/sctp/ogs-lksctp.c:884)
+04/05 11:25:14.869: [sock] DEBUG: Turn on SO_REUSEADDR (../lib/core/ogs-sockopt.c:120)
+04/05 11:25:14.869: [sock] DEBUG: sctp_server() [127.0.0.2]:36412 (bound 1 addresses) (../lib/sctp/ogs-lksctp.c:250)
+04/05 11:25:14.869: [mme] INFO: s1ap_server() [127.0.0.2]:36412 (../src/mme/s1ap-sctp.c:62)
+04/05 11:25:14.869: [mme] INFO: Redis connected to 0.0.0.0:6379 (../src/mme/mme-redis.c:105)
+04/05 11:25:14.869: [thread] DEBUG: [0xbdaa09583c30] worker signal (../lib/core/ogs-thread.c:66)
+04/05 11:25:14.869: [thread] DEBUG: [0xbdaa09583c30] thread started (../lib/core/ogs-thread.c:104)
+04/05 11:25:14.869: [mme] DEBUG: mme_state_initial(): INIT
+ (../src/mme/mme-sm.c:41)
+04/05 11:25:14.869: [sctp] INFO: MME initialize...done (../src/mme/app-init.c:33)
+04/05 11:25:14.869: [mme] DEBUG: mme_state_operational(): ENTRY
+ (../src/mme/mme-sm.c:89)
+04/05 11:25:15.023: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:130: SND to 'hss.epc.mnc001.mcc001.3gppnetwork.org':
+ ((null):0)
+04/05 11:25:15.023: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:      'Capabilities-Exchange-Request'
+ ((null):0)
+04/05 11:25:15.023: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:        Version: 0x01
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:        Length: 264
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:        Flags: 0x80 (R---)
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:        Command Code: 257
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:        ApplicationId: 0
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:        Hop-by-Hop Identifier: 0x1F2CB695
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:        End-to-End Identifier: 0x31A0F077
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:         {internal data}: src:(nil)(0) rwb:(nil) rt:0 cb:(nil),(nil)((nil)) qry:(nil) asso:0 sess:(nil)
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:         AVP: 'Origin-Host'(264) l=45 f=-M val="mme.epc.mnc001.mcc001.3gppnetwork.org"
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:         AVP: 'Origin-Realm'(296) l=41 f=-M val="epc.mnc001.mcc001.3gppnetwork.org"
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:         AVP: 'Origin-State-Id'(278) l=12 f=-M val=1743852314 (0x67f1131a)
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:         AVP: 'Host-IP-Address'(257) l=14 f=-M val=127.0.0.1
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:         AVP: 'Vendor-Id'(266) l=12 f=-M val=0 (0x0)
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:         AVP: 'Product-Name'(269) l=20 f=-- val="freediameter"
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:         AVP: 'Firmware-Revision'(267) l=12 f=-- val=10500 (0x2904)
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:         AVP: 'Inband-Security-Id'(299) l=12 f=-M val='NO_INBAND_SECURITY' (0 (0x0))
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:         AVP: 'Vendor-Specific-Application-Id'(260) l=32 f=-M val=(grouped)
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:            AVP: 'Auth-Application-Id'(258) l=12 f=-M val=16777251 (0x1000023)
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:            AVP: 'Vendor-Id'(266) l=12 f=-M val=10415 (0x28af)
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:         AVP: 'Supported-Vendor-Id'(265) l=12 f=-M val=5535 (0x159f)
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:         AVP: 'Supported-Vendor-Id'(265) l=12 f=-M val=10415 (0x28af)
+ ((null):0)
+04/05 11:25:15.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:131:         AVP: 'Supported-Vendor-Id'(265) l=12 f=-M val=13019 (0x32db)
+ ((null):0)
+04/05 11:25:25.024: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in md_hook_cb_tree@dbg_msg_dumps.c:150: CONNECT FAILED to hss.epc.mnc001.mcc001.3gppnetwork.org: Timeout while waiting for remote peer
+ ((null):0)
+04/05 11:25:27.643: [app] INFO: SIGTERM received (../src/main.c:54)
+04/05 11:25:27.643: [app] INFO: Open5GS daemon terminating... (../src/main.c:231)
+04/05 11:25:27.643: [event] DEBUG: interrupt all (../lib/core/ogs-queue.c:284)
+04/05 11:25:27.643: [thread] DEBUG: [0xbdaa09583c30] thread running(1) (../lib/core/ogs-thread.c:114)
+04/05 11:25:27.644: [mme] DEBUG: mme_state_operational(): EXIT
+ (../src/mme/mme-sm.c:89)
+04/05 11:25:27.644: [mme] DEBUG: mme_state_final(): INIT
+ (../src/mme/mme-sm.c:50)
+04/05 11:25:27.644: [thread] DEBUG: [0xbdaa09583c30] worker done (../lib/core/ogs-thread.c:72)
+04/05 11:25:27.645: [thread] DEBUG: [0xbdaa09583c30] thread destroy (../lib/core/ogs-thread.c:126)
+04/05 11:25:27.645: [thread] DEBUG: [0xbdaa09583c30] thread join (../lib/core/ogs-thread.c:135)
+04/05 11:25:27.645: [thread] DEBUG: [0xbdaa09583c30] thread done (../lib/core/ogs-thread.c:141)
+04/05 11:25:27.645: [diam] DEBUG: pid:Main in fd_core_shutdown@core.c:331: Initiating freeDiameter shutdown sequence (3)
+ ((null):0)
+04/05 11:25:27.645: [diam] DEBUG: pid:fD Core Runner in core_shutdown@core.c:99: freediameterd framework is stopping...
+ ((null):0)
+04/05 11:25:27.667: [diam] DEBUG: pid:PSM/hss.epc.mnc001.mcc001.3gppnetwork.org in p_psm_th@p_psm.c:894: hss.epc.mnc001.mcc001.3gppnetwork.org: Going to ZOMBIE state (no more activity) after abnormal shutdown
+ ((null):0)
+04/05 11:25:27.779: [sctp] INFO: MME terminate...done (../src/mme/app-init.c:42)
