@@ -410,9 +410,11 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
                     if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK)
                         amf_nnrf_handle_nf_discover(sbi_xact, &sbi_message);
-                    else
+                    else {
                         ogs_error("HTTP response error [%d]",
                                 sbi_message.res_status);
+                        amf_nnrf_handle_failed_amf_discovery(sbi_xact);
+                    }
                     break;
 
                 DEFAULT
