@@ -24,7 +24,7 @@ If you find Open5GS useful for work, please consider supporting this Open Source
   </a>
 </p>
 <p align="center">
-  <h2 align="center">This Fork</h2>
+  <h2>This Fork</h2>
 </p>
 <p>
   This fork of Open5GS introduces enhancements for advanced 5G core analytics:
