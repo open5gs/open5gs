@@ -42,6 +42,8 @@ If you find Open5GS useful for work, please consider supporting this Open Source
      Upon receiving NWDAF notifications, the SMF can identify abnormal User Equipment (UEs) and automatically release their PDU sessions, helping maintain optimal network performance.
   </li>
 </ul>  
+
+
 ## Community
 
 - Problem with Open5GS can be filed as [issues](https://github.com/open5gs/open5gs/issues) in this repository.
