@@ -34,7 +34,7 @@ libdiameter_common_sources = files('''
 libdiameter_common_inc = include_directories('.')
 
 # At this point, Open5GS always use the subproject of freeDiameter
-freeDiameter_proj = subproject('freeDiameter')
+freeDiameter_proj = subproject('freeDiameter', default_options: 'werror=false')
 libfdcore_dep = freeDiameter_proj.get_variable('libfdcore_dep')
 
 libdiameter_common_cc_flags = ['-DOGS_DIAM_COMPILATION']

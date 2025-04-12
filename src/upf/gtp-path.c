@@ -52,9 +52,12 @@
 #include "gtp-path.h"
 #include "pfcp-path.h"
 #include "rule-match.h"
-
+#include "upf_prepare_data.h"
 #define UPF_GTP_HANDLED     1
 
+#define DEFINE_MANAGE
+#include "manage_collection.h"
+#undef DEFINE_MANAGE
 const uint8_t proxy_mac_addr[] = { 0x0e, 0x00, 0x00, 0x00, 0x00, 0x01 };
 
 static ogs_pkbuf_pool_t *packet_pool = NULL;
@@ -162,7 +165,7 @@ static void _gtpv1_tun_recv_common_cb(
         }
         ogs_pkbuf_pull(recvbuf, ETHER_HDR_LEN);
     }
-
+    // We have session here.
     sess = upf_sess_find_by_ue_ip_address(recvbuf);
     if (!sess)
         goto cleanup;
@@ -210,6 +213,10 @@ static void _gtpv1_tun_recv_common_cb(
     }
 
     /* Increment total & dl octets + pkts */
+    // [FATEMEH: consider things as DL traffic]
+//    ogs_warn("Packet detected calling the print function, ");
+    if(is_active) prepare_data_ee(false,sess->smf_n4_f_seid.seid,recvbuf);
+
     for (i = 0; i < pdr->num_of_urr; i++)
         upf_sess_urr_acc_add(sess, pdr->urr[i], recvbuf->len, false);
 
@@ -379,9 +386,10 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         ogs_pfcp_subnet_t *subnet = NULL;
         ogs_pfcp_dev_t *dev = NULL;
         int i;
-
+        // [FATEMEH]making the ip packet using data
         ip_h = (struct ip *)pkbuf->data;
         ogs_assert(ip_h);
+
 
         /*
          * Issue #2210, Discussion #2208, #2209
@@ -634,7 +642,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
             dev = subnet->dev;
             ogs_assert(dev);
-
+            // [FATEMEH] consider it as UL traffic
             /* Increment total & ul octets + pkts */
             for (i = 0; i < pdr->num_of_urr; i++)
                 upf_sess_urr_acc_add(sess, pdr->urr[i], pkbuf->len, true);
@@ -695,6 +703,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         ogs_error("[DROP] Invalid GTPU Type [%d]", header_desc.type);
         ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
     }
+//  ogs_warn("Packet detected calling the print function");
+  if(is_active) prepare_data_ee(true,sess->smf_n4_f_seid.seid,pkbuf);
 
 cleanup:
     ogs_pkbuf_free(pkbuf);

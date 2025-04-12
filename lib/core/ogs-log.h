@@ -39,6 +39,13 @@ extern "C" {
 #define ogs_debug(...) ogs_log_message(OGS_LOG_DEBUG, 0, __VA_ARGS__)
 #define ogs_trace(...) ogs_log_message(OGS_LOG_TRACE, 0, __VA_ARGS__)
 
+//#define FATEMEH_ENABLE_LOG
+#ifdef FATEMEH_ENABLE_LOG
+#define fatemeh_log(...) ogs_log_message(OGS_LOG_INFO, 0, __VA_ARGS__)
+#else
+#define fatemeh_log(...)
+#endif
+
 #define ogs_log_message(level, err, ...) \
     ogs_log_printf(level, OGS_LOG_DOMAIN, \
     err, __FILE__, __LINE__, OGS_FUNC,  \
