@@ -21,6 +21,10 @@
 #include "gtp-path.h"
 #include "pfcp-path.h"
 #include "metrics.h"
+#include <pthread.h>
+#include "ee_server.h"
+#include "ee_client.h"
+#include "publish_subscribe.h"
 
 static ogs_thread_t *thread;
 static void upf_main(void *data);
@@ -78,6 +82,25 @@ int upf_initialize(void)
     if (!thread) return OGS_ERROR;
 
     initialized = 1;
+    pthread_t ee_server_thread;
+    if (pthread_create(&ee_server_thread, NULL, ee_http_server, NULL)) {
+      fatemeh_log("Error creating thread for EE request\n");
+      return 1;
+    }
+  fatemeh_log("server thread created\n");
+//    pthread_join(server_thread, NULL);
+    pthread_t report_thread;
+    if (pthread_create(&report_thread, NULL, periodic_sending, NULL)) {
+      fatemeh_log("Error creating thread for EE report\n");
+    return 1;
+    }
+    pthread_join(report_thread, NULL);
+//  pthread_t publisher_thread;
+//  if (pthread_create(&publisher_thread, NULL, publisher, NULL)) {
+//      ogs_warn("Error creating thread for EE request\n");
+//      return 1;
+//    }
+//  pthread_join(publisher_thread, NULL);
 
     return OGS_OK;
 }

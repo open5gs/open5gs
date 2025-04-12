@@ -621,7 +621,7 @@ int smf_5gc_pfcp_send_qos_flow_list_modification_request(
 
     return rv;
 }
-
+// [FATEMEH] session deletation req
 int smf_5gc_pfcp_send_session_deletion_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, int trigger)
 {

@@ -23,7 +23,9 @@
 #include "pfcp-path.h"
 #include "sbi-path.h"
 #include "metrics.h"
-
+#include <pthread.h>
+#include "subscriber_server.h"
+#include "subscriber_client.h"
 static ogs_thread_t *thread;
 static void smf_main(void *data);
 
@@ -91,6 +93,11 @@ int smf_initialize(void)
     if (!thread) return OGS_ERROR;
 
     initialized = 1;
+    pthread_t subscriber_server_thread;
+    if (pthread_create(&subscriber_server_thread, NULL, subscriber_server, NULL)) {
+      ogs_warn("Error creating thread for subscriber_server_thread \n");
+      return 1;
+    }
 
     return OGS_OK;
 }
