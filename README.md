@@ -23,12 +23,25 @@ If you find Open5GS useful for work, please consider supporting this Open Source
       <img alt="sponsors" src="https://open5gs.org/assets/img/sponsors.svg">
   </a>
 </p>
-## This FORK
-This fork of Open5GS introduces enhancements for advanced 5G core analytics:
-UPF Event Exposure Service (EES): Adds functionality for the User Plane Function (UPF) to expose traffic-related events through 3GPP-compliant service.
-SMF Subscriptions to NWDAF: Enables the Session Management Function (SMF) to subscribe to the Network Data Analytics Function (NWDAF).
-Abnormal UE Handling: Upon receiving NWDAF notifications, the SMF can identify abnormal User Equipment (UEs) and automatically release their PDU sessions, helping maintain optimal network performance.
-
+<p align="center">
+  <h2 align="center">This Fork</h2>
+</p>
+<p align="center">
+  This fork of Open5GS introduces enhancements for advanced 5G core analytics:
+</p>
+<ul>
+  <li><strong>UPF Event Exposure Service (EES)</strong><br>
+    Adds functionality for the User Plane Function (UPF) to expose traffic-related events through 3GPP-compliant service.
+  </li>
+  <li>
+    <strong> SMF Subscriptions to NWDAF </strong><br>
+    Enables the Session Management Function (SMF) to subscribe to the Network Data Analytics Function (NWDAF).
+  </li>
+  <li>
+    <strong> Abnormal UE Handling </strong><br>
+     Upon receiving NWDAF notifications, the SMF can identify abnormal User Equipment (UEs) and automatically release their PDU sessions, helping maintain optimal network performance.
+  </li>
+</ul>  
 ## Community
 
 - Problem with Open5GS can be filed as [issues](https://github.com/open5gs/open5gs/issues) in this repository.
