@@ -14,7 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+#// Modified by Fatemeh Shafiei Ardestani on 2025-04-06
+#// Changes: See GitHub for full diff
 project('open5gs', 'c', 'cpp',
     version : '2.7.5',
     license : 'AGPL-3.0-or-later',
