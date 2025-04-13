@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="MesonSettings">
+    <option name="linkedExternalProjectsSettings">
+      <MesonProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+      </MesonProjectSettings>
+    </option>
+  </component>
+  <component name="MesonWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
+</project>

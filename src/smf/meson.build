@@ -14,7 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+#// Modified by Fatemeh Shafiei Ardestani on 2025-04-06
+#// Changes: See GitHub for full diff
 
 mhd_dep_smf = dependency('libmicrohttpd', required: true)  # Added line
 jn_dep_smf = dependency('jansson', required: true)         # Added line
