@@ -1340,7 +1340,7 @@ void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm,
     /* Set the CLR-Flags */
     ret = fd_msg_avp_new(ogs_diam_s6a_clr_flags, 0, &avp);
     ogs_assert(ret == 0);
-    if (cancellation_type == OGS_DIAM_S6A_CT_SUBSCRIPTION_WITHDRAWL) {
+    if (cancellation_type == OGS_DIAM_S6A_CT_SUBSCRIPTION_WITHDRAWAL) {
         val.u32 = (OGS_DIAM_S6A_CLR_FLAGS_REATTACH_REQUIRED |
             OGS_DIAM_S6A_CLR_FLAGS_S6A_S6D_INDICATOR);
     } else {

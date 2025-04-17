@@ -25,7 +25,7 @@ int app_initialize(const char *const argv[])
 
     rv = sepp_initialize();
     if (rv != OGS_OK) {
-        ogs_error("Failed to intialize SEPP");
+        ogs_error("Failed to initialize SEPP");
         return rv;
     }
     ogs_info("SEPP initialize...done");

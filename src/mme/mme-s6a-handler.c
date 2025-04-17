@@ -277,7 +277,7 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
     ogs_debug("    OGS_NAS_EPS TYPE[%d]", mme_ue->nas_eps.type);
 
     switch (clr_message->cancellation_type) {
-    case OGS_DIAM_S6A_CT_SUBSCRIPTION_WITHDRAWL:
+    case OGS_DIAM_S6A_CT_SUBSCRIPTION_WITHDRAWAL:
         mme_ue->detach_type = MME_DETACH_TYPE_HSS_EXPLICIT;
 
         /*

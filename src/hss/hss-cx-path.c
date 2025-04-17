@@ -301,7 +301,7 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
     /* Check if IMPI(User-Name) + IMPU(Public-Identity) is associated */
     matched = hss_cx_identity_is_associated(user_name, public_identity);
     if (!matched) {
-        ogs_error("User-Name[%s] Public-Identity[%s] is not assocated",
+        ogs_error("User-Name[%s] Public-Identity[%s] is not associated",
                     user_name, public_identity);
         result_code = OGS_DIAM_CX_ERROR_IDENTITIES_DONT_MATCH;
         goto out;
@@ -545,7 +545,7 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch);
     ogs_assert(ret == 0);
 
-    /* Set the Integirty-Key AVP */
+    /* Set the Integrity-Key AVP */
     ret = fd_msg_avp_new(ogs_diam_cx_integrity_key, 0, &avpch);
     ogs_assert(ret == 0);
     val.os.data = ik;
@@ -686,7 +686,7 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
         /* Check if IMPI(User-Name) + IMPU(Public-Identity) is associated */
         matched = hss_cx_identity_is_associated(user_name, public_identity);
         if (!matched) {
-            ogs_error("User-Name[%s] Public-Identity[%s] is not assocated",
+            ogs_error("User-Name[%s] Public-Identity[%s] is not associated",
                         user_name, public_identity);
             result_code = OGS_DIAM_CX_ERROR_IDENTITIES_DONT_MATCH;
             goto out;
@@ -717,7 +717,7 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
     visited_network_identifier =
         hss_cx_get_visited_network_identifier(public_identity);
     if (!visited_network_identifier) {
-        ogs_error("Cannot find Visted-Network-Identifier "
+        ogs_error("Cannot find Visited-Network-Identifier "
                     "for User-Name[%s] Public-Identity[%s]",
                     user_name, public_identity);
         result_code = OGS_DIAM_CX_ERROR_IDENTITY_NOT_REGISTERED;
