@@ -105,7 +105,7 @@ typedef struct upf_sess_s {
 
     ogs_pfcp_sess_t pfcp;
 
-    uint64_t        upf_n4_seid;        /* UPF SEID is dervied from NODE */
+    uint64_t        upf_n4_seid;        /* UPF SEID is derived from NODE */
     struct {
         uint64_t    seid;
         ogs_ip_t    ip;

@@ -597,7 +597,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
             ogs_error("Cannot receive SBI message");
 
             if (!stream) {
-                ogs_error("STREAM has alreadt been removed [%d]",
+                ogs_error("STREAM has already been removed [%d]",
                         sbi_xact->assoc_stream_id);
                 break;
             }
