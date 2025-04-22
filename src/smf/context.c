@@ -1505,7 +1505,7 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
     }
 
     if (SmContextCreateData->is_pdu_session_id == false) {
-        ogs_error("PDU session identitiy is unassigned");
+        ogs_error("PDU session identity is unassigned");
         return NULL;
     }
 

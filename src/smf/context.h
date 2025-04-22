@@ -254,7 +254,7 @@ typedef struct smf_sess_s {
     uint32_t        sgw_s5c_teid;   /* SGW-S5C-TEID is received from SGW */
     ogs_ip_t        sgw_s5c_ip;     /* SGW-S5C IPv4/IPv6 */
 
-    uint64_t        smf_n4_seid;    /* SMF SEID is dervied from NODE */
+    uint64_t        smf_n4_seid;    /* SMF SEID is derived from NODE */
     uint64_t        upf_n4_seid;    /* UPF SEID is received from Peer */
 
     uint32_t        upf_n3_teid;    /* UPF-N3 TEID */

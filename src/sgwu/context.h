@@ -52,7 +52,7 @@ typedef struct sgwu_sess_s {
 
     ogs_pfcp_sess_t pfcp;
 
-    uint64_t        sgwu_sxa_seid;      /* SGW-U SEID is dervied from INDEX */
+    uint64_t        sgwu_sxa_seid;      /* SGW-U SEID is derived from INDEX */
     struct {
         uint64_t    seid;
         ogs_ip_t    ip;
