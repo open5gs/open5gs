@@ -82,6 +82,8 @@ int test_fd_init(void)
     ogs_assert(ret == 0);
     ret = ogs_diam_rx_init();
     ogs_assert(ret == 0);
+    ret = ogs_diam_s13_init();
+    ogs_assert(ret == 0);
 
     test_swx_init();
     test_s6b_init();

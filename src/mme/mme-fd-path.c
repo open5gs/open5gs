@@ -28,6 +28,8 @@ static struct disp_hdl *hdl_s6a_idr = NULL;
 
 static struct session_handler *mme_s6a_reg = NULL;
 
+static struct session_handler *mme_s13_reg = NULL;
+
 /* s6a process Subscription-Data from avp */
 static int mme_s6a_subscription_data_from_avp(struct avp *avp,
     ogs_subscription_data_t *subscription_data,
@@ -43,6 +45,7 @@ struct sess_state {
 static void mme_s6a_aia_cb(void *data, struct msg **msg);
 static void mme_s6a_ula_cb(void *data, struct msg **msg);
 static void mme_s6a_pua_cb(void *data, struct msg **msg);
+static void mme_s13_eca_cb(void *data, struct msg **msg);
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
@@ -2335,6 +2338,330 @@ outnoexp:
     return 0;
 }
 
+/* MME Sends ME Identity Check Request to EIR */
+void mme_s13_send_ecr(mme_ue_t *mme_ue)
+{
+    int ret;
+
+    struct msg *req = NULL;
+    struct avp *avp;
+    struct avp *avpch;
+    union avp_value val;
+    struct sess_state *sess_data = NULL, *svg;
+    struct session *session = NULL;
+
+    ogs_assert(mme_ue);
+
+    ogs_debug("[MME] ME-Identity-Check-Request");
+
+    /* Create the random value to store with the session */
+    sess_data = ogs_calloc(1, sizeof (*sess_data));
+    ogs_assert(sess_data);
+
+    sess_data->mme_ue_id = mme_ue->id;
+    
+    /* Create the request */
+    ret = fd_msg_new(ogs_diam_s13_cmd_ecr, MSGFL_ALLOC_ETEID, &req);
+    ogs_assert(ret == 0);
+
+    /* Create a new session */
+    #define OGS_DIAM_S13_APP_SID_OPT  "app_s13"
+    ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_S13_APP_SID_OPT, 
+            CONSTSTRLEN(OGS_DIAM_S13_APP_SID_OPT));
+    ogs_assert(ret == 0);
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
+    ogs_assert(ret == 0);
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            req, OGS_DIAM_S13_APPLICATION_ID);
+    ogs_assert(ret == 0);
+
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set Origin-Host & Origin-Realm */
+    ret = fd_msg_add_origin(req, 0);
+    ogs_assert(ret == 0);
+
+    /* Set the Destination-Realm AVP */
+    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
+    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set the Terminal-Information AVP */
+    if (mme_ue->imeisv_len) {
+        ret = fd_msg_avp_new(ogs_diam_s13_terminal_information, 0, &avp);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_new(ogs_diam_s13_imei, 0, &avpch);
+        ogs_assert(ret == 0);
+        val.os.data = (uint8_t *)mme_ue->imeisv_bcd;
+        val.os.len  = 14;
+        ret = fd_msg_avp_setvalue(avpch, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_new(ogs_diam_s13_software_version, 0, &avpch);
+        ogs_assert(ret == 0);
+        val.os.data = (uint8_t *)mme_ue->imeisv_bcd+14;
+        val.os.len  = 2;
+        ret = fd_msg_avp_setvalue(avpch, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);
+    }
+
+    /* Set the User-Name AVP */
+    ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = (uint8_t *)mme_ue->imsi_bcd;
+    val.os.len = strlen(mme_ue->imsi_bcd);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
+    ogs_assert(ret == 0);
+
+    /* Keep a pointer to the session data for debug purpose,
+     * in real life we would not need it */
+    svg = sess_data;
+
+    /* Store this value in the session */
+    ret = fd_sess_state_store(mme_s13_reg, session, &sess_data);
+    ogs_assert(ret == 0);
+    ogs_assert(sess_data == 0);
+
+    /* Send the request */
+    ret = fd_msg_send(&req, mme_s13_eca_cb, svg);
+    ogs_assert(ret == 0);
+
+    /* Increment the counter */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    ogs_diam_stats_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
+}
+
+/* MME received ME Identity Check Answer from EIR */
+static void mme_s13_eca_cb(void *data, struct msg **msg)
+{
+    int ret;
+    
+    struct sess_state *sess_data = NULL;
+    struct timespec ts;
+    struct session *session;
+    struct avp *avp, *avpch;
+    struct avp_hdr *hdr;
+    unsigned long dur;
+    int error = 0;
+    int new;
+
+    mme_event_t *e = NULL;
+    mme_ue_t *mme_ue = NULL;
+    ogs_diam_s13_message_t *s13_message = NULL;
+    ogs_diam_s13_eca_message_t *eca_message = NULL;
+
+    ogs_debug("[MME] ME-Identity-Check-Answer");
+    
+    ret = clock_gettime(CLOCK_REALTIME, &ts);
+    ogs_assert(ret == 0);
+
+    /* Search the session, retrieve its data */
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
+    if (new != 0) {
+        ogs_error("fd_msg_sess_get() failed");
+        return;
+    }
+    
+    
+    ret = fd_sess_state_retrieve(mme_s13_reg, session, &sess_data);
+    if (ret != 0) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if (!sess_data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+    if ((void *)sess_data != data) {
+        ogs_error("fd_sess_state_retrieve() failed");
+        return;
+    }
+	
+	mme_ue = mme_ue_find_by_id(sess_data->mme_ue_id);
+    ogs_assert(mme_ue);
+
+    /* Set ME-Identity-Check Command */
+    s13_message = ogs_calloc(1, sizeof(ogs_diam_s13_message_t));
+    ogs_assert(s13_message);
+    s13_message->cmd_code = OGS_DIAM_S13_CMD_CODE_ME_IDENTITY_CHECK;
+    eca_message = &s13_message->eca_message;
+    ogs_assert(eca_message);
+    
+    /* Value of Result Code */
+    ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        s13_message->result_code = hdr->avp_value->i32;
+        s13_message->err = &s13_message->result_code;
+        ogs_debug("    Result Code: %d", hdr->avp_value->i32);
+    } else {
+        ret = fd_msg_search_avp(*msg, ogs_diam_experimental_result, &avp);
+        ogs_assert(ret == 0);
+        if (avp) {
+            ret = fd_avp_search_avp(
+                    avp, ogs_diam_experimental_result_code, &avpch);
+            ogs_assert(ret == 0);
+            if (avpch) {
+                ret = fd_msg_avp_hdr(avpch, &hdr);
+                ogs_assert(ret == 0);
+                s13_message->result_code = hdr->avp_value->i32;
+                s13_message->exp_err = &s13_message->result_code;
+                ogs_debug("    Experimental Result Code: %d",
+                        s13_message->result_code);
+            }
+        } else {
+            ogs_error("no Result-Code");
+            error++;
+        }
+    }
+
+    /* Value of Origin-Host */
+    ret = fd_msg_search_avp(*msg, ogs_diam_origin_host, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        ogs_debug("    From '%.*s'",
+                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+    } else {
+        ogs_error("no_Origin-Host ");
+        error++;
+    }
+
+    /* Value of Origin-Realm */
+    ret = fd_msg_search_avp(*msg, ogs_diam_origin_realm, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        ogs_debug("         ('%.*s')",
+                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+    } else {
+        ogs_error("no_Origin-Realm ");
+        error++;
+    }
+
+    if (s13_message->result_code != ER_DIAMETER_SUCCESS) {
+        if (s13_message->err)
+            ogs_info("    Result Code: %d", s13_message->result_code);
+        else if (s13_message->exp_err)
+            ogs_info("    Experimental Result Code: %d",
+                    s13_message->result_code);
+        else {
+            ogs_fatal("ERROR DIAMETER Result Code(%d)",
+                    s13_message->result_code);
+            ogs_assert_if_reached();
+        }
+        goto out;
+    }
+
+    ret = fd_msg_search_avp(*msg, ogs_diam_s13_equipment_status, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        eca_message->equipment_status_code = hdr->avp_value->u32;
+    } else {
+        ogs_error("no_Equipment-Status ");
+        error++;
+    }
+
+out:
+    if (!error) {
+        int rv;
+        e = mme_event_new(MME_EVENT_S13_MESSAGE);
+        ogs_assert(e);
+        e->mme_ue_id = mme_ue->id;
+        e->gtp_xact_id = sess_data->gtp_xact_id;
+        e->s13_message = s13_message;
+        rv = ogs_queue_push(ogs_app()->queue, e);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
+            ogs_free(s13_message);
+            mme_event_free(e);
+        } else {
+            ogs_pollset_notify(ogs_app()->pollset);
+        }
+    }
+
+    /* Free the message */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) + 
+        ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    if (ogs_diam_stats_self()->stats.nb_recv) {
+        /* Ponderate in the avg */
+        ogs_diam_stats_self()->stats.avg = (ogs_diam_stats_self()->stats.avg * 
+            ogs_diam_stats_self()->stats.nb_recv + dur) /
+            (ogs_diam_stats_self()->stats.nb_recv + 1);
+        /* Min, max */
+        if (dur < ogs_diam_stats_self()->stats.shortest)
+            ogs_diam_stats_self()->stats.shortest = dur;
+        if (dur > ogs_diam_stats_self()->stats.longest)
+            ogs_diam_stats_self()->stats.longest = dur;
+    } else {
+        ogs_diam_stats_self()->stats.shortest = dur;
+        ogs_diam_stats_self()->stats.longest = dur;
+        ogs_diam_stats_self()->stats.avg = dur;
+    }
+    if (error)
+        ogs_diam_stats_self()->stats.nb_errs++;
+    else 
+        ogs_diam_stats_self()->stats.nb_recv++;
+
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
+    
+    /* Display how long it took */
+    if (ts.tv_nsec > sess_data->ts.tv_nsec)
+        ogs_trace("in %d.%06ld sec", 
+                (int)(ts.tv_sec - sess_data->ts.tv_sec),
+                (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    else
+        ogs_trace("in %d.%06ld sec", 
+                (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
+                (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    
+    ret = fd_msg_free(*msg);
+    ogs_assert(ret == 0);
+    *msg = NULL;
+
+    state_cleanup(sess_data, NULL, NULL);
+    return;
+}
+
 int mme_fd_init(void)
 {
     int ret;
@@ -2347,9 +2674,13 @@ int mme_fd_init(void)
     /* Install objects definitions for this application */
     ret = ogs_diam_s6a_init();
     ogs_assert(ret == OGS_OK);
+    ret = ogs_diam_s13_init();
+    ogs_assert(ret == OGS_OK);
 
     /* Create handler for sessions */
     ret = fd_sess_handler_create(&mme_s6a_reg, &state_cleanup, NULL, NULL);
+    ogs_assert(ret == 0);
+    ret = fd_sess_handler_create(&mme_s13_reg, &state_cleanup, NULL, NULL);
     ogs_assert(ret == 0);
 
     /* Specific handler for Cancel-Location-Request */
