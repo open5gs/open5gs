@@ -214,7 +214,7 @@ bool udm_nudr_dr_handle_subscription_authentication(
 #if 0
             OGS_HEX(tmp[step], strlen(tmp[step]), udm_ue->rand);
 #if 0
-            if (step == 0) step = 1; /* For supprorting authentication failure */
+            if (step == 0) step = 1; /* For supporting authentication failure */
             else step = 0;
 #endif
 #endif
@@ -230,7 +230,7 @@ bool udm_nudr_dr_handle_subscription_authentication(
                     udm_ue->serving_network_name, autn,
                     kausf);
             
-            /* TS33.501 Annex A.2 : Kausf derviation function */
+            /* TS33.535: Kakma derviation function */
             // extract rid from udm_ue->suci.
             // ogs_kdf_kakma(kausf, rid, udm_ue->supi, kakma)
 

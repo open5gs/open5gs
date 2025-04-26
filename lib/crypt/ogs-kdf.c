@@ -87,7 +87,7 @@ static void ogs_kdf_common(const uint8_t *key, uint32_t key_size,
     ogs_free(s);
 }
 
-/* TS33.535 Annex A.2 : Kakma derivation function */
+/* TS33.535: Kakma derivation function */
 void ogs_kdf_kakma(const uint8_t *kausf, const char *rid, uint8_t *kakma)
 {
     kdf_param_t param;
