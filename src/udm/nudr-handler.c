@@ -231,8 +231,8 @@ bool udm_nudr_dr_handle_subscription_authentication(
                     kausf);
             
             /* TS33.535: Kakma derviation function */
-            // extract rid from udm_ue->suci.
-            // ogs_kdf_kakma(kausf, rid, udm_ue->supi, kakma)
+            char *rid = ogs_nas_5gs_rid_from_suci(udm_ue->suci);
+            ogs_kdf_kakma(kausf, rid, udm_ue->supi, kakma);
 
             /* TS33.501 Annex A.4 : RES* and XRES* derivation function */
             ogs_kdf_xres_star(
