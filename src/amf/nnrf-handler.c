@@ -49,6 +49,7 @@ void amf_nnrf_handle_nf_discover(
     SearchResult = recvmsg->SearchResult;
     if (!SearchResult) {
         ogs_error("No SearchResult");
+        amf_nnrf_handle_failed_amf_discovery(xact);
         return;
     }
 
@@ -72,6 +73,34 @@ void amf_nnrf_handle_nf_discover(
             ogs_assert(amf_ue);
             ogs_error("[%s] (NF discover) No [%s]", amf_ue->suci,
                         ogs_sbi_service_type_to_name(service_type));
+
+            /*
+            * TS 23.502
+            * 4.2.2.2.2 General Registration
+            * If the SUCI is not provided by the UE nor retrieved from the old AMF the Identity Request
+            * procedure is initiated by AMF sending an Identity Request message to the UE requesting the SUCI.
+            */
+
+            if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST &&
+                    amf_ue->nas.registration.value == OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL &&
+                    requester_nf_type == OpenAPI_nf_type_AMF &&
+                    discovery_option->guami_presence) {
+
+                amf_ue->amf_ue_context_transfer_state =
+                        UE_CONTEXT_INITIAL_STATE;
+
+                ogs_sbi_xact_remove(xact);
+
+                if (!(AMF_UE_HAVE_SUCI(amf_ue) ||
+                        AMF_UE_HAVE_SUPI(amf_ue))) {
+                    CLEAR_AMF_UE_TIMER(amf_ue->t3570);
+                    r = nas_5gs_send_identity_request(amf_ue);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                    break;
+                }
+            }
+
             r = nas_5gs_send_gmm_reject_from_sbi(amf_ue,
                     OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
             ogs_expect(r == OGS_OK);
@@ -109,4 +138,63 @@ void amf_nnrf_handle_nf_discover(
     }
 
     ogs_expect(true == amf_sbi_send_request(nf_instance, xact));
+}
+
+void amf_nnrf_handle_failed_amf_discovery(
+        ogs_sbi_xact_t *sbi_xact)
+{
+    int r;
+
+    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
+    ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
+    ogs_sbi_object_t *sbi_object = NULL;
+    amf_ue_t *amf_ue = NULL;
+
+    ogs_assert(sbi_xact);
+    sbi_object = sbi_xact->sbi_object;
+    ogs_assert(sbi_object);
+    service_type = sbi_xact->service_type;
+    ogs_assert(service_type);
+    requester_nf_type = sbi_xact->requester_nf_type;
+    ogs_assert(requester_nf_type);
+
+    discovery_option = sbi_xact->discovery_option;
+
+    ogs_assert(sbi_object->type > OGS_SBI_OBJ_BASE &&
+                sbi_object->type < OGS_SBI_OBJ_TOP);
+
+    if (sbi_object->type == OGS_SBI_OBJ_UE_TYPE) {
+
+        amf_ue = (amf_ue_t *)sbi_object;
+        ogs_assert(amf_ue);
+
+        /*
+        * TS 23.502
+        * 4.2.2.2.2 General Registration
+        * If the SUCI is not provided by the UE nor retrieved from the old AMF the Identity Request
+        * procedure is initiated by AMF sending an Identity Request message to the UE requesting the SUCI.
+        */
+
+        if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST &&
+                amf_ue->nas.registration.value == OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL &&
+                requester_nf_type == OpenAPI_nf_type_AMF &&
+                discovery_option->guami_presence) {
+
+            amf_ue->amf_ue_context_transfer_state =
+                    UE_CONTEXT_INITIAL_STATE;
+
+            ogs_sbi_xact_remove(sbi_xact);
+
+            if (!(AMF_UE_HAVE_SUCI(amf_ue) ||
+                    AMF_UE_HAVE_SUPI(amf_ue))) {
+                CLEAR_AMF_UE_TIMER(amf_ue->t3570);
+                r = nas_5gs_send_identity_request(amf_ue);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            }
+        }
+    }
+
+    return;
 }

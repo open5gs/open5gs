@@ -370,8 +370,14 @@ int ogs_proc_join(ogs_proc_t *const process, int *const out_return_code)
     }
 
     if (process->child != waitpid(process->child, &status, 0)) {
+        process->child = 0;
+        ogs_fatal("waitpid failed: %d", status);
         return OGS_ERROR;
     }
+
+    process->child = 0;
+    if (process->nf_name)
+        ogs_free(process->nf_name);
 
     if (out_return_code) {
         if (WIFEXITED(status)) {
@@ -416,9 +422,13 @@ int ogs_proc_terminate(ogs_proc_t *const process)
         return OGS_ERROR;
     }
 #else
-    if (kill(process->child, SIGTERM) == -1) {
-        return OGS_ERROR;
+
+    if (process->child) {
+        if (kill(process->child, SIGTERM) == -1) {
+            return OGS_ERROR;
+        }
     }
+
 #endif
 
     return OGS_OK;

@@ -42,7 +42,7 @@ static void run_threads(const char *nf_name, int count,
 {
     int i;
 
-    threads[0] = test_child_create(nf_name, argv_out);
+    threads[0] = test_child_create(nf_name, 0, argv_out);
 
     for (i = 1; i < count; i++) {
         const char *idx_string = NULL;;
@@ -62,7 +62,7 @@ static void run_threads(const char *nf_name, int count,
         argv_out[argv_out_idx + 1] = idx_string;
         argv_out[argv_out_idx + 2] = NULL;
 
-        threads[i] = test_child_create(nf_name, argv_out);
+        threads[i] = test_child_create(nf_name, i, argv_out);
     }
 
     // reset argv_out and remove the added "-k" parameter
@@ -90,11 +90,11 @@ int app_initialize(const char *const argv[])
     }
 
     if (ogs_global_conf()->parameter.no_nrf == 0)
-        nrf_thread = test_child_create("nrf", argv_out);
+        nrf_thread = test_child_create("nrf", 0, argv_out);
     if (ogs_global_conf()->parameter.no_scp == 0)
-        scp_thread = test_child_create("scp", argv_out);
+        scp_thread = test_child_create("scp", 0, argv_out);
     if (ogs_global_conf()->parameter.no_sepp == 0)
-        sepp_thread = test_child_create("sepp", argv_out);
+        sepp_thread = test_child_create("sepp", 0, argv_out);
 
     if (ogs_global_conf()->parameter.no_upf == 0)
         run_threads("upf", ogs_global_conf()->parameter.upf_count,
