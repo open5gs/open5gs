@@ -58,43 +58,43 @@ int app_initialize(const char *const argv[])
     }
 
     if (ogs_global_conf()->parameter.no_nrf == 0)
-        nrf_thread = test_child_create("nrf", argv_out);
+        nrf_thread = test_child_create("nrf", 0, argv_out);
     if (ogs_global_conf()->parameter.no_scp == 0)
-        scp_thread = test_child_create("scp", argv_out);
+        scp_thread = test_child_create("scp", 0, argv_out);
     if (ogs_global_conf()->parameter.no_sepp == 0)
-        sepp_thread = test_child_create("sepp", argv_out);
+        sepp_thread = test_child_create("sepp", 0, argv_out);
     if (ogs_global_conf()->parameter.no_hss == 0)
-        hss_thread = test_child_create("hss", argv_out);
+        hss_thread = test_child_create("hss", 0, argv_out);
     if (ogs_global_conf()->parameter.no_pcrf == 0)
-        pcrf_thread = test_child_create("pcrf", argv_out);
+        pcrf_thread = test_child_create("pcrf", 0, argv_out);
 
     if (ogs_global_conf()->parameter.no_upf == 0)
-        upf_thread = test_child_create("upf", argv_out);
+        upf_thread = test_child_create("upf", 0, argv_out);
     if (ogs_global_conf()->parameter.no_sgwu == 0)
-        sgwu_thread = test_child_create("sgwu", argv_out);
+        sgwu_thread = test_child_create("sgwu", 0, argv_out);
 
     if (ogs_global_conf()->parameter.no_smf == 0)
-        smf_thread = test_child_create("smf", argv_out);
+        smf_thread = test_child_create("smf", 0, argv_out);
     if (ogs_global_conf()->parameter.no_sgwc == 0)
-        sgwc_thread = test_child_create("sgwc", argv_out);
+        sgwc_thread = test_child_create("sgwc", 0, argv_out);
 
     if (ogs_global_conf()->parameter.no_mme == 0)
-        mme_thread = test_child_create("mme", argv_out);
+        mme_thread = test_child_create("mme", 0, argv_out);
     if (ogs_global_conf()->parameter.no_amf == 0)
-        amf_thread = test_child_create("amf", argv_out);
+        amf_thread = test_child_create("amf", 0, argv_out);
 
     if (ogs_global_conf()->parameter.no_ausf == 0)
-        ausf_thread = test_child_create("ausf", argv_out);
+        ausf_thread = test_child_create("ausf", 0, argv_out);
     if (ogs_global_conf()->parameter.no_udm == 0)
-        udm_thread = test_child_create("udm", argv_out);
+        udm_thread = test_child_create("udm", 0, argv_out);
     if (ogs_global_conf()->parameter.no_pcf == 0)
-        pcf_thread = test_child_create("pcf", argv_out);
+        pcf_thread = test_child_create("pcf", 0, argv_out);
     if (ogs_global_conf()->parameter.no_nssf == 0)
-        nssf_thread = test_child_create("nssf", argv_out);
+        nssf_thread = test_child_create("nssf", 0, argv_out);
     if (ogs_global_conf()->parameter.no_bsf == 0)
-        bsf_thread = test_child_create("bsf", argv_out);
+        bsf_thread = test_child_create("bsf", 0, argv_out);
     if (ogs_global_conf()->parameter.no_udr == 0)
-        udr_thread = test_child_create("udr", argv_out);
+        udr_thread = test_child_create("udr", 0, argv_out);
 
     /*
      * Wait for all sockets listening
