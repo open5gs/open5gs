@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,30 +17,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SMF_NSMF_BUILD_H
-#define SMF_NSMF_BUILD_H
+#ifndef SMF_LOCAL_PATH_H
+#define SMF_LOCAL_PATH_H
 
 #include "context.h"
-#include "gsmue-message.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-ogs_sbi_request_t *smf_nsmf_pdusession_build_create_data(
-        smf_sess_t *sess, void *data);
-ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
-        smf_sess_t *sess, void *data);
-ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
-        smf_sess_t *sess, void *data);
-ogs_sbi_request_t *smf_nsmf_pdusession_build_release_data(
-        smf_sess_t *sess, void *data);
-
-ogs_sbi_request_t *smf_nsmf_pdusession_build_status(
-        smf_sess_t *sess, void *data);
+void smf_trigger_session_release(smf_sess_t *sess,
+    ogs_sbi_stream_t *stream, int pfcp_trigger);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SMF_NSMF_BUILD_H */
+#endif /* SMF_LOCAL_PATH_H */

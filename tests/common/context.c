@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -1599,7 +1599,11 @@ bson_t *test_db_new_simple(test_ue_t *test_ue)
                             "pre_emption_capability", BCON_INT32(1),
                         "}",
                     "}",
+#if 0
                     "lbo_roaming_allowed", BCON_BOOL(true),
+#else
+                    "lbo_roaming_allowed", BCON_BOOL(false),
+#endif
                 "}", "]",
             "}", "]",
             "security", "{",
@@ -2085,6 +2089,11 @@ bson_t *test_db_new_ims(test_ue_t *test_ue)
                         "}",
                       "}",
                     "]",
+#if 1
+                    "lbo_roaming_allowed", BCON_BOOL(true),
+#else
+                    "lbo_roaming_allowed", BCON_BOOL(false),
+#endif
                   "}",
                 "]",
             "}", "]",

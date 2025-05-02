@@ -2469,6 +2469,8 @@ void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object)
         if (sbi_object->nf_type_array[i].nf_instance_id)
             ogs_free(sbi_object->nf_type_array[i].nf_instance_id);
     }
+    if (sbi_object->home_nsmf_pdusession.nf_instance_id)
+        ogs_free(sbi_object->home_nsmf_pdusession.nf_instance_id);
 }
 
 ogs_sbi_xact_t *ogs_sbi_xact_add(

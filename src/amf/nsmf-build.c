@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -256,18 +256,6 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     message.http.accept = (char *)(OGS_SBI_CONTENT_JSON_TYPE ","
         OGS_SBI_CONTENT_NGAP_TYPE "," OGS_SBI_CONTENT_PROBLEM_TYPE);
 
-/*
- * Callback Header Configuration
- *
- * The 3gpp-Sbi-Callback HTTP header (per 3GPP TS 29.500 v17.9.0) indicates that
- * a message is an asynchronous notification or callback. This header should be
- * included only in HTTP POST requests that are callbacks (e.g., event or
- * notification messages) and must not be added to regular service requests,
- * such as registration (HTTP PUT) or subscription requests.
- */
-    message.http.custom.callback =
-        (char *)OGS_SBI_CALLBACK_NSMF_PDUSESSION_STATUS_NOTIFY;
-
     if (param && param->nrf_uri) {
         message.http.custom.nrf_uri =
             ogs_msprintf("%s: \"%s\"",
@@ -460,6 +448,8 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_release_sm_context(
     OpenAPI_ng_ap_cause_t ngApCause;
     OpenAPI_user_location_t ueLocation;
 
+    ogs_assert(param);
+
     ogs_assert(sess);
     ogs_assert(sess->sm_context_resource_uri);
 
@@ -471,20 +461,18 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_release_sm_context(
 
     memset(&SmContextReleaseData, 0, sizeof(SmContextReleaseData));
 
-    if (param) {
-        SmContextReleaseData.cause = param->cause;
+    SmContextReleaseData.cause = param->cause;
 
-        if (param->ngApCause.group) {
-            SmContextReleaseData.ng_ap_cause = &ngApCause;
-            memset(&ngApCause, 0, sizeof(ngApCause));
-            ngApCause.group = param->ngApCause.group;
-            ngApCause.value = param->ngApCause.value;
-        }
+    if (param->ngApCause.group) {
+        SmContextReleaseData.ng_ap_cause = &ngApCause;
+        memset(&ngApCause, 0, sizeof(ngApCause));
+        ngApCause.group = param->ngApCause.group;
+        ngApCause.value = param->ngApCause.value;
+    }
 
-        if (param->gmm_cause) {
-            SmContextReleaseData._5g_mm_cause_value = param->gmm_cause;
-            SmContextReleaseData.is__5g_mm_cause_value = true;
-        }
+    if (param->gmm_cause) {
+        SmContextReleaseData._5g_mm_cause_value = param->gmm_cause;
+        SmContextReleaseData.is__5g_mm_cause_value = true;
     }
 
     memset(&ueLocation, 0, sizeof(ueLocation));
@@ -495,24 +483,30 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_release_sm_context(
         goto end;
     }
 
-    ueLocation.nr_location = ogs_sbi_build_nr_location(
-            &amf_ue->nr_tai, &amf_ue->nr_cgi);
-    if (!ueLocation.nr_location) {
-        ogs_error("No ueLocation.nr_location");
-        goto end;
-    }
-    ueLocation.nr_location->ue_location_timestamp =
-        ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
-    if (!ueLocation.nr_location->ue_location_timestamp) {
-        ogs_error("No ueLocation.nr_location->ue_location_timestamp");
-        goto end;
+    if (param->ue_location) {
+        ueLocation.nr_location = ogs_sbi_build_nr_location(
+                &amf_ue->nr_tai, &amf_ue->nr_cgi);
+        if (!ueLocation.nr_location) {
+            ogs_error("No ueLocation.nr_location");
+            goto end;
+        }
+        ueLocation.nr_location->ue_location_timestamp =
+            ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
+        if (!ueLocation.nr_location->ue_location_timestamp) {
+            ogs_error("No ueLocation.nr_location->ue_location_timestamp");
+            goto end;
+        }
+
+        SmContextReleaseData.ue_location = &ueLocation;
     }
 
-    SmContextReleaseData.ue_location = &ueLocation;
-    SmContextReleaseData.ue_time_zone = ogs_sbi_timezone_string(ogs_timezone());
-    if (!SmContextReleaseData.ue_time_zone) {
-        ogs_error("No SmContextReleaseData.ue_time_zone");
-        goto end;
+    if (param->ue_timezone) {
+        SmContextReleaseData.ue_time_zone =
+            ogs_sbi_timezone_string(ogs_timezone());
+        if (!SmContextReleaseData.ue_time_zone) {
+            ogs_error("No SmContextReleaseData.ue_time_zone");
+            goto end;
+        }
     }
 
     message.SmContextReleaseData = &SmContextReleaseData;

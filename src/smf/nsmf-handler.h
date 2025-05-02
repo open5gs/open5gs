@@ -33,10 +33,19 @@ bool smf_nsmf_handle_update_sm_context(
 bool smf_nsmf_handle_release_sm_context(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
 
-bool smf_nsmf_handle_create_pdu_session_in_hsmf(
+bool smf_nsmf_handle_create_data_in_hsmf(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
-bool smf_nsmf_handle_create_pdu_session_in_vsmf(
+bool smf_nsmf_handle_create_data_in_vsmf(
     smf_sess_t *sess, ogs_sbi_message_t *recvmsg);
+
+bool smf_nsmf_handle_hsmf_update_data(
+    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
+bool smf_nsmf_handle_vsmf_update_data(
+    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
+
+bool smf_nsmf_handle_release_data_in_hsmf(
+    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
+
 bool smf_nsmf_callback_handle_sdm_data_change_notify(
     ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 

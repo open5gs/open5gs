@@ -1859,6 +1859,9 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->v_smf.client)
         ogs_sbi_client_remove(sess->v_smf.client);
 
+    if (sess->n1smbuf)
+        ogs_pkbuf_free(sess->n1smbuf);
+
     OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_rules);
     OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_flow_descriptions);
     OGS_NAS_CLEAR_DATA(&sess->h_smf_extended_protocol_configuration_options);

@@ -161,6 +161,8 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_release_data_free(message->ReleaseData);
     if (message->ReleasedData)
         OpenAPI_released_data_free(message->ReleasedData);
+    if (message->StatusNotification)
+        OpenAPI_status_notification_free(message->StatusNotification);
     if (message->SessionManagementSubscriptionDataList) {
         OpenAPI_lnode_t *node = NULL;
         OpenAPI_list_for_each(message->SessionManagementSubscriptionDataList, node)
@@ -1567,6 +1569,10 @@ static char *build_json(ogs_sbi_message_t *message)
     } else if (message->ReleasedData) {
         item = OpenAPI_released_data_convertToJSON(message->ReleasedData);
         ogs_assert(item);
+    } else if (message->StatusNotification) {
+        item = OpenAPI_status_notification_convertToJSON(
+                message->StatusNotification);
+        ogs_assert(item);
     } else if (message->SessionManagementSubscriptionDataList) {
         OpenAPI_lnode_t *node = NULL;
 
@@ -2506,6 +2512,57 @@ static int parse_json(ogs_sbi_message_t *message,
                             rv = OGS_ERROR;
                             ogs_error("JSON parse error");
                         }
+                    }
+                END
+                break;
+            CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+                SWITCH(message->h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+                    if (message->res_status == 0) {
+                        message->VsmfUpdateData =
+                            OpenAPI_vsmf_update_data_parseFromJSON(item);
+                        if (!message->VsmfUpdateData) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                        message->VsmfUpdatedData =
+                            OpenAPI_vsmf_updated_data_parseFromJSON(item);
+                        if (!message->VsmfUpdatedData) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else if (message->res_status ==
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST ||
+                                message->res_status ==
+                                    OGS_SBI_HTTP_STATUS_FORBIDDEN ||
+                                message->res_status ==
+                                    OGS_SBI_HTTP_STATUS_NOT_FOUND ||
+                                message->res_status ==
+                                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR ||
+                                message->res_status ==
+                                    OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE ||
+                                message->res_status ==
+                                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT) {
+                        message->VsmfUpdateError =
+                            OpenAPI_vsmf_update_error_parseFromJSON(item);
+                        if (!message->VsmfUpdateError) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    }
+                    break;
+                DEFAULT
+                    if (message->res_status < 300) {
+                        message->StatusNotification =
+                            OpenAPI_status_notification_parseFromJSON(item);
+                        if (!message->StatusNotification) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else {
+                        ogs_error("HTTP ERROR Status : %d",
+                                message->res_status);
                     }
                 END
                 break;

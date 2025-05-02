@@ -1885,7 +1885,15 @@ int amf_namf_comm_handle_registration_status_update_request(
                     uint8_t psi = *(double *)node->data;
                     sess = amf_sess_find_by_psi(amf_ue, psi);
                     if (SESSION_CONTEXT_IN_SMF(sess)) {
-                        amf_sbi_send_release_session(ran_ue, sess, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                        amf_nsmf_pdusession_sm_context_param_t param;
+
+                        memset(&param, 0, sizeof(param));
+                        param.ue_location = true;
+                        param.ue_timezone = true;
+
+                        amf_sbi_send_release_session(
+                                ran_ue, sess,
+                                AMF_RELEASE_SM_CONTEXT_NO_STATE, &param);
                     } else {
                         ogs_error("[%s] No Session Context PSI[%d]",
                                 amf_ue->supi, psi);

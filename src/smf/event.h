@@ -62,6 +62,8 @@ typedef enum {
     SMF_EVT_5GSM_MESSAGE,
     SMF_EVT_5GSM_TIMER,
 
+    SMF_EVT_SESSION_RELEASE,
+
     SMF_EVT_TOP,
 
 } smf_event_e;
@@ -98,6 +100,10 @@ typedef struct smf_event_s {
         uint8_t type;
         ogs_nas_5gs_message_t *message;
     } nas;
+
+    struct {
+        int trigger;
+    } release;
 
     ogs_pool_id_t sess_id;
 } smf_event_t;

@@ -26,27 +26,6 @@
 extern "C" {
 #endif
 
-typedef struct smf_npcf_smpolicycontrol_param_s {
-    struct {
-        struct {
-            int group;
-            int value;
-        } ngap_cause;
-        int gmm_cause;
-        int gsm_cause;
-    } ran_nas_release;
-    OpenAPI_pdu_session_rel_cause_e pdu_sess_rel_cause;
-
-    union {
-        struct {
-        ED3(uint8_t ue_location:1;,
-            uint8_t ue_timezone:1;,
-            uint8_t spare:6;)
-        };
-        uint8_t indications;
-    };
-} smf_npcf_smpolicycontrol_param_t;
-
 ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         smf_sess_t *sess, void *data);
 ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -237,7 +237,8 @@ int smf_sbi_discover_and_send(
 }
 
 void smf_namf_comm_send_n1_n2_message_transfer(
-        smf_sess_t *sess, smf_n1_n2_message_transfer_param_t *param)
+        smf_sess_t *sess, ogs_sbi_stream_t *stream,
+        smf_n1_n2_message_transfer_param_t *param)
 {
     smf_ue_t *smf_ue = NULL;
     ogs_sbi_xact_t *xact = NULL;
@@ -269,6 +270,12 @@ void smf_namf_comm_send_n1_n2_message_transfer(
 
     xact->state = param->state;
 
+    if (stream) {
+        xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
+        ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                xact->assoc_stream_id <= OGS_MAX_POOL_ID);
+    }
+
     r = ogs_sbi_discover_and_send(xact);
     if (r != OGS_OK) {
         ogs_error("smf_namf_comm_send_n1_n2_message_transfer() failed");
@@ -278,17 +285,17 @@ void smf_namf_comm_send_n1_n2_message_transfer(
 }
 
 void smf_namf_comm_send_n1_n2_pdu_establishment_reject(
-        smf_sess_t *sess)
+        smf_sess_t *sess, ogs_sbi_stream_t *stream)
 {
     smf_n1_n2_message_transfer_param_t param;
 
     memset(&param, 0, sizeof(param));
-    param.state = SMF_NETWORK_REQUESTED_PDU_SESSION_RELEASE;
+    param.state = SMF_UE_OR_NETWORK_REQUESTED_PDU_SESSION_RELEASE;
     param.n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
         OGS_5GSM_CAUSE_NETWORK_FAILURE);
     ogs_assert(param.n1smbuf);
 
-    smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+    smf_namf_comm_send_n1_n2_message_transfer(sess, stream, &param);
 }
 
 void smf_sbi_send_sm_context_created_data(
@@ -825,6 +832,92 @@ static int client_notify_cb(
     return OGS_OK;
 }
 
+int smf_sbi_cleanup_session(
+    smf_sess_t              *sess,
+    ogs_sbi_stream_t        *stream,
+    int                      state,
+    smf_sbi_cleanup_mode_t   mode)
+{
+    smf_ue_t *smf_ue = NULL;
+    int r = OGS_ERROR;
+
+    ogs_assert(mode);
+
+    ogs_assert(sess);
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+
+    ogs_assert(state);
+
+    switch (mode) {
+    case SMF_SBI_CLEANUP_MODE_POLICY_FIRST:
+        if (PCF_SM_POLICY_ASSOCIATED(sess)) {
+            r = smf_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL,
+                NULL,
+                smf_npcf_smpolicycontrol_build_delete,
+                sess, stream, state, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        } else if (UDM_SDM_SUBSCRIBED(sess)) {
+            ogs_error("[%s:%d] No PolicyAssociationId. Forcibly remove SESSION",
+                    smf_ue->supi, sess->psi);
+            r = smf_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NUDM_SDM,
+                NULL,
+                smf_nudm_sdm_build_subscription_delete,
+                sess, stream, state, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        } else {
+            ogs_error("[%s:%d] No UDM Subscription. Forcibly remove SESSION",
+                    smf_ue->supi, sess->psi);
+            r = smf_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NUDM_UECM,
+                NULL,
+                smf_nudm_uecm_build_deregistration,
+                sess, stream, state, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        }
+        break;
+
+    case SMF_SBI_CLEANUP_MODE_SUBSCRIPTION_FIRST:
+        if (UDM_SDM_SUBSCRIBED(sess)) {
+            r = smf_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NUDM_SDM,
+                NULL,
+                smf_nudm_sdm_build_subscription_delete,
+                sess, stream, state, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        } else {
+            ogs_error("[%s:%d] No UDM Subscription. Forcibly remove SESSION",
+                    smf_ue->supi, sess->psi);
+            r = smf_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NUDM_UECM,
+                NULL,
+                smf_nudm_uecm_build_deregistration,
+                sess, stream, state, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        }
+        break;
+
+    case SMF_SBI_CLEANUP_MODE_CONTEXT_ONLY:
+        r = smf_sbi_discover_and_send(
+            OGS_SBI_SERVICE_TYPE_NUDM_UECM,
+            NULL,
+            smf_nudm_uecm_build_deregistration,
+            sess, stream, state, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        break;
+    }
+
+    return r;
+}
+
 bool smf_sbi_send_sm_context_status_notify(smf_sess_t *sess)
 {
     bool rc;
@@ -906,4 +999,157 @@ void smf_sbi_send_pdu_session_create_error(
         ogs_free(PduSessionCreateError.n1sm_cause);
     if (n1SmBufToUe)
         ogs_pkbuf_free(n1SmBufToUe);
+}
+
+void smf_sbi_send_hsmf_update_error(
+        ogs_sbi_stream_t *stream,
+        int status, ogs_sbi_app_errno_e err, int n1SmCause,
+        const char *title, const char *detail,
+        ogs_pkbuf_t *n1SmBufToUe)
+{
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    OpenAPI_hsmf_update_error_t HsmfUpdateError;
+    OpenAPI_problem_details_t problem;
+    OpenAPI_ref_to_binary_data_t n1SmMsgToUe;
+
+    ogs_assert(stream);
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    memset(&problem, 0, sizeof(problem));
+    memset(&HsmfUpdateError, 0, sizeof(HsmfUpdateError));
+
+    if (status) {
+        problem.is_status = true;
+        problem.status = status;
+    }
+    problem.title = (char*)title;
+    problem.detail = (char*)detail;
+    if (err > OGS_SBI_APP_ERRNO_NULL && err < OGS_SBI_MAX_NUM_OF_APP_ERRNO)
+        problem.cause = (char*)ogs_sbi_app_strerror(err);
+
+    sendmsg.HsmfUpdateError = &HsmfUpdateError;
+
+    memset(&HsmfUpdateError, 0, sizeof(HsmfUpdateError));
+    HsmfUpdateError.error = &problem;
+
+    if (n1SmCause)
+        HsmfUpdateError.n1sm_cause = ogs_msprintf("%02x", n1SmCause);
+
+    if (n1SmBufToUe) {
+        HsmfUpdateError.n1_sm_info_to_ue = &n1SmMsgToUe;
+        n1SmMsgToUe.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+        sendmsg.part[0].content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+        sendmsg.part[0].content_type = (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
+        sendmsg.part[0].pkbuf = n1SmBufToUe;
+        sendmsg.num_of_part = 1;
+    }
+
+    response = ogs_sbi_build_response(&sendmsg, problem.status);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    if (HsmfUpdateError.n1sm_cause)
+        ogs_free(HsmfUpdateError.n1sm_cause);
+    if (n1SmBufToUe)
+        ogs_pkbuf_free(n1SmBufToUe);
+}
+
+void smf_sbi_send_vsmf_update_error(
+        ogs_sbi_stream_t *stream,
+        int status, ogs_sbi_app_errno_e err, int n1SmCause,
+        const char *title, const char *detail,
+        ogs_pkbuf_t *n1SmBufFromUe)
+{
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    OpenAPI_vsmf_update_error_t VsmfUpdateError;
+    OpenAPI_ext_problem_details_t problem;
+    OpenAPI_ref_to_binary_data_t n1SmMsgFromUe;
+
+    ogs_assert(stream);
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    memset(&problem, 0, sizeof(problem));
+    memset(&VsmfUpdateError, 0, sizeof(VsmfUpdateError));
+
+    if (status) {
+        problem.is_status = true;
+        problem.status = status;
+    }
+    problem.title = (char*)title;
+    problem.detail = (char*)detail;
+    if (err > OGS_SBI_APP_ERRNO_NULL && err < OGS_SBI_MAX_NUM_OF_APP_ERRNO)
+        problem.cause = (char*)ogs_sbi_app_strerror(err);
+
+    sendmsg.VsmfUpdateError = &VsmfUpdateError;
+
+    memset(&VsmfUpdateError, 0, sizeof(VsmfUpdateError));
+    VsmfUpdateError.error = &problem;
+
+    if (n1SmCause)
+        VsmfUpdateError.n1sm_cause = ogs_msprintf("%02x", n1SmCause);
+
+    if (n1SmBufFromUe) {
+        VsmfUpdateError.n1_sm_info_from_ue = &n1SmMsgFromUe;
+        n1SmMsgFromUe.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+        sendmsg.part[0].content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+        sendmsg.part[0].content_type = (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
+        sendmsg.part[0].pkbuf = n1SmBufFromUe;
+        sendmsg.num_of_part = 1;
+    }
+
+    response = ogs_sbi_build_response(&sendmsg, problem.status);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    if (VsmfUpdateError.n1sm_cause)
+        ogs_free(VsmfUpdateError.n1sm_cause);
+    if (n1SmBufFromUe)
+        ogs_pkbuf_free(n1SmBufFromUe);
+}
+
+void smf_sbi_send_released_data(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream)
+{
+    OpenAPI_released_data_t ReleasedData;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    memset(&ReleasedData, 0, sizeof(ReleasedData));
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
+    sendmsg.ReleasedData = &ReleasedData;
+
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+}
+
+bool smf_sbi_send_status_notify(smf_sess_t *sess)
+{
+    bool rc;
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(sess);
+    client = sess->v_smf.client;
+    ogs_assert(client);
+
+    request = smf_nsmf_pdusession_build_status(sess, NULL);
+    if (!request) {
+        ogs_error("smf_nsmf_pdusession_build_status() failed");
+        return false;
+    }
+
+    rc = ogs_sbi_send_request_to_client(
+            client, client_notify_cb, request, NULL);
+    ogs_expect(rc == true);
+
+    ogs_sbi_request_free(request);
+
+    return rc;
 }

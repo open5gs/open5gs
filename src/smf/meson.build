@@ -68,6 +68,7 @@ libsmf_sources = files('''
     ngap-build.h
     ngap-handler.h
     ngap-path.h
+    local-path.h
     metrics.h
 
     init.c
@@ -109,6 +110,7 @@ libsmf_sources = files('''
     ngap-build.c
     ngap-handler.c
     ngap-path.c
+    local-path.c
     metrics.c
 '''.split())
 

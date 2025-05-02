@@ -39,7 +39,7 @@ int smf_5gc_pfcp_send_session_establishment_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, uint64_t flags);
 int smf_5gc_pfcp_send_all_pdr_modification_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
-        uint64_t flags, ogs_time_t duration);
+        uint64_t flags, int trigger, ogs_time_t duration);
 int smf_5gc_pfcp_send_qos_flow_list_modification_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
         uint64_t flags, ogs_time_t duration);

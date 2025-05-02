@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -19,6 +19,7 @@
 
 #include "sbi-path.h"
 #include "pfcp-path.h"
+#include "local-path.h"
 
 #include "n4-handler.h"
 
@@ -490,7 +491,6 @@ static void pfcp_restoration(ogs_pfcp_node_t *node)
 
 static void reselect_upf(ogs_pfcp_node_t *node)
 {
-    int r;
     smf_ue_t *smf_ue = NULL;
     ogs_pfcp_node_t *iter = NULL;
 
@@ -523,27 +523,9 @@ static void reselect_upf(ogs_pfcp_node_t *node)
                     ogs_error("[%s:%s] EPC restoration is not implemented",
                             smf_ue->imsi_bcd, sess->session.name);
                 } else {
-                    if (PCF_SM_POLICY_ASSOCIATED(sess)) {
-                        smf_npcf_smpolicycontrol_param_t param;
-
-                        ogs_info("[%s:%d] SMF-initiated Deletion",
-                                smf_ue->supi, sess->psi);
-                        ogs_assert(sess->sm_context_ref);
-                        memset(&param, 0, sizeof(param));
-                        r = smf_sbi_discover_and_send(
-                                OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
-                                smf_npcf_smpolicycontrol_build_delete,
-                                sess, NULL,
-                                OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED,
-                                &param);
-                        ogs_expect(r == OGS_OK);
-                        ogs_assert(r != OGS_ERROR);
-                    } else {
-                        ogs_error("[%s:%d] No PolicyAssociationId. "
-                                "Forcibly remove SESSION",
-                                smf_ue->supi, sess->psi);
-                        SMF_SESS_CLEAR(sess);
-                    }
+                    smf_trigger_session_release(
+                            sess, NULL,
+                            OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED);
                 }
             }
         }

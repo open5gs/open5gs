@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -21,6 +21,7 @@
 #include "nas-path.h"
 #include "ngap-path.h"
 #include "pfcp-path.h"
+#include "local-path.h"
 #include "nsmf-handler.h"
 
 bool smf_nsmf_handle_create_sm_context(
@@ -607,7 +608,6 @@ bool smf_nsmf_handle_update_sm_context(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
     int i;
-    int r;
     smf_ue_t *smf_ue = NULL;
 
     ogs_sbi_message_t sendmsg;
@@ -638,6 +638,8 @@ bool smf_nsmf_handle_update_sm_context(
         return false;
     }
 
+    memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
+
     if (SmContextUpdateData->ue_location &&
         SmContextUpdateData->ue_location->nr_location) {
         OpenAPI_nr_location_t *NrLocation =
@@ -658,7 +660,20 @@ bool smf_nsmf_handle_update_sm_context(
                 ogs_plmn_id_hexdump(&sess->nr_cgi.plmn_id),
                 (long long)sess->nr_cgi.cell_id);
         }
+
+        sess->nsmf_param.ue_location = true;
+        sess->nsmf_param.ue_timezone = true;
     }
+
+    if (SmContextUpdateData->ng_ap_cause) {
+        sess->nsmf_param.ngap_cause.group =
+            SmContextUpdateData->ng_ap_cause->group;
+        sess->nsmf_param.ngap_cause.value =
+            SmContextUpdateData->ng_ap_cause->value;
+    }
+    sess->nsmf_param.gmm_cause =
+        SmContextUpdateData->_5g_mm_cause_value;
+    sess->nsmf_param.cause = SmContextUpdateData->cause;
 
     if (SmContextUpdateData->n1_sm_msg) {
         n1SmMsg = SmContextUpdateData->n1_sm_msg;
@@ -684,14 +699,46 @@ bool smf_nsmf_handle_update_sm_context(
         ogs_assert(gsm_header);
         sess->pti = gsm_header->procedure_transaction_identity;
 
+        switch (gsm_header->message_type) {
+        case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
+            if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+                /* Save N1 SM Message and send it to H-SMF */
+                if (sess->n1smbuf) ogs_pkbuf_free(sess->n1smbuf);
+                sess->n1smbuf = ogs_pkbuf_copy(n1smbuf);
+                ogs_assert(sess->n1smbuf);
+
+                /* UE Requested PDU Session Release */
+                sess->nsmf_param.request_indication =
+                    OpenAPI_request_indication_UE_REQ_PDU_SES_REL;
+
+                /* Store Stream ID */
+                sess->amf_update_request_stream_id =
+                    ogs_sbi_id_from_stream(stream);
+
+                ogs_assert(OGS_OK ==
+                    smf_5gc_pfcp_send_all_pdr_modification_request(
+                        sess, stream,
+                        OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+                        OGS_PFCP_MODIFY_UL_ONLY|
+                        OGS_PFCP_MODIFY_DEACTIVATE,
+                        OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED, 0));
+            } else {
+                n1smbuf = ogs_pkbuf_copy(n1smbuf);
+                ogs_assert(n1smbuf);
+                nas_5gs_send_to_gsm(sess, stream, n1smbuf);
+            }
+            break;
+
+        default:
+
         /*
-         * NOTE : The pkbuf created in the SBI message will be removed
-         *        from ogs_sbi_message_free().
-         *        So it must be copied and push a event queue.
+         * Do not send PFCP Modification on PDU session release complete.
+         * PFCP Modification should only be sent on PDU session release request.
          */
-        n1smbuf = ogs_pkbuf_copy(n1smbuf);
-        ogs_assert(n1smbuf);
-        nas_5gs_send_to_gsm(sess, stream, n1smbuf);
+            n1smbuf = ogs_pkbuf_copy(n1smbuf);
+            ogs_assert(n1smbuf);
+            nas_5gs_send_to_gsm(sess, stream, n1smbuf);
+        }
 
         return true;
     
@@ -770,7 +817,8 @@ bool smf_nsmf_handle_update_sm_context(
                 ogs_assert(OGS_OK ==
                     smf_5gc_pfcp_send_all_pdr_modification_request(
                         sess, stream,
-                        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE, 0));
+                        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
+                        0, 0));
             }
 
         } else if (SmContextUpdateData->up_cnx_state ==
@@ -916,7 +964,7 @@ bool smf_nsmf_handle_update_sm_context(
                         sess, stream,
                         OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE|
                         OGS_PFCP_MODIFY_N2_HANDOVER|OGS_PFCP_MODIFY_END_MARKER,
-                        0));
+                        0, 0));
             } else {
                 char *strerror = ogs_msprintf(
                         "[%s:%d] No FAR Update", smf_ue->supi, sess->psi);
@@ -949,7 +997,7 @@ bool smf_nsmf_handle_update_sm_context(
                         sess, stream,
                         OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_REMOVE|
                         OGS_PFCP_MODIFY_HANDOVER_CANCEL,
-                        0));
+                        0, 0));
             } else {
                 smf_sbi_send_sm_context_updated_data_ho_state(
                         sess, stream, OpenAPI_ho_state_CANCELLED);
@@ -983,39 +1031,30 @@ bool smf_nsmf_handle_update_sm_context(
             ogs_assert(true ==
                     ogs_sbi_server_send_response(stream, response));
 
-        } else if (PCF_SM_POLICY_ASSOCIATED(sess)) {
-            smf_npcf_smpolicycontrol_param_t param;
-
-            memset(&param, 0, sizeof(param));
-
-            param.ue_location = true;
-            param.ue_timezone = true;
-
-            r = smf_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
-                    smf_npcf_smpolicycontrol_build_delete,
-                    sess, stream,
-                    OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT, &param);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-        } else if (UDM_SDM_SUBSCRIBED(sess)) {
-            ogs_warn("[%s:%d] No PolicyAssociationId. Forcibly remove SESSION",
-                    smf_ue->supi, sess->psi);
-            r = smf_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
-                    smf_nudm_sdm_build_subscription_delete, sess, stream,
-                    SMF_UECM_STATE_DEREGISTERED_BY_AMF, NULL);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
         } else {
-            ogs_warn("[%s:%d] No UDM Subscription. Forcibly remove SESSION",
-                    smf_ue->supi, sess->psi);
-            r = smf_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
-                    smf_nudm_uecm_build_deregistration, sess, stream,
-                    SMF_UECM_STATE_DEREGISTERED_BY_AMF, NULL);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
+            if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+                /* Network Initiated PDU Session Release */
+                sess->nsmf_param.request_indication =
+                    OpenAPI_request_indication_NW_REQ_PDU_SES_REL;
+
+                /* Remove N1 SM Message */
+                if (sess->n1smbuf) {
+                    ogs_pkbuf_free(sess->n1smbuf);
+                    sess->n1smbuf = NULL;
+                }
+
+                ogs_assert(OGS_OK ==
+                    smf_5gc_pfcp_send_all_pdr_modification_request(
+                        sess, stream,
+                        OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+                        OGS_PFCP_MODIFY_UL_ONLY|
+                        OGS_PFCP_MODIFY_DEACTIVATE,
+                        OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT, 0));
+            } else {
+                smf_trigger_session_release(
+                        sess, stream,
+                        OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT);
+            }
         }
     } else if (SmContextUpdateData->serving_nf_id) {
         ogs_debug("Old amf_nf_id: %s, new amf_nf_id: %s",
@@ -1045,8 +1084,6 @@ bool smf_nsmf_handle_update_sm_context(
 bool smf_nsmf_handle_release_sm_context(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
-    int r;
-    smf_npcf_smpolicycontrol_param_t param;
     smf_ue_t *smf_ue = NULL;
 
     OpenAPI_sm_context_release_data_t *SmContextReleaseData = NULL;
@@ -1057,7 +1094,7 @@ bool smf_nsmf_handle_release_sm_context(
     smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
-    memset(&param, 0, sizeof(param));
+    memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
 
     SmContextReleaseData = message->SmContextReleaseData;
     if (SmContextReleaseData) {
@@ -1084,52 +1121,25 @@ bool smf_nsmf_handle_release_sm_context(
                     (long long)sess->nr_cgi.cell_id);
             }
 
-            param.ue_location = true;
-            param.ue_timezone = true;
+            sess->nsmf_param.ue_location = true;
+            sess->nsmf_param.ue_timezone = true;
         }
 
         if (SmContextReleaseData->ng_ap_cause) {
-            param.ran_nas_release.ngap_cause.group =
+            sess->nsmf_param.ngap_cause.group =
                 SmContextReleaseData->ng_ap_cause->group;
-            param.ran_nas_release.ngap_cause.value =
+            sess->nsmf_param.ngap_cause.value =
                 SmContextReleaseData->ng_ap_cause->value;
         }
-        param.ran_nas_release.gmm_cause =
+        sess->nsmf_param.gmm_cause =
             SmContextReleaseData->_5g_mm_cause_value;
-    }
-
-    if (PCF_SM_POLICY_ASSOCIATED(sess)) {
-        r = smf_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
-                smf_npcf_smpolicycontrol_build_delete,
-                sess, stream,
-                OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT, &param);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-    } else if (UDM_SDM_SUBSCRIBED(sess)) {
-        ogs_warn("[%s:%d] No PolicyAssociationId. Forcibly remove SESSION",
-                smf_ue->supi, sess->psi);
-        r = smf_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
-                smf_nudm_sdm_build_subscription_delete, sess, stream,
-                SMF_UECM_STATE_DEREGISTERED_BY_AMF, NULL);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-    } else {
-        ogs_warn("[%s:%d] No UDM Subscription. Forcibly remove SESSION",
-                smf_ue->supi, sess->psi);
-        r = smf_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
-                smf_nudm_uecm_build_deregistration, sess, stream,
-                SMF_UECM_STATE_DEREGISTERED_BY_AMF, NULL);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
+        sess->nsmf_param.cause = SmContextReleaseData->cause;
     }
 
     return true;
 }
 
-bool smf_nsmf_handle_create_pdu_session_in_hsmf(
+bool smf_nsmf_handle_create_data_in_hsmf(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
     bool rc;
@@ -1548,7 +1558,7 @@ bool smf_nsmf_handle_create_pdu_session_in_hsmf(
     return true;
 }
 
-bool smf_nsmf_handle_create_pdu_session_in_vsmf(
+bool smf_nsmf_handle_create_data_in_vsmf(
     smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
 {
     int rv;
@@ -2036,6 +2046,234 @@ bool smf_nsmf_handle_create_pdu_session_in_vsmf(
                 recvmsg->res_status, gsm_cause);
 
         return false;
+    }
+
+    return true;
+}
+
+bool smf_nsmf_handle_hsmf_update_data(
+    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
+{
+    int rv;
+    smf_ue_t *smf_ue = NULL;
+
+    OpenAPI_hsmf_update_data_t *HsmfUpdateData = NULL;
+
+    OpenAPI_ref_to_binary_data_t *n1SmInfoFromUe = NULL;
+
+    ogs_nas_5gs_message_t nas_message;
+    ogs_pkbuf_t *n1SmBufFromUe = NULL;
+
+    ogs_assert(stream);
+    ogs_assert(message);
+    ogs_assert(sess);
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+
+    memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
+
+    HsmfUpdateData = message->HsmfUpdateData;
+    if (!HsmfUpdateData) {
+        ogs_error("[%s:%d] No HsmfUpdateData",
+                smf_ue->supi, sess->psi);
+        smf_sbi_send_hsmf_update_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                "No HsmfUpdateData", smf_ue->supi, NULL);
+        return false;
+    }
+
+    if (!HsmfUpdateData->request_indication) {
+        ogs_error("[%s:%d] No requestIndication",
+                smf_ue->supi, sess->psi);
+        smf_sbi_send_hsmf_update_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                "No requestIndication", smf_ue->supi, NULL);
+        return false;
+    }
+
+    sess->nsmf_param.request_indication = HsmfUpdateData->request_indication;
+
+    n1SmInfoFromUe = HsmfUpdateData->n1_sm_info_from_ue;
+    if (n1SmInfoFromUe) {
+        n1SmBufFromUe = ogs_sbi_find_part_by_content_id(
+                message, n1SmInfoFromUe->content_id);
+
+        if (n1SmBufFromUe) {
+            rv = gsmue_decode_n1_sm_info(&nas_message, n1SmBufFromUe);
+            if (rv != OGS_OK) {
+                ogs_error("[%s:%d] cannot decode N1 SM Content [%s]",
+                        smf_ue->supi, sess->psi, n1SmInfoFromUe->content_id);
+                ogs_log_hexdump(OGS_LOG_ERROR,
+                        n1SmBufFromUe->data, n1SmBufFromUe->len);
+                smf_sbi_send_hsmf_update_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                        OGS_5GSM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+                        "cannot decode N1 SM Content", smf_ue->supi, NULL);
+                return false;
+            }
+        }
+    }
+
+    if (HsmfUpdateData->ue_location &&
+        HsmfUpdateData->ue_location->nr_location) {
+        OpenAPI_nr_location_t *NrLocation =
+            HsmfUpdateData->ue_location->nr_location;
+        if (NrLocation->tai &&
+            NrLocation->tai->plmn_id && NrLocation->tai->tac &&
+            NrLocation->ncgi &&
+            NrLocation->ncgi->plmn_id && NrLocation->ncgi->nr_cell_id) {
+
+            ogs_sbi_parse_nr_location(
+                    &sess->nr_tai, &sess->nr_cgi, NrLocation);
+            if (NrLocation->ue_location_timestamp)
+                ogs_sbi_time_from_string(&sess->ue_location_timestamp,
+                        NrLocation->ue_location_timestamp);
+
+            ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
+                ogs_plmn_id_hexdump(&sess->nr_tai.plmn_id),
+                sess->nr_tai.tac.v);
+            ogs_debug("    NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]",
+                ogs_plmn_id_hexdump(&sess->nr_cgi.plmn_id),
+                (long long)sess->nr_cgi.cell_id);
+        }
+
+        sess->nsmf_param.ue_location = true;
+        sess->nsmf_param.ue_timezone = true;
+    }
+
+    if (HsmfUpdateData->ng_ap_cause) {
+        sess->nsmf_param.ngap_cause.group =
+            HsmfUpdateData->ng_ap_cause->group;
+        sess->nsmf_param.ngap_cause.value =
+            HsmfUpdateData->ng_ap_cause->value;
+    }
+    sess->nsmf_param.gmm_cause = HsmfUpdateData->_5g_mm_cause_value;
+    sess->nsmf_param.cause = HsmfUpdateData->cause;
+
+    return true;
+}
+
+bool smf_nsmf_handle_vsmf_update_data(
+    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
+{
+    int rv;
+    smf_ue_t *smf_ue = NULL;
+
+    OpenAPI_vsmf_update_data_t *VsmfUpdateData = NULL;
+
+    ogs_nas_5gs_message_t nas_message;
+    ogs_pkbuf_t *n1SmBufToUe = NULL;
+    OpenAPI_ref_to_binary_data_t *n1SmInfoToUe = NULL;
+
+    ogs_assert(stream);
+    ogs_assert(message);
+    ogs_assert(sess);
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+
+    memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
+
+    VsmfUpdateData = message->VsmfUpdateData;
+    if (!VsmfUpdateData) {
+        ogs_error("[%s:%d] No VsmfUpdateData",
+                smf_ue->supi, sess->psi);
+        smf_sbi_send_vsmf_update_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                "No VsmfUpdateData", smf_ue->supi, NULL);
+        return false;
+    }
+
+    if (!VsmfUpdateData->request_indication) {
+        ogs_error("[%s:%d] No requestIndication",
+                smf_ue->supi, sess->psi);
+        smf_sbi_send_vsmf_update_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                "No requestIndication", smf_ue->supi, NULL);
+        return false;
+    }
+
+    sess->nsmf_param.request_indication = VsmfUpdateData->request_indication;
+
+    n1SmInfoToUe = VsmfUpdateData->n1_sm_info_to_ue;
+    if (n1SmInfoToUe) {
+        n1SmBufToUe = ogs_sbi_find_part_by_content_id(
+                message, n1SmInfoToUe->content_id);
+
+        if (n1SmBufToUe) {
+            rv = gsmue_decode_n1_sm_info(&nas_message, n1SmBufToUe);
+            if (rv != OGS_OK) {
+                ogs_error("[%s:%d] cannot decode N1 SM Content [%s]",
+                        smf_ue->supi, sess->psi, n1SmInfoToUe->content_id);
+                ogs_log_hexdump(OGS_LOG_ERROR,
+                        n1SmBufToUe->data, n1SmBufToUe->len);
+                smf_sbi_send_vsmf_update_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                        OGS_5GSM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+                        "cannot decode N1 SM Content", smf_ue->supi, NULL);
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool smf_nsmf_handle_release_data_in_hsmf(
+    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
+{
+    smf_ue_t *smf_ue = NULL;
+
+    OpenAPI_release_data_t *ReleaseData = NULL;
+
+    ogs_assert(stream);
+    ogs_assert(message);
+    ogs_assert(sess);
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+
+    memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
+
+    ReleaseData = message->ReleaseData;
+    if (ReleaseData) {
+        if (ReleaseData->ue_location &&
+            ReleaseData->ue_location->nr_location) {
+            OpenAPI_nr_location_t *NrLocation =
+                ReleaseData->ue_location->nr_location;
+            if (NrLocation->tai &&
+                NrLocation->tai->plmn_id && NrLocation->tai->tac &&
+                NrLocation->ncgi &&
+                NrLocation->ncgi->plmn_id && NrLocation->ncgi->nr_cell_id) {
+
+                ogs_sbi_parse_nr_location(
+                        &sess->nr_tai, &sess->nr_cgi, NrLocation);
+                if (NrLocation->ue_location_timestamp)
+                    ogs_sbi_time_from_string(&sess->ue_location_timestamp,
+                            NrLocation->ue_location_timestamp);
+
+                ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
+                    ogs_plmn_id_hexdump(&sess->nr_tai.plmn_id),
+                    sess->nr_tai.tac.v);
+                ogs_debug("    NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]",
+                    ogs_plmn_id_hexdump(&sess->nr_cgi.plmn_id),
+                    (long long)sess->nr_cgi.cell_id);
+            }
+
+            sess->nsmf_param.ue_location = true;
+            sess->nsmf_param.ue_timezone = true;
+        }
+
+        if (ReleaseData->ng_ap_cause) {
+            sess->nsmf_param.ngap_cause.group =
+                ReleaseData->ng_ap_cause->group;
+            sess->nsmf_param.ngap_cause.value =
+                ReleaseData->ng_ap_cause->value;
+        }
+        sess->nsmf_param.gmm_cause = ReleaseData->_5g_mm_cause_value;
+        sess->nsmf_param.cause = ReleaseData->cause;
     }
 
     return true;

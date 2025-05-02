@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -598,10 +598,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         if (!sbi_message.h.resource.component[1]) {
                             ogs_error("No pduSessionRef [%s]",
                                     sbi_message.h.resource.component[1]);
-                            smf_sbi_send_sm_context_update_error_log(
-                                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            smf_sbi_send_hsmf_update_error(stream,
+                                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                    OGS_SBI_APP_ERRNO_NULL,
+                                    OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
                                     "No pduSessionRef",
-                                    sbi_message.h.resource.component[1]);
+                                    sbi_message.h.resource.component[1], NULL);
                             break;
                         }
 
@@ -610,9 +612,11 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
                         if (!sess) {
                             ogs_warn("Not found [%s]", sbi_message.h.uri);
-                            smf_sbi_send_sm_context_update_error_log(
-                                    stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                                    "Not found", sbi_message.h.uri);
+                            smf_sbi_send_hsmf_update_error(stream,
+                                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                    OGS_SBI_APP_ERRNO_NULL,
+                                    OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                                    "Not found", sbi_message.h.uri, NULL);
                         }
                         break;
 
@@ -632,6 +636,54 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         smf_metrics_inst_by_slice_add(NULL, NULL,
                                 SMF_METR_CTR_SM_PDUSESSIONCREATIONREQ, 1);
                     END
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                            "Invalid HTTP method", sbi_message.h.method,
+                            NULL));
+                END
+
+                if (sess) {
+                    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+                    ogs_assert(smf_ue);
+                    ogs_assert(OGS_FSM_STATE(&sess->sm));
+
+                    e->sess_id = sess->id;
+                    e->h.sbi.message = &sbi_message;
+                    ogs_fsm_dispatch(&sess->sm, e);
+                }
+                break;
+
+            CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+                SWITCH(sbi_message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    if (!sbi_message.h.resource.component[1]) {
+                        ogs_error("No smContextRef [%s]",
+                                sbi_message.h.resource.component[1]);
+                        smf_sbi_send_vsmf_update_error(stream,
+                                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                OGS_SBI_APP_ERRNO_NULL,
+                                OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                                "No smContextRef",
+                                sbi_message.h.resource.component[1], NULL);
+                        break;
+                    }
+
+                    sess = smf_sess_find_by_sm_context_ref(
+                            sbi_message.h.resource.component[1]);
+
+                    if (!sess) {
+                        ogs_warn("Not found [%s]", sbi_message.h.uri);
+                        smf_sbi_send_vsmf_update_error(stream,
+                                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                OGS_SBI_APP_ERRNO_NULL,
+                                OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                                "Not found", sbi_message.h.uri, NULL);
+                    }
                     break;
 
                 DEFAULT
@@ -699,10 +751,13 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
                 SWITCH(sbi_message.h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_UPDATE)
+#define ENABLE_PCF_INITIATED_SESSION_RELEASE 0
+#if !ENABLE_PCF_INITIATED_SESSION_RELEASE
                     smf_npcf_smpolicycontrol_handle_update_notify(
                             sess, stream, &sbi_message);
                     break;
                 CASE(OGS_SBI_RESOURCE_NAME_TERMINATE)
+#endif
                     smf_npcf_smpolicycontrol_handle_terminate_notify(
                             sess, stream, &sbi_message);
                     break;
@@ -881,6 +936,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
         CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
         CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
+        CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
             sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
             ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
                     sbi_xact_id <= OGS_MAX_POOL_ID);
@@ -957,13 +1013,15 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_assert(smf_ue);
 
             if (state == SMF_UECM_STATE_REGISTERED ||
-                state ==SMF_UECM_STATE_REGISTERED_BY_HOME_ROUTED_ROAMING) {
+                state == SMF_UECM_STATE_REGISTERED_HR) {
                 /* SMF Registration */
                 if (sbi_message.res_status != OGS_SBI_HTTP_STATUS_OK &&
                     sbi_message.res_status != OGS_SBI_HTTP_STATUS_CREATED)
                     unknown_res_status = true;
-            } else if (state == SMF_UECM_STATE_DEREGISTERED_BY_AMF ||
-                        state == SMF_UECM_STATE_DEREGISTERED_BY_N1_N2_RELEASE) {
+            } else if (state == SMF_UECM_STATE_DEREG_BY_AMF ||
+                        state == SMF_UECM_STATE_DEREG_BY_AMF_HR ||
+                        state == SMF_UECM_STATE_DEREG_BY_N1N2 ||
+                        state == SMF_UECM_STATE_DEREG_BY_N1N2_HR) {
                 /* SMF Deregistration */
                 if (sbi_message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)
                     unknown_res_status = true;
@@ -992,86 +1050,67 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 /* SMF Registration */
                 ogs_assert(stream);
                 ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
-            } else if (state ==
-                    SMF_UECM_STATE_REGISTERED_BY_HOME_ROUTED_ROAMING) {
+            } else if (state == SMF_UECM_STATE_REGISTERED_HR) {
                 smf_sbi_send_pdu_session_created_data(sess, stream);
                 smf_metrics_inst_by_slice_add(
                         &sess->serving_plmn_id, &sess->s_nssai,
                         SMF_METR_CTR_SM_PDUSESSIONCREATIONSUCC, 1);
-            } else if (state == SMF_UECM_STATE_DEREGISTERED_BY_AMF) {
-                /* SMF Deregistration */
+            } else if (state == SMF_UECM_STATE_DEREG_BY_AMF) {
+/*
+ * Handle deregistration states SMF_UECM_STATE_DEREG_BY_AMF and
+ * SMF_UECM_STATE_DEREG_BY_N1N2: context has been removed by AMF or
+ * by NAS (N1/N2) procedures, respectively.
+ *
+ * In 3GPP TS 23.501, two related flows must be coordinated:
+ *  - PDU Session Release: Figure 4.3.4.2-1, steps 11 to 15
+ *  - PDU Session Establishment: Figure 4.3.2.2.1-1, steps 16a to 16c
+ *
+ * Normally, step 11 (SMContextStatusNotify) informs the AMF that the SM
+ * Context has been released, and SMF would then delete the session state.
+ * However, if the AMF triggers a release while a new establishment is still
+ * underway (the PFCP Modification and NAS Registration in steps 16a–16c),
+ * deleting the context too early causes those procedures to fail.
+ *
+ * To avoid this race, we defer step 11 until after steps 12–15 complete:
+ * subscription termination, policy cleanup, and UDM deregistration. This
+ * delay allows both the old (released) context and the new (establishing)
+ * context to coexist in SMF, so that PFCP and NAS messages can still find
+ * the correct context. Only once all cleanup is done do we invoke the
+ * SMContextStatusNotify and remove the session state.
+ *
+ * This ensures:
+ *  - PFCP Modification (step 16a) still locates its context
+ *  - NAS Registration (steps 16b–16c) can finish successfully
+ *  - The final cleanup (deferred step 11) does not interrupt any in-flight
+ *    procedures
+ *
+ * If you attempt to address this:
+ *
+ * Legacy flow:
+ *   sess = smf_sess_find_by_psi(...);
+ *   if (sess) { smf_sess_remove(sess); }
+ *   sess = smf_sess_add_by_psi(...);
+ *
+ *  - Do not use smf_sess_find_by_psi() to remove old contexts here.
+ *  - Call only smf_sess_add_by_psi() to add the new session.
+ *  - Since PSI duplicates may occur without an explicit release, you must
+ *    design a separate cleanup mechanism (e.g., periodic purge, release
+ *    tracking, or context deduplication) that safely detects and removes
+ *    stale SM Context entries outside of this path.
+ */
                 ogs_assert(stream);
                 ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
                 SMF_SESS_CLEAR(sess);
-            } else if (state == SMF_UECM_STATE_DEREGISTERED_BY_N1_N2_RELEASE) {
-                /* SMF Deregistration */
+            } else if (state == SMF_UECM_STATE_DEREG_BY_N1N2) {
                 ogs_assert(true == smf_sbi_send_sm_context_status_notify(sess));
+                SMF_SESS_CLEAR(sess);
+            } else if (state == SMF_UECM_STATE_DEREG_BY_AMF_HR) {
+                SMF_SESS_CLEAR(sess);
+            } else if (state == SMF_UECM_STATE_DEREG_BY_N1N2_HR) {
+                ogs_assert(true == smf_sbi_send_status_notify(sess));
                 SMF_SESS_CLEAR(sess);
             }
 
-            break;
-
-        CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
-            SWITCH(sbi_message.h.resource.component[0])
-            CASE(OGS_SBI_RESOURCE_NAME_PDU_SESSIONS)
-                SWITCH(sbi_message.h.method)
-                CASE(OGS_SBI_HTTP_METHOD_POST)
-                    sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
-                    ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
-                            sbi_xact_id <= OGS_MAX_POOL_ID);
-
-                    sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
-                    if (!sbi_xact) {
-                        /* CLIENT_WAIT timer could remove SBI transaction
-                         * before receiving SBI message */
-                        ogs_error(
-                                "SBI transaction has already been removed [%d]",
-                                sbi_xact_id);
-                        break;
-                    }
-
-                    sbi_object_id = sbi_xact->sbi_object_id;
-                    ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
-                            sbi_object_id <= OGS_MAX_POOL_ID);
-
-                    ogs_sbi_xact_remove(sbi_xact);
-
-                    sess = smf_sess_find_by_id(sbi_object_id);
-                    if (!sess) {
-                        ogs_error("Session has already been removed");
-                        break;
-                    }
-                    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
-                    ogs_assert(smf_ue);
-
-                    SWITCH(sbi_message.h.resource.component[2])
-                    CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                    CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
-                        ogs_error("Not Implemented");
-                        break;
-                    DEFAULT
-                        if (smf_nsmf_handle_create_pdu_session_in_vsmf(
-                                    sess, &sbi_message) == false) {
-                            ogs_error("[%s:%d] create_pdu_session "
-                                    "failed() [%d]",
-                                    smf_ue->supi, sess->psi,
-                                    sbi_message.res_status);
-                            SMF_SESS_CLEAR(sess);
-                        }
-                    END
-                    break;
-
-                DEFAULT
-                    ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
-                    ogs_assert_if_reached();
-                END
-                break;
-
-            DEFAULT
-                ogs_error("Invalid resource name [%s]",
-                        sbi_message.h.resource.component[0]);
-                ogs_assert_if_reached();
-            END
             break;
 
         DEFAULT
@@ -1231,6 +1270,16 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_fsm_dispatch(&sess->sm, e);
 
         ogs_pkbuf_free(pkbuf);
+        break;
+
+    case SMF_EVT_SESSION_RELEASE:
+        sess = smf_sess_find_by_id(e->sess_id);
+        if (!sess) {
+            ogs_error("Session has already been removed");
+            break;
+        }
+
+        ogs_fsm_dispatch(&sess->sm, e);
         break;
 
     default:

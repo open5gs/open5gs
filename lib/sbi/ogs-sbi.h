@@ -99,6 +99,7 @@
 #include "model/ue_context_transfer_rsp_data.h"
 #include "model/ue_reg_status_update_req_data.h"
 #include "model/ue_reg_status_update_rsp_data.h"
+#include "model/status_notification.h"
 
 #include "custom/links.h"
 

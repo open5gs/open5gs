@@ -23,7 +23,8 @@
 #include "namf-handler.h"
 
 bool smf_namf_comm_handle_n1_n2_message_transfer(
-        smf_sess_t *sess, int state, ogs_sbi_message_t *recvmsg)
+        smf_sess_t *sess, ogs_sbi_stream_t *stream,
+        int state, ogs_sbi_message_t *recvmsg)
 {
     smf_ue_t *smf_ue = NULL;
     OpenAPI_n1_n2_message_transfer_rsp_data_t *N1N2MessageTransferRspData;
@@ -104,7 +105,7 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
         }
         break;
 
-    case SMF_NETWORK_REQUESTED_PDU_SESSION_RELEASE:
+    case SMF_UE_OR_NETWORK_REQUESTED_PDU_SESSION_RELEASE:
     case SMF_ERROR_INDICATON_RECEIVED_FROM_5G_AN:
 
         N1N2MessageTransferRspData = recvmsg->N1N2MessageTransferRspData;
@@ -158,10 +159,12 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
 
                 param.n1n2_failure_txf_notif_uri = true;
 
-                smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+                smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
             } else if (N1N2MessageTransferRspData->cause ==
                 OpenAPI_n1_n2_message_transfer_cause_N1_N2_TRANSFER_INITIATED) {
-                /* Nothing */
+                if (stream)
+                    sess->n1_n2_released_stream_id =
+                        ogs_sbi_id_from_stream(stream);
             } else {
                 ogs_error("Not implemented [cause:%d]",
                         N1N2MessageTransferRspData->cause);

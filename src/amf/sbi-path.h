@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -98,9 +98,9 @@ void amf_sbi_send_deactivate_all_sessions(
 void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state);
 
 void amf_sbi_send_release_session(
-        ran_ue_t *ran_ue, amf_sess_t *sess, int state);
+        ran_ue_t *ran_ue, amf_sess_t *sess, int state, void *data);
 void amf_sbi_send_release_all_sessions(
-        ran_ue_t *ran_ue, amf_ue_t *amf_ue, int state);
+        ran_ue_t *ran_ue, amf_ue_t *amf_ue, int state, void *data);
 
 bool amf_sbi_send_n1_n2_failure_notify(
         amf_sess_t *sess, OpenAPI_n1_n2_message_transfer_cause_e cause);

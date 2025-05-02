@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -259,6 +259,7 @@ void smf_5gc_n4_handle_session_modification_response(
 {
     int status = 0;
     uint64_t flags = 0;
+    int trigger = 0;
     ogs_sbi_stream_t *stream = NULL;
     smf_bearer_t *qos_flow = NULL;
 
@@ -271,6 +272,7 @@ void smf_5gc_n4_handle_session_modification_response(
 
     flags = xact->modify_flags;
     ogs_assert(flags);
+    trigger = xact->delete_trigger;
 
     /* 'stream' could be NULL in smf_qos_flow_binding() */
     if (xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
@@ -420,7 +422,7 @@ void smf_5gc_n4_handle_session_modification_response(
                     smf_5gc_pfcp_send_all_pdr_modification_request(
                         sess, stream,
                         OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_REMOVE,
-                        ogs_local_conf()->time.handover.duration));
+                        0, ogs_local_conf()->time.handover.duration));
             }
 
             smf_sbi_send_sm_context_updated_data_ho_state(
@@ -448,7 +450,7 @@ void smf_5gc_n4_handle_session_modification_response(
                             sess);
                 ogs_assert(param.n2smbuf);
 
-                smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+                smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
             } else {
                 ogs_fatal("Invalid flags [0x%llx]", (long long)flags);
                 ogs_assert_if_reached();
@@ -482,7 +484,39 @@ void smf_5gc_n4_handle_session_modification_response(
 
             param.skip_ind = true;
 
-            smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+            smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
+        } else if (flags & OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING) {
+            int r;
+            ogs_assert(trigger);
+
+            if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED) {
+                r = smf_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                        smf_nsmf_pdusession_build_hsmf_update_data,
+                        sess, stream, trigger, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            } else if (trigger ==
+                    OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT) {
+                r = smf_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                        smf_nsmf_pdusession_build_hsmf_update_data,
+                        sess, stream, trigger, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            } else if (trigger ==
+                    OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT) {
+                r = smf_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                        smf_nsmf_pdusession_build_release_data,
+                        sess, stream, trigger, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            } else {
+                ogs_fatal("Invalid delete trigger[%d]", trigger);
+                ogs_assert_if_reached();
+            }
+
         } else {
             smf_sbi_send_sm_context_updated_data_up_cnx_state(
                     sess, stream, OpenAPI_up_cnx_state_DEACTIVATED);
@@ -511,7 +545,7 @@ void smf_5gc_n4_handle_session_modification_response(
                     smf_5gc_pfcp_send_all_pdr_modification_request(
                         sess, stream,
                         OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_CREATE,
-                        0));
+                        0, 0));
             } else if (flags & OGS_PFCP_MODIFY_HANDOVER_CANCEL) {
                 smf_sbi_send_sm_context_updated_data_ho_state(
                         sess, stream, OpenAPI_ho_state_CANCELLED);
@@ -548,7 +582,7 @@ void smf_5gc_n4_handle_session_modification_response(
                         NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
             ogs_assert(param.n2smbuf);
 
-            smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+            smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
 
             ogs_list_for_each_entry_safe(&sess->qos_flow_to_modify_list,
                     next, qos_flow, to_modify_node) {
@@ -639,7 +673,7 @@ void smf_5gc_n4_handle_session_modification_response(
                         sess, true);
             ogs_assert(param.n2smbuf);
 
-            smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+            smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
 
         } else {
             ogs_fatal("Unknown flags [0x%llx]", (long long)flags);
@@ -699,7 +733,7 @@ void smf_5gc_n4_handle_session_modification_response(
                     (flags & OGS_PFCP_MODIFY_QOS_MODIFY) ? true : false);
             ogs_assert(param.n2smbuf);
 
-            smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+            smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
 
         } else if (flags & OGS_PFCP_MODIFY_UE_REQUESTED) {
             ogs_pkbuf_t *n1smbuf = NULL, *n2smbuf = NULL;
@@ -1359,7 +1393,7 @@ uint8_t smf_n4_handle_session_report_request(
 
             param.n1n2_failure_txf_notif_uri = true;
 
-            smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+            smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
             break;
         case OpenAPI_up_cnx_state_SUSPENDED:
             ogs_error("[%s:%s] PDU Session had been SUSPENDED",
@@ -1457,7 +1491,7 @@ uint8_t smf_n4_handle_session_report_request(
                     sess, NULL,
                     OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE|
                     OGS_PFCP_MODIFY_ERROR_INDICATION,
-                    0));
+                    0, 0));
         }
     }
     return cause_value;

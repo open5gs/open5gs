@@ -475,9 +475,17 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_update(
 
         ogs_list_for_each(&amf_ue->sess_list, sess) {
             if ((psimask & (1 << sess->psi)) == 0) {
-                if (SESSION_CONTEXT_IN_SMF(sess))
+                if (SESSION_CONTEXT_IN_SMF(sess)) {
+                    amf_nsmf_pdusession_sm_context_param_t param;
+
+                    memset(&param, 0, sizeof(param));
+                    param.ue_location = true;
+                    param.ue_timezone = true;
+
                     amf_sbi_send_release_session(
-                        ran_ue, sess, AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT);
+                        ran_ue, sess,
+                        AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT, &param);
+                }
             }
         }
     }
@@ -799,9 +807,17 @@ ogs_nas_5gmm_cause_t gmm_handle_service_update(
 
         ogs_list_for_each(&amf_ue->sess_list, sess) {
             if ((psimask & (1 << sess->psi)) == 0) {
-                if (SESSION_CONTEXT_IN_SMF(sess))
+                if (SESSION_CONTEXT_IN_SMF(sess)) {
+                    amf_nsmf_pdusession_sm_context_param_t param;
+
+                    memset(&param, 0, sizeof(param));
+                    param.ue_location = true;
+                    param.ue_timezone = true;
+
                     amf_sbi_send_release_session(
-                        ran_ue, sess, AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT);
+                        ran_ue, sess,
+                        AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT, &param);
+                }
             }
         }
     }
@@ -849,6 +865,7 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
     int r, state, xact_count = 0;
     ran_ue_t *ran_ue = NULL;
     ogs_nas_de_registration_type_t *de_registration_type = NULL;
+    amf_nsmf_pdusession_sm_context_param_t param;
 
     ogs_assert(amf_ue);
     ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
@@ -883,7 +900,16 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
     xact_count = amf_sess_xact_count(amf_ue);
 
     state = AMF_UE_INITIATED_DE_REGISTERED;
-    amf_sbi_send_release_all_sessions(ran_ue, amf_ue, state);
+
+    memset(&param, 0, sizeof(param));
+    param.cause = OpenAPI_cause_REL_DUE_TO_UNSPECIFIED_REASON;
+    param.ngApCause.group = NGAP_Cause_PR_nas;
+    param.ngApCause.value = NGAP_CauseNas_deregister;
+    param.gmm_cause = OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
+    param.ue_location = true;
+    param.ue_timezone = true;
+
+    amf_sbi_send_release_all_sessions(ran_ue, amf_ue, state, &param);
 
     if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
         amf_sess_xact_count(amf_ue) == xact_count) {

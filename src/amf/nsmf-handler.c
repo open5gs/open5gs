@@ -1134,7 +1134,7 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
     if (sess->old_gsm_type == OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE &&
         sess->current_gsm_type ==
             OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST) {
-        ogs_error("[%s:%d] Do not remove Session due to Reactivation-requested",
+        ogs_warn("[%s:%d] Session retained: reactivation has been requested",
                 amf_ue->supi, sess->psi);
 
         /*

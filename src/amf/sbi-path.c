@@ -604,7 +604,7 @@ void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state)
 }
 
 void amf_sbi_send_release_session(
-        ran_ue_t *ran_ue, amf_sess_t *sess, int state)
+        ran_ue_t *ran_ue, amf_sess_t *sess, int state, void *data)
 {
     int r;
 
@@ -613,7 +613,7 @@ void amf_sbi_send_release_session(
     r = amf_sess_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
             amf_nsmf_pdusession_build_release_sm_context,
-            ran_ue, sess, state, NULL);
+            ran_ue, sess, state, data);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 
@@ -622,7 +622,7 @@ void amf_sbi_send_release_session(
 }
 
 void amf_sbi_send_release_all_sessions(
-        ran_ue_t *ran_ue, amf_ue_t *amf_ue, int state)
+        ran_ue_t *ran_ue, amf_ue_t *amf_ue, int state, void *data)
 {
     amf_sess_t *sess = NULL;
 
@@ -630,7 +630,7 @@ void amf_sbi_send_release_all_sessions(
 
     ogs_list_for_each(&amf_ue->sess_list, sess) {
         if (SESSION_CONTEXT_IN_SMF(sess))
-            amf_sbi_send_release_session(ran_ue, sess, state);
+            amf_sbi_send_release_session(ran_ue, sess, state, data);
     }
 }
 

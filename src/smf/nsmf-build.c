@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2024-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -19,7 +19,7 @@
 
 #include "nsmf-build.h"
 
-ogs_sbi_request_t *smf_nsmf_pdusession_build_create_pdu_session(
+ogs_sbi_request_t *smf_nsmf_pdusession_build_create_data(
         smf_sess_t *sess, void *data)
 {
     ogs_sbi_message_t message;
@@ -131,14 +131,13 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_pdu_session(
             OpenAPI_request_type_EXISTING_EMERGENCY_PDU_SESSION)
         PduSessionCreateData.request_type = sess->request_type;
 
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NSMF_CALLBACK;
+    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION;
     header.api.version = (char *)OGS_SBI_API_V1;
-    header.resource.component[0] = smf_ue->supi;
-    header.resource.component[1] =
-        (char *)OGS_SBI_RESOURCE_NAME_PDU_SESSION_STATUS;
-    header.resource.component[2] = ogs_msprintf("%d", sess->psi);
-    if (!header.resource.component[2]) {
-        ogs_error("No header.resource.component[2]");
+    header.resource.component[0] =
+        (char *)OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS;
+    header.resource.component[1] = sess->sm_context_ref;
+    if (!header.resource.component[1]) {
+        ogs_error("No header.resource.component[1]");
         goto end;
     }
 
@@ -287,17 +286,6 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_pdu_session(
     message.http.accept = (char *)(OGS_SBI_CONTENT_JSON_TYPE ","
         OGS_SBI_CONTENT_NGAP_TYPE "," OGS_SBI_CONTENT_PROBLEM_TYPE);
 
-    message.http.custom.callback =
-        (char *)OGS_SBI_CALLBACK_NSMF_PDUSESSION_STATUS_NOTIFY;
-
-#if 0 /* Needs to be checked against AMF's nsmf-build.c */
-    if (param && param->nrf_uri) {
-        message.http.custom.nrf_uri =
-            ogs_msprintf("%s: \"%s\"",
-                    OGS_SBI_SERVICE_NAME_NNRF_DISC, param->nrf_uri);
-    }
-#endif
-
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
 
@@ -335,11 +323,304 @@ end:
     if (PduSessionCreateData.ue_time_zone)
         ogs_free(PduSessionCreateData.ue_time_zone);
 
+    if (sess->n1smbuf) {
+        ogs_pkbuf_free(sess->n1smbuf);
+        sess->n1smbuf = NULL;
+    }
+
     if (n1SmBufFromUe)
         ogs_pkbuf_free(n1SmBufFromUe);
 
     if (message.http.custom.nrf_uri)
         ogs_free(message.http.custom.nrf_uri);
+
+    return request;
+}
+
+ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
+        smf_sess_t *sess, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    smf_ue_t *smf_ue = NULL;
+
+    OpenAPI_hsmf_update_data_t HsmfUpdateData;
+    OpenAPI_ng_ap_cause_t ngApCause;
+    OpenAPI_user_location_t ueLocation;
+
+    int rv;
+    ogs_nas_5gs_message_t nas_message;
+    ogs_pkbuf_t *n1SmBufFromUe = NULL;
+    OpenAPI_ref_to_binary_data_t n1SmInfoFromUe;
+
+    ogs_assert(sess);
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    ogs_assert(sess->pdu_session_resource_uri);
+    message.h.uri = ogs_msprintf("%s/%s",
+            sess->pdu_session_resource_uri, OGS_SBI_RESOURCE_NAME_MODIFY);
+    ogs_assert(message.h.uri);
+
+    memset(&HsmfUpdateData, 0, sizeof(HsmfUpdateData));
+    memset(&ngApCause, 0, sizeof(ngApCause));
+    memset(&ueLocation, 0, sizeof(ueLocation));
+
+    HsmfUpdateData.request_indication = sess->nsmf_param.request_indication;
+    ogs_assert(HsmfUpdateData.request_indication);
+
+    HsmfUpdateData.cause = sess->nsmf_param.cause;
+
+    if (sess->nsmf_param.ngap_cause.group) {
+        HsmfUpdateData.ng_ap_cause = &ngApCause;
+        ngApCause.group = sess->nsmf_param.ngap_cause.group;
+        ngApCause.value = sess->nsmf_param.ngap_cause.value;
+    }
+
+    if (sess->nsmf_param.gmm_cause) {
+        HsmfUpdateData.is__5g_mm_cause_value = true;
+        HsmfUpdateData._5g_mm_cause_value = sess->nsmf_param.gmm_cause;
+    }
+
+    if (sess->nsmf_param.ue_location) {
+        ueLocation.nr_location = ogs_sbi_build_nr_location(
+                &sess->nr_tai, &sess->nr_cgi);
+        if (!ueLocation.nr_location) {
+            ogs_error("No ueLocation.nr_location");
+            goto end;
+        }
+        ueLocation.nr_location->ue_location_timestamp =
+            ogs_sbi_gmtime_string(sess->ue_location_timestamp);
+        if (!ueLocation.nr_location->ue_location_timestamp) {
+            ogs_error("No ue_location_timestamp");
+            goto end;
+        }
+
+        HsmfUpdateData.ue_location = &ueLocation;
+    }
+    if (sess->nsmf_param.ue_timezone) {
+        HsmfUpdateData.ue_time_zone = ogs_sbi_timezone_string(ogs_timezone());
+        if (!HsmfUpdateData.ue_time_zone) {
+            ogs_error("No ue_time_zone");
+            goto end;
+        }
+    }
+
+    if (sess->n1smbuf) {
+        rv = ogs_nas_5gsm_decode(&nas_message, sess->n1smbuf);
+
+        if (rv == OGS_OK) {
+            n1SmBufFromUe = gsmue_encode_n1_sm_info(&nas_message);
+            message.part[message.num_of_part].pkbuf = n1SmBufFromUe;
+            if (message.part[message.num_of_part].pkbuf) {
+                message.part[message.num_of_part].content_id =
+                    (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+                message.part[message.num_of_part].content_type =
+                    (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
+                message.num_of_part++;
+
+                n1SmInfoFromUe.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+                HsmfUpdateData.n1_sm_info_from_ue = &n1SmInfoFromUe;
+            } else {
+                ogs_error("gsm_encode_n1_sm_info() failed [%d]", rv);
+                ogs_log_hexdump(OGS_LOG_ERROR,
+                        sess->n1smbuf->data, sess->n1smbuf->len);
+            }
+        } else {
+            ogs_error("ogs_nas_5gsm_decode() failed [%d]", rv);
+            ogs_log_hexdump(OGS_LOG_ERROR,
+                    sess->n1smbuf->data, sess->n1smbuf->len);
+        }
+    }
+
+    message.HsmfUpdateData = &HsmfUpdateData;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+end:
+    if (message.h.uri)
+        ogs_free(message.h.uri);
+
+    if (ueLocation.nr_location) {
+        if (ueLocation.nr_location->ue_location_timestamp)
+            ogs_free(ueLocation.nr_location->ue_location_timestamp);
+        ogs_sbi_free_nr_location(ueLocation.nr_location);
+    }
+    if (HsmfUpdateData.ue_time_zone)
+        ogs_free(HsmfUpdateData.ue_time_zone);
+
+    if (sess->n1smbuf) {
+        ogs_pkbuf_free(sess->n1smbuf);
+        sess->n1smbuf = NULL;
+    }
+
+    return request;
+}
+
+ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
+        smf_sess_t *sess, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    OpenAPI_vsmf_update_data_t VsmfUpdateData;
+
+    OpenAPI_ref_to_binary_data_t n1SmInfoToUe;
+    ogs_pkbuf_t *n1SmBufToUe = NULL;
+
+    ogs_assert(sess);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    ogs_assert(sess->vsmf_pdu_session_uri);
+    message.h.uri = ogs_msprintf("%s/%s",
+            sess->vsmf_pdu_session_uri, OGS_SBI_RESOURCE_NAME_MODIFY);
+    ogs_assert(message.h.uri);
+
+    memset(&VsmfUpdateData, 0, sizeof(VsmfUpdateData));
+
+    VsmfUpdateData.request_indication = sess->nsmf_param.request_indication;
+    ogs_assert(VsmfUpdateData.request_indication);
+
+    n1SmBufToUe = gsmue_build_pdu_session_release_command(sess);
+    ogs_assert(n1SmBufToUe);
+
+    n1SmInfoToUe.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+    VsmfUpdateData.n1_sm_info_to_ue = &n1SmInfoToUe;
+
+    message.part[message.num_of_part].pkbuf = n1SmBufToUe;
+    message.part[message.num_of_part].content_id =
+        (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+    message.part[message.num_of_part].content_type =
+        (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
+    message.num_of_part++;
+
+    message.VsmfUpdateData = &VsmfUpdateData;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+end:
+    if (message.h.uri)
+        ogs_free(message.h.uri);
+
+    return request;
+}
+
+ogs_sbi_request_t *smf_nsmf_pdusession_build_release_data(
+        smf_sess_t *sess, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    smf_ue_t *smf_ue = NULL;
+
+    OpenAPI_release_data_t ReleaseData;
+    OpenAPI_ng_ap_cause_t ngApCause;
+    OpenAPI_user_location_t ueLocation;
+
+    ogs_assert(sess);
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    ogs_assert(sess->pdu_session_resource_uri);
+    message.h.uri = ogs_msprintf("%s/%s",
+            sess->pdu_session_resource_uri, OGS_SBI_RESOURCE_NAME_RELEASE);
+    ogs_assert(message.h.uri);
+
+    memset(&ReleaseData, 0, sizeof(ReleaseData));
+    memset(&ngApCause, 0, sizeof(ngApCause));
+    memset(&ueLocation, 0, sizeof(ueLocation));
+
+    ReleaseData.cause = sess->nsmf_param.cause;
+
+    if (sess->nsmf_param.ngap_cause.group) {
+        ReleaseData.ng_ap_cause = &ngApCause;
+        ngApCause.group = sess->nsmf_param.ngap_cause.group;
+        ngApCause.value = sess->nsmf_param.ngap_cause.value;
+    }
+
+    if (sess->nsmf_param.gmm_cause) {
+        ReleaseData.is__5g_mm_cause_value = true;
+        ReleaseData._5g_mm_cause_value = sess->nsmf_param.gmm_cause;
+    }
+
+    if (sess->nsmf_param.ue_location) {
+        ueLocation.nr_location = ogs_sbi_build_nr_location(
+                &sess->nr_tai, &sess->nr_cgi);
+        if (!ueLocation.nr_location) {
+            ogs_error("No ueLocation.nr_location");
+            goto end;
+        }
+        ueLocation.nr_location->ue_location_timestamp =
+            ogs_sbi_gmtime_string(sess->ue_location_timestamp);
+        if (!ueLocation.nr_location->ue_location_timestamp) {
+            ogs_error("No ue_location_timestamp");
+            goto end;
+        }
+
+        ReleaseData.ue_location = &ueLocation;
+    }
+    if (sess->nsmf_param.ue_timezone) {
+        ReleaseData.ue_time_zone = ogs_sbi_timezone_string(ogs_timezone());
+        if (!ReleaseData.ue_time_zone) {
+            ogs_error("No ue_time_zone");
+            goto end;
+        }
+    }
+
+    message.ReleaseData = &ReleaseData;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+end:
+    if (message.h.uri)
+        ogs_free(message.h.uri);
+
+    if (ueLocation.nr_location) {
+        if (ueLocation.nr_location->ue_location_timestamp)
+            ogs_free(ueLocation.nr_location->ue_location_timestamp);
+        ogs_sbi_free_nr_location(ueLocation.nr_location);
+    }
+    if (ReleaseData.ue_time_zone)
+        ogs_free(ReleaseData.ue_time_zone);
+
+    return request;
+}
+
+ogs_sbi_request_t *smf_nsmf_pdusession_build_status(
+        smf_sess_t *sess, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    OpenAPI_status_notification_t StatusNotification;
+    OpenAPI_status_info_t StatusInfo;
+
+    ogs_assert(sess);
+    ogs_assert(sess->vsmf_pdu_session_uri);
+
+    memset(&StatusInfo, 0, sizeof(StatusInfo));
+    StatusInfo.resource_status = OpenAPI_resource_status_RELEASED;
+
+    memset(&StatusNotification, 0, sizeof(StatusNotification));
+    StatusNotification.status_info = &StatusInfo;
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    message.h.uri = sess->vsmf_pdu_session_uri;
+
+    message.StatusNotification = &StatusNotification;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
 
     return request;
 }

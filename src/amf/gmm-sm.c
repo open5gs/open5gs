@@ -86,6 +86,8 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 
     int r, state = 0, xact_count;
 
+    amf_nsmf_pdusession_sm_context_param_t param;
+
     ogs_assert(s);
     ogs_assert(e);
 
@@ -316,7 +318,13 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                             AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED) {
 
                         xact_count = amf_sess_xact_count(amf_ue);
-                        amf_sbi_send_release_all_sessions(NULL, amf_ue, state);
+
+                        memset(&param, 0, sizeof(param));
+                        param.ue_location = true;
+                        param.ue_timezone = true;
+
+                        amf_sbi_send_release_all_sessions(
+                                NULL, amf_ue, state, &param);
 
                         if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                             amf_sess_xact_count(amf_ue) == xact_count) {
@@ -598,9 +606,14 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                     }
 
                     xact_count = amf_sess_xact_count(amf_ue);
+
+                    memset(&param, 0, sizeof(param));
+                    param.ue_location = true;
+                    param.ue_timezone = true;
+
                     amf_sbi_send_release_all_sessions(
                             ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
-                            AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                            AMF_RELEASE_SM_CONTEXT_NO_STATE, &param);
 
                     if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                         amf_sess_xact_count(amf_ue) == xact_count) {
@@ -648,6 +661,8 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
     amf_sess_t *sess = NULL;
 
     ogs_sbi_message_t *sbi_message = NULL;
+
+    amf_nsmf_pdusession_sm_context_param_t param;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -910,7 +925,13 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                             AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED) {
 
                         int xact_count = amf_sess_xact_count(amf_ue);
-                        amf_sbi_send_release_all_sessions(NULL, amf_ue, state);
+
+                        memset(&param, 0, sizeof(param));
+                        param.ue_location = true;
+                        param.ue_timezone = true;
+
+                        amf_sbi_send_release_all_sessions(
+                                NULL, amf_ue, state, &param);
 
                         if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                             amf_sess_xact_count(amf_ue) == xact_count) {
@@ -1077,9 +1098,12 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                                 ogs_assert(r != OGS_ERROR);
 
                             } else {
+                                memset(&param, 0, sizeof(param));
+                                param.ue_location = true;
+                                param.ue_timezone = true;
 
                                 amf_sbi_send_release_all_sessions(
-                                        NULL, amf_ue, state);
+                                        NULL, amf_ue, state, &param);
 
                                 if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                                     amf_sess_xact_count(amf_ue) == xact_count) {
@@ -1231,9 +1255,14 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                     }
 
                     xact_count = amf_sess_xact_count(amf_ue);
+
+                    memset(&param, 0, sizeof(param));
+                    param.ue_location = true;
+                    param.ue_timezone = true;
+
                     amf_sbi_send_release_all_sessions(
                             ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
-                            AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                            AMF_RELEASE_SM_CONTEXT_NO_STATE, &param);
 
                     if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                         amf_sess_xact_count(amf_ue) == xact_count) {
@@ -1284,6 +1313,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
     amf_sess_t *sess = NULL;
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
+
+    amf_nsmf_pdusession_sm_context_param_t param;
 
     ogs_assert(e);
 
@@ -1458,9 +1489,13 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                     OGS_FSM_TRAN(s, &gmm_state_registered);
 
             } else {
+                memset(&param, 0, sizeof(param));
+                param.ue_location = true;
+                param.ue_timezone = true;
 
                 amf_sbi_send_release_all_sessions(
-                        ran_ue, amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                        ran_ue, amf_ue,
+                        AMF_RELEASE_SM_CONTEXT_NO_STATE, &param);
 
                 if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                     amf_sess_xact_count(amf_ue) == xact_count) {
@@ -1582,8 +1617,12 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 break;
             }
 
+            memset(&param, 0, sizeof(param));
+            param.ue_location = true;
+            param.ue_timezone = true;
+
             amf_sbi_send_release_all_sessions(
-                    ran_ue, amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                    ran_ue, amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE, &param);
 
             if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                 amf_sess_xact_count(amf_ue) == xact_count) {
@@ -2429,7 +2468,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 
     ogs_sbi_message_t *sbi_message = NULL;
 
-    gmm_configuration_update_command_param_t param;
+    gmm_configuration_update_command_param_t gmm_param;
+    amf_nsmf_pdusession_sm_context_param_t nsmf_param;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -2710,9 +2750,9 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
              * Indication if the AMF wants to update these NAS parameters
              * without triggering a UE Registration procedure.
              */
-            memset(&param, 0, sizeof(param));
-            param.nitz = 1;
-            r = nas_5gs_send_configuration_update_command(amf_ue, &param);
+            memset(&gmm_param, 0, sizeof(gmm_param));
+            gmm_param.nitz = 1;
+            r = nas_5gs_send_configuration_update_command(amf_ue, &gmm_param);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
 
@@ -2751,8 +2791,13 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
+            memset(&nsmf_param, 0, sizeof(nsmf_param));
+            nsmf_param.ue_location = true;
+            nsmf_param.ue_timezone = true;
+
             amf_sbi_send_release_all_sessions(
-                    ran_ue, amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                    ran_ue, amf_ue,
+                    AMF_RELEASE_SM_CONTEXT_NO_STATE, &nsmf_param);
 
             if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                 amf_sess_xact_count(amf_ue) == xact_count) {
@@ -2864,6 +2909,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
     ogs_nas_security_header_type_t h;
     ogs_sbi_message_t *sbi_message = NULL;
 
+    amf_nsmf_pdusession_sm_context_param_t param;
+
     ogs_assert(s);
     ogs_assert(e);
 
@@ -2919,9 +2966,13 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
 
         xact_count = amf_sess_xact_count(amf_ue);
 
+        memset(&param, 0, sizeof(param));
+        param.ue_location = true;
+        param.ue_timezone = true;
+
         amf_sbi_send_release_all_sessions(
                 ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
-                AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                AMF_RELEASE_SM_CONTEXT_NO_STATE, &param);
 
         if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
             amf_sess_xact_count(amf_ue) == xact_count) {
@@ -3032,9 +3083,13 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                     OGS_FSM_TRAN(s, &gmm_state_registered);
 
             } else {
+                memset(&param, 0, sizeof(param));
+                param.ue_location = true;
+                param.ue_timezone = true;
 
                 amf_sbi_send_release_all_sessions(
-                        ran_ue, amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                        ran_ue, amf_ue,
+                        AMF_RELEASE_SM_CONTEXT_NO_STATE, &param);
 
                 if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                     amf_sess_xact_count(amf_ue) == xact_count) {
@@ -3129,8 +3184,14 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
 
                     /* Continue with release command */
                     xact_count = amf_sess_xact_count(amf_ue);
+
+                    memset(&param, 0, sizeof(param));
+                    param.ue_location = true;
+                    param.ue_timezone = true;
+
                     amf_sbi_send_release_all_sessions(
-                            ran_ue, amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                            ran_ue, amf_ue,
+                            AMF_RELEASE_SM_CONTEXT_NO_STATE, &param);
 
                     if (!AMF_SESSION_RELEASE_PENDING(amf_ue) &&
                         amf_sess_xact_count(amf_ue) == xact_count) {

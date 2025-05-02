@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -63,6 +63,61 @@ typedef struct smf_ctf_config_s {
 } smf_ctf_config_t;
 
 int smf_ctf_config_init(smf_ctf_config_t *ctf_config);
+
+typedef struct smf_nsmf_pdusession_param_s {
+    OpenAPI_request_indication_e request_indication;
+
+    OpenAPI_cause_e cause;
+
+    struct {
+        int group;
+        int value;
+    } ngap_cause;
+
+    int gmm_cause;
+    int gsm_cause;
+
+    struct {
+    ED3(uint8_t ue_location:1;,
+        uint8_t ue_timezone:1;,
+        uint8_t spare:6;)
+    };
+} smf_nsmf_pdusession_param_t;
+
+/* HR flag bit */
+#define SMF_UECM_FLAG_HR         (1 << 7)
+
+/* Base states (low bits only) */
+#define SMF_UECM_STATE_NONE       0
+#define SMF_UECM_STATE_REGISTERED 1
+#define SMF_UECM_STATE_DEREG_BY_AMF  2
+#define SMF_UECM_STATE_DEREG_BY_N1N2 3
+
+/* HR variants (OR base state with HR flag) */
+#define SMF_UECM_STATE_REGISTERED_HR    \
+    (SMF_UECM_STATE_REGISTERED | SMF_UECM_FLAG_HR)
+#define SMF_UECM_STATE_DEREG_BY_AMF_HR  \
+    (SMF_UECM_STATE_DEREG_BY_AMF | SMF_UECM_FLAG_HR)
+#define SMF_UECM_STATE_DEREG_BY_N1N2_HR \
+    (SMF_UECM_STATE_DEREG_BY_N1N2 | SMF_UECM_FLAG_HR)
+
+/**
+ * Return true if the PDU session anchor SMF is in the HPLMN
+ * (Home-Routed Roaming, HR)
+ */
+static inline bool smf_uecm_anchor_in_hplmn(int state)
+{
+    return !!(state & SMF_UECM_FLAG_HR);
+}
+
+/**
+ * Return true if the PDU session anchor SMF is in the VPLMN
+ * (Non-Roaming or Local Break-Out Roaming, LBO)
+ */
+static inline bool smf_uecm_anchor_in_vplmn(int state)
+{
+    return !(state & SMF_UECM_FLAG_HR);
+}
 
 typedef struct smf_context_s {
     smf_ctf_config_t    ctf_config;
@@ -531,12 +586,6 @@ typedef struct smf_sess_s {
         int pdu_session_resource_release;
     } ngap_state;
 
-#define SMF_UECM_STATE_NONE                                     0
-#define SMF_UECM_STATE_REGISTERED                               1
-#define SMF_UECM_STATE_REGISTERED_BY_HOME_ROUTED_ROAMING        2
-#define SMF_UECM_STATE_DEREGISTERED_BY_AMF                      3
-#define SMF_UECM_STATE_DEREGISTERED_BY_N1_N2_RELEASE            4
-
     /* Handover */
     struct {
         bool prepared;
@@ -584,6 +633,11 @@ typedef struct smf_sess_s {
 
     bool n1_released;
     bool n2_released;
+    ogs_pool_id_t amf_update_request_stream_id;
+    ogs_pool_id_t n1_n2_released_stream_id;
+
+    smf_nsmf_pdusession_param_t nsmf_param;
+
 } smf_sess_t;
 
 void smf_context_init(void);

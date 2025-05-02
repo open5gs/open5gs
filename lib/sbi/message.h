@@ -121,7 +121,7 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_RELEASE               "release"
 
 #define OGS_SBI_RESOURCE_NAME_PDU_SESSIONS          "pdu-sessions"
-#define OGS_SBI_RESOURCE_NAME_PDU_SESSION_STATUS    "pdu-session-status"
+#define OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS     "vsmf-pdu-session"
 
 #define OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY      "sm-policy-notify"
 #define OGS_SBI_RESOURCE_NAME_N1_N2_FAILURE_NOTIFY  "n1-n2-failure-notify"
@@ -576,6 +576,7 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_vsmf_update_error_t *VsmfUpdateError;
     OpenAPI_release_data_t *ReleaseData;
     OpenAPI_released_data_t *ReleasedData;
+    OpenAPI_status_notification_t *StatusNotification;
     OpenAPI_list_t *SessionManagementSubscriptionDataList;
     OpenAPI_n1_n2_message_transfer_req_data_t *N1N2MessageTransferReqData;
     OpenAPI_n1_n2_message_transfer_rsp_data_t *N1N2MessageTransferRspData;

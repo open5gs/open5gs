@@ -381,6 +381,9 @@ void nssf_home_remove(nssf_home_t *home)
     if (home->nsi_id)
         ogs_free(home->nsi_id);
 
+    /* Free SBI object memory */
+    ogs_sbi_object_free(&home->sbi);
+
     ogs_pool_id_free(&nssf_home_pool, home);
 }
 

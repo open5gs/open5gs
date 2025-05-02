@@ -154,7 +154,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
                      OGS_PFCP_MODIFY_DL_ONLY|
                      OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL|
                      OGS_PFCP_MODIFY_ACTIVATE) :
-                    (OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE), 0));
+                    (OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE), 0, 0));
     } else {
 #if 0 /* Modified by pull request #1729 */
         /* ACTIVATED Is NOT Included in RESPONSE */
@@ -264,7 +264,7 @@ int ngap_handle_pdu_session_resource_setup_unsuccessful_transfer(
     ogs_assert(OGS_OK ==
         smf_5gc_pfcp_send_all_pdr_modification_request(
             sess, stream,
-            OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE, 0));
+            OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE, 0, 0));
 
     rv = OGS_OK;
 cleanup:
@@ -492,7 +492,7 @@ int ngap_handle_path_switch_request_transfer(
                 sess, stream,
                 OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE|
                 OGS_PFCP_MODIFY_XN_HANDOVER|OGS_PFCP_MODIFY_END_MARKER,
-                0));
+                0, 0));
     } else {
         /* ACTIVATED Is NOT Included in RESPONSE */
         ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
@@ -712,7 +712,7 @@ int ngap_handle_handover_request_ack(
                      * ...
                      */
                     OGS_PFCP_MODIFY_REMOVE|OGS_PFCP_MODIFY_CREATE,
-                    0));
+                    0, 0));
         } else {
 
             smf_sess_create_indirect_data_forwarding(sess);
@@ -721,7 +721,7 @@ int ngap_handle_handover_request_ack(
                 smf_5gc_pfcp_send_all_pdr_modification_request(
                     sess, stream,
                     OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_CREATE,
-                    0));
+                    0, 0));
         }
     } else {
         ogs_pkbuf_t *n2smbuf = ngap_build_handover_command_transfer(sess);
