@@ -479,7 +479,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
                     ogs_fsm_dispatch(&udm_ue->sm, e);
                     if (OGS_FSM_CHECK(&udm_ue->sm, udm_ue_state_exception)) {
-                        ogs_error("[%s] State machine exception", udm_ue->suci);
+                        ogs_warn("[%s] State machine exception", udm_ue->suci);
                         udm_ue_remove(udm_ue);
                     }
                 END
