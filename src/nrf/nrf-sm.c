@@ -168,7 +168,7 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                             ogs_error("SELF Not allowed [%s]", nf_instance->id);
                             ogs_assert(true ==
                                 ogs_sbi_server_send_error(stream,
-                                    OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                                    OGS_SBI_HTTP_STATUS_FORBIDDEN,
                                     &message, "SELF Not allowed",
                                     nf_instance->id, NULL));
                             break;
