@@ -1313,6 +1313,16 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
 
         ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
         ogs_assert(ran_ue);
+        ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+        if (!ran_ue) {
+            ogs_error("No NG Context SUPI[%s] NAS-Type[%d] "
+                    "RAN-UE-ID[%d:%p]",
+                    amf_ue->supi, nas_message->gmm.h.message_type,
+                    amf_ue->ran_ue_id, ran_ue_find_by_id(amf_ue->ran_ue_id));
+            ogs_assert(e->pkbuf);
+            ogs_log_hexdump(OGS_LOG_ERROR, e->pkbuf->data, e->pkbuf->len);
+            break;
+        }
 
         h.type = e->nas.type;
 
