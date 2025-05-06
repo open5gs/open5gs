@@ -245,14 +245,8 @@ void s1ap_recv_handler(ogs_sock_t *sock)
         s1ap_event_push(MME_EVENT_S1AP_MESSAGE, sock, addr, pkbuf, 0, 0);
         return;
     } else {
-        if (ogs_socket_errno != OGS_EAGAIN) {
-            ogs_fatal("ogs_sctp_recvmsg(%d) failed(%d:%s-0x%x)",
-                    size, errno, strerror(errno), flags);
-            ogs_assert_if_reached();
-        } else {
-            ogs_error("ogs_sctp_recvmsg(%d) failed(%d:%s-0x%x)",
-                    size, errno, strerror(errno), flags);
-        }
+        ogs_error("ogs_sctp_recvmsg(%d) failed(%d:%s-0x%x)",
+                size, errno, strerror(errno), flags);
     }
 
     ogs_pkbuf_free(pkbuf);
