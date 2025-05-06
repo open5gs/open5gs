@@ -2433,8 +2433,12 @@ void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object)
 
     ogs_assert(sbi_object);
 
-    if (ogs_list_count(&sbi_object->xact_list))
+    if (ogs_list_count(&sbi_object->xact_list)) {
+        ogs_sbi_xact_t *xact = NULL; \
         ogs_error("SBI running [%d]", ogs_list_count(&sbi_object->xact_list));
+        ogs_list_for_each(&sbi_object->xact_list, xact)
+            OGS_SBI_XACT_LOG(xact);
+    }
 
     for (i = 0; i < OGS_SBI_MAX_NUM_OF_SERVICE_TYPE; i++) {
         if (sbi_object->service_type_array[i].nf_instance_id)
