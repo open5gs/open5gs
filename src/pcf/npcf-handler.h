@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-bool pcf_npcf_am_policy_control_handle_create(pcf_ue_t *pcf_ue,
+bool pcf_npcf_am_policy_control_handle_create(pcf_ue_am_t *pcf_ue_am,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,

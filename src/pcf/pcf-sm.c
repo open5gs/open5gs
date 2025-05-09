@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -53,8 +53,9 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
 
-    pcf_ue_t *pcf_ue = NULL;
-    ogs_pool_id_t pcf_ue_id = OGS_INVALID_POOL_ID;
+    pcf_ue_am_t *pcf_ue_am = NULL;
+    ogs_pool_id_t pcf_ue_am_id = OGS_INVALID_POOL_ID;
+    pcf_ue_sm_t *pcf_ue_sm = NULL;
     pcf_sess_t *sess = NULL;
     ogs_pool_id_t sess_id = OGS_INVALID_POOL_ID;
     pcf_app_t *app_session = NULL;
@@ -140,18 +141,18 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             CASE(OGS_SBI_HTTP_METHOD_POST)
                 if (message.PolicyAssociationRequest &&
                     message.PolicyAssociationRequest->supi) {
-                    pcf_ue = pcf_ue_find_by_supi(
+                    pcf_ue_am = pcf_ue_am_find_by_supi(
                                 message.PolicyAssociationRequest->supi);
-                    if (!pcf_ue) {
-                        pcf_ue = pcf_ue_add(
+                    if (!pcf_ue_am) {
+                        pcf_ue_am = pcf_ue_am_add(
                             message.PolicyAssociationRequest->supi);
-                        ogs_assert(pcf_ue);
+                        ogs_assert(pcf_ue_am);
                     }
                 }
                 break;
             CASE(OGS_SBI_HTTP_METHOD_DELETE)
                 if (message.h.resource.component[1]) {
-                    pcf_ue = pcf_ue_find_by_association_id(
+                    pcf_ue_am = pcf_ue_am_find_by_association_id(
                                 message.h.resource.component[1]);
                 } else {
                     ogs_error("No Policy Association Id");
@@ -160,7 +161,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             DEFAULT
             END
 
-            if (!pcf_ue) {
+            if (!pcf_ue_am) {
                 ogs_error("Not found [%s]", message.h.method);
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
@@ -169,17 +170,17 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                 break;
             }
 
-            ogs_assert(OGS_FSM_STATE(&pcf_ue->sm));
+            ogs_assert(OGS_FSM_STATE(&pcf_ue_am->sm));
 
-            e->pcf_ue_id = pcf_ue->id;
+            e->pcf_ue_am_id = pcf_ue_am->id;
             e->h.sbi.message = &message;
-            ogs_fsm_dispatch(&pcf_ue->sm, e);
-            if (OGS_FSM_CHECK(&pcf_ue->sm, pcf_am_state_exception)) {
-                ogs_error("[%s] State machine exception", pcf_ue->supi);
-                pcf_ue_remove(pcf_ue);
-            } else if (OGS_FSM_CHECK(&pcf_ue->sm, pcf_am_state_deleted)) {
-                ogs_debug("[%s] PCF-AM removed", pcf_ue->supi);
-                pcf_ue_remove(pcf_ue);
+            ogs_fsm_dispatch(&pcf_ue_am->sm, e);
+            if (OGS_FSM_CHECK(&pcf_ue_am->sm, pcf_am_state_exception)) {
+                ogs_error("[%s] State machine exception", pcf_ue_am->supi);
+                pcf_ue_am_remove(pcf_ue_am);
+            } else if (OGS_FSM_CHECK(&pcf_ue_am->sm, pcf_am_state_deleted)) {
+                ogs_debug("[%s] PCF-AM removed", pcf_ue_am->supi);
+                pcf_ue_am_remove(pcf_ue_am);
             }
             break;
 
@@ -191,14 +192,14 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                         message.SmPolicyContextData->supi &&
                         message.SmPolicyContextData->pdu_session_id) {
 
-                        pcf_ue = pcf_ue_find_by_supi(
+                        pcf_ue_sm = pcf_ue_sm_find_by_supi(
                                     message.SmPolicyContextData->supi);
-                        if (!pcf_ue) {
+                        if (!pcf_ue_sm) {
                             if (!strcmp(message.h.method,
                                         OGS_SBI_HTTP_METHOD_POST)) {
-                                pcf_ue = pcf_ue_add(
+                                pcf_ue_sm = pcf_ue_sm_add(
                                             message.SmPolicyContextData->supi);
-                                if (!pcf_ue) {
+                                if (!pcf_ue_sm) {
                                     ogs_error("[%s:%d] Invalid Request [%s]",
                                             message.SmPolicyContextData->supi,
                                             message.SmPolicyContextData->
@@ -218,13 +219,13 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                             }
                         }
 
-                        if (pcf_ue) {
-                            sess = pcf_sess_find_by_psi(pcf_ue, message.
+                        if (pcf_ue_sm) {
+                            sess = pcf_sess_find_by_psi(pcf_ue_sm, message.
                                     SmPolicyContextData->pdu_session_id);
                             if (!sess) {
                                 if (!strcmp(message.h.method,
                                             OGS_SBI_HTTP_METHOD_POST)) {
-                                    sess = pcf_sess_add(pcf_ue, message.
+                                    sess = pcf_sess_add(pcf_ue_sm, message.
                                         SmPolicyContextData->pdu_session_id);
                                     if (!sess) {
                                         ogs_error("[%s:%d] "
@@ -236,7 +237,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                                                 message.h.method);
                                     } else
                                         ogs_debug("[%s:%d] PCF session added",
-                                                    pcf_ue->supi, sess->psi);
+                                                    pcf_ue_sm->supi, sess->psi);
                                 } else {
                                     ogs_error("[%s:%d] "
                                             "Invalid HTTP method [%s]",
@@ -258,15 +259,15 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             END
             if (!sess) {
                 ogs_error("Not found [%s]", message.h.uri);
-                /*
-                 * TS29.512
-                 * 4.2.2.2 SM Policy Association establishment
-                 *
-                 * If the user information received within the "supi" attribute is
-                 * unknown, the PCF shall reject the request with an HTTP "400 Bad
-                 * Request" response message including the "cause" attribute
-                 * of the ProblemDetails data structure set to "USER_UNKNOWN".
-                 */
+            /*
+             * TS29.512
+             * 4.2.2.2 SM Policy Association establishment
+             *
+             * If the user information received within the "supi" attribute is
+             * unknown, the PCF shall reject the request with an HTTP "400 Bad
+             * Request" response message including the "cause" attribute
+             * of the ProblemDetails data structure set to "USER_UNKNOWN".
+             */
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST,
@@ -280,10 +281,11 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             e->h.sbi.message = &message;
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
-                /* Clang scan-build SA: NULL pointer dereference: pcf_ue=NULL, remove logging of pcf_ue->supi. */
+                /* Clang scan-build SA: NULL pointer dereference:
+                 * pcf_ue_sm=NULL, remove logging of pcf_ue_sm->supi. */
                 ogs_error("[%s:%d] State machine exception",
-                        pcf_ue ? pcf_ue->supi : "Unknown", sess->psi);
-                pcf_sess_remove(sess);
+                        pcf_ue_sm ? pcf_ue_sm->supi : "Unknown", sess->psi);
+                PCF_SESS_CLEAR(sess);
             }
             break;
 
@@ -332,10 +334,11 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             e->h.sbi.message = &message;
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
-                /* Clang scan-build SA: NULL pointer dereference: pcf_ue=NULL, remove logging of pcf_ue->supi. */
+                /* Clang scan-build SA: NULL pointer dereference:
+                 * pcf_ue_sm=NULL, remove logging of pcf_ue_sm->supi. */
                 ogs_error("[%s:%d] State machine exception",
-                        pcf_ue ? pcf_ue->supi : "Unknown", sess->psi);
-                pcf_sess_remove(sess);
+                        pcf_ue_sm ? pcf_ue_sm->supi : "Unknown", sess->psi);
+                PCF_SESS_CLEAR(sess);
             }
             break;
 
@@ -496,9 +499,9 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                         break;
                     }
 
-                    pcf_ue_id = sbi_xact->sbi_object_id;
-                    ogs_assert(pcf_ue_id >= OGS_MIN_POOL_ID &&
-                            pcf_ue_id <= OGS_MAX_POOL_ID);
+                    pcf_ue_am_id = sbi_xact->sbi_object_id;
+                    ogs_assert(pcf_ue_am_id >= OGS_MIN_POOL_ID &&
+                            pcf_ue_am_id <= OGS_MAX_POOL_ID);
 
                     if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                         sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
@@ -507,20 +510,21 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
                     ogs_sbi_xact_remove(sbi_xact);
 
-                    pcf_ue = pcf_ue_find_by_id(pcf_ue_id);
-                    if (!pcf_ue) {
-                        ogs_error("UE(pcf_ue) Context "
+                    pcf_ue_am = pcf_ue_am_find_by_id(pcf_ue_am_id);
+                    if (!pcf_ue_am) {
+                        ogs_error("UE(pcf_ue_am) Context "
                                     "has already been removed");
                         break;
                     }
 
-                    e->pcf_ue_id = pcf_ue->id;
+                    e->pcf_ue_am_id = pcf_ue_am->id;
                     e->h.sbi.message = &message;
 
-                    ogs_fsm_dispatch(&pcf_ue->sm, e);
-                    if (OGS_FSM_CHECK(&pcf_ue->sm, pcf_am_state_exception)) {
-                        ogs_error("[%s] State machine exception", pcf_ue->supi);
-                        pcf_ue_remove(pcf_ue);
+                    ogs_fsm_dispatch(&pcf_ue_am->sm, e);
+                    if (OGS_FSM_CHECK(&pcf_ue_am->sm, pcf_am_state_exception)) {
+                        ogs_error("[%s] State machine exception",
+                                pcf_ue_am->supi);
+                        pcf_ue_am_remove(pcf_ue_am);
                     }
                     break;
 
@@ -556,8 +560,8 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                         break;
                     }
 
-                    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
-                    ogs_assert(pcf_ue);
+                    pcf_ue_sm = pcf_ue_sm_find_by_id(sess->pcf_ue_sm_id);
+                    ogs_assert(pcf_ue_sm);
 
                     e->sess_id = sess->id;
                     e->h.sbi.message = &message;
@@ -565,8 +569,8 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     ogs_fsm_dispatch(&sess->sm, e);
                     if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
                         ogs_error("[%s:%d] State machine exception",
-                                    pcf_ue->supi, sess->psi);
-                        pcf_sess_remove(sess);
+                                    pcf_ue_sm->supi, sess->psi);
+                        PCF_SESS_CLEAR(sess);
                     }
                     break;
 
@@ -607,7 +611,8 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
                 if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                     sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
-                    e->h.sbi.data = OGS_UINT_TO_POINTER(sbi_xact->assoc_stream_id);
+                    e->h.sbi.data = OGS_UINT_TO_POINTER(
+                            sbi_xact->assoc_stream_id);
 
                 ogs_sbi_xact_remove(sbi_xact);
 
@@ -617,8 +622,8 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     break;
                 }
 
-                pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
-                ogs_assert(pcf_ue);
+                pcf_ue_sm = pcf_ue_sm_find_by_id(sess->pcf_ue_sm_id);
+                ogs_assert(pcf_ue_sm);
 
                 e->sess_id = sess->id;
                 e->h.sbi.message = &message;
@@ -626,12 +631,12 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                 ogs_fsm_dispatch(&sess->sm, e);
                 if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
                     ogs_error("[%s:%d] State machine exception",
-                                pcf_ue->supi, sess->psi);
-                    pcf_sess_remove(sess);
+                                pcf_ue_sm->supi, sess->psi);
+                    PCF_SESS_CLEAR(sess);
                 } else if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_deleted)) {
                     ogs_debug("[%s:%d] PCF session removed",
-                                pcf_ue->supi, sess->psi);
-                    pcf_sess_remove(sess);
+                                pcf_ue_sm->supi, sess->psi);
+                    PCF_SESS_CLEAR(sess);
                 }
                 break;
 
@@ -754,16 +759,16 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             switch(sbi_object->type) {
             case OGS_SBI_OBJ_UE_TYPE:
-                pcf_ue_id = sbi_xact->sbi_object_id;
-                ogs_assert(pcf_ue_id >= OGS_MIN_POOL_ID &&
-                        pcf_ue_id <= OGS_MAX_POOL_ID);
+                pcf_ue_am_id = sbi_xact->sbi_object_id;
+                ogs_assert(pcf_ue_am_id >= OGS_MIN_POOL_ID &&
+                        pcf_ue_am_id <= OGS_MAX_POOL_ID);
 
-                pcf_ue = pcf_ue_find_by_id(pcf_ue_id);
-                if (!pcf_ue) {
-                    ogs_error("UE(pcf_ue) has already been removed");
+                pcf_ue_am = pcf_ue_am_find_by_id(pcf_ue_am_id);
+                if (!pcf_ue_am) {
+                    ogs_error("UE(pcf_ue_am) has already been removed");
                     break;
                 }
-                ogs_error("[%s] Cannot receive SBI message", pcf_ue->supi);
+                ogs_error("[%s] Cannot receive SBI message", pcf_ue_am->supi);
                 break;
 
             case OGS_SBI_OBJ_SESS_TYPE:

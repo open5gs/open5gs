@@ -1084,6 +1084,9 @@ void smf_ue_remove(smf_ue_t *smf_ue)
         ogs_free(smf_ue->supi);
     }
 
+    if (smf_ue->gpsi)
+        ogs_free(smf_ue->gpsi);
+
     if (smf_ue->imsi_len) {
         ogs_hash_set(self.imsi_hash, smf_ue->imsi, smf_ue->imsi_len, NULL);
     }

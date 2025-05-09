@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -27,7 +27,8 @@ extern "C" {
 #endif
 
 bool pcf_nudr_dr_handle_query_am_data(
-    pcf_ue_t *pcf_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+    pcf_ue_am_t *pcf_ue_am,
+    ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 bool pcf_nudr_dr_handle_query_sm_data(
     pcf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);

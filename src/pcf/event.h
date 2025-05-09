@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -26,14 +26,16 @@
 extern "C" {
 #endif
 
-typedef struct pcf_ue_s pcf_ue_t;
+typedef struct pcf_ue_am_s pcf_ue_am_t;
+typedef struct pcf_ue_sm_s pcf_ue_sm_t;
 typedef struct pcf_sess_s pcf_sess_t;
 typedef struct pcf_app_s pcf_app_t;
 
 typedef struct pcf_event_s {
     ogs_event_t h;
 
-    ogs_pool_id_t pcf_ue_id;
+    ogs_pool_id_t pcf_ue_am_id;
+    ogs_pool_id_t pcf_ue_sm_id;
     ogs_pool_id_t sess_id;
     pcf_app_t *app;
 } pcf_event_t;

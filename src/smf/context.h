@@ -117,6 +117,9 @@ typedef struct smf_ue_s {
     /* SUPI */
     char *supi;
 
+    /* GPSI */
+    char *gpsi;
+
     /* IMSI */
     uint8_t imsi[OGS_MAX_IMSI_LEN];
     int imsi_len;
