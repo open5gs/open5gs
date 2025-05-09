@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,21 +20,21 @@
 #include "namf-build.h"
 
 ogs_sbi_request_t *pcf_namf_callback_build_am_policy_control(
-        pcf_ue_t *pcf_ue, void *data)
+        pcf_ue_am_t *pcf_ue_am, void *data)
 {
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
     OpenAPI_policy_update_t PolicyUpdate;
 
-    ogs_assert(pcf_ue);
-    ogs_assert(pcf_ue->notification_uri);
+    ogs_assert(pcf_ue_am);
+    ogs_assert(pcf_ue_am->notification_uri);
 
     memset(&PolicyUpdate, 0, sizeof(PolicyUpdate));
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
-    message.h.uri = pcf_ue->notification_uri;
+    message.h.uri = pcf_ue_am->notification_uri;
 
     message.PolicyUpdate = &PolicyUpdate;
 
