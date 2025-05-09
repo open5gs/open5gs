@@ -73,6 +73,10 @@ int resvd_set_number = RESVD_SET;
 
 int ipfw_socket = -1;
 
+#if 1 /* modifed by acetcom */
+#define errx(eval, ...) ogs_log_message(OGS_LOG_ERROR, 0, __VA_ARGS__)
+#endif
+
 #define	CHECK_LENGTH(v, len) do {				\
 	if ((v) < (len))					\
 		errx(EX_DATAERR, "Rule too long");		\
