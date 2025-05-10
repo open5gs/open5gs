@@ -315,7 +315,13 @@ ogs_pkbuf_t *ngap_build_downlink_nas_transport(
     ogs_assert(gmmbuf);
     ogs_assert(ran_ue);
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
-    ogs_assert(amf_ue);
+    if (!amf_ue) {
+        ogs_fatal("    AMF-UE-ID[%d] RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+                ran_ue->amf_ue_id,
+                (long long)ran_ue->ran_ue_ngap_id,
+                (long long)ran_ue->amf_ue_ngap_id);
+        ogs_assert_if_reached();
+    }
 
     ogs_debug("DownlinkNASTransport");
 

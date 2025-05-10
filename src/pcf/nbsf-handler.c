@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -26,7 +26,7 @@ bool pcf_nbsf_management_handle_register(
 {
     int rv, status = 0;
     char *strerror = NULL;
-    pcf_ue_t *pcf_ue = NULL;
+    pcf_ue_sm_t *pcf_ue_sm = NULL;
     ogs_sbi_server_t *server = NULL;
 
     ogs_sbi_header_t header;
@@ -42,27 +42,27 @@ bool pcf_nbsf_management_handle_register(
     ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
     ogs_assert(sess);
-    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
-    ogs_assert(pcf_ue);
+    pcf_ue_sm = pcf_ue_sm_find_by_id(sess->pcf_ue_sm_id);
+    ogs_assert(pcf_ue_sm);
     ogs_assert(stream);
     server = ogs_sbi_server_from_stream(stream);
     ogs_assert(server);
 
     ogs_assert(recvmsg);
 
-    ogs_assert(pcf_ue->supi);
+    ogs_assert(pcf_ue_sm->supi);
     ogs_assert(sess->dnn);
 
     if (!recvmsg->http.location) {
         strerror = ogs_msprintf("[%s:%d] No http.location",
-                pcf_ue->supi, sess->psi);
+                pcf_ue_sm->supi, sess->psi);
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
 
     if (!recvmsg->PcfBinding) {
         strerror = ogs_msprintf("[%s:%d] No PcfBinding",
-                pcf_ue->supi, sess->psi);
+                pcf_ue_sm->supi, sess->psi);
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
@@ -80,13 +80,13 @@ bool pcf_nbsf_management_handle_register(
     rv = ogs_sbi_parse_header(&message, &header);
     if (rv != OGS_OK) {
         strerror = ogs_msprintf("[%s:%d] Cannot parse http.location [%s]",
-                pcf_ue->supi, sess->psi, recvmsg->http.location);
+                pcf_ue_sm->supi, sess->psi, recvmsg->http.location);
         goto cleanup;
     }
 
     if (!message.h.resource.component[1]) {
         strerror = ogs_msprintf("[%s:%d] No Binding ID [%s]",
-                pcf_ue->supi, sess->psi, recvmsg->http.location);
+                pcf_ue_sm->supi, sess->psi, recvmsg->http.location);
 
         ogs_sbi_header_free(&header);
         goto cleanup;
@@ -96,18 +96,18 @@ bool pcf_nbsf_management_handle_register(
             &scheme, &fqdn, &fqdn_port, &addr, &addr6, header.uri);
     if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
         strerror = ogs_msprintf("[%s:%d] Invalid URI [%s]",
-                pcf_ue->supi, sess->psi, header.uri);
+                pcf_ue_sm->supi, sess->psi, header.uri);
         ogs_sbi_header_free(&header);
         goto cleanup;
     }
 
     client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
     if (!client) {
-        ogs_debug("[%s:%d] ogs_sbi_client_add()", pcf_ue->supi, sess->psi);
+        ogs_debug("[%s:%d] ogs_sbi_client_add()", pcf_ue_sm->supi, sess->psi);
         client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
         if (!client) {
             strerror = ogs_msprintf("[%s:%d] ogs_sbi_client_add() failed",
-                    pcf_ue->supi, sess->psi);
+                    pcf_ue_sm->supi, sess->psi);
 
             ogs_sbi_header_free(&header);
             ogs_free(fqdn);

@@ -354,7 +354,7 @@ $ ./install/bin/open5gs-udrd
 $ ./install/bin/open5gs-seppd -c ./install/etc/open5gs/sepp1.yaml
 ```
 
-#### Visted Network
+#### Visited Network
 ```
 $ ./install/bin/open5gs-nrfd
 $ ./install/bin/open5gs-scpd

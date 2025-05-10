@@ -194,7 +194,8 @@ ogs_pfcp_extract_node_id(ogs_pfcp_message_t *message,
         goto done;
     }
 
-    memcpy(node_id, tlv_node_id->data, tlv_node_id->len);
+	memcpy(node_id, tlv_node_id->data, ogs_min(tlv_node_id->len, sizeof(ogs_pfcp_node_id_t)));
+    node_id->fqdn[OGS_MAX_FQDN_LEN - 1] = '\0';
 
     if (node_id->type != OGS_PFCP_NODE_ID_IPV4 &&
         node_id->type != OGS_PFCP_NODE_ID_IPV6 &&

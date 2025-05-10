@@ -227,6 +227,35 @@ typedef struct ogs_sbi_object_s {
 typedef ogs_sbi_request_t *(*ogs_sbi_build_f)(
         void *context, void *data);
 
+#define OGS_SBI_XACT_LOG(xact) \
+    do { \
+        ogs_error("    requester-nf-type[%s:%d]", \
+                OpenAPI_nf_type_ToString((xact)->requester_nf_type), \
+                (xact)->requester_nf_type); \
+        ogs_error("    service-name[%s:%d]", \
+                ogs_sbi_service_type_to_name((xact)->service_type), \
+                (xact)->service_type); \
+        if ((xact)->request) { \
+            int i; \
+            ogs_sbi_request_t *request = (xact)->request; \
+            if (request->h.method) \
+                ogs_error("    h.method[%s]", request->h.method); \
+            if (request->h.uri) \
+                ogs_error("    h.uri[%s]", request->h.uri); \
+            if (request->h.service.name) \
+                ogs_error("    h.service.name[%s]", request->h.service.name); \
+            if (request->h.api.version) \
+                ogs_error("    h.api.version[%s]", request->h.api.version); \
+            for (i = 0; i < OGS_SBI_MAX_NUM_OF_RESOURCE_COMPONENT && \
+                        request->h.resource.component[i]; i++)  \
+                ogs_error("    h.resource.component[%s:%d]", \
+                        request->h.resource.component[i], i); \
+            ogs_error("    http.content_length[%d]", \
+                    (int)request->http.content_length); \
+            if (request->http.content) \
+                ogs_error("    http.content[%s]", request->http.content); \
+        } \
+    } while(0)
 typedef struct ogs_sbi_xact_s {
     ogs_lnode_t lnode;
 

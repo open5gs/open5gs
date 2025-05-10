@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -302,8 +302,12 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA)
                 SWITCH(message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_AUTHENTICATION_DATA)
-                    udm_nudr_dr_handle_subscription_authentication(
-                            udm_ue, stream, message);
+                    if (udm_nudr_dr_handle_subscription_authentication(
+                            udm_ue, stream, message) == false) {
+                        ogs_warn("udm_nudr_dr_handle_subscription_"
+                                "authentication() failed");
+                        OGS_FSM_TRAN(s, udm_ue_state_exception);
+                    }
                     break;
 
                 CASE(OGS_SBI_RESOURCE_NAME_CONTEXT_DATA)

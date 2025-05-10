@@ -485,7 +485,7 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                          *
                          * In the following configuration,
                          * 127.0.0.4, 127.0.0.5 and 2001:db8:cafe::1 are ignored
-                         * on PFCP Assocation Response message's
+                         * on PFCP Association Response message's
                          * user plane IP resource information.
                          *
                          * gtpu:

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,12 +20,12 @@
 #include "nudr-build.h"
 
 ogs_sbi_request_t *pcf_nudr_dr_build_query_am_data(
-        pcf_ue_t *pcf_ue, void *data)
+        pcf_ue_am_t *pcf_ue_am, void *data)
 {
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
-    ogs_assert(pcf_ue);
+    ogs_assert(pcf_ue_am);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
@@ -33,7 +33,7 @@ ogs_sbi_request_t *pcf_nudr_dr_build_query_am_data(
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_POLICY_DATA;
     message.h.resource.component[1] = (char *)OGS_SBI_RESOURCE_NAME_UES;
-    message.h.resource.component[2] = pcf_ue->supi;
+    message.h.resource.component[2] = pcf_ue_am->supi;
     message.h.resource.component[3] = (char *)OGS_SBI_RESOURCE_NAME_AM_DATA;
 
     request = ogs_sbi_build_request(&message);
@@ -45,14 +45,14 @@ ogs_sbi_request_t *pcf_nudr_dr_build_query_am_data(
 ogs_sbi_request_t *pcf_nudr_dr_build_query_sm_data(
         pcf_sess_t *sess, void *data)
 {
-    pcf_ue_t *pcf_ue = NULL;
+    pcf_ue_sm_t *pcf_ue_sm = NULL;
 
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
     ogs_assert(sess);
-    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
-    ogs_assert(pcf_ue);
+    pcf_ue_sm = pcf_ue_sm_find_by_id(sess->pcf_ue_sm_id);
+    ogs_assert(pcf_ue_sm);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
@@ -60,7 +60,7 @@ ogs_sbi_request_t *pcf_nudr_dr_build_query_sm_data(
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_POLICY_DATA;
     message.h.resource.component[1] = (char *)OGS_SBI_RESOURCE_NAME_UES;
-    message.h.resource.component[2] = pcf_ue->supi;
+    message.h.resource.component[2] = pcf_ue_sm->supi;
     message.h.resource.component[3] = (char *)OGS_SBI_RESOURCE_NAME_SM_DATA;
 
     message.param.snssai_presence = true;

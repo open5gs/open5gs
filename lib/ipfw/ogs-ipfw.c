@@ -79,7 +79,7 @@ int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description)
     /* ADDR */
     i = 2;
     token = ogs_strtok_r(NULL, " ", &saveptr);
-    while (token != NULL) {
+    while ((token != NULL) && (i < (MAX_NUM_OF_TOKEN-2))) {
         av[i++] = token;
         token = ogs_strtok_r(NULL, " ", &saveptr);
     }

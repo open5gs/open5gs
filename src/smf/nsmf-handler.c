@@ -273,6 +273,10 @@ bool smf_nsmf_handle_create_sm_context(
             }
             ogs_free(type);
         }
+
+        if (smf_ue->gpsi)
+            ogs_free(smf_ue->gpsi);
+        smf_ue->gpsi = ogs_strdup(SmContextCreateData->gpsi);
     }
 
     sess->request_type = SmContextCreateData->request_type;

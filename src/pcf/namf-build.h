@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 ogs_sbi_request_t *pcf_namf_callback_build_am_policy_control(
-        pcf_ue_t *pcf_ue, void *data);
+        pcf_ue_am_t *pcf_ue_am, void *data);
 
 #ifdef __cplusplus
 }

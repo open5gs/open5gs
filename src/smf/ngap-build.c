@@ -260,23 +260,33 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
 
         if (qos_flow->qos.mbr.downlink || qos_flow->qos.mbr.uplink ||
             qos_flow->qos.gbr.downlink || qos_flow->qos.gbr.uplink) {
-            ogs_assert(qos_flow->qos.mbr.downlink);
-            ogs_assert(qos_flow->qos.mbr.uplink);
-            ogs_assert(qos_flow->qos.gbr.downlink);
-            ogs_assert(qos_flow->qos.gbr.uplink);
 
-            qosFlowLevelQosParameters->gBR_QosInformation =
-                gBR_QosInformation = CALLOC(1, sizeof(*gBR_QosInformation));
-            ogs_assert(gBR_QosInformation);
+            if (qos_flow->qos.mbr.downlink && qos_flow->qos.mbr.uplink &&
+                qos_flow->qos.gbr.downlink && qos_flow->qos.gbr.uplink) {
 
-            asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateDL,
-                    qos_flow->qos.mbr.downlink);
-            asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateUL,
-                    qos_flow->qos.mbr.uplink);
-            asn_uint642INTEGER(&gBR_QosInformation->
-                    guaranteedFlowBitRateDL, qos_flow->qos.gbr.downlink);
-            asn_uint642INTEGER(&gBR_QosInformation->
-                    guaranteedFlowBitRateUL, qos_flow->qos.gbr.uplink);
+                qosFlowLevelQosParameters->gBR_QosInformation =
+                    gBR_QosInformation = CALLOC(1, sizeof(*gBR_QosInformation));
+                ogs_assert(gBR_QosInformation);
+
+                asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateDL,
+                        qos_flow->qos.mbr.downlink);
+                asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateUL,
+                        qos_flow->qos.mbr.uplink);
+                asn_uint642INTEGER(&gBR_QosInformation->
+                        guaranteedFlowBitRateDL, qos_flow->qos.gbr.downlink);
+                asn_uint642INTEGER(&gBR_QosInformation->
+                        guaranteedFlowBitRateUL, qos_flow->qos.gbr.uplink);
+
+            } else {
+                ogs_error("Missing one or more MBR/GBR parameters; "
+                        "defaulting to Non-GBR flow ");
+                ogs_error("    MBR[DL:%lld,UL:%lld]",
+                    (long long)qos_flow->qos.mbr.downlink,
+                    (long long)qos_flow->qos.mbr.uplink);
+                ogs_error("    GBR[DL:%lld,UL:%lld]",
+                    (long long)qos_flow->qos.gbr.downlink,
+                    (long long)qos_flow->qos.gbr.uplink);
+            }
         }
     }
 
@@ -355,22 +365,32 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
         if (qos_presence == true &&
             (qos_flow->qos.mbr.downlink || qos_flow->qos.mbr.uplink ||
              qos_flow->qos.gbr.downlink || qos_flow->qos.gbr.uplink)) {
-            ogs_assert(qos_flow->qos.mbr.downlink);
-            ogs_assert(qos_flow->qos.mbr.uplink);
-            ogs_assert(qos_flow->qos.gbr.downlink);
-            ogs_assert(qos_flow->qos.gbr.uplink);
 
-            qosFlowLevelQosParameters->gBR_QosInformation =
-                gBR_QosInformation = CALLOC(1, sizeof(*gBR_QosInformation));
+            if (qos_flow->qos.mbr.downlink && qos_flow->qos.mbr.uplink &&
+                qos_flow->qos.gbr.downlink && qos_flow->qos.gbr.uplink) {
 
-            asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateDL,
-                    qos_flow->qos.mbr.downlink);
-            asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateUL,
-                    qos_flow->qos.mbr.uplink);
-            asn_uint642INTEGER(&gBR_QosInformation->
-                    guaranteedFlowBitRateDL, qos_flow->qos.gbr.downlink);
-            asn_uint642INTEGER(&gBR_QosInformation->
-                    guaranteedFlowBitRateUL, qos_flow->qos.gbr.uplink);
+                qosFlowLevelQosParameters->gBR_QosInformation =
+                    gBR_QosInformation = CALLOC(1, sizeof(*gBR_QosInformation));
+
+                asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateDL,
+                        qos_flow->qos.mbr.downlink);
+                asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateUL,
+                        qos_flow->qos.mbr.uplink);
+                asn_uint642INTEGER(&gBR_QosInformation->
+                        guaranteedFlowBitRateDL, qos_flow->qos.gbr.downlink);
+                asn_uint642INTEGER(&gBR_QosInformation->
+                        guaranteedFlowBitRateUL, qos_flow->qos.gbr.uplink);
+
+            } else {
+                ogs_error("Missing one or more MBR/GBR parameters; "
+                        "defaulting to Non-GBR flow ");
+                ogs_error("    MBR[DL:%lld,UL:%lld]",
+                    (long long)qos_flow->qos.mbr.downlink,
+                    (long long)qos_flow->qos.mbr.uplink);
+                ogs_error("    GBR[DL:%lld,UL:%lld]",
+                    (long long)qos_flow->qos.gbr.downlink,
+                    (long long)qos_flow->qos.gbr.uplink);
+            }
         }
     }
 

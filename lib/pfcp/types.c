@@ -304,7 +304,7 @@ int16_t ogs_pfcp_build_sdf_filter(
 int16_t ogs_pfcp_parse_sdf_filter(
         ogs_pfcp_sdf_filter_t *filter, ogs_tlv_octet_t *octet)
 {
-    int16_t size = 0;
+    uint32_t size = 0;
 
     ogs_assert(filter);
     ogs_assert(octet);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -22,7 +22,8 @@
 #include "nudr-handler.h"
 
 bool pcf_nudr_dr_handle_query_am_data(
-    pcf_ue_t *pcf_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+    pcf_ue_am_t *pcf_ue_am,
+    ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
     int rv, status = 0;
     char *strerror = NULL;
@@ -34,7 +35,7 @@ bool pcf_nudr_dr_handle_query_am_data(
 
     ogs_subscription_data_t subscription_data;
 
-    ogs_assert(pcf_ue);
+    ogs_assert(pcf_ue_am);
     ogs_assert(stream);
     server = ogs_sbi_server_from_stream(stream);
     ogs_assert(server);
@@ -51,52 +52,52 @@ bool pcf_nudr_dr_handle_query_am_data(
         OpenAPI_lnode_t *node = NULL;
 
         if (!recvmsg->AmPolicyData) {
-            strerror = ogs_msprintf("[%s] No AmPolicyData", pcf_ue->supi);
+            strerror = ogs_msprintf("[%s] No AmPolicyData", pcf_ue_am->supi);
             status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
             goto cleanup;
         }
 
-        if (!pcf_ue->policy_association_request) {
+        if (!pcf_ue_am->policy_association_request) {
             strerror = ogs_msprintf("[%s] No PolicyAssociationRequest",
-                    pcf_ue->supi);
+                    pcf_ue_am->supi);
             status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
             goto cleanup;
         }
 
-        rv = ogs_dbi_subscription_data(pcf_ue->supi, &subscription_data);
+        rv = ogs_dbi_subscription_data(pcf_ue_am->supi, &subscription_data);
         if (rv != OGS_OK) {
             strerror = ogs_msprintf("[%s] Cannot find SUPI in DB",
-                    pcf_ue->supi);
+                    pcf_ue_am->supi);
             status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
             goto cleanup;
         }
 
         if (!subscription_data.ambr.uplink &&
                 !subscription_data.ambr.downlink) {
-            strerror = ogs_msprintf("[%s] No UE-AMBR", pcf_ue->supi);
+            strerror = ogs_msprintf("[%s] No UE-AMBR", pcf_ue_am->supi);
             status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
             goto cleanup;
         }
 
         memset(&PolicyAssociation, 0, sizeof(PolicyAssociation));
-        PolicyAssociation.request = pcf_ue->policy_association_request;
+        PolicyAssociation.request = pcf_ue_am->policy_association_request;
         PolicyAssociation.supp_feat =
-            ogs_uint64_to_string(pcf_ue->am_policy_control_features);
+            ogs_uint64_to_string(pcf_ue_am->am_policy_control_features);
         ogs_assert(PolicyAssociation.supp_feat);
 
         TriggerList = OpenAPI_list_create();
         ogs_assert(TriggerList);
 
         memset(&UeAmbr, 0, sizeof(UeAmbr));
-        if (OGS_SBI_FEATURES_IS_SET(pcf_ue->am_policy_control_features,
+        if (OGS_SBI_FEATURES_IS_SET(pcf_ue_am->am_policy_control_features,
                     OGS_SBI_NPCF_AM_POLICY_CONTROL_UE_AMBR_AUTHORIZATION)) {
-            if (pcf_ue->subscribed_ue_ambr) {
+            if (pcf_ue_am->subscribed_ue_ambr) {
                 ogs_bitrate_t subscribed_ue_ambr;
 
                 subscribed_ue_ambr.uplink = ogs_sbi_bitrate_from_string(
-                        pcf_ue->subscribed_ue_ambr->uplink);
+                        pcf_ue_am->subscribed_ue_ambr->uplink);
                 subscribed_ue_ambr.downlink = ogs_sbi_bitrate_from_string(
-                        pcf_ue->subscribed_ue_ambr->downlink);
+                        pcf_ue_am->subscribed_ue_ambr->downlink);
 
                 if (((subscribed_ue_ambr.uplink / 1000) !=
                      (subscription_data.ambr.uplink / 1000)) ||
@@ -124,7 +125,7 @@ bool pcf_nudr_dr_handle_query_am_data(
         header.api.version = (char *)OGS_SBI_API_V1;
         header.resource.component[0] =
             (char *)OGS_SBI_RESOURCE_NAME_POLICIES;
-        header.resource.component[1] = pcf_ue->association_id;
+        header.resource.component[1] = pcf_ue_am->association_id;
 
         memset(&sendmsg, 0, sizeof(sendmsg));
         sendmsg.PolicyAssociation = &PolicyAssociation;
@@ -148,17 +149,18 @@ bool pcf_nudr_dr_handle_query_am_data(
 
         ogs_subscription_data_free(&subscription_data);
 
-        OpenAPI_list_for_each(PolicyAssociation.request->allowed_snssais, node) {
+        OpenAPI_list_for_each(
+                PolicyAssociation.request->allowed_snssais, node) {
             struct OpenAPI_snssai_s *Snssai = node->data;
             if (Snssai) {
                 ogs_s_nssai_t s_nssai;
                 s_nssai.sst = Snssai->sst;
                 s_nssai.sd = ogs_s_nssai_sd_from_string(Snssai->sd);
 
-                pcf_metrics_inst_by_slice_add(&pcf_ue->guami.plmn_id,
+                pcf_metrics_inst_by_slice_add(&pcf_ue_am->guami.plmn_id,
                         &s_nssai, PCF_METR_CTR_PA_POLICYAMASSOSUCC, 1);
             } else {
-                ogs_error("[%s] No Snssai", pcf_ue->supi);
+                ogs_error("[%s] No Snssai", pcf_ue_am->supi);
             }
         }
 
@@ -166,7 +168,7 @@ bool pcf_nudr_dr_handle_query_am_data(
 
     DEFAULT
         strerror = ogs_msprintf("[%s] Invalid resource name [%s]", 
-                        pcf_ue->supi, recvmsg->h.resource.component[3]);
+                        pcf_ue_am->supi, recvmsg->h.resource.component[3]);
     END
 
 cleanup:
@@ -188,13 +190,13 @@ bool pcf_nudr_dr_handle_query_sm_data(
 {
     int status = 0;
     char *strerror = NULL;
-    pcf_ue_t *pcf_ue = NULL;
+    pcf_ue_sm_t *pcf_ue_sm = NULL;
     ogs_sbi_server_t *server = NULL;
     int r;
 
     ogs_assert(sess);
-    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
-    ogs_assert(pcf_ue);
+    pcf_ue_sm = pcf_ue_sm_find_by_id(sess->pcf_ue_sm_id);
+    ogs_assert(pcf_ue_sm);
     ogs_assert(stream);
     server = ogs_sbi_server_from_stream(stream);
     ogs_assert(server);
@@ -205,7 +207,7 @@ bool pcf_nudr_dr_handle_query_sm_data(
     CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
         if (!recvmsg->SmPolicyData) {
             strerror = ogs_msprintf("[%s:%d] No SmPolicyData",
-                    pcf_ue->supi, sess->psi);
+                    pcf_ue_sm->supi, sess->psi);
             status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
             goto cleanup;
         }
@@ -221,7 +223,8 @@ bool pcf_nudr_dr_handle_query_sm_data(
 
     DEFAULT
         strerror = ogs_msprintf("[%s:%d] Invalid resource name [%s]", 
-                    pcf_ue->supi, sess->psi, recvmsg->h.resource.component[3]);
+                    pcf_ue_sm->supi, sess->psi,
+                    recvmsg->h.resource.component[3]);
     END
 
 cleanup:

@@ -317,7 +317,7 @@ static int hss_ogs_diam_swx_mar_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch);
     ogs_assert(ret == 0);
 
-    /* Set the Integirty-Key AVP */
+    /* Set the Integrity-Key AVP */
     ret = fd_msg_avp_new(ogs_diam_cx_integrity_key, 0, &avpch);
     ogs_assert(ret == 0);
     val.os.data = ik;

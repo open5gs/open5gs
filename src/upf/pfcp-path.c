@@ -22,7 +22,7 @@
 #include "pfcp-path.h"
 #include "n4-build.h"
 
-static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_assoicate)
+static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_associate)
 {
     upf_event_t e;
 
@@ -31,7 +31,7 @@ static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_assoicate)
     memset(&e, 0, sizeof(e));
     e.pfcp_node = node;
 
-    if (try_to_assoicate == true) {
+    if (try_to_associate == true) {
         node->t_association = ogs_timer_add(ogs_app()->timer_mgr,
                 upf_timer_association, node);
         ogs_assert(node->t_association);
