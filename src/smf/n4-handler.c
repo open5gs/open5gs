@@ -706,7 +706,10 @@ void smf_5gc_n4_handle_session_modification_response(
             ogs_assert_if_reached();
         }
 
-        if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
+        if (flags & OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING) {
+            ogs_fatal("Home routed : Nothing to do");
+
+        } else if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
             ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
 
             /*

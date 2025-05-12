@@ -486,8 +486,19 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
     VsmfUpdateData.request_indication = sess->nsmf_param.request_indication;
     ogs_assert(VsmfUpdateData.request_indication);
 
-    n1SmBufToUe = gsmue_build_pdu_session_release_command(sess);
-    ogs_assert(n1SmBufToUe);
+    switch (VsmfUpdateData.request_indication) {
+    case OpenAPI_request_indication_NW_REQ_PDU_SES_MOD:
+        n1SmBufToUe = gsmue_build_pdu_session_modification_command(sess);
+        ogs_assert(n1SmBufToUe);
+        break;
+    case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
+        n1SmBufToUe = gsmue_build_pdu_session_release_command(sess);
+        break;
+    default:
+        ogs_fatal("Not implemented [request_indication:%d]",
+                VsmfUpdateData.request_indication);
+
+    }
 
     n1SmInfoToUe.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
     VsmfUpdateData.n1_sm_info_to_ue = &n1SmInfoToUe;

@@ -1090,18 +1090,28 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         ogs_assert(sess->nsmf_param.request_indication);
 
                         if (sess->nsmf_param.request_indication ==
-                            OpenAPI_request_indication_UE_REQ_PDU_SES_REL) {
-                            e->h.sbi.state =
-                                OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED;
-                        } else if (sess->nsmf_param.request_indication ==
-                            OpenAPI_request_indication_NW_REQ_PDU_SES_REL) {
-                            e->h.sbi.state =
-                            OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT;
+                            OpenAPI_request_indication_NW_REQ_PDU_SES_MOD) {
+                            ogs_fatal("TODO");
+
+                            ogs_assert(true ==
+                                    ogs_sbi_send_http_status_no_content(
+                                        stream));
                         } else {
-                            ogs_fatal("Not implemented [requestIndication:%d]",
-                                    sess->nsmf_param.request_indication);
-                            ogs_assert_if_reached();
-                        }
+                            if (sess->nsmf_param.request_indication ==
+                                    OpenAPI_request_indication_UE_REQ_PDU_SES_REL) {
+                                e->h.sbi.state =
+                                    OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED;
+                            } else if (sess->nsmf_param.request_indication ==
+                                    OpenAPI_request_indication_NW_REQ_PDU_SES_REL) {
+                                e->h.sbi.state =
+                                OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT;
+
+                            } else {
+                                ogs_fatal("Not implemented "
+                                        "[requestIndication:%d]",
+                                        sess->nsmf_param.request_indication);
+                                ogs_assert_if_reached();
+                            }
     /*
      * TS23.502 clause 4.3.4.3 UE or network requested PDU Session Release
      * for Home-routed Roaming.
@@ -1119,10 +1129,12 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
      *  - the V-SMF invokes the Nsmf_PDUSession_Update Request towards H-SMF.
      *    (OpenAPI_cause_REL_DUE_TO_DUPLICATE_SESSION_ID);
      */
-                        ogs_assert(true ==
-                                ogs_sbi_send_http_status_no_content(stream));
+                            ogs_assert(true ==
+                                    ogs_sbi_send_http_status_no_content(
+                                        stream));
 
-                        OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
+                            OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
+                        }
                     } else {
                         ogs_error("smf_nsmf_handle_hsmf_update_data() "
                                 "failed");
@@ -1259,6 +1271,19 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 END
                 break;
 
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+            SWITCH(sbi_message->h.resource.component[2])
+            CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+                rc = smf_nsmf_handle_vsmf_update_data(
+                        sess, stream, sbi_message);
+                break;
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
                         sbi_message->h.resource.component[0]);

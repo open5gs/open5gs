@@ -30,6 +30,7 @@ ogs_pkbuf_t *gsmue_encode_n1_sm_info(ogs_nas_5gs_message_t *message);
 int gsmue_decode_n1_sm_info(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf);
 
 ogs_pkbuf_t *gsmue_build_pdu_session_establishment_accept(smf_sess_t *sess);
+ogs_pkbuf_t *gsmue_build_pdu_session_modification_command(smf_sess_t *sess);
 ogs_pkbuf_t *gsmue_build_pdu_session_release_command(smf_sess_t *sess);
 
 #ifdef __cplusplus
