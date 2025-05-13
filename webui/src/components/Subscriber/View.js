@@ -177,6 +177,7 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
   const ambr = ((subscriber || {}).ambr || {});
   const subscriber_status = (subscriber || {}).subscriber_status;
   const operator_determined_barring = (subscriber || {}).operator_determined_barring;
+  const network_access_mode = (subscriber || {}).network_access_mode;
   const slice_list = ((subscriber || {}).slice || []);
 
   return (
@@ -275,6 +276,13 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                       <div className="data">
                         {operator_determined_barring}
                         <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>Operator Determined Barring (TS 29.272 7.3.30)</span>
+                      </div>
+                      <div className="data">
+                        {network_access_mode === 0 ? "Packet and Circuit (0)" :
+                         network_access_mode === 1 ? "Packet Only (1)" :
+                         network_access_mode === 2 ? "Circuit Only (2)" :
+                         network_access_mode}
+                        <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>Network Access</span>
                       </div>
                     </div>
                   </div>
@@ -421,11 +429,16 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                                     undefined ?  "" :
                                   session.ambr.uplink['unit'] ===
                                     undefined ?  "bps" :
-                                    session.ambr.uplink.unit === 0 ? "bps" :
-                                    session.ambr.uplink.unit === 1 ? "Kbps" :
-                                    session.ambr.uplink.unit === 2 ? "Mbps" :
-                                    session.ambr.uplink.unit === 3 ? "Gbps" :
-                                    session.ambr.uplink.unit === 4 ? "Tbps" :
+                                    session.ambr.uplink.unit === 0 ?
+                                      "bps" :
+                                    session.ambr.uplink.unit === 1 ?
+                                      "Kbps" :
+                                    session.ambr.uplink.unit === 2 ?
+                                      "Mbps" :
+                                    session.ambr.uplink.unit === 3 ?
+                                      "Gbps" :
+                                    session.ambr.uplink.unit === 4 ?
+                                      "Tbps" :
                                         "Unknown Unit"
                             }
                           </div>
