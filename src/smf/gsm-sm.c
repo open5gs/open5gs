@@ -833,7 +833,7 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
                     ogs_assert(param.n1smbuf);
                     param.n2smbuf =
                         ngap_build_pdu_session_resource_setup_request_transfer(
-                                sess);
+                                sess, SMF_NGAP_STATE_PDU_SESSION_ESTABLISHMENT);
                     ogs_assert(param.n2smbuf);
                     smf_namf_comm_send_n1_n2_message_transfer(
                             sess, NULL, &param);
@@ -870,7 +870,7 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
 
 void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 {
-    int r, rv, ngap_state;
+    int r, rv;
     char *strerror = NULL;
     smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
@@ -1415,9 +1415,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
-            ngap_state = sess->ngap_state.pdu_session_resource_release;
-
-            if (ngap_state == SMF_NGAP_STATE_NONE) {
+            if (sess->ngap_state == SMF_NGAP_STATE_NONE) {
                 strerror = ogs_msprintf(
                         "[%s:%d] No PDUSessionResourceReleaseRequest",
                         smf_ue->supi, sess->psi);
@@ -1432,7 +1430,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
                 OGS_FSM_TRAN(s, smf_gsm_state_exception);
 
-            } else if (ngap_state ==
+            } else if (sess->ngap_state ==
                     SMF_NGAP_STATE_ERROR_INDICATION_RECEIVED_FROM_5G_AN) {
                 smf_n1_n2_message_transfer_param_t param;
 
@@ -1442,14 +1440,14 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 param.state = SMF_NETWORK_TRIGGERED_SERVICE_REQUEST;
                 param.n2smbuf =
                     ngap_build_pdu_session_resource_setup_request_transfer(
-                            sess);
+                            sess, SMF_NGAP_STATE_NONE);
                 ogs_assert(param.n2smbuf);
 
                 param.n1n2_failure_txf_notif_uri = true;
 
                 smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
             } else {
-                ogs_fatal("Invalid state [%d]", ngap_state);
+                ogs_fatal("Invalid state [%d]", sess->ngap_state);
                 ogs_assert_if_reached();
             }
             break;
@@ -2060,7 +2058,6 @@ test_can_proceed:
 
 void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
 {
-    int ngap_state;
     char *strerror = NULL;
 
     smf_ue_t *smf_ue = NULL;
@@ -2322,9 +2319,7 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
-            ngap_state = sess->ngap_state.pdu_session_resource_release;
-
-            if (ngap_state == SMF_NGAP_STATE_NONE) {
+            if (sess->ngap_state == SMF_NGAP_STATE_NONE) {
                 strerror = ogs_msprintf(
                         "[%s:%d] No PDUSessionResourceReleaseRequest",
                         smf_ue->supi, sess->psi);
@@ -2339,10 +2334,12 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
 
                 OGS_FSM_TRAN(s, smf_gsm_state_exception);
 
-            } else if (
-                ngap_state == SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED ||
-                ngap_state == SMF_NGAP_STATE_DELETE_TRIGGER_PCF_INITIATED ||
-                ngap_state == SMF_NGAP_STATE_DELETE_TRIGGER_SMF_INITIATED) {
+            } else if (sess->ngap_state ==
+                    SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED ||
+                    sess->ngap_state ==
+                    SMF_NGAP_STATE_DELETE_TRIGGER_PCF_INITIATED ||
+                    sess->ngap_state ==
+                    SMF_NGAP_STATE_DELETE_TRIGGER_SMF_INITIATED) {
 
                 ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 
@@ -2376,7 +2373,7 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
                 }
 
             } else {
-                ogs_fatal("Invalid state [%d]", ngap_state);
+                ogs_fatal("Invalid state [%d]", sess->ngap_state);
                 ogs_assert_if_reached();
             }
             break;

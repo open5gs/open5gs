@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
-        smf_sess_t *sess);
+        smf_sess_t *sess, int state);
 
 ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
         smf_sess_t *sess, bool qos_presence);

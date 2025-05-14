@@ -447,7 +447,7 @@ void smf_5gc_n4_handle_session_modification_response(
                 ogs_assert(param.n1smbuf);
                 param.n2smbuf =
                     ngap_build_pdu_session_resource_setup_request_transfer(
-                            sess);
+                            sess, SMF_NGAP_STATE_NONE);
                 ogs_assert(param.n2smbuf);
 
                 smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
@@ -1391,7 +1391,8 @@ uint8_t smf_n4_handle_session_report_request(
             memset(&param, 0, sizeof(param));
             param.state = SMF_NETWORK_TRIGGERED_SERVICE_REQUEST;
             param.n2smbuf =
-                ngap_build_pdu_session_resource_setup_request_transfer(sess);
+                ngap_build_pdu_session_resource_setup_request_transfer(
+                        sess, SMF_NGAP_STATE_NONE);
             ogs_assert(param.n2smbuf);
 
             param.n1n2_failure_txf_notif_uri = true;

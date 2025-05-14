@@ -20,7 +20,7 @@
 #include "ngap-build.h"
 
 ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
-        smf_sess_t *sess)
+        smf_sess_t *sess, int state)
 {
     smf_bearer_t *qos_flow = NULL;
     ogs_ip_t upf_n3_ip;
@@ -44,6 +44,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     NGAP_GBR_QosInformation_t *gBR_QosInformation = NULL;
 
     ogs_assert(sess);
+    sess->ngap_state = state;
 
     ogs_debug("PDUSessionResourceSetupRequestTransfer");
     memset(&message, 0, sizeof(NGAP_PDUSessionResourceSetupRequestTransfer_t));
@@ -313,6 +314,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
     smf_bearer_t *qos_flow = NULL;
 
     ogs_assert(sess);
+    sess->ngap_state = SMF_NGAP_STATE_NONE;
 
     ogs_debug("PDUSessionResourceModifyRequestTransfer");
     memset(&message, 0, sizeof(NGAP_PDUSessionResourceModifyRequestTransfer_t));
@@ -413,6 +415,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_request_transfer(
     smf_bearer_t *qos_flow = NULL;
 
     ogs_assert(sess);
+    sess->ngap_state = SMF_NGAP_STATE_NONE;
 
     ogs_debug("PDUSessionResourceModifyRequestTransfer");
     memset(&message, 0, sizeof(NGAP_PDUSessionResourceModifyRequestTransfer_t));
@@ -454,7 +457,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command_transfer(
 
     ogs_assert(sess);
     ogs_assert(state);
-    sess->ngap_state.pdu_session_resource_release = state;
+    sess->ngap_state = state;
 
     ogs_debug("PDUSessionResourceReleaseCommandTransfer");
     memset(&message, 0,
@@ -482,6 +485,7 @@ ogs_pkbuf_t *ngap_build_path_switch_request_ack_transfer(smf_sess_t *sess)
 #endif
 
     ogs_assert(sess);
+    sess->ngap_state = SMF_NGAP_STATE_NONE;
 
     ogs_debug("PathSwitchRequestAcknowledgeTransfer");
     memset(&message, 0, sizeof(NGAP_PathSwitchRequestAcknowledgeTransfer_t));
@@ -515,6 +519,7 @@ ogs_pkbuf_t *ngap_build_handover_command_transfer(smf_sess_t *sess)
     ogs_ip_t local_dl_ip;
 
     ogs_assert(sess);
+    sess->ngap_state = SMF_NGAP_STATE_NONE;
 
     ogs_debug("HandoverCommandTransfer");
     memset(&message, 0, sizeof(NGAP_HandoverCommandTransfer_t));

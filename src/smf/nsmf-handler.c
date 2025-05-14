@@ -799,14 +799,14 @@ bool smf_nsmf_handle_update_sm_context(
         /*********************************************************
          * Handle DEACTIVATED
          ********************************************************/
-            if (sess->ngap_state.pdu_session_resource_release ==
+            if (sess->ngap_state ==
                     SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED) {
                 /*
                  * 1. UE->SMF: PDU session release request
                  * 2. PFCP Session Deletion Request/Response
                  * 3. AMF/SMF->UE : PDUSessionResourceReleaseCommand +
                  *                  PDU session release command
-                 *    sess->ngap_state.pdu_session_resource_release is set
+                 *    sess->ngap_state is set
                  *      to SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED
                  * 4. UE->AMF/SMF : PDUSessionResourceReleaseResponse
                  *
@@ -894,7 +894,8 @@ bool smf_nsmf_handle_update_sm_context(
             sendmsg.num_of_part = 0;
 
             sendmsg.part[sendmsg.num_of_part].pkbuf =
-                ngap_build_pdu_session_resource_setup_request_transfer(sess);
+                ngap_build_pdu_session_resource_setup_request_transfer(
+                        sess, SMF_NGAP_STATE_NONE);
             if (sendmsg.part[sendmsg.num_of_part].pkbuf) {
                 sendmsg.part[sendmsg.num_of_part].content_id =
                     (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
@@ -1023,8 +1024,7 @@ bool smf_nsmf_handle_update_sm_context(
                 SmContextUpdateData->release == true) {
 
         /* First of all, it checks for REL_DUE_TO_DUPLICATE_SESSION_ID */
-        if (sess->ngap_state.pdu_session_resource_release ==
-                SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED) {
+        if (sess->ngap_state == SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED) {
 
             /* PCF session context has already been removed */
             memset(&sendmsg, 0, sizeof(sendmsg));
