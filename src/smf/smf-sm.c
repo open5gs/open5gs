@@ -31,6 +31,7 @@
 #include "nsmf-handler.h"
 #include "npcf-handler.h"
 #include "nsmf-handler.h"
+#include "binding.h"
 
 void smf_state_initial(ogs_fsm_t *s, smf_event_t *e)
 {
@@ -1048,14 +1049,29 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             }
 
             if (state == SMF_UECM_STATE_REGISTERED) {
-                /* SMF Registration */
                 ogs_assert(stream);
                 ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+                smf_metrics_inst_by_slice_add(
+                        &sess->serving_plmn_id, &sess->s_nssai,
+                        SMF_METR_CTR_SM_PDUSESSIONCREATIONSUCC, 1);
             } else if (state == SMF_UECM_STATE_REGISTERED_HR) {
+                ogs_assert(stream);
                 smf_sbi_send_pdu_session_created_data(sess, stream);
                 smf_metrics_inst_by_slice_add(
                         &sess->serving_plmn_id, &sess->s_nssai,
                         SMF_METR_CTR_SM_PDUSESSIONCREATIONSUCC, 1);
+
+/*
+ * Non-roaming/LBO: start network-triggered PDU Session Modification at step 11
+ * after N1N2 transfer (Establishment Accept) and N2/N4 context sync, ensuring
+ * the session is active on UE, RAN, and SMF before applying QoS updates.
+ *
+ * Home-Routed Roaming: trigger PDU Session Modification at step 13
+ * immediately after H-SMF’s CreateSMContext response and H-UPF N4 setup
+ * to apply QoS updates without waiting for V-SMF or RAN setup.
+ */
+                smf_qos_flow_binding(sess);
+
             } else if (state == SMF_UECM_STATE_DEREG_BY_AMF) {
 /*
  * Handle deregistration states SMF_UECM_STATE_DEREG_BY_AMF and

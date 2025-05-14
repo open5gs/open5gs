@@ -493,6 +493,7 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
         break;
     case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
         n1SmBufToUe = gsmue_build_pdu_session_release_command(sess);
+        ogs_assert(n1SmBufToUe);
         break;
     default:
         ogs_fatal("Not implemented [request_indication:%d]",
