@@ -581,12 +581,13 @@ typedef struct smf_sess_s {
 
     /* State */
 #define SMF_NGAP_STATE_NONE                                     0
-#define SMF_NGAP_STATE_PDU_SESSION_ESTABLISHMENT                1
-#define SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED              2
-#define SMF_NGAP_STATE_DELETE_TRIGGER_PCF_INITIATED             3
-#define SMF_NGAP_STATE_ERROR_INDICATION_RECEIVED_FROM_5G_AN     4
-#define SMF_NGAP_STATE_DELETE_TRIGGER_SMF_INITIATED             5
-    int ngap_state;
+#define SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED              1
+#define SMF_NGAP_STATE_DELETE_TRIGGER_PCF_INITIATED             2
+#define SMF_NGAP_STATE_ERROR_INDICATION_RECEIVED_FROM_5G_AN     3
+#define SMF_NGAP_STATE_DELETE_TRIGGER_SMF_INITIATED             4
+    struct {
+        int pdu_session_resource_release;
+    } ngap_state;
 
     /* Handover */
     struct {

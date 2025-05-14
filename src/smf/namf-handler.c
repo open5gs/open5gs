@@ -154,7 +154,7 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
                 param.state = SMF_NETWORK_TRIGGERED_SERVICE_REQUEST;
                 param.n2smbuf =
                     ngap_build_pdu_session_resource_setup_request_transfer(
-                            sess, SMF_NGAP_STATE_NONE);
+                            sess);
                 ogs_assert(param.n2smbuf);
 
                 param.n1n2_failure_txf_notif_uri = true;

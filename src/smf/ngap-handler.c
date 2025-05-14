@@ -542,8 +542,7 @@ int ngap_handle_handover_required_transfer(
     if (!directForwardingPathAvailability)
         sess->handover.data_forwarding_not_possible = true;
 
-    n2smbuf = ngap_build_pdu_session_resource_setup_request_transfer(
-            sess, SMF_NGAP_STATE_NONE);
+    n2smbuf = ngap_build_pdu_session_resource_setup_request_transfer(sess);
     ogs_assert(n2smbuf);
 
     smf_sbi_send_sm_context_updated_data(
