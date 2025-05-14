@@ -55,6 +55,20 @@
 
 #define UPF_GTP_HANDLED     1
 
+#include <err.h>
+
+uint8_t *pfcp_ue_mac_addr(uint32_t ip);
+uint8_t *pfcp_ue_mac_addr(uint32_t ip) {
+    uint8_t *ue_mac_addr = malloc(6);
+    ue_mac_addr[0] = 0x0e;
+    ue_mac_addr[1] = 0x00;
+    ue_mac_addr[2] = ip;
+    ue_mac_addr[3] = ip >> 8;
+    ue_mac_addr[4] = ip >> 16;
+    ue_mac_addr[5] = ip >> 24;
+    return ue_mac_addr;
+}
+
 const uint8_t proxy_mac_addr[] = { 0x0e, 0x00, 0x00, 0x00, 0x00, 0x01 };
 
 static ogs_pkbuf_pool_t *packet_pool = NULL;
@@ -126,12 +140,25 @@ static void _gtpv1_tun_recv_common_cb(
             if (is_arp_req(recvbuf->data, recvbuf->len) &&
                     upf_sess_find_by_ipv4(
                         arp_parse_target_addr(recvbuf->data, recvbuf->len))) {
+                ogs_pfcp_subnet_t *subnet;
+                subnet = ogs_pfcp_find_subnet(AF_INET);
                 replybuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_PKT_LEN);
                 ogs_assert(replybuf);
                 ogs_pkbuf_reserve(replybuf, OGS_TUN_MAX_HEADROOM);
                 ogs_pkbuf_put(replybuf, OGS_MAX_PKT_LEN-OGS_TUN_MAX_HEADROOM);
-                size = arp_reply(replybuf->data, recvbuf->data, recvbuf->len,
-                    proxy_mac_addr);
+
+                /* In bridge mode, create a MAC address based on UE IP */
+                /* In normal mode, use a fixed MAC address */
+                if(subnet->bridge) {
+                    uint8_t *ue_mac_addr;
+                    ue_mac_addr = pfcp_ue_mac_addr(arp_parse_target_addr(recvbuf->data, recvbuf->len));
+                    size = arp_reply(replybuf->data, recvbuf->data, recvbuf->len,
+                        ue_mac_addr);
+                    free(ue_mac_addr);
+                } else {
+                    size = arp_reply(replybuf->data, recvbuf->data, recvbuf->len,
+                        proxy_mac_addr);
+                }
                 ogs_pkbuf_trim(replybuf, size);
                 ogs_info("[SEND] reply to ARP request: %u", size);
             } else {
@@ -139,12 +166,19 @@ static void _gtpv1_tun_recv_common_cb(
             }
         } else if (eth_type == ETHERTYPE_IPV6 &&
                     is_nd_req(recvbuf->data, recvbuf->len)) {
+            ogs_pfcp_subnet_t *subnet;
+            subnet = ogs_pfcp_find_subnet(AF_INET6);
             replybuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_PKT_LEN);
             ogs_assert(replybuf);
             ogs_pkbuf_reserve(replybuf, OGS_TUN_MAX_HEADROOM);
             ogs_pkbuf_put(replybuf, OGS_MAX_PKT_LEN-OGS_TUN_MAX_HEADROOM);
-            size = nd_reply(replybuf->data, recvbuf->data, recvbuf->len,
-                proxy_mac_addr);
+
+            /* In bridge mode, create a MAC address based on UE IP */
+            /* In normal mode, use a fixed MAC address */
+            if(subnet->bridge == false) {
+                size = nd_reply(replybuf->data, recvbuf->data, recvbuf->len,
+                    proxy_mac_addr);
+            }
             ogs_pkbuf_trim(replybuf, size);
             ogs_info("[SEND] reply to ND solicit: %u", size);
         }
@@ -649,9 +683,21 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 ogs_pkbuf_push(pkbuf, sizeof(eth_type));
                 memcpy(pkbuf->data, &eth_type, sizeof(eth_type));
                 ogs_pkbuf_push(pkbuf, ETHER_ADDR_LEN);
-                memcpy(pkbuf->data, proxy_mac_addr, ETHER_ADDR_LEN);
-                ogs_pkbuf_push(pkbuf, ETHER_ADDR_LEN);
-                memcpy(pkbuf->data, dev->mac_addr, ETHER_ADDR_LEN);
+
+                /* In bridge mode, use the MAC address from the gateway */
+                /* In normal mode, use the MAC address from the interface */
+                if(subnet->bridge) {
+                    uint8_t *ue_mac_addr;
+                    ue_mac_addr = pfcp_ue_mac_addr(sess->ipv4->addr[0]);
+                    memcpy(pkbuf->data, ue_mac_addr, ETHER_ADDR_LEN);
+                    ogs_pkbuf_push(pkbuf, ETHER_ADDR_LEN);
+                    memcpy(pkbuf->data, subnet->mac_addr, ETHER_ADDR_LEN);
+                    free(ue_mac_addr);
+                } else {
+                    memcpy(pkbuf->data, proxy_mac_addr, ETHER_ADDR_LEN);
+                    ogs_pkbuf_push(pkbuf, ETHER_ADDR_LEN);
+                    memcpy(pkbuf->data, dev->mac_addr, ETHER_ADDR_LEN);
+                }
             }
 
             /* TODO: if destined to another UE, hairpin back out. */
