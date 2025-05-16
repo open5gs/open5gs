@@ -139,29 +139,55 @@ void app_terminate(void)
     int i;
 
     for (i = 0; i < OGS_MAX_NF_INSTANCES; i++) {
-        if (amf_threads[i])
+        if (amf_threads[i]) {
             ogs_thread_destroy(amf_threads[i]);
-        if (smf_threads[i])
+            amf_threads[i] = NULL;
+        }
+        if (smf_threads[i]) {
             ogs_thread_destroy(smf_threads[i]);
-        if (upf_threads[i])
+            smf_threads[i] = NULL;
+        }
+        if (upf_threads[i]) {
             ogs_thread_destroy(upf_threads[i]);
-        if (udr_threads[i])
+            upf_threads[i] = NULL;
+        }
+        if (udr_threads[i]) {
             ogs_thread_destroy(udr_threads[i]);
-        if (nssf_threads[i])
+            udr_threads[i] = NULL;
+        }
+        if (nssf_threads[i]) {
             ogs_thread_destroy(nssf_threads[i]);
-        if (bsf_threads[i])
+            nssf_threads[i] = NULL;
+        }
+        if (bsf_threads[i]) {
             ogs_thread_destroy(bsf_threads[i]);
-        if (pcf_threads[i])
+            bsf_threads[i] = NULL;
+        }
+        if (pcf_threads[i]) {
             ogs_thread_destroy(pcf_threads[i]);
-        if (udm_threads[i])
+            pcf_threads[i] = NULL;
+        }
+        if (udm_threads[i]) {
             ogs_thread_destroy(udm_threads[i]);
-        if (ausf_threads[i])
+            udm_threads[i] = NULL;
+        }
+        if (ausf_threads[i]) {
             ogs_thread_destroy(ausf_threads[i]);
+            ausf_threads[i] = NULL;
+        }
     }
-
-    if (sepp_thread) ogs_thread_destroy(sepp_thread);
-    if (scp_thread) ogs_thread_destroy(scp_thread);
-    if (nrf_thread) ogs_thread_destroy(nrf_thread);
+    if (sepp_thread) {
+        ogs_thread_destroy(sepp_thread);
+        sepp_thread = NULL;
+    }
+    if (scp_thread) {
+        ogs_thread_destroy(scp_thread);
+        scp_thread = NULL;
+    }
+    if (nrf_thread) {
+        ogs_thread_destroy(nrf_thread);
+        nrf_thread = NULL;
+    }
 }
 
 void test_5gc_init(void)

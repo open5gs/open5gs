@@ -19,7 +19,7 @@
 
  #include "test-common.h"
 
- static void test1_func(abts_case *tc, void *data)
+ static void test1_func_error(abts_case *tc, void *data)
  {
     int rv;
     ogs_socknode_t *ngap1, *ngap2;
@@ -675,7 +675,7 @@
  {
     suite = ADD_SUITE(suite)
 
-    abts_run_test(suite, test1_func, NULL);
+    abts_run_test(suite, test1_func_error, NULL);
     return suite;
  }
 

@@ -163,7 +163,10 @@ void test_child_terminate(void)
     ogs_proc_t *current = NULL;
     for (i = 0; i < process_num; i++) {
         current = &process[i];
-        ogs_proc_terminate(current);
+
+        if (current->stdin_file != 0 &&  current->child != 0) {
+            ogs_proc_terminate(current);
+        }
     }
 }
 
@@ -171,16 +174,15 @@ void test_child_terminate_with_name(char *name, int index)
 {
     int i;
     ogs_proc_t *current = NULL;
-
     for (i = 0; i < process_num; i++) {
         current = &process[i];
 
-        if (!strcmp(current->nf_name, name)) {
-            if (current->index == index) {
-                ogs_warn("Terminating process: [%s][%d]", current->nf_name, current->child);
+        if (!strcmp(current->nf_name, name) &&
+                current->index == index &&
+                current->stdin_file != 0 &&
+                current->child != 0) {
                 ogs_proc_terminate(current);
                 break;
-            }
         }
     }
 }

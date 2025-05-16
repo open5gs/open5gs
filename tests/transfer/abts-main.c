@@ -20,11 +20,19 @@
 #include "test-app.h"
 
 abts_suite * test_ue_context_transfer(abts_suite *suite);
+abts_suite * test_ue_context_transfer_error_case(abts_suite *suite);
 
-const struct testlist {
+struct testlist {
     abts_suite *(*func)(abts_suite *suite);
-} alltests[] = {
+};
+
+const struct testlist alltests[] = {
     {test_ue_context_transfer},
+    {NULL},
+};
+
+const struct testlist alltests_error[] = {
+    {test_ue_context_transfer_error_case},
     {NULL},
 };
 
@@ -53,14 +61,40 @@ static void initialize(const char *const argv[])
 
 int main(int argc, const char *const argv[])
 {
-    int i;
+    int i, j, rv;
     abts_suite *suite = NULL;
 
-    atexit(terminate);
-    test_app_run(argc, argv, "transfer.yaml", initialize);
+    struct test_config {
+        const struct testlist *tests;
+        const char *config;
+    };
 
-    for (i = 0; alltests[i].func; i++)
-        suite = alltests[i].func(suite);
+    /*
+     * Tests run the app with different configs:
+     * - alltests runs positive test scenarios with scp included in 5g core
+     * - alltests_error runs error case scenario with configuration "no_scp: true"
+     */
+    struct test_config test_configs[] = {
+        {alltests, "transfer.yaml"},
+        {alltests_error, "transfer-error-case.yaml"}
+    };
 
-    return abts_report(suite);
+    int num_configs = sizeof(test_configs) / sizeof(test_configs[0]);
+
+    for (j = 0; j < num_configs; j++) {
+        test_app_run(argc, argv, test_configs[j].config, initialize);
+
+        for (i = 0; test_configs[j].tests[i].func; i++) {
+            suite = test_configs[j].tests[i].func(suite);
+        }
+
+        rv = abts_report(suite);
+        if (rv != OGS_OK)
+            ogs_error("abts_report error for config: %s", test_configs[j].config);
+
+        suite = NULL;
+        terminate();
+    }
+
+    return rv;
 }

@@ -18,6 +18,7 @@
 testapp_transfer_sources = files('''
     abts-main.c
     ue-context-transfer-test.c
+    ue-context-transfer-error-case-test.c
 '''.split())
 
 testapp_transfer_exe = executable('transfer',
