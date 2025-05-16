@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2023 by Ryan Dimsey <ryan@omnitouch.com.au>
  *
  * This file is part of Open5GS.
  *
@@ -17,36 +17,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TEST_FD_PATH_H
-#define TEST_FD_PATH_H
+#ifndef OGS_DIMAETER_S13_H
+#define OGS_DIMAETER_S13_H
+
+#include "ogs-diameter-common.h"
+
+#define OGS_DIAMETER_INSIDE
+
+#include "diameter/s13/message.h"
+
+#undef OGS_DIAMETER_INSIDE
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "ogs-diameter-cx.h"
-#include "ogs-diameter-s6a.h"
-#include "ogs-diameter-s13.h"
-#include "ogs-diameter-swx.h"
-
-#include "ogs-diameter-rx.h"
-#include "ogs-diameter-s6b.h"
-
-int test_fd_init(void);
-void test_fd_final(void);
-
-int test_swx_init(void);
-void test_swx_final(void);
-
-void test_swx_send(test_sess_t *sess, bool handover_ind,
-        int (*gtp_send)(test_sess_t *sess, bool handover_ind));
-
-int test_s6b_init(void);
-void test_s6b_final(void);
+/* Nothing */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* TEST_FD_PATH_H */
-
+#endif /* OGS_DIMAETER_S13_H */

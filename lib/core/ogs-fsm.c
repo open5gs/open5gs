@@ -127,7 +127,7 @@ void ogs_fsm_dispatch(void *fsm, void *event)
         (*tmp)(sm, e);
 
     if (sm->state != tmp)
-        fsm_change(fsm, tmp, sm->state, e);
+        fsm_change(sm, tmp, sm->state, e);
 }
 
 void ogs_fsm_fini(void *fsm, void *event)
