@@ -1084,6 +1084,9 @@ void smf_ue_remove(smf_ue_t *smf_ue)
         ogs_free(smf_ue->supi);
     }
 
+    if (smf_ue->gpsi)
+        ogs_free(smf_ue->gpsi);
+
     if (smf_ue->imsi_len) {
         ogs_hash_set(self.imsi_hash, smf_ue->imsi, smf_ue->imsi_len, NULL);
     }
@@ -1505,7 +1508,7 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
     }
 
     if (SmContextCreateData->is_pdu_session_id == false) {
-        ogs_error("PDU session identitiy is unassigned");
+        ogs_error("PDU session identity is unassigned");
         return NULL;
     }
 

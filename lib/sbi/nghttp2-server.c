@@ -1762,9 +1762,12 @@ static void session_write_callback(short when, ogs_socket_t fd, void *data)
     ogs_assert(sbi_sess);
 
     if (ogs_list_empty(&sbi_sess->write_queue) == true) {
-        ogs_assert(sbi_sess->poll.write);
-        ogs_pollset_remove(sbi_sess->poll.write);
-        sbi_sess->poll.write = NULL;
+        if (sbi_sess->poll.write) {
+            ogs_pollset_remove(sbi_sess->poll.write);
+            sbi_sess->poll.write = NULL;
+        } else
+            ogs_warn("poll.write has already been removed");
+
         return;
     }
 

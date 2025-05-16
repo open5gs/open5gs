@@ -163,6 +163,16 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                                     &message, "Not found",
                                     message.h.resource.component[1], NULL));
                         END
+                    } else {
+                        if (NF_INSTANCE_ID_IS_SELF(nf_instance->id)) {
+                            ogs_error("SELF Not allowed [%s]", nf_instance->id);
+                            ogs_assert(true ==
+                                ogs_sbi_server_send_error(stream,
+                                    OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                                    &message, "SELF Not allowed",
+                                    nf_instance->id, NULL));
+                            break;
+                        }
                     }
 
                     if (nf_instance) {

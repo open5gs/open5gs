@@ -1033,8 +1033,11 @@ amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi);
         ogs_assert(sbi_object); \
         \
         if (ogs_list_count(&sbi_object->xact_list)) { \
+            ogs_sbi_xact_t *xact = NULL; \
             ogs_error("SBI running [%d]", \
                     ogs_list_count(&sbi_object->xact_list)); \
+            ogs_list_for_each(&sbi_object->xact_list, xact) \
+                OGS_SBI_XACT_LOG(xact); \
         } else { \
             amf_sess_remove(__sESS); \
         } \

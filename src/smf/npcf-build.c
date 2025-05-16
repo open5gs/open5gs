@@ -75,6 +75,9 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
      */
     SmPolicyContextData.chargingcharacteristics = (char *)"00000800";
 
+    /* GPSI */
+    SmPolicyContextData.gpsi = smf_ue->gpsi;
+
     /*
      * Use ogs_sbi_supi_in_vplmn() instead of ogs_sbi_plmn_id_in_vplmn().
      * This is because some vendors might not use the full DNN in LBO and
@@ -287,8 +290,6 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
 end:
     if (SmPolicyContextData.notification_uri)
         ogs_free(SmPolicyContextData.notification_uri);
-    if (SmPolicyContextData.gpsi)
-        ogs_free(SmPolicyContextData.gpsi);
 
     if (SmPolicyContextData.dnn)
         ogs_free(SmPolicyContextData.dnn);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -37,6 +37,7 @@ int pcf_sbi_open(void)
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SCP);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AMF);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SMF);
+    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AF);
 
     /* Build NF service information. It will be transmitted to NRF. */
     if (ogs_sbi_nf_service_is_available(
@@ -68,6 +69,8 @@ int pcf_sbi_open(void)
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
+        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_AF);
+        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_PCF);
 
         policyauthorization_enabled = true;
     }
@@ -166,23 +169,23 @@ static int pcf_sbi_discover_and_send(
     return OGS_OK;
 }
 
-int pcf_ue_sbi_discover_and_send(
+int pcf_ue_am_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
-        ogs_sbi_request_t *(*build)(pcf_ue_t *pcf_ue, void *data),
-        pcf_ue_t *pcf_ue, ogs_sbi_stream_t *stream, void *data)
+        ogs_sbi_request_t *(*build)(pcf_ue_am_t *pcf_ue_am, void *data),
+        pcf_ue_am_t *pcf_ue_am, ogs_sbi_stream_t *stream, void *data)
 {
     int r;
 
     r = pcf_sbi_discover_and_send(
-            pcf_ue->id, &pcf_ue->sbi, service_type, discovery_option,
-            (ogs_sbi_build_f)build, pcf_ue, stream, data);
+            pcf_ue_am->id, &pcf_ue_am->sbi, service_type, discovery_option,
+            (ogs_sbi_build_f)build, pcf_ue_am, stream, data);
     if (r != OGS_OK) {
-        ogs_error("pcf_ue_sbi_discover_and_send() failed");
+        ogs_error("pcf_ue_am_sbi_discover_and_send() failed");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", pcf_ue->supi, NULL));
+                "Cannot discover", pcf_ue_am->supi, NULL));
         return r;
     }
 
@@ -257,17 +260,17 @@ static int client_delete_notify_cb(
     return OGS_OK;
 }
 
-bool pcf_sbi_send_am_policy_control_notify(pcf_ue_t *pcf_ue)
+bool pcf_sbi_send_am_policy_control_notify(pcf_ue_am_t *pcf_ue_am)
 {
     bool rc;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
 
-    ogs_assert(pcf_ue);
-    client = pcf_ue->namf.client;
+    ogs_assert(pcf_ue_am);
+    client = pcf_ue_am->namf.client;
     ogs_assert(client);
 
-    request = pcf_namf_callback_build_am_policy_control(pcf_ue, NULL);
+    request = pcf_namf_callback_build_am_policy_control(pcf_ue_am, NULL);
     if (!request) {
         ogs_error("pcf_namf_callback_build_am_policy_control() failed");
         return false;
@@ -287,7 +290,7 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
 {
     int i, rv, status = 0;
     char *strerror = NULL;
-    pcf_ue_t *pcf_ue = NULL;
+    pcf_ue_sm_t *pcf_ue_sm = NULL;
     ogs_sbi_server_t *server = NULL;
 
     ogs_sbi_message_t sendmsg;
@@ -320,24 +323,24 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
     OpenAPI_list_t *PolicyCtrlReqTriggers = NULL;
 
     ogs_assert(sess);
-    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
-    ogs_assert(pcf_ue);
+    pcf_ue_sm = pcf_ue_sm_find_by_id(sess->pcf_ue_sm_id);
+    ogs_assert(pcf_ue_sm);
     ogs_assert(stream);
     server = ogs_sbi_server_from_stream(stream);
     ogs_assert(server);
 
     memset(&session_data, 0, sizeof(ogs_session_data_t));
 
-    ogs_assert(pcf_ue->supi);
+    ogs_assert(pcf_ue_sm->supi);
     ogs_assert(sess->dnn);
 
     rv = pcf_db_qos_data(
-            pcf_ue->supi,
+            pcf_ue_sm->supi,
             sess->home.presence == true ? &sess->home.plmn_id : NULL,
             &sess->s_nssai, sess->dnn, &session_data);
     if (rv != OGS_OK) {
         strerror = ogs_msprintf("[%s:%d] Cannot find SUPI in DB",
-                pcf_ue->supi, sess->psi);
+                pcf_ue_sm->supi, sess->psi);
         status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
         goto cleanup;
     }
@@ -345,20 +348,20 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
     session = &session_data.session;
 
     if (!session->qos.index) {
-        strerror = ogs_msprintf("[%s:%d] No 5QI", pcf_ue->supi, sess->psi);
+        strerror = ogs_msprintf("[%s:%d] No 5QI", pcf_ue_sm->supi, sess->psi);
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
     if (!session->qos.arp.priority_level) {
         strerror = ogs_msprintf("[%s:%d] No Priority Level",
-                pcf_ue->supi, sess->psi);
+                pcf_ue_sm->supi, sess->psi);
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
 
     if (!session->ambr.uplink && !session->ambr.downlink) {
         strerror = ogs_msprintf("[%s:%d] No Session-AMBR",
-                pcf_ue->supi, sess->psi);
+                pcf_ue_sm->supi, sess->psi);
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
@@ -596,7 +599,8 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
     if (SmPolicyDecision.supp_feat)
         ogs_free(SmPolicyDecision.supp_feat);
 
-    pcf_metrics_inst_by_slice_add(&pcf_ue->guami.plmn_id,
+    pcf_metrics_inst_by_slice_add(
+            sess->home.presence == true ? &sess->home.plmn_id : NULL,
             &sess->s_nssai, PCF_METR_CTR_PA_POLICYSMASSOSUCC, 1);
 
     OGS_SESSION_DATA_FREE(&session_data);

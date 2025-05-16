@@ -751,7 +751,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     break;
                 }
 
-                ogs_error("[%s] Cannot receive SBI message", amf_ue->suci);
+                ogs_error("[%s:%s] Cannot receive SBI message",
+                        amf_ue->supi, amf_ue->suci);
+
                 r = nas_5gs_send_gmm_reject_from_sbi(amf_ue,
                         OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
                 ogs_expect(r == OGS_OK);
@@ -771,8 +773,31 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     break;
                 }
 
-                ogs_error("[%d:%d] Cannot receive SBI message",
-                        sess->psi, sess->pti);
+                ogs_error("[%s:%s:%d:%d] Cannot receive SBI message",
+                        amf_ue->supi, amf_ue->suci, sess->psi, sess->pti);
+
+                ran_ue = ran_ue_find_by_id(sess->ran_ue_id);
+                if (!ran_ue) {
+                    ogs_error("[%s:%s:%d:%d] "
+                            "NG Context has already been removed",
+                            amf_ue->supi, amf_ue->suci, sess->psi, sess->pti);
+                    break;
+                }
+
+                if (ran_ue->amf_ue_id == OGS_INVALID_POOL_ID) {
+                    ogs_error("[%s:%s:%d:%d] "
+                            "RAN-UE has already been deassociated",
+                            amf_ue->supi, amf_ue->suci, sess->psi, sess->pti);
+                    break;
+                }
+
+                if (amf_ue->id != ran_ue->amf_ue_id) {
+                    ogs_error("[%s:%s:%d:%d] AMF-UE mismatched [%d!=%d]",
+                            amf_ue->supi, amf_ue->suci, sess->psi, sess->pti,
+                            amf_ue->id, ran_ue->amf_ue_id);
+                    break;
+                }
+
                 if (sess->payload_container_type) {
                     r = nas_5gs_send_back_gsm_message(
                             ran_ue_find_by_id(sess->ran_ue_id), sess,

@@ -586,15 +586,19 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  * 6. UEContextReleaseComplete
                  */
                 ogs_warn("PDUSessionResourceSetupResponse(Unsuccessful)");
-                ogs_assert(ran_ue);
-                ogs_assert(ran_ue->deactivation.group);
+                if (ran_ue) {
+                    ogs_assert(ran_ue->deactivation.group);
 
-                r = ngap_send_ran_ue_context_release_command(ran_ue,
-                        ran_ue->deactivation.group,
-                        ran_ue->deactivation.cause,
-                        NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
+                    r = ngap_send_ran_ue_context_release_command(ran_ue,
+                            ran_ue->deactivation.group,
+                            ran_ue->deactivation.cause,
+                            NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else {
+                    ogs_warn("[%s] RAN-NG Context has already been removed",
+                            amf_ue->supi);
+                }
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_MODIFIED) {
                 /*
@@ -625,15 +629,19 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  */
 
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
-                    ogs_assert(ran_ue);
-                    ogs_assert(ran_ue->deactivation.group);
+                    if (ran_ue) {
+                        ogs_assert(ran_ue->deactivation.group);
 
-                    r = ngap_send_ran_ue_context_release_command(ran_ue,
-                            ran_ue->deactivation.group,
-                            ran_ue->deactivation.cause,
-                            NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
+                        r = ngap_send_ran_ue_context_release_command(ran_ue,
+                                ran_ue->deactivation.group,
+                                ran_ue->deactivation.cause,
+                                NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+                    } else {
+                        ogs_warn("[%s] RAN-NG Context has already been removed",
+                                amf_ue->supi);
+                    }
                 }
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST) {

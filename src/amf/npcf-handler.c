@@ -94,7 +94,7 @@ int amf_npcf_am_policy_control_handle_create(
     }
 
     if (!message.h.resource.component[1]) {
-        ogs_error("[%s] No Assocation ID [%s]",
+        ogs_error("[%s] No Association ID [%s]",
                 amf_ue->supi, recvmsg->http.location);
 
         ogs_sbi_header_free(&header);

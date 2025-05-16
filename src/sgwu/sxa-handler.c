@@ -363,7 +363,7 @@ void sgwu_sxa_handle_session_report_response(
 
     ogs_pfcp_xact_commit(xact);
 
-    ogs_debug("Session report resopnse");
+    ogs_debug("Session report response");
 
     cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
