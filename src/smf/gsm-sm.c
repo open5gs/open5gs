@@ -1166,8 +1166,22 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             sess, stream, sbi_message);
 
                     if (rc == true) {
-                        e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED;
-                        OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
+                        switch (sess->nsmf_param.request_indication) {
+                        case OpenAPI_request_indication_UE_REQ_PDU_SES_MOD:
+                        case OpenAPI_request_indication_NW_REQ_PDU_SES_MOD:
+                            ogs_assert(true ==
+                                    ogs_sbi_send_http_status_no_content(stream));
+                            break;
+                        case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
+                        case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
+                            e->h.sbi.state =
+                                OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED;
+                            OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
+                            break;
+                        default:
+                            ogs_error("Unknown request_indication:%d",
+                                    sess->nsmf_param.request_indication);
+                        }
                     } else {
                         ogs_error("smf_nsmf_handle_vsmf_update_data() failed");
                     }
@@ -1271,19 +1285,22 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 END
                 break;
 
-            DEFAULT
-                ogs_error("Invalid resource name [%s]",
-                        sbi_message->h.resource.component[0]);
-                ogs_assert_if_reached();
-            END
-            break;
-
-        CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
-            SWITCH(sbi_message->h.resource.component[2])
-            CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                rc = smf_nsmf_handle_vsmf_update_data(
-                        sess, stream, sbi_message);
+            CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+                SWITCH(sbi_message->h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+                    ogs_fatal("OK");
+#if 0
+                    rc = smf_nsmf_handle_vsmf_update_data(
+                            sess, stream, sbi_message);
+#endif
+                    break;
+                DEFAULT
+                    ogs_error("Invalid resource name [%s]",
+                            sbi_message->h.resource.component[0]);
+                    ogs_assert_if_reached();
+                END
                 break;
+
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
                         sbi_message->h.resource.component[0]);
