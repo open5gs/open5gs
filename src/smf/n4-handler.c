@@ -467,8 +467,16 @@ void smf_5gc_n4_handle_session_modification_response(
                 ogs_fatal("Invalid delete trigger[%d]", trigger);
                 ogs_assert_if_reached();
             }
+        } else if (flags & OGS_PFCP_MODIFY_CREATE) {
+            if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
+            } else {
+                ogs_fatal("Invalid PDR-Create flags [0x%llx]",
+                        (long long)flags);
+                ogs_assert_if_reached();
+            }
         } else {
-            ogs_fatal("Nothing To Do flags [0x%llx]", (long long)flags);
+            ogs_fatal("Invalid flags [%lld]", (long long)flags);
+            ogs_assert_if_reached();
         }
     } else if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
         if (flags & OGS_PFCP_MODIFY_XN_HANDOVER) {
