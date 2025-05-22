@@ -18,6 +18,10 @@
 testapp_transfer_sources = files('''
     abts-main.c
     ue-context-transfer-test.c
+'''.split())
+
+testapp_transfer_error_sources = files('''
+    abts-error-main.c
     ue-context-transfer-error-case-test.c
 '''.split())
 
@@ -26,4 +30,10 @@ testapp_transfer_exe = executable('transfer',
     c_args : testunit_core_cc_flags,
     dependencies : libtest5gc_dep)
 
+testapp_transfer_error_exe = executable('transfer-error',
+    sources : testapp_transfer_error_sources,
+    c_args : testunit_core_cc_flags,
+    dependencies : libtest5gc_dep)
+
 test('transfer', testapp_transfer_exe, is_parallel : false, suite: '5gc')
+test('transfer-error', testapp_transfer_error_exe, is_parallel : false, suite: '5gc')
