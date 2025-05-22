@@ -33,6 +33,8 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_reject(
 ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
         smf_sess_t *sess,
         uint8_t qos_rule_code, uint8_t qos_flow_description_code);
+ogs_pkbuf_t *gsm_build_pdu_session_modification_command_hr(
+        smf_bearer_t *qos_flow);
 ogs_pkbuf_t *gsm_build_pdu_session_modification_reject(
         smf_sess_t *sess, ogs_nas_5gsm_cause_t gsm_cause);
 

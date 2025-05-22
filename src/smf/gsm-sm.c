@@ -1169,8 +1169,29 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         switch (sess->nsmf_param.request_indication) {
                         case OpenAPI_request_indication_UE_REQ_PDU_SES_MOD:
                         case OpenAPI_request_indication_NW_REQ_PDU_SES_MOD:
+                            ogs_error("Here!!");
+#if 1
                             ogs_assert(true ==
                                     ogs_sbi_send_http_status_no_content(stream));
+#endif
+#if 0
+                            sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+
+                            memset(&param, 0, sizeof(param));
+                            param.state =
+                                SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
+                            param.n1smbuf =
+                                gsm_build_pdu_session_modification_command(
+                                    sess, qos_rule_code, qos_flow_description_code);
+                            ogs_assert(param.n1smbuf);
+                            param.n2smbuf =
+                                ngap_build_pdu_session_resource_modify_request_transfer(
+                                    sess, true);
+                            ogs_assert(param.n2smbuf);
+
+                            smf_namf_comm_send_n1_n2_message_transfer(
+                                    sess, NULL, &param);
+#endif
                             break;
                         case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
                         case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
