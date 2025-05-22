@@ -73,6 +73,10 @@ typedef struct ogs_proc_s {
     unsigned long dwProcessId;
 #else
     pid_t child;
+
+    // to force kill the right NF in tests if needed.
+    char *nf_name;
+    int index;
 #endif
 } ogs_proc_t;
 
