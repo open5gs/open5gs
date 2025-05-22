@@ -1842,28 +1842,28 @@ bool smf_nsmf_handle_create_data_in_vsmf(
 
         qos_flow->qfi = qosFlowSetupItem->qfi;
 
-        OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_rules);
+        OGS_NAS_CLEAR_DATA(&qos_flow->h_smf_authorized_qos_rules);
         len = ogs_base64_decode_len(qosFlowSetupItem->qos_rules);
         ogs_assert(len);
-        sess->h_smf_authorized_qos_rules.buffer = ogs_calloc(1, len);
-        ogs_assert(sess->h_smf_authorized_qos_rules.buffer);
-        sess->h_smf_authorized_qos_rules.length =
+        qos_flow->h_smf_authorized_qos_rules.buffer = ogs_calloc(1, len);
+        ogs_assert(qos_flow->h_smf_authorized_qos_rules.buffer);
+        qos_flow->h_smf_authorized_qos_rules.length =
             ogs_base64_decode_binary(
-                    sess->h_smf_authorized_qos_rules.buffer,
+                    qos_flow->h_smf_authorized_qos_rules.buffer,
                     qosFlowSetupItem->qos_rules);
-        ogs_assert(sess->h_smf_authorized_qos_rules.length);
+        ogs_assert(qos_flow->h_smf_authorized_qos_rules.length);
 
-        OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_flow_descriptions);
+        OGS_NAS_CLEAR_DATA(&qos_flow->h_smf_authorized_qos_flow_descriptions);
         len = ogs_base64_decode_len(qosFlowSetupItem->qos_flow_description);
         ogs_assert(len);
-        sess->h_smf_authorized_qos_flow_descriptions.buffer =
+        qos_flow->h_smf_authorized_qos_flow_descriptions.buffer =
             ogs_calloc(1, len);
-        ogs_assert(sess->h_smf_authorized_qos_flow_descriptions.buffer);
-        sess->h_smf_authorized_qos_flow_descriptions.length =
+        ogs_assert(qos_flow->h_smf_authorized_qos_flow_descriptions.buffer);
+        qos_flow->h_smf_authorized_qos_flow_descriptions.length =
             ogs_base64_decode_binary(
-                    sess->h_smf_authorized_qos_flow_descriptions.buffer,
+                    qos_flow->h_smf_authorized_qos_flow_descriptions.buffer,
                     qosFlowSetupItem->qos_flow_description);
-        ogs_assert(sess->h_smf_authorized_qos_flow_descriptions.length);
+        ogs_assert(qos_flow->h_smf_authorized_qos_flow_descriptions.length);
 
         qosFlowProfile = qosFlowSetupItem->qos_flow_profile;
         ogs_assert(qosFlowProfile);
@@ -2055,7 +2055,7 @@ bool smf_nsmf_handle_create_data_in_vsmf(
     return true;
 }
 
-bool smf_nsmf_handle_hsmf_update_data(
+bool smf_nsmf_handle_update_data_in_hsmf(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
     int rv;
@@ -2159,7 +2159,7 @@ bool smf_nsmf_handle_hsmf_update_data(
     return true;
 }
 
-bool smf_nsmf_handle_vsmf_update_data(
+bool smf_nsmf_handle_update_data_in_vsmf(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
     int rv;

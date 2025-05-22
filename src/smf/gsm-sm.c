@@ -1084,7 +1084,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_PDU_SESSIONS)
                 SWITCH(sbi_message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                    rc = smf_nsmf_handle_hsmf_update_data(
+                    rc = smf_nsmf_handle_update_data_in_hsmf(
                             sess, stream, sbi_message);
                     if (rc == true) {
                         ogs_assert(sess->nsmf_param.request_indication);
@@ -1136,7 +1136,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
                         }
                     } else {
-                        ogs_error("smf_nsmf_handle_hsmf_update_data() "
+                        ogs_error("smf_nsmf_handle_update_data_in_hsmf() "
                                 "failed");
                     }
                     break;
@@ -1162,7 +1162,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
                 SWITCH(sbi_message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                    rc = smf_nsmf_handle_vsmf_update_data(
+                    rc = smf_nsmf_handle_update_data_in_vsmf(
                             sess, stream, sbi_message);
 
                     if (rc == true) {
@@ -1183,7 +1183,8 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     sess->nsmf_param.request_indication);
                         }
                     } else {
-                        ogs_error("smf_nsmf_handle_vsmf_update_data() failed");
+                        ogs_error("smf_nsmf_handle_update_data_in_vsmf() "
+                                "failed");
                     }
                     break;
                 DEFAULT
@@ -1290,7 +1291,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
                     ogs_fatal("OK");
 #if 0
-                    rc = smf_nsmf_handle_vsmf_update_data(
+                    rc = smf_nsmf_handle_update_data_in_vsmf(
                             sess, stream, sbi_message);
 #endif
                     break;

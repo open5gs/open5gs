@@ -1865,8 +1865,6 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->n1smbuf)
         ogs_pkbuf_free(sess->n1smbuf);
 
-    OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_rules);
-    OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_flow_descriptions);
     OGS_NAS_CLEAR_DATA(&sess->h_smf_extended_protocol_configuration_options);
     sess->h_smf_gsm_cause = 0;
 
@@ -2747,6 +2745,9 @@ int smf_bearer_remove(smf_bearer_t *bearer)
         ogs_freeaddrinfo(bearer->pgw_s5u_addr);
     if (bearer->pgw_s5u_addr6)
         ogs_freeaddrinfo(bearer->pgw_s5u_addr6);
+
+    OGS_NAS_CLEAR_DATA(&bearer->h_smf_authorized_qos_rules);
+    OGS_NAS_CLEAR_DATA(&bearer->h_smf_authorized_qos_flow_descriptions);
 
     smf_pf_remove_all(bearer);
 

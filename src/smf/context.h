@@ -284,6 +284,10 @@ typedef struct smf_bearer_s {
     } pcc_rule;
     ogs_qos_t       qos;            /* QoS Information */
 
+    /* Saved from H-SMF */
+    ogs_nas_qos_rules_t h_smf_authorized_qos_rules;
+    ogs_nas_qos_flow_descriptions_t h_smf_authorized_qos_flow_descriptions;
+
     OGS_POOL(pf_identifier_pool, uint8_t);
 
     /* Packet Filter List */
@@ -488,8 +492,6 @@ typedef struct smf_sess_s {
     char            *h_smf_id;
 
     /* Saved from H-SMF */
-    ogs_nas_qos_rules_t h_smf_authorized_qos_rules;
-    ogs_nas_qos_flow_descriptions_t h_smf_authorized_qos_flow_descriptions;
     ogs_nas_extended_protocol_configuration_options_t
         h_smf_extended_protocol_configuration_options;
     ogs_nas_5gsm_cause_t h_smf_gsm_cause;
