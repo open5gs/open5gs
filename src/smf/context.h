@@ -82,6 +82,25 @@ typedef struct smf_nsmf_pdusession_param_s {
         uint8_t ue_timezone:1;,
         uint8_t spare:6;)
     };
+
+#define QOS_RULE_CODE_FROM_PFCP_FLAGS(pfcp_flags) \
+        (pfcp_flags & OGS_PFCP_MODIFY_CREATE) ? \
+            OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE : \
+        (pfcp_flags & OGS_PFCP_MODIFY_TFT_NEW) ? \
+            OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE : \
+        (pfcp_flags & OGS_PFCP_MODIFY_TFT_ADD) ? \
+            OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS : \
+        (pfcp_flags & OGS_PFCP_MODIFY_TFT_REPLACE) ? \
+            OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_ALL_PACKET_FILTERS : \
+        (pfcp_flags & OGS_PFCP_MODIFY_TFT_DELETE) ? \
+            OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS : 0
+    uint8_t qos_rule_code;
+#define QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS(pfcp_flags) \
+        (pfcp_flags & OGS_PFCP_MODIFY_CREATE) ? \
+            OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION : \
+        (pfcp_flags & OGS_PFCP_MODIFY_QOS_MODIFY) ? \
+            OGS_NAS_MODIFY_NEW_QOS_FLOW_DESCRIPTION : 0
+    uint8_t qos_flow_description_code;
 } smf_nsmf_pdusession_param_t;
 
 /* HR flag bit */

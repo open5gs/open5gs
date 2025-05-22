@@ -699,23 +699,9 @@ void smf_5gc_n4_handle_session_modification_response(
         uint8_t qos_rule_code = 0;
         uint8_t qos_flow_description_code = 0;
 
-        if (flags & OGS_PFCP_MODIFY_TFT_NEW) {
-            qos_rule_code = OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE;
-        } else if (flags & OGS_PFCP_MODIFY_TFT_ADD) {
-            qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS;
-        } else if (flags & OGS_PFCP_MODIFY_TFT_REPLACE) {
-            qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_ALL_PACKET_FILTERS;
-        } else if (flags & OGS_PFCP_MODIFY_TFT_DELETE) {
-            qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS;
-        }
-
-        if (flags & OGS_PFCP_MODIFY_QOS_CREATE) {
-            ogs_assert_if_reached();
-        } else if (flags & OGS_PFCP_MODIFY_QOS_MODIFY) {
-            qos_flow_description_code = OGS_NAS_MODIFY_NEW_QOS_FLOW_DESCRIPTION;
-        } else if (flags & OGS_PFCP_MODIFY_QOS_DELETE) {
-            ogs_assert_if_reached();
-        }
+        qos_rule_code = QOS_RULE_CODE_FROM_PFCP_FLAGS(flags);
+        qos_flow_description_code =
+                QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS(flags);
 
         if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
             ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);

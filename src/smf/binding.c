@@ -786,6 +786,10 @@ void smf_qos_flow_binding(smf_sess_t *sess)
             /* Network Requested PDU Session Modification */
             sess->nsmf_param.request_indication =
                 OpenAPI_request_indication_NW_REQ_PDU_SES_MOD;
+            sess->nsmf_param.qos_rule_code =
+                QOS_RULE_CODE_FROM_PFCP_FLAGS(pfcp_flags);
+            sess->nsmf_param.qos_flow_description_code =
+                QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS(pfcp_flags);
 
             r = smf_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,

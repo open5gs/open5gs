@@ -528,8 +528,8 @@ void smf_sbi_send_pdu_session_created_data(
             OGS_5GC_PRE_EMPTION_DISABLED)
         Arp.preempt_cap = OpenAPI_preemption_capability_NOT_PREEMPT;
     else {
-        ogs_fatal("No Arp.preempt_cap");
-        ogs_assert_if_reached();
+        ogs_error("No Arp.preempt_cap");
+        goto end;
     }
 
     if (qos_flow->qos.arp.pre_emption_vulnerability ==
@@ -539,8 +539,8 @@ void smf_sbi_send_pdu_session_created_data(
             OGS_5GC_PRE_EMPTION_DISABLED)
         Arp.preempt_vuln = OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
     else {
-        ogs_fatal("No Arp.preempt_vuln");
-        ogs_assert_if_reached();
+        ogs_error("No Arp.preempt_vuln");
+        goto end;
     }
     Arp.priority_level = qos_flow->qos.arp.priority_level;
 
@@ -584,9 +584,9 @@ void smf_sbi_send_pdu_session_created_data(
                 ue_ipv6_interface_id, sizeof(ue_ipv6_interface_id));
         PduSessionCreatedData.ue_ipv6_interface_id = ue_ipv6_interface_id;
     } else {
-        ogs_fatal("Invalid sess->session.session_type[%d]",
+        ogs_error("Invalid sess->session.session_type[%d]",
                 sess->paa.session_type);
-        ogs_assert_if_reached();
+        goto end;
     }
 
     memset(&sendmsg, 0, sizeof(sendmsg));
@@ -626,6 +626,7 @@ void smf_sbi_send_pdu_session_created_data(
 
     ogs_free(sendmsg.http.location);
 
+end:
     if (hcnTunnelInfo.ipv4_addr)
         ogs_free(hcnTunnelInfo.ipv4_addr);
     if (hcnTunnelInfo.ipv6_addr)
