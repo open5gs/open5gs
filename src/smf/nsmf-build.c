@@ -472,6 +472,17 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
     OpenAPI_ref_to_binary_data_t n1SmInfoToUe;
     ogs_pkbuf_t *n1SmBufToUe = NULL;
 
+#if 0
+    OpenAPI_list_t *qosFlowsAddModRequestList = NULL;
+    OpenAPI_qos_flow_add_modify_request_item_t *qosFlowAddModifyRequestItem =
+        NULL;
+    OpenAPI_qos_flow_profile_t qosFlowProfile;
+    OpenAPI_arp_t Arp;
+    int enc_len = 0;
+
+    smf_bearer_t *qos_flow = NULL;
+#endif
+
     ogs_assert(sess);
 
     memset(&message, 0, sizeof(message));
@@ -490,6 +501,91 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
     case OpenAPI_request_indication_NW_REQ_PDU_SES_MOD:
         n1SmBufToUe = gsmue_build_pdu_session_modification_command(sess);
         ogs_assert(n1SmBufToUe);
+
+#if 0
+        qosFlowsAddModRequestList = OpenAPI_list_create();
+        ogs_assert(qosFlowsAddModRequestList);
+
+        int i = 0;
+        ogs_list_for_each_entry(
+                &sess->qos_flow_to_modify_list, qos_flow, to_modify_node) {
+            ogs_assert(i < OGS_MAX_NUM_OF_BEARER);
+
+            qosFlowAddModifyRequestItem =
+                ogs_calloc(1, sizeof(*qosFlowAddModifyRequestItem));
+            ogs_assert(qosFlowAddModifyRequestItem);
+
+#if 0
+            qosFlowAddModifyRequestItem->qfi = qos_flow->qfi;
+            if (qos_rule[0].DQR_bit) {
+                qosFlowAddModifyRequestItem->is_default_qos_rule_ind = true;
+                qosFlowAddModifyRequestItem->default_qos_rule_ind = true;
+            }
+#endif
+
+            enc_len = ogs_base64_encode_len(authorized_qos_rules.length);
+            qosFlowAddModifyRequestItem->qos_rules = ogs_calloc(1, enc_len);
+            ogs_assert(qosFlowAddModifyRequestItem->qos_rules);
+            ogs_base64_encode(qosFlowAddModifyRequestItem->qos_rules,
+                    authorized_qos_rules.buffer, authorized_qos_rules.length);
+
+            ogs_free(authorized_qos_rules.buffer);
+
+            enc_len = ogs_base64_encode_len(
+                    authorized_qos_flow_descriptions.length);
+            qosFlowAddModifyRequestItem->qos_flow_description =
+                ogs_calloc(1, enc_len);
+            ogs_assert(qosFlowAddModifyRequestItem->qos_flow_description);
+            ogs_base64_encode(qosFlowAddModifyRequestItem->qos_flow_description,
+                    authorized_qos_flow_descriptions.buffer,
+                    authorized_qos_flow_descriptions.length);
+
+            ogs_free(authorized_qos_flow_descriptions.buffer);
+
+            memset(&Arp, 0, sizeof(Arp));
+            if (qos_flow->qos.arp.pre_emption_capability ==
+                    OGS_5GC_PRE_EMPTION_ENABLED)
+                Arp.preempt_cap = OpenAPI_preemption_capability_MAY_PREEMPT;
+            else if (qos_flow->qos.arp.pre_emption_capability ==
+                    OGS_5GC_PRE_EMPTION_DISABLED)
+                Arp.preempt_cap = OpenAPI_preemption_capability_NOT_PREEMPT;
+            else {
+                ogs_fatal("No Arp.preempt_cap");
+                ogs_assert_if_reached();
+            }
+
+            if (qos_flow->qos.arp.pre_emption_vulnerability ==
+                    OGS_5GC_PRE_EMPTION_ENABLED)
+                Arp.preempt_vuln = OpenAPI_preemption_vulnerability_PREEMPTABLE;
+            else if (qos_flow->qos.arp.pre_emption_vulnerability ==
+                    OGS_5GC_PRE_EMPTION_DISABLED)
+                Arp.preempt_vuln =
+                    OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
+            else {
+                ogs_fatal("No Arp.preempt_vuln");
+                ogs_assert_if_reached();
+            }
+            Arp.priority_level = qos_flow->qos.arp.priority_level;
+
+            memset(&qosFlowProfile, 0, sizeof(qosFlowProfile));
+            qosFlowProfile.arp = &Arp;
+            qosFlowProfile._5qi = qos_flow->qos.index;
+
+            qosFlowAddModifyRequestItem->qos_flow_profile = &qosFlowProfile;
+
+            OpenAPI_list_add(qosFlowsAddModRequestList,
+                    qosFlowAddModifyRequestItem);
+
+            if (qosFlowsAddModRequestList->count)
+                VsmfUpdateData.qos_flows_add_mod_request_list =
+                    qosFlowsAddModRequestList;
+            else
+                OpenAPI_list_free(qosFlowsAddModRequestList);
+
+            i++;
+        }
+#endif
+
         break;
     case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
         n1SmBufToUe = gsmue_build_pdu_session_release_command(sess);

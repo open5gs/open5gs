@@ -472,7 +472,7 @@ void smf_sbi_send_pdu_session_created_data(
     ogs_assert(ogs_list_next(qos_flow) == NULL);
 
     memset(qos_rule, 0, sizeof(qos_rule));
-    encode_default_qos_rule(&qos_rule[0], qos_flow);
+    gsm_encode_default_qos_rule(&qos_rule[0], qos_flow);
 
     memset(&authorized_qos_rules, 0, sizeof(authorized_qos_rules));
     rv = ogs_nas_build_qos_rules(&authorized_qos_rules, qos_rule, 1);
@@ -481,8 +481,7 @@ void smf_sbi_send_pdu_session_created_data(
 
     /* QoS flow descriptions */
     memset(&qos_flow_description, 0, sizeof(qos_flow_description));
-    encode_default_qos_flow_description(&qos_flow_description[0],
-            qos_flow);
+    gsm_encode_default_qos_flow_description(&qos_flow_description[0], qos_flow);
 
     memset(&authorized_qos_flow_descriptions, 0,
             sizeof(authorized_qos_flow_descriptions));

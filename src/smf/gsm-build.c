@@ -100,7 +100,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
         ogs_assert_if_reached();
     } else {
         memset(qos_rule, 0, sizeof(qos_rule));
-        encode_default_qos_rule(&qos_rule[0], qos_flow);
+        gsm_encode_default_qos_rule(&qos_rule[0], qos_flow);
 
         rv = ogs_nas_build_qos_rules(authorized_qos_rules, qos_rule, 1);
         if (rv != OGS_OK) {
@@ -188,7 +188,8 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
         ogs_assert_if_reached();
     } else {
         memset(&qos_flow_description, 0, sizeof(qos_flow_description));
-        encode_default_qos_flow_description(&qos_flow_description[0], qos_flow);
+        gsm_encode_default_qos_flow_description(
+                &qos_flow_description[0], qos_flow);
 
         pdu_session_establishment_accept->presencemask |=
             OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT;
@@ -285,9 +286,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
         uint8_t qos_rule_code, uint8_t qos_flow_description_code)
 {
     ogs_pkbuf_t *pkbuf = NULL;
-    smf_bearer_t *qos_flow = NULL;
-    ogs_pfcp_pdr_t *dl_pdr = NULL;
-    int num_of_param, rv, i;
+    int rv;
 
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_pdu_session_modification_command_t
@@ -296,10 +295,6 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
 
     ogs_nas_qos_rules_t *authorized_qos_rules = NULL;
     ogs_nas_qos_flow_descriptions_t *authorized_qos_flow_descriptions = NULL;
-
-    ogs_nas_qos_rule_t qos_rule[OGS_NAS_MAX_NUM_OF_QOS_RULE];
-    ogs_nas_qos_flow_description_t
-        qos_flow_description[OGS_NAS_MAX_NUM_OF_QOS_FLOW_DESCRIPTION];
 
     authorized_qos_rules = &pdu_session_modification_command->
         authorized_qos_rules;
@@ -320,44 +315,10 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
     /* QoS rule */
     if (qos_rule_code) {
 
-        i = 0;
-        memset(qos_rule, 0, sizeof(qos_rule));
-
-        ogs_list_for_each_entry(
-                &sess->qos_flow_to_modify_list, qos_flow, to_modify_node) {
-            ogs_assert(i < OGS_MAX_NUM_OF_BEARER);
-
-            dl_pdr = qos_flow->dl_pdr;
-            ogs_assert(dl_pdr);
-
-            qos_rule[i].identifier = qos_flow->qfi; /* Use QFI in Open5GS */
-            qos_rule[i].code = qos_rule_code;
-
-            if (qos_rule_code != OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE &&
-                qos_rule_code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS)
-                encode_qos_rule_packet_filter(&qos_rule[i], qos_flow);
-
-            if (qos_rule_code != OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE &&
-                qos_rule_code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS &&
-                qos_rule_code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS) {
-                ogs_assert(dl_pdr->precedence > 0 && dl_pdr->precedence < 255);
-                /* Use PCC Rule Precedence */
-                qos_rule[i].precedence = dl_pdr->precedence;
-
-                qos_rule[i].flow.segregation = 0;
-                qos_rule[i].flow.identifier = qos_flow->qfi;
-            }
-
-            i++;
-        }
-
-        rv = ogs_nas_build_qos_rules(authorized_qos_rules, qos_rule, i);
+        rv = gsm_encode_qos_rules_for_modification(
+                authorized_qos_rules, sess, qos_rule_code);
         if (rv != OGS_OK) {
-            ogs_error("ogs_nas_build_qos_rules() failed");
-            return NULL;
-        }
-        if (!authorized_qos_rules->length) {
-            ogs_error("No length");
+            ogs_error("encoding QoS rules failed");
             return NULL;
         }
 
@@ -368,86 +329,11 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
     /* QoS flow descriptions */
     if (qos_flow_description_code) {
 
-        i = 0;
-        memset(&qos_flow_description, 0, sizeof(qos_flow_description));
-
-        ogs_list_for_each_entry(
-                &sess->qos_flow_to_modify_list, qos_flow, to_modify_node) {
-            ogs_assert(i < OGS_MAX_NUM_OF_BEARER);
-
-            qos_flow_description[i].identifier = qos_flow->qfi;
-            qos_flow_description[i].code = qos_flow_description_code;
-
-            num_of_param = 0;
-
-            if (qos_flow_description_code !=
-                    OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION) {
-                qos_flow_description[i].E_bit = 1;
-
-                qos_flow_description[i].param[num_of_param].identifier =
-                    OGS_NAX_QOS_FLOW_PARAMETER_ID_5QI;
-                qos_flow_description[i].param[num_of_param].len =
-                    sizeof(qos_flow_description[i].param[num_of_param].
-                            qos_index);
-                qos_flow_description[i].param[num_of_param].qos_index =
-                    qos_flow->qos.index;
-                num_of_param++;
-
-                if (qos_flow->qos.gbr.uplink) {
-                    qos_flow_description[i].param[num_of_param].identifier =
-                        OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_UPLINK;
-                    qos_flow_description[i].param[num_of_param].len =
-                        sizeof(qos_flow_description[i].param[num_of_param].br);
-                    ogs_nas_bitrate_from_uint64(
-                            &qos_flow_description[i].param[num_of_param].br,
-                            qos_flow->qos.gbr.uplink);
-                    num_of_param++;
-                }
-                if (qos_flow->qos.gbr.downlink) {
-                    qos_flow_description[i].param[num_of_param].identifier =
-                        OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_DOWNLINK;
-                    qos_flow_description[i].param[num_of_param].len =
-                        sizeof(qos_flow_description[i].param[num_of_param].br);
-                    ogs_nas_bitrate_from_uint64(
-                            &qos_flow_description[i].param[num_of_param].br,
-                            qos_flow->qos.gbr.downlink);
-                    num_of_param++;
-                }
-                if (qos_flow->qos.mbr.uplink) {
-                    qos_flow_description[i].param[num_of_param].identifier =
-                        OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_UPLINK;
-                    qos_flow_description[i].param[num_of_param].len =
-                        sizeof(qos_flow_description[i].param[num_of_param].br);
-                    ogs_nas_bitrate_from_uint64(
-                            &qos_flow_description[i].param[num_of_param].br,
-                            qos_flow->qos.mbr.uplink);
-                    num_of_param++;
-                }
-                if (qos_flow->qos.mbr.downlink) {
-                    qos_flow_description[i].param[num_of_param].identifier =
-                        OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_DOWNLINK;
-                    qos_flow_description[i].param[num_of_param].len =
-                        sizeof(qos_flow_description[i].param[num_of_param].br);
-                    ogs_nas_bitrate_from_uint64(
-                            &qos_flow_description[i].param[num_of_param].br,
-                            qos_flow->qos.mbr.downlink);
-                    num_of_param++;
-                }
-            }
-
-            qos_flow_description[i].num_of_parameter = num_of_param;
-
-            i++;
-        }
-
-        rv = ogs_nas_build_qos_flow_descriptions(
-                authorized_qos_flow_descriptions, qos_flow_description, i);
+        rv = gsm_encode_qos_flow_descriptions_for_modification(
+                authorized_qos_flow_descriptions,
+                sess, qos_flow_description_code);
         if (rv != OGS_OK) {
-            ogs_error("ogs_nas_build_qos_flow_descriptions() failed");
-            return NULL;
-        }
-        if (!authorized_qos_flow_descriptions->length) {
-            ogs_error("No length");
+            ogs_error("encoding QoS flow descriptions failed");
             return NULL;
         }
 
@@ -537,7 +423,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_release_reject(
     return ogs_nas_5gs_plain_encode(&message);
 }
 
-void encode_default_qos_rule(
+void gsm_encode_default_qos_rule(
         ogs_nas_qos_rule_t *qos_rule, smf_bearer_t *qos_flow)
 {
     ogs_assert(qos_rule);
@@ -584,7 +470,7 @@ void encode_default_qos_rule(
     qos_rule->flow.identifier = qos_flow->qfi;
 }
 
-void encode_default_qos_flow_description(
+void gsm_encode_default_qos_flow_description(
         ogs_nas_qos_flow_description_t *qos_flow_description,
         smf_bearer_t *qos_flow)
 {
@@ -609,7 +495,7 @@ void encode_default_qos_flow_description(
     qos_flow_description->num_of_parameter = num_of_param;
 }
 
-void encode_qos_rule_packet_filter(
+void gsm_encode_qos_rule_packet_filter(
         ogs_nas_qos_rule_t *qos_rule, smf_bearer_t *qos_flow)
 {
     int i;
@@ -642,4 +528,145 @@ void encode_qos_rule_packet_filter(
         qos_rule->num_of_packet_filter = i;
 
     }
+}
+
+/**
+ * Encode QoS rules for PDU Session Modification.
+ */
+int gsm_encode_qos_rules_for_modification(
+    ogs_nas_qos_rules_t *authorized_qos_rules,
+    smf_sess_t *sess, uint8_t qos_rule_code)
+{
+    ogs_nas_qos_rule_t qos_rule[OGS_NAS_MAX_NUM_OF_QOS_RULE];
+    smf_bearer_t *qos_flow;
+    ogs_pfcp_pdr_t *dl_pdr;
+    int i = 0, rv;
+
+    ogs_assert(qos_rule_code);
+
+    memset(qos_rule, 0, sizeof(qos_rule));
+    ogs_list_for_each_entry(
+        &sess->qos_flow_to_modify_list, qos_flow, to_modify_node) {
+        ogs_assert(i < OGS_MAX_NUM_OF_BEARER);
+        dl_pdr = qos_flow->dl_pdr;
+        ogs_assert(dl_pdr);
+
+        qos_rule[i].identifier = qos_flow->qfi;
+        qos_rule[i].code = qos_rule_code;
+
+        if (qos_rule_code != OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE &&
+            qos_rule_code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS) {
+            gsm_encode_qos_rule_packet_filter(&qos_rule[i], qos_flow);
+        }
+        if (qos_rule_code != OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE &&
+            qos_rule_code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS &&
+            qos_rule_code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS) {
+            ogs_assert(dl_pdr->precedence > 0 && dl_pdr->precedence < 255);
+            /* Use PCC Rule Precedence */
+            qos_rule[i].precedence = dl_pdr->precedence;
+            qos_rule[i].flow.segregation = 0;
+            qos_rule[i].flow.identifier  = qos_flow->qfi;
+        }
+        i++;
+    }
+
+    rv = ogs_nas_build_qos_rules(authorized_qos_rules, qos_rule, i);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_nas_build_qos_rules() failed");
+        return OGS_ERROR;
+    }
+    if (!authorized_qos_rules->length) {
+        ogs_error("No length");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
+/**
+ * Encode QoS flow descriptions for PDU Session Modification.
+ */
+int gsm_encode_qos_flow_descriptions_for_modification(
+    ogs_nas_qos_flow_descriptions_t *authorized_qos_flow_descriptions,
+    smf_sess_t *sess, uint8_t qos_flow_description_code)
+{
+    ogs_nas_qos_flow_description_t qos_flow_description[
+        OGS_NAS_MAX_NUM_OF_QOS_FLOW_DESCRIPTION];
+    smf_bearer_t *qos_flow;
+    int i = 0, num_of_param, rv;
+
+    ogs_assert(qos_flow_description_code);
+
+    memset(qos_flow_description, 0, sizeof(qos_flow_description));
+    ogs_list_for_each_entry(
+        &sess->qos_flow_to_modify_list, qos_flow, to_modify_node) {
+        ogs_assert(i < OGS_MAX_NUM_OF_BEARER);
+
+        qos_flow_description[i].identifier = qos_flow->qfi;
+        qos_flow_description[i].code = qos_flow_description_code;
+        num_of_param = 0;
+
+        if (qos_flow_description_code !=
+                OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION) {
+            qos_flow_description[i].E_bit = 1;
+            qos_flow_description[i].param[num_of_param].identifier =
+                OGS_NAX_QOS_FLOW_PARAMETER_ID_5QI;
+            qos_flow_description[i].param[num_of_param].len =
+                sizeof(qos_flow_description[i].param[num_of_param].qos_index);
+            qos_flow_description[i].param[num_of_param].qos_index =
+                qos_flow->qos.index;
+            num_of_param++;
+            if (qos_flow->qos.gbr.uplink) {
+                qos_flow_description[i].param[num_of_param].identifier =
+                    OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_UPLINK;
+                qos_flow_description[i].param[num_of_param].len =
+                    sizeof(qos_flow_description[i].param[num_of_param].br);
+                ogs_nas_bitrate_from_uint64(&qos_flow_description[i].
+                        param[num_of_param].br, qos_flow->qos.gbr.uplink);
+                num_of_param++;
+            }
+            if (qos_flow->qos.gbr.downlink) {
+                qos_flow_description[i].param[num_of_param].identifier =
+                    OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_DOWNLINK;
+                qos_flow_description[i].param[num_of_param].len =
+                    sizeof(qos_flow_description[i].param[num_of_param].br);
+                ogs_nas_bitrate_from_uint64(&qos_flow_description[i].
+                        param[num_of_param].br, qos_flow->qos.gbr.downlink);
+                num_of_param++;
+            }
+            if (qos_flow->qos.mbr.uplink) {
+                qos_flow_description[i].param[num_of_param].identifier =
+                    OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_UPLINK;
+                qos_flow_description[i].param[num_of_param].len =
+                    sizeof(qos_flow_description[i].param[num_of_param].br);
+                ogs_nas_bitrate_from_uint64(&qos_flow_description[i].
+                        param[num_of_param].br, qos_flow->qos.mbr.uplink);
+                num_of_param++;
+            }
+            if (qos_flow->qos.mbr.downlink) {
+                qos_flow_description[i].param[num_of_param].identifier =
+                    OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_DOWNLINK;
+                qos_flow_description[i].param[num_of_param].len =
+                    sizeof(qos_flow_description[i].param[num_of_param].br);
+                ogs_nas_bitrate_from_uint64(&qos_flow_description[i].
+                        param[num_of_param].br, qos_flow->qos.mbr.downlink);
+                num_of_param++;
+            }
+        }
+        qos_flow_description[i].num_of_parameter = num_of_param;
+        i++;
+    }
+
+    rv = ogs_nas_build_qos_flow_descriptions(
+        authorized_qos_flow_descriptions, qos_flow_description, i);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_nas_build_qos_flow_descriptions() failed");
+        return OGS_ERROR;
+    }
+    if (!authorized_qos_flow_descriptions->length) {
+        ogs_error("No length");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
 }

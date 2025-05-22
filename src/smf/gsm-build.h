@@ -43,13 +43,22 @@ ogs_pkbuf_t *gsm_build_pdu_session_release_reject(
 
 ogs_pkbuf_t *gsm_build_status(smf_sess_t *sess, ogs_nas_5gsm_cause_t cause);
 
-void encode_default_qos_rule(
+void gsm_encode_default_qos_rule(
         ogs_nas_qos_rule_t *qos_rule, smf_bearer_t *qos_flow);
-void encode_default_qos_flow_description(
+void gsm_encode_default_qos_flow_description(
         ogs_nas_qos_flow_description_t *qos_flow_description,
         smf_bearer_t *qos_flow);
-void encode_qos_rule_packet_filter(
+void gsm_encode_qos_rule_packet_filter(
         ogs_nas_qos_rule_t *qos_rule, smf_bearer_t *qos_flow);
+
+int gsm_encode_qos_rules_for_modification(
+    ogs_nas_qos_rules_t *authorized_qos_rules,
+    smf_sess_t *sess, uint8_t qos_rule_code);
+
+int gsm_encode_qos_flow_descriptions_for_modification(
+    ogs_nas_qos_flow_descriptions_t *authorized_qos_flow_descriptions,
+    smf_sess_t *sess,
+    uint8_t qos_flow_description_code);
 
 #ifdef __cplusplus
 }
