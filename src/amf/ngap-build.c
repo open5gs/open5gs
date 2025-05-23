@@ -1265,7 +1265,7 @@ ogs_pkbuf_t *ngap_build_ue_context_release_command(
                 &UE_NGAP_IDs->choice.aMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
     } else {
         UE_NGAP_IDs->present = NGAP_UE_NGAP_IDs_PR_uE_NGAP_ID_pair;
-        UE_NGAP_IDs->choice.uE_NGAP_ID_pair = 
+        UE_NGAP_IDs->choice.uE_NGAP_ID_pair =
             CALLOC(1, sizeof(NGAP_UE_NGAP_ID_pair_t));
         asn_uint642INTEGER(
             &UE_NGAP_IDs->choice.uE_NGAP_ID_pair->aMF_UE_NGAP_ID,
