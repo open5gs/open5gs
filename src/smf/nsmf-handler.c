@@ -1842,28 +1842,28 @@ bool smf_nsmf_handle_create_data_in_vsmf(
 
         qos_flow->qfi = qosFlowSetupItem->qfi;
 
-        OGS_NAS_CLEAR_DATA(&qos_flow->h_smf_authorized_qos_rules);
+        OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_rules);
         len = ogs_base64_decode_len(qosFlowSetupItem->qos_rules);
         ogs_assert(len);
-        qos_flow->h_smf_authorized_qos_rules.buffer = ogs_calloc(1, len);
-        ogs_assert(qos_flow->h_smf_authorized_qos_rules.buffer);
-        qos_flow->h_smf_authorized_qos_rules.length =
+        sess->h_smf_authorized_qos_rules.buffer = ogs_calloc(1, len);
+        ogs_assert(sess->h_smf_authorized_qos_rules.buffer);
+        sess->h_smf_authorized_qos_rules.length =
             ogs_base64_decode_binary(
-                    qos_flow->h_smf_authorized_qos_rules.buffer,
+                    sess->h_smf_authorized_qos_rules.buffer,
                     qosFlowSetupItem->qos_rules);
-        ogs_assert(qos_flow->h_smf_authorized_qos_rules.length);
+        ogs_assert(sess->h_smf_authorized_qos_rules.length);
 
-        OGS_NAS_CLEAR_DATA(&qos_flow->h_smf_authorized_qos_flow_descriptions);
+        OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_flow_descriptions);
         len = ogs_base64_decode_len(qosFlowSetupItem->qos_flow_description);
         ogs_assert(len);
-        qos_flow->h_smf_authorized_qos_flow_descriptions.buffer =
+        sess->h_smf_authorized_qos_flow_descriptions.buffer =
             ogs_calloc(1, len);
-        ogs_assert(qos_flow->h_smf_authorized_qos_flow_descriptions.buffer);
-        qos_flow->h_smf_authorized_qos_flow_descriptions.length =
+        ogs_assert(sess->h_smf_authorized_qos_flow_descriptions.buffer);
+        sess->h_smf_authorized_qos_flow_descriptions.length =
             ogs_base64_decode_binary(
-                    qos_flow->h_smf_authorized_qos_flow_descriptions.buffer,
+                    sess->h_smf_authorized_qos_flow_descriptions.buffer,
                     qosFlowSetupItem->qos_flow_description);
-        ogs_assert(qos_flow->h_smf_authorized_qos_flow_descriptions.length);
+        ogs_assert(sess->h_smf_authorized_qos_flow_descriptions.length);
 
         qosFlowProfile = qosFlowSetupItem->qos_flow_profile;
         ogs_assert(qosFlowProfile);
@@ -2177,7 +2177,9 @@ bool smf_nsmf_handle_update_data_in_vsmf(
     ogs_pkbuf_t *n1SmBufToUe = NULL;
     OpenAPI_ref_to_binary_data_t *n1SmInfoToUe = NULL;
 
+#if 0
     smf_bearer_t *qos_flow = NULL;
+#endif
 
     ogs_assert(stream);
     ogs_assert(message);
@@ -2210,6 +2212,27 @@ bool smf_nsmf_handle_update_data_in_vsmf(
 
     sess->nsmf_param.request_indication = VsmfUpdateData->request_indication;
 
+    n1SmInfoToUe = VsmfUpdateData->n1_sm_info_to_ue;
+    if (n1SmInfoToUe) {
+        n1SmBufToUe = ogs_sbi_find_part_by_content_id(
+                message, n1SmInfoToUe->content_id);
+
+        if (n1SmBufToUe) {
+            rv = gsmue_decode_n1_sm_info(&nas_message, n1SmBufToUe);
+            if (rv != OGS_OK) {
+                ogs_error("[%s:%d] cannot decode N1 SM Content [%s]",
+                        smf_ue->supi, sess->psi, n1SmInfoToUe->content_id);
+                ogs_log_hexdump(OGS_LOG_ERROR,
+                        n1SmBufToUe->data, n1SmBufToUe->len);
+                smf_sbi_send_vsmf_update_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                        OGS_5GSM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+                        "cannot decode N1 SM Content", smf_ue->supi, NULL);
+                return false;
+            }
+        }
+    }
+
     switch (sess->nsmf_param.request_indication) {
     case OpenAPI_request_indication_UE_REQ_PDU_SES_MOD:
     case OpenAPI_request_indication_NW_REQ_PDU_SES_MOD:
@@ -2240,33 +2263,28 @@ bool smf_nsmf_handle_update_data_in_vsmf(
             return false;
         }
 
-        qos_flow = smf_qos_flow_add(sess);
-        ogs_assert(qos_flow);
-
-        qos_flow->qfi = qosFlowAddModifyRequestItem->qfi;
-
-        OGS_NAS_CLEAR_DATA(&qos_flow->h_smf_authorized_qos_rules);
+        OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_rules);
         len = ogs_base64_decode_len(qosFlowAddModifyRequestItem->qos_rules);
         ogs_assert(len);
-        qos_flow->h_smf_authorized_qos_rules.buffer = ogs_calloc(1, len);
-        ogs_assert(qos_flow->h_smf_authorized_qos_rules.buffer);
-        qos_flow->h_smf_authorized_qos_rules.length =
+        sess->h_smf_authorized_qos_rules.buffer = ogs_calloc(1, len);
+        ogs_assert(sess->h_smf_authorized_qos_rules.buffer);
+        sess->h_smf_authorized_qos_rules.length =
             ogs_base64_decode_binary(
-                    qos_flow->h_smf_authorized_qos_rules.buffer,
+                    sess->h_smf_authorized_qos_rules.buffer,
                     qosFlowAddModifyRequestItem->qos_rules);
-        ogs_assert(qos_flow->h_smf_authorized_qos_rules.length);
+        ogs_assert(sess->h_smf_authorized_qos_rules.length);
 
-        OGS_NAS_CLEAR_DATA(&qos_flow->h_smf_authorized_qos_flow_descriptions);
+        OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_flow_descriptions);
         len = ogs_base64_decode_len(qosFlowAddModifyRequestItem->qos_flow_description);
         ogs_assert(len);
-        qos_flow->h_smf_authorized_qos_flow_descriptions.buffer =
+        sess->h_smf_authorized_qos_flow_descriptions.buffer =
             ogs_calloc(1, len);
-        ogs_assert(qos_flow->h_smf_authorized_qos_flow_descriptions.buffer);
-        qos_flow->h_smf_authorized_qos_flow_descriptions.length =
+        ogs_assert(sess->h_smf_authorized_qos_flow_descriptions.buffer);
+        sess->h_smf_authorized_qos_flow_descriptions.length =
             ogs_base64_decode_binary(
-                    qos_flow->h_smf_authorized_qos_flow_descriptions.buffer,
+                    sess->h_smf_authorized_qos_flow_descriptions.buffer,
                     qosFlowAddModifyRequestItem->qos_flow_description);
-        ogs_assert(qos_flow->h_smf_authorized_qos_flow_descriptions.length);
+        ogs_assert(sess->h_smf_authorized_qos_flow_descriptions.length);
 
         qosFlowProfile = qosFlowAddModifyRequestItem->qos_flow_profile;
         ogs_assert(qosFlowProfile);
@@ -2287,17 +2305,23 @@ bool smf_nsmf_handle_update_data_in_vsmf(
             return false;
         }
 
-        sess->session.qos.index = qosFlowProfile->_5qi;
+#if 0
+        qos_flow = smf_vcn_tunnel_add(sess);
+        ogs_assert(qos_flow);
+
+        qos_flow->qfi = qosFlowAddModifyRequestItem->qfi;
+
+        qos_flow->qos.index = qosFlowProfile->_5qi;
         if (qosFlowProfile->arp) {
-            sess->session.qos.arp.priority_level =
+            qos_flow->qos.arp.priority_level =
                     qosFlowProfile->arp->priority_level;
             if (qosFlowProfile->arp->preempt_cap ==
                 OpenAPI_preemption_capability_NOT_PREEMPT)
-                sess->session.qos.arp.pre_emption_capability =
+                qos_flow->qos.arp.pre_emption_capability =
                     OGS_5GC_PRE_EMPTION_DISABLED;
             else if (qosFlowProfile->arp->preempt_cap ==
                 OpenAPI_preemption_capability_MAY_PREEMPT)
-                sess->session.qos.arp.pre_emption_capability =
+                qos_flow->qos.arp.pre_emption_capability =
                     OGS_5GC_PRE_EMPTION_ENABLED;
             else {
                 ogs_error("[%s:%d] Invalid preempt_cap [%d]",
@@ -2312,11 +2336,11 @@ bool smf_nsmf_handle_update_data_in_vsmf(
 
             if (qosFlowProfile->arp->preempt_vuln ==
                 OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE)
-                sess->session.qos.arp.pre_emption_vulnerability =
+                qos_flow->qos.arp.pre_emption_vulnerability =
                     OGS_5GC_PRE_EMPTION_DISABLED;
             else if (qosFlowProfile->arp->preempt_vuln ==
                 OpenAPI_preemption_vulnerability_PREEMPTABLE)
-                sess->session.qos.arp.pre_emption_vulnerability =
+                qos_flow->qos.arp.pre_emption_vulnerability =
                     OGS_5GC_PRE_EMPTION_ENABLED;
             else {
                 ogs_error("[%s:%d] Invalid preempt_vuln [%d]",
@@ -2329,9 +2353,14 @@ bool smf_nsmf_handle_update_data_in_vsmf(
                 return false;
             }
         }
+#endif
 
-        memcpy(&qos_flow->qos, &sess->session.qos, sizeof(ogs_qos_t));
+#if 0
+        ogs_list_init(&sess->qos_flow_to_modify_list);
+        ogs_list_add(&sess->qos_flow_to_modify_list, &qos_flow->to_modify_node);
+#endif
         break;
+
     case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
     case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
         break;
@@ -2343,27 +2372,6 @@ bool smf_nsmf_handle_update_data_in_vsmf(
                 OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
                 "Unknown requestIndication", smf_ue->supi, NULL);
         return false;
-    }
-
-    n1SmInfoToUe = VsmfUpdateData->n1_sm_info_to_ue;
-    if (n1SmInfoToUe) {
-        n1SmBufToUe = ogs_sbi_find_part_by_content_id(
-                message, n1SmInfoToUe->content_id);
-
-        if (n1SmBufToUe) {
-            rv = gsmue_decode_n1_sm_info(&nas_message, n1SmBufToUe);
-            if (rv != OGS_OK) {
-                ogs_error("[%s:%d] cannot decode N1 SM Content [%s]",
-                        smf_ue->supi, sess->psi, n1SmInfoToUe->content_id);
-                ogs_log_hexdump(OGS_LOG_ERROR,
-                        n1SmBufToUe->data, n1SmBufToUe->len);
-                smf_sbi_send_vsmf_update_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
-                        OGS_5GSM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
-                        "cannot decode N1 SM Content", smf_ue->supi, NULL);
-                return false;
-            }
-        }
     }
 
     return true;

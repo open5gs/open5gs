@@ -91,10 +91,10 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     selected_pdu_session_type->value = sess->session.session_type;
 
     if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
-        ogs_assert(qos_flow->h_smf_authorized_qos_rules.buffer);
-        ogs_assert(qos_flow->h_smf_authorized_qos_rules.length);
+        ogs_assert(sess->h_smf_authorized_qos_rules.buffer);
+        ogs_assert(sess->h_smf_authorized_qos_rules.length);
         OGS_NAS_STORE_DATA(
-                authorized_qos_rules, &qos_flow->h_smf_authorized_qos_rules);
+                authorized_qos_rules, &sess->h_smf_authorized_qos_rules);
     } else if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
         ogs_fatal("This should not be invoked from H-SMF during HR-Roaming");
         ogs_assert_if_reached();
@@ -175,13 +175,13 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
 
     /* QoS flow descriptions */
     if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
-        if (qos_flow->h_smf_authorized_qos_flow_descriptions.buffer &&
-            qos_flow->h_smf_authorized_qos_flow_descriptions.length) {
+        if (sess->h_smf_authorized_qos_flow_descriptions.buffer &&
+            sess->h_smf_authorized_qos_flow_descriptions.length) {
             pdu_session_establishment_accept->presencemask |=
                 OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT;
             OGS_NAS_STORE_DATA(
                     authorized_qos_flow_descriptions,
-                    &qos_flow->h_smf_authorized_qos_flow_descriptions);
+                    &sess->h_smf_authorized_qos_flow_descriptions);
         }
     } else if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
         ogs_fatal("This should not be invoked from H-SMF during HR-Roaming");
@@ -251,9 +251,8 @@ cleanup:
     if (extended_protocol_configuration_options->buffer)
         ogs_free(extended_protocol_configuration_options->buffer);
 
-    OGS_NAS_CLEAR_DATA(&qos_flow->h_smf_authorized_qos_rules);
-    OGS_NAS_CLEAR_DATA(&qos_flow->h_smf_authorized_qos_flow_descriptions);
-
+    OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_rules);
+    OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_flow_descriptions);
     OGS_NAS_CLEAR_DATA(&sess->h_smf_extended_protocol_configuration_options);
 
     return pkbuf;
@@ -319,7 +318,17 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
     message.gsm.h.message_type = OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND;
 
     /* QoS rule */
-    if (qos_rule_code) {
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        ogs_assert(sess->h_smf_authorized_qos_rules.buffer);
+        ogs_assert(sess->h_smf_authorized_qos_rules.length);
+        OGS_NAS_STORE_DATA(
+                authorized_qos_rules, &sess->h_smf_authorized_qos_rules);
+        pdu_session_modification_command->presencemask |=
+            OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_AUTHORIZED_QOS_RULES_PRESENT;
+    } else if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
+        ogs_fatal("This should not be invoked from H-SMF during HR-Roaming");
+        ogs_assert_if_reached();
+    } else if (qos_rule_code) {
 
         i = 0;
         memset(qos_rule, 0, sizeof(qos_rule));
@@ -346,7 +355,19 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
     }
 
     /* QoS flow descriptions */
-    if (qos_flow_description_code) {
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        if (sess->h_smf_authorized_qos_flow_descriptions.buffer &&
+            sess->h_smf_authorized_qos_flow_descriptions.length) {
+            OGS_NAS_STORE_DATA(
+                    authorized_qos_flow_descriptions,
+                    &sess->h_smf_authorized_qos_flow_descriptions);
+            pdu_session_modification_command->presencemask |=
+                OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT;
+        }
+    } else if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
+        ogs_fatal("This should not be invoked from H-SMF during HR-Roaming");
+        ogs_assert_if_reached();
+    } else if (qos_flow_description_code) {
 
         i = 0;
         memset(&qos_flow_description, 0, sizeof(qos_flow_description));
@@ -379,14 +400,14 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
     pkbuf = ogs_nas_5gs_plain_encode(&message);
     ogs_assert(pkbuf);
 
-    if (pdu_session_modification_command->presencemask &
-        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_AUTHORIZED_QOS_RULES_PRESENT) {
+cleanup:
+    if (authorized_qos_rules->buffer)
         ogs_free(authorized_qos_rules->buffer);
-    }
-    if (pdu_session_modification_command->presencemask &
-        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT) {
+    if (authorized_qos_flow_descriptions->buffer)
         ogs_free(authorized_qos_flow_descriptions->buffer);
-    }
+
+    OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_rules);
+    OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_flow_descriptions);
 
     return pkbuf;
 }
