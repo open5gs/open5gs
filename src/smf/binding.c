@@ -778,30 +778,11 @@ void smf_qos_flow_binding(smf_sess_t *sess)
     }
 
     if (ogs_list_count(&sess->qos_flow_to_modify_list)) {
-        if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
-            int r;
-
-            memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
-
-            /* Network Requested PDU Session Modification */
-            sess->nsmf_param.request_indication =
-                OpenAPI_request_indication_NW_REQ_PDU_SES_MOD;
-            sess->nsmf_param.qos_rule_code =
-                QOS_RULE_CODE_FROM_PFCP_FLAGS(pfcp_flags);
-            sess->nsmf_param.qos_flow_description_code =
-                QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS(pfcp_flags);
-
-            r = smf_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
-                    smf_nsmf_pdusession_build_vsmf_update_data,
-                    sess, NULL, 0, NULL);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-
-            pfcp_flags |= OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING;
-        }
         ogs_assert(OGS_OK ==
                 smf_5gc_pfcp_send_qos_flow_list_modification_request(
-                    sess, NULL, pfcp_flags, 0));
+                    sess, NULL,
+                    HOME_ROUTED_ROAMING_IN_HSMF(sess) ?
+                        OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|pfcp_flags :
+                        pfcp_flags, 0));
     }
 }

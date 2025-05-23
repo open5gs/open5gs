@@ -2177,10 +2177,6 @@ bool smf_nsmf_handle_update_data_in_vsmf(
     ogs_pkbuf_t *n1SmBufToUe = NULL;
     OpenAPI_ref_to_binary_data_t *n1SmInfoToUe = NULL;
 
-#if 0
-    smf_bearer_t *qos_flow = NULL;
-#endif
-
     ogs_assert(stream);
     ogs_assert(message);
     ogs_assert(sess);
@@ -2305,23 +2301,18 @@ bool smf_nsmf_handle_update_data_in_vsmf(
             return false;
         }
 
-#if 0
-        qos_flow = smf_vcn_tunnel_add(sess);
-        ogs_assert(qos_flow);
-
-        qos_flow->qfi = qosFlowAddModifyRequestItem->qfi;
-
-        qos_flow->qos.index = qosFlowProfile->_5qi;
+        sess->h_smf_qfi = qosFlowAddModifyRequestItem->qfi;
+        sess->h_smf_qos.index = qosFlowProfile->_5qi;
         if (qosFlowProfile->arp) {
-            qos_flow->qos.arp.priority_level =
+            sess->h_smf_qos.arp.priority_level =
                     qosFlowProfile->arp->priority_level;
             if (qosFlowProfile->arp->preempt_cap ==
                 OpenAPI_preemption_capability_NOT_PREEMPT)
-                qos_flow->qos.arp.pre_emption_capability =
+                sess->h_smf_qos.arp.pre_emption_capability =
                     OGS_5GC_PRE_EMPTION_DISABLED;
             else if (qosFlowProfile->arp->preempt_cap ==
                 OpenAPI_preemption_capability_MAY_PREEMPT)
-                qos_flow->qos.arp.pre_emption_capability =
+                sess->h_smf_qos.arp.pre_emption_capability =
                     OGS_5GC_PRE_EMPTION_ENABLED;
             else {
                 ogs_error("[%s:%d] Invalid preempt_cap [%d]",
@@ -2336,11 +2327,11 @@ bool smf_nsmf_handle_update_data_in_vsmf(
 
             if (qosFlowProfile->arp->preempt_vuln ==
                 OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE)
-                qos_flow->qos.arp.pre_emption_vulnerability =
+                sess->h_smf_qos.arp.pre_emption_vulnerability =
                     OGS_5GC_PRE_EMPTION_DISABLED;
             else if (qosFlowProfile->arp->preempt_vuln ==
                 OpenAPI_preemption_vulnerability_PREEMPTABLE)
-                qos_flow->qos.arp.pre_emption_vulnerability =
+                sess->h_smf_qos.arp.pre_emption_vulnerability =
                     OGS_5GC_PRE_EMPTION_ENABLED;
             else {
                 ogs_error("[%s:%d] Invalid preempt_vuln [%d]",
@@ -2353,12 +2344,6 @@ bool smf_nsmf_handle_update_data_in_vsmf(
                 return false;
             }
         }
-#endif
-
-#if 0
-        ogs_list_init(&sess->qos_flow_to_modify_list);
-        ogs_list_add(&sess->qos_flow_to_modify_list, &qos_flow->to_modify_node);
-#endif
         break;
 
     case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:

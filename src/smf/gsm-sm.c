@@ -1167,7 +1167,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
                     if (rc == true) {
 #if 0
-                        bool qos_presence = false;
                         smf_n1_n2_message_transfer_param_t param;
 #endif
 
@@ -1181,12 +1180,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 #else
                             sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
 
-                            if (sess->h_smf_authorized_qos_flow_descriptions.
-                                    buffer &&
-                                sess->h_smf_authorized_qos_flow_descriptions.
-                                    length)
-                                qos_presence = true;
-
                             memset(&param, 0, sizeof(param));
                             param.state =
                                 SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
@@ -1196,7 +1189,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             ogs_assert(param.n1smbuf);
                             param.n2smbuf =
                                 ngap_build_pdu_session_resource_modify_request_transfer(
-                                        sess, qos_presence);
+                                        sess, 0);
                             ogs_assert(param.n2smbuf);
 
                             smf_namf_comm_send_n1_n2_message_transfer(

@@ -257,7 +257,7 @@ void smf_5gc_n4_handle_session_modification_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_modification_response_t *rsp)
 {
-    int status = 0;
+    int r, status = 0;
     uint64_t flags = 0;
     int trigger = 0;
     ogs_sbi_stream_t *stream = NULL;
@@ -437,7 +437,6 @@ void smf_5gc_n4_handle_session_modification_response(
                 ogs_assert_if_reached();
             }
         } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
-            int r;
             ogs_assert(trigger);
 
             if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED) {
@@ -469,6 +468,23 @@ void smf_5gc_n4_handle_session_modification_response(
             }
         } else if (flags & OGS_PFCP_MODIFY_CREATE) {
             if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
+                memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
+
+                /* Network Requested PDU Session Modification */
+                sess->nsmf_param.request_indication =
+                    OpenAPI_request_indication_NW_REQ_PDU_SES_MOD;
+                sess->nsmf_param.qos_rule_code =
+                    QOS_RULE_CODE_FROM_PFCP_FLAGS(flags);
+                sess->nsmf_param.qos_flow_description_code =
+                    QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS(flags);
+
+                r = smf_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                        smf_nsmf_pdusession_build_vsmf_update_data,
+                        sess, NULL, 0, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+
             } else {
                 ogs_fatal("Invalid PDR-Create flags [0x%llx]",
                         (long long)flags);
@@ -504,7 +520,7 @@ void smf_5gc_n4_handle_session_modification_response(
                 smf_sbi_send_sm_context_updated_data_up_cnx_state(
                         sess, stream, OpenAPI_up_cnx_state_ACTIVATED);
             } else {
-                int r = smf_sbi_discover_and_send(
+                r = smf_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
                         smf_nudm_uecm_build_registration,
                         sess, stream, SMF_UECM_STATE_REGISTERED, NULL);

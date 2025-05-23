@@ -493,6 +493,8 @@ typedef struct smf_sess_s {
     ogs_nas_extended_protocol_configuration_options_t
         h_smf_extended_protocol_configuration_options;
     ogs_nas_5gsm_cause_t h_smf_gsm_cause;
+    uint8_t h_smf_qfi;
+    ogs_qos_t h_smf_qos;
 
 #define HOME_ROUTED_ROAMING_IN_HSMF(__sESS) \
     ((__sESS) && (__sESS)->vsmf_pdu_session_uri)
