@@ -2177,6 +2177,8 @@ bool smf_nsmf_handle_update_data_in_vsmf(
     ogs_pkbuf_t *n1SmBufToUe = NULL;
     OpenAPI_ref_to_binary_data_t *n1SmInfoToUe = NULL;
 
+    smf_n1_n2_message_transfer_param_t param;
+
     ogs_assert(stream);
     ogs_assert(message);
     ogs_assert(sess);
@@ -2360,6 +2362,19 @@ bool smf_nsmf_handle_update_data_in_vsmf(
                 sess->h_smf_qos.gbr.uplink =
                     ogs_sbi_bitrate_from_string(gbrQosFlowInfo->gua_fbr_ul);
         }
+
+        sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+
+        memset(&param, 0, sizeof(param));
+        param.state = SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
+        param.n1smbuf = gsm_build_pdu_session_modification_command(sess, 0, 0);
+        ogs_assert(param.n1smbuf);
+        param.n2smbuf =
+            ngap_build_pdu_session_resource_modify_request_transfer(sess,
+                    qosFlowProfile->gbr_qos_flow_info ? true : false);
+        ogs_assert(param.n2smbuf);
+
+        smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
         break;
 
     case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:

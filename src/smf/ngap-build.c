@@ -329,6 +329,9 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
 
     /* Home-Routed V-SMF: single QoS flow */
     if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        ogs_assert(sess->h_smf_qfi);
+        ogs_assert(sess->h_smf_qos.index);
+
         QosFlowAddOrModifyRequestItem =
             CALLOC(1, sizeof(*QosFlowAddOrModifyRequestItem));
         ogs_assert(QosFlowAddOrModifyRequestItem);
