@@ -509,8 +509,9 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
 
             int rv, enc_len = 0;
 
-            OpenAPI_qos_flow_profile_t qosFlowProfile;
-            OpenAPI_arp_t Arp;
+            OpenAPI_qos_flow_profile_t *qosFlowProfile = NULL;
+            OpenAPI_arp_t *Arp = NULL;
+            OpenAPI_gbr_qos_flow_information_t *gbrQosFlowInfo = NULL;
 
             ogs_assert(i < OGS_MAX_NUM_OF_BEARER);
 
@@ -584,36 +585,56 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
                 ogs_free(authorized_qos_flow_descriptions.buffer);
             }
 
-            memset(&Arp, 0, sizeof(Arp));
+            Arp = ogs_calloc(1, sizeof(*Arp));
+            ogs_assert(Arp);
             if (qos_flow->qos.arp.pre_emption_capability ==
                     OGS_5GC_PRE_EMPTION_ENABLED)
-                Arp.preempt_cap = OpenAPI_preemption_capability_MAY_PREEMPT;
+                Arp->preempt_cap = OpenAPI_preemption_capability_MAY_PREEMPT;
             else if (qos_flow->qos.arp.pre_emption_capability ==
                     OGS_5GC_PRE_EMPTION_DISABLED)
-                Arp.preempt_cap = OpenAPI_preemption_capability_NOT_PREEMPT;
+                Arp->preempt_cap = OpenAPI_preemption_capability_NOT_PREEMPT;
             else {
-                ogs_error("No Arp.preempt_cap");
+                ogs_error("No Arp->preempt_cap");
                 goto end;
             }
 
             if (qos_flow->qos.arp.pre_emption_vulnerability ==
                     OGS_5GC_PRE_EMPTION_ENABLED)
-                Arp.preempt_vuln = OpenAPI_preemption_vulnerability_PREEMPTABLE;
+                Arp->preempt_vuln = OpenAPI_preemption_vulnerability_PREEMPTABLE;
             else if (qos_flow->qos.arp.pre_emption_vulnerability ==
                     OGS_5GC_PRE_EMPTION_DISABLED)
-                Arp.preempt_vuln =
+                Arp->preempt_vuln =
                     OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
             else {
-                ogs_error("No Arp.preempt_vuln");
+                ogs_error("No Arp->preempt_vuln");
                 goto end;
             }
-            Arp.priority_level = qos_flow->qos.arp.priority_level;
+            Arp->priority_level = qos_flow->qos.arp.priority_level;
 
-            memset(&qosFlowProfile, 0, sizeof(qosFlowProfile));
-            qosFlowProfile.arp = &Arp;
-            qosFlowProfile._5qi = qos_flow->qos.index;
+            gbrQosFlowInfo = ogs_calloc(1, sizeof(*gbrQosFlowInfo));
+            ogs_assert(gbrQosFlowInfo);
 
-            qosFlowAddModifyRequestItem->qos_flow_profile = &qosFlowProfile;
+            if (qos_flow->qos.mbr.uplink)
+                gbrQosFlowInfo->max_fbr_ul = ogs_sbi_bitrate_to_string(
+                        qos_flow->qos.mbr.uplink, OGS_SBI_BITRATE_BPS);
+            if (qos_flow->qos.mbr.downlink)
+                gbrQosFlowInfo->max_fbr_dl = ogs_sbi_bitrate_to_string(
+                        qos_flow->qos.mbr.downlink, OGS_SBI_BITRATE_BPS);
+
+            if (qos_flow->qos.gbr.uplink)
+                gbrQosFlowInfo->gua_fbr_ul = ogs_sbi_bitrate_to_string(
+                        qos_flow->qos.gbr.uplink, OGS_SBI_BITRATE_BPS);
+            if (qos_flow->qos.gbr.downlink)
+                gbrQosFlowInfo->gua_fbr_dl = ogs_sbi_bitrate_to_string(
+                        qos_flow->qos.gbr.downlink, OGS_SBI_BITRATE_BPS);
+
+            qosFlowProfile = ogs_calloc(1, sizeof(*qosFlowProfile));
+            ogs_assert(qosFlowProfile);
+            qosFlowProfile->arp = Arp;
+            qosFlowProfile->gbr_qos_flow_info = gbrQosFlowInfo;
+            qosFlowProfile->_5qi = qos_flow->qos.index;
+
+            qosFlowAddModifyRequestItem->qos_flow_profile = qosFlowProfile;
 
             OpenAPI_list_add(qosFlowsAddModRequestList,
                     qosFlowAddModifyRequestItem);
@@ -665,6 +686,30 @@ end:
                 ogs_free(qosFlowAddModifyRequestItem->qos_rules);
             if (qosFlowAddModifyRequestItem->qos_flow_description)
                 ogs_free(qosFlowAddModifyRequestItem->qos_flow_description);
+            if (qosFlowAddModifyRequestItem->qos_flow_profile) {
+                OpenAPI_arp_t *Arp =
+                    qosFlowAddModifyRequestItem->qos_flow_profile->arp;
+                OpenAPI_gbr_qos_flow_information_t *gbrQosFlowInfo =
+                    qosFlowAddModifyRequestItem->
+                        qos_flow_profile->gbr_qos_flow_info;
+
+                if (Arp)
+                    ogs_free(Arp);
+                if (gbrQosFlowInfo) {
+                    if (gbrQosFlowInfo->max_fbr_dl)
+                        ogs_free(gbrQosFlowInfo->max_fbr_dl);
+                    if (gbrQosFlowInfo->max_fbr_ul)
+                        ogs_free(gbrQosFlowInfo->max_fbr_ul);
+                    if (gbrQosFlowInfo->gua_fbr_dl)
+                        ogs_free(gbrQosFlowInfo->gua_fbr_dl);
+                    if (gbrQosFlowInfo->gua_fbr_ul)
+                        ogs_free(gbrQosFlowInfo->gua_fbr_ul);
+
+                    ogs_free(gbrQosFlowInfo);
+                }
+
+                ogs_free(qosFlowAddModifyRequestItem->qos_flow_profile);
+            }
             ogs_free(qosFlowAddModifyRequestItem);
         }
     }

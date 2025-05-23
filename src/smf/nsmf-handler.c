@@ -2344,6 +2344,22 @@ bool smf_nsmf_handle_update_data_in_vsmf(
                 return false;
             }
         }
+        if (qosFlowProfile->gbr_qos_flow_info) {
+            OpenAPI_gbr_qos_flow_information_t *gbrQosFlowInfo =
+                    qosFlowProfile->gbr_qos_flow_info;
+            if (gbrQosFlowInfo->max_fbr_dl)
+                sess->h_smf_qos.mbr.downlink =
+                    ogs_sbi_bitrate_from_string(gbrQosFlowInfo->max_fbr_dl);
+            if (gbrQosFlowInfo->max_fbr_ul)
+                sess->h_smf_qos.mbr.uplink =
+                    ogs_sbi_bitrate_from_string(gbrQosFlowInfo->max_fbr_ul);
+            if (gbrQosFlowInfo->gua_fbr_dl)
+                sess->h_smf_qos.gbr.downlink =
+                    ogs_sbi_bitrate_from_string(gbrQosFlowInfo->gua_fbr_dl);
+            if (gbrQosFlowInfo->gua_fbr_ul)
+                sess->h_smf_qos.gbr.uplink =
+                    ogs_sbi_bitrate_from_string(gbrQosFlowInfo->gua_fbr_ul);
+        }
         break;
 
     case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
