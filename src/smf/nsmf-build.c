@@ -583,6 +583,22 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
                         authorized_qos_flow_descriptions.length);
 
                 ogs_free(authorized_qos_flow_descriptions.buffer);
+
+                if (qos_flow->qos.mbr.downlink && qos_flow->qos.mbr.uplink &&
+                    qos_flow->qos.gbr.downlink && qos_flow->qos.gbr.uplink) {
+                    gbrQosFlowInfo = ogs_calloc(1, sizeof(*gbrQosFlowInfo));
+                    ogs_assert(gbrQosFlowInfo);
+
+                    gbrQosFlowInfo->max_fbr_ul = ogs_sbi_bitrate_to_string(
+                            qos_flow->qos.mbr.uplink, OGS_SBI_BITRATE_BPS);
+                    gbrQosFlowInfo->max_fbr_dl = ogs_sbi_bitrate_to_string(
+                            qos_flow->qos.mbr.downlink, OGS_SBI_BITRATE_BPS);
+
+                    gbrQosFlowInfo->gua_fbr_ul = ogs_sbi_bitrate_to_string(
+                            qos_flow->qos.gbr.uplink, OGS_SBI_BITRATE_BPS);
+                    gbrQosFlowInfo->gua_fbr_dl = ogs_sbi_bitrate_to_string(
+                            qos_flow->qos.gbr.downlink, OGS_SBI_BITRATE_BPS);
+                }
             }
 
             Arp = ogs_calloc(1, sizeof(*Arp));
@@ -600,7 +616,8 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
 
             if (qos_flow->qos.arp.pre_emption_vulnerability ==
                     OGS_5GC_PRE_EMPTION_ENABLED)
-                Arp->preempt_vuln = OpenAPI_preemption_vulnerability_PREEMPTABLE;
+                Arp->preempt_vuln =
+                    OpenAPI_preemption_vulnerability_PREEMPTABLE;
             else if (qos_flow->qos.arp.pre_emption_vulnerability ==
                     OGS_5GC_PRE_EMPTION_DISABLED)
                 Arp->preempt_vuln =
@@ -611,28 +628,11 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
             }
             Arp->priority_level = qos_flow->qos.arp.priority_level;
 
-            gbrQosFlowInfo = ogs_calloc(1, sizeof(*gbrQosFlowInfo));
-            ogs_assert(gbrQosFlowInfo);
-
-            if (qos_flow->qos.mbr.uplink)
-                gbrQosFlowInfo->max_fbr_ul = ogs_sbi_bitrate_to_string(
-                        qos_flow->qos.mbr.uplink, OGS_SBI_BITRATE_BPS);
-            if (qos_flow->qos.mbr.downlink)
-                gbrQosFlowInfo->max_fbr_dl = ogs_sbi_bitrate_to_string(
-                        qos_flow->qos.mbr.downlink, OGS_SBI_BITRATE_BPS);
-
-            if (qos_flow->qos.gbr.uplink)
-                gbrQosFlowInfo->gua_fbr_ul = ogs_sbi_bitrate_to_string(
-                        qos_flow->qos.gbr.uplink, OGS_SBI_BITRATE_BPS);
-            if (qos_flow->qos.gbr.downlink)
-                gbrQosFlowInfo->gua_fbr_dl = ogs_sbi_bitrate_to_string(
-                        qos_flow->qos.gbr.downlink, OGS_SBI_BITRATE_BPS);
-
             qosFlowProfile = ogs_calloc(1, sizeof(*qosFlowProfile));
             ogs_assert(qosFlowProfile);
             qosFlowProfile->arp = Arp;
-            qosFlowProfile->gbr_qos_flow_info = gbrQosFlowInfo;
             qosFlowProfile->_5qi = qos_flow->qos.index;
+            qosFlowProfile->gbr_qos_flow_info = gbrQosFlowInfo;
 
             qosFlowAddModifyRequestItem->qos_flow_profile = qosFlowProfile;
 
