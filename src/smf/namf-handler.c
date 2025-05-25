@@ -66,7 +66,9 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
         if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
             if (N1N2MessageTransferRspData->cause ==
                 OpenAPI_n1_n2_message_transfer_cause_N1_N2_TRANSFER_INITIATED) {
-                /* Nothing */
+                if (stream)
+                    sess->n1_n2_modified_stream_id =
+                        ogs_sbi_id_from_stream(stream);
             } else {
                 ogs_error("Not implemented [cause:%d]",
                         N1N2MessageTransferRspData->cause);

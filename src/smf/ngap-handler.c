@@ -309,6 +309,21 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
 
     rv = OGS_ERROR;
 
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        /* Home Routed Roaming */
+        rv = OGS_OK;
+
+        if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING) {
+            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                    sess, stream, OpenAPI_up_cnx_state_ACTIVATED);
+        } else {
+            ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+        }
+
+        goto cleanup;
+    }
+
     qosFlowAddOrModifyResponseList = message.qosFlowAddOrModifyResponseList;
     if (!qosFlowAddOrModifyResponseList) {
         /* QosFlow Release */

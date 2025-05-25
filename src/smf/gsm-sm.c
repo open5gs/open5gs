@@ -1169,11 +1169,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         switch (sess->nsmf_param.request_indication) {
                         case OpenAPI_request_indication_UE_REQ_PDU_SES_MOD:
                         case OpenAPI_request_indication_NW_REQ_PDU_SES_MOD:
-#if 0
-                            ogs_assert(true ==
-                                    ogs_sbi_send_http_status_no_content(stream));
-
-#endif
                             break;
                         case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
                         case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
@@ -1348,6 +1343,22 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
             ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+            if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+                ogs_sbi_stream_t *n1_n2_modified_stream = NULL;
+                if (sess->n1_n2_modified_stream_id >= OGS_MIN_POOL_ID &&
+                    sess->n1_n2_modified_stream_id <= OGS_MAX_POOL_ID)
+                    n1_n2_modified_stream =
+                        ogs_sbi_stream_find_by_id(
+                                sess->n1_n2_modified_stream_id);
+
+                if (n1_n2_modified_stream)
+                    ogs_assert(true ==
+                            ogs_sbi_send_http_status_no_content(
+                                n1_n2_modified_stream));
+                else
+                    ogs_error("No N1-N2 Released Stream [%d]",
+                                sess->n1_n2_modified_stream_id);
+            }
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
