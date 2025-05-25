@@ -1562,7 +1562,7 @@ bool smf_nsmf_handle_create_data_in_hsmf(
     return true;
 }
 
-bool smf_nsmf_handle_create_data_in_vsmf(
+bool smf_nsmf_handle_created_data_in_vsmf(
     smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
 {
     int rv;

@@ -1266,7 +1266,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     &smf_gsm_state_wait_pfcp_deletion);
                         break;
                     DEFAULT
-                        if (smf_nsmf_handle_create_data_in_vsmf(
+                        if (smf_nsmf_handle_created_data_in_vsmf(
                                     sess, sbi_message) == false) {
                             ogs_error("[%s:%d] create_pdu_session "
                                     "failed() [%d]",
@@ -1288,10 +1288,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 SWITCH(sbi_message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
                     ogs_fatal("OK");
-#if 0
-                    rc = smf_nsmf_handle_update_data_in_vsmf(
-                            sess, stream, sbi_message);
-#endif
                     break;
                 DEFAULT
                     ogs_error("Invalid resource name [%s]",
@@ -1351,11 +1347,12 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         ogs_sbi_stream_find_by_id(
                                 sess->n1_n2_modified_stream_id);
 
-                if (n1_n2_modified_stream)
+                if (n1_n2_modified_stream) {
+                    ogs_fatal("TODO vsmf_updated_data");
                     ogs_assert(true ==
                             ogs_sbi_send_http_status_no_content(
                                 n1_n2_modified_stream));
-                else
+                } else
                     ogs_error("No N1-N2 Released Stream [%d]",
                                 sess->n1_n2_modified_stream_id);
             }
