@@ -398,9 +398,8 @@ void smf_sbi_send_pdu_session_created_data(
     OpenAPI_ambr_t sessionAmbr;
     OpenAPI_list_t *qosFlowsSetupList = NULL;
     OpenAPI_qos_flow_setup_item_t *qosFlowSetupItem = NULL;
-    OpenAPI_qos_flow_profile_t qosFlowProfile;
-    OpenAPI_arp_t Arp;
-    OpenAPI_lnode_t *node = NULL;
+    OpenAPI_qos_flow_profile_t *qosFlowProfile = NULL;
+    OpenAPI_arp_t *Arp = NULL;
 
     ogs_nas_qos_rule_t qos_rule[OGS_NAS_MAX_NUM_OF_QOS_RULE];
     ogs_nas_qos_rules_t authorized_qos_rules;
@@ -472,7 +471,7 @@ void smf_sbi_send_pdu_session_created_data(
     ogs_assert(ogs_list_next(qos_flow) == NULL);
 
     memset(qos_rule, 0, sizeof(qos_rule));
-    encode_default_qos_rule(&qos_rule[0], qos_flow);
+    gsm_encode_default_qos_rule(&qos_rule[0], qos_flow);
 
     memset(&authorized_qos_rules, 0, sizeof(authorized_qos_rules));
     rv = ogs_nas_build_qos_rules(&authorized_qos_rules, qos_rule, 1);
@@ -481,8 +480,7 @@ void smf_sbi_send_pdu_session_created_data(
 
     /* QoS flow descriptions */
     memset(&qos_flow_description, 0, sizeof(qos_flow_description));
-    encode_default_qos_flow_description(&qos_flow_description[0],
-            qos_flow);
+    gsm_encode_default_qos_flow_description(&qos_flow_description[0], qos_flow);
 
     memset(&authorized_qos_flow_descriptions, 0,
             sizeof(authorized_qos_flow_descriptions));
@@ -521,35 +519,37 @@ void smf_sbi_send_pdu_session_created_data(
 
     ogs_free(authorized_qos_flow_descriptions.buffer);
 
-    memset(&Arp, 0, sizeof(Arp));
+    Arp = ogs_calloc(1, sizeof(*Arp));
+    ogs_assert(Arp);
     if (qos_flow->qos.arp.pre_emption_capability ==
             OGS_5GC_PRE_EMPTION_ENABLED)
-        Arp.preempt_cap = OpenAPI_preemption_capability_MAY_PREEMPT;
+        Arp->preempt_cap = OpenAPI_preemption_capability_MAY_PREEMPT;
     else if (qos_flow->qos.arp.pre_emption_capability ==
             OGS_5GC_PRE_EMPTION_DISABLED)
-        Arp.preempt_cap = OpenAPI_preemption_capability_NOT_PREEMPT;
+        Arp->preempt_cap = OpenAPI_preemption_capability_NOT_PREEMPT;
     else {
-        ogs_fatal("No Arp.preempt_cap");
-        ogs_assert_if_reached();
+        ogs_error("No Arp->preempt_cap");
+        goto end;
     }
 
     if (qos_flow->qos.arp.pre_emption_vulnerability ==
             OGS_5GC_PRE_EMPTION_ENABLED)
-        Arp.preempt_vuln = OpenAPI_preemption_vulnerability_PREEMPTABLE;
+        Arp->preempt_vuln = OpenAPI_preemption_vulnerability_PREEMPTABLE;
     else if (qos_flow->qos.arp.pre_emption_vulnerability ==
             OGS_5GC_PRE_EMPTION_DISABLED)
-        Arp.preempt_vuln = OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
+        Arp->preempt_vuln = OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
     else {
-        ogs_fatal("No Arp.preempt_vuln");
-        ogs_assert_if_reached();
+        ogs_error("No Arp->preempt_vuln");
+        goto end;
     }
-    Arp.priority_level = qos_flow->qos.arp.priority_level;
+    Arp->priority_level = qos_flow->qos.arp.priority_level;
 
-    memset(&qosFlowProfile, 0, sizeof(qosFlowProfile));
-    qosFlowProfile.arp = &Arp;
-    qosFlowProfile._5qi = qos_flow->qos.index;
+    qosFlowProfile = ogs_calloc(1, sizeof(*qosFlowProfile));
+    ogs_assert(qosFlowProfile);
+    qosFlowProfile->arp = Arp;
+    qosFlowProfile->_5qi = qos_flow->qos.index;
 
-    qosFlowSetupItem->qos_flow_profile = &qosFlowProfile;
+    qosFlowSetupItem->qos_flow_profile = qosFlowProfile;
 
     OpenAPI_list_add(qosFlowsSetupList, qosFlowSetupItem);
 
@@ -585,9 +585,9 @@ void smf_sbi_send_pdu_session_created_data(
                 ue_ipv6_interface_id, sizeof(ue_ipv6_interface_id));
         PduSessionCreatedData.ue_ipv6_interface_id = ue_ipv6_interface_id;
     } else {
-        ogs_fatal("Invalid sess->session.session_type[%d]",
+        ogs_error("Invalid sess->session.session_type[%d]",
                 sess->paa.session_type);
-        ogs_assert_if_reached();
+        goto end;
     }
 
     memset(&sendmsg, 0, sizeof(sendmsg));
@@ -627,6 +627,7 @@ void smf_sbi_send_pdu_session_created_data(
 
     ogs_free(sendmsg.http.location);
 
+end:
     if (hcnTunnelInfo.ipv4_addr)
         ogs_free(hcnTunnelInfo.ipv4_addr);
     if (hcnTunnelInfo.ipv6_addr)
@@ -639,18 +640,7 @@ void smf_sbi_send_pdu_session_created_data(
     if (sessionAmbr.downlink)
         ogs_free(sessionAmbr.downlink);
 
-    OpenAPI_list_for_each(
-            PduSessionCreatedData.qos_flows_setup_list, node) {
-        qosFlowSetupItem = node->data;
-        if (qosFlowSetupItem) {
-            if (qosFlowSetupItem->qos_rules)
-                ogs_free(qosFlowSetupItem->qos_rules);
-            if (qosFlowSetupItem->qos_flow_description)
-                ogs_free(qosFlowSetupItem->qos_flow_description);
-            ogs_free(qosFlowSetupItem);
-        }
-    }
-    OpenAPI_list_free(PduSessionCreatedData.qos_flows_setup_list);
+    CLEAR_QOS_FLOWS_SETUP_LIST(PduSessionCreatedData.qos_flows_setup_list);
 
     if (PduSessionCreatedData.ue_ipv4_address)
         ogs_free(PduSessionCreatedData.ue_ipv4_address);

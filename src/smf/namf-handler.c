@@ -38,6 +38,15 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
     switch (state) {
     case SMF_UE_REQUESTED_PDU_SESSION_ESTABLISHMENT:
         if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
+/*
+ * Non-roaming/LBO: start network-triggered PDU Session Modification at step 11
+ * after N1N2 transfer (Establishment Accept) and N2/N4 context sync, ensuring
+ * the session is active on UE, RAN, and SMF before applying QoS updates.
+ *
+ * Home-Routed Roaming: trigger PDU Session Modification at step 13
+ * immediately after H-SMF’s CreateSMContext response and H-UPF N4 setup
+ * to apply QoS updates without waiting for V-SMF or RAN setup.
+ */
             smf_qos_flow_binding(sess);
         } else {
             ogs_error("[%s:%d] HTTP response error [%d]",
@@ -57,7 +66,9 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
         if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
             if (N1N2MessageTransferRspData->cause ==
                 OpenAPI_n1_n2_message_transfer_cause_N1_N2_TRANSFER_INITIATED) {
-                /* Nothing */
+                if (stream)
+                    sess->n1_n2_modified_stream_id =
+                        ogs_sbi_id_from_stream(stream);
             } else {
                 ogs_error("Not implemented [cause:%d]",
                         N1N2MessageTransferRspData->cause);

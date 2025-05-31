@@ -21,6 +21,7 @@
 #include "s5c-build.h"
 #include "pfcp-path.h"
 #include "gtp-path.h"
+#include "sbi-path.h"
 
 #include "ipfw/ipfw2.h"
 
@@ -779,6 +780,9 @@ void smf_qos_flow_binding(smf_sess_t *sess)
     if (ogs_list_count(&sess->qos_flow_to_modify_list)) {
         ogs_assert(OGS_OK ==
                 smf_5gc_pfcp_send_qos_flow_list_modification_request(
-                    sess, NULL, pfcp_flags, 0));
+                    sess, NULL,
+                    HOME_ROUTED_ROAMING_IN_HSMF(sess) ?
+                        OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|pfcp_flags :
+                        pfcp_flags, 0));
     }
 }

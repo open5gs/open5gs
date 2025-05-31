@@ -18,6 +18,7 @@
  */
 
 #include "nsmf-build.h"
+#include "gsm-build.h"
 
 ogs_sbi_request_t *smf_nsmf_pdusession_build_create_data(
         smf_sess_t *sess, void *data)
@@ -472,6 +473,12 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
     OpenAPI_ref_to_binary_data_t n1SmInfoToUe;
     ogs_pkbuf_t *n1SmBufToUe = NULL;
 
+    OpenAPI_list_t *qosFlowsAddModRequestList = NULL;
+    OpenAPI_qos_flow_add_modify_request_item_t *qosFlowAddModifyRequestItem =
+        NULL;
+
+    smf_bearer_t *qos_flow = NULL;
+
     ogs_assert(sess);
 
     memset(&message, 0, sizeof(message));
@@ -486,8 +493,172 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
     VsmfUpdateData.request_indication = sess->nsmf_param.request_indication;
     ogs_assert(VsmfUpdateData.request_indication);
 
-    n1SmBufToUe = gsmue_build_pdu_session_release_command(sess);
-    ogs_assert(n1SmBufToUe);
+    switch (VsmfUpdateData.request_indication) {
+    case OpenAPI_request_indication_UE_REQ_PDU_SES_MOD:
+    case OpenAPI_request_indication_NW_REQ_PDU_SES_MOD:
+        n1SmBufToUe = gsmue_build_pdu_session_modification_command(sess);
+        ogs_assert(n1SmBufToUe);
+
+        qosFlowsAddModRequestList = OpenAPI_list_create();
+        ogs_assert(qosFlowsAddModRequestList);
+
+        int i = 0;
+
+        ogs_list_for_each_entry(
+                &sess->qos_flow_to_modify_list, qos_flow, to_modify_node) {
+
+            int rv, enc_len = 0;
+
+            OpenAPI_qos_flow_profile_t *qosFlowProfile = NULL;
+            OpenAPI_arp_t *Arp = NULL;
+            OpenAPI_gbr_qos_flow_information_t *gbrQosFlowInfo = NULL;
+
+            ogs_assert(i < OGS_MAX_NUM_OF_BEARER);
+
+            qosFlowAddModifyRequestItem =
+                ogs_calloc(1, sizeof(*qosFlowAddModifyRequestItem));
+            ogs_assert(qosFlowAddModifyRequestItem);
+
+            qosFlowAddModifyRequestItem->qfi = qos_flow->qfi;
+
+            if (sess->nsmf_param.qos_rule_code) {
+                ogs_nas_qos_rules_t authorized_qos_rules;
+                ogs_nas_qos_rule_t qos_rule;
+
+                memset(&qos_rule, 0, sizeof(qos_rule));
+                gsm_encode_qos_rule(
+                        &qos_rule, qos_flow, sess->nsmf_param.qos_rule_code);
+
+                rv = ogs_nas_build_qos_rules(
+                        &authorized_qos_rules, &qos_rule, 1);
+                if (rv != OGS_OK) {
+                    ogs_error("ogs_nas_build_qos_rules() failed");
+                    goto end;
+                }
+                if (!authorized_qos_rules.length) {
+                    ogs_error("No length");
+                    goto end;
+                }
+
+                enc_len = ogs_base64_encode_len(authorized_qos_rules.length);
+                qosFlowAddModifyRequestItem->qos_rules = ogs_calloc(1, enc_len);
+                ogs_assert(qosFlowAddModifyRequestItem->qos_rules);
+                ogs_base64_encode(
+                        qosFlowAddModifyRequestItem->qos_rules,
+                        authorized_qos_rules.buffer,
+                        authorized_qos_rules.length);
+
+                ogs_free(authorized_qos_rules.buffer);
+            }
+
+            if (sess->nsmf_param.qos_flow_description_code) {
+                ogs_nas_qos_flow_descriptions_t
+                    authorized_qos_flow_descriptions;
+                ogs_nas_qos_flow_description_t qos_flow_description;
+
+                memset(&qos_flow_description, 0, sizeof(qos_flow_description));
+                gsm_encode_qos_flow_description(
+                        &qos_flow_description, qos_flow,
+                        sess->nsmf_param.qos_flow_description_code);
+                rv = ogs_nas_build_qos_flow_descriptions(
+                        &authorized_qos_flow_descriptions,
+                        &qos_flow_description, 1);
+                if (rv != OGS_OK) {
+                    ogs_error("ogs_nas_build_qos_flow_descriptions() failed");
+                    goto end;
+                }
+                if (!authorized_qos_flow_descriptions.length) {
+                    ogs_error("No length");
+                    goto end;
+                }
+
+                enc_len = ogs_base64_encode_len(
+                        authorized_qos_flow_descriptions.length);
+                qosFlowAddModifyRequestItem->qos_flow_description =
+                    ogs_calloc(1, enc_len);
+                ogs_assert(qosFlowAddModifyRequestItem->qos_flow_description);
+                ogs_base64_encode(
+                        qosFlowAddModifyRequestItem->qos_flow_description,
+                        authorized_qos_flow_descriptions.buffer,
+                        authorized_qos_flow_descriptions.length);
+
+                ogs_free(authorized_qos_flow_descriptions.buffer);
+
+                if (qos_flow->qos.mbr.downlink && qos_flow->qos.mbr.uplink &&
+                    qos_flow->qos.gbr.downlink && qos_flow->qos.gbr.uplink) {
+                    gbrQosFlowInfo = ogs_calloc(1, sizeof(*gbrQosFlowInfo));
+                    ogs_assert(gbrQosFlowInfo);
+
+                    gbrQosFlowInfo->max_fbr_ul = ogs_sbi_bitrate_to_string(
+                            qos_flow->qos.mbr.uplink, OGS_SBI_BITRATE_BPS);
+                    gbrQosFlowInfo->max_fbr_dl = ogs_sbi_bitrate_to_string(
+                            qos_flow->qos.mbr.downlink, OGS_SBI_BITRATE_BPS);
+
+                    gbrQosFlowInfo->gua_fbr_ul = ogs_sbi_bitrate_to_string(
+                            qos_flow->qos.gbr.uplink, OGS_SBI_BITRATE_BPS);
+                    gbrQosFlowInfo->gua_fbr_dl = ogs_sbi_bitrate_to_string(
+                            qos_flow->qos.gbr.downlink, OGS_SBI_BITRATE_BPS);
+                }
+            }
+
+            Arp = ogs_calloc(1, sizeof(*Arp));
+            ogs_assert(Arp);
+            if (qos_flow->qos.arp.pre_emption_capability ==
+                    OGS_5GC_PRE_EMPTION_ENABLED)
+                Arp->preempt_cap = OpenAPI_preemption_capability_MAY_PREEMPT;
+            else if (qos_flow->qos.arp.pre_emption_capability ==
+                    OGS_5GC_PRE_EMPTION_DISABLED)
+                Arp->preempt_cap = OpenAPI_preemption_capability_NOT_PREEMPT;
+            else {
+                ogs_error("No Arp->preempt_cap");
+                goto end;
+            }
+
+            if (qos_flow->qos.arp.pre_emption_vulnerability ==
+                    OGS_5GC_PRE_EMPTION_ENABLED)
+                Arp->preempt_vuln =
+                    OpenAPI_preemption_vulnerability_PREEMPTABLE;
+            else if (qos_flow->qos.arp.pre_emption_vulnerability ==
+                    OGS_5GC_PRE_EMPTION_DISABLED)
+                Arp->preempt_vuln =
+                    OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
+            else {
+                ogs_error("No Arp->preempt_vuln");
+                goto end;
+            }
+            Arp->priority_level = qos_flow->qos.arp.priority_level;
+
+            qosFlowProfile = ogs_calloc(1, sizeof(*qosFlowProfile));
+            ogs_assert(qosFlowProfile);
+            qosFlowProfile->arp = Arp;
+            qosFlowProfile->_5qi = qos_flow->qos.index;
+            qosFlowProfile->gbr_qos_flow_info = gbrQosFlowInfo;
+
+            qosFlowAddModifyRequestItem->qos_flow_profile = qosFlowProfile;
+
+            OpenAPI_list_add(qosFlowsAddModRequestList,
+                    qosFlowAddModifyRequestItem);
+
+            if (qosFlowsAddModRequestList->count)
+                VsmfUpdateData.qos_flows_add_mod_request_list =
+                    qosFlowsAddModRequestList;
+            else
+                OpenAPI_list_free(qosFlowsAddModRequestList);
+
+            i++;
+        }
+
+        break;
+    case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
+    case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
+        n1SmBufToUe = gsmue_build_pdu_session_release_command(sess);
+        ogs_assert(n1SmBufToUe);
+        break;
+    default:
+        ogs_fatal("Not implemented [request_indication:%d]",
+                VsmfUpdateData.request_indication);
+
+    }
 
     n1SmInfoToUe.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
     VsmfUpdateData.n1_sm_info_to_ue = &n1SmInfoToUe;
@@ -507,6 +678,9 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
 end:
     if (message.h.uri)
         ogs_free(message.h.uri);
+
+    CLEAR_QOS_FLOWS_ADD_MOD_REQUEST_LIST(
+            VsmfUpdateData.qos_flows_add_mod_request_list);
 
     return request;
 }

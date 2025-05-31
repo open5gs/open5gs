@@ -26,6 +26,8 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
 {
     smf_ue_t *smf_ue = NULL;
+    smf_bearer_t *qos_flow = NULL;
+
     int rv, i;
 
     uint32_t remote_dl_teid;
@@ -103,7 +105,8 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &remote_dl_teid);
 
     /* Need to Update? */
-    if (memcmp(&sess->remote_dl_ip, &remote_dl_ip, sizeof(sess->remote_dl_ip)) != 0 ||
+    if (memcmp(&sess->remote_dl_ip,
+                &remote_dl_ip, sizeof(sess->remote_dl_ip)) != 0 ||
         sess->remote_dl_teid != remote_dl_teid)
         far_update = true;
 
@@ -111,36 +114,49 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     memcpy(&sess->remote_dl_ip, &remote_dl_ip, sizeof(sess->remote_dl_ip));
     sess->remote_dl_teid = remote_dl_teid;
 
-    associatedQosFlowList = &dLQosFlowPerTNLInformation->associatedQosFlowList;
-    for (i = 0; i < associatedQosFlowList->list.count; i++) {
-        NGAP_AssociatedQosFlowItem_t *associatedQosFlowItem = NULL;
-        associatedQosFlowItem = (NGAP_AssociatedQosFlowItem_t *)
-                associatedQosFlowList->list.array[i];
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        ogs_list_for_each(&sess->bearer_list, qos_flow) {
+            ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
+            ogs_assert(dl_far);
+            if (dl_far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
+                far_update = true;
+            }
 
-        if (associatedQosFlowItem) {
-            smf_bearer_t *qos_flow = smf_qos_flow_find_by_qfi(
-                    sess, associatedQosFlowItem->qosFlowIdentifier);
+            dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+            ogs_assert(OGS_OK ==
+                ogs_pfcp_ip_to_outer_header_creation(
+                        &sess->remote_dl_ip,
+                        &dl_far->outer_header_creation,
+                        &dl_far->outer_header_creation_len));
+            dl_far->outer_header_creation.teid = sess->remote_dl_teid;
+        }
+    } else {
+        associatedQosFlowList =
+            &dLQosFlowPerTNLInformation->associatedQosFlowList;
+        for (i = 0; i < associatedQosFlowList->list.count; i++) {
+            NGAP_AssociatedQosFlowItem_t *associatedQosFlowItem = NULL;
+            associatedQosFlowItem = (NGAP_AssociatedQosFlowItem_t *)
+                    associatedQosFlowList->list.array[i];
 
-            if (qos_flow) {
-                ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
-                ogs_assert(dl_far);
-                if (dl_far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
-                    far_update = true;
+            if (associatedQosFlowItem) {
+                qos_flow = smf_qos_flow_find_by_qfi(
+                        sess, associatedQosFlowItem->qosFlowIdentifier);
+
+                if (qos_flow) {
+                    ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
+                    ogs_assert(dl_far);
+                    if (dl_far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
+                        far_update = true;
+                    }
+
+                    dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+                    ogs_assert(OGS_OK ==
+                        ogs_pfcp_ip_to_outer_header_creation(
+                                &sess->remote_dl_ip,
+                                &dl_far->outer_header_creation,
+                                &dl_far->outer_header_creation_len));
+                    dl_far->outer_header_creation.teid = sess->remote_dl_teid;
                 }
-
-                dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
-                ogs_assert(OGS_OK ==
-                    ogs_pfcp_ip_to_outer_header_creation(
-                            &sess->remote_dl_ip,
-                            &dl_far->outer_header_creation,
-                            &dl_far->outer_header_creation_len));
-                dl_far->outer_header_creation.teid = sess->remote_dl_teid;
-            } else {
-                ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
-                smf_sbi_send_sm_context_update_error_log(
-                        stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        "No QoS flow", smf_ue->supi);
-                goto cleanup;
             }
         }
     }
@@ -308,6 +324,21 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
     }
 
     rv = OGS_ERROR;
+
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        /* Home Routed Roaming */
+        rv = OGS_OK;
+
+        if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING) {
+            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                    sess, stream, OpenAPI_up_cnx_state_ACTIVATED);
+        } else {
+            ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+        }
+
+        goto cleanup;
+    }
 
     qosFlowAddOrModifyResponseList = message.qosFlowAddOrModifyResponseList;
     if (!qosFlowAddOrModifyResponseList) {

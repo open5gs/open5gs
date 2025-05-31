@@ -1865,10 +1865,12 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->n1smbuf)
         ogs_pkbuf_free(sess->n1smbuf);
 
-    OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_rules);
-    OGS_NAS_CLEAR_DATA(&sess->h_smf_authorized_qos_flow_descriptions);
     OGS_NAS_CLEAR_DATA(&sess->h_smf_extended_protocol_configuration_options);
     sess->h_smf_gsm_cause = 0;
+
+    CLEAR_QOS_FLOWS_SETUP_LIST(sess->h_smf_qos_flows_setup_list);
+    CLEAR_QOS_FLOWS_ADD_MOD_REQUEST_LIST(
+            sess->h_smf_qos_flows_add_mod_request_list);
 
     /* Free SBI object memory */
     ogs_sbi_object_free(&sess->sbi);

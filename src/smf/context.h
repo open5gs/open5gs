@@ -82,6 +82,25 @@ typedef struct smf_nsmf_pdusession_param_s {
         uint8_t ue_timezone:1;,
         uint8_t spare:6;)
     };
+
+#define QOS_RULE_CODE_FROM_PFCP_FLAGS(pfcp_flags) \
+        (pfcp_flags & OGS_PFCP_MODIFY_CREATE) ? \
+            OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE : \
+        (pfcp_flags & OGS_PFCP_MODIFY_TFT_NEW) ? \
+            OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE : \
+        (pfcp_flags & OGS_PFCP_MODIFY_TFT_ADD) ? \
+            OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS : \
+        (pfcp_flags & OGS_PFCP_MODIFY_TFT_REPLACE) ? \
+            OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_ALL_PACKET_FILTERS : \
+        (pfcp_flags & OGS_PFCP_MODIFY_TFT_DELETE) ? \
+            OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS : 0
+    uint8_t qos_rule_code;
+#define QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS(pfcp_flags) \
+        (pfcp_flags & OGS_PFCP_MODIFY_CREATE) ? \
+            OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION : \
+        (pfcp_flags & OGS_PFCP_MODIFY_QOS_MODIFY) ? \
+            OGS_NAS_MODIFY_NEW_QOS_FLOW_DESCRIPTION : 0
+    uint8_t qos_flow_description_code;
 } smf_nsmf_pdusession_param_t;
 
 /* HR flag bit */
@@ -469,11 +488,35 @@ typedef struct smf_sess_s {
     char            *h_smf_id;
 
     /* Saved from H-SMF */
-    ogs_nas_qos_rules_t h_smf_authorized_qos_rules;
-    ogs_nas_qos_flow_descriptions_t h_smf_authorized_qos_flow_descriptions;
     ogs_nas_extended_protocol_configuration_options_t
         h_smf_extended_protocol_configuration_options;
     ogs_nas_5gsm_cause_t h_smf_gsm_cause;
+
+    /* Saved from H-SMF */
+#define CLEAR_QOS_FLOWS_SETUP_LIST(__lIST) \
+    do { \
+        OpenAPI_lnode_t *node = NULL; \
+        OpenAPI_list_for_each((__lIST), node) { \
+            OpenAPI_qos_flow_setup_item_t *qosFlowSetupItem = node->data; \
+            if (qosFlowSetupItem) \
+                OpenAPI_qos_flow_setup_item_free(qosFlowSetupItem); \
+        } \
+        OpenAPI_list_free((__lIST)); \
+    } while(0)
+    OpenAPI_list_t *h_smf_qos_flows_setup_list;
+#define CLEAR_QOS_FLOWS_ADD_MOD_REQUEST_LIST(__lIST) \
+    do { \
+        OpenAPI_lnode_t *node = NULL; \
+        OpenAPI_list_for_each((__lIST), node) { \
+            OpenAPI_qos_flow_add_modify_request_item_t \
+                *qosFlowAddModifyRequestItem = node->data; \
+            if (qosFlowAddModifyRequestItem) \
+                OpenAPI_qos_flow_add_modify_request_item_free( \
+                        qosFlowAddModifyRequestItem); \
+        } \
+        OpenAPI_list_free((__lIST)); \
+    } while(0)
+    OpenAPI_list_t *h_smf_qos_flows_add_mod_request_list;
 
 #define HOME_ROUTED_ROAMING_IN_HSMF(__sESS) \
     ((__sESS) && (__sESS)->vsmf_pdu_session_uri)
@@ -637,6 +680,7 @@ typedef struct smf_sess_s {
     bool n1_released;
     bool n2_released;
     ogs_pool_id_t amf_update_request_stream_id;
+    ogs_pool_id_t n1_n2_modified_stream_id;
     ogs_pool_id_t n1_n2_released_stream_id;
 
     smf_nsmf_pdusession_param_t nsmf_param;

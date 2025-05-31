@@ -325,6 +325,15 @@ bsf:
       scp:
         - uri: http://127.0.0.200:7777
 
+af:
+  sbi:
+    server:
+      - address: 127.0.0.16
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.0.200:7777
+
 udr:
   sbi:
     server:

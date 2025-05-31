@@ -1609,6 +1609,23 @@ cleanup:
     return pkbuf;
 }
 
+ogs_pkbuf_t *gsmue_build_pdu_session_modification_command(smf_sess_t *sess)
+{
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_nas_5gs_message_t message;
+
+    ogs_assert(sess);
+
+    memset(&message, 0, sizeof(message));
+    message.gsm.h.message_type = OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND;
+
+    pkbuf = gsmue_encode_n1_sm_info(&message);
+    ogs_assert(pkbuf);
+
+    return pkbuf;
+}
+
 ogs_pkbuf_t *gsmue_build_pdu_session_release_command(smf_sess_t *sess)
 {
     ogs_pkbuf_t *pkbuf = NULL;

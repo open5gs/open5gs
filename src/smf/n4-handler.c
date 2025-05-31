@@ -257,7 +257,7 @@ void smf_5gc_n4_handle_session_modification_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_modification_response_t *rsp)
 {
-    int status = 0;
+    int r, status = 0;
     uint64_t flags = 0;
     int trigger = 0;
     ogs_sbi_stream_t *stream = NULL;
@@ -407,35 +407,17 @@ void smf_5gc_n4_handle_session_modification_response(
         return;
     }
 
-    if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
-        if (flags & OGS_PFCP_MODIFY_XN_HANDOVER) {
-            ogs_pkbuf_t *n2smbuf =
-                ngap_build_path_switch_request_ack_transfer(sess);
-            ogs_assert(n2smbuf);
-
-            smf_sbi_send_sm_context_updated_data_n2smbuf(sess, stream,
-                OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK, n2smbuf);
-        } else if (flags & OGS_PFCP_MODIFY_N2_HANDOVER) {
-
-            if (smf_sess_have_indirect_data_forwarding(sess) == true) {
-                ogs_assert(OGS_OK ==
-                    smf_5gc_pfcp_send_all_pdr_modification_request(
-                        sess, stream,
-                        OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_REMOVE,
-                        0, ogs_local_conf()->time.handover.duration));
-            }
-
-            smf_sbi_send_sm_context_updated_data_ho_state(
-                    sess, stream, OpenAPI_ho_state_COMPLETED);
-        } else if (flags & OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING) {
+    if (flags & OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING) {
+        if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
             if (flags & OGS_PFCP_MODIFY_DL_ONLY) {
                 if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING) {
                     sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
                     smf_sbi_send_sm_context_updated_data_up_cnx_state(
                             sess, stream, OpenAPI_up_cnx_state_ACTIVATED);
                 } else {
-                    ogs_assert(true ==
-                            ogs_sbi_send_http_status_no_content(stream));
+                    if (stream)
+                        ogs_assert(true ==
+                                ogs_sbi_send_http_status_no_content(stream));
                 }
             } else if (flags & OGS_PFCP_MODIFY_UL_ONLY) {
                 smf_n1_n2_message_transfer_param_t param;
@@ -455,38 +437,7 @@ void smf_5gc_n4_handle_session_modification_response(
                 ogs_fatal("Invalid flags [0x%llx]", (long long)flags);
                 ogs_assert_if_reached();
             }
-        } else {
-            if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING) {
-                sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
-                smf_sbi_send_sm_context_updated_data_up_cnx_state(
-                        sess, stream, OpenAPI_up_cnx_state_ACTIVATED);
-            } else {
-                int r = smf_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
-                        smf_nudm_uecm_build_registration,
-                        sess, stream, SMF_UECM_STATE_REGISTERED, NULL);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-            }
-        }
-
-    } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
-        if (flags & OGS_PFCP_MODIFY_ERROR_INDICATION) {
-            smf_n1_n2_message_transfer_param_t param;
-
-            memset(&param, 0, sizeof(param));
-            param.state = SMF_ERROR_INDICATON_RECEIVED_FROM_5G_AN;
-            param.n2smbuf =
-                ngap_build_pdu_session_resource_release_command_transfer(
-                    sess, SMF_NGAP_STATE_ERROR_INDICATION_RECEIVED_FROM_5G_AN,
-                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
-            ogs_assert(param.n2smbuf);
-
-            param.skip_ind = true;
-
-            smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
-        } else if (flags & OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING) {
-            int r;
+        } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
             ogs_assert(trigger);
 
             if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED) {
@@ -516,7 +467,84 @@ void smf_5gc_n4_handle_session_modification_response(
                 ogs_fatal("Invalid delete trigger[%d]", trigger);
                 ogs_assert_if_reached();
             }
+        } else if (flags & OGS_PFCP_MODIFY_CREATE) {
+            if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
+                memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
 
+                /* Network Requested PDU Session Modification */
+                sess->nsmf_param.request_indication =
+                    OpenAPI_request_indication_NW_REQ_PDU_SES_MOD;
+                sess->nsmf_param.qos_rule_code =
+                    QOS_RULE_CODE_FROM_PFCP_FLAGS(flags);
+                sess->nsmf_param.qos_flow_description_code =
+                    QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS(flags);
+
+                r = smf_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                        smf_nsmf_pdusession_build_vsmf_update_data,
+                        sess, NULL, 0, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+
+            } else {
+                ogs_fatal("Invalid PDR-Create flags [0x%llx]",
+                        (long long)flags);
+                ogs_assert_if_reached();
+            }
+        } else {
+            ogs_fatal("Invalid flags [%lld]", (long long)flags);
+            ogs_assert_if_reached();
+        }
+    } else if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
+        if (flags & OGS_PFCP_MODIFY_XN_HANDOVER) {
+            ogs_pkbuf_t *n2smbuf =
+                ngap_build_path_switch_request_ack_transfer(sess);
+            ogs_assert(n2smbuf);
+
+            smf_sbi_send_sm_context_updated_data_n2smbuf(sess, stream,
+                OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK, n2smbuf);
+        } else if (flags & OGS_PFCP_MODIFY_N2_HANDOVER) {
+
+            if (smf_sess_have_indirect_data_forwarding(sess) == true) {
+                ogs_assert(OGS_OK ==
+                    smf_5gc_pfcp_send_all_pdr_modification_request(
+                        sess, stream,
+                        OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_REMOVE,
+                        0, ogs_local_conf()->time.handover.duration));
+            }
+
+            smf_sbi_send_sm_context_updated_data_ho_state(
+                    sess, stream, OpenAPI_ho_state_COMPLETED);
+        } else {
+            if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING) {
+                sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+                smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                        sess, stream, OpenAPI_up_cnx_state_ACTIVATED);
+            } else {
+                r = smf_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
+                        smf_nudm_uecm_build_registration,
+                        sess, stream, SMF_UECM_STATE_REGISTERED, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            }
+        }
+
+    } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
+        if (flags & OGS_PFCP_MODIFY_ERROR_INDICATION) {
+            smf_n1_n2_message_transfer_param_t param;
+
+            memset(&param, 0, sizeof(param));
+            param.state = SMF_ERROR_INDICATON_RECEIVED_FROM_5G_AN;
+            param.n2smbuf =
+                ngap_build_pdu_session_resource_release_command_transfer(
+                    sess, SMF_NGAP_STATE_ERROR_INDICATION_RECEIVED_FROM_5G_AN,
+                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
+            ogs_assert(param.n2smbuf);
+
+            param.skip_ind = true;
+
+            smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
         } else {
             smf_sbi_send_sm_context_updated_data_up_cnx_state(
                     sess, stream, OpenAPI_up_cnx_state_DEACTIVATED);
@@ -688,23 +716,9 @@ void smf_5gc_n4_handle_session_modification_response(
         uint8_t qos_rule_code = 0;
         uint8_t qos_flow_description_code = 0;
 
-        if (flags & OGS_PFCP_MODIFY_TFT_NEW) {
-            qos_rule_code = OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE;
-        } else if (flags & OGS_PFCP_MODIFY_TFT_ADD) {
-            qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS;
-        } else if (flags & OGS_PFCP_MODIFY_TFT_REPLACE) {
-            qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_ALL_PACKET_FILTERS;
-        } else if (flags & OGS_PFCP_MODIFY_TFT_DELETE) {
-            qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS;
-        }
-
-        if (flags & OGS_PFCP_MODIFY_QOS_CREATE) {
-            ogs_assert_if_reached();
-        } else if (flags & OGS_PFCP_MODIFY_QOS_MODIFY) {
-            qos_flow_description_code = OGS_NAS_MODIFY_NEW_QOS_FLOW_DESCRIPTION;
-        } else if (flags & OGS_PFCP_MODIFY_QOS_DELETE) {
-            ogs_assert_if_reached();
-        }
+        qos_rule_code = QOS_RULE_CODE_FROM_PFCP_FLAGS(flags);
+        qos_flow_description_code =
+                QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS(flags);
 
         if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
             ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
