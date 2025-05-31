@@ -33,6 +33,7 @@
 #include "mme-s11-handler.h"
 #include "mme-fd-path.h"
 #include "mme-s6a-handler.h"
+#include "mme-s13-handler.h"
 #include "mme-path.h"
 
 void mme_state_initial(ogs_fsm_t *s, mme_event_t *e)
@@ -75,6 +76,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     mme_sess_t *sess = NULL;
 
     ogs_diam_s6a_message_t *s6a_message = NULL;
+    ogs_diam_s13_message_t *s13_message = NULL;
     uint8_t emm_cause = 0;
 
     ogs_gtp_node_t *gnode = NULL;
@@ -689,7 +691,47 @@ cleanup:
         ogs_subscription_data_free(&s6a_message->ula_message.subscription_data);
         ogs_free(s6a_message);
         break;
+    case MME_EVENT_S13_MESSAGE:
+        mme_ue = mme_ue_find_by_id(e->mme_ue_id);
+		enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+        ogs_assert(mme_ue);
+        s13_message = e->s13_message;
+        ogs_assert(s13_message);
 
+        switch(s13_message->cmd_code) {
+            case OGS_DIAM_S13_CMD_CODE_ME_IDENTITY_CHECK:
+                emm_cause = mme_s13_handle_eca(mme_ue, s13_message);
+                if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
+                    ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
+                            mme_ue->imsi_bcd, emm_cause);
+                    
+                    if (!enb_ue) {
+                        ogs_error("S13 context has already been removed");
+                        break;
+                    }
+                    ogs_assert(OGS_OK ==
+                        nas_eps_send_attach_reject(enb_ue, mme_ue, emm_cause,
+                            OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
+
+                    ogs_assert(OGS_OK ==
+                        s1ap_send_ue_context_release_command(enb_ue,
+                            S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                            S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
+                    break;
+                }
+                else {
+                    /* Now that the UE has been
+                     * validated we can send the 
+                     * Update Location Request to HSS */
+                    mme_s6a_send_ulr(enb_ue, mme_ue);
+                }
+                break;
+            default:
+                ogs_error("Invalid Type[%d]", s13_message->cmd_code);
+                break;
+        }
+        ogs_free(s13_message);
+        break;
     case MME_EVENT_S11_MESSAGE:
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);

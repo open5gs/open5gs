@@ -2530,6 +2530,62 @@ int mme_context_parse_config(void)
                     }
                 } else if (!strcmp(mme_key, "metrics")) {
                     /* handle config in metrics library */
+                } else if (!strcmp(mme_key, "eir")) {
+                    ogs_yaml_iter_t eir_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &eir_iter);
+
+                    while (ogs_yaml_iter_next(&eir_iter)) {
+                        const char *eir_key = ogs_yaml_iter_key(&eir_iter);
+                        ogs_assert(eir_key);
+                        if (!strcmp(eir_key, "enabled")) {
+                            ogs_nas_eir_t *eir = &self.eir;
+                            const char *c_eir_enabled = ogs_yaml_iter_value(&eir_iter);
+
+                            if (!strcmp("True", c_eir_enabled) || 
+                                !strcmp("true", c_eir_enabled)) {
+                                ogs_info("EIR functionality has been enabled");
+                                eir->enabled = true;
+                            }
+                            else {
+                                eir->enabled = false;
+                            }
+                        } if (!strcmp(eir_key, "allowed_states")) {
+                            ogs_yaml_iter_t allowed_states_iter;
+                            ogs_yaml_iter_recurse(&eir_iter,
+                                    &allowed_states_iter);
+                            ogs_assert(ogs_yaml_iter_type(
+                                        &allowed_states_iter) !=
+                                YAML_MAPPING_NODE);
+
+                            do {
+                                const char *allowed_states_value = NULL;
+
+                                if (ogs_yaml_iter_type(&allowed_states_iter) ==
+                                        YAML_SEQUENCE_NODE) {
+                                    if (!ogs_yaml_iter_next(
+                                                &allowed_states_iter))
+                                        break;
+                                }
+
+                                allowed_states_value = ogs_yaml_iter_value(&allowed_states_iter);
+                                if (allowed_states_value) {
+                                    if (strcmp(allowed_states_value, "WHITELIST") == 0) {
+                                        self.eir.allow_whitelist = true;
+                                    } else if (strcmp(allowed_states_value, "GREYLIST") == 0) {
+                                        self.eir.allow_greylist = true;
+                                    } else if (strcmp(allowed_states_value, "BLACKLIST") == 0) {
+                                        self.eir.allow_blacklist = true;
+                                    } else {
+                                        ogs_warn("'%s' is not a valid eir allowed_states value. "
+                                                 "Valid values include: WHITELIST, GREYLIST, BLACKLIST",
+                                                 allowed_states_value);
+                                    } 
+                                }
+                            } while (
+                                ogs_yaml_iter_type(&allowed_states_iter) ==
+                                    YAML_SEQUENCE_NODE);
+                        }
+                    }
                 } else
                     ogs_warn("unknown key `%s`", mme_key);
             }
