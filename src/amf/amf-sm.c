@@ -78,6 +78,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     ogs_sbi_response_t *sbi_response = NULL;
     ogs_sbi_message_t sbi_message;
 
+    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
+
     amf_sm_debug(e);
 
     ogs_assert(s);
@@ -720,10 +723,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
              * To avoid double-free SBI xact,
              * we need to check ogs_sbi_xact_find_by_id()
              */
-
-            OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
-            ogs_sbi_discovery_option_t *discovery_option = NULL;
-
             sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
             ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
                     sbi_xact_id <= OGS_MAX_POOL_ID);

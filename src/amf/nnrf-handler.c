@@ -71,7 +71,7 @@ void amf_nnrf_handle_nf_discover(
         case OGS_SBI_OBJ_UE_TYPE:
             amf_ue = (amf_ue_t *)sbi_object;
             ogs_assert(amf_ue);
-            ogs_error("[%s] (NF discover) No [%s]", amf_ue->suci,
+            ogs_warn("[%s] (NF discover) No [%s]", amf_ue->suci,
                         ogs_sbi_service_type_to_name(service_type));
 
             /*
