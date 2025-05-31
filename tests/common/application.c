@@ -85,13 +85,18 @@ static int process_num = 0;
 
 static void child_main(void *data)
 {
-    const char **commandLine = data;
+    thread_data_t *thread_data = data;
+    const char **commandLine = thread_data->commandLine;
     ogs_proc_t *current = NULL;
     FILE *out = NULL;
     char buf[OGS_HUGE_LEN];
     int ret = 0, out_return_code = 0;
 
     current = &process[process_num++];
+
+    // get name and index of NF into the process.
+    current->nf_name =  ogs_strdup(thread_data->nf_name);
+    current->index = thread_data->index;
 
     if (process_num > MAX_CHILD_PROCESS) {
         ogs_fatal("Process limit reached");
@@ -118,12 +123,16 @@ static void child_main(void *data)
     ogs_assert(ret == 0);
 }
 
-ogs_thread_t *test_child_create(const char *name, const char *const argv[])
+ogs_thread_t *test_child_create(const char *name, int index, const char *const argv[])
 {
     ogs_thread_t *child = NULL;
+    thread_data_t thread_data;
+
     const char *commandLine[OGS_ARG_MAX];
     int i = 0;
     char command[OGS_MAX_FILEPATH_LEN];
+
+    memset(&thread_data, 0, sizeof(thread_data));
 
     while(argv[i] && i < 32) {
         commandLine[i] = argv[i];
@@ -137,7 +146,11 @@ ogs_thread_t *test_child_create(const char *name, const char *const argv[])
             name, OGS_DIR_SEPARATOR_S "open5gs-", name);
     commandLine[0] = command;
 
-    child = ogs_thread_create(child_main, commandLine);
+    thread_data.commandLine = commandLine;
+    thread_data.nf_name = name;
+    thread_data.index = index;
+
+    child = ogs_thread_create(child_main, &thread_data);
 
     ogs_msleep(50);
 
@@ -150,6 +163,26 @@ void test_child_terminate(void)
     ogs_proc_t *current = NULL;
     for (i = 0; i < process_num; i++) {
         current = &process[i];
-        ogs_proc_terminate(current);
+
+        if (current->stdin_file != 0 &&  current->child != 0) {
+            ogs_proc_terminate(current);
+        }
+    }
+}
+
+void test_child_terminate_with_name(char *name, int index)
+{
+    int i;
+    ogs_proc_t *current = NULL;
+    for (i = 0; i < process_num; i++) {
+        current = &process[i];
+
+        if (!strcmp(current->nf_name, name) &&
+                current->index == index &&
+                current->stdin_file != 0 &&
+                current->child != 0) {
+                ogs_proc_terminate(current);
+                break;
+        }
     }
 }
