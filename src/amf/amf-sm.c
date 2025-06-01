@@ -78,6 +78,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     ogs_sbi_response_t *sbi_response = NULL;
     ogs_sbi_message_t sbi_message;
 
+    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
+    ogs_sbi_discovery_option_t *discovery_option = NULL;
+
     amf_sm_debug(e);
 
     ogs_assert(s);
@@ -410,9 +413,11 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
                     if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK)
                         amf_nnrf_handle_nf_discover(sbi_xact, &sbi_message);
-                    else
+                    else {
                         ogs_error("HTTP response error [%d]",
                                 sbi_message.res_status);
+                        amf_nnrf_handle_failed_amf_discovery(sbi_xact);
+                    }
                     break;
 
                 DEFAULT
@@ -737,6 +742,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     sbi_object_id <= OGS_MAX_POOL_ID);
 
             service_type = sbi_xact->service_type;
+            requester_nf_type = sbi_xact->requester_nf_type;
+            discovery_option = sbi_xact->discovery_option;
 
             ogs_sbi_xact_remove(sbi_xact);
 
@@ -753,6 +760,32 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
                 ogs_error("[%s:%s] Cannot receive SBI message",
                         amf_ue->supi, amf_ue->suci);
+
+                /*
+                * TS 23.502
+                * 4.2.2.2.2 General Registration
+                * If the SUCI is not provided by the UE nor retrieved from the old AMF the Identity Request
+                * procedure is initiated by AMF sending an Identity Request message to the UE requesting the SUCI.
+                */
+
+                if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST &&
+                        amf_ue->nas.registration.value == OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL &&
+                        requester_nf_type == OpenAPI_nf_type_AMF &&
+                        discovery_option->guami_presence) {
+
+                    amf_ue->amf_ue_context_transfer_state =
+                            UE_CONTEXT_INITIAL_STATE;
+
+                    if (!(AMF_UE_HAVE_SUCI(amf_ue) ||
+                            AMF_UE_HAVE_SUPI(amf_ue))) {
+                            CLEAR_AMF_UE_TIMER(amf_ue->t3570);
+                        rv = nas_5gs_send_identity_request(amf_ue);
+                        ogs_expect(rv == OGS_OK);
+                        ogs_assert(rv != OGS_ERROR);
+
+                        break;
+                    }
+                }
 
                 r = nas_5gs_send_gmm_reject_from_sbi(amf_ue,
                         OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);

@@ -45,7 +45,7 @@ cJSON *ogs_sbi_links_convertToJSON(ogs_sbi_links_t *links)
     linksJSON = cJSON_CreateObject();
     ogs_assert(linksJSON);
 
-    cJSON_AddItemToObject(linksJSON, "items", itemsJSON);
+    cJSON_AddItemToObject(linksJSON, "item", itemsJSON);
     cJSON_AddItemToObject(linksJSON, "self", selfJSON);
     cJSON_AddNumberToObject(linksJSON, "totalItemCount", cJSON_GetArraySize(itemsJSON));
 
@@ -73,9 +73,9 @@ ogs_sbi_links_t *ogs_sbi_links_parseFromJSON(cJSON *json)
         return NULL;
     }
 
-    _items = cJSON_GetObjectItemCaseSensitive(_links, "items");
+    _items = cJSON_GetObjectItemCaseSensitive(_links, "item");
     if (!_items) {
-        ogs_error("No items");
+        ogs_error("No item");
         return NULL;
     }
 

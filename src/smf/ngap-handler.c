@@ -525,8 +525,12 @@ int ngap_handle_path_switch_request_transfer(
                 OGS_PFCP_MODIFY_XN_HANDOVER|OGS_PFCP_MODIFY_END_MARKER,
                 0, 0));
     } else {
-        /* ACTIVATED Is NOT Included in RESPONSE */
-        ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+        ogs_pkbuf_t *n2smbuf =
+            ngap_build_path_switch_request_ack_transfer(sess);
+        ogs_assert(n2smbuf);
+
+        smf_sbi_send_sm_context_updated_data_n2smbuf(sess, stream,
+            OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK, n2smbuf);
     }
 
     rv = OGS_OK;

@@ -1106,7 +1106,17 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(message);
 
         enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
-        ogs_assert(enb_ue);
+        if (!enb_ue) {
+            ogs_error("No S1 Context IMSI[%s] NAS-Type[%d] "
+                    "ENB-UE-ID[%d:%d][%p:%p]",
+                    mme_ue->imsi_bcd, message->emm.h.message_type,
+                    e->enb_ue_id, mme_ue->enb_ue_id,
+                    enb_ue_find_by_id(e->enb_ue_id),
+                    enb_ue_find_by_id(mme_ue->enb_ue_id));
+            ogs_assert(e->pkbuf);
+            ogs_log_hexdump(OGS_LOG_ERROR, e->pkbuf->data, e->pkbuf->len);
+            break;
+        }
 
         switch (message->emm.h.message_type) {
         case OGS_NAS_EPS_AUTHENTICATION_RESPONSE:
@@ -1288,7 +1298,17 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(message);
 
         enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
-        ogs_assert(enb_ue);
+        if (!enb_ue) {
+            ogs_error("No S1 Context IMSI[%s] NAS-Type[%d] "
+                    "ENB-UE-ID[%d:%d][%p:%p]",
+                    mme_ue->imsi_bcd, message->emm.h.message_type,
+                    e->enb_ue_id, mme_ue->enb_ue_id,
+                    enb_ue_find_by_id(e->enb_ue_id),
+                    enb_ue_find_by_id(mme_ue->enb_ue_id));
+            ogs_assert(e->pkbuf);
+            ogs_log_hexdump(OGS_LOG_ERROR, e->pkbuf->data, e->pkbuf->len);
+            break;
+        }
 
         if (message->emm.h.security_header_type
                 == OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE) {
@@ -1528,7 +1548,17 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(message);
 
         enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
-        ogs_assert(enb_ue);
+        if (!enb_ue) {
+            ogs_error("No S1 Context IMSI[%s] NAS-Type[%d] "
+                    "ENB-UE-ID[%d:%d][%p:%p]",
+                    mme_ue->imsi_bcd, message->emm.h.message_type,
+                    e->enb_ue_id, mme_ue->enb_ue_id,
+                    enb_ue_find_by_id(e->enb_ue_id),
+                    enb_ue_find_by_id(mme_ue->enb_ue_id));
+            ogs_assert(e->pkbuf);
+            ogs_log_hexdump(OGS_LOG_ERROR, e->pkbuf->data, e->pkbuf->len);
+            break;
+        }
 
         xact_count = mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR);
 
@@ -1820,7 +1850,17 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(message);
 
         enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
-        ogs_assert(enb_ue);
+        if (!enb_ue) {
+            ogs_error("No S1 Context IMSI[%s] NAS-Type[%d] "
+                    "ENB-UE-ID[%d:%d][%p:%p]",
+                    mme_ue->imsi_bcd, message->emm.h.message_type,
+                    e->enb_ue_id, mme_ue->enb_ue_id,
+                    enb_ue_find_by_id(e->enb_ue_id),
+                    enb_ue_find_by_id(mme_ue->enb_ue_id));
+            ogs_assert(e->pkbuf);
+            ogs_log_hexdump(OGS_LOG_ERROR, e->pkbuf->data, e->pkbuf->len);
+            break;
+        }
 
         h.type = e->nas_type;
 
