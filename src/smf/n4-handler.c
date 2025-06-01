@@ -438,33 +438,40 @@ void smf_5gc_n4_handle_session_modification_response(
                 ogs_assert_if_reached();
             }
         } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
-            ogs_assert(trigger);
+            if (flags & OGS_PFCP_MODIFY_DL_ONLY) {
+                ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+            } else if (flags & OGS_PFCP_MODIFY_UL_ONLY) {
+                ogs_assert(trigger);
 
-            if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED) {
-                r = smf_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
-                        smf_nsmf_pdusession_build_hsmf_update_data,
-                        sess, stream, trigger, NULL);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-            } else if (trigger ==
-                    OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT) {
-                r = smf_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
-                        smf_nsmf_pdusession_build_hsmf_update_data,
-                        sess, stream, trigger, NULL);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-            } else if (trigger ==
-                    OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT) {
-                r = smf_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
-                        smf_nsmf_pdusession_build_release_data,
-                        sess, stream, trigger, NULL);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
+                if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED) {
+                    r = smf_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            smf_nsmf_pdusession_build_hsmf_update_data,
+                            sess, stream, trigger, NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else if (trigger ==
+                        OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT) {
+                    r = smf_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            smf_nsmf_pdusession_build_hsmf_update_data,
+                            sess, stream, trigger, NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else if (trigger ==
+                        OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT) {
+                    r = smf_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            smf_nsmf_pdusession_build_release_data,
+                            sess, stream, trigger, NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else {
+                    ogs_fatal("Invalid delete trigger[%d]", trigger);
+                    ogs_assert_if_reached();
+                }
             } else {
-                ogs_fatal("Invalid delete trigger[%d]", trigger);
+                ogs_fatal("Invalid flags [0x%llx]", (long long)flags);
                 ogs_assert_if_reached();
             }
         } else if (flags & OGS_PFCP_MODIFY_CREATE) {

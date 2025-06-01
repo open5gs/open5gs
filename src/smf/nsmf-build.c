@@ -375,6 +375,8 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
 
     HsmfUpdateData.cause = sess->nsmf_param.cause;
 
+    HsmfUpdateData.up_cnx_state = sess->nsmf_param.up_cnx_state;
+
     if (sess->nsmf_param.ngap_cause.group) {
         HsmfUpdateData.ng_ap_cause = &ngApCause;
         ngApCause.group = sess->nsmf_param.ngap_cause.group;

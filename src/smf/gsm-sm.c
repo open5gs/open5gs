@@ -1088,16 +1088,29 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     rc = smf_nsmf_handle_update_data_in_hsmf(
                             sess, stream, sbi_message);
                     if (rc == true) {
-                        ogs_assert(sess->nsmf_param.request_indication);
-
-                        if (sess->nsmf_param.request_indication ==
-                            OpenAPI_request_indication_NW_REQ_PDU_SES_MOD) {
-                            ogs_fatal("TODO");
-
-                            ogs_assert(true ==
-                                    ogs_sbi_send_http_status_no_content(
-                                        stream));
-                        } else {
+                        switch (sess->nsmf_param.request_indication) {
+                        case OpenAPI_request_indication_UE_REQ_PDU_SES_MOD:
+                            if (sess->nsmf_param.up_cnx_state ==
+                                    OpenAPI_up_cnx_state_DEACTIVATED) {
+                                ogs_assert(OGS_OK ==
+                                    smf_5gc_pfcp_send_all_pdr_modification_request(
+                                        sess, stream,
+                                        OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+                                        OGS_PFCP_MODIFY_DL_ONLY|
+                                        OGS_PFCP_MODIFY_DEACTIVATE, 0, 0));
+                            } else {
+                                ogs_error("Unknown State [%d]",
+                                        sess->nsmf_param.up_cnx_state);
+                                ogs_assert(true ==
+                                        ogs_sbi_send_http_status_no_content(
+                                            stream));
+                            }
+                            break;
+                        case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
+                        case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
+                            e->h.sbi.state =
+                                OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED;
+                            OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
                             if (sess->nsmf_param.request_indication ==
                                     OpenAPI_request_indication_UE_REQ_PDU_SES_REL) {
                                 e->h.sbi.state =
@@ -1106,12 +1119,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     OpenAPI_request_indication_NW_REQ_PDU_SES_REL) {
                                 e->h.sbi.state =
                                 OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT;
-
-                            } else {
-                                ogs_fatal("Not implemented "
-                                        "[requestIndication:%d]",
-                                        sess->nsmf_param.request_indication);
-                                ogs_assert_if_reached();
                             }
     /*
      * TS23.502 clause 4.3.4.3 UE or network requested PDU Session Release
@@ -1135,6 +1142,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                         stream));
 
                             OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
+                            break;
+                        default:
+                            ogs_error("Unknown request_indication:%d",
+                                    sess->nsmf_param.request_indication);
                         }
                     } else {
                         ogs_error("smf_nsmf_handle_update_data_in_hsmf() "
@@ -1259,10 +1270,29 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     SWITCH(sbi_message->h.resource.component[2])
                     CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                        if (e->h.sbi.state ==
-                                OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT)
-                            OGS_FSM_TRAN(&sess->sm,
-                                    &smf_gsm_state_wait_pfcp_deletion);
+                        switch (sess->nsmf_param.request_indication) {
+                        case OpenAPI_request_indication_UE_REQ_PDU_SES_MOD:
+                            if (sess->nsmf_param.up_cnx_state ==
+                                    OpenAPI_up_cnx_state_DEACTIVATED) {
+                                smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                                        sess, stream,
+                                        OpenAPI_up_cnx_state_DEACTIVATED);
+                            } else {
+                                ogs_fatal("Unkown state [%d]",
+                                        sess->nsmf_param.up_cnx_state);
+                            }
+                            break;
+                        case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
+                        case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
+                            if (e->h.sbi.state ==
+                                    OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT)
+                                OGS_FSM_TRAN(&sess->sm,
+                                        &smf_gsm_state_wait_pfcp_deletion);
+                            break;
+                        default:
+                            ogs_error("Unknown request_indication:%d",
+                                    sess->nsmf_param.request_indication);
+                        }
                         break;
                     CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
                         if (e->h.sbi.state ==

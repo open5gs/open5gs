@@ -83,6 +83,8 @@ typedef struct smf_nsmf_pdusession_param_s {
         uint8_t spare:6;)
     };
 
+    OpenAPI_up_cnx_state_e up_cnx_state;
+
 #define QOS_RULE_CODE_FROM_PFCP_FLAGS(pfcp_flags) \
         (pfcp_flags & OGS_PFCP_MODIFY_CREATE) ? \
             OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE : \

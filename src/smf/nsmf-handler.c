@@ -611,7 +611,7 @@ bool smf_nsmf_handle_create_sm_context(
 bool smf_nsmf_handle_update_sm_context(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
-    int i;
+    int r, i;
     smf_ue_t *smf_ue = NULL;
 
     ogs_sbi_message_t sendmsg;
@@ -801,28 +801,65 @@ bool smf_nsmf_handle_update_sm_context(
          ********************************************************/
             if (sess->ngap_state.pdu_session_resource_release ==
                     SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED) {
-                /*
-                 * 1. UE->SMF: PDU session release request
-                 * 2. PFCP Session Deletion Request/Response
-                 * 3. AMF/SMF->UE : PDUSessionResourceReleaseCommand +
-                 *                  PDU session release command
-                 *    sess->ngap_state.pdu_session_resource_release is set
-                 *      to SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED
-                 * 4. UE->AMF/SMF : PDUSessionResourceReleaseResponse
-                 *
-                 * If UE sends UEContextReleaseRequest to the AMF/SMF,
-                 * there is no PFCP context in the SMF/UPF.
-                 *
-                 * So, PFCP deactivation is skipped.
-                 */
+/*
+ * If UE initiates PDU Session Release, PFCP context is already removed.
+ * In this case, skip PFCP deactivation and only send UP_CNX_STATE=DEACTIVATED.
+ *
+ * Typical flow:
+ * 1. UE -> SMF: PDU Session Release Request
+ * 2. SMF -> UPF: PFCP Session Deletion
+ * 3. SMF -> UE : ReleaseCommand (NAS + NGAP)
+ * 4. UE -> SMF: PDU Session Release Response
+ *
+ * If UE sends UEContextReleaseRequest after step 4,
+ * PFCP session no longer exists in UPF.
+ */
                 smf_sbi_send_sm_context_updated_data_up_cnx_state(
                         sess, stream, OpenAPI_up_cnx_state_DEACTIVATED);
             } else {
-                ogs_assert(OGS_OK ==
-                    smf_5gc_pfcp_send_all_pdr_modification_request(
-                        sess, stream,
-                        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
-                        0, 0));
+                if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+/*
+ * For Home Routed Roaming, delegate PFCP deactivation to H-SMF by
+ * sending UP_CNX_STATE=DEACTIVATED via HsmfUpdateData.
+ */
+                    memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
+
+                    sess->nsmf_param.request_indication =
+                        OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
+
+                    sess->nsmf_param.up_cnx_state =
+                        SmContextUpdateData->up_cnx_state;
+
+                    if (SmContextUpdateData->ue_location)
+                        sess->nsmf_param.ue_location = true;
+                    if (SmContextUpdateData->ue_time_zone)
+                        sess->nsmf_param.ue_timezone = true;
+
+                    if (SmContextUpdateData->ng_ap_cause) {
+                        OpenAPI_ng_ap_cause_t *ngApCause =
+                            SmContextUpdateData->ng_ap_cause;
+                        sess->nsmf_param.ngap_cause.group = ngApCause->group;
+                        sess->nsmf_param.ngap_cause.value = ngApCause->value;
+                    }
+
+                    r = smf_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            smf_nsmf_pdusession_build_hsmf_update_data,
+                            sess, stream, 0, NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+
+                } else {
+/*
+ * For non-HRR sessions, directly send PFCP PDR modification with
+ * DL-only deactivation to the local UPF.
+ */
+                    ogs_assert(OGS_OK ==
+                        smf_5gc_pfcp_send_all_pdr_modification_request(
+                            sess, stream,
+                            OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
+                            0, 0));
+                }
             }
 
         } else if (SmContextUpdateData->up_cnx_state ==
