@@ -1312,8 +1312,6 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
         ogs_assert(nas_message);
 
         ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
-        ogs_assert(ran_ue);
-        ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
         if (!ran_ue) {
             ogs_error("No NG Context SUPI[%s] NAS-Type[%d] "
                     "RAN-UE-ID[%d:%p]",
@@ -1753,7 +1751,15 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(nas_message);
 
         ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
-        ogs_assert(ran_ue);
+        if (!ran_ue) {
+            ogs_error("No NG Context SUPI[%s] NAS-Type[%d] "
+                    "RAN-UE-ID[%d:%p]",
+                    amf_ue->supi, nas_message->gmm.h.message_type,
+                    amf_ue->ran_ue_id, ran_ue_find_by_id(amf_ue->ran_ue_id));
+            ogs_assert(e->pkbuf);
+            ogs_log_hexdump(OGS_LOG_ERROR, e->pkbuf->data, e->pkbuf->len);
+            break;
+        }
 
         h.type = e->nas.type;
 
@@ -2112,7 +2118,15 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(nas_message);
 
         ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
-        ogs_assert(ran_ue);
+        if (!ran_ue) {
+            ogs_error("No NG Context SUPI[%s] NAS-Type[%d] "
+                    "RAN-UE-ID[%d:%p]",
+                    amf_ue->supi, nas_message->gmm.h.message_type,
+                    amf_ue->ran_ue_id, ran_ue_find_by_id(amf_ue->ran_ue_id));
+            ogs_assert(e->pkbuf);
+            ogs_log_hexdump(OGS_LOG_ERROR, e->pkbuf->data, e->pkbuf->len);
+            break;
+        }
 
         h.type = e->nas.type;
 
@@ -2657,7 +2671,15 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(nas_message);
 
         ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
-        ogs_assert(ran_ue);
+        if (!ran_ue) {
+            ogs_error("No NG Context SUPI[%s] NAS-Type[%d] "
+                    "RAN-UE-ID[%d:%p]",
+                    amf_ue->supi, nas_message->gmm.h.message_type,
+                    amf_ue->ran_ue_id, ran_ue_find_by_id(amf_ue->ran_ue_id));
+            ogs_assert(e->pkbuf);
+            ogs_log_hexdump(OGS_LOG_ERROR, e->pkbuf->data, e->pkbuf->len);
+            break;
+        }
 
         h.type = e->nas.type;
 
@@ -2951,7 +2973,15 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(nas_message);
 
         ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
-        ogs_assert(ran_ue);
+        if (!ran_ue) {
+            ogs_error("No NG Context SUPI[%s] NAS-Type[%d] "
+                    "RAN-UE-ID[%d:%p]",
+                    amf_ue->supi, nas_message->gmm.h.message_type,
+                    amf_ue->ran_ue_id, ran_ue_find_by_id(amf_ue->ran_ue_id));
+            ogs_assert(e->pkbuf);
+            ogs_log_hexdump(OGS_LOG_ERROR, e->pkbuf->data, e->pkbuf->len);
+            break;
+        }
 
         h.type = e->nas.type;
 
@@ -3069,7 +3099,27 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(sbi_message);
 
         ran_ue_t *ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
-        ogs_assert(ran_ue);
+        if (!ran_ue) {
+            int i;
+            ogs_error("No NG Context SUPI[%s] Status[%d] RAN-UE-ID[%d:%p]",
+                    amf_ue->supi, sbi_message->res_status,
+                    amf_ue->ran_ue_id, ran_ue_find_by_id(amf_ue->ran_ue_id));
+
+            if (sbi_message->h.method)
+                ogs_error("    h.method[%s]", sbi_message->h.method);
+            if (sbi_message->h.uri)
+                ogs_error("    h.uri[%s]", sbi_message->h.uri);
+            if (sbi_message->h.service.name)
+                ogs_error("    h.service.name[%s]",
+                        sbi_message->h.service.name);
+            if (sbi_message->h.api.version)
+                ogs_error("    h.api.version[%s]", sbi_message->h.api.version);
+            for (i = 0; i < OGS_SBI_MAX_NUM_OF_RESOURCE_COMPONENT &&
+                        sbi_message->h.resource.component[i]; i++)
+                ogs_error("    h.resource.component[%s:%d]",
+                        sbi_message->h.resource.component[i], i);
+            break;
+        }
 
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NAUSF_AUTH)
