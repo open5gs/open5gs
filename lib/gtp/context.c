@@ -481,6 +481,13 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                 rv = ogs_filteraddrinfo(&adv_addr6, AF_INET6);
                                 ogs_assert(rv == OGS_OK);
 
+                                if (adv_addr || adv_addr6) {
+                                    rv = ogs_sockaddr_to_ip(
+                                            adv_addr, adv_addr6,
+                                            &self.gtpu_ip);
+                                    ogs_assert(rv == OGS_OK);
+                                }
+
                         /* Find first IPv4/IPv6 address in the list.
                          *
                          * In the following configuration,

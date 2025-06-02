@@ -57,9 +57,10 @@ extern "C" {
         \
         ogs_assert(ogs_gtp_self()->gtpu_addr || ogs_gtp_self()->gtpu_addr6); \
         \
-        ogs_sockaddr_to_ip( \
-                ogs_gtp_self()->gtpu_addr, ogs_gtp_self()->gtpu_addr6, \
-                &ogs_gtp_self()->gtpu_ip); \
+        if (!ogs_gtp_self()->gtpu_ip.ipv4 && !ogs_gtp_self()->gtpu_ip.ipv6) \
+            ogs_sockaddr_to_ip( \
+                    ogs_gtp_self()->gtpu_addr, ogs_gtp_self()->gtpu_addr6, \
+                    &ogs_gtp_self()->gtpu_ip); \
     } while(0)
 
 ogs_sock_t *ogs_gtp_server(ogs_socknode_t *node);
