@@ -16,7 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+// Modified by Fatemeh Shafiei Ardestani on 2025-04-06
+// Changes: See GitHub for full diff
 #include "sbi-path.h"
 #include "pfcp-path.h"
 
@@ -621,7 +622,7 @@ int smf_5gc_pfcp_send_qos_flow_list_modification_request(
 
     return rv;
 }
-
+// [FATEMEH] session deletation req
 int smf_5gc_pfcp_send_session_deletion_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, int trigger)
 {

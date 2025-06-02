@@ -14,7 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+#// Modified by Fatemeh Shafiei Ardestani on 2025-04-06
+#// Changes: See GitHub for full diff
 libdiameter_common_sources = files('''
     ogs-diameter-common.h
 
@@ -36,7 +37,7 @@ libdiameter_common_sources = files('''
 libdiameter_common_inc = include_directories('.')
 
 # At this point, Open5GS always use the subproject of freeDiameter
-freeDiameter_proj = subproject('freeDiameter')
+freeDiameter_proj = subproject('freeDiameter', default_options: 'werror=false')
 libfdcore_dep = freeDiameter_proj.get_variable('libfdcore_dep')
 
 libdiameter_common_cc_flags = ['-DOGS_DIAM_COMPILATION']

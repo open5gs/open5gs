@@ -16,7 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+// Modified by Fatemeh Shafiei Ardestani on 2025-04-06
+// Changes: See GitHub for full diff
 #include "context.h"
 #include "s5c-build.h"
 #include "pfcp-path.h"
@@ -667,7 +668,7 @@ void smf_5gc_n4_handle_session_modification_response(
         }
     }
 }
-
+//FATEMEH
 int smf_5gc_n4_handle_session_deletion_response(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, int trigger,
         ogs_pfcp_session_deletion_response_t *rsp)
