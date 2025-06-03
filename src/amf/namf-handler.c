@@ -782,8 +782,6 @@ static int update_rat_res_array(cJSON *json_restrictions,
 static int update_rat_res(OpenAPI_change_item_t *item_change,
                           OpenAPI_list_t *restrictions)
 {
-    cJSON* json = item_change->new_value->json;
-    cJSON* json_restrictions;
 
     if (!item_change->path) {
         return OGS_ERROR;
@@ -792,7 +790,18 @@ static int update_rat_res(OpenAPI_change_item_t *item_change,
     switch (item_change->op) {
     case OpenAPI_change_type_REPLACE:
     case OpenAPI_change_type_ADD:
+    {
+        cJSON *json;
+
+        if ((!item_change->new_value) || (!item_change->new_value->json)) {
+            ogs_error("No 'new_value' field present");
+            return OGS_ERROR;
+        }
+        json = item_change->new_value->json;
+
         if (!strcmp(item_change->path, "")) {
+            cJSON *json_restrictions;
+
             if (!cJSON_IsObject(json)) {
                 ogs_error("Invalid type of am-data");
             }
@@ -813,6 +822,7 @@ static int update_rat_res(OpenAPI_change_item_t *item_change,
             return update_rat_res_add_one(json, restrictions, i);
         }
         return OGS_OK;
+    }
 
     case OpenAPI_change_type__REMOVE:
         if (!strcmp(item_change->path, "")) {
