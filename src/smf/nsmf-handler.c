@@ -2088,6 +2088,8 @@ bool smf_nsmf_handle_update_data_in_hsmf(
 
     sess->nsmf_param.request_indication = HsmfUpdateData->request_indication;
 
+    sess->nsmf_param.up_cnx_state = HsmfUpdateData->up_cnx_state;
+
     n1SmInfoFromUe = HsmfUpdateData->n1_sm_info_from_ue;
     if (n1SmInfoFromUe) {
         n1SmBufFromUe = ogs_sbi_find_part_by_content_id(
