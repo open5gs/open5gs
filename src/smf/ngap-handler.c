@@ -28,7 +28,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     smf_ue_t *smf_ue = NULL;
     smf_bearer_t *qos_flow = NULL;
 
-    int rv, i;
+    int rv, i, r;
 
     uint32_t remote_dl_teid;
     ogs_ip_t remote_dl_ip;
@@ -176,12 +176,23 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         /* ACTIVATED Is NOT Included in RESPONSE */
         ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 #else
-        if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING) {
-            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
-            smf_sbi_send_sm_context_updated_data_up_cnx_state(
-                    sess, stream, OpenAPI_up_cnx_state_ACTIVATED);
+        if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+            ogs_assert(sess->nsmf_param.request_indication);
+
+            r = smf_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                    smf_nsmf_pdusession_build_hsmf_update_data,
+                    sess, stream, 0, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         } else {
-            ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+            if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING) {
+                sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+                smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                        sess, stream, OpenAPI_up_cnx_state_ACTIVATED);
+            } else {
+                ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+            }
         }
 #endif
     }

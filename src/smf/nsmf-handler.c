@@ -779,6 +779,21 @@ bool smf_nsmf_handle_update_sm_context(
             return false;
         }
 
+        if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+            memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
+
+            sess->nsmf_param.request_indication =
+                OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
+
+            sess->nsmf_param.up_cnx_state =
+                SmContextUpdateData->up_cnx_state;
+
+            if (SmContextUpdateData->ue_location)
+                sess->nsmf_param.ue_location = true;
+            if (SmContextUpdateData->ue_time_zone)
+                sess->nsmf_param.ue_timezone = true;
+        }
+
         /*
          * NOTE : The pkbuf created in the SBI message will be removed
          *        from ogs_sbi_message_free().

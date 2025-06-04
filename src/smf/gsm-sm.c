@@ -1098,12 +1098,49 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                         OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
                                         OGS_PFCP_MODIFY_DL_ONLY|
                                         OGS_PFCP_MODIFY_DEACTIVATE, 0, 0));
-                            } else {
-                                ogs_error("Unknown State [%d]",
+                            } else if (sess->nsmf_param.up_cnx_state ==
+                                    OpenAPI_up_cnx_state_ACTIVATING) {
+                                ogs_error("Activating State [%d]",
                                         sess->nsmf_param.up_cnx_state);
                                 ogs_assert(true ==
                                         ogs_sbi_send_http_status_no_content(
                                             stream));
+                            } else {
+                                bool far_update = false;
+
+                                ogs_list_for_each(
+                                        &sess->bearer_list, qos_flow) {
+                                    ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
+                                    ogs_assert(dl_far);
+
+                                    if (dl_far->apply_action !=
+                                            OGS_PFCP_APPLY_ACTION_FORW)
+                                        far_update = true;
+
+                                    dl_far->apply_action =
+                                        OGS_PFCP_APPLY_ACTION_FORW;
+                                    ogs_assert(OGS_OK ==
+                                        ogs_pfcp_ip_to_outer_header_creation(
+                                            &sess->remote_dl_ip,
+                                            &dl_far->outer_header_creation,
+                                            &dl_far->outer_header_creation_len)
+                                        );
+                                    dl_far->outer_header_creation.teid =
+                                        sess->remote_dl_teid;
+                                }
+
+                                if (far_update) {
+                                    ogs_assert(OGS_OK ==
+                                        smf_5gc_pfcp_send_all_pdr_modification_request(
+                                            sess, stream,
+                                            OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+                                            OGS_PFCP_MODIFY_DL_ONLY|
+                                            OGS_PFCP_MODIFY_ACTIVATE, 0, 0));
+                                } else {
+                                    ogs_assert(true ==
+                                            ogs_sbi_send_http_status_no_content(
+                                                stream));
+                                }
                             }
                             break;
                         case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
@@ -1277,9 +1314,24 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                 smf_sbi_send_sm_context_updated_data_up_cnx_state(
                                         sess, stream,
                                         OpenAPI_up_cnx_state_DEACTIVATED);
+                            } else if (sess->nsmf_param.up_cnx_state ==
+                                    OpenAPI_up_cnx_state_ACTIVATING) {
+                                ogs_error("Activating state [%d]",
+                                        sess->nsmf_param.up_cnx_state);
                             } else {
                                 ogs_fatal("Unkown state [%d]",
                                         sess->nsmf_param.up_cnx_state);
+                                if (sess->up_cnx_state ==
+                                        OpenAPI_up_cnx_state_ACTIVATING) {
+                                    sess->up_cnx_state =
+                                        OpenAPI_up_cnx_state_ACTIVATED;
+                                    smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                                            sess, stream,
+                                            OpenAPI_up_cnx_state_ACTIVATED);
+                                } else {
+                                    ogs_assert(true ==
+                                            ogs_sbi_send_http_status_no_content(stream));
+                                }
                             }
                             break;
                         case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
