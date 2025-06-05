@@ -166,12 +166,9 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_data(
         ogs_error("No ueLocation.nr_location");
         goto end;
     }
-    ueLocation.nr_location->ue_location_timestamp =
-        ogs_sbi_gmtime_string(sess->ue_location_timestamp);
-    if (!ueLocation.nr_location->ue_location_timestamp) {
-        ogs_error("No ue_location_timestamp");
-        goto end;
-    }
+    if (sess->ue_location_timestamp)
+        ueLocation.nr_location->ue_location_timestamp =
+            ogs_sbi_gmtime_string(sess->ue_location_timestamp);
 
     PduSessionCreateData.ue_location = &ueLocation;
     PduSessionCreateData.ue_time_zone = ogs_sbi_timezone_string(ogs_timezone());
@@ -348,6 +345,7 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
 
     OpenAPI_hsmf_update_data_t HsmfUpdateData;
     OpenAPI_ng_ap_cause_t ngApCause;
+    OpenAPI_tunnel_info_t vcnTunnelInfo;
     OpenAPI_user_location_t ueLocation;
 
     int rv;
@@ -368,6 +366,7 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
 
     memset(&HsmfUpdateData, 0, sizeof(HsmfUpdateData));
     memset(&ngApCause, 0, sizeof(ngApCause));
+    memset(&vcnTunnelInfo, 0, sizeof(vcnTunnelInfo));
     memset(&ueLocation, 0, sizeof(ueLocation));
 
     HsmfUpdateData.request_indication = sess->nsmf_param.request_indication;
@@ -388,6 +387,32 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
         HsmfUpdateData._5g_mm_cause_value = sess->nsmf_param.gmm_cause;
     }
 
+    if (sess->nsmf_param.serving_network) {
+        HsmfUpdateData.serving_network =
+            ogs_sbi_build_plmn_id_nid(&sess->nr_tai.plmn_id);
+        if (!HsmfUpdateData.serving_network) {
+            ogs_error("No serving_network");
+            goto end;
+        }
+    }
+
+    if (sess->nsmf_param.dl_ip.ipv4)
+        vcnTunnelInfo.ipv4_addr = ogs_ipv4_to_string(
+                sess->nsmf_param.dl_ip.addr);
+
+    if (sess->nsmf_param.dl_ip.ipv6)
+        vcnTunnelInfo.ipv6_addr = ogs_ipv6addr_to_string(
+                sess->nsmf_param.dl_ip.addr6);
+
+    if (vcnTunnelInfo.ipv4_addr || vcnTunnelInfo.ipv6_addr) {
+        vcnTunnelInfo.gtp_teid = ogs_uint32_to_0string(
+                sess->nsmf_param.dl_teid);
+        HsmfUpdateData.vcn_tunnel_info = &vcnTunnelInfo;
+    }
+
+    HsmfUpdateData.an_type = sess->nsmf_param.an_type;
+    HsmfUpdateData.rat_type = sess->nsmf_param.rat_type;
+
     if (sess->nsmf_param.ue_location) {
         ueLocation.nr_location = ogs_sbi_build_nr_location(
                 &sess->nr_tai, &sess->nr_cgi);
@@ -395,12 +420,9 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
             ogs_error("No ueLocation.nr_location");
             goto end;
         }
-        ueLocation.nr_location->ue_location_timestamp =
-            ogs_sbi_gmtime_string(sess->ue_location_timestamp);
-        if (!ueLocation.nr_location->ue_location_timestamp) {
-            ogs_error("No ue_location_timestamp");
-            goto end;
-        }
+        if (sess->ue_location_timestamp)
+            ueLocation.nr_location->ue_location_timestamp =
+                ogs_sbi_gmtime_string(sess->ue_location_timestamp);
 
         HsmfUpdateData.ue_location = &ueLocation;
     }
@@ -447,6 +469,16 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
 end:
     if (message.h.uri)
         ogs_free(message.h.uri);
+
+    if (HsmfUpdateData.serving_network)
+        ogs_sbi_free_plmn_id_nid(HsmfUpdateData.serving_network);
+
+    if (vcnTunnelInfo.ipv4_addr)
+        ogs_free(vcnTunnelInfo.ipv4_addr);
+    if (vcnTunnelInfo.ipv6_addr)
+        ogs_free(vcnTunnelInfo.ipv6_addr);
+    if (vcnTunnelInfo.gtp_teid)
+        ogs_free(vcnTunnelInfo.gtp_teid);
 
     if (ueLocation.nr_location) {
         if (ueLocation.nr_location->ue_location_timestamp)
@@ -734,12 +766,9 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_release_data(
             ogs_error("No ueLocation.nr_location");
             goto end;
         }
-        ueLocation.nr_location->ue_location_timestamp =
-            ogs_sbi_gmtime_string(sess->ue_location_timestamp);
-        if (!ueLocation.nr_location->ue_location_timestamp) {
-            ogs_error("No ue_location_timestamp");
-            goto end;
-        }
+        if (sess->ue_location_timestamp)
+            ueLocation.nr_location->ue_location_timestamp =
+                ogs_sbi_gmtime_string(sess->ue_location_timestamp);
 
         ReleaseData.ue_location = &ueLocation;
     }

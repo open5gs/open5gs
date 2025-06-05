@@ -785,13 +785,19 @@ bool smf_nsmf_handle_update_sm_context(
             sess->nsmf_param.request_indication =
                 OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
 
-            sess->nsmf_param.up_cnx_state =
-                SmContextUpdateData->up_cnx_state;
+            sess->nsmf_param.serving_network = true;
 
-            if (SmContextUpdateData->ue_location)
-                sess->nsmf_param.ue_location = true;
-            if (SmContextUpdateData->ue_time_zone)
-                sess->nsmf_param.ue_timezone = true;
+            ogs_assert(OGS_OK ==
+                    ogs_sockaddr_to_ip(
+                        sess->local_dl_addr, sess->local_dl_addr6,
+                        &sess->nsmf_param.dl_ip));
+            sess->nsmf_param.dl_teid = sess->local_dl_teid;
+
+            sess->nsmf_param.an_type = sess->an_type;
+            sess->nsmf_param.rat_type = sess->sbi_rat_type;
+
+            sess->nsmf_param.ue_location = true;
+            sess->nsmf_param.ue_timezone = true;
         }
 
         /*
@@ -1426,7 +1432,9 @@ bool smf_nsmf_handle_create_data_in_hsmf(
     if (sess->remote_dl_ip.ipv4 && sess->remote_dl_ip.ipv6)
         sess->remote_dl_ip.len = OGS_IPV4V6_LEN;
 
-    sess->remote_dl_teid = ogs_uint64_from_string_hexadecimal(vcnTunnelInfo->gtp_teid);
+    if (vcnTunnelInfo->gtp_teid)
+        sess->remote_dl_teid =
+            ogs_uint64_from_string_hexadecimal(vcnTunnelInfo->gtp_teid);
     ogs_debug("vcnTunnelInfo->ipv4 = 0x%x", sess->remote_dl_ip.addr);
     ogs_log_hexdump(OGS_LOG_DEBUG, sess->remote_dl_ip.addr6, OGS_IPV6_LEN);
     ogs_debug("vcnTunnelInfo->gtp_teid = 0x%x", sess->remote_dl_teid);
@@ -1815,10 +1823,14 @@ bool smf_nsmf_handle_created_data_in_vsmf(
         if (sess->remote_ul_ip.ipv4 && sess->remote_ul_ip.ipv6)
             sess->remote_ul_ip.len = OGS_IPV4V6_LEN;
 
-        sess->remote_ul_teid = ogs_uint64_from_string_hexadecimal(hcnTunnelInfo->gtp_teid);
-        ogs_debug("hcnTunnelInfo->ipv4 = 0x%x", sess->remote_ul_ip.addr);
-        ogs_log_hexdump(OGS_LOG_DEBUG, sess->remote_ul_ip.addr6, OGS_IPV6_LEN);
-        ogs_debug("hcnTunnelInfo->gtp_teid = 0x%x", sess->remote_ul_teid);
+        if (hcnTunnelInfo->gtp_teid) {
+            sess->remote_ul_teid =
+                ogs_uint64_from_string_hexadecimal(hcnTunnelInfo->gtp_teid);
+            ogs_debug("hcnTunnelInfo->ipv4 = 0x%x", sess->remote_ul_ip.addr);
+            ogs_log_hexdump(OGS_LOG_DEBUG,
+                    sess->remote_ul_ip.addr6, OGS_IPV6_LEN);
+            ogs_debug("hcnTunnelInfo->gtp_teid = 0x%x", sess->remote_ul_teid);
+        }
 
         dl_pdr = qos_flow->dl_pdr;
         ogs_assert(dl_pdr);
@@ -2067,6 +2079,8 @@ bool smf_nsmf_handle_update_data_in_hsmf(
 
     OpenAPI_hsmf_update_data_t *HsmfUpdateData = NULL;
 
+    OpenAPI_plmn_id_nid_t *servingNetwork = NULL;
+    OpenAPI_tunnel_info_t *vcnTunnelInfo = NULL;
     OpenAPI_ref_to_binary_data_t *n1SmInfoFromUe = NULL;
 
     ogs_nas_5gs_message_t nas_message;
@@ -2105,26 +2119,54 @@ bool smf_nsmf_handle_update_data_in_hsmf(
 
     sess->nsmf_param.up_cnx_state = HsmfUpdateData->up_cnx_state;
 
-    n1SmInfoFromUe = HsmfUpdateData->n1_sm_info_from_ue;
-    if (n1SmInfoFromUe) {
-        n1SmBufFromUe = ogs_sbi_find_part_by_content_id(
-                message, n1SmInfoFromUe->content_id);
-
-        if (n1SmBufFromUe) {
-            rv = gsmue_decode_n1_sm_info(&nas_message, n1SmBufFromUe);
+    vcnTunnelInfo = HsmfUpdateData->vcn_tunnel_info;
+    if (vcnTunnelInfo) {
+        if (vcnTunnelInfo->ipv4_addr) {
+            rv = ogs_ipv4_from_string(
+                    &sess->nsmf_param.dl_ip.addr, vcnTunnelInfo->ipv4_addr);
             if (rv != OGS_OK) {
-                ogs_error("[%s:%d] cannot decode N1 SM Content [%s]",
-                        smf_ue->supi, sess->psi, n1SmInfoFromUe->content_id);
-                ogs_log_hexdump(OGS_LOG_ERROR,
-                        n1SmBufFromUe->data, n1SmBufFromUe->len);
+                ogs_error("ogs_ipv4_from_string() [%s] failed",
+                        vcnTunnelInfo->ipv4_addr);
                 smf_sbi_send_hsmf_update_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
-                        OGS_5GSM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
-                        "cannot decode N1 SM Content", smf_ue->supi, NULL);
+                        OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                        "ogs_ipv4_from_string() failed",
+                        vcnTunnelInfo->ipv4_addr, NULL);
                 return false;
             }
+            sess->nsmf_param.dl_ip.ipv4 = 1;
+            sess->nsmf_param.dl_ip.len = OGS_IPV4_LEN;
         }
+        if (vcnTunnelInfo->ipv6_addr) {
+            rv = ogs_ipv6addr_from_string(
+                    sess->nsmf_param.dl_ip.addr6, vcnTunnelInfo->ipv6_addr);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_ipv6addr_from_string() [%s] failed",
+                        vcnTunnelInfo->ipv6_addr);
+                smf_sbi_send_hsmf_update_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                        OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                        "ogs_ipv6addr_from_string() failed",
+                        vcnTunnelInfo->ipv6_addr, NULL);
+                return false;
+            }
+            sess->nsmf_param.dl_ip.ipv6 = 1;
+            sess->nsmf_param.dl_ip.len = OGS_IPV6_LEN;
+        }
+        if (sess->remote_dl_ip.ipv4 && sess->remote_dl_ip.ipv6)
+            sess->remote_dl_ip.len = OGS_IPV4V6_LEN;
+
+        if (vcnTunnelInfo->gtp_teid)
+            sess->nsmf_param.dl_teid =
+                ogs_uint64_from_string_hexadecimal(vcnTunnelInfo->gtp_teid);
     }
+
+    sess->nsmf_param.an_type = HsmfUpdateData->an_type;
+    sess->nsmf_param.rat_type = HsmfUpdateData->rat_type;
+
+    servingNetwork = HsmfUpdateData->serving_network;
+    if (servingNetwork && servingNetwork->mcc && servingNetwork->mnc)
+        sess->nsmf_param.serving_network = true;
 
     if (HsmfUpdateData->ue_location &&
         HsmfUpdateData->ue_location->nr_location) {
@@ -2161,6 +2203,27 @@ bool smf_nsmf_handle_update_data_in_hsmf(
     }
     sess->nsmf_param.gmm_cause = HsmfUpdateData->_5g_mm_cause_value;
     sess->nsmf_param.cause = HsmfUpdateData->cause;
+
+    n1SmInfoFromUe = HsmfUpdateData->n1_sm_info_from_ue;
+    if (n1SmInfoFromUe) {
+        n1SmBufFromUe = ogs_sbi_find_part_by_content_id(
+                message, n1SmInfoFromUe->content_id);
+
+        if (n1SmBufFromUe) {
+            rv = gsmue_decode_n1_sm_info(&nas_message, n1SmBufFromUe);
+            if (rv != OGS_OK) {
+                ogs_error("[%s:%d] cannot decode N1 SM Content [%s]",
+                        smf_ue->supi, sess->psi, n1SmInfoFromUe->content_id);
+                ogs_log_hexdump(OGS_LOG_ERROR,
+                        n1SmBufFromUe->data, n1SmBufFromUe->len);
+                smf_sbi_send_hsmf_update_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                        OGS_5GSM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+                        "cannot decode N1 SM Content", smf_ue->supi, NULL);
+                return false;
+            }
+        }
+    }
 
     return true;
 }

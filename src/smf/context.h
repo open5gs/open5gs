@@ -78,10 +78,17 @@ typedef struct smf_nsmf_pdusession_param_s {
     int gsm_cause;
 
     struct {
-    ED3(uint8_t ue_location:1;,
+    ED4(uint8_t serving_network:1;,
+        uint8_t ue_location:1;,
         uint8_t ue_timezone:1;,
-        uint8_t spare:6;)
+        uint8_t spare:4;)
     };
+
+    uint32_t dl_teid;
+    ogs_ip_t dl_ip;
+
+    OpenAPI_access_type_e an_type;
+    OpenAPI_rat_type_e rat_type;
 
     OpenAPI_up_cnx_state_e up_cnx_state;
 
@@ -103,6 +110,7 @@ typedef struct smf_nsmf_pdusession_param_s {
         (pfcp_flags & OGS_PFCP_MODIFY_QOS_MODIFY) ? \
             OGS_NAS_MODIFY_NEW_QOS_FLOW_DESCRIPTION : 0
     uint8_t qos_flow_description_code;
+
 } smf_nsmf_pdusession_param_t;
 
 /* HR flag bit */

@@ -1108,6 +1108,14 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             } else {
                                 bool far_update = false;
 
+                                if (memcmp(
+                                        &sess->nsmf_param.dl_ip,
+                                        &sess->remote_dl_ip,
+                                        sizeof(sess->nsmf_param.dl_ip)) != 0 ||
+                                    sess->nsmf_param.dl_teid !=
+                                        sess->remote_dl_teid)
+                                    far_update = true;
+
                                 ogs_list_for_each(
                                         &sess->bearer_list, qos_flow) {
                                     ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
@@ -1319,16 +1327,16 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                 ogs_error("Activating state [%d]",
                                         sess->nsmf_param.up_cnx_state);
                             } else {
-                                ogs_fatal("Unkown state [%d]",
-                                        sess->nsmf_param.up_cnx_state);
                                 if (sess->up_cnx_state ==
                                         OpenAPI_up_cnx_state_ACTIVATING) {
+                                    ogs_fatal("ACTIVATED");
                                     sess->up_cnx_state =
                                         OpenAPI_up_cnx_state_ACTIVATED;
                                     smf_sbi_send_sm_context_updated_data_up_cnx_state(
                                             sess, stream,
                                             OpenAPI_up_cnx_state_ACTIVATED);
                                 } else {
+                                    ogs_fatal("No-Content");
                                     ogs_assert(true ==
                                             ogs_sbi_send_http_status_no_content(stream));
                                 }
