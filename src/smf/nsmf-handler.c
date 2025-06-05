@@ -611,7 +611,7 @@ bool smf_nsmf_handle_create_sm_context(
 bool smf_nsmf_handle_update_sm_context(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
-    int r, i;
+    int r;
     smf_ue_t *smf_ue = NULL;
 
     ogs_sbi_message_t sendmsg;
@@ -889,9 +889,6 @@ bool smf_nsmf_handle_update_sm_context(
         /*********************************************************
          * Handle ACTIVATING
          ********************************************************/
-            OpenAPI_sm_context_updated_data_t SmContextUpdatedData;
-            OpenAPI_ref_to_binary_data_t n2SmInfo;
-
             if (!OGS_FSM_CHECK(&sess->sm, smf_gsm_state_operational)) {
             /*
              * TS29.502 5.2.2.3.2.2
@@ -937,38 +934,33 @@ bool smf_nsmf_handle_update_sm_context(
                 return false;
             }
 
-            memset(&sendmsg, 0, sizeof(sendmsg));
-            sendmsg.SmContextUpdatedData = &SmContextUpdatedData;
+            if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+                memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
 
-            memset(&SmContextUpdatedData, 0, sizeof(SmContextUpdatedData));
-            SmContextUpdatedData.up_cnx_state = OpenAPI_up_cnx_state_ACTIVATING;
-            SmContextUpdatedData.n2_sm_info_type =
-                OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ;
-            SmContextUpdatedData.n2_sm_info = &n2SmInfo;
+                sess->nsmf_param.request_indication =
+                    OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
 
-            memset(&n2SmInfo, 0, sizeof(n2SmInfo));
-            n2SmInfo.content_id = (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
+                sess->nsmf_param.up_cnx_state =
+                    SmContextUpdateData->up_cnx_state;
 
-            sendmsg.num_of_part = 0;
+                r = smf_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                        smf_nsmf_pdusession_build_hsmf_update_data,
+                        sess, stream, 0, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
 
-            sendmsg.part[sendmsg.num_of_part].pkbuf =
-                ngap_build_pdu_session_resource_setup_request_transfer(sess);
-            if (sendmsg.part[sendmsg.num_of_part].pkbuf) {
-                sendmsg.part[sendmsg.num_of_part].content_id =
-                    (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
-                sendmsg.part[sendmsg.num_of_part].content_type =
-                    (char *)OGS_SBI_CONTENT_NGAP_TYPE;
-                sendmsg.num_of_part++;
+            } else {
+                ogs_pkbuf_t *n2smbuf =
+                    ngap_build_pdu_session_resource_setup_request_transfer(
+                            sess);
+                ogs_assert(n2smbuf);
+
+                smf_sbi_send_sm_context_updated_data(
+                        sess, stream,
+                        OpenAPI_up_cnx_state_ACTIVATING, 0, NULL,
+                        OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ, n2smbuf);
             }
-
-            response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
-            ogs_assert(response);
-            ogs_assert(true == ogs_sbi_server_send_response(stream, response));
-
-            for (i = 0; i < sendmsg.num_of_part; i++)
-                if (sendmsg.part[i].pkbuf)
-                    ogs_pkbuf_free(sendmsg.part[i].pkbuf);
-
         } else {
             char *strerror = ogs_msprintf("[%s:%d] Invalid upCnxState [%d]",
                 smf_ue->supi, sess->psi, SmContextUpdateData->up_cnx_state);

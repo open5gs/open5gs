@@ -1100,8 +1100,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                         OGS_PFCP_MODIFY_DEACTIVATE, 0, 0));
                             } else if (sess->nsmf_param.up_cnx_state ==
                                     OpenAPI_up_cnx_state_ACTIVATING) {
-                                ogs_error("Activating State [%d]",
-                                        sess->nsmf_param.up_cnx_state);
                                 ogs_assert(true ==
                                         ogs_sbi_send_http_status_no_content(
                                             stream));
@@ -1324,21 +1322,30 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                         OpenAPI_up_cnx_state_DEACTIVATED);
                             } else if (sess->nsmf_param.up_cnx_state ==
                                     OpenAPI_up_cnx_state_ACTIVATING) {
-                                ogs_error("Activating state [%d]",
-                                        sess->nsmf_param.up_cnx_state);
+
+                                ogs_pkbuf_t *n2smbuf =
+                                    ngap_build_pdu_session_resource_setup_request_transfer(sess);
+                                ogs_assert(n2smbuf);
+
+                                smf_sbi_send_sm_context_updated_data(
+                                        sess, stream,
+                                        OpenAPI_up_cnx_state_ACTIVATING, 0,
+                                        NULL,
+                                        OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ,
+                                        n2smbuf);
+
                             } else {
                                 if (sess->up_cnx_state ==
                                         OpenAPI_up_cnx_state_ACTIVATING) {
-                                    ogs_fatal("ACTIVATED");
                                     sess->up_cnx_state =
                                         OpenAPI_up_cnx_state_ACTIVATED;
                                     smf_sbi_send_sm_context_updated_data_up_cnx_state(
                                             sess, stream,
                                             OpenAPI_up_cnx_state_ACTIVATED);
                                 } else {
-                                    ogs_fatal("No-Content");
                                     ogs_assert(true ==
-                                            ogs_sbi_send_http_status_no_content(stream));
+                                            ogs_sbi_send_http_status_no_content(
+                                                stream));
                                 }
                             }
                             break;
