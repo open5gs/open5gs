@@ -36,6 +36,33 @@ void smf_sbi_close(void);
 
 bool smf_sbi_send_request(
         ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
+
+/* HR flag (bit 7) */
+#define SMF_UPDATE_FLAG_HR                         (1 << 7)
+
+/* no update performed (initial state) */
+#define SMF_UPDATE_STATE_NONE                      0x00
+
+/* update is in progress (activating) */
+#define SMF_UPDATE_STATE_ACTIVATING                0x01
+#define SMF_UPDATE_STATE_HR_ACTIVATING             \
+  (SMF_UPDATE_STATE_ACTIVATING | SMF_UPDATE_FLAG_HR)
+
+/* activated from activating state */
+#define SMF_UPDATE_STATE_ACTIVATED_FROM_ACTIVATING 0x02
+#define SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING \
+  (SMF_UPDATE_STATE_ACTIVATED_FROM_ACTIVATING | SMF_UPDATE_FLAG_HR)
+
+/* activated when not in activating state */
+#define SMF_UPDATE_STATE_ACTIVATED_FROM_NON_ACTIVATING 0x03
+#define SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING \
+  (SMF_UPDATE_STATE_ACTIVATED_FROM_NON_ACTIVATING | SMF_UPDATE_FLAG_HR)
+
+/* deactivated state */
+#define SMF_UPDATE_STATE_DEACTIVATED               0x04
+#define SMF_UPDATE_STATE_HR_DEACTIVATED            \
+  (SMF_UPDATE_STATE_DEACTIVATED | SMF_UPDATE_FLAG_HR)
+
 int smf_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
