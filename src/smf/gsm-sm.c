@@ -1313,53 +1313,50 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     SWITCH(sbi_message->h.resource.component[2])
                     CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                        switch (sess->nsmf_param.request_indication) {
-                        case OpenAPI_request_indication_UE_REQ_PDU_SES_MOD:
-                            switch (e->h.sbi.state) {
-                            case SMF_UPDATE_STATE_HR_DEACTIVATED:
-                                smf_sbi_send_sm_context_updated_data_up_cnx_state(
-                                        sess, stream,
-                                        OpenAPI_up_cnx_state_DEACTIVATED);
-                                break;
-                            case SMF_UPDATE_STATE_HR_ACTIVATING:
-                                ogs_pkbuf_t *n2smbuf =
-                                    ngap_build_pdu_session_resource_setup_request_transfer(sess);
-                                ogs_assert(n2smbuf);
-
-                                smf_sbi_send_sm_context_updated_data(
-                                        sess, stream,
-                                        OpenAPI_up_cnx_state_ACTIVATING, 0,
-                                        NULL,
-                                        OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ,
-                                        n2smbuf);
-                                break;
-                            case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING:
-                                sess->up_cnx_state =
-                                    OpenAPI_up_cnx_state_ACTIVATED;
-                                smf_sbi_send_sm_context_updated_data_up_cnx_state(
-                                        sess, stream,
-                                        OpenAPI_up_cnx_state_ACTIVATED);
-                                break;
-                            case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING:
-                                ogs_assert(true ==
-                                        ogs_sbi_send_http_status_no_content(
-                                            stream));
-                                break;
-                            default:
-                                ogs_fatal("Unknown state [%d]", e->h.sbi.state);
-                                ogs_assert_if_reached();
-                            }
+/*
+ * PFCP delete triggers are defined in lib/pfcp/xact.h (values 1–7).
+ * To avoid overlap with OGS_PFCP_DELETE_TRIGGER_*, SMF states use:
+ *   - UPDATE_STATE_BASE at 0x10–0x14
+ *   - UECM_STATE_BASE   at 0x20–0x23
+ * HR flag is bit 7 (0x80).
+ */
+                        switch (e->h.sbi.state) {
+                        case OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT:
+                            OGS_FSM_TRAN(&sess->sm,
+                                    &smf_gsm_state_wait_pfcp_deletion);
                             break;
-                        case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
-                        case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
-                            if (e->h.sbi.state ==
-                                    OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT)
-                                OGS_FSM_TRAN(&sess->sm,
-                                        &smf_gsm_state_wait_pfcp_deletion);
+                        case SMF_UPDATE_STATE_HR_DEACTIVATED:
+                            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                                    sess, stream,
+                                    OpenAPI_up_cnx_state_DEACTIVATED);
+                            break;
+                        case SMF_UPDATE_STATE_HR_ACTIVATING:
+                            ogs_pkbuf_t *n2smbuf =
+                                ngap_build_pdu_session_resource_setup_request_transfer(sess);
+                            ogs_assert(n2smbuf);
+
+                            smf_sbi_send_sm_context_updated_data(
+                                    sess, stream,
+                                    OpenAPI_up_cnx_state_ACTIVATING, 0,
+                                    NULL,
+                                    OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ,
+                                    n2smbuf);
+                            break;
+                        case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING:
+                            sess->up_cnx_state =
+                                OpenAPI_up_cnx_state_ACTIVATED;
+                            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                                    sess, stream,
+                                    OpenAPI_up_cnx_state_ACTIVATED);
+                            break;
+                        case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING:
+                            ogs_assert(true ==
+                                    ogs_sbi_send_http_status_no_content(
+                                        stream));
                             break;
                         default:
-                            ogs_error("Unknown request_indication:%d",
-                                    sess->nsmf_param.request_indication);
+                            ogs_fatal("Unknown state [%d]", e->h.sbi.state);
+                            ogs_assert_if_reached();
                         }
                         break;
                     CASE(OGS_SBI_RESOURCE_NAME_RELEASE)

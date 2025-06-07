@@ -113,41 +113,6 @@ typedef struct smf_nsmf_pdusession_param_s {
 
 } smf_nsmf_pdusession_param_t;
 
-/* HR flag bit */
-#define SMF_UECM_FLAG_HR         (1 << 7)
-
-/* Base states (low bits only) */
-#define SMF_UECM_STATE_NONE       0
-#define SMF_UECM_STATE_REGISTERED 1
-#define SMF_UECM_STATE_DEREG_BY_AMF  2
-#define SMF_UECM_STATE_DEREG_BY_N1N2 3
-
-/* HR variants (OR base state with HR flag) */
-#define SMF_UECM_STATE_REGISTERED_HR    \
-    (SMF_UECM_STATE_REGISTERED | SMF_UECM_FLAG_HR)
-#define SMF_UECM_STATE_DEREG_BY_AMF_HR  \
-    (SMF_UECM_STATE_DEREG_BY_AMF | SMF_UECM_FLAG_HR)
-#define SMF_UECM_STATE_DEREG_BY_N1N2_HR \
-    (SMF_UECM_STATE_DEREG_BY_N1N2 | SMF_UECM_FLAG_HR)
-
-/**
- * Return true if the PDU session anchor SMF is in the HPLMN
- * (Home-Routed Roaming, HR)
- */
-static inline bool smf_uecm_anchor_in_hplmn(int state)
-{
-    return !!(state & SMF_UECM_FLAG_HR);
-}
-
-/**
- * Return true if the PDU session anchor SMF is in the VPLMN
- * (Non-Roaming or Local Break-Out Roaming, LBO)
- */
-static inline bool smf_uecm_anchor_in_vplmn(int state)
-{
-    return !(state & SMF_UECM_FLAG_HR);
-}
-
 typedef struct smf_context_s {
     smf_ctf_config_t    ctf_config;
     const char*         diam_conf_path;   /* SMF Diameter conf path */
