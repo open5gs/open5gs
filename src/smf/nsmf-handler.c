@@ -780,8 +780,6 @@ bool smf_nsmf_handle_update_sm_context(
         }
 
         if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
-            memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
-
             sess->nsmf_param.request_indication =
                 OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
 
@@ -796,8 +794,10 @@ bool smf_nsmf_handle_update_sm_context(
             sess->nsmf_param.an_type = sess->an_type;
             sess->nsmf_param.rat_type = sess->sbi_rat_type;
 
-            sess->nsmf_param.ue_location = true;
-            sess->nsmf_param.ue_timezone = true;
+            if (SmContextUpdateData->ue_location)
+                sess->nsmf_param.ue_location = true;
+            if (SmContextUpdateData->ue_time_zone)
+                sess->nsmf_param.ue_timezone = true;
         }
 
         /*
@@ -843,8 +843,6 @@ bool smf_nsmf_handle_update_sm_context(
  * For Home Routed Roaming, delegate PFCP deactivation to H-SMF by
  * sending UP_CNX_STATE=DEACTIVATED via HsmfUpdateData.
  */
-                    memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
-
                     sess->nsmf_param.request_indication =
                         OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
 
@@ -936,8 +934,6 @@ bool smf_nsmf_handle_update_sm_context(
             }
 
             if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
-                memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
-
                 sess->nsmf_param.request_indication =
                     OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
 
