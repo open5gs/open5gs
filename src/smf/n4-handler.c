@@ -410,8 +410,6 @@ void smf_5gc_n4_handle_session_modification_response(
     if (flags & OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING) {
         if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
             if (flags & OGS_PFCP_MODIFY_DL_ONLY) {
-                ogs_assert(stream);
-
                 if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
                     ogs_assert(sess->nsmf_param.request_indication);
                     ogs_assert(stream);
@@ -427,7 +425,8 @@ void smf_5gc_n4_handle_session_modification_response(
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
                 } else if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
-                    ogs_assert(true ==
+                    if (stream)
+                        ogs_assert(true ==
                             ogs_sbi_send_http_status_no_content(stream));
                 } else {
                     ogs_fatal("Invalid flags [0x%llx]", (long long)flags);
