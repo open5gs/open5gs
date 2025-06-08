@@ -1321,6 +1321,9 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
  * HR flag is bit 7 (0x80).
  */
                         switch (e->h.sbi.state) {
+                        case OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED:
+                            /* Nothing to do */
+                            break;
                         case OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT:
                             OGS_FSM_TRAN(&sess->sm,
                                     &smf_gsm_state_wait_pfcp_deletion);
