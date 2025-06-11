@@ -1863,6 +1863,12 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                     ogs_pkbuf_t *n1smbuf = NULL, *n2smbuf = NULL;
 
                     if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
+                        if (sess->nsmf_param.request_indication !=
+                                OpenAPI_request_indication_UE_REQ_PDU_SES_REL) {
+                            ogs_fatal("Invalid request_indication = %d",
+                                    sess->nsmf_param.request_indication);
+                            ogs_assert_if_reached();
+                        }
 
                         r = smf_sbi_discover_and_send(
                                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
