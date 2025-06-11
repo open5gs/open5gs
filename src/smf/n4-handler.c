@@ -498,10 +498,10 @@ void smf_5gc_n4_handle_session_modification_response(
      * <UE-requested PDU Session Release>
      *
      * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
-     *         OGS_PFCP_MODIFY_DEACTIVATE
+     *        OGS_PFCP_MODIFY_DEACTIVATE
      * 2.  V: OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
-     * 3.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
-     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 3.  V*: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 4.  V*: smf_nsmf_pdusession_build_hsmf_update_data
      * 5.  H: smf_nsmf_handle_update_data_in_hsmf
      * 6.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
      * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
@@ -509,10 +509,10 @@ void smf_5gc_n4_handle_session_modification_response(
      * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
      * 9.  H: smf_nsmf_pdusession_build_vsmf_update_data
      * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
-     * 11. V*: smf_nsmf_handle_update_data_in_vsmf
-     * 12. V*: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
-     * 13. V*: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
-     * 14. V*: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 11. V: smf_nsmf_handle_update_data_in_vsmf
+     * 12. V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
      * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
      *        gsm_build_pdu_session_release_command
      * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
