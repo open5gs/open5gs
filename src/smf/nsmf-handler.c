@@ -743,6 +743,11 @@ bool smf_nsmf_handle_update_sm_context(
      * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
      *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
      * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V: case OGS_EVENT_SBI_CLIENT:
+     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V: ogs_sbi_send_http_status_no_content+
+     *        smf_sbi_send_sm_context_status_notify
+     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
      */
 
                 /* Store Stream ID */
