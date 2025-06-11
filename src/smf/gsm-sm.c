@@ -1104,6 +1104,30 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                         ogs_sbi_send_http_status_no_content(
                                             stream));
                             } else {
+    /*
+     * <UE-requested PDU Session Modification>
+     *
+     * 1.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 2.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
+     *        OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL|OGS_PFCP_MODIFY_ACTIVATE
+     * 3.  V: if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
+     *           pfcp_flags |= OGS_PFCP_MODIFY_FROM_ACTIVATING;
+     * 4.  V: flags & OGS_PFCP_MODIFY_FROM_ACTIVATING ?
+     *           SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING :
+     *           SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING,
+     * 5.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 6.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 7.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 8.  H*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
+     *         OGS_PFCP_MODIFY_ACTIVATE
+     * 9.  H: ogs_sbi_send_http_status_no_content
+     * 10. V: case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING:
+     *           sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+     *           smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *               OpenAPI_up_cnx_state_ACTIVATED);
+     *        case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING:
+     *           ogs_sbi_send_http_status_no_content
+     */
                                 bool far_update = false;
 
                                 if (memcmp(
@@ -1390,6 +1414,20 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
                 SWITCH(sbi_message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+                /*
+                 * <Network-initiated PDU Session Modification>
+                 *
+                 * 1. H:OGS_PFCP_MODIFY_NETWORK_REQUESTED|OGS_PFCP_MODIFY_CREATE
+                 * 2. H:OpenAPI_request_indication_NW_REQ_PDU_SES_MOD
+                 * 3. H:smf_nsmf_pdusession_build_vsmf_update_data
+                 * 4. V:smf_nsmf_handle_update_data_in_vsmf
+                 * 5. V:OpenAPI_request_indication_NW_REQ_PDU_SES_MOD
+                 * 6. V:ngap_build_pdu_session_resource_modify_request_transfer+
+                 *      gsm_build_pdu_session_modification_command
+                 * 7. H:OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+                 *      OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
+                 * 8. H:ogs_sbi_send_http_status_no_content
+                 */
                     ogs_list_for_each_entry(
                             &sess->qos_flow_to_modify_list,
                             qos_flow, to_modify_node) {

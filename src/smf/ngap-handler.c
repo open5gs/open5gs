@@ -164,6 +164,30 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     if (far_update) {
         uint64_t pfcp_flags = OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE;
         if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+    /*
+     * <UE-requested PDU Session Modification>
+     *
+     * 1.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 2.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
+     *        OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL|OGS_PFCP_MODIFY_ACTIVATE
+     * 3.  V*: if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
+     *            pfcp_flags |= OGS_PFCP_MODIFY_FROM_ACTIVATING;
+     * 4.  V: flags & OGS_PFCP_MODIFY_FROM_ACTIVATING ?
+     *           SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING :
+     *           SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING,
+     * 5.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 6.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 7.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
+     *        OGS_PFCP_MODIFY_ACTIVATE
+     * 9.  H: ogs_sbi_send_http_status_no_content
+     * 10. V: case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING:
+     *           sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+     *           smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *               OpenAPI_up_cnx_state_ACTIVATED);
+     *        case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING:
+     *           ogs_sbi_send_http_status_no_content
+     */
             pfcp_flags |= OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING;
             pfcp_flags |= OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL;
 
@@ -180,7 +204,19 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 #else
         if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
-            ogs_assert(sess->nsmf_param.request_indication);
+            sess->nsmf_param.request_indication =
+                OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
+
+            sess->nsmf_param.serving_network = true;
+
+            ogs_assert(OGS_OK ==
+                    ogs_sockaddr_to_ip(
+                        sess->local_dl_addr, sess->local_dl_addr6,
+                        &sess->nsmf_param.dl_ip));
+            sess->nsmf_param.dl_teid = sess->local_dl_teid;
+
+            sess->nsmf_param.an_type = sess->an_type;
+            sess->nsmf_param.rat_type = sess->sbi_rat_type;
 
             r = smf_sbi_discover_and_send(
                     OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,

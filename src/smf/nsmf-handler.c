@@ -780,20 +780,6 @@ bool smf_nsmf_handle_update_sm_context(
         }
 
         if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
-            sess->nsmf_param.request_indication =
-                OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
-
-            sess->nsmf_param.serving_network = true;
-
-            ogs_assert(OGS_OK ==
-                    ogs_sockaddr_to_ip(
-                        sess->local_dl_addr, sess->local_dl_addr6,
-                        &sess->nsmf_param.dl_ip));
-            sess->nsmf_param.dl_teid = sess->local_dl_teid;
-
-            sess->nsmf_param.an_type = sess->an_type;
-            sess->nsmf_param.rat_type = sess->sbi_rat_type;
-
             if (SmContextUpdateData->ue_location)
                 sess->nsmf_param.ue_location = true;
             if (SmContextUpdateData->ue_time_zone)
