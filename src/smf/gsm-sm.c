@@ -1199,20 +1199,21 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
      * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
      *        gsm_build_pdu_session_release_command
      * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
-       17. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
-              case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
-     * 18. V: ogs_sbi_send_http_status_no_content(n1_n2_released_stream)
-     * 19. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
-     * 20. H: case OGS_EVENT_SBI_CLIENT:
-     * 21. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
-     * 22. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     * 17. V: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+     *        case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+     * 19. V: ogs_sbi_send_http_status_no_content(n1_n2_released_stream)
+     * 20. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H: case OGS_EVENT_SBI_CLIENT:
+     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
      *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
-     * 23. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
-     * 24. V: case OGS_EVENT_SBI_CLIENT:
-     * 25. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
-     * 26. V: ogs_sbi_send_http_status_no_content+
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V: case OGS_EVENT_SBI_CLIENT:
+     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V: ogs_sbi_send_http_status_no_content+
      *        smf_sbi_send_sm_context_status_notify
-     * 27. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
      */
                                 e->h.sbi.state =
                                     OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED;
@@ -1307,20 +1308,21 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
      * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
      *        gsm_build_pdu_session_release_command
      * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
-       17. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+     * 17. V: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
               case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
-     * 18. V: ogs_sbi_send_http_status_no_content(n1_n2_released_stream)
-     * 19. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
-     * 20. H: case OGS_EVENT_SBI_CLIENT:
-     * 21. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
-     * 22. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     * 19. V: ogs_sbi_send_http_status_no_content(n1_n2_released_stream)
+     * 20. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H: case OGS_EVENT_SBI_CLIENT:
+     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
      *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
-     * 23. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
-     * 24. V: case OGS_EVENT_SBI_CLIENT:
-     * 25. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
-     * 26. V: ogs_sbi_send_http_status_no_content+
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V: case OGS_EVENT_SBI_CLIENT:
+     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V: ogs_sbi_send_http_status_no_content+
      *        smf_sbi_send_sm_context_status_notify
-     * 27. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
      */
                             e->h.sbi.state =
                                 OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED;
@@ -1972,22 +1974,23 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
      * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
      * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
      * 15. V*: ngap_build_pdu_session_resource_release_command_transfer+
-     *        gsm_build_pdu_session_release_command
+     *         gsm_build_pdu_session_release_command
      * 16  V*: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
-       17. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+     * 17. V: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
               case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
-     * 18. V: ogs_sbi_send_http_status_no_content(n1_n2_released_stream)
-     * 19. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
-     * 20. H: case OGS_EVENT_SBI_CLIENT:
-     * 21. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
-     * 22. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     * 19. V: ogs_sbi_send_http_status_no_content(n1_n2_released_stream)
+     * 20. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H: case OGS_EVENT_SBI_CLIENT:
+     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
      *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
-     * 23. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
-     * 24. V: case OGS_EVENT_SBI_CLIENT:
-     * 25. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
-     * 26. V: ogs_sbi_send_http_status_no_content+
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V: case OGS_EVENT_SBI_CLIENT:
+     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V: ogs_sbi_send_http_status_no_content+
      *        smf_sbi_send_sm_context_status_notify
-     * 27. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
      */
 
                         smf_n1_n2_message_transfer_param_t param;
@@ -2491,6 +2494,44 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     SWITCH(sbi_message->h.resource.component[2])
                     CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+    /*
+     * <UE-requested PDU Session Release>
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 3.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
+     * 11. V: smf_nsmf_handle_update_data_in_vsmf
+     * 12. V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
+     *        gsm_build_pdu_session_release_command
+     * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
+     * 17. V: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+     *         case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+     * 19. V: ogs_sbi_send_http_status_no_content(n1_n2_released_stream)
+     * 20. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H*: case OGS_EVENT_SBI_CLIENT:
+     * 22. H*: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H*: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     *                                 SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V: case OGS_EVENT_SBI_CLIENT:
+     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V: ogs_sbi_send_http_status_no_content+
+     *         smf_sbi_send_sm_context_status_notify
+     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                         r = smf_sbi_cleanup_session(
                                 sess, NULL,
                                 SMF_UECM_STATE_DEREG_BY_N1N2_HR,
@@ -2653,6 +2694,44 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
                 sess->n2_released = true;
                 if ((sess->n1_released) && (sess->n2_released)) {
                     if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+    /*
+     * <UE-requested PDU Session Release>
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 3.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
+     * 11. V: smf_nsmf_handle_update_data_in_vsmf
+     * 12. V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
+     *        gsm_build_pdu_session_release_command
+     * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
+     * 17. V*: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V*: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+     *         case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+     * 19. V*: ogs_sbi_send_http_status_no_content(n1_n2_released_stream)
+     * 20. V*: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H: case OGS_EVENT_SBI_CLIENT:
+     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V: case OGS_EVENT_SBI_CLIENT:
+     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V: ogs_sbi_send_http_status_no_content+
+     *        smf_sbi_send_sm_context_status_notify
+     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                         ogs_sbi_stream_t *n1_n2_released_stream = NULL;
                         if (sess->n1_n2_released_stream_id >= OGS_MIN_POOL_ID &&
                             sess->n1_n2_released_stream_id <= OGS_MAX_POOL_ID)
@@ -2710,6 +2789,44 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
             sess->n1_released = true;
             if ((sess->n1_released) && (sess->n2_released)) {
                 if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+    /*
+     * <UE-requested PDU Session Release>
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 3.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
+     * 11. V: smf_nsmf_handle_update_data_in_vsmf
+     * 12. V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
+     *        gsm_build_pdu_session_release_command
+     * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
+     * 17. V*: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V*: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+     *         case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+     * 19. V*: ogs_sbi_send_http_status_no_content(n1_n2_released_stream)
+     * 20. V*: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H: case OGS_EVENT_SBI_CLIENT:
+     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V: case OGS_EVENT_SBI_CLIENT:
+     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V: ogs_sbi_send_http_status_no_content+
+     *        smf_sbi_send_sm_context_status_notify
+     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                     ogs_sbi_stream_t *n1_n2_released_stream = NULL;
                     if (sess->n1_n2_released_stream_id >= OGS_MIN_POOL_ID &&
                         sess->n1_n2_released_stream_id <= OGS_MAX_POOL_ID)
@@ -2948,6 +3065,44 @@ void smf_gsm_state_5gc_session_will_deregister(ogs_fsm_t *s, smf_event_t *e)
                     OGS_FSM_TRAN(s, smf_gsm_state_exception);
                     break;
                 DEFAULT
+    /*
+     * <UE-requested PDU Session Release>
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 3.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
+     * 11. V: smf_nsmf_handle_update_data_in_vsmf
+     * 12. V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
+     *        gsm_build_pdu_session_release_command
+     * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
+     * 17. V: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+     *         case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+     * 19. V: ogs_sbi_send_http_status_no_content(n1_n2_released_stream)
+     * 20. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H: case OGS_EVENT_SBI_CLIENT:
+     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V*: case OGS_EVENT_SBI_CLIENT:
+     * 26. V*: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V*: ogs_sbi_send_http_status_no_content+
+     *         smf_sbi_send_sm_context_status_notify
+     * 28. V*: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                     ogs_assert(true ==
                             ogs_sbi_send_http_status_no_content(stream));
                     ogs_assert(true ==

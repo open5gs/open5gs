@@ -733,20 +733,21 @@ bool smf_nsmf_handle_update_sm_context(
      * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
      *        gsm_build_pdu_session_release_command
      * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
-       17. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+     * 17. V: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
               case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
-     * 18. V: ogs_sbi_send_http_status_no_content(n1_n2_released_stream)
-     * 19. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
-     * 20. H: case OGS_EVENT_SBI_CLIENT:
-     * 21. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
-     * 22. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     * 19. V: ogs_sbi_send_http_status_no_content(n1_n2_released_stream)
+     * 20. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H: case OGS_EVENT_SBI_CLIENT:
+     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
      *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
-     * 23. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
-     * 24. V: case OGS_EVENT_SBI_CLIENT:
-     * 25. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
-     * 26. V: ogs_sbi_send_http_status_no_content+
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V: case OGS_EVENT_SBI_CLIENT:
+     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V: ogs_sbi_send_http_status_no_content+
      *        smf_sbi_send_sm_context_status_notify
-     * 27. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
      */
 
                 /* Store Stream ID */
