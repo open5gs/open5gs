@@ -711,9 +711,39 @@ bool smf_nsmf_handle_update_sm_context(
                 sess->n1smbuf = ogs_pkbuf_copy(n1smbuf);
                 ogs_assert(sess->n1smbuf);
 
-                /* UE Requested PDU Session Release */
-                sess->nsmf_param.request_indication =
-                    OpenAPI_request_indication_UE_REQ_PDU_SES_REL;
+    /*
+     * <UE-requested PDU Session Release>
+     *
+     * 1.  V*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *         OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V*: OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 3.  V*: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 4.  V*: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
+     * 11. V: smf_nsmf_handle_update_data_in_vsmf
+     * 12. V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 14. V: ogs_sbi_send_http_status_no_content
+     * 15. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 16. V: ngap_build_pdu_session_resource_release_command_transfer+
+     *        gsm_build_pdu_session_release_command
+     * 17  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
+       18. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+              case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+     * 19. V: ogs_sbi_send_http_status_no_content(n1_n2_released_stream)
+     * 20. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H: case OGS_EVENT_SBI_CLIENT:
+     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     */
 
                 /* Store Stream ID */
                 sess->amf_update_request_stream_id =
@@ -1070,10 +1100,6 @@ bool smf_nsmf_handle_update_sm_context(
 
         } else {
             if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
-                /* Network Initiated PDU Session Release */
-                sess->nsmf_param.request_indication =
-                    OpenAPI_request_indication_NW_REQ_PDU_SES_REL;
-
                 /* Remove N1 SM Message */
                 if (sess->n1smbuf) {
                     ogs_pkbuf_free(sess->n1smbuf);

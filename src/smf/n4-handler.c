@@ -411,16 +411,16 @@ void smf_5gc_n4_handle_session_modification_response(
         if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
             if (flags & OGS_PFCP_MODIFY_DL_ONLY) {
     /*
-     * <UE-requested PDU Session Modification>
+     * <UE-requested PDU Session Modification-ACTIVATE>
      *
-     * 1.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
-     * 2.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
      *        OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL|OGS_PFCP_MODIFY_ACTIVATE
-     * 3.  V: if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
+     * 2.  V: if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
      *           pfcp_flags |= OGS_PFCP_MODIFY_FROM_ACTIVATING;
-     * 4.  V*: flags & OGS_PFCP_MODIFY_FROM_ACTIVATING ?
+     * 3.  V*: flags & OGS_PFCP_MODIFY_FROM_ACTIVATING ?
      *            SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING :
      *            SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING,
+     * 4.  V*: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
      * 5.  V*: smf_nsmf_pdusession_build_hsmf_update_data
      * 6.  H: smf_nsmf_handle_update_data_in_hsmf
      * 7.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
@@ -494,6 +494,9 @@ void smf_5gc_n4_handle_session_modification_response(
                 ogs_assert(trigger);
 
                 if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED) {
+                    sess->nsmf_param.request_indication =
+                        OpenAPI_request_indication_UE_REQ_PDU_SES_REL;
+
                     r = smf_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                             smf_nsmf_pdusession_build_hsmf_update_data,
@@ -502,6 +505,9 @@ void smf_5gc_n4_handle_session_modification_response(
                     ogs_assert(r != OGS_ERROR);
                 } else if (trigger ==
                         OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT) {
+                    sess->nsmf_param.request_indication =
+                        OpenAPI_request_indication_NW_REQ_PDU_SES_REL;
+
                     r = smf_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                             smf_nsmf_pdusession_build_hsmf_update_data,

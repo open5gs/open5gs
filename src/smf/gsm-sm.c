@@ -1105,7 +1105,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                             stream));
                             } else {
     /*
-     * <UE-requested PDU Session Modification>
+     * <UE-requested PDU Session Modification-ACTIVATE>
      *
      * 1.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
      * 2.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
@@ -1175,9 +1175,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             break;
                         case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
                         case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
-                            e->h.sbi.state =
-                                OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED;
-                            OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
                             if (sess->nsmf_param.request_indication ==
                                     OpenAPI_request_indication_UE_REQ_PDU_SES_REL) {
                                 e->h.sbi.state =
