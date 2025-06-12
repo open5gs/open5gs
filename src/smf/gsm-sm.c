@@ -1374,6 +1374,32 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
                 SWITCH(sbi_message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+    /*
+     * Network-requested PDU Session Modification
+     *
+     * 1.  H: OpenAPI_request_indication_NW_REQ_PDU_SES_MOD
+     *        QOS_RULE_CODE_FROM_PFCP_FLAGS
+     *        QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
+     * 2.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 3.  V*: smf_nsmf_handle_update_data_in_hsmf
+     * 4.  V: gsm_build_pdu_session_modification_command+
+     *        ngap_build_pdu_session_resource_modify_request_transfer
+     * 5.  V: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
+     *        if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
+     *            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+     *            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *                  OpenAPI_up_cnx_state_ACTIVATED)
+     *        else
+     *            ogs_sbi_send_http_status_no_content(stream)
+     * 6.  V: ogs_sbi_send_http_status_no_content(stream)
+     *        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
+     *        ogs_sbi_send_http_status_no_content(n1_n2_modified_stream));
+     * 7.  V: case OGS_EVENT_SBI_CLIENT
+     *        CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+     *        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
+     * 9.  H: ogs_sbi_send_http_status_no_content
+     */
                     rc = smf_nsmf_handle_update_data_in_vsmf(
                             sess, stream, sbi_message);
 
@@ -1639,20 +1665,32 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
                 SWITCH(sbi_message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                /*
-                 * <Network-initiated PDU Session Modification>
-                 *
-                 * 1. H:OGS_PFCP_MODIFY_NETWORK_REQUESTED|OGS_PFCP_MODIFY_CREATE
-                 * 2. H:OpenAPI_request_indication_NW_REQ_PDU_SES_MOD
-                 * 3. H:smf_nsmf_pdusession_build_vsmf_update_data
-                 * 4. V:smf_nsmf_handle_update_data_in_vsmf
-                 * 5. V:OpenAPI_request_indication_NW_REQ_PDU_SES_MOD
-                 * 6. V:ngap_build_pdu_session_resource_modify_request_transfer+
-                 *      gsm_build_pdu_session_modification_command
-                 * 7. H:OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
-                 *      OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
-                 * 8. H:ogs_sbi_send_http_status_no_content
-                 */
+    /*
+     * Network-requested PDU Session Modification
+     *
+     * 1.  H: OpenAPI_request_indication_NW_REQ_PDU_SES_MOD
+     *        QOS_RULE_CODE_FROM_PFCP_FLAGS
+     *        QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
+     * 2.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 3.  V: smf_nsmf_handle_update_data_in_hsmf
+     * 4.  V: gsm_build_pdu_session_modification_command+
+     *        ngap_build_pdu_session_resource_modify_request_transfer
+     * 5.  V: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
+     *        if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
+     *            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+     *            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *                  OpenAPI_up_cnx_state_ACTIVATED)
+     *        else
+     *            ogs_sbi_send_http_status_no_content(stream)
+     * 6.  V: ogs_sbi_send_http_status_no_content(stream)
+     *         OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
+     *         ogs_sbi_send_http_status_no_content(n1_n2_modified_stream));
+     * 7.  V*: case OGS_EVENT_SBI_CLIENT
+     *         CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 8.  H*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+     *         OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
+     * 9.  H: ogs_sbi_send_http_status_no_content
+     */
                     ogs_list_for_each_entry(
                             &sess->qos_flow_to_modify_list,
                             qos_flow, to_modify_node) {
@@ -1727,6 +1765,32 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
             ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
             if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+    /*
+     * Network-requested PDU Session Modification
+     *
+     * 1.  H: OpenAPI_request_indication_NW_REQ_PDU_SES_MOD
+     *        QOS_RULE_CODE_FROM_PFCP_FLAGS
+     *        QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
+     * 2.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 3.  V: smf_nsmf_handle_update_data_in_hsmf
+     * 4.  V: gsm_build_pdu_session_modification_command+
+     *        ngap_build_pdu_session_resource_modify_request_transfer
+     * 5.  V: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
+     *        if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
+     *            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+     *            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *                  OpenAPI_up_cnx_state_ACTIVATED)
+     *        else
+     *            ogs_sbi_send_http_status_no_content(stream)
+     * 6.  V*: ogs_sbi_send_http_status_no_content(stream)
+     *         OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
+     *         ogs_sbi_send_http_status_no_content(n1_n2_modified_stream));
+     * 7.  V: case OGS_EVENT_SBI_CLIENT
+     *        CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+     *        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
+     * 9.  H: ogs_sbi_send_http_status_no_content
+     */
                 ogs_sbi_stream_t *n1_n2_modified_stream = NULL;
                 if (sess->n1_n2_modified_stream_id >= OGS_MIN_POOL_ID &&
                     sess->n1_n2_modified_stream_id <= OGS_MAX_POOL_ID)
@@ -1820,6 +1884,32 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP:
+    /*
+     * Network-requested PDU Session Modification
+     *
+     * 1.  H: OpenAPI_request_indication_NW_REQ_PDU_SES_MOD
+     *        QOS_RULE_CODE_FROM_PFCP_FLAGS
+     *        QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
+     * 2.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 3.  V: smf_nsmf_handle_update_data_in_hsmf
+     * 4.  V: gsm_build_pdu_session_modification_command+
+     *        ngap_build_pdu_session_resource_modify_request_transfer
+     * 5.  V*: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
+     *        if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
+     *            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+     *            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *                  OpenAPI_up_cnx_state_ACTIVATED)
+     *        else
+     *            ogs_sbi_send_http_status_no_content(stream)
+     * 6.  V: ogs_sbi_send_http_status_no_content(stream)
+     *        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
+     *        ogs_sbi_send_http_status_no_content(n1_n2_modified_stream));
+     * 7.  V: case OGS_EVENT_SBI_CLIENT
+     *        CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+     *        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
+     * 9.  H: ogs_sbi_send_http_status_no_content
+     */
             rv = ngap_handle_pdu_session_resource_modify_response_transfer(
                     sess, stream, pkbuf);
             if (rv != OGS_OK) {

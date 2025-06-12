@@ -2448,6 +2448,32 @@ bool smf_nsmf_handle_update_data_in_vsmf(
 
         sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
 
+    /*
+     * Network-requested PDU Session Modification
+     *
+     * 1.  H: OpenAPI_request_indication_NW_REQ_PDU_SES_MOD
+     *        QOS_RULE_CODE_FROM_PFCP_FLAGS
+     *        QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
+     * 2.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 3.  V: smf_nsmf_handle_update_data_in_hsmf
+     * 4.  V*: gsm_build_pdu_session_modification_command+
+     *         ngap_build_pdu_session_resource_modify_request_transfer
+     * 5.  V: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
+     *        if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
+     *            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+     *            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *                  OpenAPI_up_cnx_state_ACTIVATED)
+     *        else
+     *            ogs_sbi_send_http_status_no_content(stream)
+     * 6.  V: ogs_sbi_send_http_status_no_content(stream)
+     *        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
+     *        ogs_sbi_send_http_status_no_content(n1_n2_modified_stream));
+     * 7.  V: case OGS_EVENT_SBI_CLIENT
+     *        CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+     *        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
+     * 9.  H: ogs_sbi_send_http_status_no_content
+     */
         memset(&param, 0, sizeof(param));
         param.state = SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
         param.n1smbuf = gsm_build_pdu_session_modification_command(sess, 0, 0);
