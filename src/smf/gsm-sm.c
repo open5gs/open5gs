@@ -1105,7 +1105,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                             stream));
                             } else {
     /*
-     * <UE-requested PDU Session Modification-ACTIVATE>
+     * UE-requested PDU Session Modification(ACTIVATE)
      *
      * 1.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
      * 2.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
@@ -1178,7 +1178,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             if (sess->nsmf_param.request_indication ==
                                     OpenAPI_request_indication_UE_REQ_PDU_SES_REL) {
     /*
-     * <UE-requested PDU Session Release>
+     * UE-requested PDU Session Release
      *
      * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
      *        OGS_PFCP_MODIFY_DEACTIVATE
@@ -1287,7 +1287,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
                         case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
     /*
-     * <UE-requested PDU Session Release>
+     * UE-requested PDU Session Release
      *
      * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
      *        OGS_PFCP_MODIFY_DEACTIVATE
@@ -1940,7 +1940,7 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
                     if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
     /*
-     * <UE-requested PDU Session Release>
+     * UE-requested PDU Session Release
      *
      * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
      *        OGS_PFCP_MODIFY_DEACTIVATE
@@ -1994,7 +1994,7 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
                     } else if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
     /*
-     * <UE-requested PDU Session Release>
+     * UE-requested PDU Session Release
      *
      * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
      *        OGS_PFCP_MODIFY_DEACTIVATE
@@ -2534,7 +2534,7 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
                     SWITCH(sbi_message->h.resource.component[2])
                     CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
     /*
-     * <UE-requested PDU Session Release>
+     * UE-requested PDU Session Release
      *
      * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
      *        OGS_PFCP_MODIFY_DEACTIVATE
@@ -2734,7 +2734,7 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
                 if ((sess->n1_released) && (sess->n2_released)) {
                     if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
     /*
-     * <UE-requested PDU Session Release>
+     * UE-requested PDU Session Release
      *
      * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
      *        OGS_PFCP_MODIFY_DEACTIVATE
@@ -2829,7 +2829,7 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
             if ((sess->n1_released) && (sess->n2_released)) {
                 if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
     /*
-     * <UE-requested PDU Session Release>
+     * UE-requested PDU Session Release
      *
      * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
      *        OGS_PFCP_MODIFY_DEACTIVATE
@@ -3105,7 +3105,7 @@ void smf_gsm_state_5gc_session_will_deregister(ogs_fsm_t *s, smf_event_t *e)
                     break;
                 DEFAULT
     /*
-     * <UE-requested PDU Session Release>
+     * UE-requested PDU Session Release
      *
      * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
      *        OGS_PFCP_MODIFY_DEACTIVATE

@@ -411,7 +411,7 @@ void smf_5gc_n4_handle_session_modification_response(
         if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
             if (flags & OGS_PFCP_MODIFY_DL_ONLY) {
     /*
-     * <UE-requested PDU Session Modification-ACTIVATE>
+     * UE-requested PDU Session Modification(ACTIVATE)
      *
      * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
      *        OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL|OGS_PFCP_MODIFY_ACTIVATE
@@ -495,7 +495,7 @@ void smf_5gc_n4_handle_session_modification_response(
 
                 if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED) {
     /*
-     * <UE-requested PDU Session Release>
+     * UE-requested PDU Session Release
      *
      * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
      *        OGS_PFCP_MODIFY_DEACTIVATE

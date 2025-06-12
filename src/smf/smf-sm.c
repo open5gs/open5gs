@@ -1125,7 +1125,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 SMF_SESS_CLEAR(sess);
             } else if (state == SMF_UECM_STATE_DEREG_BY_N1N2_HR) {
     /*
-     * <UE-requested PDU Session Release>
+     * UE-requested PDU Session Release
      *
      * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
      *        OGS_PFCP_MODIFY_DEACTIVATE

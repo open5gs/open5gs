@@ -165,7 +165,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         uint64_t pfcp_flags = OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE;
         if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
     /*
-     * <UE-requested PDU Session Modification-ACTIVATE>
+     * UE-requested PDU Session Modification(ACTIVATE)
      *
      * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
      *        OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL|OGS_PFCP_MODIFY_ACTIVATE

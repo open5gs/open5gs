@@ -712,7 +712,7 @@ bool smf_nsmf_handle_update_sm_context(
                 ogs_assert(sess->n1smbuf);
 
     /*
-     * <UE-requested PDU Session Release>
+     * UE-requested PDU Session Release
      *
      * 1.  V*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
      *         OGS_PFCP_MODIFY_DEACTIVATE
@@ -815,6 +815,30 @@ bool smf_nsmf_handle_update_sm_context(
         }
 
         if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+    /*
+     * UE-requested PDU Session Modification(ACTIVATE)
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
+     *        OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL|OGS_PFCP_MODIFY_ACTIVATE
+     * 2.  V: if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
+     *            pfcp_flags |= OGS_PFCP_MODIFY_FROM_ACTIVATING;
+     * 3.  V: flags & OGS_PFCP_MODIFY_FROM_ACTIVATING ?
+     *           SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING :
+     *           SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING,
+     * 4.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 5.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 6.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 7.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
+     *        OGS_PFCP_MODIFY_ACTIVATE
+     * 9.  H: ogs_sbi_send_http_status_no_content
+     * 10. V: case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING:
+     *           sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+     *           smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *               OpenAPI_up_cnx_state_ACTIVATED);
+     *        case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING:
+     *           ogs_sbi_send_http_status_no_content
+     */
             if (SmContextUpdateData->ue_location)
                 sess->nsmf_param.ue_location = true;
             if (SmContextUpdateData->ue_time_zone)
