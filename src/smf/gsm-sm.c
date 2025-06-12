@@ -1092,6 +1092,24 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         case OpenAPI_request_indication_UE_REQ_PDU_SES_MOD:
                             if (sess->nsmf_param.up_cnx_state ==
                                     OpenAPI_up_cnx_state_DEACTIVATED) {
+    /*
+     * UE-requested PDU Session Modification(DEACTIVATED)
+     *
+     * For Home Routed Roaming, delegate PFCP deactivation to H-SMF by
+     * sending UP_CNX_STATE=DEACTIVATED via HsmfUpdateData.
+     *
+     * 1.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 2.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     *        SMF_UPDATE_STATE_HR_DEACTIVATED
+     * 3.  H*: smf_nsmf_handle_update_data_in_hsmf
+     * 4.  H*: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 5.  H*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
+     *         OGS_PFCP_MODIFY_DEACTIVATE
+     * 6.  H: ogs_sbi_send_http_status_no_content
+     * 7.  V: case SMF_UPDATE_STATE_HR_DEACTIVATED:
+     * 8.  V: smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *          OpenAPI_up_cnx_state_DEACTIVATED)
+     */
                                 ogs_assert(OGS_OK ==
                                     smf_5gc_pfcp_send_all_pdr_modification_request(
                                         sess, stream,
@@ -1100,12 +1118,26 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                         OGS_PFCP_MODIFY_DEACTIVATE, 0, 0));
                             } else if (sess->nsmf_param.up_cnx_state ==
                                     OpenAPI_up_cnx_state_ACTIVATING) {
+    /*
+     * UE-requested PDU Session Modification(ACTIVATING)
+     *
+     * 1.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 2.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     *        SMF_UPDATE_STATE_HR_ACTIVATING
+     * 3.  H*: smf_nsmf_handle_update_data_in_hsmf
+     * 4.  H*: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 5.  H*: ogs_sbi_send_http_status_no_content
+     * 6.  V: ngap_build_pdu_session_resource_setup_request_transfer
+     * 7.  V: smf_sbi_send_sm_context_updated_data(
+     *          OpenAPI_up_cnx_state_ACTIVATING,
+     *          OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ, n2smbuf)
+     */
                                 ogs_assert(true ==
                                         ogs_sbi_send_http_status_no_content(
                                             stream));
                             } else {
     /*
-     * UE-requested PDU Session Modification(ACTIVATE)
+     * UE-requested PDU Session Modification(ACTIVATED)
      *
      * 1.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
      * 2.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
@@ -1219,6 +1251,28 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED;
                             } else if (sess->nsmf_param.request_indication ==
                                     OpenAPI_request_indication_NW_REQ_PDU_SES_REL) {
+    /*
+     * Network-requested PDU Session Release(DUPLICATED)
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT,
+     * 3.  V: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H*: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H*: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 6.  H*: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 7.  H*: ogs_sbi_send_http_status_no_content
+     * 8.  H*: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H: SMF_SESS_CLEAR(sess)
+     * 12. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 13. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 14. V: ogs_sbi_send_http_status_no_content
+     * 15. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                                 e->h.sbi.state =
                                 OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT;
                             }
@@ -1422,15 +1476,69 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             /* Nothing to do */
                             break;
                         case OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT:
+    /*
+     * Network-requested PDU Session Release(DUPLICATED)
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT,
+     * 3.  V: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H: SMF_SESS_CLEAR(sess)
+     * 12. V*: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 13. V*: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 14. V: ogs_sbi_send_http_status_no_content
+     * 15. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                             OGS_FSM_TRAN(&sess->sm,
                                     &smf_gsm_state_wait_pfcp_deletion);
                             break;
                         case SMF_UPDATE_STATE_HR_DEACTIVATED:
+    /*
+     * UE-requested PDU Session Modification(DEACTIVATED)
+     *
+     * For Home Routed Roaming, delegate PFCP deactivation to H-SMF by
+     * sending UP_CNX_STATE=DEACTIVATED via HsmfUpdateData.
+     *
+     * 1.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 2.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     *        SMF_UPDATE_STATE_HR_DEACTIVATED
+     * 3.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 4.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 5.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 6.  H: ogs_sbi_send_http_status_no_content
+     * 7.  V*: case SMF_UPDATE_STATE_HR_DEACTIVATED:
+     * 8.  V*: smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *           OpenAPI_up_cnx_state_DEACTIVATED)
+     */
                             smf_sbi_send_sm_context_updated_data_up_cnx_state(
                                     sess, stream,
                                     OpenAPI_up_cnx_state_DEACTIVATED);
                             break;
                         case SMF_UPDATE_STATE_HR_ACTIVATING:
+    /*
+     * UE-requested PDU Session Modification(ACTIVATING)
+     *
+     * 1.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 2.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     *        SMF_UPDATE_STATE_HR_ACTIVATING
+     * 3.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 4.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 5.  H: ogs_sbi_send_http_status_no_content
+     * 6.  V*: ngap_build_pdu_session_resource_setup_request_transfer
+     * 7.  V*: smf_sbi_send_sm_context_updated_data(
+     *           OpenAPI_up_cnx_state_ACTIVATING,
+     *           OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ, n2smbuf)
+     */
                             ogs_pkbuf_t *n2smbuf =
                                 ngap_build_pdu_session_resource_setup_request_transfer(sess);
                             ogs_assert(n2smbuf);
@@ -2118,6 +2226,8 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
                     if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
     /*
+     * Network-requested PDU Session Release(DUPLICATED)
+     *
      * TS23.502 clause 4.3.4.3 UE or network requested PDU Session Release
      * for Home-routed Roaming.
      *
@@ -2125,6 +2235,25 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
      * SHALL immediately send the Update Response, then issue PFCP Session
      * Deletion. This ordering is per the standard, even for duplicate
      * sessions, and may overlap with AMF’s concurrent Create Session.
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT,
+     * 3.  V: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H*: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                 SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H*: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H: SMF_SESS_CLEAR(sess)
+     * 12. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 13. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 14. V: ogs_sbi_send_http_status_no_content
+     * 15. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
      */
                         r = smf_sbi_cleanup_session(
                                 sess, NULL,
@@ -2138,6 +2267,28 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
                     } else if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
 
+    /*
+     * Network-requested PDU Session Release(DUPLICATED)
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT,
+     * 3.  V: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H: SMF_SESS_CLEAR(sess)
+     * 12. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 13. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 14. V*: ogs_sbi_send_http_status_no_content
+     * 15. V*: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                         ogs_assert(true ==
                                 ogs_sbi_send_http_status_no_content(stream));
                         OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
