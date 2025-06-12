@@ -1052,6 +1052,28 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             sess, stream, sbi_message);
                     break;
                 CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
+    /*
+     * Network-requested PDU Session Release
+     *
+     * 1.  V*: smf_nsmf_handle_release_sm_context
+     * 2.  V*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *         OGS_PFCP_MODIFY_DEACTIVATE
+     * 3.  V*: OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 4.  V: smf_nsmf_pdusession_build_release_data
+     * 5.  H: smf_nsmf_handle_release_data_in_hsmf
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 7.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 8.  H: ogs_sbi_send_http_status_no_content
+     * 9.  H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H: SMF_SESS_CLEAR(sess)
+     * 12. V: smf_nsmf_handle_release_data_in_hsmf
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V*: ogs_sbi_send_http_status_no_content
+     * 16. V*: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                     smf_nsmf_handle_release_sm_context(
                             sess, stream, sbi_message);
 
@@ -1309,6 +1331,28 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     }
                     break;
                 CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
+    /*
+     * Network-requested PDU Session Release
+     *
+     * 1.  V: smf_nsmf_handle_release_sm_context
+     * 2.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 3.  V: OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 4.  V: smf_nsmf_pdusession_build_release_data
+     * 5.  H*: smf_nsmf_handle_release_data_in_hsmf
+     * 6.  H*: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 7.  H*: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 8.  H: ogs_sbi_send_http_status_no_content
+     * 9.  H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H: SMF_SESS_CLEAR(sess)
+     * 12. V*: smf_nsmf_handle_release_data_in_hsmf
+     * 13. V*: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 14. V*: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V: ogs_sbi_send_http_status_no_content
+     * 16. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                     smf_nsmf_handle_release_data_in_hsmf(
                             sess, stream, sbi_message);
                     e->h.sbi.state =
@@ -2310,13 +2354,34 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                             OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT) {
 
                     if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
-                /*
-                 * TS23.502
-                 * 4.3.4.3 UE or network requested PDU Session Release
-                 *         for Home-routed Roaming
-                 *
-                 * 1b. (Serving network initiated release)
-                 */
+    /*
+     * Network-requested PDU Session Release
+     *
+     * TS23.502
+     * 4.3.4.3 UE or network requested PDU Session Release
+     *         for Home-routed Roaming
+     *
+     * 1b. (Serving network initiated release)
+     *
+     * 1.  V*: smf_nsmf_handle_release_sm_context
+     * 2.  V*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *         OGS_PFCP_MODIFY_DEACTIVATE
+     * 3.  V*: OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 4.  V: smf_nsmf_pdusession_build_release_data
+     * 5.  H: smf_nsmf_handle_release_data_in_hsmf
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 7.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 8.  H*: ogs_sbi_send_http_status_no_content
+     * 9.  H*: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                 SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H*: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H*: SMF_SESS_CLEAR(sess)
+     * 12. V: smf_nsmf_handle_release_data_in_hsmf
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V*: ogs_sbi_send_http_status_no_content
+     * 16. V*: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                         ogs_assert(true ==
                                 ogs_sbi_send_http_status_no_content(stream));
 
@@ -2332,6 +2397,28 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
                     } else if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
 
+    /*
+     * Network-requested PDU Session Release
+     *
+     * 1.  V: smf_nsmf_handle_release_sm_context
+     * 2.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 3.  V: OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 4.  V: smf_nsmf_pdusession_build_release_data
+     * 5.  H: smf_nsmf_handle_release_data_in_hsmf
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 7.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 8.  H: ogs_sbi_send_http_status_no_content
+     * 9.  H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H: SMF_SESS_CLEAR(sess)
+     * 12. V: smf_nsmf_handle_release_data_in_hsmf
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V*: ogs_sbi_send_http_status_no_content
+     * 16. V*: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                         ogs_assert(true ==
                                 ogs_sbi_send_http_status_no_content(stream));
                         OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
@@ -2610,18 +2697,28 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
                 smf_nsmf_handle_update_sm_context(sess, stream, sbi_message);
                 break;
             CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
-            /*
-             * Session release is initiated by a PDU Session Release Request.
-             * The AMF sends a PDUSessionReleaseCommand to the UE, but the UE
-             * does not send a PDU Session Release Complete or
-             * PDUSessionResourceReleaseResponse back to the AMF.
-             *
-             * As a result, the context remains in the
-             * smf_gsm_state_wait_5gc_n1_n2_release state.
-             *
-             * When the UE then sends a Deregistration request in this state,
-             * smf_nsmf_handle_release_sm_context() is invoked.
-             */
+    /*
+     * Network-requested PDU Session Release
+     *
+     * 1.  V*: smf_nsmf_handle_release_sm_context
+     * 2.  V*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *         OGS_PFCP_MODIFY_DEACTIVATE
+     * 3.  V*: OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 4.  V: smf_nsmf_pdusession_build_release_data
+     * 5.  H: smf_nsmf_handle_release_data_in_hsmf
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 7.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 8.  H*: ogs_sbi_send_http_status_no_content
+     * 9.  H*: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                 SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H*: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H*: SMF_SESS_CLEAR(sess)
+     * 12. V: smf_nsmf_handle_release_data_in_hsmf
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V*: ogs_sbi_send_http_status_no_content
+     * 16. V*: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                 smf_nsmf_handle_release_sm_context(sess, stream, sbi_message);
 
                 if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
