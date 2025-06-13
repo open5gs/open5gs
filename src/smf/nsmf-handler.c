@@ -42,6 +42,7 @@ bool smf_nsmf_handle_create_sm_context(
     char *fqdn = NULL;
     uint16_t fqdn_port = 0;
     ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+    char *home_network_domain = NULL;
 
     OpenAPI_sm_context_create_data_t *SmContextCreateData = NULL;
     OpenAPI_nr_location_t *NrLocation = NULL;
@@ -351,65 +352,63 @@ bool smf_nsmf_handle_create_sm_context(
      * the full DNN in LBO and non-roaming scenarios. If the Operator Identifier
      * is absent, the serving core network operator shall be assumed.
      */
-    if (SmContextCreateData->dnn) {
-        char *home_network_domain =
-            ogs_home_network_domain_from_fqdn(SmContextCreateData->dnn);
+    home_network_domain =
+        ogs_home_network_domain_from_fqdn(SmContextCreateData->dnn);
 
-        if (home_network_domain) {
-            char dnn_network_identifer[OGS_MAX_DNN_LEN+1];
-            uint16_t mcc = 0, mnc = 0;
+    if (home_network_domain) {
+        char dnn_network_identifer[OGS_MAX_DNN_LEN+1];
+        uint16_t mcc = 0, mnc = 0;
 
-            ogs_assert(home_network_domain > SmContextCreateData->dnn);
+        ogs_assert(home_network_domain > SmContextCreateData->dnn);
 
-            ogs_cpystrn(dnn_network_identifer, SmContextCreateData->dnn,
-                ogs_min(OGS_MAX_DNN_LEN,
-                    home_network_domain - SmContextCreateData->dnn));
+        ogs_cpystrn(dnn_network_identifer, SmContextCreateData->dnn,
+            ogs_min(OGS_MAX_DNN_LEN,
+                home_network_domain - SmContextCreateData->dnn));
 
-            if (sess->session.name)
-                ogs_free(sess->session.name);
-            sess->session.name = ogs_strdup(dnn_network_identifer);
-            ogs_assert(sess->session.name);
+        if (sess->session.name)
+            ogs_free(sess->session.name);
+        sess->session.name = ogs_strdup(dnn_network_identifer);
+        ogs_assert(sess->session.name);
 
-            if (sess->full_dnn)
-                ogs_free(sess->full_dnn);
-            sess->full_dnn = ogs_strdup(SmContextCreateData->dnn);
-            ogs_assert(sess->full_dnn);
+        if (sess->full_dnn)
+            ogs_free(sess->full_dnn);
+        sess->full_dnn = ogs_strdup(SmContextCreateData->dnn);
+        ogs_assert(sess->full_dnn);
 
-            mcc = ogs_plmn_id_mcc_from_fqdn(sess->full_dnn);
-            mnc = ogs_plmn_id_mnc_from_fqdn(sess->full_dnn);
+        mcc = ogs_plmn_id_mcc_from_fqdn(sess->full_dnn);
+        mnc = ogs_plmn_id_mnc_from_fqdn(sess->full_dnn);
 
-            /*
-             * To generate the Home PLMN ID of the SMF-UE,
-             * the length of the MNC is obtained
-             * by comparing the MNC part of the SUPI and full-DNN.
-             */
-            if (mcc && mnc &&
-                strncmp(smf_ue->supi, "imsi-", strlen("imsi-")) == 0) {
-                int mnc_len = 0;
-                char buf[OGS_PLMNIDSTRLEN];
+        /*
+         * To generate the Home PLMN ID of the SMF-UE,
+         * the length of the MNC is obtained
+         * by comparing the MNC part of the SUPI and full-DNN.
+         */
+        if (mcc && mnc &&
+            strncmp(smf_ue->supi, "imsi-", strlen("imsi-")) == 0) {
+            int mnc_len = 0;
+            char buf[OGS_PLMNIDSTRLEN];
 
-                ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%02d", mcc, mnc);
-                if (strncmp(smf_ue->supi + 5, buf, strlen(buf)) == 0)
-                    mnc_len = 2;
+            ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%02d", mcc, mnc);
+            if (strncmp(smf_ue->supi + 5, buf, strlen(buf)) == 0)
+                mnc_len = 2;
 
-                ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%03d", mcc, mnc);
-                if (strncmp(smf_ue->supi + 5, buf, strlen(buf)) == 0)
-                    mnc_len = 3;
+            ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%03d", mcc, mnc);
+            if (strncmp(smf_ue->supi + 5, buf, strlen(buf)) == 0)
+                mnc_len = 3;
 
-                /* Change Home PLMN for VPLMN */
-                if (mnc_len == 2 || mnc_len == 3)
-                    ogs_plmn_id_build(&sess->home_plmn_id, mcc, mnc, mnc_len);
-            }
-        } else {
-            if (sess->session.name)
-                ogs_free(sess->session.name);
-            sess->session.name = ogs_strdup(SmContextCreateData->dnn);
-            ogs_assert(sess->session.name);
-
-            if (sess->full_dnn)
-                ogs_free(sess->full_dnn);
-            sess->full_dnn = NULL;
+            /* Change Home PLMN for VPLMN */
+            if (mnc_len == 2 || mnc_len == 3)
+                ogs_plmn_id_build(&sess->home_plmn_id, mcc, mnc, mnc_len);
         }
+    } else {
+        if (sess->session.name)
+            ogs_free(sess->session.name);
+        sess->session.name = ogs_strdup(SmContextCreateData->dnn);
+        ogs_assert(sess->session.name);
+
+        if (sess->full_dnn)
+            ogs_free(sess->full_dnn);
+        sess->full_dnn = NULL;
     }
 
     ogs_assert(SmContextCreateData->serving_nf_id);
@@ -1302,6 +1301,8 @@ bool smf_nsmf_handle_create_data_in_hsmf(
     char *fqdn = NULL;
     uint16_t fqdn_port = 0;
     ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+    char *home_network_domain = NULL;
+
     OpenAPI_pdu_session_create_data_t *PduSessionCreateData = NULL;
     OpenAPI_nr_location_t *NrLocation = NULL;
     OpenAPI_snssai_t *sNssai = NULL;
@@ -1368,6 +1369,65 @@ bool smf_nsmf_handle_create_data_in_hsmf(
                 OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
                 "No DNN", smf_ue->supi, NULL);
         return false;
+    }
+
+    home_network_domain =
+        ogs_home_network_domain_from_fqdn(PduSessionCreateData->dnn);
+
+    if (home_network_domain) {
+        char dnn_network_identifer[OGS_MAX_DNN_LEN+1];
+        uint16_t mcc = 0, mnc = 0;
+
+        ogs_assert(home_network_domain > PduSessionCreateData->dnn);
+
+        ogs_cpystrn(dnn_network_identifer, PduSessionCreateData->dnn,
+            ogs_min(OGS_MAX_DNN_LEN,
+                home_network_domain - PduSessionCreateData->dnn));
+
+        if (sess->session.name)
+            ogs_free(sess->session.name);
+        sess->session.name = ogs_strdup(dnn_network_identifer);
+        ogs_assert(sess->session.name);
+
+        if (sess->full_dnn)
+            ogs_free(sess->full_dnn);
+        sess->full_dnn = ogs_strdup(PduSessionCreateData->dnn);
+        ogs_assert(sess->full_dnn);
+
+        mcc = ogs_plmn_id_mcc_from_fqdn(sess->full_dnn);
+        mnc = ogs_plmn_id_mnc_from_fqdn(sess->full_dnn);
+
+        /*
+         * To generate the Home PLMN ID of the SMF-UE,
+         * the length of the MNC is obtained
+         * by comparing the MNC part of the SUPI and full-DNN.
+         */
+        if (mcc && mnc &&
+            strncmp(smf_ue->supi, "imsi-", strlen("imsi-")) == 0) {
+            int mnc_len = 0;
+            char buf[OGS_PLMNIDSTRLEN];
+
+            ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%02d", mcc, mnc);
+            if (strncmp(smf_ue->supi + 5, buf, strlen(buf)) == 0)
+                mnc_len = 2;
+
+            ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%03d", mcc, mnc);
+            if (strncmp(smf_ue->supi + 5, buf, strlen(buf)) == 0)
+                mnc_len = 3;
+
+            /* Change Home PLMN for VPLMN */
+            if (mnc_len == 2 || mnc_len == 3)
+                ogs_plmn_id_build(&sess->home_plmn_id, mcc, mnc, mnc_len);
+        }
+    } else {
+        if (sess->session.name)
+            ogs_free(sess->session.name);
+        sess->session.name = ogs_strdup(PduSessionCreateData->dnn);
+        ogs_assert(sess->session.name);
+
+        if (sess->full_dnn)
+            ogs_free(sess->full_dnn);
+        sess->full_dnn = NULL;
     }
 
     sNssai = PduSessionCreateData->s_nssai;
