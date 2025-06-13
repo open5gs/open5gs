@@ -1376,7 +1376,6 @@ bool smf_nsmf_handle_create_data_in_hsmf(
 
     if (home_network_domain) {
         char dnn_network_identifer[OGS_MAX_DNN_LEN+1];
-        uint16_t mcc = 0, mnc = 0;
 
         ogs_assert(home_network_domain > PduSessionCreateData->dnn);
 
@@ -1393,32 +1392,6 @@ bool smf_nsmf_handle_create_data_in_hsmf(
             ogs_free(sess->full_dnn);
         sess->full_dnn = ogs_strdup(PduSessionCreateData->dnn);
         ogs_assert(sess->full_dnn);
-
-        mcc = ogs_plmn_id_mcc_from_fqdn(sess->full_dnn);
-        mnc = ogs_plmn_id_mnc_from_fqdn(sess->full_dnn);
-
-        /*
-         * To generate the Home PLMN ID of the SMF-UE,
-         * the length of the MNC is obtained
-         * by comparing the MNC part of the SUPI and full-DNN.
-         */
-        if (mcc && mnc &&
-            strncmp(smf_ue->supi, "imsi-", strlen("imsi-")) == 0) {
-            int mnc_len = 0;
-            char buf[OGS_PLMNIDSTRLEN];
-
-            ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%02d", mcc, mnc);
-            if (strncmp(smf_ue->supi + 5, buf, strlen(buf)) == 0)
-                mnc_len = 2;
-
-            ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%03d", mcc, mnc);
-            if (strncmp(smf_ue->supi + 5, buf, strlen(buf)) == 0)
-                mnc_len = 3;
-
-            /* Change Home PLMN for VPLMN */
-            if (mnc_len == 2 || mnc_len == 3)
-                ogs_plmn_id_build(&sess->home_plmn_id, mcc, mnc, mnc_len);
-        }
     } else {
         if (sess->session.name)
             ogs_free(sess->session.name);
