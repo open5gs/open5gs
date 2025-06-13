@@ -118,6 +118,9 @@ static inline bool smf_uecm_anchor_in_vplmn(int state)
     return !(state & SMF_STATE_HR);
 }
 
+ogs_sbi_xact_t *smf_namf_comm_create_n1_n2_message_xact(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream,
+        smf_n1_n2_message_transfer_param_t *param);
 void smf_namf_comm_send_n1_n2_message_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
         smf_n1_n2_message_transfer_param_t *param);

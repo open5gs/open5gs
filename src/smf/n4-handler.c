@@ -509,6 +509,16 @@ void smf_5gc_n4_handle_session_modification_response(
                 ogs_assert(param.n2smbuf);
 
                 smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
+
+                if (sess->pending_modification_xact) {
+                    if (ogs_sbi_discover_and_send(
+                                sess->pending_modification_xact) != OGS_OK) {
+                        ogs_error("ogs_sbi_discover_and_send() failed");
+                        ogs_sbi_xact_remove(sess->pending_modification_xact);
+                    }
+
+                    sess->pending_modification_xact = NULL;
+                }
             } else {
                 ogs_fatal("Invalid flags [0x%llx]", (long long)flags);
                 ogs_assert_if_reached();

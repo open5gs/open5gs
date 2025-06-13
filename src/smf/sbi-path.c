@@ -236,14 +236,13 @@ int smf_sbi_discover_and_send(
     return OGS_OK;
 }
 
-void smf_namf_comm_send_n1_n2_message_transfer(
+ogs_sbi_xact_t *smf_namf_comm_create_n1_n2_message_xact(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
         smf_n1_n2_message_transfer_param_t *param)
 {
     smf_ue_t *smf_ue = NULL;
     ogs_sbi_xact_t *xact = NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
-    int r;
 
     ogs_assert(sess);
     smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
@@ -264,8 +263,8 @@ void smf_namf_comm_send_n1_n2_message_transfer(
             (ogs_sbi_build_f)smf_namf_comm_build_n1_n2_message_transfer,
             sess, param);
     if (!xact) {
-        ogs_error("smf_namf_comm_send_n1_n2_message_transfer() failed");
-        return;
+        ogs_error("ogs_sbi_xact_add() failed");
+        return NULL;
     }
 
     xact->state = param->state;
@@ -274,6 +273,27 @@ void smf_namf_comm_send_n1_n2_message_transfer(
         xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
         ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                 xact->assoc_stream_id <= OGS_MAX_POOL_ID);
+    }
+
+    return xact;
+}
+
+void smf_namf_comm_send_n1_n2_message_transfer(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream,
+        smf_n1_n2_message_transfer_param_t *param)
+{
+    ogs_sbi_xact_t *xact = NULL;
+    int r;
+
+    ogs_assert(sess);
+    ogs_assert(param);
+    ogs_assert(param->state);
+    ogs_assert(param->n1smbuf || param->n2smbuf);
+
+    xact = smf_namf_comm_create_n1_n2_message_xact(sess, stream, param);
+    if (!xact) {
+        ogs_error("smf_namf_comm_create_n1_n2_message_xact() failed");
+        return;
     }
 
     r = ogs_sbi_discover_and_send(xact);

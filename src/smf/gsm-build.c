@@ -270,6 +270,8 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     pkbuf = ogs_nas_5gs_plain_encode(&message);
     ogs_assert(pkbuf);
 
+    sess->establishment_accept_sent = true;
+
 cleanup:
     if (authorized_qos_rules->buffer)
         ogs_free(authorized_qos_rules->buffer);

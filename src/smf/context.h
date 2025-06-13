@@ -660,6 +660,9 @@ typedef struct smf_sess_s {
 
     smf_nsmf_pdusession_param_t nsmf_param;
 
+    bool establishment_accept_sent;
+    ogs_sbi_xact_t *pending_modification_xact;
+
 } smf_sess_t;
 
 void smf_context_init(void);

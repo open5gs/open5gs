@@ -1877,6 +1877,9 @@ void smf_sess_remove(smf_sess_t *sess)
     CLEAR_QOS_FLOWS_ADD_MOD_REQUEST_LIST(
             sess->h_smf_qos_flows_add_mod_request_list);
 
+    if (sess->pending_modification_xact)
+        ogs_sbi_xact_remove(sess->pending_modification_xact);
+
     /* Free SBI object memory */
     ogs_sbi_object_free(&sess->sbi);
 

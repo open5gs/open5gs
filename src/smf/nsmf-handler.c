@@ -2516,7 +2516,15 @@ bool smf_nsmf_handle_update_data_in_vsmf(
                     qosFlowProfile->gbr_qos_flow_info ? true : false);
         ogs_assert(param.n2smbuf);
 
-        smf_namf_comm_send_n1_n2_message_transfer(sess, stream, &param);
+        if (sess->establishment_accept_sent == true) {
+            smf_namf_comm_send_n1_n2_message_transfer(sess, stream, &param);
+        } else {
+            if (sess->pending_modification_xact)
+                ogs_sbi_xact_remove(sess->pending_modification_xact);
+
+            sess->pending_modification_xact =
+                smf_namf_comm_create_n1_n2_message_xact(sess, stream, &param);
+        }
         break;
 
     case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
