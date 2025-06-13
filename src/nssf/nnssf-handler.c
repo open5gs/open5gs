@@ -90,10 +90,6 @@ bool nssf_nnrf_nsselection_handle_get_from_amf_or_vnssf(
         nssf_home_t *home = nssf_home_find(
                 &recvmsg->param.home_plmn_id, &recvmsg->param.home_snssai);
         if (!home) {
-            int r, i;
-            nssf_nnssf_nsselection_param_t param;
-            ogs_sbi_discovery_option_t *h_discovery_option = NULL;
-
             home = nssf_home_add(
                     &recvmsg->param.home_plmn_id, &recvmsg->param.home_snssai);
             if (!home) {
@@ -105,6 +101,12 @@ bool nssf_nnrf_nsselection_handle_get_from_amf_or_vnssf(
                         recvmsg->param.home_snssai.sd.v);
                 goto cleanup;
             }
+        }
+
+        if (!home->nrf_id || !home->nsi_id) {
+            int r, i;
+            nssf_nnssf_nsselection_param_t param;
+            ogs_sbi_discovery_option_t *h_discovery_option = NULL;
 
             h_discovery_option = ogs_sbi_discovery_option_new();
             ogs_assert(h_discovery_option);
