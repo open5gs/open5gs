@@ -1542,7 +1542,9 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
  */
                         switch (e->h.sbi.state) {
                         case OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED:
-                            /* Nothing to do */
+                            /* Store Stream ID */
+                            sess->amf_update_request_stream_id =
+                                ogs_sbi_id_from_stream(stream);
                             break;
                         case OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT:
     /*
@@ -1842,6 +1844,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED;
 
             if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+                ogs_error("smf_5gc_pfcp_send_all_pdr_modification_request");
                 ogs_assert(OGS_OK ==
                     smf_5gc_pfcp_send_all_pdr_modification_request(
                         sess, stream,

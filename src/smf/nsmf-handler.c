@@ -702,81 +702,22 @@ bool smf_nsmf_handle_update_sm_context(
         ogs_assert(gsm_header);
         sess->pti = gsm_header->procedure_transaction_identity;
 
-        switch (gsm_header->message_type) {
-        case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
-            if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+            switch (gsm_header->message_type) {
+            case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
                 /* Save N1 SM Message and send it to H-SMF */
                 if (sess->n1smbuf) ogs_pkbuf_free(sess->n1smbuf);
                 sess->n1smbuf = ogs_pkbuf_copy(n1smbuf);
                 ogs_assert(sess->n1smbuf);
+                break;
 
-    /*
-     * UE-requested PDU Session Release
-     *
-     * 1.  V*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
-     *         OGS_PFCP_MODIFY_DEACTIVATE
-     * 2.  V*: OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
-     * 3.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
-     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
-     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
-     * 6.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
-     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
-     * 7.  H: ogs_sbi_send_http_status_no_content
-     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
-     * 9.  H: smf_nsmf_pdusession_build_vsmf_update_data
-     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
-     * 11. V: smf_nsmf_handle_update_data_in_vsmf
-     * 12. V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
-     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
-     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
-     * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
-     *        gsm_build_pdu_session_release_command
-     * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
-     * 17. V: ogs_sbi_send_http_status_no_content(stream)
-     * 18. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
-              case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
-     * 19. V: ogs_sbi_send_http_status_no_content(n1_n2_released_stream)
-     * 20. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
-     * 21. H: case OGS_EVENT_SBI_CLIENT:
-     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
-     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
-     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
-     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
-     * 25. V: case OGS_EVENT_SBI_CLIENT:
-     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
-     * 27. V: ogs_sbi_send_http_status_no_content+
-     *        smf_sbi_send_sm_context_status_notify
-     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
-     */
-
-                /* Store Stream ID */
-                sess->amf_update_request_stream_id =
-                    ogs_sbi_id_from_stream(stream);
-
-                ogs_assert(OGS_OK ==
-                    smf_5gc_pfcp_send_all_pdr_modification_request(
-                        sess, stream,
-                        OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
-                        OGS_PFCP_MODIFY_UL_ONLY|
-                        OGS_PFCP_MODIFY_DEACTIVATE,
-                        OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED, 0));
-            } else {
-                n1smbuf = ogs_pkbuf_copy(n1smbuf);
-                ogs_assert(n1smbuf);
-                nas_5gs_send_to_gsm(sess, stream, n1smbuf);
+            default:
             }
-            break;
-
-        default:
-
-        /*
-         * Do not send PFCP Modification on PDU session release complete.
-         * PFCP Modification should only be sent on PDU session release request.
-         */
-            n1smbuf = ogs_pkbuf_copy(n1smbuf);
-            ogs_assert(n1smbuf);
-            nas_5gs_send_to_gsm(sess, stream, n1smbuf);
         }
+
+        n1smbuf = ogs_pkbuf_copy(n1smbuf);
+        ogs_assert(n1smbuf);
+        nas_5gs_send_to_gsm(sess, stream, n1smbuf);
 
         return true;
     
