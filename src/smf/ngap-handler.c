@@ -222,8 +222,8 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
                     OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                     smf_nsmf_pdusession_build_hsmf_update_data, sess, stream,
                     sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING ?
-                        SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING :
-                        SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING,
+                        SMF_UPDATE_STATE_ACTIVATED_FROM_ACTIVATING :
+                        SMF_UPDATE_STATE_ACTIVATED_FROM_NON_ACTIVATING,
                     NULL);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);

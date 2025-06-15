@@ -1570,7 +1570,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             OGS_FSM_TRAN(&sess->sm,
                                     &smf_gsm_state_wait_pfcp_deletion);
                             break;
-                        case SMF_UPDATE_STATE_HR_DEACTIVATED:
+                        case SMF_UPDATE_STATE_DEACTIVATED:
     /*
      * UE-requested PDU Session Modification(DEACTIVATED)
      *
@@ -1593,7 +1593,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     sess, stream,
                                     OpenAPI_up_cnx_state_DEACTIVATED);
                             break;
-                        case SMF_UPDATE_STATE_HR_ACTIVATING:
+                        case SMF_UPDATE_STATE_ACTIVATING:
     /*
      * UE-requested PDU Session Modification(ACTIVATING)
      *
@@ -1619,14 +1619,14 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ,
                                     n2smbuf);
                             break;
-                        case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING:
+                        case SMF_UPDATE_STATE_ACTIVATED_FROM_ACTIVATING:
                             sess->up_cnx_state =
                                 OpenAPI_up_cnx_state_ACTIVATED;
                             smf_sbi_send_sm_context_updated_data_up_cnx_state(
                                     sess, stream,
                                     OpenAPI_up_cnx_state_ACTIVATED);
                             break;
-                        case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING:
+                        case SMF_UPDATE_STATE_ACTIVATED_FROM_NON_ACTIVATING:
                             ogs_assert(true ==
                                     ogs_sbi_send_http_status_no_content(
                                         stream));
@@ -1764,12 +1764,24 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         switch (nas_message->gsm.h.message_type) {
         case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST:
-            rv = gsm_handle_pdu_session_modification_request(sess, stream,
-                    &nas_message->gsm.pdu_session_modification_request);
-            if (rv != OGS_OK) {
-                ogs_error("[%s:%d] Cannot handle NAS message",
-                        smf_ue->supi, sess->psi);
-                OGS_FSM_TRAN(s, smf_gsm_state_exception);
+            if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+                sess->nsmf_param.request_indication =
+                    OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
+
+                r = smf_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                        smf_nsmf_pdusession_build_hsmf_update_data,
+                        sess, stream, SMF_UPDATE_STATE_UE_REQ_MOD, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            } else {
+                rv = gsm_handle_pdu_session_modification_request(sess, stream,
+                        &nas_message->gsm.pdu_session_modification_request);
+                if (rv != OGS_OK) {
+                    ogs_error("[%s:%d] Cannot handle NAS message",
+                            smf_ue->supi, sess->psi);
+                    OGS_FSM_TRAN(s, smf_gsm_state_exception);
+                }
             }
             break;
 

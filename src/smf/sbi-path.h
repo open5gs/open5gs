@@ -68,16 +68,8 @@ bool smf_sbi_send_request(
     (SMF_UPDATE_STATE_BASE + 0x03U)  /* 0x03 */
 #define SMF_UPDATE_STATE_DEACTIVATED                \
     (SMF_UPDATE_STATE_BASE + 0x04U)  /* 0x04 */
-
-/* HR variants for SMF_UPDATE */
-#define SMF_UPDATE_STATE_HR_ACTIVATING                              \
-    (SMF_UPDATE_STATE_ACTIVATING | SMF_STATE_HR)                    /* 0xA1 */
-#define SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING               \
-    (SMF_UPDATE_STATE_ACTIVATED_FROM_ACTIVATING | SMF_STATE_HR)     /* 0xA2 */
-#define SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING           \
-    (SMF_UPDATE_STATE_ACTIVATED_FROM_NON_ACTIVATING | SMF_STATE_HR) /* 0xA3 */
-#define SMF_UPDATE_STATE_HR_DEACTIVATED                             \
-    (SMF_UPDATE_STATE_DEACTIVATED | SMF_STATE_HR)                   /* 0xA4 */
+#define SMF_UPDATE_STATE_UE_REQ_MOD                 \
+    (SMF_UPDATE_STATE_BASE + 0x05U)  /* 0x05 */
 
 /* Base offset for SMF_REMOVE states */
 #define SMF_REMOVE_STATE_BASE       0x30U           /* REMOVE at 0x30 */

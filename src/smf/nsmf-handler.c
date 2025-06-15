@@ -922,8 +922,7 @@ bool smf_nsmf_handle_update_sm_context(
                     r = smf_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                             smf_nsmf_pdusession_build_hsmf_update_data,
-                            sess, stream,
-                            SMF_UPDATE_STATE_HR_DEACTIVATED, NULL);
+                            sess, stream, SMF_UPDATE_STATE_DEACTIVATED, NULL);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
 
@@ -1015,7 +1014,7 @@ bool smf_nsmf_handle_update_sm_context(
                 r = smf_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         smf_nsmf_pdusession_build_hsmf_update_data,
-                        sess, stream, SMF_UPDATE_STATE_HR_ACTIVATING, NULL);
+                        sess, stream, SMF_UPDATE_STATE_ACTIVATING, NULL);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
 

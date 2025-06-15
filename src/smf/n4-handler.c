@@ -456,8 +456,8 @@ void smf_5gc_n4_handle_session_modification_response(
                             smf_nsmf_pdusession_build_hsmf_update_data,
                             sess, stream,
                             flags & OGS_PFCP_MODIFY_FROM_ACTIVATING ?
-                                SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING :
-                                SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING,
+                                SMF_UPDATE_STATE_ACTIVATED_FROM_ACTIVATING :
+                                SMF_UPDATE_STATE_ACTIVATED_FROM_NON_ACTIVATING,
                             NULL);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
@@ -665,12 +665,14 @@ void smf_5gc_n4_handle_session_modification_response(
                 ogs_fatal("Invalid flags [0x%llx]", (long long)flags);
                 ogs_assert_if_reached();
             }
-        } else if (flags & OGS_PFCP_MODIFY_REMOVE) {
-            if (flags & OGS_PFCP_MODIFY_INDIRECT) {
-                ogs_fatal("Invalid flags [0x%llx]", (long long)flags);
-                ogs_assert_if_reached();
-
-            } else if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
+        } else if (
+                (flags & OGS_PFCP_MODIFY_REMOVE) ||
+                (flags & OGS_PFCP_MODIFY_CREATE) ||
+                (flags &
+                 (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
+                 OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE|
+                 OGS_PFCP_MODIFY_QOS_MODIFY))) {
+            if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
     /*
      * Network-requested PDU Session Modification
      *
@@ -696,6 +698,8 @@ void smf_5gc_n4_handle_session_modification_response(
      * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
      *        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
      */
+                int state;
+
                 memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
                 sess->nsmf_param.request_indication =
                     OpenAPI_request_indication_NW_REQ_PDU_SES_MOD;
@@ -704,111 +708,31 @@ void smf_5gc_n4_handle_session_modification_response(
                 sess->nsmf_param.qos_flow_description_code =
                     QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS(flags);
 
+                if (flags & OGS_PFCP_MODIFY_REMOVE) {
+                    if (flags & OGS_PFCP_MODIFY_INDIRECT) {
+                        ogs_fatal("Invalid flags [0x%llx]", (long long)flags);
+                        ogs_assert_if_reached();
+                    }
+
+                    state = SMF_REMOVE_STATE_BASE;
+                } else if (flags & OGS_PFCP_MODIFY_CREATE) {
+                    state = SMF_CREATE_STATE_BASE;
+                } else if (flags &
+                        (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
+                         OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE|
+                         OGS_PFCP_MODIFY_QOS_MODIFY)) {
+                    state = SMF_UPDATE_STATE_BASE;
+                }
+
                 r = smf_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         smf_nsmf_pdusession_build_vsmf_update_data,
-                        sess, NULL, SMF_REMOVE_STATE_BASE, NULL);
+                        sess, NULL, state, NULL);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
+
             } else if (flags & OGS_PFCP_MODIFY_UE_REQUESTED) {
                 ogs_fatal("Invalid flags [0x%llx]", (long long)flags);
-                ogs_assert_if_reached();
-            }
-        } else if (flags & OGS_PFCP_MODIFY_CREATE) {
-            if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
-    /*
-     * Network-requested PDU Session Modification
-     *
-     * 1.  H*: OpenAPI_request_indication_NW_REQ_PDU_SES_MOD
-     *         QOS_RULE_CODE_FROM_PFCP_FLAGS
-     *         QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
-     * 2.  H*: smf_nsmf_pdusession_build_vsmf_update_data
-     * 3.  V: smf_nsmf_handle_update_data_in_vsmf
-     * 4.  V: gsm_build_pdu_session_modification_command+
-     *        ngap_build_pdu_session_resource_modify_request_transfer
-     * 5.  V: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
-     *        if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
-     *            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
-     *            smf_sbi_send_sm_context_updated_data_up_cnx_state(
-     *                  OpenAPI_up_cnx_state_ACTIVATED)
-     *        else
-     *            ogs_sbi_send_http_status_no_content(stream)
-     * 6.  V: ogs_sbi_send_http_status_no_content(stream)
-     *        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
-     *        ogs_sbi_send_http_status_no_content(n1_n2_modified_stream));
-     * 7.  V: case OGS_EVENT_SBI_CLIENT
-     *        CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
-     * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
-     *        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
-     * 9.  H: ogs_sbi_send_http_status_no_content
-     */
-                memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
-                sess->nsmf_param.request_indication =
-                    OpenAPI_request_indication_NW_REQ_PDU_SES_MOD;
-                sess->nsmf_param.qos_rule_code =
-                    QOS_RULE_CODE_FROM_PFCP_FLAGS(flags);
-                sess->nsmf_param.qos_flow_description_code =
-                    QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS(flags);
-
-                r = smf_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
-                        smf_nsmf_pdusession_build_vsmf_update_data,
-                        sess, NULL, SMF_CREATE_STATE_NONE, NULL);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-            } else {
-                ogs_fatal("Invalid PDR-Create flags [0x%llx]",
-                        (long long)flags);
-                ogs_assert_if_reached();
-            }
-        } else if (flags &
-                    (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
-                    OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE|
-                    OGS_PFCP_MODIFY_QOS_MODIFY)) {
-            if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
-    /*
-     * Network-requested PDU Session Modification
-     *
-     * 1.  H*: OpenAPI_request_indication_NW_REQ_PDU_SES_MOD
-     *         QOS_RULE_CODE_FROM_PFCP_FLAGS
-     *         QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
-     * 2.  H*: smf_nsmf_pdusession_build_vsmf_update_data
-     * 3.  V: smf_nsmf_handle_update_data_in_vsmf
-     * 4.  V: gsm_build_pdu_session_modification_command+
-     *        ngap_build_pdu_session_resource_modify_request_transfer
-     * 5.  V: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
-     *        if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
-     *            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
-     *            smf_sbi_send_sm_context_updated_data_up_cnx_state(
-     *                  OpenAPI_up_cnx_state_ACTIVATED)
-     *        else
-     *            ogs_sbi_send_http_status_no_content(stream)
-     * 6.  V: ogs_sbi_send_http_status_no_content(stream)
-     *        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
-     *        ogs_sbi_send_http_status_no_content(n1_n2_modified_stream));
-     * 7.  V: case OGS_EVENT_SBI_CLIENT
-     *        CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
-     * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
-     *        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
-     * 9.  H: ogs_sbi_send_http_status_no_content
-     */
-                memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
-                sess->nsmf_param.request_indication =
-                    OpenAPI_request_indication_NW_REQ_PDU_SES_MOD;
-                sess->nsmf_param.qos_rule_code =
-                    QOS_RULE_CODE_FROM_PFCP_FLAGS(flags);
-                sess->nsmf_param.qos_flow_description_code =
-                    QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS(flags);
-
-                r = smf_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
-                        smf_nsmf_pdusession_build_vsmf_update_data,
-                        sess, NULL, SMF_UPDATE_STATE_NONE, NULL);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-            } else {
-                ogs_fatal("Invalid PDR-Create flags [0x%llx]",
-                        (long long)flags);
                 ogs_assert_if_reached();
             }
         } else {
