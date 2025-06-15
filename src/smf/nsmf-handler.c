@@ -2350,6 +2350,7 @@ bool smf_nsmf_handle_update_data_in_vsmf(
     OpenAPI_vsmf_update_data_t *VsmfUpdateData = NULL;
 
     OpenAPI_list_t *qosFlowsAddModRequestList = NULL;
+    OpenAPI_list_t *qosFlowsRelRequestList = NULL;
     OpenAPI_qos_flow_profile_t *qosFlowProfile = NULL;
     OpenAPI_lnode_t *node = NULL;
 
@@ -2479,6 +2480,42 @@ bool smf_nsmf_handle_update_data_in_vsmf(
         else
             OpenAPI_list_free(qosFlowsAddModRequestList);
 
+        CLEAR_QOS_FLOWS_REL_REQUEST_LIST(
+                sess->h_smf_qos_flows_rel_request_list);
+
+        qosFlowsRelRequestList = OpenAPI_list_create();
+        ogs_assert(qosFlowsRelRequestList);
+        OpenAPI_list_for_each(VsmfUpdateData->qos_flows_rel_request_list, node) {
+            OpenAPI_qos_flow_release_request_item_t *dst = NULL, *src = NULL;
+
+            src = node->data;
+            if (!src ||
+                !src->qfi ||
+                !src->qos_rules ||
+                !src->qos_flow_description) {
+                ogs_error("[%s:%d] No src [%d:%s:%s]",
+                        smf_ue->supi, sess->psi, src->qfi,
+                        src->qos_rules ?
+                            src->qos_rules : "NULL",
+                        src->qos_flow_description ?
+                            src->qos_flow_description : "NULL");
+                smf_sbi_send_vsmf_update_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                        OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                        "No src", smf_ue->supi, NULL);
+                return false;
+            }
+
+            dst = OpenAPI_qos_flow_release_request_item_copy(dst, src);
+            ogs_assert(dst);
+            OpenAPI_list_add(qosFlowsRelRequestList, dst);
+        }
+
+        if (qosFlowsRelRequestList->count)
+            sess->h_smf_qos_flows_rel_request_list = qosFlowsRelRequestList;
+        else
+            OpenAPI_list_free(qosFlowsRelRequestList);
+
         sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
 
     /*
@@ -2488,7 +2525,7 @@ bool smf_nsmf_handle_update_data_in_vsmf(
      *        QOS_RULE_CODE_FROM_PFCP_FLAGS
      *        QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
      * 2.  H: smf_nsmf_pdusession_build_vsmf_update_data
-     * 3.  V: smf_nsmf_handle_update_data_in_hsmf
+     * 3.  V: smf_nsmf_handle_update_data_in_vsmf
      * 4.  V*: gsm_build_pdu_session_modification_command+
      *         ngap_build_pdu_session_resource_modify_request_transfer
      * 5.  V: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
@@ -2505,16 +2542,30 @@ bool smf_nsmf_handle_update_data_in_vsmf(
      *        CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
      * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
      *        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
-     * 9.  H: ogs_sbi_send_http_status_no_content
      */
         memset(&param, 0, sizeof(param));
-        param.state = SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
-        param.n1smbuf = gsm_build_pdu_session_modification_command(sess, 0, 0);
-        ogs_assert(param.n1smbuf);
-        param.n2smbuf =
-            ngap_build_pdu_session_resource_modify_request_transfer(sess,
-                    qosFlowProfile->gbr_qos_flow_info ? true : false);
-        ogs_assert(param.n2smbuf);
+
+        if (sess->h_smf_qos_flows_rel_request_list) {
+            param.state = SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
+            param.n1smbuf = gsm_build_pdu_session_modification_command(
+                    sess, 0, 0);
+            ogs_assert(param.n1smbuf);
+            param.n2smbuf =
+                ngap_build_pdu_session_resource_release_request_transfer(
+                        sess,
+                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
+            ogs_assert(param.n2smbuf);
+        } else if (sess->h_smf_qos_flows_add_mod_request_list) {
+            param.state = SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
+            param.n1smbuf = gsm_build_pdu_session_modification_command(
+                    sess, 0, 0);
+            ogs_assert(param.n1smbuf);
+            param.n2smbuf =
+                ngap_build_pdu_session_resource_modify_request_transfer(sess,
+                        qosFlowProfile->gbr_qos_flow_info ? true : false);
+            ogs_assert(param.n2smbuf);
+        } else
+            ogs_error("No LIST");
 
         if (sess->establishment_accept_sent == true) {
             smf_namf_comm_send_n1_n2_message_transfer(sess, stream, &param);

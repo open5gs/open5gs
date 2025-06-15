@@ -1381,7 +1381,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
      *        QOS_RULE_CODE_FROM_PFCP_FLAGS
      *        QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
      * 2.  H: smf_nsmf_pdusession_build_vsmf_update_data
-     * 3.  V*: smf_nsmf_handle_update_data_in_hsmf
+     * 3.  V*: smf_nsmf_handle_update_data_in_vsmf
      * 4.  V: gsm_build_pdu_session_modification_command+
      *        ngap_build_pdu_session_resource_modify_request_transfer
      * 5.  V: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
@@ -1398,7 +1398,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
      *        CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
      * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
      *        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
-     * 9.  H: ogs_sbi_send_http_status_no_content
      */
                     rc = smf_nsmf_handle_update_data_in_vsmf(
                             sess, stream, sbi_message);
@@ -1672,7 +1671,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
      *        QOS_RULE_CODE_FROM_PFCP_FLAGS
      *        QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
      * 2.  H: smf_nsmf_pdusession_build_vsmf_update_data
-     * 3.  V: smf_nsmf_handle_update_data_in_hsmf
+     * 3.  V: smf_nsmf_handle_update_data_in_vsmf
      * 4.  V: gsm_build_pdu_session_modification_command+
      *        ngap_build_pdu_session_resource_modify_request_transfer
      * 5.  V: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
@@ -1689,30 +1688,39 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
      *         CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
      * 8.  H*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
      *         OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
-     * 9.  H: ogs_sbi_send_http_status_no_content
      */
-                    ogs_list_for_each_entry(
-                            &sess->qos_flow_to_modify_list,
-                            qos_flow, to_modify_node) {
-                        ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
-                        ogs_assert(dl_far);
+                    switch (e->h.sbi.state) {
+                    case SMF_CREATE_STATE_NONE:
+                        ogs_list_for_each_entry(
+                                &sess->qos_flow_to_modify_list,
+                                qos_flow, to_modify_node) {
+                            ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
+                            ogs_assert(dl_far);
 
-                        dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+                            dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+                            ogs_assert(OGS_OK ==
+                                ogs_pfcp_ip_to_outer_header_creation(
+                                    &sess->remote_dl_ip,
+                                    &dl_far->outer_header_creation,
+                                    &dl_far->outer_header_creation_len));
+                            dl_far->outer_header_creation.teid =
+                                sess->remote_dl_teid;
+                        }
+
                         ogs_assert(OGS_OK ==
-                            ogs_pfcp_ip_to_outer_header_creation(
-                                &sess->remote_dl_ip,
-                                &dl_far->outer_header_creation,
-                                &dl_far->outer_header_creation_len));
-                        dl_far->outer_header_creation.teid =
-                            sess->remote_dl_teid;
+                                smf_5gc_pfcp_send_qos_flow_list_modification_request(
+                                    sess, NULL,
+                                    OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+                                    OGS_PFCP_MODIFY_DL_ONLY|
+                                    OGS_PFCP_MODIFY_ACTIVATE, 0));
+                        break;
+                    case SMF_REMOVE_STATE_NONE:
+                        /* Nothing to do */
+                        break;
+                    default:
+                        ogs_fatal("Unknown state [%d]", e->h.sbi.state);
+                        ogs_assert_if_reached();
                     }
-
-                    ogs_assert(OGS_OK ==
-                            smf_5gc_pfcp_send_qos_flow_list_modification_request(
-                                sess, NULL,
-                                OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
-                                OGS_PFCP_MODIFY_DL_ONLY|
-                                OGS_PFCP_MODIFY_ACTIVATE, 0));
                     break;
                 DEFAULT
                     ogs_error("Invalid resource name [%s]",
@@ -1772,7 +1780,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
      *        QOS_RULE_CODE_FROM_PFCP_FLAGS
      *        QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
      * 2.  H: smf_nsmf_pdusession_build_vsmf_update_data
-     * 3.  V: smf_nsmf_handle_update_data_in_hsmf
+     * 3.  V: smf_nsmf_handle_update_data_in_vsmf
      * 4.  V: gsm_build_pdu_session_modification_command+
      *        ngap_build_pdu_session_resource_modify_request_transfer
      * 5.  V: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
@@ -1789,7 +1797,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
      *        CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
      * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
      *        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
-     * 9.  H: ogs_sbi_send_http_status_no_content
      */
                 ogs_sbi_stream_t *n1_n2_modified_stream = NULL;
                 if (sess->n1_n2_modified_stream_id >= OGS_MIN_POOL_ID &&
@@ -1891,7 +1898,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
      *        QOS_RULE_CODE_FROM_PFCP_FLAGS
      *        QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
      * 2.  H: smf_nsmf_pdusession_build_vsmf_update_data
-     * 3.  V: smf_nsmf_handle_update_data_in_hsmf
+     * 3.  V: smf_nsmf_handle_update_data_in_vsmf
      * 4.  V: gsm_build_pdu_session_modification_command+
      *        ngap_build_pdu_session_resource_modify_request_transfer
      * 5.  V*: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
@@ -1908,7 +1915,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
      *        CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
      * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
      *        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
-     * 9.  H: ogs_sbi_send_http_status_no_content
      */
             rv = ngap_handle_pdu_session_resource_modify_response_transfer(
                     sess, stream, pkbuf);

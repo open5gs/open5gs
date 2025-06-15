@@ -46,35 +46,47 @@ bool smf_sbi_send_request(
  */
 
 /* Common HR flag (bit 7) */
-#define SMF_STATE_HR             (1U << 7)      /* 0x80 */
+#define SMF_STATE_HR             (1U << 7)          /* 0x80 */
+
+/* Base offset for SMF_CREATE states */
+#define SMF_CREATE_STATE_BASE       0x10U           /* CREATE at 0x10 */
+
+#define SMF_CREATE_STATE_NONE                       \
+    (SMF_CREATE_STATE_BASE + 0x00U)  /* 0x00 */
 
 /* Base offset for SMF_UPDATE states */
-#define SMF_UPDATE_STATE_BASE   0x10U          /* UPDATE at 0x10–0x14 */
+#define SMF_UPDATE_STATE_BASE       0x20U           /* UPDATE at 0x20–0x24 */
 
 /* SMF_UPDATE base states */
-#define SMF_UPDATE_STATE_NONE                           \
+#define SMF_UPDATE_STATE_NONE                       \
     (SMF_UPDATE_STATE_BASE + 0x00U)  /* 0x00 */
-#define SMF_UPDATE_STATE_ACTIVATING                     \
+#define SMF_UPDATE_STATE_ACTIVATING                 \
     (SMF_UPDATE_STATE_BASE + 0x01U)  /* 0x01 */
-#define SMF_UPDATE_STATE_ACTIVATED_FROM_ACTIVATING      \
+#define SMF_UPDATE_STATE_ACTIVATED_FROM_ACTIVATING  \
     (SMF_UPDATE_STATE_BASE + 0x02U)  /* 0x02 */
-#define SMF_UPDATE_STATE_ACTIVATED_FROM_NON_ACTIVATING   \
+#define SMF_UPDATE_STATE_ACTIVATED_FROM_NON_ACTIVATING  \
     (SMF_UPDATE_STATE_BASE + 0x03U)  /* 0x03 */
-#define SMF_UPDATE_STATE_DEACTIVATED                    \
+#define SMF_UPDATE_STATE_DEACTIVATED                \
     (SMF_UPDATE_STATE_BASE + 0x04U)  /* 0x04 */
 
 /* HR variants for SMF_UPDATE */
-#define SMF_UPDATE_STATE_HR_ACTIVATING                        \
-    (SMF_UPDATE_STATE_ACTIVATING | SMF_STATE_HR)              /* 0x91 */
-#define SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING         \
-    (SMF_UPDATE_STATE_ACTIVATED_FROM_ACTIVATING | SMF_STATE_HR)/* 0x92 */
-#define SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING      \
-    (SMF_UPDATE_STATE_ACTIVATED_FROM_NON_ACTIVATING | SMF_STATE_HR) /* 0x93 */
-#define SMF_UPDATE_STATE_HR_DEACTIVATED                       \
-    (SMF_UPDATE_STATE_DEACTIVATED | SMF_STATE_HR)             /* 0x94 */
+#define SMF_UPDATE_STATE_HR_ACTIVATING                              \
+    (SMF_UPDATE_STATE_ACTIVATING | SMF_STATE_HR)                    /* 0xA1 */
+#define SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING               \
+    (SMF_UPDATE_STATE_ACTIVATED_FROM_ACTIVATING | SMF_STATE_HR)     /* 0xA2 */
+#define SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING           \
+    (SMF_UPDATE_STATE_ACTIVATED_FROM_NON_ACTIVATING | SMF_STATE_HR) /* 0xA3 */
+#define SMF_UPDATE_STATE_HR_DEACTIVATED                             \
+    (SMF_UPDATE_STATE_DEACTIVATED | SMF_STATE_HR)                   /* 0xA4 */
+
+/* Base offset for SMF_REMOVE states */
+#define SMF_REMOVE_STATE_BASE       0x30U           /* REMOVE at 0x30 */
+
+#define SMF_REMOVE_STATE_NONE                       \
+    (SMF_REMOVE_STATE_BASE + 0x00U)  /* 0x00 */
 
 /* Base offset for SMF_UECM states */
-#define SMF_UECM_STATE_BASE         0x20U          /* UECM at 0x20–0x23 */
+#define SMF_UECM_STATE_BASE         0x40U           /* UECM at 0x40–0x43 */
 
 /* SMF_UECM base states */
 #define SMF_UECM_STATE_NONE                 \
@@ -87,12 +99,12 @@ bool smf_sbi_send_request(
     (SMF_UECM_STATE_BASE + 0x03U)  /* 0x23 */
 
 /* HR variants for SMF_UECM */
-#define SMF_UECM_STATE_REGISTERED_HR        \
-    (SMF_UECM_STATE_REGISTERED | SMF_STATE_HR)      /* 0xA1 */
-#define SMF_UECM_STATE_DEREG_BY_AMF_HR      \
-    (SMF_UECM_STATE_DEREG_BY_AMF | SMF_STATE_HR)    /* 0xA2 */
-#define SMF_UECM_STATE_DEREG_BY_N1N2_HR     \
-    (SMF_UECM_STATE_DEREG_BY_N1N2 | SMF_STATE_HR)   /* 0xA3 */
+#define SMF_UECM_STATE_REGISTERED_HR                \
+    (SMF_UECM_STATE_REGISTERED | SMF_STATE_HR)      /* 0xC1 */
+#define SMF_UECM_STATE_DEREG_BY_AMF_HR              \
+    (SMF_UECM_STATE_DEREG_BY_AMF | SMF_STATE_HR)    /* 0xC2 */
+#define SMF_UECM_STATE_DEREG_BY_N1N2_HR             \
+    (SMF_UECM_STATE_DEREG_BY_N1N2 | SMF_STATE_HR)   /* 0xC3 */
 
 int smf_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,

@@ -1876,6 +1876,7 @@ void smf_sess_remove(smf_sess_t *sess)
     CLEAR_QOS_FLOWS_SETUP_LIST(sess->h_smf_qos_flows_setup_list);
     CLEAR_QOS_FLOWS_ADD_MOD_REQUEST_LIST(
             sess->h_smf_qos_flows_add_mod_request_list);
+    CLEAR_QOS_FLOWS_REL_REQUEST_LIST(sess->h_smf_qos_flows_rel_request_list);
 
     if (sess->pending_modification_xact)
         ogs_sbi_xact_remove(sess->pending_modification_xact);

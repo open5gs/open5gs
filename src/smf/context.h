@@ -95,6 +95,8 @@ typedef struct smf_nsmf_pdusession_param_s {
 #define QOS_RULE_CODE_FROM_PFCP_FLAGS(pfcp_flags) \
         (pfcp_flags & OGS_PFCP_MODIFY_CREATE) ? \
             OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE : \
+        (pfcp_flags & OGS_PFCP_MODIFY_REMOVE) ? \
+            OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE : \
         (pfcp_flags & OGS_PFCP_MODIFY_TFT_NEW) ? \
             OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE : \
         (pfcp_flags & OGS_PFCP_MODIFY_TFT_ADD) ? \
@@ -107,6 +109,8 @@ typedef struct smf_nsmf_pdusession_param_s {
 #define QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS(pfcp_flags) \
         (pfcp_flags & OGS_PFCP_MODIFY_CREATE) ? \
             OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION : \
+        (pfcp_flags & OGS_PFCP_MODIFY_REMOVE) ? \
+            OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION : \
         (pfcp_flags & OGS_PFCP_MODIFY_QOS_MODIFY) ? \
             OGS_NAS_MODIFY_NEW_QOS_FLOW_DESCRIPTION : 0
     uint8_t qos_flow_description_code;
@@ -477,6 +481,7 @@ typedef struct smf_sess_s {
                 OpenAPI_qos_flow_setup_item_free(qosFlowSetupItem); \
         } \
         OpenAPI_list_free((__lIST)); \
+        (__lIST) = NULL; \
     } while(0)
     OpenAPI_list_t *h_smf_qos_flows_setup_list;
 #define CLEAR_QOS_FLOWS_ADD_MOD_REQUEST_LIST(__lIST) \
@@ -490,8 +495,23 @@ typedef struct smf_sess_s {
                         qosFlowAddModifyRequestItem); \
         } \
         OpenAPI_list_free((__lIST)); \
+        (__lIST) = NULL; \
     } while(0)
     OpenAPI_list_t *h_smf_qos_flows_add_mod_request_list;
+#define CLEAR_QOS_FLOWS_REL_REQUEST_LIST(__lIST) \
+    do { \
+        OpenAPI_lnode_t *node = NULL; \
+        OpenAPI_list_for_each((__lIST), node) { \
+            OpenAPI_qos_flow_release_request_item_t \
+                *qosFlowReleaseRequestItem = node->data; \
+            if (qosFlowReleaseRequestItem) \
+                OpenAPI_qos_flow_release_request_item_free( \
+                        qosFlowReleaseRequestItem); \
+        } \
+        OpenAPI_list_free((__lIST)); \
+        (__lIST) = NULL; \
+    } while(0)
+    OpenAPI_list_t *h_smf_qos_flows_rel_request_list;
 
 #define HOME_ROUTED_ROAMING_IN_HSMF(__sESS) \
     ((__sESS) && (__sESS)->vsmf_pdu_session_uri)
