@@ -1867,8 +1867,8 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->v_smf.client)
         ogs_sbi_client_remove(sess->v_smf.client);
 
-    if (sess->n1smbuf)
-        ogs_pkbuf_free(sess->n1smbuf);
+    if (sess->n1SmBufFromUe)
+        ogs_pkbuf_free(sess->n1SmBufFromUe);
 
     OGS_NAS_CLEAR_DATA(&sess->h_smf_extended_protocol_configuration_options);
     sess->h_smf_gsm_cause = 0;

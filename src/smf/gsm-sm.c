@@ -1844,7 +1844,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED;
 
             if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
-                ogs_error("smf_5gc_pfcp_send_all_pdr_modification_request");
                 ogs_assert(OGS_OK ==
                     smf_5gc_pfcp_send_all_pdr_modification_request(
                         sess, stream,

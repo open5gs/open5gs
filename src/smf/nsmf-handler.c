@@ -597,9 +597,9 @@ bool smf_nsmf_handle_create_sm_context(
     ul_pdr->precedence = OGS_PFCP_DEFAULT_PDR_PRECEDENCE;
 
     /* Save N1 SM Message and send it to H-SMF */
-    if (sess->n1smbuf) ogs_pkbuf_free(sess->n1smbuf);
-    sess->n1smbuf = ogs_pkbuf_copy(n1smbuf);
-    ogs_assert(sess->n1smbuf);
+    if (sess->n1SmBufFromUe) ogs_pkbuf_free(sess->n1SmBufFromUe);
+    sess->n1SmBufFromUe = ogs_pkbuf_copy(n1smbuf);
+    ogs_assert(sess->n1SmBufFromUe);
 
     ogs_assert(OGS_OK ==
             smf_5gc_pfcp_send_session_establishment_request(sess, NULL, 0));
@@ -642,6 +642,12 @@ bool smf_nsmf_handle_update_sm_context(
     }
 
     memset(&sess->nsmf_param, 0, sizeof(sess->nsmf_param));
+
+    /* Remove N1 SM Message From UE */
+    if (sess->n1SmBufFromUe) {
+        ogs_pkbuf_free(sess->n1SmBufFromUe);
+        sess->n1SmBufFromUe = NULL;
+    }
 
     if (SmContextUpdateData->ue_location &&
         SmContextUpdateData->ue_location->nr_location) {
@@ -706,9 +712,8 @@ bool smf_nsmf_handle_update_sm_context(
             switch (gsm_header->message_type) {
             case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
                 /* Save N1 SM Message and send it to H-SMF */
-                if (sess->n1smbuf) ogs_pkbuf_free(sess->n1smbuf);
-                sess->n1smbuf = ogs_pkbuf_copy(n1smbuf);
-                ogs_assert(sess->n1smbuf);
+                sess->n1SmBufFromUe = ogs_pkbuf_copy(n1smbuf);
+                ogs_assert(sess->n1SmBufFromUe);
                 break;
 
             default:
@@ -1096,12 +1101,6 @@ bool smf_nsmf_handle_update_sm_context(
 
         } else {
             if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
-                /* Remove N1 SM Message */
-                if (sess->n1smbuf) {
-                    ogs_pkbuf_free(sess->n1smbuf);
-                    sess->n1smbuf = NULL;
-                }
-
     /*
      * Network-requested PDU Session Release(DUPLICATED)
      *

@@ -524,7 +524,7 @@ typedef struct smf_sess_s {
      * Keeps the n1SmMsg Content (n1smbuf) in the context of the V-SMF
      * for use when creating the n1SmBufFromUe to send to the H-SMF.
      */
-    ogs_pkbuf_t     *n1smbuf;
+    ogs_pkbuf_t     *n1SmBufFromUe;
 
     /* PCF ID */
     char            *pcf_id;

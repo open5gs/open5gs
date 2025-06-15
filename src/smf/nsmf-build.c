@@ -208,8 +208,8 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_data(
         goto end;
     }
 
-    ogs_assert(sess->n1smbuf);
-    rv = ogs_nas_5gsm_decode(&nas_message, sess->n1smbuf);
+    ogs_assert(sess->n1SmBufFromUe);
+    rv = ogs_nas_5gsm_decode(&nas_message, sess->n1SmBufFromUe);
 
     if (rv == OGS_OK) {
         n1SmBufFromUe = gsmue_encode_n1_sm_info(&nas_message);
@@ -272,11 +272,11 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_data(
         } else {
             ogs_error("gsm_encode_n1_sm_info() failed [%d]", rv);
             ogs_log_hexdump(OGS_LOG_ERROR,
-                    sess->n1smbuf->data, sess->n1smbuf->len);
+                    sess->n1SmBufFromUe->data, sess->n1SmBufFromUe->len);
         }
     } else {
         ogs_error("ogs_nas_5gsm_decode() failed [%d]", rv);
-        ogs_log_hexdump(OGS_LOG_ERROR, sess->n1smbuf->data, sess->n1smbuf->len);
+        ogs_log_hexdump(OGS_LOG_ERROR, sess->n1SmBufFromUe->data, sess->n1SmBufFromUe->len);
     }
 
     message.PduSessionCreateData = &PduSessionCreateData;
@@ -321,9 +321,9 @@ end:
     if (PduSessionCreateData.ue_time_zone)
         ogs_free(PduSessionCreateData.ue_time_zone);
 
-    if (sess->n1smbuf) {
-        ogs_pkbuf_free(sess->n1smbuf);
-        sess->n1smbuf = NULL;
+    if (sess->n1SmBufFromUe) {
+        ogs_pkbuf_free(sess->n1SmBufFromUe);
+        sess->n1SmBufFromUe = NULL;
     }
 
     if (n1SmBufFromUe)
@@ -434,8 +434,8 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
         }
     }
 
-    if (sess->n1smbuf) {
-        rv = ogs_nas_5gsm_decode(&nas_message, sess->n1smbuf);
+    if (sess->n1SmBufFromUe) {
+        rv = ogs_nas_5gsm_decode(&nas_message, sess->n1SmBufFromUe);
 
         if (rv == OGS_OK) {
             n1SmBufFromUe = gsmue_encode_n1_sm_info(&nas_message);
@@ -452,12 +452,12 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
             } else {
                 ogs_error("gsm_encode_n1_sm_info() failed [%d]", rv);
                 ogs_log_hexdump(OGS_LOG_ERROR,
-                        sess->n1smbuf->data, sess->n1smbuf->len);
+                        sess->n1SmBufFromUe->data, sess->n1SmBufFromUe->len);
             }
         } else {
             ogs_error("ogs_nas_5gsm_decode() failed [%d]", rv);
             ogs_log_hexdump(OGS_LOG_ERROR,
-                    sess->n1smbuf->data, sess->n1smbuf->len);
+                    sess->n1SmBufFromUe->data, sess->n1SmBufFromUe->len);
         }
     }
 
@@ -488,9 +488,9 @@ end:
     if (HsmfUpdateData.ue_time_zone)
         ogs_free(HsmfUpdateData.ue_time_zone);
 
-    if (sess->n1smbuf) {
-        ogs_pkbuf_free(sess->n1smbuf);
-        sess->n1smbuf = NULL;
+    if (sess->n1SmBufFromUe) {
+        ogs_pkbuf_free(sess->n1SmBufFromUe);
+        sess->n1SmBufFromUe = NULL;
     }
 
     return request;
