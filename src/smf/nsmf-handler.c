@@ -710,6 +710,7 @@ bool smf_nsmf_handle_update_sm_context(
 
         if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
             switch (gsm_header->message_type) {
+            case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST:
             case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
                 /* Save N1 SM Message and send it to H-SMF */
                 sess->n1SmBufFromUe = ogs_pkbuf_copy(n1smbuf);

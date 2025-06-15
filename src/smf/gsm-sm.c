@@ -1633,8 +1633,11 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     ogs_sbi_send_http_status_no_content(
                                         stream));
                             break;
+                        case SMF_UPDATE_STATE_UE_REQ_MOD:
+                            ogs_fatal("TODO");
+                            break;
                         default:
-                            ogs_fatal("Unknown state [%d]", e->h.sbi.state);
+                            ogs_fatal("Unknown state [0x%x]", e->h.sbi.state);
                             ogs_assert_if_reached();
                         }
                         break;
