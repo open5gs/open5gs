@@ -2427,13 +2427,10 @@ bool smf_nsmf_handle_update_data_in_vsmf(
             src = node->data;
             if (!src ||
                 !src->qfi ||
-                !src->qos_rules ||
                 !src->qos_flow_description ||
                 !src->qos_flow_profile) {
-                ogs_error("[%s:%d] No src [%d:%s:%s]",
+                ogs_error("[%s:%d] No src [%d:%s]",
                         smf_ue->supi, sess->psi, src->qfi,
-                        src->qos_rules ?
-                            src->qos_rules : "NULL",
                         src->qos_flow_description ?
                             src->qos_flow_description : "NULL");
                 smf_sbi_send_vsmf_update_error(stream,

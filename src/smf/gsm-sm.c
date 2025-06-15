@@ -1714,6 +1714,9 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     OGS_PFCP_MODIFY_DL_ONLY|
                                     OGS_PFCP_MODIFY_ACTIVATE, 0));
                         break;
+                    case SMF_UPDATE_STATE_NONE:
+                        /* Nothing to do */
+                        break;
                     case SMF_REMOVE_STATE_NONE:
                         /* Nothing to do */
                         break;

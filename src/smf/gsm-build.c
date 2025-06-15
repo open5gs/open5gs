@@ -355,7 +355,8 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
         OpenAPI_list_for_each(
                 sess->h_smf_qos_flows_add_mod_request_list, node) {
             qosFlowAddModRequestItem = node->data;
-            if (qosFlowAddModRequestItem) {
+            if (qosFlowAddModRequestItem &&
+                qosFlowAddModRequestItem->qos_rules) {
                 ogs_nas_qos_rules_t qos_rules;
 
                 len = ogs_base64_decode_len(
@@ -378,7 +379,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
 
         OpenAPI_list_for_each(sess->h_smf_qos_flows_rel_request_list, node) {
             qosFlowRelRequestItem = node->data;
-            if (qosFlowRelRequestItem) {
+            if (qosFlowRelRequestItem && qosFlowRelRequestItem->qos_rules) {
                 ogs_nas_qos_rules_t qos_rules;
 
                 len = ogs_base64_decode_len(qosFlowRelRequestItem->qos_rules);
@@ -441,7 +442,8 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
         OpenAPI_list_for_each(
                 sess->h_smf_qos_flows_add_mod_request_list, node) {
             qosFlowAddModRequestItem = node->data;
-            if (qosFlowAddModRequestItem) {
+            if (qosFlowAddModRequestItem &&
+                qosFlowAddModRequestItem->qos_flow_description) {
                 ogs_nas_qos_flow_descriptions_t qos_flow_descriptions;
 
                 len = ogs_base64_decode_len(
@@ -468,7 +470,8 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
         OpenAPI_list_for_each(
                 sess->h_smf_qos_flows_rel_request_list, node) {
             qosFlowRelRequestItem = node->data;
-            if (qosFlowRelRequestItem) {
+            if (qosFlowRelRequestItem &&
+                qosFlowRelRequestItem->qos_flow_description) {
                 ogs_nas_qos_flow_descriptions_t qos_flow_descriptions;
 
                 len = ogs_base64_decode_len(
