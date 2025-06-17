@@ -2514,7 +2514,7 @@ static void mme_s13_eca_cb(void *data, struct msg **msg)
 	
 	if (!mme_ue) {
 		ogs_error("ECA received but mme_ue context not found. Possibly due to early detach.");
-		return OGS_OK;
+		return;
 	}
 
     /* Set ME-Identity-Check Command */
