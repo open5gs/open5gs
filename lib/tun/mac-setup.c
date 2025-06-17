@@ -250,6 +250,8 @@ static int tun_set_ipv6(char *ifname,
     commandLine[4] = "up";
     commandLine[5] = NULL;
 
+    memset(&process, 0, sizeof(process));
+
     ret = ogs_proc_create(commandLine, 0, &process);
     ogs_assert(ret == 0);
 
