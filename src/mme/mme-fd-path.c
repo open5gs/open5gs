@@ -2510,7 +2510,12 @@ static void mme_s13_eca_cb(void *data, struct msg **msg)
     }
 	
 	mme_ue = mme_ue_find_by_id(sess_data->mme_ue_id);
-    ogs_assert(mme_ue);
+    //ogs_assert(mme_ue);
+	
+	if (!mme_ue) {
+		ogs_error("ECA received but mme_ue context not found. Possibly due to early detach.");
+		return OGS_OK;
+	}
 
     /* Set ME-Identity-Check Command */
     s13_message = ogs_calloc(1, sizeof(ogs_diam_s13_message_t));
