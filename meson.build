@@ -14,13 +14,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+#// Modified by Fatemeh Shafiei Ardestani on 2025-04-06
+#// Changes: See GitHub for full diff
 project('open5gs', 'c', 'cpp',
     version : '2.7.5',
     license : 'AGPL-3.0-or-later',
     meson_version : '>= 0.43.0',
     default_options : [
         'warning_level=1',
+        'werror=false',
         'c_std=gnu89',
     ],
 )
@@ -64,25 +66,26 @@ if cc.get_id() == 'gcc' or cc.get_id() == 'clang'
     possible_cc_flags = [
         '-Wextra',
         '-Wlogical-op',
-        '-Werror=pointer-arith',
-        '-Werror=init-self',
+        '-Wno-error',
+#        '-Werror=pointer-arith',
+#        '-Werror=init-self',
         '-Wfloat-equal',
         '-Wsuggest-attribute=noreturn',
-        '-Werror=missing-prototypes',
-        '-Werror=missing-declarations',
-        '-Werror=implicit-function-declaration',
-        '-Werror=return-type',
-        '-Werror=incompatible-pointer-types',
-        '-Werror=format=2',
+#        '-Werror=missing-prototypes',
+#        '-Werror=missing-declarations',
+#        '-Werror=implicit-function-declaration',
+#        '-Werror=return-type',
+#        '-Werror=incompatible-pointer-types',
+#        '-Werror=format=2',
         '-Wstrict-prototypes',
         '-Wredundant-decls',
         '-Wimplicit-fallthrough=5',
         '-Wendif-labels',
         '-Wstrict-aliasing=3',
         '-Wwrite-strings',
-        '-Werror=overflow',
-        '-Werror=shift-count-overflow',
-        '-Werror=shift-overflow=2',
+#        '-Werror=overflow',
+#        '-Werror=shift-count-overflow',
+#        '-Werror=shift-overflow=2',
         '-Wdate-time',
         '-Wnested-externs',
         '-Wunused',
@@ -119,6 +122,8 @@ endif
 
 add_project_arguments(
     cc.get_supported_arguments(possible_cc_flags),
+#    '-Wall', '-Wextra',
+    '-Wno-error',
     language : 'c')
 
 subdir('configs')

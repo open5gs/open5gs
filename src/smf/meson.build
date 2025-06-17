@@ -14,7 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#// Modified by Fatemeh Shafiei Ardestani on 2025-04-06
+#// Changes: See GitHub for full diff
 
+mhd_dep_smf = dependency('libmicrohttpd', required: true)  # Added line
+jn_dep_smf = dependency('jansson', required: true)         # Added line
+curl_dep_smf = dependency('libcurl', required: true)       # Added line
 smf_conf = configuration_data()
 
 smf_headers = ('''
@@ -23,6 +28,8 @@ smf_headers = ('''
     netinet/ip6.h
     netinet/ip_icmp.h
     netinet/icmp6.h
+    jansson.h
+    microhttpd.h
 '''.split())
 
 foreach h : smf_headers
@@ -67,6 +74,8 @@ libsmf_sources = files('''
     ngap-handler.h
     ngap-path.h
     metrics.h
+    subscriber_client.h
+    subscriber_server.h
 
     init.c
     event.c
@@ -106,6 +115,8 @@ libsmf_sources = files('''
     ngap-handler.c
     ngap-path.c
     metrics.c
+    subscriber_client.c
+    subscriber_server.c
 '''.split())
 
 libsmf = static_library('smf',
@@ -117,7 +128,11 @@ libsmf = static_library('smf',
                     libdiameter_gx_dep,
                     libdiameter_gy_dep,
                     libdiameter_s6b_dep,
-                    libpfcp_dep],
+                    libpfcp_dep,
+                    mhd_dep_smf,  # Added line
+                    jn_dep_smf,   # Added line
+                    curl_dep_smf, # Added line
+    ],
     install : false)
 
 libsmf_dep = declare_dependency(
@@ -129,7 +144,11 @@ libsmf_dep = declare_dependency(
                     libdiameter_gx_dep,
                     libdiameter_gy_dep,
                     libdiameter_s6b_dep,
-                    libpfcp_dep])
+                    libpfcp_dep,
+                    mhd_dep_smf,  # Added line
+                    jn_dep_smf,   # Added line
+                    curl_dep_smf # Added line
+                    ])
 
 smf_sources = files('''
     app.c
