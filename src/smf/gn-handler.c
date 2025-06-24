@@ -284,10 +284,19 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     /* Select PGW based on UE Location Information */
     smf_sess_select_upf(sess);
 
+    /* Check if UPF selection was successful */
+    if (!sess->pfcp_node) {
+        ogs_error("[%s:%s] No UPF available for session",
+                  smf_ue->imsi_bcd, sess->session.name);
+        return OGS_GTP1_CAUSE_SYSTEM_FAILURE;
+    }
+
     /* Check if selected PGW is associated with SMF */
-    ogs_assert(sess->pfcp_node);
-    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated))
+    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
+        ogs_error("[%s:%s] selected UPF is not assocated with SMF",
+                  smf_ue->imsi_bcd, sess->session.name);
         return OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE;
+    }
 
     if ((pfcp_cause = smf_sess_set_ue_ip(sess)) != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
         cause_value = gtp_cause_from_pfcp(pfcp_cause, 1);

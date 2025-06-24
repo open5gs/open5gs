@@ -28,10 +28,18 @@
 extern "C" {
 #endif
 
+typedef struct {
+        const char **commandLine;
+        const char *nf_name;
+        int index;
+        pid_t child;
+} thread_data_t;
+
 void test_app_run(int argc, const char *const argv[],
         const char *name, void (*init)(const char * const argv[]));
 void test_child_terminate(void);
-ogs_thread_t *test_child_create(const char *name, const char *const argv[]);
+void test_child_terminate_with_name(char *name, int index);
+ogs_thread_t *test_child_create(const char *name, int index, const char *const argv[]);
 
 #ifdef __cplusplus
 }

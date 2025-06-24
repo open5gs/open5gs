@@ -403,7 +403,7 @@ static uint8_t emm_cause_from_diameter(
     if (dia_exp_err) {
         switch (*dia_exp_err) {
         case OGS_DIAM_S6A_ERROR_USER_UNKNOWN:                   /* 5001 */
-            return OGS_NAS_EMM_CAUSE_PLMN_NOT_ALLOWED;
+            return OGS_NAS_EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED;
         case OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION:       /* 5420 */
             /* FIXME: Error diagnostic? */
             return OGS_NAS_EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA;

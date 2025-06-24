@@ -754,7 +754,7 @@ static void check_multi_info(ogs_sbi_client_t *client)
                 }
 
             } else
-                ogs_warn("[%d] %s", res, conn->error);
+                ogs_warn("%s (%d): %s", curl_easy_strerror(res), res, conn->error);
 
             ogs_assert(conn->client_cb);
             if (res == CURLE_OK)

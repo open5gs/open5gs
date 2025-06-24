@@ -41,6 +41,7 @@ example_conf = '''
     srsenb.yaml
     non3gpp.yaml
     transfer.yaml
+    transfer-error-case.yaml
 '''.split()
 
 foreach file : example_conf
