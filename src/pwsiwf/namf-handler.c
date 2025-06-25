@@ -39,7 +39,7 @@ bool pwsiwf_nonuen2_comm_handle_nonuen2_message_transfer(
             /* Warning message broadcast initiated successfully */
             warning->broadcast.broadcast_started = true;
             warning->broadcast.broadcast_count++;
-            ogs_info("[Warning ID:%d] Broadcast initiated successfully", warning->warning_id);
+            ogs_info("[Warning ID:%d] PWS to AMF (ETWS/CMAS)Broadcast initiated successfully", warning->warning_id);
         } else {
             ogs_error("[Warning ID:%d] HTTP response error [%d]",
                 warning->warning_id, recvmsg->res_status);

@@ -244,13 +244,16 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             CASE(OGS_SBI_RESOURCE_NAME_NON_UE_N2_MESSAGES) /* New case for PWS */
                 SWITCH(sbi_message.h.method)
-                ogs_info("amf is getting................");
+                ogs_info("AMF is Receiving PWS (ETWS/CMAS)................");
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     rv = amf_namf_comm_handle_non_ue_n2_message_transfer(
                     stream, &sbi_message);
                     if (rv != OGS_OK) {
                         ogs_assert(true ==ogs_sbi_server_send_error(stream,OGS_SBI_HTTP_STATUS_BAD_REQUEST,&sbi_message,
                         "Invalid NonUeN2MessageTransferReqData", NULL, NULL));
+                    }
+                    else {
+                        ogs_info("PWS (ETWS/CMAS)Broadcast to gNB successfully");
                     }
                     break;
                 DEFAULT

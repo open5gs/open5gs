@@ -87,7 +87,6 @@ int pwsiwf_ngap_send_kill_request(sbc_pws_data_t *sbc_pws)
 {
     ogs_pkbuf_t *ngapbuf = NULL;
     pwsiwf_warning_t *warning = NULL;
-    pwsiwf_connection_t *connection = NULL;
     pwsiwf_nonuen2_message_transfer_param_t param;
 
     ogs_assert(sbc_pws);
