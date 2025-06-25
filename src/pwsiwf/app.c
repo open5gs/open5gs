@@ -37,9 +37,10 @@ int app_initialize(const char *const argv[])
     ogs_sctp_init(ogs_app()->usrsctp.udp_port);
     rv = pwsiwf_initialize();
     if (rv != OGS_OK) {
+        ogs_error("Failed to initialize PWS-IWF");
         return rv;
     }
-
+    ogs_info("PWS-IWF initialize...done");
     return OGS_OK;
 }
 
@@ -47,4 +48,5 @@ void app_terminate(void)
 {
     pwsiwf_terminate();
     ogs_sctp_final();
+    ogs_info("PWS-IWF terminate...done");
 } 
