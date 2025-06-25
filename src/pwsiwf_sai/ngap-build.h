@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,29 +17,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef NGAP_PATH_H
-#define NGAP_PATH_H
+#ifndef PWSIWF_SAI_NGAP_BUILD_H
+#define PWSIWF_SAI_NGAP_BUILD_H
 
-#include "ogs-core.h"
 #include "context.h"
-#include "sbc-message.h"
-
-#define NGAP_NON_UE_SIGNALLING 0
-
-static inline ogs_pkbuf_t *ngap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws) { return NULL; }
-static inline ogs_pkbuf_t *ngap_build_kill_request(sbc_pws_data_t *sbc_pws) { return NULL; }
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* PWS-IWF NGAP-AMF Message Functions */
-int pwsiwf_ngap_send_write_replace_warning_request(sbc_pws_data_t *sbc_pws);
-int pwsiwf_ngap_send_kill_request(sbc_pws_data_t *sbc_pws);
-int pwsiwf_ngap_send_to_amf(ogs_pkbuf_t *buf);
+/* NGAP Warning Message Transfer Building Functions */
+ogs_pkbuf_t *ngap_build_warning_message_broadcast_request_transfer(
+        pwsiwf_sai_warning_t *warning);
+
+ogs_pkbuf_t *ngap_build_warning_message_stop_request_transfer(
+        pwsiwf_sai_warning_t *warning);
+
+ogs_pkbuf_t *ngap_build_warning_message_cancel_request_transfer(
+        pwsiwf_sai_warning_t *warning);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* NGAP_PATH_H */ 
+#endif /* PWSIWF_SAI_NGAP_BUILD_H */ 

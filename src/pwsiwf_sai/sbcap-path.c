@@ -31,9 +31,9 @@ int sbcap_open(void)
     char buf[OGS_ADDRSTRLEN];
 
     // Start SBCAP server only
-    ogs_list_for_each(&pwsiwf_self()->sbcap_list, node) {
+    ogs_list_for_each(&pwsiwf_sai_self()->sbcap_list, node) {
         if (sbcap_server(node) == NULL) return OGS_ERROR;
-        ogs_info("PWS-IWF SBCAP server listening on [%s]:%d",
+        ogs_info("PWS-IWF_SAI SBCAP server listening on [%s]:%d",
                 OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
     }
 
@@ -42,7 +42,7 @@ int sbcap_open(void)
 
 void sbcap_close(void)
 {
-    ogs_socknode_remove_all(&pwsiwf_self()->sbcap_list);
+    ogs_socknode_remove_all(&pwsiwf_sai_self()->sbcap_list);
 }
 
 ogs_sock_t *sbcap_server(ogs_socknode_t *node)
@@ -155,7 +155,7 @@ void sbcap_recv_handler(ogs_sock_t *sock)
     ogs_sockaddr_t from;
     ogs_sctp_info_t sinfo;
     int flags = 0;
-    pwsiwf_connection_t *connection = NULL;
+    pwsiwf_sai_connection_t *connection = NULL;
 
     ogs_assert(sock);
 
@@ -171,9 +171,9 @@ void sbcap_recv_handler(ogs_sock_t *sock)
         addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
         ogs_assert(addr);
         memcpy(addr, &from, sizeof(ogs_sockaddr_t));
-        connection = pwsiwf_connection_find_by_addr(addr);
+        connection = pwsiwf_sai_connection_find_by_addr(addr);
         if (connection) {
-            pwsiwf_connection_remove(connection);
+            pwsiwf_sai_connection_remove(connection);
         }
         ogs_free(addr);
 
@@ -266,11 +266,11 @@ void sbcap_recv_handler(ogs_sock_t *sock)
         ogs_info("SBCAP event: SCTP_DATA");
 
         /* Find or create connection */
-        connection = pwsiwf_connection_find_by_addr(addr);
+        connection = pwsiwf_sai_connection_find_by_addr(addr);
         if (!connection) {
-            connection = pwsiwf_connection_add(sock, addr);
+            connection = pwsiwf_sai_connection_add(sock, addr);
             if (!connection) {
-                ogs_error("Failed to create PWS-IWF connection");
+                ogs_error("Failed to create PWS-IWF_SAI connection");
                 ogs_pkbuf_free(pkbuf);
                 return;
             }
@@ -313,8 +313,8 @@ void sbcap_recv_handler(ogs_sock_t *sock)
 
                 switch (successfulOutcome->procedureCode) {
                 case SBCAP_id_Write_Replace_Warning:
-                    ogs_info("Calling pwsiwf_sbcap_handle_write_replace_warning_response");
-                    pwsiwf_sbcap_handle_write_replace_warning_response(connection, pdu);
+                    ogs_info("Calling pwsiwf_sai_sbcap_handle_write_replace_warning_response");
+                    pwsiwf_sai_sbcap_handle_write_replace_warning_response(connection, pdu);
                     ogs_info("Write_Replace_Warning_Response");
                     break;
                 default:
@@ -332,14 +332,14 @@ void sbcap_recv_handler(ogs_sock_t *sock)
 
                 switch (initiatingMessage->procedureCode) {
                 case SBCAP_id_Write_Replace_Warning:
-                    ogs_info("Calling pwsiwf_sbcap_handle_write_replace_warning_request");
-                    pwsiwf_sbcap_handle_write_replace_warning_request(connection, pdu);
+                    ogs_info("Calling pwsiwf_sai_sbcap_handle_write_replace_warning_request");
+                    pwsiwf_sai_sbcap_handle_write_replace_warning_request(connection, pdu);
                     ogs_info("Write_Replace_Warning_Request");
                     break;
 
                 case SBCAP_id_Stop_Warning:
-                    ogs_info("Calling pwsiwf_sbcap_handle_stop_warning_request");
-                    pwsiwf_sbcap_handle_stop_warning_request(connection, pdu);
+                    ogs_info("Calling pwsiwf_sai_sbcap_handle_stop_warning_request");
+                    pwsiwf_sai_sbcap_handle_stop_warning_request(connection, pdu);
                     ogs_info("Stop_Warning_Request");
                     break;
                 default:

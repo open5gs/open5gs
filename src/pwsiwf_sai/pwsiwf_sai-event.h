@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PWSIWF_EVENT_H
-#define PWSIWF_EVENT_H
+#ifndef PWSIWF_SAI_EVENT_H
+#define PWSIWF_SAI_EVENT_H
 
 #include "ogs-proto.h"
 
@@ -28,25 +28,25 @@ extern "C" {
 
 /* forward declaration */
 typedef enum {
-    PWSIWF_EVENT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
+    PWSIWF_SAI_EVENT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
 
-    PWSIWF_EVENT_SBCAP_MESSAGE,
-    PWSIWF_EVENT_SBCAP_TIMER,
-    PWSIWF_EVENT_SBCAP_LO_ACCEPT,
-    PWSIWF_EVENT_SBCAP_LO_SCTP_COMM_UP,
-    PWSIWF_EVENT_SBCAP_LO_CONNREFUSED,
+    PWSIWF_SAI_EVENT_SBCAP_MESSAGE,
+    PWSIWF_SAI_EVENT_SBCAP_TIMER,
+    PWSIWF_SAI_EVENT_SBCAP_LO_ACCEPT,
+    PWSIWF_SAI_EVENT_SBCAP_LO_SCTP_COMM_UP,
+    PWSIWF_SAI_EVENT_SBCAP_LO_CONNREFUSED,
 
-    PWSIWF_EVENT_SBI_MESSAGE,
-    PWSIWF_EVENT_SBI_TIMER,
+    PWSIWF_SAI_EVENT_SBI_MESSAGE,
+    PWSIWF_SAI_EVENT_SBI_TIMER,
 
-    MAX_NUM_OF_PWSIWF_EVENT,
+    MAX_NUM_OF_PWSIWF_SAI_EVENT,
 
-} pwsiwf_event_e;
+} pwsiwf_sai_event_e;
 
 typedef struct SBCAP_SBC_AP_PDU ogs_sbcap_message_t;
-typedef struct pwsiwf_connection_s pwsiwf_connection_t;
+typedef struct pwsiwf_sai_connection_s pwsiwf_sai_connection_t;
 
-typedef struct pwsiwf_event_s {
+typedef struct pwsiwf_sai_event_s {
     int id;
     int timer_id;
 
@@ -60,23 +60,23 @@ typedef struct pwsiwf_event_s {
 
     ogs_sbcap_message_t *sbcap_message;
 
-    pwsiwf_connection_t *connection;
+    pwsiwf_sai_connection_t *connection;
 
     ogs_timer_t *timer;
-} pwsiwf_event_t;
+} pwsiwf_sai_event_t;
 
-OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(pwsiwf_event_t));
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(pwsiwf_sai_event_t));
 
-void pwsiwf_event_term(void);
+void pwsiwf_sai_event_term(void);
 
-pwsiwf_event_t *pwsiwf_event_new(pwsiwf_event_e id);
-void pwsiwf_event_free(pwsiwf_event_t *e);
+pwsiwf_sai_event_t *pwsiwf_sai_event_new(pwsiwf_sai_event_e id);
+void pwsiwf_sai_event_free(pwsiwf_sai_event_t *e);
 
-void pwsiwf_event_timeout(void *data);
+void pwsiwf_sai_event_timeout(void *data);
 
-const char *pwsiwf_event_get_name(pwsiwf_event_t *e);
+const char *pwsiwf_sai_event_get_name(pwsiwf_sai_event_t *e);
 
-void pwsiwf_sctp_event_push(pwsiwf_event_e id,
+void pwsiwf_sai_sctp_event_push(pwsiwf_sai_event_e id,
         void *sock, ogs_sockaddr_t *addr, ogs_pkbuf_t *pkbuf,
         uint16_t max_num_of_istreams, uint16_t max_num_of_ostreams);
 
@@ -84,4 +84,4 @@ void pwsiwf_sctp_event_push(pwsiwf_event_e id,
 }
 #endif
 
-#endif /* PWSIWF_EVENT_H */ 
+#endif /* PWSIWF_SAI_EVENT_H */ 

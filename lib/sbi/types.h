@@ -94,7 +94,7 @@ typedef enum {
     OGS_SBI_SERVICE_TYPE_N32C_HANDSHAKE,
     OGS_SBI_SERVICE_TYPE_NAMF_CALLBACK,
     OGS_SBI_SERVICE_TYPE_NSMF_CALLBACK,
-    OGS_SBI_SERVICE_TYPE_NPWSIWF,
+    OGS_SBI_SERVICE_TYPE_NPWSIWF_SAI,
     OGS_SBI_SERVICE_TYPE_MAX,
 } ogs_sbi_service_type_e;
 
@@ -165,7 +165,7 @@ typedef enum {
 
 #define OGS_SBI_SERVICE_NAME_NAMF_CALLBACK "namf-callback"
 #define OGS_SBI_SERVICE_NAME_NSMF_CALLBACK "nsmf-callback"
-#define OGS_SBI_SERVICE_NAME_NPWSIWF "npwsiwf"
+#define OGS_SBI_SERVICE_NAME_NPWSIWF_SAI "npwsiwf_sai"
 
 OpenAPI_nf_type_e ogs_sbi_service_type_to_nf_type(
         ogs_sbi_service_type_e service_type);

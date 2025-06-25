@@ -34,8 +34,8 @@ void sbc_handle_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
     }
 
     /* Send to AMF */
-    r = pwsiwf_ngap_send_to_amf(ngapbuf);
-    ogs_info("pwsiwf_ngap_send_to_amf() %d", r);
+    r = pwsiwf_sai_ngap_send_to_amf(ngapbuf);
+    ogs_info("pwsiwf_sai_ngap_send_to_amf() %d", r);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 }
@@ -53,7 +53,7 @@ void sbc_handle_stop_warning_request(sbc_pws_data_t *sbc_pws)
     }
 
     /* Send to AMF */
-    r = pwsiwf_ngap_send_to_amf(ngapbuf);
+    r = pwsiwf_sai_ngap_send_to_amf(ngapbuf);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 } 

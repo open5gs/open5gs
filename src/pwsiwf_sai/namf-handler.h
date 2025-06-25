@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,18 +17,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PWSIWF_INIT_H
-#define PWSIWF_INIT_H
+#ifndef PWSIWF_SAI_NONUEN2_HANDLER_H
+#define PWSIWF_SAI_NONUEN2_HANDLER_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int pwsiwf_initialize(void);
-void pwsiwf_terminate(void);
+#include "context.h"
+
+bool pwsiwf_sai_nonuen2_comm_handle_nonuen2_message_transfer(
+        pwsiwf_sai_warning_t *warning, int state, ogs_sbi_message_t *recvmsg);
+
+bool pwsiwf_sai_nonuen2_comm_handle_nonuen2_message_transfer_failure_notify(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* PWSIWF_INIT_H */ 
+#endif /* PWSIWF_SAI_NONUEN2_HANDLER_H */

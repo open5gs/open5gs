@@ -17,28 +17,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PWSIWF_SBCAP_HANDLER_H
-#define PWSIWF_SBCAP_HANDLER_H
-
-#include "context.h"
-#include "pwsiwf-event.h"
+#ifndef PWSIWF_SAI_INIT_H
+#define PWSIWF_SAI_INIT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* SBCAP Message Handler Functions */
-void pwsiwf_sbcap_handle_write_replace_warning_request(
-        pwsiwf_connection_t *connection, ogs_sbcap_message_t *message);
-
-void pwsiwf_sbcap_handle_stop_warning_request(
-        pwsiwf_connection_t *connection, ogs_sbcap_message_t *message);
-
-void pwsiwf_sbcap_handle_write_replace_warning_response(
-        pwsiwf_connection_t *connection, ogs_sbcap_message_t *message);
+int pwsiwf_sai_initialize(void);
+void pwsiwf_sai_terminate(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* PWSIWF_SBCAP_HANDLER_H */ 
+#endif /* PWSIWF_SAI_INIT_H */ 

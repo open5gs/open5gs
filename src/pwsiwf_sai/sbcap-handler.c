@@ -22,8 +22,8 @@
 #include "sbi-path.h"
 #include "ngap-build.h"
 
-void pwsiwf_sbcap_handle_write_replace_warning_response(
-        pwsiwf_connection_t *connection, ogs_sbcap_message_t *message)
+void pwsiwf_sai_sbcap_handle_write_replace_warning_response(
+        pwsiwf_sai_connection_t *connection, ogs_sbcap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
 
@@ -34,12 +34,12 @@ void pwsiwf_sbcap_handle_write_replace_warning_response(
             OGS_ADDR(connection->addr, buf));
 }
 
-void pwsiwf_sbcap_handle_write_replace_warning_request(
-        pwsiwf_connection_t *connection, ogs_sbcap_message_t *message)
+void pwsiwf_sai_sbcap_handle_write_replace_warning_request(
+        pwsiwf_sai_connection_t *connection, ogs_sbcap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
     int i;
-    pwsiwf_warning_t *warning = NULL;
+    pwsiwf_sai_warning_t *warning = NULL;
     uint16_t message_id = 0;
     uint16_t serial_number_i = 0;
 
@@ -144,7 +144,7 @@ void pwsiwf_sbcap_handle_write_replace_warning_request(
         }
     }
 
-    warning = pwsiwf_warning_add(connection);
+    warning = pwsiwf_sai_warning_add(connection);
     if (!warning) {
         ogs_error("Failed to create a new warning context");
         return;
@@ -168,21 +168,21 @@ void pwsiwf_sbcap_handle_write_replace_warning_request(
         warning->warning_data.message_length = warning_message_content->size;
     }
 
-    pwsiwf_nonuen2_message_transfer_param_t param;
+    pwsiwf_sai_nonuen2_message_transfer_param_t param;
     memset(&param, 0, sizeof(param));
-    param.state = PWSIWF_WARNING_MESSAGE_BROADCAST;
+    param.state = PWSIWF_SAI_WARNING_MESSAGE_BROADCAST;
     param.nonuen2_failure_txf_notif_uri = true;
 
     param.n2smbuf = ngap_build_warning_message_broadcast_request_transfer(warning);
     if (!param.n2smbuf) {
         ogs_error("Failed to build NGAP warning message broadcast request transfer");
-        pwsiwf_warning_remove(warning);
+        pwsiwf_sai_warning_remove(warning);
         return;
     }
 
-    if (pwsiwf_nonuen2_comm_send_nonuen2_message_transfer(warning, &param) != OGS_OK) {
+    if (pwsiwf_sai_nonuen2_comm_send_nonuen2_message_transfer(warning, &param) != OGS_OK) {
         ogs_error("Failed to send Non-UE N2 message to AMF");
-        pwsiwf_warning_remove(warning);
+        pwsiwf_sai_warning_remove(warning);
         return;
     }
 
@@ -192,8 +192,8 @@ void pwsiwf_sbcap_handle_write_replace_warning_request(
             OGS_ADDR(connection->addr, buf));
 }
 
-void pwsiwf_sbcap_handle_stop_warning_request(
-        pwsiwf_connection_t *connection, ogs_sbcap_message_t *message)
+void pwsiwf_sai_sbcap_handle_stop_warning_request(
+        pwsiwf_sai_connection_t *connection, ogs_sbcap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
     int i;

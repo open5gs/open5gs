@@ -15,11 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-libpwsiwf_sources = files('''
+libpwsiwf_sai_sources = files('''
     context.h
     context.c
-    pwsiwf-event.h
-    pwsiwf-event.c
+    pwsiwf_sai-event.h
+    pwsiwf_sai-event.c
     sbi-path.h
     sbi-path.c
     ngap-path.h
@@ -43,8 +43,8 @@ libpwsiwf_sources = files('''
 
 asn1c_sbcap_inc = include_directories('../../lib/asn1c/sbcap')
 
-libpwsiwf = static_library('pwsiwf',
-    sources : libpwsiwf_sources,
+libpwsiwf_sai = static_library('pwsiwf_sai',
+    sources : libpwsiwf_sai_sources,
     dependencies : [libsctp_dep,
                     libngap_dep,
                     libnas_5gs_dep,
@@ -53,23 +53,23 @@ libpwsiwf = static_library('pwsiwf',
     include_directories : [asn1c_sbcap_inc],
     install : false)
 
-libpwsiwf_dep = declare_dependency(
-    link_with : libpwsiwf,
+libpwsiwf_sai_dep = declare_dependency(
+    link_with : libpwsiwf_sai,
     dependencies : [libsctp_dep,
                     libngap_dep,
                     libnas_5gs_dep,
                     libsbi_dep,
                     libasn1c_sbcap_dep])
 
-pwsiwf_sources = files('''
+pwsiwf_sai_sources = files('''
     app.c
     ../main.c
 '''.split())
 
-executable('open5gs-pwsiwfd',
-    sources : pwsiwf_sources,
-    c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/pwsiwf.yaml"'.format(open5gs_sysconfdir),
+executable('open5gs-pwsiwf_said',
+    sources : pwsiwf_sai_sources,
+    c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/pwsiwf_sai.yaml"'.format(open5gs_sysconfdir),
     include_directories : [srcinc, asn1c_sbcap_inc],
-    dependencies : libpwsiwf_dep,
+    dependencies : libpwsiwf_sai_dep,
     install_rpath : libdir,
     install : true) 
