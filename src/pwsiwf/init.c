@@ -24,47 +24,47 @@
 #include "init.h"
 
 static ogs_thread_t *thread;
-static void pwsiws_main(void *data);
+static void pwsiwf_main(void *data);
 static int initialized = 0;
 
-int pwsiws_initialize(void)
+int pwsiwf_initialize(void)
 {
     int rv;
-#define APP_NAME "pwsiws"
+#define APP_NAME "pwsiwf"
     rv = ogs_app_parse_local_conf(APP_NAME);
     if (rv != OGS_OK) return rv;
 
-    pwsiws_context_init();
+    pwsiwf_context_init();
 
     /* Install SBI log domain before any SBI server is started */
     /* Only install if not already installed to avoid duplication warnings */
     if (!ogs_log_find_domain("sbi"))
         ogs_log_install_domain(&__ogs_sbi_domain, "sbi", ogs_core()->log.level);
-    if (!ogs_log_find_domain("pwsiws"))
-        ogs_log_install_domain(&__pwsiws_log_domain, "pwsiws", ogs_core()->log.level);
+    if (!ogs_log_find_domain("pwsiwf"))
+        ogs_log_install_domain(&__pwsiwf_log_domain, "pwsiwf", ogs_core()->log.level);
 
     rv = ogs_log_config_domain(
             ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
-    /* Use AMF NF type as a base since PWS-IWS interfaces with AMF */
+    /* Use AMF NF type as a base since PWS-IWF interfaces with AMF */
     ogs_sbi_context_init(OpenAPI_nf_type_AMF);
     //rv = ogs_sbi_context_parse_config(APP_NAME, NULL, NULL);
     //if (rv != OGS_OK) return rv;
 
-    rv = pwsiws_context_parse_config(); // Only for non-SBI config
+    rv = pwsiwf_context_parse_config(); // Only for non-SBI config
     if (rv != OGS_OK) return rv;
 
-    rv = pwsiws_context_nf_info();
+    rv = pwsiwf_context_nf_info();
     if (rv != OGS_OK) return rv;
 
-    rv = pwsiws_sbi_open();
+    rv = pwsiwf_sbi_open();
     if (rv != OGS_OK) return rv;
 
     rv = sbcap_open();
     if (rv != OGS_OK) return rv;
 
-    thread = ogs_thread_create(pwsiws_main, NULL);
+    thread = ogs_thread_create(pwsiwf_main, NULL);
     if (!thread) return OGS_ERROR;
 
     initialized = 1;
@@ -76,7 +76,7 @@ static ogs_timer_t *t_termination_holding = NULL;
 static void event_termination(void)
 {
     /* Gracefully shutdown the server by sending GOAWAY to each session. */
-    pwsiws_sbi_close();
+    pwsiwf_sbi_close();
     sbcap_close();
 
     /* Starting holding timer */
@@ -90,16 +90,16 @@ static void event_termination(void)
     ogs_pollset_notify(ogs_app()->pollset);
 }
 
-void pwsiws_terminate(void)
+void pwsiwf_terminate(void)
 {
     if (!initialized) return;
     event_termination();
     ogs_thread_destroy(thread);
     ogs_timer_delete(t_termination_holding);
-    pwsiws_context_final();
+    pwsiwf_context_final();
 }
 
-static void pwsiws_main(void *data)
+static void pwsiwf_main(void *data)
 {
     int rv;
     for (;;) {

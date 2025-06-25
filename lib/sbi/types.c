@@ -86,7 +86,7 @@ static struct service_desc_s service_desc[] = {
     { OpenAPI_nf_type_SEPP, OGS_SBI_SERVICE_NAME_N32C_HANDSHAKE },
     { OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NAMF_CALLBACK },
     { OpenAPI_nf_type_SMF, OGS_SBI_SERVICE_NAME_NSMF_CALLBACK },
-    { OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NPWSIWS },
+    { OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NPWSIWF },
 };
 
 OpenAPI_nf_type_e ogs_sbi_service_type_to_nf_type(ogs_sbi_service_type_e type)

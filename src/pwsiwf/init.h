@@ -17,18 +17,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PWSIWS_INIT_H
-#define PWSIWS_INIT_H
+#ifndef PWSIWF_INIT_H
+#define PWSIWF_INIT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int pwsiws_initialize(void);
-void pwsiws_terminate(void);
+int pwsiwf_initialize(void);
+void pwsiwf_terminate(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* PWSIWS_INIT_H */ 
+#endif /* PWSIWF_INIT_H */ 

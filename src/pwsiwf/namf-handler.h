@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PWSIWS_NONUEN2_HANDLER_H
-#define PWSIWS_NONUEN2_HANDLER_H
+#ifndef PWSIWF_NONUEN2_HANDLER_H
+#define PWSIWF_NONUEN2_HANDLER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,14 +26,14 @@ extern "C" {
 
 #include "context.h"
 
-bool pwsiws_nonuen2_comm_handle_nonuen2_message_transfer(
-        pwsiws_warning_t *warning, int state, ogs_sbi_message_t *recvmsg);
+bool pwsiwf_nonuen2_comm_handle_nonuen2_message_transfer(
+        pwsiwf_warning_t *warning, int state, ogs_sbi_message_t *recvmsg);
 
-bool pwsiws_nonuen2_comm_handle_nonuen2_message_transfer_failure_notify(
+bool pwsiwf_nonuen2_comm_handle_nonuen2_message_transfer_failure_notify(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* PWSIWS_NONUEN2_HANDLER_H */
+#endif /* PWSIWF_NONUEN2_HANDLER_H */

@@ -21,7 +21,7 @@
 #include "ogs-ngap.h"
 
 ogs_pkbuf_t *ngap_build_warning_message_broadcast_request_transfer(
-        pwsiws_warning_t *warning)
+        pwsiwf_warning_t *warning)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     NGAP_NGAP_PDU_t pdu;
@@ -131,7 +131,7 @@ ogs_pkbuf_t *ngap_build_warning_message_broadcast_request_transfer(
 }
 
 ogs_pkbuf_t *ngap_build_warning_message_stop_request_transfer(
-        pwsiws_warning_t *warning)
+        pwsiwf_warning_t *warning)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     NGAP_NGAP_PDU_t pdu;
@@ -191,7 +191,7 @@ ogs_pkbuf_t *ngap_build_warning_message_stop_request_transfer(
 }
 
 ogs_pkbuf_t *ngap_build_warning_message_cancel_request_transfer(
-        pwsiws_warning_t *warning)
+        pwsiwf_warning_t *warning)
 {
     /* For now, use the same as stop request */
     return ngap_build_warning_message_stop_request_transfer(warning);

@@ -36,7 +36,7 @@ static ogs_thread_t *pcf_thread = NULL;
 static ogs_thread_t *nssf_thread = NULL;
 static ogs_thread_t *bsf_thread = NULL;
 static ogs_thread_t *udr_thread = NULL;
-static ogs_thread_t *pwsiws_thread = NULL;
+static ogs_thread_t *pwsiwf_thread = NULL;
 
 int app_initialize(const char *const argv[])
 {
@@ -96,8 +96,8 @@ int app_initialize(const char *const argv[])
         bsf_thread = test_child_create("bsf", argv_out);
     if (ogs_global_conf()->parameter.no_udr == 0)
         udr_thread = test_child_create("udr", argv_out);
-    if (ogs_global_conf()->parameter.no_pwsiws == 0)
-        pwsiws_thread = test_child_create("pwsiws", argv_out);
+    if (ogs_global_conf()->parameter.no_pwsiwf == 0)
+        pwsiwf_thread = test_child_create("pwsiwf", argv_out);
 
     /*
      * Wait for all sockets listening
@@ -126,7 +126,7 @@ void app_terminate(void)
     if (pcf_thread) ogs_thread_destroy(pcf_thread);
     if (udm_thread) ogs_thread_destroy(udm_thread);
     if (ausf_thread) ogs_thread_destroy(ausf_thread);
-    if (pwsiws_thread) ogs_thread_destroy(pwsiws_thread);
+    if (pwsiwf_thread) ogs_thread_destroy(pwsiwf_thread);
 
     if (hss_thread) ogs_thread_destroy(hss_thread);
     if (pcrf_thread) ogs_thread_destroy(pcrf_thread);

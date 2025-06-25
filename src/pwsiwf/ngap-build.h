@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PWSIWS_NGAP_BUILD_H
-#define PWSIWS_NGAP_BUILD_H
+#ifndef PWSIWF_NGAP_BUILD_H
+#define PWSIWF_NGAP_BUILD_H
 
 #include "context.h"
 
@@ -28,16 +28,16 @@ extern "C" {
 
 /* NGAP Warning Message Transfer Building Functions */
 ogs_pkbuf_t *ngap_build_warning_message_broadcast_request_transfer(
-        pwsiws_warning_t *warning);
+        pwsiwf_warning_t *warning);
 
 ogs_pkbuf_t *ngap_build_warning_message_stop_request_transfer(
-        pwsiws_warning_t *warning);
+        pwsiwf_warning_t *warning);
 
 ogs_pkbuf_t *ngap_build_warning_message_cancel_request_transfer(
-        pwsiws_warning_t *warning);
+        pwsiwf_warning_t *warning);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* PWSIWS_NGAP_BUILD_H */ 
+#endif /* PWSIWF_NGAP_BUILD_H */ 

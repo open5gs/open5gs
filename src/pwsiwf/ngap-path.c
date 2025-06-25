@@ -21,24 +21,24 @@
 #include "ngap-build.h"
 #include "sbi-path.h"
 
-int pwsiws_ngap_send_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
+int pwsiwf_ngap_send_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
 {
     ogs_pkbuf_t *ngapbuf = NULL;
-    pwsiws_warning_t *warning = NULL;
-    pwsiws_connection_t *connection = NULL;
-    pwsiws_nonuen2_message_transfer_param_t param;
+    pwsiwf_warning_t *warning = NULL;
+    pwsiwf_connection_t *connection = NULL;
+    pwsiwf_nonuen2_message_transfer_param_t param;
 
     ogs_assert(sbc_pws);
 
     /* Create a warning message from SBC PWS data */
     /* For now, we'll use the first connection or create a dummy one */
-    connection = ogs_list_first(&pwsiws_self()->connection_list);
+    connection = ogs_list_first(&pwsiwf_self()->connection_list);
     if (!connection) {
-        ogs_error("No PWS-IWS connection available");
+        ogs_error("No PWS-IWF connection available");
         return OGS_ERROR;
     }
 
-    warning = pwsiws_warning_add(connection);
+    warning = pwsiwf_warning_add(connection);
     if (!warning) {
         ogs_error("Failed to create PWS warning");
         return OGS_ERROR;
@@ -60,20 +60,20 @@ int pwsiws_ngap_send_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
     ngapbuf = ngap_build_warning_message_broadcast_request_transfer(warning);
     if (!ngapbuf) {
         ogs_error("Failed to build NGAP warning message");
-        pwsiws_warning_remove(warning);
+        pwsiwf_warning_remove(warning);
         return OGS_ERROR;
     }
 
     /* Set up transfer parameters */
     memset(&param, 0, sizeof(param));
-    param.state = PWSIWS_WARNING_MESSAGE_BROADCAST;
+    param.state = PWSIWF_WARNING_MESSAGE_BROADCAST;
     param.n2smbuf = ngapbuf;
     param.nonuen2_failure_txf_notif_uri = true;
 
     /* Send to AMF via SBI */
-    if (pwsiws_nonuen2_comm_send_nonuen2_message_transfer(warning, &param) != OGS_OK) {
+    if (pwsiwf_nonuen2_comm_send_nonuen2_message_transfer(warning, &param) != OGS_OK) {
         ogs_error("Failed to send Non-UE N2 message transfer");
-        pwsiws_warning_remove(warning);
+        pwsiwf_warning_remove(warning);
         return OGS_ERROR;
     }
 
@@ -83,17 +83,17 @@ int pwsiws_ngap_send_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
     return OGS_OK;
 }
 
-int pwsiws_ngap_send_kill_request(sbc_pws_data_t *sbc_pws)
+int pwsiwf_ngap_send_kill_request(sbc_pws_data_t *sbc_pws)
 {
     ogs_pkbuf_t *ngapbuf = NULL;
-    pwsiws_warning_t *warning = NULL;
-    pwsiws_connection_t *connection = NULL;
-    pwsiws_nonuen2_message_transfer_param_t param;
+    pwsiwf_warning_t *warning = NULL;
+    pwsiwf_connection_t *connection = NULL;
+    pwsiwf_nonuen2_message_transfer_param_t param;
 
     ogs_assert(sbc_pws);
 
     /* Find existing warning by message ID */
-    warning = pwsiws_warning_find_by_warning_id(sbc_pws->message_id);
+    warning = pwsiwf_warning_find_by_warning_id(sbc_pws->message_id);
     if (!warning) {
         ogs_error("Warning not found for message ID: %d", sbc_pws->message_id);
         return OGS_ERROR;
@@ -108,12 +108,12 @@ int pwsiws_ngap_send_kill_request(sbc_pws_data_t *sbc_pws)
 
     /* Set up transfer parameters */
     memset(&param, 0, sizeof(param));
-    param.state = PWSIWS_WARNING_MESSAGE_CANCEL;
+    param.state = PWSIWF_WARNING_MESSAGE_CANCEL;
     param.n2smbuf = ngapbuf;
     param.nonuen2_failure_txf_notif_uri = true;
 
     /* Send to AMF via SBI */
-    if (pwsiws_nonuen2_comm_send_nonuen2_message_transfer(warning, &param) != OGS_OK) {
+    if (pwsiwf_nonuen2_comm_send_nonuen2_message_transfer(warning, &param) != OGS_OK) {
         ogs_error("Failed to send Non-UE N2 cancel message transfer");
         return OGS_ERROR;
     }
@@ -124,9 +124,9 @@ int pwsiws_ngap_send_kill_request(sbc_pws_data_t *sbc_pws)
     return OGS_OK;
 }
 
-int pwsiws_ngap_send_to_amf(ogs_pkbuf_t *buf)
+int pwsiwf_ngap_send_to_amf(ogs_pkbuf_t *buf)
 {
-    if (!pwsiws_self()->amf_sbi) {
+    if (!pwsiwf_self()->amf_sbi) {
         ogs_error("AMF SBI client not configured");
         ogs_pkbuf_free(buf);
         return OGS_ERROR;

@@ -17,18 +17,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pwsiws-event.h"
+#include "pwsiwf-event.h"
 #include "context.h"
 
-void pwsiws_event_term(void)
+void pwsiwf_event_term(void)
 {
     ogs_queue_term(ogs_app()->queue);
     ogs_pollset_notify(ogs_app()->pollset);
 }
 
-pwsiws_event_t *pwsiws_event_new(pwsiws_event_e id)
+pwsiwf_event_t *pwsiwf_event_new(pwsiwf_event_e id)
 {
-    pwsiws_event_t *e = NULL;
+    pwsiwf_event_t *e = NULL;
 
     e = ogs_calloc(1, sizeof *e);
     ogs_assert(e);
@@ -39,23 +39,23 @@ pwsiws_event_t *pwsiws_event_new(pwsiws_event_e id)
     return e;
 }
 
-void pwsiws_event_free(pwsiws_event_t *e)
+void pwsiwf_event_free(pwsiwf_event_t *e)
 {
     ogs_assert(e);
     ogs_free(e);
 }
 
-void pwsiws_event_timeout(void *data)
+void pwsiwf_event_timeout(void *data)
 {
-    pwsiws_event_t *e = data;
+    pwsiwf_event_t *e = data;
     ogs_assert(e);
 
-    ogs_info("PWS-IWS Event Timeout: %s", pwsiws_event_get_name(e));
+    ogs_info("PWS-IWF Event Timeout: %s", pwsiwf_event_get_name(e));
 
-    pwsiws_event_free(e);
+    pwsiwf_event_free(e);
 }
 
-const char *pwsiws_event_get_name(pwsiws_event_t *e)
+const char *pwsiwf_event_get_name(pwsiwf_event_t *e)
 {
     if (e == NULL)
         return OGS_FSM_NAME_INIT_SIG;
@@ -66,21 +66,21 @@ const char *pwsiws_event_get_name(pwsiws_event_t *e)
     case OGS_FSM_EXIT_SIG:
         return OGS_FSM_NAME_EXIT_SIG;
 
-    case PWSIWS_EVENT_SBCAP_MESSAGE:
-        return "PWSIWS_EVENT_SBCAP_MESSAGE";
-    case PWSIWS_EVENT_SBCAP_TIMER:
-        return "PWSIWS_EVENT_SBCAP_TIMER";
-    case PWSIWS_EVENT_SBCAP_LO_ACCEPT:
-        return "PWSIWS_EVENT_SBCAP_LO_ACCEPT";
-    case PWSIWS_EVENT_SBCAP_LO_SCTP_COMM_UP:
-        return "PWSIWS_EVENT_SBCAP_LO_SCTP_COMM_UP";
-    case PWSIWS_EVENT_SBCAP_LO_CONNREFUSED:
-        return "PWSIWS_EVENT_SBCAP_LO_CONNREFUSED";
+    case PWSIWF_EVENT_SBCAP_MESSAGE:
+        return "PWSIWF_EVENT_SBCAP_MESSAGE";
+    case PWSIWF_EVENT_SBCAP_TIMER:
+        return "PWSIWF_EVENT_SBCAP_TIMER";
+    case PWSIWF_EVENT_SBCAP_LO_ACCEPT:
+        return "PWSIWF_EVENT_SBCAP_LO_ACCEPT";
+    case PWSIWF_EVENT_SBCAP_LO_SCTP_COMM_UP:
+        return "PWSIWF_EVENT_SBCAP_LO_SCTP_COMM_UP";
+    case PWSIWF_EVENT_SBCAP_LO_CONNREFUSED:
+        return "PWSIWF_EVENT_SBCAP_LO_CONNREFUSED";
 
-    case PWSIWS_EVENT_SBI_MESSAGE:
-        return "PWSIWS_EVENT_SBI_MESSAGE";
-    case PWSIWS_EVENT_SBI_TIMER:
-        return "PWSIWS_EVENT_SBI_TIMER";
+    case PWSIWF_EVENT_SBI_MESSAGE:
+        return "PWSIWF_EVENT_SBI_MESSAGE";
+    case PWSIWF_EVENT_SBI_TIMER:
+        return "PWSIWF_EVENT_SBI_TIMER";
 
     default:
         break;
@@ -89,17 +89,17 @@ const char *pwsiws_event_get_name(pwsiws_event_t *e)
     return "UNKNOWN_EVENT";
 }
 
-void pwsiws_sctp_event_push(pwsiws_event_e id,
+void pwsiwf_sctp_event_push(pwsiwf_event_e id,
         void *sock, ogs_sockaddr_t *addr, ogs_pkbuf_t *pkbuf,
         uint16_t max_num_of_istreams, uint16_t max_num_of_ostreams)
 {
-    pwsiws_event_t *e = NULL;
+    pwsiwf_event_t *e = NULL;
     int rv;
 
     ogs_assert(id);
     ogs_assert(sock);
 
-    e = pwsiws_event_new(id);
+    e = pwsiwf_event_new(id);
     ogs_assert(e);
     e->sock = sock;
     e->addr = addr;
@@ -113,7 +113,7 @@ void pwsiws_sctp_event_push(pwsiws_event_e id,
         ogs_free(e->addr);
         if (e->pkbuf)
             ogs_pkbuf_free(e->pkbuf);
-        pwsiws_event_free(e);
+        pwsiwf_event_free(e);
     }
 #if HAVE_USRSCTP
     else {

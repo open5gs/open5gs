@@ -1,7 +1,7 @@
 logger:
-  file: /tmp/open5gs-pwsiws.log
+  file: /tmp/open5gs-pwsiwf.log
 
-pwsiws:
+pwsiwf:
   sbi:
     server:
       - address: 127.0.0.199
@@ -11,5 +11,5 @@ pwsiws:
         - uri: http://127.0.0.5:7777
   sbcap:
     server:
-      - address: 127.0.0.199  # PWS-IWS SBCAP server address
-        port: 29168           # PWS-IWS SBCAP server port 
+      - address: 127.0.0.199  # PWS-IWF SBCAP server address
+        port: 29168           # PWS-IWF SBCAP server port 

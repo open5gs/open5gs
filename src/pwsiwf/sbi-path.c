@@ -4,7 +4,7 @@
 #include "namf-build.h"
 #include "namf-handler.h"
 
-int pwsiws_sbi_open(void) 
+int pwsiwf_sbi_open(void) 
 {
     // Start all SBI servers using the standard SBI context
     int count = 0;
@@ -12,29 +12,29 @@ int pwsiws_sbi_open(void)
     ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
         count++;
     }
-    ogs_info("pwsiws_sbi_open: Starting %d SBI servers", count);
-    if (ogs_sbi_server_start_all(pwsiws_sbi_server_callback) != OGS_OK) {
-        ogs_error("Failed to start PWS-IWS SBI servers");
+    ogs_info("pwsiwf_sbi_open: Starting %d SBI servers", count);
+    if (ogs_sbi_server_start_all(pwsiwf_sbi_server_callback) != OGS_OK) {
+        ogs_error("Failed to start PWS-IWF SBI servers");
         return OGS_ERROR;
     }
     
     // Start SBI client for AMF communication
-    if (pwsiws_sbi_client_open() != OGS_OK) {
-        ogs_error("Failed to start PWS-IWS SBI client");
+    if (pwsiwf_sbi_client_open() != OGS_OK) {
+        ogs_error("Failed to start PWS-IWF SBI client");
         return OGS_ERROR;
     }
     
     return OGS_OK;
 }
 
-void pwsiws_sbi_close(void) 
+void pwsiwf_sbi_close(void) 
 {
-    pwsiws_sbi_client_close();
+    pwsiwf_sbi_client_close();
     ogs_sbi_server_stop_all();
     ogs_sbi_server_remove_all();
 }
 
-int pwsiws_sbi_server_callback(ogs_sbi_request_t *request, void *data) 
+int pwsiwf_sbi_server_callback(ogs_sbi_request_t *request, void *data) 
 { 
     ogs_sbi_message_t message;
     ogs_sbi_stream_t *stream = NULL;
@@ -53,7 +53,7 @@ int pwsiws_sbi_server_callback(ogs_sbi_request_t *request, void *data)
         return OGS_ERROR;
     }
     
-    ogs_info("PWS-IWS SBI server callback received: %s %s", 
+    ogs_info("PWS-IWF SBI server callback received: %s %s", 
             message.h.method, message.h.service.name);
     
     SWITCH(message.h.service.name)
@@ -62,7 +62,7 @@ int pwsiws_sbi_server_callback(ogs_sbi_request_t *request, void *data)
         CASE(OGS_SBI_RESOURCE_NAME_N1_N2_FAILURE_NOTIFY)
             SWITCH(message.h.method)
             CASE(OGS_SBI_HTTP_METHOD_POST)
-                rv = pwsiws_nonuen2_comm_handle_nonuen2_message_transfer_failure_notify(
+                rv = pwsiwf_nonuen2_comm_handle_nonuen2_message_transfer_failure_notify(
                         stream, &message);
                 break;
             DEFAULT
@@ -93,25 +93,25 @@ int pwsiws_sbi_server_callback(ogs_sbi_request_t *request, void *data)
     return OGS_OK;
 }
 
-int pwsiws_sbi_discover_and_send(ogs_sbi_service_type_e service_type, 
-        ogs_sbi_request_t *(*build)(pwsiws_warning_t *warning, void *data),
-        pwsiws_warning_t *warning, ogs_sbi_xact_t *xact, void *data) 
+int pwsiwf_sbi_discover_and_send(ogs_sbi_service_type_e service_type, 
+        ogs_sbi_request_t *(*build)(pwsiwf_warning_t *warning, void *data),
+        pwsiwf_warning_t *warning, ogs_sbi_xact_t *xact, void *data) 
 { 
     return OGS_OK; 
 }
 
-int pwsiws_sbi_client_open(void) 
+int pwsiwf_sbi_client_open(void) 
 { 
-    ogs_info("PWS-IWS SBI client opened");
+    ogs_info("PWS-IWF SBI client opened");
     return OGS_OK; 
 }
 
-void pwsiws_sbi_client_close(void) 
+void pwsiwf_sbi_client_close(void) 
 {
-    ogs_info("PWS-IWS SBI client closed");
+    ogs_info("PWS-IWF SBI client closed");
 }
 
-int pwsiws_sbi_client_callback(int status, ogs_sbi_response_t *response, void *data) 
+int pwsiwf_sbi_client_callback(int status, ogs_sbi_response_t *response, void *data) 
 { 
     ogs_sbi_message_t message;
     int rv;
@@ -119,7 +119,7 @@ int pwsiws_sbi_client_callback(int status, ogs_sbi_response_t *response, void *d
     if (status != OGS_OK) {
         ogs_log_message(
                 status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
-                "pwsiws_sbi_client_callback() failed [%d]", status);
+                "pwsiwf_sbi_client_callback() failed [%d]", status);
         return OGS_ERROR;
     }
     
@@ -135,17 +135,17 @@ int pwsiws_sbi_client_callback(int status, ogs_sbi_response_t *response, void *d
         return OGS_ERROR;
     }
     
-    ogs_info("PWS-IWS SBI client callback: status=%d, service=%s", 
+    ogs_info("PWS-IWF SBI client callback: status=%d, service=%s", 
             message.res_status, message.h.service.name);
     
     // Handle the response based on the service and state
     if (data) {
-        pwsiws_warning_t *warning = (pwsiws_warning_t *)data;
+        pwsiwf_warning_t *warning = (pwsiwf_warning_t *)data;
         // For now, use a default state since we can't get it from response
-        int state = PWSIWS_WARNING_MESSAGE_BROADCAST;
+        int state = PWSIWF_WARNING_MESSAGE_BROADCAST;
         
         if (strcmp(message.h.service.name, OGS_SBI_SERVICE_NAME_NAMF_COMM) == 0) {
-            pwsiws_nonuen2_comm_handle_nonuen2_message_transfer(
+            pwsiwf_nonuen2_comm_handle_nonuen2_message_transfer(
                     warning, state, &message);
         }
     }
@@ -155,18 +155,18 @@ int pwsiws_sbi_client_callback(int status, ogs_sbi_response_t *response, void *d
     return OGS_OK;
 }
 
-int pwsiws_nonuen2_comm_send_nonuen2_message_transfer(
-        pwsiws_warning_t *warning, pwsiws_nonuen2_message_transfer_param_t *param)
+int pwsiwf_nonuen2_comm_send_nonuen2_message_transfer(
+        pwsiwf_warning_t *warning, pwsiwf_nonuen2_message_transfer_param_t *param)
 {
     ogs_sbi_request_t *request = NULL;
     bool rc;
     
     ogs_assert(warning);
     ogs_assert(param);
-    ogs_assert(pwsiws_self()->amf_sbi);
+    ogs_assert(pwsiwf_self()->amf_sbi);
     
     // Build the Non-UE N2 message transfer request
-    request = pwsiws_nonuen2_comm_build_nonuen2_message_transfer(warning, param);
+    request = pwsiwf_nonuen2_comm_build_nonuen2_message_transfer(warning, param);
     if (!request) {
         ogs_error("Failed to build Non-UE N2 message transfer request");
         return OGS_ERROR;
@@ -174,8 +174,8 @@ int pwsiws_nonuen2_comm_send_nonuen2_message_transfer(
     
     // Send the request to AMF
     rc = ogs_sbi_send_request_to_client(
-            pwsiws_self()->amf_sbi, 
-            pwsiws_sbi_client_callback, 
+            pwsiwf_self()->amf_sbi, 
+            pwsiwf_sbi_client_callback, 
             request, 
             warning);
     

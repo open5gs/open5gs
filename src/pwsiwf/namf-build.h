@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PWSIWS_NONUEN2_BUILD_H
-#define PWSIWS_NONUEN2_BUILD_H
+#ifndef PWSIWF_NONUEN2_BUILD_H
+#define PWSIWF_NONUEN2_BUILD_H
 
 #include "context.h"
 #include "sbi-path.h"
@@ -27,15 +27,15 @@
 extern "C" {
 #endif
 
-ogs_sbi_request_t *pwsiws_nonuen2_comm_build_nonuen2_message_transfer(
-        pwsiws_warning_t *warning, pwsiws_nonuen2_message_transfer_param_t *param);
+ogs_sbi_request_t *pwsiwf_nonuen2_comm_build_nonuen2_message_transfer(
+        pwsiwf_warning_t *warning, pwsiwf_nonuen2_message_transfer_param_t *param);
 
-ogs_sbi_request_t *pwsiws_nonuen2_callback_build_warning_status(
-        pwsiws_warning_t *warning, void *data);
+ogs_sbi_request_t *pwsiwf_nonuen2_callback_build_warning_status(
+        pwsiwf_warning_t *warning, void *data);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* PWSIWS_NONUEN2_BUILD_H */
+#endif /* PWSIWF_NONUEN2_BUILD_H */

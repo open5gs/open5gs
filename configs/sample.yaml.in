@@ -236,14 +236,14 @@ hss:
       - identity: mme.localdomain
         address: 127.0.0.2
 
-pwsiws:
+pwsiwf:
   sbi:
     client:
       amf:
         - uri: http://127.0.0.5:7777 # Default AMF SBI
   sbcap:
     server:
-      - address: 127.0.0.199 # Using a new address for PWS-IWS
+      - address: 127.0.0.199 # Using a new address for PWS-IWF
         port: 29168
     client:
       cbc:
@@ -352,7 +352,7 @@ udr:
       scp:
         - uri: http://127.0.0.200:7777
 
-#pwsiws:
+#pwsiwf:
 #  sbi:
 #    server:
 #      - address: 127.0.0.21

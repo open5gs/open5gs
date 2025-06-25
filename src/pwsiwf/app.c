@@ -28,14 +28,14 @@ int app_initialize(const char *const argv[])
     int rv;
 
     /* Install log domain first */
-    ogs_log_install_domain(&__pwsiws_log_domain, "pwsiws", ogs_core()->log.level);
+    ogs_log_install_domain(&__pwsiwf_log_domain, "pwsiwf", ogs_core()->log.level);
 
     // Register NGAP log domain
     if (!ogs_log_find_domain("ngap"))
         ogs_log_install_domain(&__ogs_ngap_domain, "ngap", ogs_core()->log.level);
 
     ogs_sctp_init(ogs_app()->usrsctp.udp_port);
-    rv = pwsiws_initialize();
+    rv = pwsiwf_initialize();
     if (rv != OGS_OK) {
         return rv;
     }
@@ -45,6 +45,6 @@ int app_initialize(const char *const argv[])
 
 void app_terminate(void)
 {
-    pwsiws_terminate();
+    pwsiwf_terminate();
     ogs_sctp_final();
 } 

@@ -2,34 +2,34 @@
 #include "ogs-sbi.h"
 #include "ogs-app.h"
 
-OGS_POOL(pwsiws_connection_pool, pwsiws_connection_t);
-OGS_POOL(pwsiws_warning_pool, pwsiws_warning_t);
+OGS_POOL(pwsiwf_connection_pool, pwsiwf_connection_t);
+OGS_POOL(pwsiwf_warning_pool, pwsiwf_warning_t);
 
-int __pwsiws_log_domain;
+int __pwsiwf_log_domain;
 
-static pwsiws_context_t self;
+static pwsiwf_context_t self;
 
-void pwsiws_context_init(void) 
+void pwsiwf_context_init(void) 
 {
-    memset(&self, 0, sizeof(pwsiws_context_t));
+    memset(&self, 0, sizeof(pwsiwf_context_t));
     
     ogs_list_init(&self.connection_list);
     ogs_list_init(&self.warning_list);
-    ogs_list_init(&self.pws_iws_list);
-    ogs_list_init(&self.pws_iws_list6);
+    ogs_list_init(&self.pws_iwf_list);
+    ogs_list_init(&self.pws_iwf_list6);
     ogs_list_init(&self.sbcap_list);
 
     /* Initialize pools */
-    ogs_pool_init(&pwsiws_connection_pool, 32);
-    ogs_pool_init(&pwsiws_warning_pool, 64);
+    ogs_pool_init(&pwsiwf_connection_pool, 32);
+    ogs_pool_init(&pwsiwf_warning_pool, 64);
 
     self.amf_sbi = NULL;
 }
 
-void pwsiws_context_final(void) 
+void pwsiwf_context_final(void) 
 {
-    pwsiws_connection_remove_all();
-    pwsiws_warning_remove_all();
+    pwsiwf_connection_remove_all();
+    pwsiwf_warning_remove_all();
 
     if (self.amf_sbi) {
         // TODO: Find the correct way to free the SBI client
@@ -38,12 +38,12 @@ void pwsiws_context_final(void)
     }
 }
 
-pwsiws_context_t *pwsiws_self(void) 
+pwsiwf_context_t *pwsiwf_self(void) 
 { 
     return &self; 
 }
 
-int pwsiws_context_parse_config(void)
+int pwsiwf_context_parse_config(void)
 {
     // Hardcode SBCAP server configuration for now
     ogs_sockaddr_t *addr = NULL;
@@ -62,9 +62,9 @@ int pwsiws_context_parse_config(void)
     node = ogs_socknode_add(&self.sbcap_list, AF_INET, addr, NULL);
     ogs_assert(node);
     
-    ogs_info("PWS-IWS SBCAP server configured: [%s]:%d", 
+    ogs_info("PWS-IWF SBCAP server configured: [%s]:%d", 
             OGS_ADDR(addr, buf), OGS_PORT(addr));
-    ogs_info("PWS-IWS configured as SBCAP server");
+    ogs_info("PWS-IWF configured as SBCAP server");
     ogs_info("SBCAP server list count: %d", ogs_list_count(&self.sbcap_list));
     
     // Setup AMF SBI client
@@ -101,7 +101,7 @@ int pwsiws_context_parse_config(void)
     
     self.amf_sbi = amf_client;
     
-    ogs_info("PWS-IWS AMF SBI client configured: [%s]", amf_uri);
+    ogs_info("PWS-IWF AMF SBI client configured: [%s]", amf_uri);
     
     ogs_free(fqdn);
     ogs_freeaddrinfo(amf_addr);
@@ -111,26 +111,26 @@ int pwsiws_context_parse_config(void)
     return OGS_OK;
 }
 
-int pwsiws_context_nf_info(void) 
+int pwsiwf_context_nf_info(void) 
 { 
     return OGS_OK; 
 }
 
-pwsiws_connection_t *pwsiws_connection_add(ogs_sock_t *sock, ogs_sockaddr_t *addr) 
+pwsiwf_connection_t *pwsiwf_connection_add(ogs_sock_t *sock, ogs_sockaddr_t *addr) 
 { 
-    pwsiws_connection_t *connection = NULL;
+    pwsiwf_connection_t *connection = NULL;
     char buf[OGS_ADDRSTRLEN];
 
     ogs_assert(sock);
     ogs_assert(addr);
 
-    ogs_pool_alloc(&pwsiws_connection_pool, &connection);
+    ogs_pool_alloc(&pwsiwf_connection_pool, &connection);
     if (!connection) {
-        ogs_error("Failed to allocate PWS-IWS connection");
+        ogs_error("Failed to allocate PWS-IWF connection");
         return NULL;
     }
 
-    memset(connection, 0, sizeof(pwsiws_connection_t));
+    memset(connection, 0, sizeof(pwsiwf_connection_t));
 
     connection->sctp.sock = sock;
     connection->addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
@@ -139,13 +139,13 @@ pwsiws_connection_t *pwsiws_connection_add(ogs_sock_t *sock, ogs_sockaddr_t *add
 
     ogs_list_add(&self.connection_list, connection);
 
-    ogs_info("PWS-IWS connection added: [%s]:%d", 
+    ogs_info("PWS-IWF connection added: [%s]:%d", 
             OGS_ADDR(connection->addr, buf), OGS_PORT(connection->addr));
 
     return connection;
 }
 
-void pwsiws_connection_remove(pwsiws_connection_t *connection) 
+void pwsiwf_connection_remove(pwsiwf_connection_t *connection) 
 {
     ogs_assert(connection);
     
@@ -154,21 +154,21 @@ void pwsiws_connection_remove(pwsiws_connection_t *connection)
     }
     
     ogs_list_remove(&self.connection_list, connection);
-    ogs_pool_free(&pwsiws_connection_pool, connection);
+    ogs_pool_free(&pwsiwf_connection_pool, connection);
 }
 
-void pwsiws_connection_remove_all(void) 
+void pwsiwf_connection_remove_all(void) 
 {
-    pwsiws_connection_t *connection = NULL, *next_connection = NULL;
+    pwsiwf_connection_t *connection = NULL, *next_connection = NULL;
     
     ogs_list_for_each_safe(&self.connection_list, next_connection, connection) {
-        pwsiws_connection_remove(connection);
+        pwsiwf_connection_remove(connection);
     }
 }
 
-pwsiws_connection_t *pwsiws_connection_find_by_addr(ogs_sockaddr_t *addr) 
+pwsiwf_connection_t *pwsiwf_connection_find_by_addr(ogs_sockaddr_t *addr) 
 { 
-    pwsiws_connection_t *connection = NULL;
+    pwsiwf_connection_t *connection = NULL;
     
     ogs_assert(addr);
     
@@ -182,9 +182,9 @@ pwsiws_connection_t *pwsiws_connection_find_by_addr(ogs_sockaddr_t *addr)
     return NULL;
 }
 
-pwsiws_connection_t *pwsiws_connection_find_by_id(ogs_pool_id_t id) 
+pwsiwf_connection_t *pwsiwf_connection_find_by_id(ogs_pool_id_t id) 
 { 
-    pwsiws_connection_t *connection = NULL;
+    pwsiwf_connection_t *connection = NULL;
     
     ogs_list_for_each(&self.connection_list, connection) {
         if (connection->id == id) {
@@ -195,33 +195,33 @@ pwsiws_connection_t *pwsiws_connection_find_by_id(ogs_pool_id_t id)
     return NULL;
 }
 
-pwsiws_warning_t *pwsiws_warning_add(pwsiws_connection_t *connection) 
+pwsiwf_warning_t *pwsiwf_warning_add(pwsiwf_connection_t *connection) 
 { 
-    pwsiws_warning_t *warning = NULL;
+    pwsiwf_warning_t *warning = NULL;
     
     ogs_assert(connection);
     
-    ogs_pool_alloc(&pwsiws_warning_pool, &warning);
+    ogs_pool_alloc(&pwsiwf_warning_pool, &warning);
     if (!warning) {
-        ogs_error("Failed to allocate PWS-IWS warning");
+        ogs_error("Failed to allocate PWS-IWF warning");
         return NULL;
     }
     
-    memset(warning, 0, sizeof(pwsiws_warning_t));
+    memset(warning, 0, sizeof(pwsiwf_warning_t));
     
     warning->connection_id = connection->id;
-    warning->warning_id = pwsiws_warning_id_alloc();
-    warning->message_id = pwsiws_message_id_alloc();
+    warning->warning_id = pwsiwf_warning_id_alloc();
+    warning->message_id = pwsiwf_message_id_alloc();
     
     ogs_list_add(&self.warning_list, warning);
     
-    ogs_info("PWS-IWS warning added: ID=%d, WarningID=%d, MessageID=%d", 
+    ogs_info("PWS-IWF warning added: ID=%d, WarningID=%d, MessageID=%d", 
             warning->id, warning->warning_id, warning->message_id);
     
     return warning;
 }
 
-void pwsiws_warning_remove(pwsiws_warning_t *warning) 
+void pwsiwf_warning_remove(pwsiwf_warning_t *warning) 
 {
     ogs_assert(warning);
     
@@ -230,21 +230,21 @@ void pwsiws_warning_remove(pwsiws_warning_t *warning)
     }
     
     ogs_list_remove(&self.warning_list, warning);
-    ogs_pool_free(&pwsiws_warning_pool, warning);
+    ogs_pool_free(&pwsiwf_warning_pool, warning);
 }
 
-void pwsiws_warning_remove_all(void) 
+void pwsiwf_warning_remove_all(void) 
 {
-    pwsiws_warning_t *warning = NULL, *next_warning = NULL;
+    pwsiwf_warning_t *warning = NULL, *next_warning = NULL;
     
     ogs_list_for_each_safe(&self.warning_list, next_warning, warning) {
-        pwsiws_warning_remove(warning);
+        pwsiwf_warning_remove(warning);
     }
 }
 
-pwsiws_warning_t *pwsiws_warning_find_by_id(ogs_pool_id_t id) 
+pwsiwf_warning_t *pwsiwf_warning_find_by_id(ogs_pool_id_t id) 
 { 
-    pwsiws_warning_t *warning = NULL;
+    pwsiwf_warning_t *warning = NULL;
     
     ogs_list_for_each(&self.warning_list, warning) {
         if (warning->id == id) {
@@ -255,9 +255,9 @@ pwsiws_warning_t *pwsiws_warning_find_by_id(ogs_pool_id_t id)
     return NULL;
 }
 
-pwsiws_warning_t *pwsiws_warning_find_by_warning_id(uint32_t warning_id) 
+pwsiwf_warning_t *pwsiwf_warning_find_by_warning_id(uint32_t warning_id) 
 { 
-    pwsiws_warning_t *warning = NULL;
+    pwsiwf_warning_t *warning = NULL;
     
     ogs_list_for_each(&self.warning_list, warning) {
         if (warning->warning_id == warning_id) {
@@ -268,9 +268,9 @@ pwsiws_warning_t *pwsiws_warning_find_by_warning_id(uint32_t warning_id)
     return NULL;
 }
 
-pwsiws_warning_t *pwsiws_warning_find_by_paging_nonuen2message_location(char *location) 
+pwsiwf_warning_t *pwsiwf_warning_find_by_paging_nonuen2message_location(char *location) 
 { 
-    pwsiws_warning_t *warning = NULL;
+    pwsiwf_warning_t *warning = NULL;
     
     ogs_assert(location);
     
@@ -284,7 +284,7 @@ pwsiws_warning_t *pwsiws_warning_find_by_paging_nonuen2message_location(char *lo
     return NULL;
 }
 
-void pwsiws_warning_set_paging_nonuen2message_location(pwsiws_warning_t *warning, char *location) 
+void pwsiwf_warning_set_paging_nonuen2message_location(pwsiwf_warning_t *warning, char *location) 
 {
     ogs_assert(warning);
     ogs_assert(location);
@@ -297,13 +297,13 @@ void pwsiws_warning_set_paging_nonuen2message_location(pwsiws_warning_t *warning
     ogs_assert(warning->paging_nonuen2message_location);
 }
 
-uint32_t pwsiws_warning_id_alloc(void) 
+uint32_t pwsiwf_warning_id_alloc(void) 
 { 
     static uint32_t warning_id = 1;
     return warning_id++;
 }
 
-uint32_t pwsiws_message_id_alloc(void) 
+uint32_t pwsiwf_message_id_alloc(void) 
 { 
     static uint32_t message_id = 1;
     return message_id++;

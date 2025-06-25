@@ -17,28 +17,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PWSIWS_SBCAP_HANDLER_H
-#define PWSIWS_SBCAP_HANDLER_H
+#ifndef PWSIWF_SBCAP_HANDLER_H
+#define PWSIWF_SBCAP_HANDLER_H
 
 #include "context.h"
-#include "pwsiws-event.h"
+#include "pwsiwf-event.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* SBCAP Message Handler Functions */
-void pwsiws_sbcap_handle_write_replace_warning_request(
-        pwsiws_connection_t *connection, ogs_sbcap_message_t *message);
+void pwsiwf_sbcap_handle_write_replace_warning_request(
+        pwsiwf_connection_t *connection, ogs_sbcap_message_t *message);
 
-void pwsiws_sbcap_handle_stop_warning_request(
-        pwsiws_connection_t *connection, ogs_sbcap_message_t *message);
+void pwsiwf_sbcap_handle_stop_warning_request(
+        pwsiwf_connection_t *connection, ogs_sbcap_message_t *message);
 
-void pwsiws_sbcap_handle_write_replace_warning_response(
-        pwsiws_connection_t *connection, ogs_sbcap_message_t *message);
+void pwsiwf_sbcap_handle_write_replace_warning_response(
+        pwsiwf_connection_t *connection, ogs_sbcap_message_t *message);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* PWSIWS_SBCAP_HANDLER_H */ 
+#endif /* PWSIWF_SBCAP_HANDLER_H */ 

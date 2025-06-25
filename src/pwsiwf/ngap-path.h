@@ -33,10 +33,10 @@ static inline ogs_pkbuf_t *ngap_build_kill_request(sbc_pws_data_t *sbc_pws) { re
 extern "C" {
 #endif
 
-/* PWS-IWS NGAP-AMF Message Functions */
-int pwsiws_ngap_send_write_replace_warning_request(sbc_pws_data_t *sbc_pws);
-int pwsiws_ngap_send_kill_request(sbc_pws_data_t *sbc_pws);
-int pwsiws_ngap_send_to_amf(ogs_pkbuf_t *buf);
+/* PWS-IWF NGAP-AMF Message Functions */
+int pwsiwf_ngap_send_write_replace_warning_request(sbc_pws_data_t *sbc_pws);
+int pwsiwf_ngap_send_kill_request(sbc_pws_data_t *sbc_pws);
+int pwsiwf_ngap_send_to_amf(ogs_pkbuf_t *buf);
 
 #ifdef __cplusplus
 }

@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PWSIWS_CONTEXT_H
-#define PWSIWS_CONTEXT_H
+#ifndef PWSIWF_CONTEXT_H
+#define PWSIWF_CONTEXT_H
 
 #include "ogs-app.h"
 #include "ogs-sbi.h"
@@ -30,16 +30,16 @@
 extern "C" {
 #endif
 
-extern int __pwsiws_log_domain;
+extern int __pwsiwf_log_domain;
 
 #undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __pwsiws_log_domain
+#define OGS_LOG_DOMAIN __pwsiwf_log_domain
 
-typedef struct pwsiws_connection_s pwsiws_connection_t;
-typedef struct pwsiws_warning_s pwsiws_warning_t;
+typedef struct pwsiwf_connection_s pwsiwf_connection_t;
+typedef struct pwsiwf_warning_s pwsiwf_warning_t;
 
-/* PWS-IWS Connection Structure */
-typedef struct pwsiws_connection_s {
+/* PWS-IWF Connection Structure */
+typedef struct pwsiwf_connection_s {
     ogs_lnode_t     lnode;
 
     ogs_pool_id_t   id;
@@ -64,10 +64,10 @@ typedef struct pwsiws_connection_s {
     int num_of_supported_ta_list;
     ogs_eps_tai_t supported_ta_list[16];
 
-} pwsiws_connection_t;
+} pwsiwf_connection_t;
 
-/* PWS-IWS Warning Message Structure */
-typedef struct pwsiws_warning_s {
+/* PWS-IWF Warning Message Structure */
+typedef struct pwsiwf_warning_s {
     ogs_lnode_t     lnode;
 
     ogs_pool_id_t   id;
@@ -117,24 +117,24 @@ typedef struct pwsiws_warning_s {
     char            *warning_status_uri;
     char            *paging_nonuen2message_location;
 
-} pwsiws_warning_t;
+} pwsiwf_warning_t;
 
-/* PWS-IWS Context Structure */
-typedef struct pwsiws_context_s {
-    /* PWS-IWS Configuration */
-    uint16_t        pws_iws_port;       /* PWS-IWS SCTP Port */
+/* PWS-IWF Context Structure */
+typedef struct pwsiwf_context_s {
+    /* PWS-IWF Configuration */
+    uint16_t        pws_iwf_port;       /* PWS-IWF SCTP Port */
     uint16_t        sbcap_port;         /* SBCAP Port */
 
     /* Connection Management */
-    ogs_list_t      connection_list;    /* PWS-IWS Connection List */
+    ogs_list_t      connection_list;    /* PWS-IWF Connection List */
     ogs_list_t      warning_list;       /* Active Warning List */
 
     ogs_hash_t      *connection_addr_hash; /* hash table for Connection Address */
     ogs_hash_t      *warning_id_hash;   /* hash table for Warning ID */
 
     /* SCTP Server Lists */
-    ogs_list_t      pws_iws_list;       /* PWS-IWS IPv4 Server List */
-    ogs_list_t      pws_iws_list6;      /* PWS-IWS IPv6 Server List */
+    ogs_list_t      pws_iwf_list;       /* PWS-IWF IPv4 Server List */
+    ogs_list_t      pws_iwf_list6;      /* PWS-IWF IPv6 Server List */
 
     /* SBCAP Server Lists */
     ogs_list_t      sbcap_list;         /* SBCAP IPv4 Server List */
@@ -153,39 +153,39 @@ typedef struct pwsiws_context_s {
         } warning_broadcast, connection_timeout;
     } time;
 
-} pwsiws_context_t;
+} pwsiwf_context_t;
 
-void pwsiws_context_init(void);
-void pwsiws_context_final(void);
-pwsiws_context_t *pwsiws_self(void);
+void pwsiwf_context_init(void);
+void pwsiwf_context_final(void);
+pwsiwf_context_t *pwsiwf_self(void);
 
-int pwsiws_context_parse_config(void);
-int pwsiws_context_nf_info(void);
+int pwsiwf_context_parse_config(void);
+int pwsiwf_context_nf_info(void);
 
 /* Connection Management */
-pwsiws_connection_t *pwsiws_connection_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
-void pwsiws_connection_remove(pwsiws_connection_t *connection);
-void pwsiws_connection_remove_all(void);
-pwsiws_connection_t *pwsiws_connection_find_by_addr(ogs_sockaddr_t *addr);
-pwsiws_connection_t *pwsiws_connection_find_by_id(ogs_pool_id_t id);
+pwsiwf_connection_t *pwsiwf_connection_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
+void pwsiwf_connection_remove(pwsiwf_connection_t *connection);
+void pwsiwf_connection_remove_all(void);
+pwsiwf_connection_t *pwsiwf_connection_find_by_addr(ogs_sockaddr_t *addr);
+pwsiwf_connection_t *pwsiwf_connection_find_by_id(ogs_pool_id_t id);
 
 /* Warning Message Management */
-pwsiws_warning_t *pwsiws_warning_add(pwsiws_connection_t *connection);
-void pwsiws_warning_remove(pwsiws_warning_t *warning);
-void pwsiws_warning_remove_all(void);
-pwsiws_warning_t *pwsiws_warning_find_by_id(ogs_pool_id_t id);
-pwsiws_warning_t *pwsiws_warning_find_by_warning_id(uint32_t warning_id);
-pwsiws_warning_t *pwsiws_warning_find_by_paging_nonuen2message_location(char *location);
+pwsiwf_warning_t *pwsiwf_warning_add(pwsiwf_connection_t *connection);
+void pwsiwf_warning_remove(pwsiwf_warning_t *warning);
+void pwsiwf_warning_remove_all(void);
+pwsiwf_warning_t *pwsiwf_warning_find_by_id(ogs_pool_id_t id);
+pwsiwf_warning_t *pwsiwf_warning_find_by_warning_id(uint32_t warning_id);
+pwsiwf_warning_t *pwsiwf_warning_find_by_paging_nonuen2message_location(char *location);
 
 /* Warning Message SBI Functions */
-void pwsiws_warning_set_paging_nonuen2message_location(pwsiws_warning_t *warning, char *location);
+void pwsiwf_warning_set_paging_nonuen2message_location(pwsiwf_warning_t *warning, char *location);
 
 /* Utility Functions */
-uint32_t pwsiws_warning_id_alloc(void);
-uint32_t pwsiws_message_id_alloc(void);
+uint32_t pwsiwf_warning_id_alloc(void);
+uint32_t pwsiwf_message_id_alloc(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* PWSIWS_CONTEXT_H */ 
+#endif /* PWSIWF_CONTEXT_H */ 
