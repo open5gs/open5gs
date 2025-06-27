@@ -4054,6 +4054,7 @@ void ngap_handle_handover_notification(
 {
     char buf[OGS_ADDRSTRLEN];
     int i, r;
+    int xact_count;
 
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
@@ -4213,15 +4214,14 @@ void ngap_handle_handover_notification(
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 
+    /* Save the number of ongoing SMF transactions before processing sessions */
+    xact_count = amf_sess_xact_count(amf_ue);
+
     ogs_list_for_each(&amf_ue->sess_list, sess) {
         if (!SESSION_CONTEXT_IN_SMF(sess)) {
-            ogs_error("Session Context is not in SMF [%d]", sess->psi);
-            r = ngap_send_error_indication2(source_ue,
-                    NGAP_Cause_PR_radioNetwork,
-                    NGAP_CauseRadioNetwork_partial_handover);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-            return;
+            /* Warn if this UE session is not handled by SMF and skip it */
+            ogs_warn("Session Context is not in SMF [%d]", sess->psi);
+            continue;
         }
 
         memset(&param, 0, sizeof(param));
@@ -4231,6 +4231,19 @@ void ngap_handle_handover_notification(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                 amf_nsmf_pdusession_build_update_sm_context,
                 source_ue, sess, AMF_UPDATE_SM_CONTEXT_HANDOVER_NOTIFY, &param);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+    }
+
+    /*
+     * If no SMF sessions were processed (transaction count unchanged),
+     * send partial-handover error
+     */
+    if (xact_count == amf_sess_xact_count(amf_ue)) {
+        ogs_error("No SMF session were processed [%d]", sess->psi);
+        r = ngap_send_error_indication2(source_ue,
+                NGAP_Cause_PR_radioNetwork,
+                NGAP_CauseRadioNetwork_partial_handover);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     }
