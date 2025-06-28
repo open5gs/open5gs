@@ -2815,6 +2815,11 @@ static int parse_multipart(
     ogs_assert(message);
     ogs_assert(http);
 
+    if (!http->content) {
+        ogs_error("HTTP content NULL [%d]", (int)http->content_length);
+        return OGS_ERROR;
+    }
+
     memset(&settings, 0, sizeof(settings));
     settings.on_header_field = &on_header_field;
     settings.on_header_value = &on_header_value;
