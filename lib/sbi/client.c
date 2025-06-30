@@ -161,7 +161,7 @@ ogs_sbi_client_t *ogs_sbi_client_add(
     curl_multi_setopt(multi, CURLMOPT_SOCKETDATA, client);
     curl_multi_setopt(multi, CURLMOPT_TIMERFUNCTION, multi_timer_cb);
     curl_multi_setopt(multi, CURLMOPT_TIMERDATA, client);
-#ifdef CURLMOPT_MAX_CONCURRENT_STREAMS
+#if CURL_AT_LEAST_VERSION(7,67,0)
     curl_multi_setopt(multi, CURLMOPT_MAX_CONCURRENT_STREAMS,
                         ogs_app()->pool.stream);
 #endif
