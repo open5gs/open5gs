@@ -876,6 +876,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     smf_sess_t *sess = NULL;
     smf_bearer_t *qos_flow = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
+    ogs_pkbuf_t *n2smbuf = NULL;
 
     ogs_pfcp_xact_t *pfcp_xact = NULL;
     ogs_pfcp_message_t *pfcp_message = NULL;
@@ -1052,6 +1053,28 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             sess, stream, sbi_message);
                     break;
                 CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
+    /*
+     * Network-requested PDU Session Release
+     *
+     * 1.  V*: smf_nsmf_handle_release_sm_context
+     * 2.  V*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *         OGS_PFCP_MODIFY_DEACTIVATE
+     * 3.  V*: OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 4.  V: smf_nsmf_pdusession_build_release_data
+     * 5.  H: smf_nsmf_handle_release_data_in_hsmf
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 7.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 8.  H: ogs_sbi_send_http_status_no_content
+     * 9.  H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H: SMF_SESS_CLEAR(sess)
+     * 12. V: smf_nsmf_handle_release_data_in_hsmf
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V*: ogs_sbi_send_http_status_no_content
+     * 16. V*: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                     smf_nsmf_handle_release_sm_context(
                             sess, stream, sbi_message);
 
@@ -1088,30 +1111,211 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     rc = smf_nsmf_handle_update_data_in_hsmf(
                             sess, stream, sbi_message);
                     if (rc == true) {
-                        ogs_assert(sess->nsmf_param.request_indication);
+                        switch (sess->nsmf_param.request_indication) {
+                        case OpenAPI_request_indication_UE_REQ_PDU_SES_MOD:
+                            if (sess->nsmf_param.up_cnx_state ==
+                                    OpenAPI_up_cnx_state_DEACTIVATED) {
+    /*
+     * UE-requested PDU Session Modification(DEACTIVATED)
+     *
+     * For Home Routed Roaming, delegate PFCP deactivation to H-SMF by
+     * sending UP_CNX_STATE=DEACTIVATED via HsmfUpdateData.
+     *
+     * 1.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 2.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     *        SMF_UPDATE_STATE_HR_DEACTIVATED
+     * 3.  H*: smf_nsmf_handle_update_data_in_hsmf
+     * 4.  H*: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 5.  H*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
+     *         OGS_PFCP_MODIFY_DEACTIVATE
+     * 6.  H: ogs_sbi_send_http_status_no_content
+     * 7.  V: case SMF_UPDATE_STATE_HR_DEACTIVATED:
+     * 8.  V: smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *          OpenAPI_up_cnx_state_DEACTIVATED)
+     */
+                                ogs_assert(OGS_OK ==
+                                    smf_5gc_pfcp_send_all_pdr_modification_request(
+                                        sess, stream,
+                                        OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+                                        OGS_PFCP_MODIFY_DL_ONLY|
+                                        OGS_PFCP_MODIFY_DEACTIVATE, 0, 0));
+                            } else if (sess->nsmf_param.up_cnx_state ==
+                                    OpenAPI_up_cnx_state_ACTIVATING) {
+    /*
+     * UE-requested PDU Session Modification(ACTIVATING)
+     *
+     * 1.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 2.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     *        SMF_UPDATE_STATE_HR_ACTIVATING
+     * 3.  H*: smf_nsmf_handle_update_data_in_hsmf
+     * 4.  H*: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 5.  H*: ogs_sbi_send_http_status_no_content
+     * 6.  V: ngap_build_pdu_session_resource_setup_request_transfer
+     * 7.  V: smf_sbi_send_sm_context_updated_data(
+     *          OpenAPI_up_cnx_state_ACTIVATING,
+     *          OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ, n2smbuf)
+     */
+                                ogs_assert(true ==
+                                        ogs_sbi_send_http_status_no_content(
+                                            stream));
+                            } else if (sess->nsmf_param.up_cnx_state ==
+                                    OpenAPI_up_cnx_state_ACTIVATED) {
+    /*
+     * UE-requested PDU Session Modification(ACTIVATED)
+     *
+     * 1.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 2.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
+     *        OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL|OGS_PFCP_MODIFY_ACTIVATE
+     * 3.  V: if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
+     *           pfcp_flags |= OGS_PFCP_MODIFY_FROM_ACTIVATING;
+     * 4.  V: flags & OGS_PFCP_MODIFY_FROM_ACTIVATING ?
+     *           SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING :
+     *           SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING,
+     * 5.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 6.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 7.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 8.  H*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
+     *         OGS_PFCP_MODIFY_ACTIVATE
+     * 9.  H: ogs_sbi_send_http_status_no_content
+     * 10. V: case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_ACTIVATING:
+     *           sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+     *           smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *               OpenAPI_up_cnx_state_ACTIVATED);
+     *        case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING:
+     *           ogs_sbi_send_http_status_no_content
+     */
+                                bool far_update = false;
 
-                        if (sess->nsmf_param.request_indication ==
-                            OpenAPI_request_indication_NW_REQ_PDU_SES_MOD) {
-                            ogs_fatal("TODO");
+                                if (memcmp(
+                                        &sess->nsmf_param.dl_ip,
+                                        &sess->remote_dl_ip,
+                                        sizeof(sess->nsmf_param.dl_ip)) != 0 ||
+                                    sess->nsmf_param.dl_teid !=
+                                        sess->remote_dl_teid)
+                                    far_update = true;
 
-                            ogs_assert(true ==
-                                    ogs_sbi_send_http_status_no_content(
-                                        stream));
-                        } else {
+                                ogs_list_for_each(
+                                        &sess->bearer_list, qos_flow) {
+                                    ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
+                                    ogs_assert(dl_far);
+
+                                    if (dl_far->apply_action !=
+                                            OGS_PFCP_APPLY_ACTION_FORW)
+                                        far_update = true;
+
+                                    dl_far->apply_action =
+                                        OGS_PFCP_APPLY_ACTION_FORW;
+                                    ogs_assert(OGS_OK ==
+                                        ogs_pfcp_ip_to_outer_header_creation(
+                                            &sess->remote_dl_ip,
+                                            &dl_far->outer_header_creation,
+                                            &dl_far->outer_header_creation_len)
+                                        );
+                                    dl_far->outer_header_creation.teid =
+                                        sess->remote_dl_teid;
+                                }
+
+                                if (far_update) {
+                                    ogs_assert(OGS_OK ==
+                                        smf_5gc_pfcp_send_all_pdr_modification_request(
+                                            sess, stream,
+                                            OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+                                            OGS_PFCP_MODIFY_DL_ONLY|
+                                            OGS_PFCP_MODIFY_ACTIVATE, 0, 0));
+                                } else {
+                                    ogs_assert(true ==
+                                            ogs_sbi_send_http_status_no_content(
+                                                stream));
+                                }
+                            } else if (sess->nsmf_param.pfcp_flags) {
+                                ogs_assert(true ==
+                                        ogs_sbi_send_http_status_no_content(
+                                            stream));
+
+                                ogs_assert(OGS_OK ==
+                                        smf_5gc_pfcp_send_qos_flow_list_modification_request(
+                                            sess, NULL,
+                                            OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+                                            OGS_PFCP_MODIFY_UE_REQUESTED|
+                                            sess->nsmf_param.pfcp_flags, 0));
+                            } else {
+                                ogs_fatal("Invalid [upCnxState:%d]"
+                                        "[pfcp_flags:0x%llx]",
+                                        sess->nsmf_param.up_cnx_state,
+                                        (long long)sess->nsmf_param.pfcp_flags);
+                                ogs_assert_if_reached();
+                            }
+                            break;
+                        case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
+                        case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
                             if (sess->nsmf_param.request_indication ==
                                     OpenAPI_request_indication_UE_REQ_PDU_SES_REL) {
+    /*
+     * UE-requested PDU Session Release
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 3.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H*: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H*: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 6.  H*: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 7.  H*: ogs_sbi_send_http_status_no_content
+     * 8.  H*: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
+     * 11. V: smf_nsmf_handle_update_data_in_vsmf
+     * 12. V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
+     *        gsm_build_pdu_session_release_command
+     * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
+     * 17. V: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+     *        case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+     * 19. V: ogs_sbi_send_http_status_no_content(vsmf_to_hsmf_release_stream)
+     * 20. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H: case OGS_EVENT_SBI_CLIENT:
+     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V: case OGS_EVENT_SBI_SERVER:
+     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V: ogs_sbi_send_http_status_no_content+
+     *        smf_sbi_send_sm_context_status_notify
+     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                                 e->h.sbi.state =
                                     OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED;
                             } else if (sess->nsmf_param.request_indication ==
                                     OpenAPI_request_indication_NW_REQ_PDU_SES_REL) {
+    /*
+     * Network-requested PDU Session Release(DUPLICATED)
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT,
+     * 3.  V: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H*: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H*: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 6.  H*: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 7.  H*: ogs_sbi_send_http_status_no_content
+     * 8.  H*: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H: SMF_SESS_CLEAR(sess)
+     * 12. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 13. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 14. V: ogs_sbi_send_http_status_no_content
+     * 15. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                                 e->h.sbi.state =
                                 OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT;
-
-                            } else {
-                                ogs_fatal("Not implemented "
-                                        "[requestIndication:%d]",
-                                        sess->nsmf_param.request_indication);
-                                ogs_assert_if_reached();
                             }
     /*
      * TS23.502 clause 4.3.4.3 UE or network requested PDU Session Release
@@ -1135,6 +1339,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                         stream));
 
                             OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
+                            break;
+                        default:
+                            ogs_error("Unknown request_indication:%d",
+                                    sess->nsmf_param.request_indication);
                         }
                     } else {
                         ogs_error("smf_nsmf_handle_update_data_in_hsmf() "
@@ -1142,6 +1350,28 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     }
                     break;
                 CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
+    /*
+     * Network-requested PDU Session Release
+     *
+     * 1.  V: smf_nsmf_handle_release_sm_context
+     * 2.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 3.  V: OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 4.  V: smf_nsmf_pdusession_build_release_data
+     * 5.  H*: smf_nsmf_handle_release_data_in_hsmf
+     * 6.  H*: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 7.  H*: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 8.  H: ogs_sbi_send_http_status_no_content
+     * 9.  H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H: SMF_SESS_CLEAR(sess)
+     * 12. V*: smf_nsmf_handle_release_data_in_hsmf
+     * 13. V*: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 14. V*: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V: ogs_sbi_send_http_status_no_content
+     * 16. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                     smf_nsmf_handle_release_data_in_hsmf(
                             sess, stream, sbi_message);
                     e->h.sbi.state =
@@ -1163,6 +1393,31 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
                 SWITCH(sbi_message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+    /*
+     * Network-requested PDU Session Modification
+     *
+     * 1.  H: OpenAPI_request_indication_NW_REQ_PDU_SES_MOD
+     *        QOS_RULE_CODE_FROM_PFCP_FLAGS
+     *        QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
+     * 2.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 3.  V*: smf_nsmf_handle_update_data_in_vsmf
+     * 4.  V: gsm_build_pdu_session_modification_command+
+     *        ngap_build_pdu_session_resource_modify_request_transfer
+     * 5.  V: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
+     *        if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
+     *            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+     *            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *                  OpenAPI_up_cnx_state_ACTIVATED)
+     *        else
+     *            ogs_sbi_send_http_status_no_content(stream)
+     * 6.  V: ogs_sbi_send_http_status_no_content(stream)
+     *        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
+     *        ogs_sbi_send_http_status_no_content(vsmf_to_hsmf_modify_stream));
+     * 7.  V: case OGS_EVENT_SBI_CLIENT
+     *        CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+     *        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
+     */
                     rc = smf_nsmf_handle_update_data_in_vsmf(
                             sess, stream, sbi_message);
 
@@ -1173,6 +1428,44 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             break;
                         case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
                         case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
+    /*
+     * UE-requested PDU Session Release
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 3.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
+     * 11. V*: smf_nsmf_handle_update_data_in_vsmf
+     * 12. V*: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 13. V*: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 14. V*: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
+     *        gsm_build_pdu_session_release_command
+     * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
+     * 17. V: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+              case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+     * 19. V: ogs_sbi_send_http_status_no_content(vsmf_to_hsmf_release_stream)
+     * 20. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H: case OGS_EVENT_SBI_CLIENT:
+     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V: case OGS_EVENT_SBI_SERVER:
+     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V: ogs_sbi_send_http_status_no_content+
+     *        smf_sbi_send_sm_context_status_notify
+     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                             e->h.sbi.state =
                                 OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED;
                             OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
@@ -1259,10 +1552,128 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     SWITCH(sbi_message->h.resource.component[2])
                     CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                        if (e->h.sbi.state ==
-                                OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT)
+/*
+ * PFCP delete triggers are defined in lib/pfcp/xact.h (values 1–7).
+ * To avoid overlap with OGS_PFCP_DELETE_TRIGGER_*, SMF states use:
+ *   - UPDATE_STATE_BASE at 0x10–0x14
+ *   - UECM_STATE_BASE   at 0x20–0x23
+ * HR flag is bit 7 (0x80).
+ */
+                        switch (e->h.sbi.state) {
+                        case OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED:
+                            if (sess->amf_to_vsmf_release_stream_id >=
+                                    OGS_MIN_POOL_ID &&
+                                sess->amf_to_vsmf_release_stream_id <=
+                                    OGS_MAX_POOL_ID)
+                                ogs_error("UE requested release stream ID [%d]"
+                                        "has not been used yet",
+                                        sess->amf_to_vsmf_release_stream_id);
+                            /* Store Stream ID */
+                            sess->amf_to_vsmf_release_stream_id =
+                                ogs_sbi_id_from_stream(stream);
+                            break;
+                        case OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT:
+    /*
+     * Network-requested PDU Session Release(DUPLICATED)
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT,
+     * 3.  V: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H: SMF_SESS_CLEAR(sess)
+     * 12. V*: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 13. V*: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 14. V: ogs_sbi_send_http_status_no_content
+     * 15. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                             OGS_FSM_TRAN(&sess->sm,
                                     &smf_gsm_state_wait_pfcp_deletion);
+                            break;
+                        case SMF_UPDATE_STATE_DEACTIVATED:
+    /*
+     * UE-requested PDU Session Modification(DEACTIVATED)
+     *
+     * For Home Routed Roaming, delegate PFCP deactivation to H-SMF by
+     * sending UP_CNX_STATE=DEACTIVATED via HsmfUpdateData.
+     *
+     * 1.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 2.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     *        SMF_UPDATE_STATE_HR_DEACTIVATED
+     * 3.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 4.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 5.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 6.  H: ogs_sbi_send_http_status_no_content
+     * 7.  V*: case SMF_UPDATE_STATE_HR_DEACTIVATED:
+     * 8.  V*: smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *           OpenAPI_up_cnx_state_DEACTIVATED)
+     */
+                            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                                    sess, stream,
+                                    OpenAPI_up_cnx_state_DEACTIVATED);
+                            break;
+                        case SMF_UPDATE_STATE_ACTIVATING:
+    /*
+     * UE-requested PDU Session Modification(ACTIVATING)
+     *
+     * 1.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 2.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     *        SMF_UPDATE_STATE_HR_ACTIVATING
+     * 3.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 4.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 5.  H: ogs_sbi_send_http_status_no_content
+     * 6.  V*: ngap_build_pdu_session_resource_setup_request_transfer
+     * 7.  V*: smf_sbi_send_sm_context_updated_data(
+     *           OpenAPI_up_cnx_state_ACTIVATING,
+     *           OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ, n2smbuf)
+     */
+                            n2smbuf =
+                                ngap_build_pdu_session_resource_setup_request_transfer(sess);
+                            ogs_assert(n2smbuf);
+
+                            smf_sbi_send_sm_context_updated_data(
+                                    sess, stream,
+                                    OpenAPI_up_cnx_state_ACTIVATING, 0,
+                                    NULL,
+                                    OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ,
+                                    n2smbuf);
+                            break;
+                        case SMF_UPDATE_STATE_ACTIVATED_FROM_ACTIVATING:
+                            sess->up_cnx_state =
+                                OpenAPI_up_cnx_state_ACTIVATED;
+                            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                                    sess, stream,
+                                    OpenAPI_up_cnx_state_ACTIVATED);
+                            break;
+                        case SMF_UPDATE_STATE_ACTIVATED_FROM_NON_ACTIVATING:
+                            ogs_assert(true ==
+                                    ogs_sbi_send_http_status_no_content(
+                                        stream));
+                            break;
+                        case SMF_UPDATE_STATE_UE_REQ_MOD:
+                            if (sess->amf_to_vsmf_modify_stream_id >=
+                                    OGS_MIN_POOL_ID &&
+                                sess->amf_to_vsmf_modify_stream_id <=
+                                    OGS_MAX_POOL_ID)
+                                ogs_error("UE requested modification stream ID "
+                                        "[%d] has not been used yet",
+                                        sess->amf_to_vsmf_modify_stream_id);
+                            sess->amf_to_vsmf_modify_stream_id =
+                                ogs_sbi_id_from_stream(stream);
+                            break;
+                        default:
+                            ogs_fatal("Unknown state [0x%x]", e->h.sbi.state);
+                            ogs_assert_if_reached();
+                        }
                         break;
                     CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
                         if (e->h.sbi.state ==
@@ -1292,28 +1703,66 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
                 SWITCH(sbi_message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                    ogs_list_for_each_entry(
-                            &sess->qos_flow_to_modify_list,
-                            qos_flow, to_modify_node) {
-                        ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
-                        ogs_assert(dl_far);
+    /*
+     * Network-requested PDU Session Modification
+     *
+     * 1.  H: OpenAPI_request_indication_NW_REQ_PDU_SES_MOD
+     *        QOS_RULE_CODE_FROM_PFCP_FLAGS
+     *        QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
+     * 2.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 3.  V: smf_nsmf_handle_update_data_in_vsmf
+     * 4.  V: gsm_build_pdu_session_modification_command+
+     *        ngap_build_pdu_session_resource_modify_request_transfer
+     * 5.  V: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
+     *        if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
+     *            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+     *            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *                  OpenAPI_up_cnx_state_ACTIVATED)
+     *        else
+     *            ogs_sbi_send_http_status_no_content(stream)
+     * 6.  V: ogs_sbi_send_http_status_no_content(stream)
+     *         OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
+     *         ogs_sbi_send_http_status_no_content(vsmf_to_hsmf_modify_stream));
+     * 7.  V*: case OGS_EVENT_SBI_CLIENT
+     *         CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 8.  H*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+     *         OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
+     */
+                    switch (e->h.sbi.state) {
+                    case SMF_CREATE_STATE_NONE:
+                        ogs_list_for_each_entry(
+                                &sess->qos_flow_to_modify_list,
+                                qos_flow, to_modify_node) {
+                            ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
+                            ogs_assert(dl_far);
 
-                        dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+                            dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+                            ogs_assert(OGS_OK ==
+                                ogs_pfcp_ip_to_outer_header_creation(
+                                    &sess->remote_dl_ip,
+                                    &dl_far->outer_header_creation,
+                                    &dl_far->outer_header_creation_len));
+                            dl_far->outer_header_creation.teid =
+                                sess->remote_dl_teid;
+                        }
+
                         ogs_assert(OGS_OK ==
-                            ogs_pfcp_ip_to_outer_header_creation(
-                                &sess->remote_dl_ip,
-                                &dl_far->outer_header_creation,
-                                &dl_far->outer_header_creation_len));
-                        dl_far->outer_header_creation.teid =
-                            sess->remote_dl_teid;
+                                smf_5gc_pfcp_send_qos_flow_list_modification_request(
+                                    sess, NULL,
+                                    OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+                                    OGS_PFCP_MODIFY_DL_ONLY|
+                                    OGS_PFCP_MODIFY_ACTIVATE, 0));
+                        break;
+                    case SMF_UPDATE_STATE_NONE:
+                        /* Nothing to do */
+                        break;
+                    case SMF_REMOVE_STATE_NONE:
+                        /* Nothing to do */
+                        break;
+                    default:
+                        ogs_fatal("Unknown state [%d]", e->h.sbi.state);
+                        ogs_assert_if_reached();
                     }
-
-                    ogs_assert(OGS_OK ==
-                            smf_5gc_pfcp_send_qos_flow_list_modification_request(
-                                sess, NULL,
-                                OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
-                                OGS_PFCP_MODIFY_DL_ONLY|
-                                OGS_PFCP_MODIFY_ACTIVATE, 0));
                     break;
                 DEFAULT
                     ogs_error("Invalid resource name [%s]",
@@ -1354,32 +1803,68 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         switch (nas_message->gsm.h.message_type) {
         case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_REQUEST:
-            rv = gsm_handle_pdu_session_modification_request(sess, stream,
-                    &nas_message->gsm.pdu_session_modification_request);
-            if (rv != OGS_OK) {
-                ogs_error("[%s:%d] Cannot handle NAS message",
-                        smf_ue->supi, sess->psi);
-                OGS_FSM_TRAN(s, smf_gsm_state_exception);
+            if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+                sess->nsmf_param.request_indication =
+                    OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
+
+                r = smf_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                        smf_nsmf_pdusession_build_hsmf_update_data,
+                        sess, stream, SMF_UPDATE_STATE_UE_REQ_MOD, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            } else {
+                rv = gsm_handle_pdu_session_modification_request(sess, stream,
+                        &nas_message->gsm.pdu_session_modification_request);
+                if (rv != OGS_OK) {
+                    ogs_error("[%s:%d] Cannot handle NAS message",
+                            smf_ue->supi, sess->psi);
+                    OGS_FSM_TRAN(s, smf_gsm_state_exception);
+                }
             }
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
             ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
             if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
-                ogs_sbi_stream_t *n1_n2_modified_stream = NULL;
-                if (sess->n1_n2_modified_stream_id >= OGS_MIN_POOL_ID &&
-                    sess->n1_n2_modified_stream_id <= OGS_MAX_POOL_ID)
-                    n1_n2_modified_stream =
+    /*
+     * Network-requested PDU Session Modification
+     *
+     * 1.  H: OpenAPI_request_indication_NW_REQ_PDU_SES_MOD
+     *        QOS_RULE_CODE_FROM_PFCP_FLAGS
+     *        QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
+     * 2.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 3.  V: smf_nsmf_handle_update_data_in_vsmf
+     * 4.  V: gsm_build_pdu_session_modification_command+
+     *        ngap_build_pdu_session_resource_modify_request_transfer
+     * 5.  V: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
+     *        if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
+     *            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+     *            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *                  OpenAPI_up_cnx_state_ACTIVATED)
+     *        else
+     *            ogs_sbi_send_http_status_no_content(stream)
+     * 6.  V*: ogs_sbi_send_http_status_no_content(stream)
+     *         OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
+     *         ogs_sbi_send_http_status_no_content(vsmf_to_hsmf_modify_stream));
+     * 7.  V: case OGS_EVENT_SBI_CLIENT
+     *        CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+     *        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
+     */
+                ogs_sbi_stream_t *vsmf_to_hsmf_modify_stream = NULL;
+                if (sess->vsmf_to_hsmf_modify_stream_id >= OGS_MIN_POOL_ID &&
+                    sess->vsmf_to_hsmf_modify_stream_id <= OGS_MAX_POOL_ID)
+                    vsmf_to_hsmf_modify_stream =
                         ogs_sbi_stream_find_by_id(
-                                sess->n1_n2_modified_stream_id);
+                                sess->vsmf_to_hsmf_modify_stream_id);
 
-                if (n1_n2_modified_stream) {
+                if (vsmf_to_hsmf_modify_stream) {
                     ogs_assert(true ==
                             ogs_sbi_send_http_status_no_content(
-                                n1_n2_modified_stream));
-                } else
-                    ogs_error("No N1-N2 Modifed Stream [%d]",
-                                sess->n1_n2_modified_stream_id);
+                                vsmf_to_hsmf_modify_stream));
+                    sess->vsmf_to_hsmf_modify_stream_id = OGS_INVALID_POOL_ID;
+                }
             }
             break;
 
@@ -1459,6 +1944,31 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP:
+    /*
+     * Network-requested PDU Session Modification
+     *
+     * 1.  H: OpenAPI_request_indication_NW_REQ_PDU_SES_MOD
+     *        QOS_RULE_CODE_FROM_PFCP_FLAGS
+     *        QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS
+     * 2.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 3.  V: smf_nsmf_handle_update_data_in_vsmf
+     * 4.  V: gsm_build_pdu_session_modification_command+
+     *        ngap_build_pdu_session_resource_modify_request_transfer
+     * 5.  V*: OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP
+     *        if (sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING)
+     *            sess->up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+     *            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *                  OpenAPI_up_cnx_state_ACTIVATED)
+     *        else
+     *            ogs_sbi_send_http_status_no_content(stream)
+     * 6.  V: ogs_sbi_send_http_status_no_content(stream)
+     *        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
+     *        ogs_sbi_send_http_status_no_content(vsmf_to_hsmf_modify_stream));
+     * 7.  V: case OGS_EVENT_SBI_CLIENT
+     *        CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 8.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+     *        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
+     */
             rv = ngap_handle_pdu_session_resource_modify_response_transfer(
                     sess, stream, pkbuf);
             if (rv != OGS_OK) {
@@ -1730,6 +2240,51 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                     ogs_pkbuf_t *n1smbuf = NULL, *n2smbuf = NULL;
 
                     if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
+    /*
+     * UE-requested PDU Session Release
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 3.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H*: smf_nsmf_pdusession_build_vsmf_update_data
+     * 10. H*: OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
+     * 11. V: smf_nsmf_handle_update_data_in_vsmf
+     * 12. V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
+     *        gsm_build_pdu_session_release_command
+     * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
+     * 17. V: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+              case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+     * 19. V: ogs_sbi_send_http_status_no_content(vsmf_to_hsmf_release_stream)
+     * 20. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H: case OGS_EVENT_SBI_CLIENT:
+     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V: case OGS_EVENT_SBI_SERVER:
+     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V: ogs_sbi_send_http_status_no_content+
+     *        smf_sbi_send_sm_context_status_notify
+     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
+
+                        if (sess->nsmf_param.request_indication !=
+                                OpenAPI_request_indication_UE_REQ_PDU_SES_REL) {
+                            ogs_fatal("Invalid request_indication = %d",
+                                    sess->nsmf_param.request_indication);
+                            ogs_assert_if_reached();
+                        }
 
                         r = smf_sbi_discover_and_send(
                                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
@@ -1739,22 +2294,63 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                         ogs_assert(r != OGS_ERROR);
 
                     } else if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+    /*
+     * UE-requested PDU Session Release
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 3.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
+     * 11. V: smf_nsmf_handle_update_data_in_vsmf
+     * 12. V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V*: ngap_build_pdu_session_resource_release_command_transfer+
+     *         gsm_build_pdu_session_release_command
+     * 16  V*: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
+     * 17. V: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+              case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+     * 19. V: ogs_sbi_send_http_status_no_content(vsmf_to_hsmf_release_stream)
+     * 20. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H: case OGS_EVENT_SBI_CLIENT:
+     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V: case OGS_EVENT_SBI_SERVER:
+     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V: ogs_sbi_send_http_status_no_content+
+     *        smf_sbi_send_sm_context_status_notify
+     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
 
                         smf_n1_n2_message_transfer_param_t param;
-                        ogs_sbi_stream_t *amf_update_request_stream = NULL;
+                        ogs_sbi_stream_t *amf_to_vsmf_release_stream = NULL;
 
-                        if (sess->amf_update_request_stream_id >=
+                        if (sess->amf_to_vsmf_release_stream_id >=
                                 OGS_MIN_POOL_ID &&
-                            sess->amf_update_request_stream_id <=
+                            sess->amf_to_vsmf_release_stream_id <=
                                 OGS_MAX_POOL_ID)
-                            amf_update_request_stream =
+                            amf_to_vsmf_release_stream =
                                 ogs_sbi_stream_find_by_id(
-                                        sess->amf_update_request_stream_id);
+                                        sess->amf_to_vsmf_release_stream_id);
 
-                        if (amf_update_request_stream)
+                        if (amf_to_vsmf_release_stream) {
                             ogs_assert(true ==
                                     ogs_sbi_send_http_status_no_content(
-                                        amf_update_request_stream));
+                                        amf_to_vsmf_release_stream));
+                            sess->amf_to_vsmf_release_stream_id =
+                                OGS_INVALID_POOL_ID;
+                        }
 
                         memset(&param, 0, sizeof(param));
                         param.state =
@@ -1826,6 +2422,8 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
                     if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
     /*
+     * Network-requested PDU Session Release(DUPLICATED)
+     *
      * TS23.502 clause 4.3.4.3 UE or network requested PDU Session Release
      * for Home-routed Roaming.
      *
@@ -1833,6 +2431,25 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
      * SHALL immediately send the Update Response, then issue PFCP Session
      * Deletion. This ordering is per the standard, even for duplicate
      * sessions, and may overlap with AMF’s concurrent Create Session.
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT,
+     * 3.  V: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H*: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                 SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H*: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H: SMF_SESS_CLEAR(sess)
+     * 12. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 13. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 14. V: ogs_sbi_send_http_status_no_content
+     * 15. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
      */
                         r = smf_sbi_cleanup_session(
                                 sess, NULL,
@@ -1846,6 +2463,28 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
                     } else if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
 
+    /*
+     * Network-requested PDU Session Release(DUPLICATED)
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT,
+     * 3.  V: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_NW_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H: SMF_SESS_CLEAR(sess)
+     * 12. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT
+     * 13. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 14. V*: ogs_sbi_send_http_status_no_content
+     * 15. V*: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                         ogs_assert(true ==
                                 ogs_sbi_send_http_status_no_content(stream));
                         OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
@@ -1867,13 +2506,34 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                             OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT) {
 
                     if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
-                /*
-                 * TS23.502
-                 * 4.3.4.3 UE or network requested PDU Session Release
-                 *         for Home-routed Roaming
-                 *
-                 * 1b. (Serving network initiated release)
-                 */
+    /*
+     * Network-requested PDU Session Release
+     *
+     * TS23.502
+     * 4.3.4.3 UE or network requested PDU Session Release
+     *         for Home-routed Roaming
+     *
+     * 1b. (Serving network initiated release)
+     *
+     * 1.  V*: smf_nsmf_handle_release_sm_context
+     * 2.  V*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *         OGS_PFCP_MODIFY_DEACTIVATE
+     * 3.  V*: OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 4.  V: smf_nsmf_pdusession_build_release_data
+     * 5.  H: smf_nsmf_handle_release_data_in_hsmf
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 7.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 8.  H*: ogs_sbi_send_http_status_no_content
+     * 9.  H*: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                 SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H*: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H*: SMF_SESS_CLEAR(sess)
+     * 12. V: smf_nsmf_handle_release_data_in_hsmf
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V*: ogs_sbi_send_http_status_no_content
+     * 16. V*: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                         ogs_assert(true ==
                                 ogs_sbi_send_http_status_no_content(stream));
 
@@ -1889,6 +2549,28 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
                     } else if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
 
+    /*
+     * Network-requested PDU Session Release
+     *
+     * 1.  V: smf_nsmf_handle_release_sm_context
+     * 2.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 3.  V: OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 4.  V: smf_nsmf_pdusession_build_release_data
+     * 5.  H: smf_nsmf_handle_release_data_in_hsmf
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 7.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 8.  H: ogs_sbi_send_http_status_no_content
+     * 9.  H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H: SMF_SESS_CLEAR(sess)
+     * 12. V: smf_nsmf_handle_release_data_in_hsmf
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V*: ogs_sbi_send_http_status_no_content
+     * 16. V*: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                         ogs_assert(true ==
                                 ogs_sbi_send_http_status_no_content(stream));
                         OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
@@ -1977,6 +2659,90 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
             smf_sbi_send_sm_context_update_error_n1_n2_message(
                     stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     n1smbuf, OpenAPI_n2_sm_info_type_NULL, NULL);
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
+            stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            if (stream_id >= OGS_MIN_POOL_ID && stream_id <= OGS_MAX_POOL_ID)
+                stream = ogs_sbi_stream_find_by_id(stream_id);
+
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_PDU_SESSIONS)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    SWITCH(sbi_message->h.resource.component[2])
+                    CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+                        switch (e->h.sbi.state) {
+                        case OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED:
+/*
+ * Handle unexpected arrival of Nsmf_PDUSession_UpdateSMContext Response
+ * (step 1a) after PFCP deletion triggered by UE (step 3a).
+ * In Home-routed Roaming (TS 23.502 Section 4.3.4.3) SMContext Response is
+ * expected before SMContext Request (step 3a), but races can invert order,
+ * causing smf_gsm_state_wait_pfcp_deletion on PFCP release (steps 4a/4b).
+ * Without handling the delayed Response here, no handler exists and a crash
+ * results. Storing the stream ID lets the Response be processed safely.
+ */
+                            if (sess->amf_to_vsmf_release_stream_id >=
+                                    OGS_MIN_POOL_ID &&
+                                sess->amf_to_vsmf_release_stream_id <=
+                                    OGS_MAX_POOL_ID)
+                                ogs_error("UE requested release stream ID [%d]"
+                                        "has not been used yet",
+                                        sess->amf_to_vsmf_release_stream_id);
+                            /* Store Stream ID */
+                            sess->amf_to_vsmf_release_stream_id =
+                                ogs_sbi_id_from_stream(stream);
+                            break;
+/*
+ * Assume PDU session establishment and deregistration occur simultaneously.
+ * In Non-Roaming or LBO scenarios, no issues arise. However, in Home Routed
+ * Roaming, the following problem may occur:
+ *
+ * The final step of PDU session establishment is activation via the
+ * PDUSessionResourceSetupResponse. At this point, the V-SMF sends a
+ * /pdu-sessions/{xx}/modify request to the H-SMF. Meanwhile, the deregistration
+ * process advances the state to smf_gsm_state_wait_pfcp_deletion as part
+ * of the PFCP deletion procedure.
+ *
+ * When the H-SMF then sends the OGS_EVENT_SBI_CLIENT event, a corresponding
+ * handler is required to process this state. The code below implements this
+ * handler to address the race condition.
+ */
+                        case SMF_UPDATE_STATE_ACTIVATED_FROM_ACTIVATING:
+                            sess->up_cnx_state =
+                                OpenAPI_up_cnx_state_ACTIVATED;
+                            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                                    sess, stream,
+                                    OpenAPI_up_cnx_state_ACTIVATED);
+                            break;
+                        case SMF_UPDATE_STATE_ACTIVATED_FROM_NON_ACTIVATING:
+                            ogs_assert(true ==
+                                    ogs_sbi_send_http_status_no_content(
+                                        stream));
+                            break;
+                        default:
+                            ogs_fatal("Unknown state [0x%x]", e->h.sbi.state);
+                            ogs_assert_if_reached();
+                        }
+                        break;
+                    DEFAULT
+                        ogs_error("Invalid resource name [%s]",
+                                    sbi_message->h.resource.component[2]);
+                        ogs_assert_if_reached();
+                    END
+                    break;
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]",
+                            sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                            sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
             break;
         DEFAULT
             ogs_error("[%s:%d] Invalid API name [%s]",
@@ -2162,54 +2928,150 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
 
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
-            SWITCH(sbi_message->h.resource.component[2])
-            CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                smf_nsmf_handle_update_sm_context(sess, stream, sbi_message);
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_SM_CONTEXTS)
+                SWITCH(sbi_message->h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+                    smf_nsmf_handle_update_sm_context(
+                            sess, stream, sbi_message);
+                    break;
+    /*
+     * Network-requested PDU Session Release
+     *
+     * 1.  V*: smf_nsmf_handle_release_sm_context
+     * 2.  V*: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *         OGS_PFCP_MODIFY_DEACTIVATE
+     * 3.  V*: OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 4.  V: smf_nsmf_pdusession_build_release_data
+     * 5.  H: smf_nsmf_handle_release_data_in_hsmf
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 7.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 8.  H*: ogs_sbi_send_http_status_no_content
+     * 9.  H*: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_AMF_HR
+     *                                 SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 10. H*: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 11. H*: SMF_SESS_CLEAR(sess)
+     * 12. V: smf_nsmf_handle_release_data_in_hsmf
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V*: ogs_sbi_send_http_status_no_content
+     * 16. V*: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
+                CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
+                    smf_nsmf_handle_release_sm_context(
+                            sess, stream, sbi_message);
+
+                    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+                        ogs_assert(OGS_OK ==
+                            smf_5gc_pfcp_send_all_pdr_modification_request(
+                                sess, stream,
+                                OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+                                OGS_PFCP_MODIFY_UL_ONLY|
+                                OGS_PFCP_MODIFY_DEACTIVATE,
+                                OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT,
+                                0));
+                    } else {
+                        ogs_warn("[%s:%d] Session Release "
+                                "[PFCP-Delete-Trigger:%d]",
+                            smf_ue->supi, sess->psi, e->h.sbi.state);
+
+                        r = smf_sbi_cleanup_session(
+                                sess, stream,
+                                SMF_UECM_STATE_DEREG_BY_AMF,
+                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+
+                        OGS_FSM_TRAN(s,
+                                smf_gsm_state_5gc_session_will_deregister);
+                    }
+                    break;
+                DEFAULT
+                    ogs_error("Invalid resource name [%s]",
+                                sbi_message->h.resource.component[2]);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, sbi_message,
+                            "Invalid resource name [%s]",
+                            sbi_message->h.resource.component[2], NULL));
+                    OGS_FSM_TRAN(s, smf_gsm_state_exception);
+                END
                 break;
-            CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
-            /*
-             * Session release is initiated by a PDU Session Release Request.
-             * The AMF sends a PDUSessionReleaseCommand to the UE, but the UE
-             * does not send a PDU Session Release Complete or
-             * PDUSessionResourceReleaseResponse back to the AMF.
-             *
-             * As a result, the context remains in the
-             * smf_gsm_state_wait_5gc_n1_n2_release state.
-             *
-             * When the UE then sends a Deregistration request in this state,
-             * smf_nsmf_handle_release_sm_context() is invoked.
-             */
-                smf_nsmf_handle_release_sm_context(sess, stream, sbi_message);
 
-                if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
-                    ogs_assert(OGS_OK ==
-                        smf_5gc_pfcp_send_all_pdr_modification_request(
-                            sess, stream,
-                            OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
-                            OGS_PFCP_MODIFY_UL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
-                            OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT, 0));
-                } else {
-                    ogs_warn("[%s:%d] Session Release [PFCP-Delete-Trigger:%d]",
-                        smf_ue->supi, sess->psi, e->h.sbi.state);
+            CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+                SWITCH(sbi_message->h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
+                    ogs_error("Invalid resource name [%s]",
+                                sbi_message->h.resource.component[2]);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, sbi_message,
+                            "Invalid resource name [%s]",
+                            sbi_message->h.resource.component[2], NULL));
+                    OGS_FSM_TRAN(s, smf_gsm_state_exception);
+                    break;
+                DEFAULT
+    /*
+     * UE-requested PDU Session Release
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 3.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
+     * 11. V: smf_nsmf_handle_update_data_in_vsmf
+     * 12. V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
+     *        gsm_build_pdu_session_release_command
+     * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
+     * 17. V: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+     *        case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+     * 19. V: ogs_sbi_send_http_status_no_content(vsmf_to_hsmf_release_stream)
+     * 20. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H: case OGS_EVENT_SBI_CLIENT:
+     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V*: case OGS_EVENT_SBI_SERVER:
+     * 26. V*: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V*: ogs_sbi_send_http_status_no_content+
+     *         smf_sbi_send_sm_context_status_notify
+     * 28. V*: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
+                    ogs_assert(true ==
+                            ogs_sbi_send_http_status_no_content(stream));
 
-                    r = smf_sbi_cleanup_session(
-                            sess, stream,
-                            SMF_UECM_STATE_DEREG_BY_AMF,
-                            SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-
-                    OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
-                }
+                    sess->resource_status = OpenAPI_resource_status_RELEASED;
+                    if (sess->n1_released == true &&
+                        sess->n2_released == true &&
+                        sess->resource_status ==
+                            OpenAPI_resource_status_RELEASED) {
+                        ogs_assert(true ==
+                                smf_sbi_send_sm_context_status_notify(sess));
+                        OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+                    }
+                END
                 break;
+
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
-                            sbi_message->h.resource.component[2]);
+                            sbi_message->h.resource.component[0]);
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, sbi_message,
                         "Invalid resource name [%s]",
-                        sbi_message->h.resource.component[2], NULL));
+                        sbi_message->h.resource.component[0], NULL));
                 OGS_FSM_TRAN(s, smf_gsm_state_exception);
             END
             break;
@@ -2241,6 +3103,44 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
                     SWITCH(sbi_message->h.resource.component[2])
                     CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+    /*
+     * UE-requested PDU Session Release
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 3.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
+     * 11. V: smf_nsmf_handle_update_data_in_vsmf
+     * 12. V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
+     *        gsm_build_pdu_session_release_command
+     * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
+     * 17. V: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+     *        case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+     * 19. V: ogs_sbi_send_http_status_no_content(vsmf_to_hsmf_release_stream)
+     * 20. V: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H*: case OGS_EVENT_SBI_CLIENT:
+     * 22. H*: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H*: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     *                                 SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V: case OGS_EVENT_SBI_SERVER:
+     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V: ogs_sbi_send_http_status_no_content+
+     *        smf_sbi_send_sm_context_status_notify
+     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                         r = smf_sbi_cleanup_session(
                                 sess, NULL,
                                 SMF_UECM_STATE_DEREG_BY_N1N2_HR,
@@ -2400,35 +3300,82 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
 
                 ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 
+    /*
+     * UE-requested PDU Session Release
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 3.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
+     * 11. V: smf_nsmf_handle_update_data_in_vsmf
+     * 12. V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
+     *        gsm_build_pdu_session_release_command
+     * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
+     * 17. V*: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V*: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+     *         case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+     * 19. V*: ogs_sbi_send_http_status_no_content(vsmf_to_hsmf_release_stream)
+     * 20. V*: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H: case OGS_EVENT_SBI_CLIENT:
+     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V: case OGS_EVENT_SBI_SERVER:
+     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V: ogs_sbi_send_http_status_no_content+
+     *        smf_sbi_send_sm_context_status_notify
+     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
                 sess->n2_released = true;
-                if ((sess->n1_released) && (sess->n2_released)) {
-                    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
-                        ogs_sbi_stream_t *n1_n2_released_stream = NULL;
-                        if (sess->n1_n2_released_stream_id >= OGS_MIN_POOL_ID &&
-                            sess->n1_n2_released_stream_id <= OGS_MAX_POOL_ID)
-                            n1_n2_released_stream =
-                                ogs_sbi_stream_find_by_id(
-                                        sess->n1_n2_released_stream_id);
+                if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+                    ogs_sbi_stream_t *vsmf_to_hsmf_release_stream = NULL;
+                    if (sess->vsmf_to_hsmf_release_stream_id >=
+                            OGS_MIN_POOL_ID &&
+                        sess->vsmf_to_hsmf_release_stream_id <= OGS_MAX_POOL_ID)
+                        vsmf_to_hsmf_release_stream =
+                            ogs_sbi_stream_find_by_id(
+                                    sess->vsmf_to_hsmf_release_stream_id);
 
-                        if (n1_n2_released_stream)
-                            ogs_assert(true ==
-                                    ogs_sbi_send_http_status_no_content(
-                                        n1_n2_released_stream));
-                        else
-                            ogs_error("No N1-N2 Released Stream [%d]",
-                                        sess->n1_n2_released_stream_id);
-                    } else {
-                        r = smf_sbi_cleanup_session(
-                                sess, NULL,
-                                SMF_UECM_STATE_DEREG_BY_N1N2,
-                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
-                        ogs_expect(r == OGS_OK);
-                        ogs_assert(r != OGS_ERROR);
+                    if (vsmf_to_hsmf_release_stream) {
+                        ogs_assert(true ==
+                                ogs_sbi_send_http_status_no_content(
+                                    vsmf_to_hsmf_release_stream));
+                        sess->vsmf_to_hsmf_release_stream_id =
+                            OGS_INVALID_POOL_ID;
                     }
 
-                    OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
-                }
+                    if (sess->n1_released == true &&
+                        sess->n2_released == true &&
+                        sess->resource_status ==
+                            OpenAPI_resource_status_RELEASED) {
+                        ogs_assert(true ==
+                                smf_sbi_send_sm_context_status_notify(sess));
+                        OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+                    }
+                } else if (sess->n1_released == true &&
+                           sess->n2_released == true) {
+                    r = smf_sbi_cleanup_session(
+                            sess, NULL,
+                            SMF_UECM_STATE_DEREG_BY_N1N2,
+                            SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
 
+                    OGS_FSM_TRAN(s,
+                            smf_gsm_state_5gc_session_will_deregister);
+                }
             } else {
                 ogs_fatal("Invalid state [%d]", ngap_state);
                 ogs_assert_if_reached();
@@ -2457,31 +3404,74 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
             ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 
+    /*
+     * UE-requested PDU Session Release
+     *
+     * 1.  V: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_UL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 2.  V: OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 3.  V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 4.  V: smf_nsmf_pdusession_build_hsmf_update_data
+     * 5.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 6.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 6.  H: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 7.  H: ogs_sbi_send_http_status_no_content
+     * 8.  H: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 9.  H: smf_nsmf_pdusession_build_vsmf_update_data
+     * 10. H: OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
+     * 11. V: smf_nsmf_handle_update_data_in_vsmf
+     * 12. V: OpenAPI_request_indication_UE_REQ_PDU_SES_REL
+     * 13. V: e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED
+     * 14. V: OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion)
+     * 15. V: ngap_build_pdu_session_resource_release_command_transfer+
+     *        gsm_build_pdu_session_release_command
+     * 16  V: OGS_FSM_TRAN(&sess->sm, smf_gsm_state_wait_5gc_n1_n2_release)
+     * 17. V*: ogs_sbi_send_http_status_no_content(stream)
+     * 18. V*: case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+     *         case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+     * 19. V*: ogs_sbi_send_http_status_no_content(vsmf_to_hsmf_release_stream)
+     * 20. V*: OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+     * 21. H: case OGS_EVENT_SBI_CLIENT:
+     * 22. H: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 23. H: smf_sbi_cleanup_session(SMF_UECM_STATE_DEREG_BY_N1N2_HR
+     *                                SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+     * 24. H: smf_sbi_send_status_notify+SMF_SESS_CLEAR(sess)
+     * 25. V: case OGS_EVENT_SBI_SERVER:
+     * 26. V: CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
+     * 27. V: ogs_sbi_send_http_status_no_content+
+     *        smf_sbi_send_sm_context_status_notify
+     * 28. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+     */
             sess->n1_released = true;
-            if ((sess->n1_released) && (sess->n2_released)) {
-                if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
-                    ogs_sbi_stream_t *n1_n2_released_stream = NULL;
-                    if (sess->n1_n2_released_stream_id >= OGS_MIN_POOL_ID &&
-                        sess->n1_n2_released_stream_id <= OGS_MAX_POOL_ID)
-                        n1_n2_released_stream =
-                            ogs_sbi_stream_find_by_id(
-                                    sess->n1_n2_released_stream_id);
+            if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+                ogs_sbi_stream_t *vsmf_to_hsmf_release_stream = NULL;
+                if (sess->vsmf_to_hsmf_release_stream_id >= OGS_MIN_POOL_ID &&
+                    sess->vsmf_to_hsmf_release_stream_id <= OGS_MAX_POOL_ID)
+                    vsmf_to_hsmf_release_stream =
+                        ogs_sbi_stream_find_by_id(
+                                sess->vsmf_to_hsmf_release_stream_id);
 
-                    if (n1_n2_released_stream)
-                        ogs_assert(true ==
-                                ogs_sbi_send_http_status_no_content(
-                                    n1_n2_released_stream));
-                    else
-                        ogs_error("No N1-N2 Released Stream [%d]",
-                                    sess->n1_n2_released_stream_id);
-                } else {
-                    r = smf_sbi_cleanup_session(
-                            sess, NULL,
-                            SMF_UECM_STATE_DEREG_BY_N1N2,
-                            SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
+                if (vsmf_to_hsmf_release_stream) {
+                    ogs_assert(true ==
+                            ogs_sbi_send_http_status_no_content(
+                                vsmf_to_hsmf_release_stream));
+                    sess->vsmf_to_hsmf_release_stream_id = OGS_INVALID_POOL_ID;
                 }
+
+                if (sess->n1_released == true &&
+                    sess->n2_released == true &&
+                    sess->resource_status == OpenAPI_resource_status_RELEASED) {
+                    ogs_assert(true ==
+                            smf_sbi_send_sm_context_status_notify(sess));
+                    OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+                }
+            } else if (sess->n1_released == true && sess->n2_released == true) {
+                r = smf_sbi_cleanup_session(
+                        sess, NULL,
+                        SMF_UECM_STATE_DEREG_BY_N1N2,
+                        SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
 
                 OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
             }
@@ -2685,35 +3675,14 @@ void smf_gsm_state_5gc_session_will_deregister(ogs_fsm_t *s, smf_event_t *e)
                 END
                 break;
 
-            CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
-                SWITCH(sbi_message->h.resource.component[2])
-                CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
-                    ogs_error("Invalid resource name [%s]",
-                                sbi_message->h.resource.component[2]);
-                    ogs_assert(true ==
-                        ogs_sbi_server_send_error(stream,
-                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, sbi_message,
-                            "Invalid resource name [%s]",
-                            sbi_message->h.resource.component[2], NULL));
-                    OGS_FSM_TRAN(s, smf_gsm_state_exception);
-                    break;
-                DEFAULT
-                    ogs_assert(true ==
-                            ogs_sbi_send_http_status_no_content(stream));
-                    ogs_assert(true ==
-                            smf_sbi_send_sm_context_status_notify(sess));
-                    OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
-                END
-                break;
-
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
-                            sbi_message->h.resource.component[2]);
+                            sbi_message->h.resource.component[0]);
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, sbi_message,
                         "Invalid resource name [%s]",
-                        sbi_message->h.resource.component[2], NULL));
+                        sbi_message->h.resource.component[0], NULL));
                 OGS_FSM_TRAN(s, smf_gsm_state_exception);
             END
             break;

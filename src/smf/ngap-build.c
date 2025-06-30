@@ -399,10 +399,10 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
         OpenAPI_list_for_each(
                 sess->h_smf_qos_flows_add_mod_request_list, node) {
             OpenAPI_qos_flow_add_modify_request_item_t
-                *qosFlowAddModifyRequestItem = node->data;
-            if (qosFlowAddModifyRequestItem) {
+                *qosFlowAddModRequestItem = node->data;
+            if (qosFlowAddModRequestItem) {
                 OpenAPI_qos_flow_profile_t *qosFlowProfile =
-                    qosFlowAddModifyRequestItem->qos_flow_profile;
+                    qosFlowAddModRequestItem->qos_flow_profile;
                 if (qosFlowProfile) {
                     ogs_qos_t qos;
 
@@ -469,12 +469,12 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
                             QosFlowAddOrModifyRequestItem);
 
                     QosFlowAddOrModifyRequestItem->qosFlowIdentifier =
-                        qosFlowAddModifyRequestItem->qfi;
+                        qosFlowAddModRequestItem->qfi;
 
                     QosFlowAddOrModifyRequestItem->qosFlowLevelQosParameters =
                             CALLOC(1, sizeof(NGAP_QosFlowLevelQosParameters_t));
-                    ogs_assert(
-                            QosFlowAddOrModifyRequestItem->qosFlowLevelQosParameters);
+                    ogs_assert(QosFlowAddOrModifyRequestItem->
+                            qosFlowLevelQosParameters);
 
                     fill_qos_level_parameters(
                             QosFlowAddOrModifyRequestItem->
@@ -537,20 +537,43 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_request_transfer(
 
     QosFlowListWithCause = &ie->value.choice.QosFlowListWithCause;
 
-    ogs_list_for_each_entry(
-            &sess->qos_flow_to_modify_list, qos_flow, to_modify_node) {
+    /* Home-Routed V-SMF: QoS flow */
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        OpenAPI_lnode_t *node = NULL;
+        OpenAPI_list_for_each(sess->h_smf_qos_flows_rel_request_list, node) {
+            OpenAPI_qos_flow_release_request_item_t
+                *qosFlowRelRequestItem = node->data;
+            if (qosFlowRelRequestItem) {
 
-        QosFlowWithCauseItem = CALLOC(1, sizeof(*QosFlowWithCauseItem));
-        ASN_SEQUENCE_ADD(&QosFlowListWithCause->list, QosFlowWithCauseItem);
+                QosFlowWithCauseItem = CALLOC(1, sizeof(*QosFlowWithCauseItem));
+                ASN_SEQUENCE_ADD(&QosFlowListWithCause->list,
+                        QosFlowWithCauseItem);
 
-        qosFlowIdentifier = &QosFlowWithCauseItem->qosFlowIdentifier;
+                qosFlowIdentifier = &QosFlowWithCauseItem->qosFlowIdentifier;
 
-        *qosFlowIdentifier = qos_flow->qfi;
+                *qosFlowIdentifier = qosFlowRelRequestItem->qfi;
 
-        Cause = &QosFlowWithCauseItem->cause;
-        Cause->present = group;
-        Cause->choice.radioNetwork = cause;
+                Cause = &QosFlowWithCauseItem->cause;
+                Cause->present = group;
+                Cause->choice.radioNetwork = cause;
+            }
+        }
+    } else {
+        ogs_list_for_each_entry(
+                &sess->qos_flow_to_modify_list, qos_flow, to_modify_node) {
 
+            QosFlowWithCauseItem = CALLOC(1, sizeof(*QosFlowWithCauseItem));
+            ASN_SEQUENCE_ADD(&QosFlowListWithCause->list, QosFlowWithCauseItem);
+
+            qosFlowIdentifier = &QosFlowWithCauseItem->qosFlowIdentifier;
+
+            *qosFlowIdentifier = qos_flow->qfi;
+
+            Cause = &QosFlowWithCauseItem->cause;
+            Cause->present = group;
+            Cause->choice.radioNetwork = cause;
+
+        }
     }
 
     return ogs_asn_encode(

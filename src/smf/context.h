@@ -78,14 +78,25 @@ typedef struct smf_nsmf_pdusession_param_s {
     int gsm_cause;
 
     struct {
-    ED3(uint8_t ue_location:1;,
+    ED4(uint8_t serving_network:1;,
+        uint8_t ue_location:1;,
         uint8_t ue_timezone:1;,
-        uint8_t spare:6;)
+        uint8_t spare:4;)
     };
+
+    uint32_t dl_teid;
+    ogs_ip_t dl_ip;
+
+    OpenAPI_access_type_e an_type;
+    OpenAPI_rat_type_e rat_type;
+
+    OpenAPI_up_cnx_state_e up_cnx_state;
 
 #define QOS_RULE_CODE_FROM_PFCP_FLAGS(pfcp_flags) \
         (pfcp_flags & OGS_PFCP_MODIFY_CREATE) ? \
             OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE : \
+        (pfcp_flags & OGS_PFCP_MODIFY_REMOVE) ? \
+            OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE : \
         (pfcp_flags & OGS_PFCP_MODIFY_TFT_NEW) ? \
             OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE : \
         (pfcp_flags & OGS_PFCP_MODIFY_TFT_ADD) ? \
@@ -98,45 +109,15 @@ typedef struct smf_nsmf_pdusession_param_s {
 #define QOS_RULE_FLOW_DESCRIPTION_CODE_FROM_PFCP_FLAGS(pfcp_flags) \
         (pfcp_flags & OGS_PFCP_MODIFY_CREATE) ? \
             OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION : \
+        (pfcp_flags & OGS_PFCP_MODIFY_REMOVE) ? \
+            OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION : \
         (pfcp_flags & OGS_PFCP_MODIFY_QOS_MODIFY) ? \
             OGS_NAS_MODIFY_NEW_QOS_FLOW_DESCRIPTION : 0
     uint8_t qos_flow_description_code;
+
+    uint64_t pfcp_flags;
+
 } smf_nsmf_pdusession_param_t;
-
-/* HR flag bit */
-#define SMF_UECM_FLAG_HR         (1 << 7)
-
-/* Base states (low bits only) */
-#define SMF_UECM_STATE_NONE       0
-#define SMF_UECM_STATE_REGISTERED 1
-#define SMF_UECM_STATE_DEREG_BY_AMF  2
-#define SMF_UECM_STATE_DEREG_BY_N1N2 3
-
-/* HR variants (OR base state with HR flag) */
-#define SMF_UECM_STATE_REGISTERED_HR    \
-    (SMF_UECM_STATE_REGISTERED | SMF_UECM_FLAG_HR)
-#define SMF_UECM_STATE_DEREG_BY_AMF_HR  \
-    (SMF_UECM_STATE_DEREG_BY_AMF | SMF_UECM_FLAG_HR)
-#define SMF_UECM_STATE_DEREG_BY_N1N2_HR \
-    (SMF_UECM_STATE_DEREG_BY_N1N2 | SMF_UECM_FLAG_HR)
-
-/**
- * Return true if the PDU session anchor SMF is in the HPLMN
- * (Home-Routed Roaming, HR)
- */
-static inline bool smf_uecm_anchor_in_hplmn(int state)
-{
-    return !!(state & SMF_UECM_FLAG_HR);
-}
-
-/**
- * Return true if the PDU session anchor SMF is in the VPLMN
- * (Non-Roaming or Local Break-Out Roaming, LBO)
- */
-static inline bool smf_uecm_anchor_in_vplmn(int state)
-{
-    return !(state & SMF_UECM_FLAG_HR);
-}
 
 typedef struct smf_context_s {
     smf_ctf_config_t    ctf_config;
@@ -502,6 +483,7 @@ typedef struct smf_sess_s {
                 OpenAPI_qos_flow_setup_item_free(qosFlowSetupItem); \
         } \
         OpenAPI_list_free((__lIST)); \
+        (__lIST) = NULL; \
     } while(0)
     OpenAPI_list_t *h_smf_qos_flows_setup_list;
 #define CLEAR_QOS_FLOWS_ADD_MOD_REQUEST_LIST(__lIST) \
@@ -515,8 +497,23 @@ typedef struct smf_sess_s {
                         qosFlowAddModifyRequestItem); \
         } \
         OpenAPI_list_free((__lIST)); \
+        (__lIST) = NULL; \
     } while(0)
     OpenAPI_list_t *h_smf_qos_flows_add_mod_request_list;
+#define CLEAR_QOS_FLOWS_REL_REQUEST_LIST(__lIST) \
+    do { \
+        OpenAPI_lnode_t *node = NULL; \
+        OpenAPI_list_for_each((__lIST), node) { \
+            OpenAPI_qos_flow_release_request_item_t \
+                *qosFlowReleaseRequestItem = node->data; \
+            if (qosFlowReleaseRequestItem) \
+                OpenAPI_qos_flow_release_request_item_free( \
+                        qosFlowReleaseRequestItem); \
+        } \
+        OpenAPI_list_free((__lIST)); \
+        (__lIST) = NULL; \
+    } while(0)
+    OpenAPI_list_t *h_smf_qos_flows_rel_request_list;
 
 #define HOME_ROUTED_ROAMING_IN_HSMF(__sESS) \
     ((__sESS) && (__sESS)->vsmf_pdu_session_uri)
@@ -529,7 +526,7 @@ typedef struct smf_sess_s {
      * Keeps the n1SmMsg Content (n1smbuf) in the context of the V-SMF
      * for use when creating the n1SmBufFromUe to send to the H-SMF.
      */
-    ogs_pkbuf_t     *n1smbuf;
+    ogs_pkbuf_t     *n1SmBufFromUe;
 
     /* PCF ID */
     char            *pcf_id;
@@ -677,13 +674,42 @@ typedef struct smf_sess_s {
 
     ogs_pool_id_t smf_ue_id;
 
+    OpenAPI_resource_status_e resource_status;
     bool n1_released;
     bool n2_released;
-    ogs_pool_id_t amf_update_request_stream_id;
-    ogs_pool_id_t n1_n2_modified_stream_id;
-    ogs_pool_id_t n1_n2_released_stream_id;
+/*
+ * Section 4.3.3.3 'UE or network requested PDU Session Modification
+ * (home-routed roaming)'
+ * - Step 1a: Nsmf_PDUSession_UpdateSMContext Request (AMF -> V-SMF):
+ * - Step 4a: Nsmf_PDUSession_UpdateSMContext Response (V-SMF -> AMF):
+ */
+    ogs_pool_id_t amf_to_vsmf_modify_stream_id;
+/*
+ * Section 4.3.3.3 'UE or network requested PDU Session Modification
+ * (home-routed roaming)'
+ * - Step 3:  Nsmf_PDUSession_UpdateSMContext Request (V-SMF -> H-SMF):
+ * - Step 15: Nsmf_PDUSession_UpdateSMContext Response (V-SMF -> H-SMF):
+ */
+    ogs_pool_id_t vsmf_to_hsmf_modify_stream_id;
+/*
+ * Section 4.3.4.3 'UE or network requested PDU Session Release for
+ * Home-routed Roaming'
+ * - Step 1a: Nsmf_PDUSession_UpdateSMContext Request (AMF -> V-SMF):
+ * - Step 5b: Nsmf_PDUSession_UpdateSMContext Response (V-SMF -> AMF):
+ */
+    ogs_pool_id_t amf_to_vsmf_release_stream_id;
+/*
+ * Section 4.3.4.3 'UE or network requested PDU Session Release for
+ * Home-routed Roaming'
+ * - Step 3a: Nsmf_PDUSession_UpdateSMContext Request (V-SMF -> H-SMF):
+ * - Step 14: Nsmf_PDUSession_UpdateSMContext Response (V-SMF -> H-SMF):
+ */
+    ogs_pool_id_t vsmf_to_hsmf_release_stream_id;
 
     smf_nsmf_pdusession_param_t nsmf_param;
+
+    bool establishment_accept_sent;
+    ogs_sbi_xact_t *pending_modification_xact;
 
 } smf_sess_t;
 

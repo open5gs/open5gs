@@ -166,12 +166,9 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_data(
         ogs_error("No ueLocation.nr_location");
         goto end;
     }
-    ueLocation.nr_location->ue_location_timestamp =
-        ogs_sbi_gmtime_string(sess->ue_location_timestamp);
-    if (!ueLocation.nr_location->ue_location_timestamp) {
-        ogs_error("No ue_location_timestamp");
-        goto end;
-    }
+    if (sess->ue_location_timestamp)
+        ueLocation.nr_location->ue_location_timestamp =
+            ogs_sbi_gmtime_string(sess->ue_location_timestamp);
 
     PduSessionCreateData.ue_location = &ueLocation;
     PduSessionCreateData.ue_time_zone = ogs_sbi_timezone_string(ogs_timezone());
@@ -211,8 +208,8 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_data(
         goto end;
     }
 
-    ogs_assert(sess->n1smbuf);
-    rv = ogs_nas_5gsm_decode(&nas_message, sess->n1smbuf);
+    ogs_assert(sess->n1SmBufFromUe);
+    rv = ogs_nas_5gsm_decode(&nas_message, sess->n1SmBufFromUe);
 
     if (rv == OGS_OK) {
         n1SmBufFromUe = gsmue_encode_n1_sm_info(&nas_message);
@@ -275,11 +272,11 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_data(
         } else {
             ogs_error("gsm_encode_n1_sm_info() failed [%d]", rv);
             ogs_log_hexdump(OGS_LOG_ERROR,
-                    sess->n1smbuf->data, sess->n1smbuf->len);
+                    sess->n1SmBufFromUe->data, sess->n1SmBufFromUe->len);
         }
     } else {
         ogs_error("ogs_nas_5gsm_decode() failed [%d]", rv);
-        ogs_log_hexdump(OGS_LOG_ERROR, sess->n1smbuf->data, sess->n1smbuf->len);
+        ogs_log_hexdump(OGS_LOG_ERROR, sess->n1SmBufFromUe->data, sess->n1SmBufFromUe->len);
     }
 
     message.PduSessionCreateData = &PduSessionCreateData;
@@ -324,9 +321,9 @@ end:
     if (PduSessionCreateData.ue_time_zone)
         ogs_free(PduSessionCreateData.ue_time_zone);
 
-    if (sess->n1smbuf) {
-        ogs_pkbuf_free(sess->n1smbuf);
-        sess->n1smbuf = NULL;
+    if (sess->n1SmBufFromUe) {
+        ogs_pkbuf_free(sess->n1SmBufFromUe);
+        sess->n1SmBufFromUe = NULL;
     }
 
     if (n1SmBufFromUe)
@@ -348,6 +345,7 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
 
     OpenAPI_hsmf_update_data_t HsmfUpdateData;
     OpenAPI_ng_ap_cause_t ngApCause;
+    OpenAPI_tunnel_info_t vcnTunnelInfo;
     OpenAPI_user_location_t ueLocation;
 
     int rv;
@@ -368,12 +366,15 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
 
     memset(&HsmfUpdateData, 0, sizeof(HsmfUpdateData));
     memset(&ngApCause, 0, sizeof(ngApCause));
+    memset(&vcnTunnelInfo, 0, sizeof(vcnTunnelInfo));
     memset(&ueLocation, 0, sizeof(ueLocation));
 
     HsmfUpdateData.request_indication = sess->nsmf_param.request_indication;
     ogs_assert(HsmfUpdateData.request_indication);
 
     HsmfUpdateData.cause = sess->nsmf_param.cause;
+
+    HsmfUpdateData.up_cnx_state = sess->nsmf_param.up_cnx_state;
 
     if (sess->nsmf_param.ngap_cause.group) {
         HsmfUpdateData.ng_ap_cause = &ngApCause;
@@ -386,6 +387,32 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
         HsmfUpdateData._5g_mm_cause_value = sess->nsmf_param.gmm_cause;
     }
 
+    if (sess->nsmf_param.serving_network) {
+        HsmfUpdateData.serving_network =
+            ogs_sbi_build_plmn_id_nid(&sess->nr_tai.plmn_id);
+        if (!HsmfUpdateData.serving_network) {
+            ogs_error("No serving_network");
+            goto end;
+        }
+    }
+
+    if (sess->nsmf_param.dl_ip.ipv4)
+        vcnTunnelInfo.ipv4_addr = ogs_ipv4_to_string(
+                sess->nsmf_param.dl_ip.addr);
+
+    if (sess->nsmf_param.dl_ip.ipv6)
+        vcnTunnelInfo.ipv6_addr = ogs_ipv6addr_to_string(
+                sess->nsmf_param.dl_ip.addr6);
+
+    if (vcnTunnelInfo.ipv4_addr || vcnTunnelInfo.ipv6_addr) {
+        vcnTunnelInfo.gtp_teid = ogs_uint32_to_0string(
+                sess->nsmf_param.dl_teid);
+        HsmfUpdateData.vcn_tunnel_info = &vcnTunnelInfo;
+    }
+
+    HsmfUpdateData.an_type = sess->nsmf_param.an_type;
+    HsmfUpdateData.rat_type = sess->nsmf_param.rat_type;
+
     if (sess->nsmf_param.ue_location) {
         ueLocation.nr_location = ogs_sbi_build_nr_location(
                 &sess->nr_tai, &sess->nr_cgi);
@@ -393,12 +420,9 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
             ogs_error("No ueLocation.nr_location");
             goto end;
         }
-        ueLocation.nr_location->ue_location_timestamp =
-            ogs_sbi_gmtime_string(sess->ue_location_timestamp);
-        if (!ueLocation.nr_location->ue_location_timestamp) {
-            ogs_error("No ue_location_timestamp");
-            goto end;
-        }
+        if (sess->ue_location_timestamp)
+            ueLocation.nr_location->ue_location_timestamp =
+                ogs_sbi_gmtime_string(sess->ue_location_timestamp);
 
         HsmfUpdateData.ue_location = &ueLocation;
     }
@@ -410,8 +434,8 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
         }
     }
 
-    if (sess->n1smbuf) {
-        rv = ogs_nas_5gsm_decode(&nas_message, sess->n1smbuf);
+    if (sess->n1SmBufFromUe) {
+        rv = ogs_nas_5gsm_decode(&nas_message, sess->n1SmBufFromUe);
 
         if (rv == OGS_OK) {
             n1SmBufFromUe = gsmue_encode_n1_sm_info(&nas_message);
@@ -428,12 +452,12 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_hsmf_update_data(
             } else {
                 ogs_error("gsm_encode_n1_sm_info() failed [%d]", rv);
                 ogs_log_hexdump(OGS_LOG_ERROR,
-                        sess->n1smbuf->data, sess->n1smbuf->len);
+                        sess->n1SmBufFromUe->data, sess->n1SmBufFromUe->len);
             }
         } else {
             ogs_error("ogs_nas_5gsm_decode() failed [%d]", rv);
             ogs_log_hexdump(OGS_LOG_ERROR,
-                    sess->n1smbuf->data, sess->n1smbuf->len);
+                    sess->n1SmBufFromUe->data, sess->n1SmBufFromUe->len);
         }
     }
 
@@ -446,6 +470,16 @@ end:
     if (message.h.uri)
         ogs_free(message.h.uri);
 
+    if (HsmfUpdateData.serving_network)
+        ogs_sbi_free_plmn_id_nid(HsmfUpdateData.serving_network);
+
+    if (vcnTunnelInfo.ipv4_addr)
+        ogs_free(vcnTunnelInfo.ipv4_addr);
+    if (vcnTunnelInfo.ipv6_addr)
+        ogs_free(vcnTunnelInfo.ipv6_addr);
+    if (vcnTunnelInfo.gtp_teid)
+        ogs_free(vcnTunnelInfo.gtp_teid);
+
     if (ueLocation.nr_location) {
         if (ueLocation.nr_location->ue_location_timestamp)
             ogs_free(ueLocation.nr_location->ue_location_timestamp);
@@ -454,9 +488,9 @@ end:
     if (HsmfUpdateData.ue_time_zone)
         ogs_free(HsmfUpdateData.ue_time_zone);
 
-    if (sess->n1smbuf) {
-        ogs_pkbuf_free(sess->n1smbuf);
-        sess->n1smbuf = NULL;
+    if (sess->n1SmBufFromUe) {
+        ogs_pkbuf_free(sess->n1SmBufFromUe);
+        sess->n1SmBufFromUe = NULL;
     }
 
     return request;
@@ -474,8 +508,10 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
     ogs_pkbuf_t *n1SmBufToUe = NULL;
 
     OpenAPI_list_t *qosFlowsAddModRequestList = NULL;
-    OpenAPI_qos_flow_add_modify_request_item_t *qosFlowAddModifyRequestItem =
+    OpenAPI_qos_flow_add_modify_request_item_t *qosFlowAddModRequestItem =
         NULL;
+    OpenAPI_list_t *qosFlowsRelRequestList = NULL;
+    OpenAPI_qos_flow_release_request_item_t *qosFlowRelRequestItem = NULL;
 
     smf_bearer_t *qos_flow = NULL;
 
@@ -501,6 +537,8 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
 
         qosFlowsAddModRequestList = OpenAPI_list_create();
         ogs_assert(qosFlowsAddModRequestList);
+        qosFlowsRelRequestList = OpenAPI_list_create();
+        ogs_assert(qosFlowsRelRequestList);
 
         int i = 0;
 
@@ -513,13 +551,10 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
             OpenAPI_arp_t *Arp = NULL;
             OpenAPI_gbr_qos_flow_information_t *gbrQosFlowInfo = NULL;
 
+            char *encoded_qos_rules = NULL;
+            char *encoded_qos_flow_description = NULL;
+
             ogs_assert(i < OGS_MAX_NUM_OF_BEARER);
-
-            qosFlowAddModifyRequestItem =
-                ogs_calloc(1, sizeof(*qosFlowAddModifyRequestItem));
-            ogs_assert(qosFlowAddModifyRequestItem);
-
-            qosFlowAddModifyRequestItem->qfi = qos_flow->qfi;
 
             if (sess->nsmf_param.qos_rule_code) {
                 ogs_nas_qos_rules_t authorized_qos_rules;
@@ -541,10 +576,10 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
                 }
 
                 enc_len = ogs_base64_encode_len(authorized_qos_rules.length);
-                qosFlowAddModifyRequestItem->qos_rules = ogs_calloc(1, enc_len);
-                ogs_assert(qosFlowAddModifyRequestItem->qos_rules);
+                encoded_qos_rules = ogs_calloc(1, enc_len);
+                ogs_assert(encoded_qos_rules);
                 ogs_base64_encode(
-                        qosFlowAddModifyRequestItem->qos_rules,
+                        encoded_qos_rules,
                         authorized_qos_rules.buffer,
                         authorized_qos_rules.length);
 
@@ -574,15 +609,71 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
 
                 enc_len = ogs_base64_encode_len(
                         authorized_qos_flow_descriptions.length);
-                qosFlowAddModifyRequestItem->qos_flow_description =
-                    ogs_calloc(1, enc_len);
-                ogs_assert(qosFlowAddModifyRequestItem->qos_flow_description);
+                encoded_qos_flow_description = ogs_calloc(1, enc_len);
+                ogs_assert(encoded_qos_flow_description);
                 ogs_base64_encode(
-                        qosFlowAddModifyRequestItem->qos_flow_description,
+                        encoded_qos_flow_description,
                         authorized_qos_flow_descriptions.buffer,
                         authorized_qos_flow_descriptions.length);
 
                 ogs_free(authorized_qos_flow_descriptions.buffer);
+            }
+
+            if (sess->nsmf_param.qos_rule_code ==
+                    OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE ||
+                sess->nsmf_param.qos_flow_description_code ==
+                    OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION) {
+
+                if (sess->nsmf_param.qos_rule_code !=
+                        OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE ||
+                    sess->nsmf_param.qos_flow_description_code !=
+                        OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION)
+                    ogs_error("Invalid qosRule[%d]/qosFlowDesc[%d]",
+                        sess->nsmf_param.qos_rule_code,
+                        sess->nsmf_param.qos_flow_description_code);
+
+                qosFlowRelRequestItem =
+                    ogs_calloc(1, sizeof(*qosFlowRelRequestItem));
+                ogs_assert(qosFlowRelRequestItem);
+
+                qosFlowRelRequestItem->qfi = qos_flow->qfi;
+
+                qosFlowRelRequestItem->qos_rules = encoded_qos_rules;
+                qosFlowRelRequestItem->qos_flow_description =
+                    encoded_qos_flow_description;
+
+                OpenAPI_list_add(qosFlowsRelRequestList, qosFlowRelRequestItem);
+
+            } else if (sess->nsmf_param.qos_rule_code ||
+                    sess->nsmf_param.qos_flow_description_code) {
+                Arp = ogs_calloc(1, sizeof(*Arp));
+                ogs_assert(Arp);
+                if (qos_flow->qos.arp.pre_emption_capability ==
+                        OGS_5GC_PRE_EMPTION_ENABLED)
+                    Arp->preempt_cap =
+                        OpenAPI_preemption_capability_MAY_PREEMPT;
+                else if (qos_flow->qos.arp.pre_emption_capability ==
+                        OGS_5GC_PRE_EMPTION_DISABLED)
+                    Arp->preempt_cap =
+                        OpenAPI_preemption_capability_NOT_PREEMPT;
+                else {
+                    ogs_error("No Arp->preempt_cap");
+                    goto end;
+                }
+
+                if (qos_flow->qos.arp.pre_emption_vulnerability ==
+                        OGS_5GC_PRE_EMPTION_ENABLED)
+                    Arp->preempt_vuln =
+                        OpenAPI_preemption_vulnerability_PREEMPTABLE;
+                else if (qos_flow->qos.arp.pre_emption_vulnerability ==
+                        OGS_5GC_PRE_EMPTION_DISABLED)
+                    Arp->preempt_vuln =
+                        OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
+                else {
+                    ogs_error("No Arp->preempt_vuln");
+                    goto end;
+                }
+                Arp->priority_level = qos_flow->qos.arp.priority_level;
 
                 if (qos_flow->qos.mbr.downlink && qos_flow->qos.mbr.uplink &&
                     qos_flow->qos.gbr.downlink && qos_flow->qos.gbr.uplink) {
@@ -599,54 +690,46 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_vsmf_update_data(
                     gbrQosFlowInfo->gua_fbr_dl = ogs_sbi_bitrate_to_string(
                             qos_flow->qos.gbr.downlink, OGS_SBI_BITRATE_BPS);
                 }
+
+                qosFlowProfile = ogs_calloc(1, sizeof(*qosFlowProfile));
+                ogs_assert(qosFlowProfile);
+                qosFlowProfile->arp = Arp;
+                qosFlowProfile->_5qi = qos_flow->qos.index;
+                qosFlowProfile->gbr_qos_flow_info = gbrQosFlowInfo;
+
+                qosFlowAddModRequestItem =
+                    ogs_calloc(1, sizeof(*qosFlowAddModRequestItem));
+                ogs_assert(qosFlowAddModRequestItem);
+
+                qosFlowAddModRequestItem->qfi = qos_flow->qfi;
+
+                qosFlowAddModRequestItem->qos_rules = encoded_qos_rules;
+                qosFlowAddModRequestItem->qos_flow_description =
+                    encoded_qos_flow_description;
+
+                qosFlowAddModRequestItem->qos_flow_profile = qosFlowProfile;
+
+                OpenAPI_list_add(qosFlowsAddModRequestList,
+                        qosFlowAddModRequestItem);
+            } else {
+                ogs_error("Invalid qosRule[%d]/qosFlowDesc[%d]",
+                    sess->nsmf_param.qos_rule_code,
+                    sess->nsmf_param.qos_flow_description_code);
             }
-
-            Arp = ogs_calloc(1, sizeof(*Arp));
-            ogs_assert(Arp);
-            if (qos_flow->qos.arp.pre_emption_capability ==
-                    OGS_5GC_PRE_EMPTION_ENABLED)
-                Arp->preempt_cap = OpenAPI_preemption_capability_MAY_PREEMPT;
-            else if (qos_flow->qos.arp.pre_emption_capability ==
-                    OGS_5GC_PRE_EMPTION_DISABLED)
-                Arp->preempt_cap = OpenAPI_preemption_capability_NOT_PREEMPT;
-            else {
-                ogs_error("No Arp->preempt_cap");
-                goto end;
-            }
-
-            if (qos_flow->qos.arp.pre_emption_vulnerability ==
-                    OGS_5GC_PRE_EMPTION_ENABLED)
-                Arp->preempt_vuln =
-                    OpenAPI_preemption_vulnerability_PREEMPTABLE;
-            else if (qos_flow->qos.arp.pre_emption_vulnerability ==
-                    OGS_5GC_PRE_EMPTION_DISABLED)
-                Arp->preempt_vuln =
-                    OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
-            else {
-                ogs_error("No Arp->preempt_vuln");
-                goto end;
-            }
-            Arp->priority_level = qos_flow->qos.arp.priority_level;
-
-            qosFlowProfile = ogs_calloc(1, sizeof(*qosFlowProfile));
-            ogs_assert(qosFlowProfile);
-            qosFlowProfile->arp = Arp;
-            qosFlowProfile->_5qi = qos_flow->qos.index;
-            qosFlowProfile->gbr_qos_flow_info = gbrQosFlowInfo;
-
-            qosFlowAddModifyRequestItem->qos_flow_profile = qosFlowProfile;
-
-            OpenAPI_list_add(qosFlowsAddModRequestList,
-                    qosFlowAddModifyRequestItem);
-
-            if (qosFlowsAddModRequestList->count)
-                VsmfUpdateData.qos_flows_add_mod_request_list =
-                    qosFlowsAddModRequestList;
-            else
-                OpenAPI_list_free(qosFlowsAddModRequestList);
 
             i++;
         }
+
+        if (qosFlowsAddModRequestList->count)
+            VsmfUpdateData.qos_flows_add_mod_request_list =
+                qosFlowsAddModRequestList;
+        else
+            OpenAPI_list_free(qosFlowsAddModRequestList);
+
+        if (qosFlowsRelRequestList->count)
+            VsmfUpdateData.qos_flows_rel_request_list = qosFlowsRelRequestList;
+        else
+            OpenAPI_list_free(qosFlowsRelRequestList);
 
         break;
     case OpenAPI_request_indication_NW_REQ_PDU_SES_REL:
@@ -681,6 +764,7 @@ end:
 
     CLEAR_QOS_FLOWS_ADD_MOD_REQUEST_LIST(
             VsmfUpdateData.qos_flows_add_mod_request_list);
+    CLEAR_QOS_FLOWS_REL_REQUEST_LIST(VsmfUpdateData.qos_flows_rel_request_list);
 
     return request;
 }
@@ -732,12 +816,9 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_release_data(
             ogs_error("No ueLocation.nr_location");
             goto end;
         }
-        ueLocation.nr_location->ue_location_timestamp =
-            ogs_sbi_gmtime_string(sess->ue_location_timestamp);
-        if (!ueLocation.nr_location->ue_location_timestamp) {
-            ogs_error("No ue_location_timestamp");
-            goto end;
-        }
+        if (sess->ue_location_timestamp)
+            ueLocation.nr_location->ue_location_timestamp =
+                ogs_sbi_gmtime_string(sess->ue_location_timestamp);
 
         ReleaseData.ue_location = &ueLocation;
     }

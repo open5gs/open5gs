@@ -160,12 +160,9 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
         ogs_error("No ueLocation.nr_location");
         goto end;
     }
-    ueLocation.nr_location->ue_location_timestamp =
-        ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
-    if (!ueLocation.nr_location->ue_location_timestamp) {
-        ogs_error("No ue_location_timestamp");
-        goto end;
-    }
+    if (amf_ue->ue_location_timestamp)
+        ueLocation.nr_location->ue_location_timestamp =
+            ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
 
     SmContextCreateData.ue_location = &ueLocation;
     SmContextCreateData.ue_time_zone = ogs_sbi_timezone_string(ogs_timezone());
@@ -391,12 +388,9 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
             ogs_error("No ueLocation.nr_location");
             goto end;
         }
-        ueLocation.nr_location->ue_location_timestamp =
-            ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
-        if (!ueLocation.nr_location->ue_location_timestamp) {
-            ogs_error("No ueLocation.nr_location->ue_location_timestamp");
-            goto end;
-        }
+        if (amf_ue->ue_location_timestamp)
+            ueLocation.nr_location->ue_location_timestamp =
+                ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
 
         SmContextUpdateData.ue_location = &ueLocation;
     }
@@ -490,12 +484,9 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_release_sm_context(
             ogs_error("No ueLocation.nr_location");
             goto end;
         }
-        ueLocation.nr_location->ue_location_timestamp =
-            ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
-        if (!ueLocation.nr_location->ue_location_timestamp) {
-            ogs_error("No ueLocation.nr_location->ue_location_timestamp");
-            goto end;
-        }
+        if (amf_ue->ue_location_timestamp)
+            ueLocation.nr_location->ue_location_timestamp =
+                ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
 
         SmContextReleaseData.ue_location = &ueLocation;
     }

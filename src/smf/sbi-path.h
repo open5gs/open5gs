@@ -36,12 +36,95 @@ void smf_sbi_close(void);
 
 bool smf_sbi_send_request(
         ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
+
+/*
+ * PFCP delete triggers are defined in lib/pfcp/xact.h (values 1–7).
+ * To avoid overlap with OGS_PFCP_DELETE_TRIGGER_*, SMF states use:
+ *   - UPDATE_STATE_BASE at 0x10–0x14
+ *   - UECM_STATE_BASE   at 0x20–0x23
+ * HR flag is bit 7 (0x80).
+ */
+
+/* Common HR flag (bit 7) */
+#define SMF_STATE_HR             (1U << 7)          /* 0x80 */
+
+/* Base offset for SMF_CREATE states */
+#define SMF_CREATE_STATE_BASE       0x10U           /* CREATE at 0x10 */
+
+#define SMF_CREATE_STATE_NONE                       \
+    (SMF_CREATE_STATE_BASE + 0x00U)  /* 0x00 */
+
+/* Base offset for SMF_UPDATE states */
+#define SMF_UPDATE_STATE_BASE       0x20U           /* UPDATE at 0x20–0x24 */
+
+/* SMF_UPDATE base states */
+#define SMF_UPDATE_STATE_NONE                       \
+    (SMF_UPDATE_STATE_BASE + 0x00U)  /* 0x00 */
+#define SMF_UPDATE_STATE_ACTIVATING                 \
+    (SMF_UPDATE_STATE_BASE + 0x01U)  /* 0x01 */
+#define SMF_UPDATE_STATE_ACTIVATED_FROM_ACTIVATING  \
+    (SMF_UPDATE_STATE_BASE + 0x02U)  /* 0x02 */
+#define SMF_UPDATE_STATE_ACTIVATED_FROM_NON_ACTIVATING  \
+    (SMF_UPDATE_STATE_BASE + 0x03U)  /* 0x03 */
+#define SMF_UPDATE_STATE_DEACTIVATED                \
+    (SMF_UPDATE_STATE_BASE + 0x04U)  /* 0x04 */
+#define SMF_UPDATE_STATE_UE_REQ_MOD                 \
+    (SMF_UPDATE_STATE_BASE + 0x05U)  /* 0x05 */
+
+/* Base offset for SMF_REMOVE states */
+#define SMF_REMOVE_STATE_BASE       0x30U           /* REMOVE at 0x30 */
+
+#define SMF_REMOVE_STATE_NONE                       \
+    (SMF_REMOVE_STATE_BASE + 0x00U)  /* 0x00 */
+
+/* Base offset for SMF_UECM states */
+#define SMF_UECM_STATE_BASE         0x40U           /* UECM at 0x40–0x43 */
+
+/* SMF_UECM base states */
+#define SMF_UECM_STATE_NONE                 \
+    (SMF_UECM_STATE_BASE + 0x00U)  /* 0x20 */
+#define SMF_UECM_STATE_REGISTERED           \
+    (SMF_UECM_STATE_BASE + 0x01U)  /* 0x21 */
+#define SMF_UECM_STATE_DEREG_BY_AMF         \
+    (SMF_UECM_STATE_BASE + 0x02U)  /* 0x22 */
+#define SMF_UECM_STATE_DEREG_BY_N1N2        \
+    (SMF_UECM_STATE_BASE + 0x03U)  /* 0x23 */
+
+/* HR variants for SMF_UECM */
+#define SMF_UECM_STATE_REGISTERED_HR                \
+    (SMF_UECM_STATE_REGISTERED | SMF_STATE_HR)      /* 0xC1 */
+#define SMF_UECM_STATE_DEREG_BY_AMF_HR              \
+    (SMF_UECM_STATE_DEREG_BY_AMF | SMF_STATE_HR)    /* 0xC2 */
+#define SMF_UECM_STATE_DEREG_BY_N1N2_HR             \
+    (SMF_UECM_STATE_DEREG_BY_N1N2 | SMF_STATE_HR)   /* 0xC3 */
+
 int smf_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(smf_sess_t *sess, void *data),
         smf_sess_t *sess, ogs_sbi_stream_t *stream, int state, void *data);
 
+/**
+ * Return true if the PDU session anchor SMF is in the HPLMN
+ * (Home-Routed Roaming, HR)
+ */
+static inline bool smf_uecm_anchor_in_hplmn(int state)
+{
+    return !!(state & SMF_STATE_HR);
+}
+
+/**
+ * Return true if the PDU session anchor SMF is in the VPLMN
+ * (Non-Roaming or Local Break-Out Roaming, LBO)
+ */
+static inline bool smf_uecm_anchor_in_vplmn(int state)
+{
+    return !(state & SMF_STATE_HR);
+}
+
+ogs_sbi_xact_t *smf_namf_comm_create_n1_n2_message_xact(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream,
+        smf_n1_n2_message_transfer_param_t *param);
 void smf_namf_comm_send_n1_n2_message_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
         smf_n1_n2_message_transfer_param_t *param);

@@ -31,6 +31,15 @@ int gsm_handle_pdu_session_establishment_request(
         ogs_nas_5gs_pdu_session_establishment_request_t *
             pdu_session_establishment_request);
 
+int gsm_handle_pdu_session_modification_qos_rules(
+        smf_sess_t *sess,
+        ogs_nas_qos_rules_t *requested_qos_rules,
+        uint64_t *pfcp_flags);
+int gsm_handle_pdu_session_modification_qos_flow_descriptions(
+        smf_sess_t *sess,
+        ogs_nas_qos_flow_descriptions_t *requested_qos_flow_descriptions,
+        uint64_t *pfcp_flags);
+
 int gsm_handle_pdu_session_modification_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
         ogs_nas_5gs_pdu_session_modification_request_t *

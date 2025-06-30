@@ -332,7 +332,7 @@ af:
         port: 7777
     client:
       scp:
-        - uri: http://127.0.0.200:7777
+        - uri: http://127.0.3.200:7777
 
 udr:
   sbi:

@@ -1886,7 +1886,7 @@ bson_t *test_db_new_session(test_ue_t *test_ue)
                             "pre_emption_capability", BCON_INT32(1),
                         "}",
                     "}",
-#if 1
+#if 0
                     "lbo_roaming_allowed", BCON_BOOL(true),
 #else
                     "lbo_roaming_allowed", BCON_BOOL(false),
@@ -1953,7 +1953,7 @@ bson_t *test_db_new_session(test_ue_t *test_ue)
                                  "description", BCON_UTF8("permit out udp from 10.200.136.98/32 1-65535 to assigned 50021"), "}",
                         "]",
                     "}", "]",
-#if 1
+#if 0
                     "lbo_roaming_allowed", BCON_BOOL(true),
 #else
                     "lbo_roaming_allowed", BCON_BOOL(false),
@@ -2025,6 +2025,11 @@ bson_t *test_db_new_ims(test_ue_t *test_ue)
                             "pre_emption_capability", BCON_INT32(1),
                         "}",
                     "}",
+#if 0
+                    "lbo_roaming_allowed", BCON_BOOL(true),
+#else
+                    "lbo_roaming_allowed", BCON_BOOL(false),
+#endif
                   "}",
                   "{",
                     "name", BCON_UTF8("ims"),
@@ -2109,7 +2114,7 @@ bson_t *test_db_new_ims(test_ue_t *test_ue)
                         "}",
                       "}",
                     "]",
-#if 1
+#if 0
                     "lbo_roaming_allowed", BCON_BOOL(true),
 #else
                     "lbo_roaming_allowed", BCON_BOOL(false),

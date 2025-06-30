@@ -66,9 +66,17 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
         if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
             if (N1N2MessageTransferRspData->cause ==
                 OpenAPI_n1_n2_message_transfer_cause_N1_N2_TRANSFER_INITIATED) {
-                if (stream)
-                    sess->n1_n2_modified_stream_id =
+                if (stream) {
+                    if (sess->vsmf_to_hsmf_modify_stream_id >=
+                            OGS_MIN_POOL_ID &&
+                        sess->vsmf_to_hsmf_modify_stream_id <=
+                            OGS_MAX_POOL_ID)
+                        ogs_error("N1 N2 modified stream ID [%d]"
+                                "has not been used yet",
+                                sess->vsmf_to_hsmf_modify_stream_id);
+                    sess->vsmf_to_hsmf_modify_stream_id =
                         ogs_sbi_id_from_stream(stream);
+                }
             } else {
                 ogs_error("Not implemented [cause:%d]",
                         N1N2MessageTransferRspData->cause);
@@ -82,6 +90,18 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
                             sess, recvmsg->http.location);
                 else
                     ogs_error("No HTTP Location");
+
+                if (stream) {
+                    if (sess->vsmf_to_hsmf_modify_stream_id >=
+                            OGS_MIN_POOL_ID &&
+                        sess->vsmf_to_hsmf_modify_stream_id <=
+                            OGS_MAX_POOL_ID)
+                        ogs_error("N1 N2 modified stream ID [%d]"
+                                "has not been used yet",
+                                sess->vsmf_to_hsmf_modify_stream_id);
+                    sess->vsmf_to_hsmf_modify_stream_id =
+                        ogs_sbi_id_from_stream(stream);
+                }
             } else {
                 ogs_error("Not implemented [cause:%d]",
                         N1N2MessageTransferRspData->cause);
@@ -173,9 +193,16 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
                 smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
             } else if (N1N2MessageTransferRspData->cause ==
                 OpenAPI_n1_n2_message_transfer_cause_N1_N2_TRANSFER_INITIATED) {
-                if (stream)
-                    sess->n1_n2_released_stream_id =
+                if (stream) {
+                    if (sess->vsmf_to_hsmf_release_stream_id >=
+                            OGS_MIN_POOL_ID &&
+                        sess->vsmf_to_hsmf_release_stream_id <= OGS_MAX_POOL_ID)
+                        ogs_error("N1 N2 released stream ID [%d]"
+                                "has not been used yet",
+                                sess->vsmf_to_hsmf_release_stream_id);
+                    sess->vsmf_to_hsmf_release_stream_id =
                         ogs_sbi_id_from_stream(stream);
+                }
             } else {
                 ogs_error("Not implemented [cause:%d]",
                         N1N2MessageTransferRspData->cause);

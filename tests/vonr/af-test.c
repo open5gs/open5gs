@@ -3966,6 +3966,25 @@ static void test7_func(abts_case *tc, void *data)
     test_ue_remove(test_ue);
 }
 
+/*
+ * Disable test8_func when running Home Routed Roaming tests,
+ * to prevent V-SMF from skipping Update Response (step 14)
+ * and avoid subsequent SBI timeout and PFCP No Context errors.
+ */
+#define HOME_ROUTED_ROAMING_TEST 0
+
+#if !HOME_ROUTED_ROAMING_TEST
+/**
+ * test8_func:
+ *   - Simulates absence of N2 Resource Release Ack (step 8)
+ *     and PDU Session Release Accept (step 11) from gNB/UE.
+ *   - In Home Routed Roaming, V-SMF will not send the
+ *     Nsmf_PDUSession_Update Response (step 14), causing
+ *     the SBI client to timeout after 10 seconds.
+ *   - Subsequent deregistration triggers a PFCP deactivation
+ *     modification, but UPF has no session, leading to
+ *     a No Context error.
+ */
 static void test8_func(abts_case *tc, void *data)
 {
     int rv;
@@ -4327,12 +4346,19 @@ static void test8_func(abts_case *tc, void *data)
     /* Clear Test UE Context */
     test_ue_remove(test_ue);
 }
+#endif
 
 
 abts_suite *test_af(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
+/**
+ * abts_suite test_af:
+ *   - Always run test1_func through test7_func.
+ *   - Conditionally include test8_func based on
+ *     HOME_ROUTED_ROAMING_TEST flag.
+ */
     abts_run_test(suite, test1_func, NULL);
     abts_run_test(suite, test2_func, NULL);
     abts_run_test(suite, test3_func, NULL);
@@ -4340,7 +4366,9 @@ abts_suite *test_af(abts_suite *suite)
     abts_run_test(suite, test5_func, NULL);
     abts_run_test(suite, test6_func, NULL);
     abts_run_test(suite, test7_func, NULL);
+#if !HOME_ROUTED_ROAMING_TEST
     abts_run_test(suite, test8_func, NULL);
+#endif
 
     return suite;
 }

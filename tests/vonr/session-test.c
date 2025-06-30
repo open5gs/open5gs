@@ -1367,6 +1367,8 @@ static void test4_func(abts_case *tc, void *data)
 
     bson_t *doc = NULL;
 
+    NGAP_ProcedureCode_t ngap_procedure_code;
+
     /* Setup Test UE & Session Context */
     memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
 
@@ -1551,23 +1553,62 @@ static void test4_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive PDUSessionResourceSetupRequest +
+    /*
+     * Receive PDUSessionResourceSetupRequest +
      * DL NAS transport +
-     * PDU session establishment accept */
+     * PDU session establishment accept
+     *
+     * OR
+     *
+     * Receive PDUSessionResourceModifyRequest +
+     * DL NAS transport +
+     * PDU session modification command
+     */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
-    ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
-            test_ue->ngap_procedure_code);
 
-    /* Receive PDU session establishment accept */
+    ngap_procedure_code = test_ue->ngap_procedure_code;
+
+    /*
+     * Receive PDUSessionResourceSetupRequest +
+     * DL NAS transport +
+     * PDU session establishment accept
+     *
+     * OR
+     *
+     * Receive PDUSessionResourceModifyRequest +
+     * DL NAS transport +
+     * PDU session modification command
+     */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+
+    ngap_procedure_code += test_ue->ngap_procedure_code;
+
+    /*
+     * Receive PDUSessionResourceSetupRequest +
+     * DL NAS transport +
+     * PDU session establishment accept
+     *
+     * OR
+     *
+     * Receive PDUSessionResourceModifyRequest +
+     * DL NAS transport +
+     * PDU session modification command
+     */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    ngap_procedure_code += test_ue->ngap_procedure_code;
+
     ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
-            test_ue->ngap_procedure_code);
+            NGAP_ProcedureCode_id_PDUSessionResourceSetup +
+            NGAP_ProcedureCode_id_PDUSessionResourceSetup +
+            NGAP_ProcedureCode_id_PDUSessionResourceModify,
+            ngap_procedure_code);
 
     /* Send GTP-U ICMP Packet */
     qos_flow1 = test_qos_flow_find_by_qfi(sess5, 1);
@@ -1600,16 +1641,6 @@ static void test4_func(abts_case *tc, void *data)
     recvbuf = testgnb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
-
-    /* Receive PDUSessionResourceModifyRequest +
-     * DL NAS transport +
-     * PDU session modification command */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-    ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_PDUSessionResourceModify,
-            test_ue->ngap_procedure_code);
 
     /* Send PDU session resource modify response */
     qos_flow2 = test_qos_flow_find_by_qfi(sess6, 2);
