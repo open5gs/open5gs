@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+// Modified by Fatemeh Shafiei Ardestani on 2025-04-06
+// Changes: See GitHub for full diff
 
 #include "event.h"
 #include "context.h"
@@ -483,6 +485,7 @@ uint8_t smf_s5c_handle_create_session_request(
 
     return OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
 }
+//FATEMEH
 
 uint8_t smf_s5c_handle_delete_session_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
@@ -534,6 +537,7 @@ uint8_t smf_s5c_handle_delete_session_request(
          */
         OGS_TLV_CLEAR_DATA(&sess->gtp.ue_epco);
     }
+
 
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
