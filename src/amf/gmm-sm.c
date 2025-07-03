@@ -3169,6 +3169,40 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
             END
             break;
 
+        CASE(OGS_SBI_SERVICE_NAME_NUDM_UECM)
+            SWITCH(sbi_message->h.resource.component[1])
+            CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
+                if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
+                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK &&
+                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+                    if (sbi_message->res_status ==
+                            OGS_SBI_HTTP_STATUS_NOT_FOUND) {
+                        ogs_warn("[%s] Cannot find SUCI [%d]",
+                            amf_ue->suci, sbi_message->res_status);
+                    } else {
+                        ogs_error("[%s] HTTP response error [%d]",
+                            amf_ue->suci, sbi_message->res_status);
+                    }
+                }
+
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_PUT)
+                    ogs_warn("[%s] Ignore SBI message", amf_ue->suci);
+                    break;
+                DEFAULT
+                    ogs_error("[%s] Invalid HTTP method [%s]",
+                            amf_ue->suci, sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[1]);
+                ogs_assert_if_reached();
+            END
+            break;
+
         CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
             SWITCH(sbi_message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
