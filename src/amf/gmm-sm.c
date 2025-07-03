@@ -510,6 +510,10 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
                 SWITCH(sbi_message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
+                    if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) {
+                        ogs_error("[%s] HTTP response error [%d]",
+                                amf_ue->supi, sbi_message->res_status);
+                    }
                     ogs_warn("[%s] Ignore SBI message", amf_ue->suci);
                     break;
 
@@ -1125,6 +1129,10 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
                 SWITCH(sbi_message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
+                    if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) {
+                        ogs_error("[%s] HTTP response error [%d]",
+                                amf_ue->supi, sbi_message->res_status);
+                    }
                     ogs_warn("[%s] Ignore SBI message", amf_ue->suci);
                     break;
 
@@ -3199,6 +3207,31 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
                         sbi_message->h.resource.component[1]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) {
+                        ogs_error("[%s] HTTP response error [%d]",
+                                amf_ue->supi, sbi_message->res_status);
+                    }
+                    ogs_warn("[%s] Ignore SBI message", amf_ue->suci);
+                    break;
+
+                DEFAULT
+                    ogs_error("Unknown method [%s]", sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0]);
                 ogs_assert_if_reached();
             END
             break;
