@@ -293,10 +293,9 @@ ogs_pkbuf_t *ngap_build_ran_configuration_update_failure(
 }
 
 ogs_pkbuf_t *ngap_build_downlink_nas_transport(
-    ran_ue_t *ran_ue, ogs_pkbuf_t *gmmbuf, bool ue_ambr, bool allowed_nssai)
+    ran_ue_t *ran_ue, amf_ue_t *amf_ue,
+    ogs_pkbuf_t *gmmbuf, bool ue_ambr, bool allowed_nssai)
 {
-    amf_ue_t *amf_ue = NULL;
-
     NGAP_NGAP_PDU_t pdu;
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_DownlinkNASTransport_t *DownlinkNASTransport = NULL;
@@ -310,14 +309,7 @@ ogs_pkbuf_t *ngap_build_downlink_nas_transport(
 
     ogs_assert(gmmbuf);
     ogs_assert(ran_ue);
-    amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
-    if (!amf_ue) {
-        ogs_fatal("    AMF-UE-ID[%d] RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
-                ran_ue->amf_ue_id,
-                (long long)ran_ue->ran_ue_ngap_id,
-                (long long)ran_ue->amf_ue_ngap_id);
-        ogs_assert_if_reached();
-    }
+    ogs_assert(amf_ue);
 
     ogs_debug("DownlinkNASTransport");
 
