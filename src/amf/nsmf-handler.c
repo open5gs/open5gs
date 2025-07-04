@@ -1388,8 +1388,15 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                     ogs_assert_if_reached();
                 } else if (OGS_FSM_CHECK(&amf_ue->sm,
                                 gmm_state_initial_context_setup)) {
-                    ogs_fatal("Release SM Context in initial-context-setup");
-                    ogs_assert_if_reached();
+    /*
+     * [Issue #3946]
+     * avoid abort on SM context release in initial-setup state.
+     *
+     * Replace ogs_assert_if_reached() with ogs_error to log the invalid state
+     * and keep AMF running; logs error for debugging and improves availability.
+     */
+                    ogs_error("Invalid state transition: cannot release "
+                            "SM Context during initial-context-setup");
                 } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
                     /*
                      * 1. PDU session release request
