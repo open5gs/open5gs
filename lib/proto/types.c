@@ -480,7 +480,7 @@ int ogs_pco_parse(ogs_pco_t *pco, unsigned char *data, int data_len)
         i++;
     }
     pco->num_of_id = i;
-    ogs_assert(size == data_len);
+    ogs_expect(size == data_len);
 
     return size;
 }

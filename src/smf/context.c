@@ -2931,7 +2931,11 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
     memset(&pco_ipcp, 0, sizeof(pco_ipcp));
 
     size = ogs_pco_parse(&ue, buffer, length);
-    ogs_assert(size);
+    if (size != length) {
+        ogs_error("ogs_pco_parse() failed [size:%d != length:%d]",
+                size, length);
+        return 0;
+    }
 
     memset(&smf, 0, sizeof(ogs_pco_t));
     smf.ext = ue.ext;
@@ -3143,6 +3147,7 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
     }
 
     size = ogs_pco_build(pco_buf, OGS_MAX_PCO_LEN, &smf);
+    ogs_expect(size > 0);
     return size;
 }
 
