@@ -2974,6 +2974,12 @@ bool amf_update_allowed_nssai(amf_ue_t *amf_ue)
     amf_ue->rejected_nssai.num_of_s_nssai = 0;
 
     if (amf_ue->requested_nssai.num_of_s_nssai) {
+
+        if (amf_ue->num_of_slice == 0) {
+            ogs_error("[%s] No Slice in Subscription DB", amf_ue->supi);
+            return false;
+        }
+
         for (i = 0; i < amf_ue->requested_nssai.num_of_s_nssai; i++) {
             ogs_slice_data_t *slice = NULL;
             ogs_nas_s_nssai_ie_t *requested =
@@ -2986,7 +2992,6 @@ bool amf_update_allowed_nssai(amf_ue_t *amf_ue)
                         s_nssai[amf_ue->rejected_nssai.num_of_s_nssai];
             bool ta_supported = false;
 
-            ogs_assert(amf_ue->num_of_slice);
             slice = ogs_slice_find_by_s_nssai(
                     amf_ue->slice, amf_ue->num_of_slice,
                     (ogs_s_nssai_t *)requested);
