@@ -951,9 +951,14 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
             } else if (state == SMF_UECM_STATE_DEREGISTERED_BY_AMF) {
                 /* SMF Deregistration */
-                ogs_assert(stream);
-                ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+                if (stream)
+                    ogs_assert(true ==
+                            ogs_sbi_send_http_status_no_content(stream));
+                else
+                    ogs_error("Stream has already been removed");
+
                 SMF_SESS_CLEAR(sess);
+
             } else if (state == SMF_UECM_STATE_DEREGISTERED_BY_N1_N2_RELEASE) {
                 /* SMF Deregistration */
                 ogs_assert(true == smf_sbi_send_sm_context_status_notify(sess));
