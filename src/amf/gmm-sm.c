@@ -3211,6 +3211,29 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
             END
             break;
 
+        CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
+            if ((sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) &&
+                (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) &&
+                (sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)) {
+                ogs_error("[%s] HTTP response error [%d]",
+                          amf_ue->supi, sbi_message->res_status);
+            }
+
+            SWITCH(sbi_message->h.resource.component[1])
+            CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
+            CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
+            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
+            CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
+                ogs_warn("[%s] Ignore SBI message", amf_ue->supi);
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[1]);
+                ogs_assert_if_reached();
+            END
+            break;
+
         CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
             SWITCH(sbi_message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
