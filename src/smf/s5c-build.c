@@ -141,7 +141,12 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
             sess->gtp.ue_pco.len && sess->gtp.ue_pco.data) {
         pco_len = smf_pco_build(
                 pco_buf, sess->gtp.ue_pco.data, sess->gtp.ue_pco.len);
-        ogs_assert(pco_len > 0);
+        if (pco_len <= 0) {
+            ogs_error("smf_pco_build() failed");
+            ogs_log_hexdump(OGS_LOG_ERROR,
+                    sess->gtp.ue_pco.data, sess->gtp.ue_pco.len);
+            goto cleanup;
+        }
         rsp->protocol_configuration_options.presence = 1;
         rsp->protocol_configuration_options.data = pco_buf;
         rsp->protocol_configuration_options.len = pco_len;
@@ -152,7 +157,12 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
             sess->gtp.ue_apco.len && sess->gtp.ue_apco.data) {
         apco_len = smf_pco_build(
                 apco_buf, sess->gtp.ue_apco.data, sess->gtp.ue_apco.len);
-        ogs_assert(apco_len > 0);
+        if (apco_len <= 0) {
+            ogs_error("smf_pco_build() failed");
+            ogs_log_hexdump(OGS_LOG_ERROR,
+                    sess->gtp.ue_apco.data, sess->gtp.ue_apco.len);
+            goto cleanup;
+        }
         rsp->additional_protocol_configuration_options.presence = 1;
         rsp->additional_protocol_configuration_options.data = apco_buf;
         rsp->additional_protocol_configuration_options.len = apco_len;
@@ -165,7 +175,12 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
         ogs_assert(epco_buf);
         epco_len = smf_pco_build(
                 epco_buf, sess->gtp.ue_epco.data, sess->gtp.ue_epco.len);
-        ogs_assert(epco_len > 0);
+        if (epco_len <= 0) {
+            ogs_error("smf_pco_build() failed");
+            ogs_log_hexdump(OGS_LOG_ERROR,
+                    sess->gtp.ue_epco.data, sess->gtp.ue_epco.len);
+            goto cleanup;
+        }
         rsp->extended_protocol_configuration_options.presence = 1;
         rsp->extended_protocol_configuration_options.data = epco_buf;
         rsp->extended_protocol_configuration_options.len = epco_len;
@@ -291,7 +306,12 @@ ogs_pkbuf_t *smf_s5c_build_delete_session_response(
             sess->gtp.ue_pco.len && sess->gtp.ue_pco.data) {
         pco_len = smf_pco_build(
                 pco_buf, sess->gtp.ue_pco.data, sess->gtp.ue_pco.len);
-        ogs_assert(pco_len > 0);
+        if (pco_len <= 0) {
+            ogs_error("smf_pco_build() failed");
+            ogs_log_hexdump(OGS_LOG_ERROR,
+                    sess->gtp.ue_pco.data, sess->gtp.ue_pco.len);
+            goto cleanup;
+        }
         rsp->protocol_configuration_options.presence = 1;
         rsp->protocol_configuration_options.data = pco_buf;
         rsp->protocol_configuration_options.len = pco_len;
@@ -304,7 +324,12 @@ ogs_pkbuf_t *smf_s5c_build_delete_session_response(
         ogs_assert(epco_buf);
         epco_len = smf_pco_build(
                 epco_buf, sess->gtp.ue_epco.data, sess->gtp.ue_epco.len);
-        ogs_assert(epco_len > 0);
+        if (epco_len <= 0) {
+            ogs_error("smf_pco_build() failed");
+            ogs_log_hexdump(OGS_LOG_ERROR,
+                    sess->gtp.ue_epco.data, sess->gtp.ue_epco.len);
+            goto cleanup;
+        }
         rsp->extended_protocol_configuration_options.presence = 1;
         rsp->extended_protocol_configuration_options.data = epco_buf;
         rsp->extended_protocol_configuration_options.len = epco_len;
@@ -316,6 +341,7 @@ ogs_pkbuf_t *smf_s5c_build_delete_session_response(
     gtp_message.h.type = type;
     pkbuf = ogs_gtp2_build_msg(&gtp_message);
 
+cleanup:
     if (epco_buf)
         ogs_free(epco_buf);
 
