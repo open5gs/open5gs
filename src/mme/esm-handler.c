@@ -59,6 +59,20 @@ int esm_handle_pdn_connectivity_request(
         return OGS_ERROR;
     }
 
+    if (req->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4 ||
+        req->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV6 ||
+        req->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4V6) {
+        /* OK */
+    } else {
+        /* NOT-allowed PDN Type */
+        r = nas_eps_send_pdn_connectivity_reject(
+                sess, OGS_NAS_ESM_CAUSE_UNKNOWN_PDN_TYPE,
+                create_action);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return OGS_ERROR;
+    }
+
     memcpy(&sess->ue_request_type,
             &req->request_type, sizeof(sess->ue_request_type));
 
