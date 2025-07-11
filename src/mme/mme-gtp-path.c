@@ -656,7 +656,7 @@ void mme_gtp_send_release_all_ue_in_enb(mme_enb_t *enb, int action)
                  * Execute enb_ue_unlink(mme_ue) and enb_ue_remove(enb_ue)
                  * before mme_gtp_send_release_access_bearers_request()
                  */
-                enb_ue_unlink(mme_ue);
+                enb_ue_deassociate_mme_ue(enb_ue, mme_ue);
                 enb_ue_remove(enb_ue);
             }
 

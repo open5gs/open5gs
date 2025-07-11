@@ -3692,7 +3692,7 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     ogs_timer_delete(mme_ue->t_implicit_detach.timer);
     ogs_timer_delete(mme_ue->gn.t_gn_holding);
 
-    enb_ue_unlink(mme_ue);
+    mme_ue->enb_ue_id = OGS_INVALID_POOL_ID;
 
     mme_sess_remove_all(mme_ue);
     mme_session_remove_all(mme_ue);
@@ -4173,16 +4173,16 @@ void enb_ue_associate_mme_ue(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     enb_ue->mme_ue_id = mme_ue->id;
 }
 
-void enb_ue_deassociate(enb_ue_t *enb_ue)
-{
-    ogs_assert(enb_ue);
-    enb_ue->mme_ue_id = OGS_INVALID_POOL_ID;
-}
-
-void enb_ue_unlink(mme_ue_t *mme_ue)
+void enb_ue_deassociate_mme_ue(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
 {
     ogs_assert(mme_ue);
-    mme_ue->enb_ue_id = OGS_INVALID_POOL_ID;
+    ogs_assert(enb_ue);
+
+    if (mme_ue->enb_ue_id == enb_ue->id)
+        mme_ue->enb_ue_id = OGS_INVALID_POOL_ID;
+    else
+        ogs_error("Cannot deassociate mme_ue->enb_ue_id[%d] != enb_ue->id[%d]",
+                mme_ue->enb_ue_id, enb_ue->id);
 }
 
 void enb_ue_source_associate_target(enb_ue_t *source_ue, enb_ue_t *target_ue)
@@ -4251,16 +4251,16 @@ void sgw_ue_associate_mme_ue(sgw_ue_t *sgw_ue, mme_ue_t *mme_ue)
     sgw_ue->mme_ue_id = mme_ue->id;
 }
 
-void sgw_ue_deassociate(sgw_ue_t *sgw_ue)
-{
-    ogs_assert(sgw_ue);
-    sgw_ue->mme_ue_id = OGS_INVALID_POOL_ID;
-}
-
-void sgw_ue_unlink(mme_ue_t *mme_ue)
+void sgw_ue_deassociate_mme_ue(sgw_ue_t *sgw_ue, mme_ue_t *mme_ue)
 {
     ogs_assert(mme_ue);
-    mme_ue->sgw_ue_id = OGS_INVALID_POOL_ID;
+    ogs_assert(sgw_ue);
+
+    if (mme_ue->sgw_ue_id == sgw_ue->id)
+        mme_ue->sgw_ue_id = OGS_INVALID_POOL_ID;
+    else
+        ogs_error("Cannot deassociate mme_ue->sgw_ue_id[%d] != sgw_ue->id[%d]",
+                mme_ue->sgw_ue_id, sgw_ue->id);
 }
 
 void sgw_ue_source_associate_target(sgw_ue_t *source_ue, sgw_ue_t *target_ue)
