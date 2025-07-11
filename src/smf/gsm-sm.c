@@ -830,7 +830,13 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
                     param.state = SMF_UE_REQUESTED_PDU_SESSION_ESTABLISHMENT;
                     param.n1smbuf =
                         gsm_build_pdu_session_establishment_accept(sess);
-                    ogs_assert(param.n1smbuf);
+                    if (!param.n1smbuf) {
+                        ogs_error(
+                                "gsm_build_pdu_session_establishment_accept() "
+                                "failed");
+                        OGS_FSM_TRAN(s, smf_gsm_state_5gc_n1_n2_reject);
+                        return;
+                    }
                     param.n2smbuf =
                         ngap_build_pdu_session_resource_setup_request_transfer(
                                 sess);

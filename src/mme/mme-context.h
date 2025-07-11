@@ -634,7 +634,7 @@ struct mme_ue_s {
         \
         enb_ue_holding = enb_ue_find_by_id((__mME)->enb_ue_id); \
         if (enb_ue_holding) { \
-            enb_ue_deassociate(enb_ue_holding); \
+            enb_ue_holding->mme_ue_id = OGS_INVALID_POOL_ID; \
             \
             ogs_warn("[%s] Holding S1 Context", (__mME)->imsi_bcd); \
             ogs_warn("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]", \
@@ -1163,14 +1163,12 @@ int mme_ue_xact_count(mme_ue_t *mme_ue, uint8_t org);
  *   - Delete Indirect Data Forwarding Tunnel Request/Response
  */
 void enb_ue_associate_mme_ue(enb_ue_t *enb_ue, mme_ue_t *mme_ue);
-void enb_ue_deassociate(enb_ue_t *enb_ue);
-void enb_ue_unlink(mme_ue_t *mme_ue);
+void enb_ue_deassociate_mme_ue(enb_ue_t *enb_ue, mme_ue_t *mme_ue);
 void enb_ue_source_associate_target(enb_ue_t *source_ue, enb_ue_t *target_ue);
 void enb_ue_source_deassociate_target(enb_ue_t *enb_ue);
 
 void sgw_ue_associate_mme_ue(sgw_ue_t *sgw_ue, mme_ue_t *mme_ue);
-void sgw_ue_deassociate(sgw_ue_t *sgw_ue);
-void sgw_ue_unlink(mme_ue_t *mme_ue);
+void sgw_ue_deassociate_mme_ue(sgw_ue_t *sgw_ue, mme_ue_t *mme_ue);
 void sgw_ue_source_associate_target(sgw_ue_t *source_ue, sgw_ue_t *target_ue);
 void sgw_ue_source_deassociate_target(sgw_ue_t *sgw_ue);
 

@@ -542,7 +542,7 @@ struct amf_ue_s {
         \
         ran_ue_holding = ran_ue_find_by_id((__aMF)->ran_ue_id); \
         if (ran_ue_holding) { \
-            ran_ue_deassociate(ran_ue_holding); \
+            ran_ue_holding->amf_ue_id = OGS_INVALID_POOL_ID; \
             \
             ogs_warn("[%s] Holding NG Context", (__aMF)->suci); \
             ogs_warn("[%s]    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]", \
@@ -1017,8 +1017,7 @@ OpenAPI_rat_type_e amf_ue_rat_type(amf_ue_t *amf_ue);
  *   - Delete Indirect Data Forwarding Tunnel Request/Response
  */
 void amf_ue_associate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue);
-void ran_ue_deassociate(ran_ue_t *ran_ue);
-void amf_ue_deassociate(amf_ue_t *amf_ue);
+void amf_ue_deassociate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue);
 void source_ue_associate_target_ue(ran_ue_t *source_ue, ran_ue_t *target_ue);
 void source_ue_deassociate_target_ue(ran_ue_t *ran_ue);
 

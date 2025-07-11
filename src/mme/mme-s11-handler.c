@@ -1492,13 +1492,12 @@ void mme_s11_handle_release_access_bearers_response(
      * for new UE-associated logical S1-connections over the S1 interface,
      * the MME shall respond with the RESET ACKNOWLEDGE message.
      */
-        enb_ue_unlink(mme_ue);
-
         if (enb_ue) {
             mme_enb_t *enb = NULL;
 
             enb = mme_enb_find_by_id(enb_ue->enb_id);
 
+            enb_ue_deassociate_mme_ue(enb_ue, mme_ue);
             enb_ue_remove(enb_ue);
 
             if (enb && ogs_list_count(&enb->enb_ue_list) == 0) {
@@ -1513,13 +1512,12 @@ void mme_s11_handle_release_access_bearers_response(
     } else if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_RESET_PARTIAL) {
         enb_ue_t *iter = NULL;
 
-        enb_ue_unlink(mme_ue);
-
         if (enb_ue) {
             mme_enb_t *enb = NULL;
 
             enb = mme_enb_find_by_id(enb_ue->enb_id);
 
+            enb_ue_deassociate_mme_ue(enb_ue, mme_ue);
             enb_ue_remove(enb_ue);
 
             if (enb) {

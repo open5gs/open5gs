@@ -30,7 +30,7 @@ extern "C" {
 
 int nas_5gs_send_to_gnb(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf);
 int nas_5gs_send_to_downlink_nas_transport(
-        ran_ue_t *ran_ue, ogs_pkbuf_t *pkbuf);
+        ran_ue_t *ran_ue, amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf);
 
 int nas_5gs_send_registration_accept(amf_ue_t *amf_ue);
 int nas_5gs_send_registration_reject(

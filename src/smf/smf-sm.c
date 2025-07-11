@@ -1138,8 +1138,13 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
  *    tracking, or context deduplication) that safely detects and removes
  *    stale SM Context entries outside of this path.
  */
-                ogs_assert(stream);
-                ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+                /* SMF Deregistration */
+                if (stream)
+                    ogs_assert(true ==
+                            ogs_sbi_send_http_status_no_content(stream));
+                else
+                    ogs_error("Stream has already been removed");
+
                 SMF_SESS_CLEAR(sess);
             } else if (state == SMF_UECM_STATE_DEREG_BY_N1N2) {
                 ogs_assert(true == smf_sbi_send_sm_context_status_notify(sess));

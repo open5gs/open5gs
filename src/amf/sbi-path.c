@@ -581,8 +581,8 @@ void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state)
             new_xact_count = amf_sess_xact_count(amf_ue);
 
             if (old_xact_count == new_xact_count) {
+                amf_ue_deassociate_ran_ue(amf_ue, ran_ue);
                 ran_ue_remove(ran_ue);
-                amf_ue_deassociate(amf_ue);
             }
         } else {
             ogs_warn("amf_sbi_send_deactivate_all_ue_in_gnb()");

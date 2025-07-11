@@ -1773,7 +1773,7 @@ void amf_ue_remove(amf_ue_t *amf_ue)
                 ogs_list_count(&amf_ue->sbi.xact_list));
     ogs_sbi_object_free(&amf_ue->sbi);
 
-    amf_ue_deassociate(amf_ue);
+    amf_ue->ran_ue_id = OGS_INVALID_POOL_ID;
 
     ogs_pool_id_free(&amf_ue_pool, amf_ue);
 
@@ -2231,16 +2231,16 @@ void amf_ue_associate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue)
     ran_ue->amf_ue_id = amf_ue->id;
 }
 
-void ran_ue_deassociate(ran_ue_t *ran_ue)
-{
-    ogs_assert(ran_ue);
-    ran_ue->amf_ue_id = OGS_INVALID_POOL_ID;
-}
-
-void amf_ue_deassociate(amf_ue_t *amf_ue)
+void amf_ue_deassociate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue)
 {
     ogs_assert(amf_ue);
-    amf_ue->ran_ue_id = OGS_INVALID_POOL_ID;
+    ogs_assert(ran_ue);
+
+    if (amf_ue->ran_ue_id == ran_ue->id)
+        amf_ue->ran_ue_id = OGS_INVALID_POOL_ID;
+    else
+        ogs_error("Cannot deassociate amf_ue->ran_ue_id[%d] != ran_ue->id[%d]",
+                amf_ue->ran_ue_id, ran_ue->id);
 }
 
 void source_ue_associate_target_ue(
@@ -2954,6 +2954,12 @@ bool amf_update_allowed_nssai(amf_ue_t *amf_ue)
     amf_ue->rejected_nssai.num_of_s_nssai = 0;
 
     if (amf_ue->requested_nssai.num_of_s_nssai) {
+
+        if (amf_ue->num_of_slice == 0) {
+            ogs_error("[%s] No Slice in Subscription DB", amf_ue->supi);
+            return false;
+        }
+
         for (i = 0; i < amf_ue->requested_nssai.num_of_s_nssai; i++) {
             ogs_slice_data_t *slice = NULL;
             ogs_nas_s_nssai_ie_t *requested =
@@ -2966,7 +2972,6 @@ bool amf_update_allowed_nssai(amf_ue_t *amf_ue)
                         s_nssai[amf_ue->rejected_nssai.num_of_s_nssai];
             bool ta_supported = false;
 
-            ogs_assert(amf_ue->num_of_slice);
             slice = ogs_slice_find_by_s_nssai(
                     amf_ue->slice, amf_ue->num_of_slice,
                     (ogs_s_nssai_t *)requested);

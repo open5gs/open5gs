@@ -35,7 +35,8 @@ ogs_pkbuf_t *ngap_build_ran_configuration_update_failure(
         NGAP_Cause_PR group, long cause, long time_to_wait);
 
 ogs_pkbuf_t *ngap_build_downlink_nas_transport(
-    ran_ue_t *ran_ue, ogs_pkbuf_t *gmmbuf, bool ue_ambr, bool allowed_nssai);
+    ran_ue_t *ran_ue, amf_ue_t *amf_ue,
+    ogs_pkbuf_t *gmmbuf, bool ue_ambr, bool allowed_nssai);
 
 ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
     amf_ue_t *amf_ue, ogs_pkbuf_t *gmmbuf);
