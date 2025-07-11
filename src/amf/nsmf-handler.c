@@ -767,10 +767,9 @@ int amf_nsmf_pdusession_handle_update_sm_context(
             } else if (state == AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED) {
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
 
-                    amf_ue_deassociate(amf_ue);
-
                     if (ran_ue) {
                         ogs_debug("    SUPI[%s]", amf_ue->supi);
+                        amf_ue_deassociate_ran_ue(amf_ue, ran_ue);
                         ran_ue_remove(ran_ue);
                     } else {
                         ogs_warn("[%s] RAN-NG Context has already been removed",
@@ -812,14 +811,13 @@ int amf_nsmf_pdusession_handle_update_sm_context(
             } else if (state == AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL) {
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
 
-                    amf_ue_deassociate(amf_ue);
-
                     if (ran_ue) {
                         amf_gnb_t *gnb = NULL;
 
                         gnb = amf_gnb_find_by_id(ran_ue->gnb_id);
 
                         ogs_debug("    SUPI[%s]", amf_ue->supi);
+                        amf_ue_deassociate_ran_ue(amf_ue, ran_ue);
                         ran_ue_remove(ran_ue);
 
                         if (gnb && ogs_list_count(&gnb->ran_ue_list) == 0) {
@@ -869,14 +867,13 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
                     ran_ue_t *iter = NULL;
 
-                    amf_ue_deassociate(amf_ue);
-
                     if (ran_ue) {
                         amf_gnb_t *gnb = NULL;
 
                         gnb = amf_gnb_find_by_id(ran_ue->gnb_id);
 
                         ogs_debug("    SUPI[%s]", amf_ue->supi);
+                        amf_ue_deassociate_ran_ue(amf_ue, ran_ue);
                         ran_ue_remove(ran_ue);
 
                         if (gnb) {

@@ -1773,7 +1773,7 @@ void amf_ue_remove(amf_ue_t *amf_ue)
                 ogs_list_count(&amf_ue->sbi.xact_list));
     ogs_sbi_object_free(&amf_ue->sbi);
 
-    amf_ue_deassociate(amf_ue);
+    amf_ue->ran_ue_id = OGS_INVALID_POOL_ID;
 
     ogs_pool_id_free(&amf_ue_pool, amf_ue);
 
@@ -2231,16 +2231,16 @@ void amf_ue_associate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue)
     ran_ue->amf_ue_id = amf_ue->id;
 }
 
-void ran_ue_deassociate(ran_ue_t *ran_ue)
-{
-    ogs_assert(ran_ue);
-    ran_ue->amf_ue_id = OGS_INVALID_POOL_ID;
-}
-
-void amf_ue_deassociate(amf_ue_t *amf_ue)
+void amf_ue_deassociate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue)
 {
     ogs_assert(amf_ue);
-    amf_ue->ran_ue_id = OGS_INVALID_POOL_ID;
+    ogs_assert(ran_ue);
+
+    if (amf_ue->ran_ue_id == ran_ue->id)
+        amf_ue->ran_ue_id = OGS_INVALID_POOL_ID;
+    else
+        ogs_error("Cannot deassociate amf_ue->ran_ue_id[%d] != ran_ue->id[%d]",
+                amf_ue->ran_ue_id, ran_ue->id);
 }
 
 void source_ue_associate_target_ue(

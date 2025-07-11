@@ -1961,12 +1961,13 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         break;
     case S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK:
         ogs_debug("    Action: S1 normal release");
-        enb_ue_remove(enb_ue);
-        if (!mme_ue) {
+
+        if (mme_ue)
+            enb_ue_deassociate_mme_ue(enb_ue, mme_ue);
+        else
             ogs_error("No UE(mme-ue) context");
-            return;
-        }
-        enb_ue_unlink(mme_ue);
+
+        enb_ue_remove(enb_ue);
         break;
     case S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE:
         ogs_debug("    Action: UE context remove");
@@ -2057,16 +2058,16 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         break;
     case S1AP_UE_CTX_REL_S1_PAGING:
         ogs_debug("    Action: S1 paging");
-        enb_ue_remove(enb_ue);
-        if (!mme_ue) {
-            ogs_error("No UE(mme-ue) context");
-            return;
-        }
-        enb_ue_unlink(mme_ue);
+        if (mme_ue) {
+            enb_ue_deassociate_mme_ue(enb_ue, mme_ue);
 
-        r = s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
+            r = s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        } else
+            ogs_error("No UE(mme-ue) context");
+
+        enb_ue_remove(enb_ue);
         break;
     default:
         ogs_error("Invalid Action[%d]", enb_ue->ue_ctx_rel_action);
