@@ -90,7 +90,7 @@ extern "C" {
  * Therefore, only one End Marker should be awaited.
  */
 
-#define HOME_ROUTED_ROAMING_TEST 1
+#define HOME_ROUTED_ROAMING_TEST 0
 
 #undef OGS_TEST_INSIDE
 

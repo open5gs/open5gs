@@ -163,7 +163,6 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
 
     if (far_update) {
         uint64_t pfcp_flags = OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE;
-        if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
     /*
      * UE-requested PDU Session Modification(ACTIVATED)
      *
@@ -188,6 +187,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
      *        case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING:
      *           ogs_sbi_send_http_status_no_content
      */
+        if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
             pfcp_flags |= OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING;
             pfcp_flags |= OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL;
 
@@ -729,6 +729,7 @@ int ngap_handle_handover_request_ack(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
 {
     smf_ue_t *smf_ue = NULL;
+    smf_bearer_t *qos_flow = NULL;
     int rv, i;
 
     NGAP_HandoverRequestAcknowledgeTransfer_t message;
@@ -794,26 +795,28 @@ int ngap_handle_handover_request_ack(
     ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID,
             &sess->handover.remote_dl_teid);
 
-    qosFlowSetupResponseList = &message.qosFlowSetupResponseList;
-    for (i = 0; i < qosFlowSetupResponseList->list.count; i++) {
-        qosFlowSetupResponseItem = (NGAP_QosFlowItemWithDataForwarding_t *)
-                qosFlowSetupResponseList->list.array[i];
-        if (qosFlowSetupResponseItem) {
-            smf_bearer_t *qos_flow = smf_qos_flow_find_by_qfi(
-                    sess, qosFlowSetupResponseItem->qosFlowIdentifier);
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        ogs_list_for_each(&sess->bearer_list, qos_flow) {
+            ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
+            ogs_assert(dl_far);
 
-            if (qos_flow) {
-                ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
-                ogs_assert(dl_far);
+            dl_far->handover.prepared = true;
+        }
+    } else {
+        qosFlowSetupResponseList = &message.qosFlowSetupResponseList;
+        for (i = 0; i < qosFlowSetupResponseList->list.count; i++) {
+            qosFlowSetupResponseItem = (NGAP_QosFlowItemWithDataForwarding_t *)
+                    qosFlowSetupResponseList->list.array[i];
+            if (qosFlowSetupResponseItem) {
+                smf_bearer_t *qos_flow = smf_qos_flow_find_by_qfi(
+                        sess, qosFlowSetupResponseItem->qosFlowIdentifier);
 
-                dl_far->handover.prepared = true;
+                if (qos_flow) {
+                    ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
+                    ogs_assert(dl_far);
 
-            } else {
-                ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
-                smf_sbi_send_sm_context_update_error_log(
-                        stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        "No QoS flow", smf_ue->supi);
-                goto cleanup;
+                    dl_far->handover.prepared = true;
+                }
             }
         }
     }

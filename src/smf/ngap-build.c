@@ -307,12 +307,10 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
         qos.arp.priority_level = qosFlowProfile->arp->priority_level;
         if (qosFlowProfile->arp->preempt_cap ==
             OpenAPI_preemption_capability_NOT_PREEMPT)
-            qos.arp.pre_emption_capability =
-                OGS_5GC_PRE_EMPTION_DISABLED;
+            qos.arp.pre_emption_capability = OGS_5GC_PRE_EMPTION_DISABLED;
         else if (qosFlowProfile->arp->preempt_cap ==
             OpenAPI_preemption_capability_MAY_PREEMPT)
-            qos.arp.pre_emption_capability =
-                OGS_5GC_PRE_EMPTION_ENABLED;
+            qos.arp.pre_emption_capability = OGS_5GC_PRE_EMPTION_ENABLED;
         else {
             ogs_error("Invalid preempt_cap [%d]",
                     qosFlowProfile->arp->preempt_cap);
@@ -321,12 +319,10 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
 
         if (qosFlowProfile->arp->preempt_vuln ==
             OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE)
-            qos.arp.pre_emption_vulnerability =
-                OGS_5GC_PRE_EMPTION_DISABLED;
+            qos.arp.pre_emption_vulnerability = OGS_5GC_PRE_EMPTION_DISABLED;
         else if (qosFlowProfile->arp->preempt_vuln ==
             OpenAPI_preemption_vulnerability_PREEMPTABLE)
-            qos.arp.pre_emption_vulnerability =
-                OGS_5GC_PRE_EMPTION_ENABLED;
+            qos.arp.pre_emption_vulnerability = OGS_5GC_PRE_EMPTION_ENABLED;
         else {
             ogs_error("Invalid preempt_vuln [%d]",
                     qosFlowProfile->arp->preempt_vuln);

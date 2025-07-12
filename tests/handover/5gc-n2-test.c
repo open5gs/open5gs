@@ -849,10 +849,12 @@ static void direct_complete_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+#if !HOME_ROUTED_ROAMING_TEST
     /* Receive End Mark */
     recvbuf = test_gtpu_read(gtpu1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
+#endif
 
     /* Receive UEContextReleaseCommand */
     amf_ue_ngap_id = test_ue->amf_ue_ngap_id;
@@ -966,10 +968,12 @@ static void direct_complete_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+#if !HOME_ROUTED_ROAMING_TEST
     /* Receive End Mark */
     recvbuf = test_gtpu_read(gtpu2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
+#endif
 
     /* Receive UEContextReleaseCommand */
     amf_ue_ngap_id = test_ue->amf_ue_ngap_id;
@@ -1881,10 +1885,12 @@ static void indirect_complete_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+#if !HOME_ROUTED_ROAMING_TEST
     /* Receive End Mark */
     recvbuf = test_gtpu_read(gtpu1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
+#endif
 
     /* Receive UEContextReleaseCommand */
     amf_ue_ngap_id = test_ue->amf_ue_ngap_id;
@@ -2029,10 +2035,12 @@ static void indirect_complete_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+#if !HOME_ROUTED_ROAMING_TEST
     /* Receive End Mark */
     recvbuf = test_gtpu_read(gtpu2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
+#endif
 
     /* Receive UEContextReleaseCommand */
     amf_ue_ngap_id = test_ue->amf_ue_ngap_id;
@@ -2534,10 +2542,12 @@ static void indirect_cancel_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+#if !HOME_ROUTED_ROAMING_TEST
     /* Receive End Mark */
     recvbuf = test_gtpu_read(gtpu1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
+#endif
 
     /* Receive UEContextReleaseCommand */
     amf_ue_ngap_id = test_ue->amf_ue_ngap_id;
