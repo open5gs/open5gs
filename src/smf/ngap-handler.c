@@ -252,7 +252,7 @@ int ngap_handle_pdu_session_resource_setup_unsuccessful_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
 {
     smf_ue_t *smf_ue = NULL;
-    int rv;
+    int r, rv;
 
     NGAP_PDUSessionResourceSetupUnsuccessfulTransfer_t message;
     NGAP_Cause_t *Cause = NULL;
@@ -292,6 +292,40 @@ int ngap_handle_pdu_session_resource_setup_unsuccessful_transfer(
                 Cause->present, (int)Cause->choice.radioNetwork);
     }
 
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+    /*
+     * UE-requested PDU Session Modification(DEACTIVATED)
+     *
+     * For Home Routed Roaming, delegate PFCP deactivation to H-SMF by
+     * sending UP_CNX_STATE=DEACTIVATED via HsmfUpdateData.
+     *
+     * 1.  V*: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 2.  V*: smf_nsmf_pdusession_build_hsmf_update_data
+     *         SMF_UPDATE_STATE_HR_DEACTIVATED
+     * 3.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 4.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 5.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 6.  H: ogs_sbi_send_http_status_no_content
+     * 7.  V: case SMF_UPDATE_STATE_HR_DEACTIVATED:
+     * 8.  V: smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *          OpenAPI_up_cnx_state_DEACTIVATED)
+     */
+        sess->nsmf_param.request_indication =
+            OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
+
+        sess->nsmf_param.up_cnx_state = OpenAPI_up_cnx_state_DEACTIVATED;
+
+        sess->nsmf_param.ngap_cause.group = Cause->present;
+        sess->nsmf_param.ngap_cause.value = (int)Cause->choice.radioNetwork;
+
+        r = smf_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                smf_nsmf_pdusession_build_hsmf_update_data,
+                sess, stream, SMF_UPDATE_STATE_DEACTIVATED, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+    } else {
     /*
      * TS23.502
      * 4.2.3 Service Request procedures
@@ -331,11 +365,11 @@ int ngap_handle_pdu_session_resource_setup_unsuccessful_transfer(
      *   has failed and set the upCnxState attribute to DEACTIVATED"
      *   otherwise.
      */
-
-    ogs_assert(OGS_OK ==
-        smf_5gc_pfcp_send_all_pdr_modification_request(
-            sess, stream,
-            OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE, 0, 0));
+        ogs_assert(OGS_OK ==
+            smf_5gc_pfcp_send_all_pdr_modification_request(
+                sess, stream,
+                OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE, 0, 0));
+    }
 
     rv = OGS_OK;
 cleanup:

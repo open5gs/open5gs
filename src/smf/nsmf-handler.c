@@ -854,7 +854,7 @@ bool smf_nsmf_handle_update_sm_context(
                         OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
 
                     sess->nsmf_param.up_cnx_state =
-                        SmContextUpdateData->up_cnx_state;
+                        OpenAPI_up_cnx_state_DEACTIVATED;
 
                     if (SmContextUpdateData->ue_location)
                         sess->nsmf_param.ue_location = true;
