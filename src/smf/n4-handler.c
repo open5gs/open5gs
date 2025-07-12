@@ -409,7 +409,42 @@ void smf_5gc_n4_handle_session_modification_response(
 
     if (flags & OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING) {
         if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
-            if (flags & OGS_PFCP_MODIFY_DL_ONLY) {
+            if (flags & OGS_PFCP_MODIFY_XN_HANDOVER) {
+                if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+                    sess->nsmf_param.request_indication =
+                        OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
+
+                    sess->nsmf_param.up_cnx_state =
+                        OpenAPI_up_cnx_state_ACTIVATED;
+
+                    sess->nsmf_param.serving_network = true;
+
+                    ogs_assert(OGS_OK ==
+                            ogs_sockaddr_to_ip(
+                                sess->local_dl_addr, sess->local_dl_addr6,
+                                &sess->nsmf_param.dl_ip));
+                    sess->nsmf_param.dl_teid = sess->local_dl_teid;
+
+                    sess->nsmf_param.an_type = sess->an_type;
+                    sess->nsmf_param.rat_type = sess->sbi_rat_type;
+
+                    r = smf_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            smf_nsmf_pdusession_build_hsmf_update_data,
+                            sess, stream,
+                            SMF_UPDATE_STATE_ACTIVATED_FROM_XN_HANDOVER,
+                            NULL);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                } else {
+                    ogs_pkbuf_t *n2smbuf =
+                        ngap_build_path_switch_request_ack_transfer(sess);
+                    ogs_assert(n2smbuf);
+
+                    smf_sbi_send_sm_context_updated_data_n2smbuf(sess, stream,
+                        OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK, n2smbuf);
+                }
+            } else if (flags & OGS_PFCP_MODIFY_DL_ONLY) {
     /*
      * UE-requested PDU Session Modification(ACTIVATED)
      *
