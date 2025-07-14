@@ -77,6 +77,21 @@ extern "C" {
 #define SEND_UE_CONTEXT_RELEASE_COMMAND_IN_INTEGRITY_UNPROTECTED 0
 #define SEND_UE_CONTEXT_RELEASE_COMMAND_IN_INTEGRITY_PROTECTED 1
 
+/*
+ * [VONR]
+ * Disable vonr/test8_func when running Home Routed Roaming tests,
+ * to prevent V-SMF from skipping Update Response (step 14)
+ * and avoid subsequent SBI timeout and PFCP No Context errors.
+ *
+ * [HANDOVER]]
+ * Normally, with 2 QoS Flows, the system waits for 2 End Markers.
+ * However, in Home Routed Roaming, the V-SMF uses only a single QoS Flow
+ * even when multiple QoS Flows are present.
+ * Therefore, only one End Marker should be awaited.
+ */
+
+#define HOME_ROUTED_ROAMING_TEST 0
+
 #undef OGS_TEST_INSIDE
 
 #ifdef __cplusplus

@@ -1665,6 +1665,33 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     ogs_sbi_send_http_status_no_content(
                                         stream));
                             break;
+                        case SMF_UPDATE_STATE_ACTIVATED_FROM_XN_HANDOVER:
+                            ogs_pkbuf_t *n2smbuf =
+                                ngap_build_path_switch_request_ack_transfer(
+                                        sess);
+                            ogs_assert(n2smbuf);
+
+                            smf_sbi_send_sm_context_updated_data_n2smbuf(
+                                    sess, stream,
+                                    OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK,
+                                    n2smbuf);
+                            break;
+                        case SMF_UPDATE_STATE_ACTIVATED_FROM_N2_HANDOVER:
+                            if (smf_sess_have_indirect_data_forwarding(sess) ==
+                                    true) {
+                                ogs_assert(OGS_OK ==
+                                    smf_5gc_pfcp_send_all_pdr_modification_request(
+                                        sess, stream,
+                                        OGS_PFCP_MODIFY_INDIRECT|
+                                        OGS_PFCP_MODIFY_REMOVE,
+                                        0,
+                                        ogs_local_conf()->
+                                            time.handover.duration));
+                            }
+
+                            smf_sbi_send_sm_context_updated_data_ho_state(
+                                    sess, stream, OpenAPI_ho_state_COMPLETED);
+                            break;
                         case SMF_UPDATE_STATE_UE_REQ_MOD:
                             if (sess->amf_to_vsmf_modify_stream_id >=
                                     OGS_MIN_POOL_ID &&
@@ -2726,6 +2753,33 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                             ogs_assert(true ==
                                     ogs_sbi_send_http_status_no_content(
                                         stream));
+                            break;
+                        case SMF_UPDATE_STATE_ACTIVATED_FROM_XN_HANDOVER:
+                            ogs_pkbuf_t *n2smbuf =
+                                ngap_build_path_switch_request_ack_transfer(
+                                        sess);
+                            ogs_assert(n2smbuf);
+
+                            smf_sbi_send_sm_context_updated_data_n2smbuf(
+                                    sess, stream,
+                                    OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK,
+                                    n2smbuf);
+                            break;
+                        case SMF_UPDATE_STATE_ACTIVATED_FROM_N2_HANDOVER:
+                            if (smf_sess_have_indirect_data_forwarding(sess) ==
+                                    true) {
+                                ogs_assert(OGS_OK ==
+                                    smf_5gc_pfcp_send_all_pdr_modification_request(
+                                        sess, stream,
+                                        OGS_PFCP_MODIFY_INDIRECT|
+                                        OGS_PFCP_MODIFY_REMOVE,
+                                        0,
+                                        ogs_local_conf()->
+                                            time.handover.duration));
+                            }
+
+                            smf_sbi_send_sm_context_updated_data_ho_state(
+                                    sess, stream, OpenAPI_ho_state_COMPLETED);
                             break;
                         default:
                             ogs_fatal("Unknown state [0x%x]", e->h.sbi.state);

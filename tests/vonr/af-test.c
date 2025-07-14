@@ -3966,13 +3966,6 @@ static void test7_func(abts_case *tc, void *data)
     test_ue_remove(test_ue);
 }
 
-/*
- * Disable test8_func when running Home Routed Roaming tests,
- * to prevent V-SMF from skipping Update Response (step 14)
- * and avoid subsequent SBI timeout and PFCP No Context errors.
- */
-#define HOME_ROUTED_ROAMING_TEST 0
-
 #if !HOME_ROUTED_ROAMING_TEST
 /**
  * test8_func:

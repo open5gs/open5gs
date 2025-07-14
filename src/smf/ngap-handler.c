@@ -163,7 +163,6 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
 
     if (far_update) {
         uint64_t pfcp_flags = OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE;
-        if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
     /*
      * UE-requested PDU Session Modification(ACTIVATED)
      *
@@ -188,6 +187,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
      *        case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING:
      *           ogs_sbi_send_http_status_no_content
      */
+        if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
             pfcp_flags |= OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING;
             pfcp_flags |= OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL;
 
@@ -252,7 +252,7 @@ int ngap_handle_pdu_session_resource_setup_unsuccessful_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
 {
     smf_ue_t *smf_ue = NULL;
-    int rv;
+    int r, rv;
 
     NGAP_PDUSessionResourceSetupUnsuccessfulTransfer_t message;
     NGAP_Cause_t *Cause = NULL;
@@ -292,6 +292,40 @@ int ngap_handle_pdu_session_resource_setup_unsuccessful_transfer(
                 Cause->present, (int)Cause->choice.radioNetwork);
     }
 
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+    /*
+     * UE-requested PDU Session Modification(DEACTIVATED)
+     *
+     * For Home Routed Roaming, delegate PFCP deactivation to H-SMF by
+     * sending UP_CNX_STATE=DEACTIVATED via HsmfUpdateData.
+     *
+     * 1.  V*: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 2.  V*: smf_nsmf_pdusession_build_hsmf_update_data
+     *         SMF_UPDATE_STATE_HR_DEACTIVATED
+     * 3.  H: smf_nsmf_handle_update_data_in_hsmf
+     * 4.  H: OpenAPI_request_indication_UE_REQ_PDU_SES_MOD
+     * 5.  H: OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|OGS_PFCP_MODIFY_DL_ONLY|
+     *        OGS_PFCP_MODIFY_DEACTIVATE
+     * 6.  H: ogs_sbi_send_http_status_no_content
+     * 7.  V: case SMF_UPDATE_STATE_HR_DEACTIVATED:
+     * 8.  V: smf_sbi_send_sm_context_updated_data_up_cnx_state(
+     *          OpenAPI_up_cnx_state_DEACTIVATED)
+     */
+        sess->nsmf_param.request_indication =
+            OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
+
+        sess->nsmf_param.up_cnx_state = OpenAPI_up_cnx_state_DEACTIVATED;
+
+        sess->nsmf_param.ngap_cause.group = Cause->present;
+        sess->nsmf_param.ngap_cause.value = (int)Cause->choice.radioNetwork;
+
+        r = smf_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                smf_nsmf_pdusession_build_hsmf_update_data,
+                sess, stream, SMF_UPDATE_STATE_DEACTIVATED, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+    } else {
     /*
      * TS23.502
      * 4.2.3 Service Request procedures
@@ -331,11 +365,11 @@ int ngap_handle_pdu_session_resource_setup_unsuccessful_transfer(
      *   has failed and set the upCnxState attribute to DEACTIVATED"
      *   otherwise.
      */
-
-    ogs_assert(OGS_OK ==
-        smf_5gc_pfcp_send_all_pdr_modification_request(
-            sess, stream,
-            OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE, 0, 0));
+        ogs_assert(OGS_OK ==
+            smf_5gc_pfcp_send_all_pdr_modification_request(
+                sess, stream,
+                OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE, 0, 0));
+    }
 
     rv = OGS_OK;
 cleanup:
@@ -462,7 +496,8 @@ int ngap_handle_path_switch_request_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
 {
     smf_ue_t *smf_ue = NULL;
-    int rv, i;
+    smf_bearer_t *qos_flow = NULL;
+    int r, rv, i;
 
     uint32_t remote_dl_teid;
     ogs_ip_t remote_dl_ip;
@@ -540,52 +575,96 @@ int ngap_handle_path_switch_request_transfer(
     memcpy(&sess->remote_dl_ip, &remote_dl_ip, sizeof(sess->remote_dl_ip));
     sess->remote_dl_teid = remote_dl_teid;
 
-    qosFlowAcceptedList = &message.qosFlowAcceptedList;
-    for (i = 0; i < qosFlowAcceptedList->list.count; i++) {
-        acceptedQosFlowItem = (NGAP_QosFlowAcceptedItem_t *)
-                qosFlowAcceptedList->list.array[i];
-        if (acceptedQosFlowItem) {
-            smf_bearer_t *qos_flow = smf_qos_flow_find_by_qfi(
-                    sess, acceptedQosFlowItem->qosFlowIdentifier);
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        ogs_list_for_each(&sess->bearer_list, qos_flow) {
+            ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
+            ogs_assert(dl_far);
+            if (dl_far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
+                far_update = true;
+            }
 
-            if (qos_flow) {
-                ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
-                ogs_assert(dl_far);
-                if (dl_far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
-                    far_update = true;
-                }
-
-                dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
-                ogs_assert(OGS_OK ==
-                    ogs_pfcp_ip_to_outer_header_creation(
+            dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+            ogs_assert(OGS_OK ==
+                ogs_pfcp_ip_to_outer_header_creation(
                         &sess->remote_dl_ip,
                         &dl_far->outer_header_creation,
                         &dl_far->outer_header_creation_len));
-                dl_far->outer_header_creation.teid = sess->remote_dl_teid;
-            } else {
-                ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
-                smf_sbi_send_sm_context_update_error_log(
-                        stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        "No QoS flow", smf_ue->supi);
-                goto cleanup;
+            dl_far->outer_header_creation.teid = sess->remote_dl_teid;
+        }
+    } else {
+        qosFlowAcceptedList = &message.qosFlowAcceptedList;
+        for (i = 0; i < qosFlowAcceptedList->list.count; i++) {
+            acceptedQosFlowItem = (NGAP_QosFlowAcceptedItem_t *)
+                    qosFlowAcceptedList->list.array[i];
+            if (acceptedQosFlowItem) {
+                smf_bearer_t *qos_flow = smf_qos_flow_find_by_qfi(
+                        sess, acceptedQosFlowItem->qosFlowIdentifier);
+
+                if (qos_flow) {
+                    ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
+                    ogs_assert(dl_far);
+                    if (dl_far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
+                        far_update = true;
+                    }
+
+                    dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+                    ogs_assert(OGS_OK ==
+                        ogs_pfcp_ip_to_outer_header_creation(
+                            &sess->remote_dl_ip,
+                            &dl_far->outer_header_creation,
+                            &dl_far->outer_header_creation_len));
+                    dl_far->outer_header_creation.teid = sess->remote_dl_teid;
+                }
             }
         }
     }
 
     if (far_update) {
+        uint64_t pfcp_flags =
+            OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE|
+            OGS_PFCP_MODIFY_XN_HANDOVER|OGS_PFCP_MODIFY_END_MARKER;
+
+        if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+            pfcp_flags |= OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING;
+            pfcp_flags |= OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL;
+        }
+
         ogs_assert(OGS_OK ==
             smf_5gc_pfcp_send_all_pdr_modification_request(
-                sess, stream,
-                OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE|
-                OGS_PFCP_MODIFY_XN_HANDOVER|OGS_PFCP_MODIFY_END_MARKER,
-                0, 0));
+                sess, stream, pfcp_flags, 0, 0));
     } else {
-        ogs_pkbuf_t *n2smbuf =
-            ngap_build_path_switch_request_ack_transfer(sess);
-        ogs_assert(n2smbuf);
+        if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+            sess->nsmf_param.request_indication =
+                OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
 
-        smf_sbi_send_sm_context_updated_data_n2smbuf(sess, stream,
-            OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK, n2smbuf);
+            sess->nsmf_param.up_cnx_state = OpenAPI_up_cnx_state_ACTIVATED;
+
+            sess->nsmf_param.serving_network = true;
+
+            ogs_assert(OGS_OK ==
+                    ogs_sockaddr_to_ip(
+                        sess->local_dl_addr, sess->local_dl_addr6,
+                        &sess->nsmf_param.dl_ip));
+            sess->nsmf_param.dl_teid = sess->local_dl_teid;
+
+            sess->nsmf_param.an_type = sess->an_type;
+            sess->nsmf_param.rat_type = sess->sbi_rat_type;
+
+            r = smf_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                    smf_nsmf_pdusession_build_hsmf_update_data, sess, stream,
+                    SMF_UPDATE_STATE_ACTIVATED_FROM_XN_HANDOVER,
+                    NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        } else {
+            ogs_pkbuf_t *n2smbuf =
+                ngap_build_path_switch_request_ack_transfer(sess);
+            ogs_assert(n2smbuf);
+
+            smf_sbi_send_sm_context_updated_data_n2smbuf(sess, stream,
+                OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK, n2smbuf);
+        }
     }
 
     rv = OGS_OK;
@@ -650,6 +729,7 @@ int ngap_handle_handover_request_ack(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
 {
     smf_ue_t *smf_ue = NULL;
+    smf_bearer_t *qos_flow = NULL;
     int rv, i;
 
     NGAP_HandoverRequestAcknowledgeTransfer_t message;
@@ -715,26 +795,28 @@ int ngap_handle_handover_request_ack(
     ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID,
             &sess->handover.remote_dl_teid);
 
-    qosFlowSetupResponseList = &message.qosFlowSetupResponseList;
-    for (i = 0; i < qosFlowSetupResponseList->list.count; i++) {
-        qosFlowSetupResponseItem = (NGAP_QosFlowItemWithDataForwarding_t *)
-                qosFlowSetupResponseList->list.array[i];
-        if (qosFlowSetupResponseItem) {
-            smf_bearer_t *qos_flow = smf_qos_flow_find_by_qfi(
-                    sess, qosFlowSetupResponseItem->qosFlowIdentifier);
+    if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        ogs_list_for_each(&sess->bearer_list, qos_flow) {
+            ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
+            ogs_assert(dl_far);
 
-            if (qos_flow) {
-                ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
-                ogs_assert(dl_far);
+            dl_far->handover.prepared = true;
+        }
+    } else {
+        qosFlowSetupResponseList = &message.qosFlowSetupResponseList;
+        for (i = 0; i < qosFlowSetupResponseList->list.count; i++) {
+            qosFlowSetupResponseItem = (NGAP_QosFlowItemWithDataForwarding_t *)
+                    qosFlowSetupResponseList->list.array[i];
+            if (qosFlowSetupResponseItem) {
+                smf_bearer_t *qos_flow = smf_qos_flow_find_by_qfi(
+                        sess, qosFlowSetupResponseItem->qosFlowIdentifier);
 
-                dl_far->handover.prepared = true;
+                if (qos_flow) {
+                    ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
+                    ogs_assert(dl_far);
 
-            } else {
-                ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
-                smf_sbi_send_sm_context_update_error_log(
-                        stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        "No QoS flow", smf_ue->supi);
-                goto cleanup;
+                    dl_far->handover.prepared = true;
+                }
             }
         }
     }

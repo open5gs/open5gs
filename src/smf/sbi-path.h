@@ -66,10 +66,14 @@ bool smf_sbi_send_request(
     (SMF_UPDATE_STATE_BASE + 0x02U)  /* 0x02 */
 #define SMF_UPDATE_STATE_ACTIVATED_FROM_NON_ACTIVATING  \
     (SMF_UPDATE_STATE_BASE + 0x03U)  /* 0x03 */
-#define SMF_UPDATE_STATE_DEACTIVATED                \
+#define SMF_UPDATE_STATE_ACTIVATED_FROM_XN_HANDOVER \
     (SMF_UPDATE_STATE_BASE + 0x04U)  /* 0x04 */
-#define SMF_UPDATE_STATE_UE_REQ_MOD                 \
+#define SMF_UPDATE_STATE_ACTIVATED_FROM_N2_HANDOVER \
     (SMF_UPDATE_STATE_BASE + 0x05U)  /* 0x05 */
+#define SMF_UPDATE_STATE_DEACTIVATED                \
+    (SMF_UPDATE_STATE_BASE + 0x06U)  /* 0x06 */
+#define SMF_UPDATE_STATE_UE_REQ_MOD                 \
+    (SMF_UPDATE_STATE_BASE + 0x07U)  /* 0x07 */
 
 /* Base offset for SMF_REMOVE states */
 #define SMF_REMOVE_STATE_BASE       0x30U           /* REMOVE at 0x30 */

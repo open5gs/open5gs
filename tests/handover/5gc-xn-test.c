@@ -318,10 +318,12 @@ static void test_two_qos_flows(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+#if !HOME_ROUTED_ROAMING_TEST
     /* Receive End Mark */
     recvbuf = test_gtpu_read(gtpu1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
+#endif
 
     /* Receive Path Switch Ack */
     recvbuf = testgnb_ngap_read(ngap2);
@@ -365,10 +367,12 @@ static void test_two_qos_flows(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+#if !HOME_ROUTED_ROAMING_TEST
     /* Receive End Mark */
     recvbuf = test_gtpu_read(gtpu2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
+#endif
 
     /* Receive Path Switch Ack */
     recvbuf = testgnb_ngap_read(ngap1);

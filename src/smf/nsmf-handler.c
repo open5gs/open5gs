@@ -854,7 +854,7 @@ bool smf_nsmf_handle_update_sm_context(
                         OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
 
                     sess->nsmf_param.up_cnx_state =
-                        SmContextUpdateData->up_cnx_state;
+                        OpenAPI_up_cnx_state_DEACTIVATED;
 
                     if (SmContextUpdateData->ue_location)
                         sess->nsmf_param.ue_location = true;
@@ -1030,12 +1030,18 @@ bool smf_nsmf_handle_update_sm_context(
             }
 
             if (far_update) {
+                uint64_t pfcp_flags =
+                    OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE|
+                    OGS_PFCP_MODIFY_N2_HANDOVER|OGS_PFCP_MODIFY_END_MARKER;
+
+                if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+                    pfcp_flags |= OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING;
+                    pfcp_flags |= OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL;
+                }
+
                 ogs_assert(OGS_OK ==
                     smf_5gc_pfcp_send_all_pdr_modification_request(
-                        sess, stream,
-                        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE|
-                        OGS_PFCP_MODIFY_N2_HANDOVER|OGS_PFCP_MODIFY_END_MARKER,
-                        0, 0));
+                        sess, stream, pfcp_flags, 0, 0));
             } else {
                 char *strerror = ogs_msprintf(
                         "[%s:%d] No FAR Update", smf_ue->supi, sess->psi);

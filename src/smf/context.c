@@ -2328,11 +2328,11 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
         far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
         qer = qos_flow->qer;
-        ogs_assert(qer);
+        if (qer) {
+            ogs_pfcp_pdr_associate_qer(pdr, qer);
 
-        ogs_pfcp_pdr_associate_qer(pdr, qer);
-
-        pdr->qfi = qos_flow->qfi;
+            pdr->qfi = qos_flow->qfi;
+        }
 
         ogs_assert(sess->pfcp_node);
         if (sess->pfcp_node->up_function_features.ftup) {
