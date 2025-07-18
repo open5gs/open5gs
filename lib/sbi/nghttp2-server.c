@@ -23,8 +23,6 @@
 #include <netinet/tcp.h>
 #include <nghttp2/nghttp2.h>
 
-#define USE_SEND_DATA_WITH_NO_COPY 1
-
 static void server_init(int num_of_session_pool, int num_of_stream_pool);
 static void server_final(void);
 
@@ -588,26 +586,31 @@ static ssize_t response_read_callback(nghttp2_session *session,
     ogs_assert(response->http.content);
     ogs_assert(response->http.content_length);
 
+    size_t remaining = response->http.content_length - response->read_offset;
+    size_t chunk = ogs_min(remaining, length);
+
 #if USE_SEND_DATA_WITH_NO_COPY
     *data_flags |= NGHTTP2_DATA_FLAG_NO_COPY;
 #else
-    memcpy(buf, response->http.content, response->http.content_length);
+    memcpy(buf, response->http.content + response->read_offset, chunk);
 #endif
+    response->read_offset += chunk;
 
-    *data_flags |= NGHTTP2_DATA_FLAG_EOF;
-
+    if (response->read_offset == response->http.content_length) {
+        *data_flags |= NGHTTP2_DATA_FLAG_EOF;  // Mark end of data
 #if USE_SEND_DATA_WITH_NO_COPY
-    rv = nghttp2_session_get_stream_remote_close(session, stream_id);
-    if (rv == 0) {
-        ogs_warn("nghttp2_session_get_stream_remote_close() failed");
-        nghttp2_submit_rst_stream(
-                session, NGHTTP2_FLAG_NONE, stream_id, NGHTTP2_NO_ERROR);
-    } else if (rv != 1) {
-        ogs_error("nghttp2_session_get_stream_remote_close() failed[%d]", rv);
-    }
+        rv = nghttp2_session_get_stream_remote_close(session, stream_id);
+        if (rv == 0) {
+            ogs_warn("nghttp2_session_get_stream_remote_close() failed");
+            nghttp2_submit_rst_stream(
+                    session, NGHTTP2_FLAG_NONE, stream_id, NGHTTP2_NO_ERROR);
+        } else if (rv != 1) {
+            ogs_error("nghttp2_session_get_stream_remote_close() failed[%d]", rv);
+        }
 #endif
+    }
 
-    return response->http.content_length;
+    return (ssize_t)chunk;
 }
 
 static bool server_send_rspmem_persistent(
@@ -1668,8 +1671,10 @@ static int on_send_data(nghttp2_session *session, nghttp2_frame *frame,
         ogs_pkbuf_put_u8(pkbuf, padlen-1);
     }
 
+    ogs_assert(response->send_offset + length <= response->http.content_length);
     ogs_pkbuf_put_data(pkbuf,
-            response->http.content, response->http.content_length);
+            response->http.content + response->send_offset, length);
+    response->send_offset += length;
 
     if (padlen > 0) {
         memset(pkbuf->tail, 0, padlen-1);
