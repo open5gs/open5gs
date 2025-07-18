@@ -4,10 +4,9 @@ title: Roaming
 
 ## 0. Introduction
 
-Now, we will explain how to install and test 5G Core Roaming using Open5GS. Since we cannot test roaming with UERANSIM, we will use the test environment of Open5GS. 
+This document explains how to install and test 5G Core Roaming using Open5GS. Since roaming cannot be tested with UERANSIM, we use Open5GS's built-in test environment.
 
-We can only use the LBO method. HR roaming will be implemented at a later date. And also, 5G roaming has been implemented according to the document below.
-
+Open5GS supports both LBO (Local Breakout) and HR (Home Routed) roaming methods. The 5G roaming implementation follows the specifications outlined in the document below:
 ```
 TS29.500
 6 General Functionalities in Service Based Architecture
@@ -15,7 +14,7 @@ TS29.500
 6.1.4.3 Routing across PLMN
 ```
 
-Let's start the explanation assuming that the connection test of the UE to this single host has been completed.
+This explanation assumes that you have already completed the UE connection test on a single host.
 
 ## 1. Your First Roaming with Test Program
 
@@ -29,35 +28,42 @@ $ meson build --prefix=`pwd`/install
 $ ninja -C build install
 ```
 
-#### Configure FQDN to DNS
+#### Configure DNS for FQDN Resolution
 
-For routing to Home PLMN, NRF, AUSF and UDM address in H-PLMN shall use FQDN format, so please edit the /etc/hosts file as follows.
+For routing to the Home PLMN, the NRF, AUSF, and UDM addresses in H-PLMN must use FQDN format. Additionally, for HR roaming, NSSF, SMF, and BSF must also use FQDN format. Please edit the /etc/hosts file as follows:
 
 ```diff
-$ diff -u hosts.old hosts.new
---- hosts.old	2023-10-02 11:58:54.261154726 +0900
-+++ hosts.new	2023-10-02 11:59:02.868771248 +0900
-@@ -1,6 +1,18 @@
+--- hosts	2025-07-15 08:33:36.594334895 +0900
++++ /etc/hosts	2025-07-15 08:46:53.727356793 +0900
+@@ -1,6 +1,27 @@
  127.0.0.1	localhost
  127.0.1.1	open5gs
 
 +127.0.1.10	nrf.5gc.mnc070.mcc999.3gppnetwork.org
 +127.0.1.11	ausf.5gc.mnc070.mcc999.3gppnetwork.org
 +127.0.1.12	udm.5gc.mnc070.mcc999.3gppnetwork.org
++127.0.1.14	nssf.5gc.mnc070.mcc999.3gppnetwork.org
++127.0.1.4	smf.5gc.mnc070.mcc999.3gppnetwork.org
++127.0.1.15	bsf.5gc.mnc070.mcc999.3gppnetwork.org
 +
 +127.0.2.10	nrf.5gc.mnc001.mcc001.3gppnetwork.org
 +127.0.2.11	ausf.5gc.mnc001.mcc001.3gppnetwork.org
 +127.0.2.12	udm.5gc.mnc001.mcc001.3gppnetwork.org
++127.0.2.14	nssf.5gc.mnc001.mcc001.3gppnetwork.org
++127.0.2.4	smf.5gc.mnc001.mcc001.3gppnetwork.org
++127.0.2.15	baf.5gc.mnc001.mcc001.3gppnetwork.org
 +
 +127.0.3.10	nrf.5gc.mnc010.mcc315.3gppnetwork.org
 +127.0.3.11	ausf.5gc.mnc010.mcc315.3gppnetwork.org
 +127.0.3.12	udm.5gc.mnc010.mcc315.3gppnetwork.org
++127.0.3.14	nssf.5gc.mnc010.mcc315.3gppnetwork.org
++127.0.3.4	smf.5gc.mnc010.mcc315.3gppnetwork.org
++127.0.3.15	bsf.5gc.mnc010.mcc315.3gppnetwork.org
 +
  # The following lines are desirable for IPv6 capable hosts
  ::1     ip6-localhost ip6-loopback
  fe00::0 ip6-localnet
 ```
-
 
 #### Run the V-PLMN 5G Core and H-PLMN 5G Core on a single host
 
@@ -69,7 +75,7 @@ $ sudo ./build/tests/app/5gc -c ./build/configs/examples/5gc-sepp2-001-01.yaml
 $ sudo ./build/tests/app/5gc -c ./build/configs/examples/5gc-sepp3-315-010.yaml
 ```
 
-Performs a test of UE access while roaming subscribed to H-PLMN.
+Test UE access while roaming with UEs subscribed to different H-PLMNs. The same test commands work for both LBO and HR roaming scenarios - the roaming type is determined by the network configuration and policies:
 ```
 $ ./build/tests/registration/registration -c ./build/configs/examples/gnb-999-70-ue-001-01.yaml simple-test
 $ ./build/tests/registration/registration -c ./build/configs/examples/gnb-999-70-ue-315-010.yaml simple-test
@@ -79,15 +85,30 @@ $ ./build/tests/registration/registration -c ./build/configs/examples/gnb-315-01
 $ ./build/tests/registration/registration -c ./build/configs/examples/gnb-315-010-ue-001-01.yaml simple-test
 ```
 
-You can see the sample traffic.  -- [[5g-roaming-lbo.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/5g_roaming_lbo.pcapng).
+You can see the sample traffic for both roaming types:
+- LBO Roaming: [[5g-roaming-lbo.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/5g-roaming-lbo.pcapng)
+- HR Roaming: [[5g-roaming-hr.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/5g-roaming-hr.pcapng)
+
 
 ## 2. Roaming Test on a Single Host
 
+Open5GS now supports both roaming architectures:
+
+1. **LBO (Local Breakout)**: User plane traffic is routed locally through the visited network's UPF
+2. **HR (Home Routed)**: User plane traffic is routed back to the home network's UPF through the visited network
+
+The choice between LBO and HR is determined by subscriber configuration and roaming agreements. In Open5GS WebUI, you can configure the roaming type for each subscriber session using the `lbo_roaming_allowed` parameter:
+
+- **LBO Roaming**: Set `Subscriber.slice.session.lbo_roaming_allowed` to `true`
+- **HR Roaming**: Set `Subscriber.slice.session.lbo_roaming_allowed` to `false` or leave it unset (default behavior)
+
+This allows flexible per-session roaming policy configuration based on subscriber profiles and service requirements.
+
 ### Home PLMN
 
-NRF shall follow TS23.003(28.3.2.3.2 Format of NRF FQDN) for routing.
+The NRF must include PLMN information when serving in a 5G roaming environment. This enables proper network function discovery and routing by providing the necessary PLMN context for roaming subscribers.
 
-- Create h-nrf.yaml
+**Create h-nrf.yaml:**
 
 ```bash
 $ sh -c 'cat << EOF > ./install/etc/open5gs/h-nrf.yaml
@@ -112,7 +133,9 @@ nrf:
 EOF'
 ```
 
-- Update h-scp.yaml
+The SCP acts as a communication proxy between different network functions, enabling indirect communication and service discovery in the 5G Service Based Architecture.
+
+**Create h-scp.yaml:**
 
 ```bash
 $ sh -c 'cat << EOF > ./install/etc/open5gs/h-scp.yaml
@@ -137,9 +160,9 @@ scp:
 EOF'
 ```
 
-AUSF and UDM shall use FQDN in the Home PLMN.
+AUSF handles authentication procedures for UE access. It must use FQDN in the Home PLMN for proper authentication in roaming scenarios, ensuring that roaming subscribers can be properly authenticated by the home network.
 
-- Update ausf.yaml
+**Update ausf.yaml:**
 
 ```diff
 diff -u ./install/etc/open5gs/ausf.yaml.old ./install/etc/open5gs/ausf.yaml
@@ -163,7 +186,9 @@ diff -u ./install/etc/open5gs/ausf.yaml.old ./install/etc/open5gs/ausf.yaml
  # SBI Server
 ```
 
-- Update udm.yaml
+UDM handles user data management and subscription information. It must also use Home PLMN FQDN to ensure proper user data retrieval and management for roaming subscribers.
+
+**Update udm.yaml:**
 
 ```diff
 $ diff -u ./install/etc/open5gs/udm.yaml.old ./install/etc/open5gs/udm.yaml
@@ -187,7 +212,9 @@ $ diff -u ./install/etc/open5gs/udm.yaml.old ./install/etc/open5gs/udm.yaml
  ################################################################################
 ```
 
-- Update udr.yaml
+UDR stores subscription data and user profiles. It needs updated SCP client configuration to properly communicate with other network functions through the service communication proxy.
+
+**Update udr.yaml:**
 
 ```diff
 $ diff -u ./install/etc/open5gs/udr.yaml.old ./install/etc/open5gs/udr.yaml
@@ -204,7 +231,200 @@ $ diff -u ./install/etc/open5gs/udr.yaml.old ./install/etc/open5gs/udr.yaml
  # SBI Server
 ```
 
-- Update sepp1.yaml
+SMF manages PDU sessions and requires comprehensive configuration for data plane handling. It coordinates with UPF for user plane traffic and handles session establishment, modification, and termination.
+
+**Create h-smf.yaml:**
+
+```bash
+$ sh -c 'cat << EOF > ./install/etc/open5gs/h-smf.yaml
+logger:
+  file:
+    path: /home/acetcom/Documents/git/open5gs/install/var/log/open5gs/smf.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
+
+global:
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
+
+smf:
+  sbi:
+    server:
+      - address: smf.5gc.mnc070.mcc999.3gppnetwork.org
+    client:
+#      nrf:
+#        - uri: http://127.0.1.10:7777
+      scp:
+        - uri: http://127.0.1.200:7777
+  pfcp:
+    server:
+      - address: 127.0.1.4
+    client:
+      upf:
+        - address: 127.0.1.7
+  gtpc:
+    server:
+      - address: 127.0.1.4
+  gtpu:
+    server:
+      - address: 127.0.1.4
+  metrics:
+    server:
+      - address: 127.0.1.4
+        port: 9090
+  session:
+    - subnet: 10.46.0.0/16
+      gateway: 10.46.0.1
+    - subnet: 2001:db8:babe::/48
+      gateway: 2001:db8:babe::1
+  dns:
+    - 8.8.8.8
+    - 8.8.4.4
+    - 2001:4860:4860::8888
+    - 2001:4860:4860::8844
+  mtu: 1400
+EOF'
+```
+
+UPF handles user data forwarding and requires coordination with SMF. It manages the user plane traffic routing and forwarding, including packet inspection and QoS enforcement.
+
+**Create h-upf.yaml:**
+
+```bash
+$ sh -c 'cat << EOF > ./install/etc/open5gs/h-upf.yaml
+logger:
+  file:
+    path: /home/acetcom/Documents/git/open5gs/install/var/log/open5gs/upf.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
+
+global:
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
+
+upf:
+  pfcp:
+    server:
+      - address: 127.0.1.7
+    client:
+#      smf:     #  UPF PFCP Client try to associate SMF PFCP Server
+#        - address: 127.0.1.4
+  gtpu:
+    server:
+      - address: 127.0.1.7
+  session:
+    - subnet: 10.46.0.0/16
+      gateway: 10.46.0.1
+      dev: ogstun2
+    - subnet: 2001:db8:babe::/48
+      gateway: 2001:db8:babe::1
+      dev: ogstun2
+  metrics:
+    server:
+      - address: 127.0.1.7
+        port: 9090
+EOF'
+```
+
+PCF provides policy control and charging rules for subscriber sessions. It determines QoS policies, charging rules, and session management policies based on subscriber profiles and network conditions.
+
+**Create h-pcf.yaml:**
+
+```bash
+$ sh -c 'cat << EOF > ./install/etc/open5gs/h-pcf.yaml
+db_uri: mongodb://localhost/open5gs
+logger:
+  file:
+    path: /home/acetcom/Documents/git/open5gs/install/var/log/open5gs/pcf.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
+
+global:
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
+
+pcf:
+  sbi:
+    server:
+      - address: 127.0.1.13
+        port: 7777
+    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+      scp:
+        - uri: http://127.0.1.200:7777
+  metrics:
+    server:
+      - address: 127.0.1.13
+        port: 9090
+EOF'
+```
+
+BSF manages binding information for network functions. It maintains bindings between different network function instances and provides binding discovery services for dynamic network function selection.
+
+**Create h-bsf.yaml:**
+
+```bash
+$ sh -c 'cat << EOF > ./install/etc/open5gs/h-bsf.yaml
+logger:
+  file:
+    path: /home/acetcom/Documents/git/open5gs/install/var/log/open5gs/bsf.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
+
+global:
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
+
+bsf:
+  sbi:
+    server:
+      - address: 127.0.1.15
+        port: 7777
+    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+      scp:
+        - uri: http://127.0.1.200:7777
+EOF'
+```
+
+NSSF handles network slice selection and must use FQDN for proper slice identification. It determines which network slice instance should serve a particular UE based on subscription information and network slice availability.
+
+**Create h-nssf.yaml:**
+
+```bash
+$ sh -c 'cat << EOF > ./install/etc/open5gs/h-nssf.yaml
+logger:
+  file:
+    path: /home/acetcom/Documents/git/open5gs/install/var/log/open5gs/nssf.log
+#  level: info   # fatal|error|warn|info(default)|debug|trace
+
+global:
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
+
+nssf:
+  sbi:
+    server:
+      - address: nssf.5gc.mnc070.mcc999.3gppnetwork.org
+    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+      scp:
+        - uri: http://127.0.1.200:7777
+      nsi:
+        - uri: http://nrf.5gc.mnc070.mcc999.3gppnetwork.org
+          s_nssai:
+            sst: 1
+EOF'
+```
+
+
+SEPP handles security for inter-PLMN communication and requires SCP client update. It provides security functions for N32 interface communication between different PLMN networks, including message filtering and topology hiding.
+
+**Update sepp1.yaml:**
 
 ```diff
 $ diff -u ./install/etc/open5gs/sepp1.yaml.old ./install/etc/open5gs/sepp1.yaml
@@ -223,15 +443,15 @@ $ diff -u ./install/etc/open5gs/sepp1.yaml.old ./install/etc/open5gs/sepp1.yaml
 
 ### Visited PLMN
 
-The Visited Network should be configured using the PLMN ID 001/01, so the NRF and AMF settings should be changed accordingly.
+The visited network NRF must be configured with the visited PLMN ID and use appropriate FQDN for network function registration and discovery.
 
-- Update nrf.yaml
+**Update nrf.yaml:**
 
 ```diff
-$ diff -u ./install/etc/open5gs/nrf.yaml.old ./install/etc/open5gs/nrf.yaml
---- ./install/etc/open5gs/nrf.yaml.old	2023-11-19 18:02:34.105115863 +0900
-+++ ./install/etc/open5gs/nrf.yaml	2023-11-19 18:02:59.981115848 +0900
-@@ -10,8 +10,8 @@
+$ diff -u ./install/etc/open5gs/nrf.yaml ./install.new/etc/open5gs/nrf.yaml
+--- ./install/etc/open5gs/nrf.yaml	2025-07-18 21:57:51.244553083 +0900
++++ ./install.new/etc/open5gs/nrf.yaml	2025-07-18 21:32:57.596880880 +0900
+@@ -11,12 +11,11 @@
  nrf:
    serving:  # 5G roaming requires PLMN in NRF
      - plmn_id:
@@ -241,16 +461,42 @@ $ diff -u ./install/etc/open5gs/nrf.yaml.old ./install/etc/open5gs/nrf.yaml
 +        mnc: 01
    sbi:
      server:
-       - address: 127.0.0.10
+-      - address: 127.0.0.10
+-        port: 7777
++      - address: nrf.5gc.mnc001.mcc001.3gppnetwork.org
+
+ ################################################################################
+ # SBI Server
 ```
 
-- Update amf.yaml
+The visited network SCP must be updated to reference the visited network NRF for proper service discovery and communication routing.
+
+**Update scp.yaml:**
 
 ```diff
-$ diff -u ./install/etc/open5gs/amf.yaml.old ./install/etc/open5gs/amf.yaml
---- ./install/etc/open5gs/amf.yaml.old	2023-11-19 17:50:42.997116266 +0900
-+++ ./install/etc/open5gs/amf.yaml	2023-11-19 19:08:59.145113607 +0900
-@@ -19,27 +19,34 @@
+$ diff -u ./install/etc/open5gs/scp.yaml ./install.new/etc/open5gs/scp.yaml
+--- ./install/etc/open5gs/scp.yaml	2025-07-18 21:57:51.262552520 +0900
++++ ./install.new/etc/open5gs/scp.yaml	2025-07-18 21:33:54.670492255 +0900
+@@ -15,7 +15,7 @@
+         port: 7777
+     client:
+       nrf:
+-        - uri: http://127.0.0.10:7777
++        - uri: http://nrf.5gc.mnc001.mcc001.3gppnetwork.org
+
+ ################################################################################
+ # SCP Info
+ ```
+
+AMF handles access and mobility management for UEs. The visited network AMF must be configured to support both home and visited PLMN access control, and handle roaming subscribers appropriately.
+
+**Update amf.yaml:**
+
+```diff
+$ diff -u ./install/etc/open5gs/amf.yaml ./install.new/etc/open5gs/amf.yaml
+--- ./install/etc/open5gs/amf.yaml	2025-07-18 21:57:51.173555303 +0900
++++ ./install.new/etc/open5gs/amf.yaml	2025-07-18 21:05:05.396288769 +0900
+@@ -20,27 +20,34 @@
          - uri: http://127.0.0.200:7777
    ngap:
      server:
@@ -293,28 +539,43 @@ $ diff -u ./install/etc/open5gs/amf.yaml.old ./install/etc/open5gs/amf.yaml
    security:
 ```
 
-Due to the absence of UDR in the visiting network, V-PCF uses locally configured policies. When the UE is located in the home PLMN (001/01), MongoDB is used. On the other hand, when the UE is located in the visiting PLMN (999/70, 315/010), locally configured policies are used. This is because there is no session management policy data for the UE in the visiting network, so locally configured information based on the roaming agreement is used.
+The visited network SMF must use the visited PLMN FQDN for proper session management and coordination with other network functions.
 
-- Update pcf.yaml
+**Update smf.yaml:**
 
 ```diff
-$ diff -u ./install/etc/open5gs/pcf.yaml.old ./install/etc/open5gs/pcf.yaml
---- ./install/etc/open5gs/pcf.yaml.old	2023-11-19 18:05:35.389115760 +0900
-+++ ./install/etc/open5gs/pcf.yaml	2023-11-19 19:02:27.221113829 +0900
-@@ -1,4 +1,3 @@
--db_uri: mongodb://localhost/open5gs
- logger:
-   file:
-     path: /home/acetcom/Documents/git/open5gs/install/var/log/open5gs/pcf.log
- #  level: info   # fatal|error|warn|info(default)|debug|trace
-@@ -22,6 +21,29 @@
+$ diff -u ./install/etc/open5gs/smf.yaml ./install.new/etc/open5gs/smf.yaml
+--- ./install/etc/open5gs/smf.yaml	2025-07-18 21:57:51.154555897 +0900
++++ ./install.new/etc/open5gs/smf.yaml	2025-07-18 21:28:29.423632460 +0900
+@@ -11,8 +11,7 @@
+ smf:
+   sbi:
+     server:
+-      - address: 127.0.0.4
+-        port: 7777
++      - address: smf.5gc.mnc001.mcc001.3gppnetwork.org
+     client:
+ #      nrf:
+ #        - uri: http://127.0.0.10:7777
+ ```
+
+
+Due to the absence of UDR in the visiting network, V-PCF uses locally configured policies. When the UE is located in the home PLMN (999/70), MongoDB is used. When the UE is located in the visiting PLMN (001/01), locally configured policies are used based on roaming agreements.
+
+**Update pcf.yaml:**
+
+```diff
+$ diff --git a/configs/open5gs/pcf.yaml.in b/configs/open5gs/pcf.yaml.in
+index 4c5d103f9..d16e85728 100644
+--- a/configs/open5gs/pcf.yaml.in
++++ b/configs/open5gs/pcf.yaml.in
+@@ -23,6 +23,84 @@ pcf:
      server:
        - address: 127.0.0.13
          port: 9090
 +  policy:
-+    - plmn_id:
-+        mcc: 999
-+        mnc: 70
++    - supi_range:
++        - 999700000000001-999709999999999
 +      slice:
 +        - sst: 1  # 1,2,3,4
 +          default_indicator: true
@@ -334,9 +595,118 @@ $ diff -u ./install/etc/open5gs/pcf.yaml.old ./install/etc/open5gs/pcf.yaml
 +                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
 +                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
 +                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
++            - name: ims
++              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
++              ambr:
++                downlink:
++                  value: 1
++                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                uplink:
++                  value: 1
++                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++              qos:
++                index: 5  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                arp:
++                  priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
++                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
++              pcc_rule:
++                - qos:
++                    index: 1  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                    arp:
++                      priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                      pre_emption_vulnerability: 1   # 1: Disabled, 2:Enabled
++                      pre_emption_capability: 1   # 1: Disabled, 2:Enabled
++                    mbr:
++                      downlink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                    gbr:
++                      downlink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                - qos:
++                    index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                    arp:
++                      priority_level: 4  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                      pre_emption_vulnerability: 2   # 1: Disabled, 2:Enabled
++                      pre_emption_capability: 2   # 1: Disabled, 2:Enabled
++                    mbr:
++                      downlink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                    gbr:
++                      downlink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
 
  ################################################################################
- # Locally configured policy
+ # PCF Policy Configuration: UE Home PLMN and SUPI Range Based Policies
+```
+
+The visited network BSF requires updated addresses to align with the visited network addressing scheme.
+
+**Update bsf.yaml:**
+
+```diff
+$ diff -u ./install/etc/open5gs/bsf.yaml ./install.new/etc/open5gs/bsf.yaml
+--- ./install/etc/open5gs/bsf.yaml	2025-07-18 21:57:51.405548049 +0900
++++ ./install.new/etc/open5gs/bsf.yaml	2025-07-18 21:30:49.312390532 +0900
+@@ -11,13 +11,13 @@
+ bsf:
+   sbi:
+     server:
+-      - address: 127.0.0.15
++      - address: 127.0.1.15
+         port: 7777
+     client:
+ #      nrf:
+ #        - uri: http://127.0.0.10:7777
+       scp:
+-        - uri: http://127.0.0.200:7777
++        - uri: http://127.0.1.200:7777
+
+ ################################################################################
+ # SBI Server
+```
+The visited network NSSF must use the visited PLMN FQDN and reference the appropriate NRF for network slice selection services.
+
+**Update nssf.yaml:**
+
+```diff
+diff -u ./install/etc/open5gs/nssf.yaml ./install.new/etc/open5gs/nssf.yaml
+--- ./install/etc/open5gs/nssf.yaml	2025-07-18 21:57:51.387548612 +0900
++++ ./install.new/etc/open5gs/nssf.yaml	2025-07-18 21:21:33.415221920 +0900
+@@ -11,15 +11,14 @@
+ nssf:
+   sbi:
+     server:
+-      - address: 127.0.0.14
+-        port: 7777
++      - address: nssf.5gc.mnc001.mcc001.3gppnetwork.org
+     client:
+ #      nrf:
+ #        - uri: http://127.0.0.10:7777
+       scp:
+         - uri: http://127.0.0.200:7777
+       nsi:
+-        - uri: http://127.0.0.10:7777
++        - uri: http://nrf.5gc.mnc001.mcc001.3gppnetwork.org
+           s_nssai:
+             sst: 1
+ ################################################################################
 ```
 
 ### Run the V-PLMN 5G Core and H-PLMN 5G Core on a single host
@@ -351,19 +721,24 @@ $ ./install/bin/open5gs-scpd -c ./install/etc/open5gs/h-scp.yaml
 $ sudo ./install/bin/open5gs-ausfd
 $ sudo ./install/bin/open5gs-udmd
 $ ./install/bin/open5gs-udrd
+$ sudo ./install/bin/open5gs-smfd -c ./install/etc/open5gs/h-smf.yaml
+$ ./install/bin/open5gs-upfd -c ./install/etc/open5gs/h-upf.yaml
+$ ./install/bin/open5gs-pcfd -c ./install/etc/open5gs/h-pcf.yaml
+$ ./install/bin/open5gs-bsfd -c ./install/etc/open5gs/h-bsf.yaml
+$ sudo ./install/bin/open5gs-nssfd -c ./install/etc/open5gs/h-nssf.yaml
 $ ./install/bin/open5gs-seppd -c ./install/etc/open5gs/sepp1.yaml
 ```
 
 #### Visited Network
 ```
-$ ./install/bin/open5gs-nrfd
+$ sudo ./install/bin/open5gs-nrfd
 $ ./install/bin/open5gs-scpd
 $ ./install/bin/open5gs-amfd
-$ ./install/bin/open5gs-smfd
+$ sudo ./install/bin/open5gs-smfd
 $ ./install/bin/open5gs-upfd
 $ ./install/bin/open5gs-pcfd
 $ ./install/bin/open5gs-bsfd
-$ ./install/bin/open5gs-nssfd
+$ sudo ./install/bin/open5gs-nssfd
 $ ./install/bin/open5gs-seppd -c ./install/etc/open5gs/sepp2.yaml
 ```
 
@@ -417,21 +792,24 @@ imsi-315010000000001
 - Edit /etc/hosts
 
 ```diff
- $ diff -u hosts.old hosts.new
---- hosts.old	2023-10-02 12:22:41.320546720 +0900
-+++ hosts.new	2023-10-02 12:22:33.576884651 +0900
-@@ -1,6 +1,10 @@
+$ diff -u hosts.old hosts.new
+--- hosts.old	2025-07-19 07:02:44.813666212 +0900
++++ hosts.new	2025-07-19 07:02:51.019489167 +0900
+@@ -1,6 +1,13 @@
  127.0.0.1	localhost
  127.0.1.1	open5gs
 
-+127.0.0.10	nrf.5gc.mnc070.mcc999.3gppnetwork.org
-+127.0.0.11	ausf.5gc.mnc070.mcc999.3gppnetwork.org
-+127.0.0.12	udm.5gc.mnc070.mcc999.3gppnetwork.org
++127.0.1.10	nrf.5gc.mnc070.mcc999.3gppnetwork.org
++127.0.1.11	ausf.5gc.mnc070.mcc999.3gppnetwork.org
++127.0.1.12	udm.5gc.mnc070.mcc999.3gppnetwork.org
++127.0.1.14	nssf.5gc.mnc070.mcc999.3gppnetwork.org
++127.0.1.4	smf.5gc.mnc070.mcc999.3gppnetwork.org
++127.0.1.15	bsf.5gc.mnc070.mcc999.3gppnetwork.org
 +
  # The following lines are desirable for IPv6 capable hosts
  ::1     ip6-localhost ip6-loopback
  fe00::0 ip6-localnet
- ```
+```
 
 NRF shall follow TS23.003(28.3.2.3.2 Format of NRF FQDN) for routing.
 
@@ -476,21 +854,30 @@ index 9be6cdc93..eee7d3e3f 100644
 
 ```diff
 $ diff --git a/configs/open5gs/nssf.yaml.in b/configs/open5gs/nssf.yaml.in
-index d01645b2c..7d89cffef 100644
+index 015085f56..92ceb63b5 100644
 --- a/configs/open5gs/nssf.yaml.in
 +++ b/configs/open5gs/nssf.yaml.in
-@@ -17,7 +17,7 @@ nssf:
-         scp:
-           - uri: http://127.0.0.200:7777
-         nsi:
--          - uri: http://127.0.0.10:7777
-+          - uri: http://nrf.5gc.mnc070.mcc999.3gppnetwork.org
-             s_nssai:
-               sst: 1
+@@ -11,15 +11,14 @@ global:
+ nssf:
+   sbi:
+     server:
+-      - address: 127.0.0.14
+-        port: 7777
++      - address: nssf.5gc.mnc070.mcc999.3gppnetwork.org
+     client:
+ #      nrf:
+ #        - uri: http://127.0.0.10:7777
+       scp:
+         - uri: http://127.0.0.200:7777
+       nsi:
+-        - uri: http://127.0.0.10:7777
++        - uri: http://nrf.5gc.mnc070.mcc999.3gppnetwork.org
+           s_nssai:
+             sst: 1
  ################################################################################
 ```
 
-AUSF and UDM shall use FQDN in the Home PLMN.
+AUSF, UDM and SMF shall use FQDN in the Home PLMN.
 
 - Update ausf.yaml
 
@@ -529,6 +916,25 @@ index ce650d5c2..ed756fc28 100644
  #        nrf:
  #          - uri: http://127.0.0.10:7777
 ```
+
+- Update smf.yaml
+```diff
+$ diff --git a/configs/open5gs/smf.yaml.in b/configs/open5gs/smf.yaml.in
+index e47752393..b6cee9ff8 100644
+--- a/configs/open5gs/smf.yaml.in
++++ b/configs/open5gs/smf.yaml.in
+@@ -11,8 +11,7 @@ global:
+ smf:
+   sbi:
+     server:
+-      - address: 127.0.0.4
+-        port: 7777
++      - address: smf.5gc.mnc070.mcc999.3gppnetwork.org
+     client:
+ #      nrf:
+ #        - uri: http://127.0.0.10:7777
+```
+
 
 AMF and UPF must use external IP addresses such as 10.10.1.x for communication between VM2 and VM3.
 
@@ -588,17 +994,17 @@ Due to the absence of UDR in the visiting network, V-PCF uses locally configured
 
 ```diff
 $ diff --git a/configs/open5gs/pcf.yaml.in b/configs/open5gs/pcf.yaml.in
-index 2df2e9a36..9eea1f1de 100644
+index 4c5d103f9..c1526ff3a 100644
 --- a/configs/open5gs/pcf.yaml.in
 +++ b/configs/open5gs/pcf.yaml.in
-@@ -22,6 +22,51 @@ pcf:
+@@ -23,6 +23,85 @@ pcf:
      server:
        - address: 127.0.0.13
          port: 9090
 +  policy:
-+    - plmn_id:
-+        mcc: 001
-+        mnc: 01
++    - supi_range:
++        - 001010000000001-001019999999999
++        - 315010000000001-315010999999999
 +      slice:
 +        - sst: 1  # 1,2,3,4
 +          default_indicator: true
@@ -618,14 +1024,7 @@ index 2df2e9a36..9eea1f1de 100644
 +                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
 +                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
 +                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
-+    - plmn_id:
-+        mcc: 315
-+        mnc: 010
-+      slice:
-+        - sst: 1  # 1,2,3,4
-+          default_indicator: true
-+          session:
-+            - name: internet
++            - name: ims
 +              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
 +              ambr:
 +                downlink:
@@ -633,13 +1032,57 @@ index 2df2e9a36..9eea1f1de 100644
 +                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
 +                uplink:
 +                  value: 1
-+                  unit: 3
++                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
 +              qos:
-+                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                index: 5  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
 +                arp:
-+                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                  priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
 +                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
 +                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
++              pcc_rule:
++                - qos:
++                    index: 1  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                    arp:
++                      priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                      pre_emption_vulnerability: 1   # 1: Disabled, 2:Enabled
++                      pre_emption_capability: 1   # 1: Disabled, 2:Enabled
++                    mbr:
++                      downlink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                    gbr:
++                      downlink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                - qos:
++                    index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                    arp:
++                      priority_level: 4  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                      pre_emption_vulnerability: 2   # 1: Disabled, 2:Enabled
++                      pre_emption_capability: 2   # 1: Disabled, 2:Enabled
++                    mbr:
++                      downlink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                    gbr:
++                      downlink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+
+ ################################################################################
+ # PCF Policy Configuration: UE Home PLMN and SUPI Range Based Policies
 ```
 
 For now we will set up SEPP without using TLS.
@@ -711,21 +1154,24 @@ $ sudo ./install/bin/open5gs-udrd
 - Edit /etc/hosts
 
 ```diff
- $ diff -u hosts.old hosts.new
---- hosts.old	2023-10-02 12:22:41.320546720 +0900
-+++ hosts.new	2023-10-02 12:22:33.576884651 +0900
-@@ -1,6 +1,10 @@
+$ diff -u hosts.old hosts.new
+--- hosts.old	2025-07-19 07:02:44.813666212 +0900
++++ hosts.new	2025-07-19 07:03:40.466147375 +0900
+@@ -1,6 +1,13 @@
  127.0.0.1	localhost
  127.0.1.1	open5gs
 
-+127.0.0.10	nrf.5gc.mnc001.mcc001.3gppnetwork.org
-+127.0.0.11	ausf.5gc.mnc001.mcc001.3gppnetwork.org
-+127.0.0.12	udm.5gc.mnc001.mcc001.3gppnetwork.org
++127.0.2.10	nrf.5gc.mnc001.mcc001.3gppnetwork.org
++127.0.2.11	ausf.5gc.mnc001.mcc001.3gppnetwork.org
++127.0.2.12	udm.5gc.mnc001.mcc001.3gppnetwork.org
++127.0.2.14	nssf.5gc.mnc001.mcc001.3gppnetwork.org
++127.0.2.4	smf.5gc.mnc001.mcc001.3gppnetwork.org
++127.0.2.15	baf.5gc.mnc001.mcc001.3gppnetwork.org
 +
  # The following lines are desirable for IPv6 capable hosts
  ::1     ip6-localhost ip6-loopback
  fe00::0 ip6-localnet
- ```
+```
 
 NRF shall follow TS23.003(28.3.2.3.2 Format of NRF FQDN) for routing.
 
@@ -776,21 +1222,30 @@ index 9be6cdc93..eee7d3e3f 100644
 
 ```diff
 $ diff --git a/configs/open5gs/nssf.yaml.in b/configs/open5gs/nssf.yaml.in
-index d01645b2c..7d89cffef 100644
+index 015085f56..92ceb63b5 100644
 --- a/configs/open5gs/nssf.yaml.in
 +++ b/configs/open5gs/nssf.yaml.in
-@@ -17,7 +17,7 @@ nssf:
-         scp:
-           - uri: http://127.0.0.200:7777
-         nsi:
--          - uri: http://127.0.0.10:7777
-+          - uri: http://nrf.5gc.mnc001.mcc001.3gppnetwork.org
-             s_nssai:
-               sst: 1
+@@ -11,15 +11,14 @@ global:
+ nssf:
+   sbi:
+     server:
+-      - address: 127.0.0.14
+-        port: 7777
++      - address: nssf.5gc.mnc001.mcc001.3gppnetwork.org
+     client:
+ #      nrf:
+ #        - uri: http://127.0.0.10:7777
+       scp:
+         - uri: http://127.0.0.200:7777
+       nsi:
+-        - uri: http://127.0.0.10:7777
++        - uri: http://nrf.5gc.mnc001.mcc001.3gppnetwork.org
+           s_nssai:
+             sst: 1
  ################################################################################
 ```
 
-AUSF and UDM shall use FQDN in the Home PLMN.
+AUSF, UDM and SMF shall use FQDN in the Home PLMN.
 
 - Update ausf.yaml
 
@@ -829,6 +1284,25 @@ index ce650d5c2..ed756fc28 100644
  #        nrf:
  #          - uri: http://127.0.0.10:7777
 ```
+
+- Update smf.yaml
+```diff
+$ diff --git a/configs/open5gs/smf.yaml.in b/configs/open5gs/smf.yaml.in
+index e47752393..b6cee9ff8 100644
+--- a/configs/open5gs/smf.yaml.in
++++ b/configs/open5gs/smf.yaml.in
+@@ -11,8 +11,7 @@ global:
+ smf:
+   sbi:
+     server:
+-      - address: 127.0.0.4
+-        port: 7777
++      - address: smf.5gc.mnc001.mcc001.3gppnetwork.org
+     client:
+ #      nrf:
+ #        - uri: http://127.0.0.10:7777
+```
+
 
 AMF and UPF must use external IP addresses such as 10.10.2.x for communication between VM1 and VM3.
 
@@ -909,17 +1383,17 @@ Due to the absence of UDR in the visiting network, V-PCF uses locally configured
 
 ```diff
 $ diff --git a/configs/open5gs/pcf.yaml.in b/configs/open5gs/pcf.yaml.in
-index 2df2e9a36..9eea1f1de 100644
+index 4c5d103f9..c1526ff3a 100644
 --- a/configs/open5gs/pcf.yaml.in
 +++ b/configs/open5gs/pcf.yaml.in
-@@ -22,6 +22,51 @@ pcf:
+@@ -23,6 +23,85 @@ pcf:
      server:
        - address: 127.0.0.13
          port: 9090
 +  policy:
-+    - plmn_id:
-+        mcc: 999
-+        mnc: 70
++    - supi_range:
++        - 999700000000001-999709999999999
++        - 315010000000001-315010999999999
 +      slice:
 +        - sst: 1  # 1,2,3,4
 +          default_indicator: true
@@ -939,14 +1413,7 @@ index 2df2e9a36..9eea1f1de 100644
 +                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
 +                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
 +                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
-+    - plmn_id:
-+        mcc: 315
-+        mnc: 010
-+      slice:
-+        - sst: 1  # 1,2,3,4
-+          default_indicator: true
-+          session:
-+            - name: internet
++            - name: ims
 +              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
 +              ambr:
 +                downlink:
@@ -954,13 +1421,57 @@ index 2df2e9a36..9eea1f1de 100644
 +                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
 +                uplink:
 +                  value: 1
-+                  unit: 3
++                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
 +              qos:
-+                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                index: 5  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
 +                arp:
-+                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                  priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
 +                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
 +                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
++              pcc_rule:
++                - qos:
++                    index: 1  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                    arp:
++                      priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                      pre_emption_vulnerability: 1   # 1: Disabled, 2:Enabled
++                      pre_emption_capability: 1   # 1: Disabled, 2:Enabled
++                    mbr:
++                      downlink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                    gbr:
++                      downlink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                - qos:
++                    index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                    arp:
++                      priority_level: 4  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                      pre_emption_vulnerability: 2   # 1: Disabled, 2:Enabled
++                      pre_emption_capability: 2   # 1: Disabled, 2:Enabled
++                    mbr:
++                      downlink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                    gbr:
++                      downlink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
+
+ ################################################################################
+ # PCF Policy Configuration: UE Home PLMN and SUPI Range Based Policies
 ```
 
 For now we will set up SEPP without using TLS.
@@ -1033,20 +1544,23 @@ $ sudo ./install/bin/open5gs-udrd
 
 ```diff
  $ diff -u hosts.old hosts.new
---- hosts.old	2023-10-02 12:22:41.320546720 +0900
-+++ hosts.new	2023-10-02 12:22:33.576884651 +0900
-@@ -1,6 +1,10 @@
+--- hosts.old	2025-07-19 07:02:44.813666212 +0900
++++ hosts.new	2025-07-19 07:04:14.598284689 +0900
+@@ -1,6 +1,13 @@
  127.0.0.1	localhost
  127.0.1.1	open5gs
 
-+127.0.0.10	nrf.5gc.mnc010.mcc315.3gppnetwork.org
-+127.0.0.11	ausf.5gc.mnc010.mcc315.3gppnetwork.org
-+127.0.0.12	udm.5gc.mnc010.mcc315.3gppnetwork.org
++127.0.3.10	nrf.5gc.mnc010.mcc315.3gppnetwork.org
++127.0.3.11	ausf.5gc.mnc010.mcc315.3gppnetwork.org
++127.0.3.12	udm.5gc.mnc010.mcc315.3gppnetwork.org
++127.0.3.14	nssf.5gc.mnc010.mcc315.3gppnetwork.org
++127.0.3.4	smf.5gc.mnc010.mcc315.3gppnetwork.org
++127.0.3.15	bsf.5gc.mnc010.mcc315.3gppnetwork.org
 +
  # The following lines are desirable for IPv6 capable hosts
  ::1     ip6-localhost ip6-loopback
  fe00::0 ip6-localnet
- ```
+```
 
 NRF shall follow TS23.003(28.3.2.3.2 Format of NRF FQDN) for routing.
 
@@ -1097,21 +1611,30 @@ index 9be6cdc93..eee7d3e3f 100644
 
 ```diff
 $ diff --git a/configs/open5gs/nssf.yaml.in b/configs/open5gs/nssf.yaml.in
-index d01645b2c..7d89cffef 100644
+index 015085f56..92ceb63b5 100644
 --- a/configs/open5gs/nssf.yaml.in
 +++ b/configs/open5gs/nssf.yaml.in
-@@ -17,7 +17,7 @@ nssf:
-         scp:
-           - uri: http://127.0.0.200:7777
-         nsi:
--          - uri: http://127.0.0.10:7777
-+          - uri: http://nrf.5gc.mnc010.mcc315.3gppnetwork.org
-             s_nssai:
-               sst: 1
+@@ -11,15 +11,14 @@ global:
+ nssf:
+   sbi:
+     server:
+-      - address: 127.0.0.14
+-        port: 7777
++      - address: nssf.5gc.mnc010.mcc315.3gppnetwork.org
+     client:
+ #      nrf:
+ #        - uri: http://127.0.0.10:7777
+       scp:
+         - uri: http://127.0.0.200:7777
+       nsi:
+-        - uri: http://127.0.0.10:7777
++        - uri: http://nrf.5gc.mnc010.mcc315.3gppnetwork.org
+           s_nssai:
+             sst: 1
  ################################################################################
 ```
 
-AUSF and UDM shall use FQDN in the Home PLMN.
+AUSF, UDM and SMF shall use FQDN in the Home PLMN.
 
 - Update ausf.yaml
 
@@ -1149,6 +1672,24 @@ index ce650d5c2..ed756fc28 100644
        client:
  #        nrf:
  #          - uri: http://127.0.0.10:7777
+```
+
+- Update smf.yaml
+```diff
+$ diff --git a/configs/open5gs/smf.yaml.in b/configs/open5gs/smf.yaml.in
+index e47752393..b6cee9ff8 100644
+--- a/configs/open5gs/smf.yaml.in
++++ b/configs/open5gs/smf.yaml.in
+@@ -11,8 +11,7 @@ global:
+ smf:
+   sbi:
+     server:
+-      - address: 127.0.0.4
+-        port: 7777
++      - address: smf.5gc.mnc010.mcc315.3gppnetwork.org
+     client:
+ #      nrf:
+ #        - uri: http://127.0.0.10:7777
 ```
 
 AMF and UPF must use external IP addresses such as 10.10.3.x for communication between VM1 and VM2.
@@ -1230,17 +1771,17 @@ Due to the absence of UDR in the visiting network, V-PCF uses locally configured
 
 ```diff
 $ diff --git a/configs/open5gs/pcf.yaml.in b/configs/open5gs/pcf.yaml.in
-index 2df2e9a36..9eea1f1de 100644
+index 4c5d103f9..c1526ff3a 100644
 --- a/configs/open5gs/pcf.yaml.in
 +++ b/configs/open5gs/pcf.yaml.in
-@@ -22,6 +22,51 @@ pcf:
+@@ -23,6 +23,85 @@ pcf:
      server:
        - address: 127.0.0.13
          port: 9090
 +  policy:
-+    - plmn_id:
-+        mcc: 999
-+        mnc: 70
++    - supi_range:
++        - 999700000000001-999709999999999
++        - 001010000000001-001019999999999
 +      slice:
 +        - sst: 1  # 1,2,3,4
 +          default_indicator: true
@@ -1260,14 +1801,7 @@ index 2df2e9a36..9eea1f1de 100644
 +                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
 +                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
 +                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
-+    - plmn_id:
-+        mcc: 001
-+        mnc: 01
-+      slice:
-+        - sst: 1  # 1,2,3,4
-+          default_indicator: true
-+          session:
-+            - name: internet
++            - name: ims
 +              type: 3  # 1:IPv4, 2:IPv6, 3:IPv4v6
 +              ambr:
 +                downlink:
@@ -1275,57 +1809,57 @@ index 2df2e9a36..9eea1f1de 100644
 +                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
 +                uplink:
 +                  value: 1
-+                  unit: 3
++                  unit: 3  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
 +              qos:
-+                index: 9  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                index: 5  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
 +                arp:
-+                  priority_level: 8  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                  priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
 +                  pre_emption_vulnerability: 1  # 1: Disabled, 2:Enabled
 +                  pre_emption_capability: 1  # 1: Disabled, 2:Enabled
-```
++              pcc_rule:
++                - qos:
++                    index: 1  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                    arp:
++                      priority_level: 1  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                      pre_emption_vulnerability: 1   # 1: Disabled, 2:Enabled
++                      pre_emption_capability: 1   # 1: Disabled, 2:Enabled
++                    mbr:
++                      downlink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                    gbr:
++                      downlink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 82
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                - qos:
++                    index: 2  # 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86
++                    arp:
++                      priority_level: 4  # 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
++                      pre_emption_vulnerability: 2   # 1: Disabled, 2:Enabled
++                      pre_emption_capability: 2   # 1: Disabled, 2:Enabled
++                    mbr:
++                      downlink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                    gbr:
++                      downlink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
++                      uplink:
++                        value: 802
++                        unit: 1  # 0:bps, 1:Kbps, 2:Mbps, 3:Gbps, 4:Tbps
 
-For now we will set up SEPP without using TLS.
-
-- Create sepp.yaml
-
-```bash
-$ sh -c 'cat << EOF > ./install/etc/open5gs/sepp.yaml
-logger:
-    file:
-      path: /home/acetcom/Documents/git/open5gs/install/var/log/open5gs/sepp.log
-#    level: info   # fatal|error|warn|info(default)|debug|trace
-
-max:
-    ue: 1024  # The number of UE can be increased depending on memory size.
-#    peer: 64
-
-sepp:
-    sbi:
-      server:
-        - address: 127.0.0.250
-          port: 7777
-      client:
-        scp:
-          - uri: http://127.0.0.200:7777
-    n32:
-      server:
-        - sender: sepp3.localdomain
-          address: 10.10.3.251
-          port: 7777
-          n32f:
-            address: 10.10.3.252
-            port: 7777
-      client:
-        sepp:
-          - receiver: sepp1.localdomain
-            uri: http://10.10.1.251:7777
-            n32f:
-              uri: http://10.10.1.252:7777
-          - receiver: sepp2.localdomain
-            uri: http://10.10.2.251:7777
-            n32f:
-              uri: http://10.10.2.252:7777
-EOF'
+ ################################################################################
+ # PCF Policy Configuration: UE Home PLMN and SUPI Range Based Policies
 ```
 
 NFs requires root privileges as it uses reserved ports such as http (80) or https (443).
