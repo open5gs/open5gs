@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+// Modified by Fatemeh Shafiei Ardestani on 2025-04-06
+// Changes: See GitHub for full diff
 
 #include "context.h"
 #include "gtp-path.h"
@@ -1684,7 +1686,7 @@ void smf_sess_set_paging_n1n2message_location(
             strlen(sess->paging.n1n2message_location),
             sess);
 }
-
+//FATEMEH
 void smf_sess_remove(smf_sess_t *sess)
 {
     int i;
@@ -1846,7 +1848,7 @@ smf_sess_t *smf_sess_find_by_teid(uint32_t teid)
 {
     return smf_sess_find_by_seid(teid);
 }
-
+//FATEMEH
 smf_sess_t *smf_sess_find_by_seid(uint64_t seid)
 {
     return ogs_hash_get(self.smf_n4_seid_hash, &seid, sizeof(seid));
@@ -1899,7 +1901,7 @@ smf_sess_t *smf_sess_find_by_sm_context_ref(char *sm_context_ref)
     ogs_assert(sm_context_ref);
     return smf_sess_find(atoll(sm_context_ref));
 }
-
+//FATEMEH
 smf_sess_t *smf_sess_find_by_ipv4(uint32_t addr)
 {
     ogs_assert(self.ipv4_hash);
