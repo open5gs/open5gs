@@ -1589,6 +1589,23 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                     stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     n1smbuf, OpenAPI_n2_sm_info_type_NULL, NULL);
             break;
+        CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
+                ogs_error("[%s:%d] Ignore SBI message "
+                        "state [%d] res_status [%d]",
+                    smf_ue->supi, sess->psi,
+                    e->h.sbi.state, sbi_message->res_status);
+                break;
+
+            DEFAULT
+                ogs_error("[%s:%d] Invalid resource name [%s]",
+                        smf_ue->supi, sess->psi,
+                        sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
         DEFAULT
             ogs_error("[%s:%d] Invalid API name [%s]",
                     smf_ue->supi, sess->psi, sbi_message->h.service.name);
@@ -1809,7 +1826,7 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
             SWITCH(sbi_message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
-                ogs_warn("[%s:%d] state [%d] res_status [%d]",
+                ogs_error("[%s:%d] state [%d] res_status [%d]",
                     smf_ue->supi, sess->psi,
                     e->h.sbi.state, sbi_message->res_status);
                 smf_namf_comm_handle_n1_n2_message_transfer(
@@ -1878,7 +1895,7 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
                     break;
 
                 DEFAULT
-                    ogs_warn("[%s] Ignore invalid HTTP method [%s]",
+                    ogs_error("[%s] Ignore invalid HTTP method [%s]",
                         smf_ue->supi, sbi_message->h.method);
                 END
                 break;
@@ -2243,7 +2260,7 @@ void smf_gsm_state_5gc_session_will_deregister(ogs_fsm_t *s, smf_event_t *e)
                     break;
 
                 DEFAULT
-                    ogs_warn("Ignore invalid HTTP method [%s]",
+                    ogs_error("Ignore invalid HTTP method [%s]",
                         sbi_message->h.method);
                 END
                 break;
