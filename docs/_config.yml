@@ -26,6 +26,9 @@ google_analytics: G-12MQZTB3JH
 
 # Build settings
 markdown: kramdown
+kramdown:
+  parse_block_html: true
+
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
