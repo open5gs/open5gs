@@ -1666,7 +1666,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                         stream));
                             break;
                         case SMF_UPDATE_STATE_ACTIVATED_FROM_XN_HANDOVER:
-                            ogs_pkbuf_t *n2smbuf =
+                            n2smbuf =
                                 ngap_build_path_switch_request_ack_transfer(
                                         sess);
                             ogs_assert(n2smbuf);
@@ -2165,6 +2165,7 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
     smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
+    ogs_pkbuf_t *n2smbuf = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
@@ -2754,7 +2755,7 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                                         stream));
                             break;
                         case SMF_UPDATE_STATE_ACTIVATED_FROM_XN_HANDOVER:
-                            ogs_pkbuf_t *n2smbuf =
+                            n2smbuf =
                                 ngap_build_path_switch_request_ack_transfer(
                                         sess);
                             ogs_assert(n2smbuf);
