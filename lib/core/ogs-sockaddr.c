@@ -103,11 +103,18 @@ int ogs_addaddrinfo(ogs_sockaddr_t **sa_list,
     int rc;
     char service[NI_MAXSERV];
     struct addrinfo hints, *ai, *ai_list;
-    ogs_sockaddr_t *prev;
+    ogs_sockaddr_t *prev = NULL;
+
+    /* Last node of original list (for appending) */
+    ogs_sockaddr_t *tail = NULL;
+    /* First newly added node (for cleanup on error) */
+    ogs_sockaddr_t *first_new = NULL;
+
     char buf[OGS_ADDRSTRLEN];
 
     ogs_assert(sa_list);
 
+    /* Prepare hints for getaddrinfo() */
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = family;
     hints.ai_socktype = SOCK_STREAM;
@@ -118,24 +125,41 @@ int ogs_addaddrinfo(ogs_sockaddr_t **sa_list,
     rc = getaddrinfo(hostname, service, &hints, &ai_list);
     if (rc != 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "getaddrinfo(%d:%s:%d:0x%x) failed",
-                family, hostname, port, flags);
+                        "getaddrinfo(%d:%s:%d:0x%x) failed: %s",
+                        family, hostname ? hostname : "(null)",
+                        port, flags, gai_strerror(rc));
+        /* Non-fatal: log the error and return */
         return OGS_ERROR;
     }
 
-    prev = NULL;
+    /* Find the end of the existing list, so new entries can be appended */
     if (*sa_list) {
-        prev = *sa_list;
-        while(prev->next) prev = prev->next;
+        tail = *sa_list;
+        while (tail->next)
+            tail = tail->next;
+        prev = tail;
     }
+
+    /* Iterate over each result from getaddrinfo and add to the linked list */
     for (ai = ai_list; ai; ai = ai->ai_next) {
         ogs_sockaddr_t *new, tmp;
         if (ai->ai_family != AF_INET && ai->ai_family != AF_INET6)
-            continue;
+            continue; /* Skip unsupported address families */
 
         new = ogs_calloc(1, sizeof(ogs_sockaddr_t));
         if (!new) {
             ogs_error("ogs_calloc() failed");
+            /* Clean up any partially added entries on memory failure */
+            if (first_new) {
+                if (tail) {
+                    /* detach new sub-list from original list */
+                    tail->next = NULL;
+                } else {
+                    *sa_list = NULL;    /* no original list, reset head */
+                }
+                ogs_freeaddrinfo(first_new);
+            }
+            freeaddrinfo(ai_list);
             return OGS_ERROR;
         }
         memcpy(&new->sa, ai->ai_addr, ai->ai_addrlen);
@@ -143,30 +167,49 @@ int ogs_addaddrinfo(ogs_sockaddr_t **sa_list,
 
         if (hostname) {
             if (ogs_inet_pton(ai->ai_family, hostname, &tmp) == OGS_OK) {
-                /* It's a valid IP address */
+                /* Input string is a valid numeric IP address */
                 ogs_debug("addr:%s, port:%d", OGS_ADDR(new, buf), port);
             } else {
-                /* INVALID IP address! We assume it is a hostname */
+                /* Input string is not a numeric IP; treat it as a hostname */
                 new->hostname = ogs_strdup(hostname);
-                ogs_assert(new->hostname);
+                if (!new->hostname) {
+                    ogs_error("ogs_strdup() failed");
+                    /* Free the new node and any previously added nodes */
+                    ogs_free(new);
+                    if (first_new) {
+                        if (tail) {
+                            tail->next = NULL;
+                        } else {
+                            *sa_list = NULL;
+                        }
+                        ogs_freeaddrinfo(first_new);
+                    }
+                    freeaddrinfo(ai_list);
+                    return OGS_ERROR;
+                }
                 ogs_debug("name:%s, port:%d", new->hostname, port);
             }
         }
 
-        if (!prev)
+        /* Link the new node into the list */
+        if (!prev) {
             *sa_list = new;
-        else
+        } else {
             prev->next = new;
-
+        }
         prev = new;
+        if (!first_new) {
+            first_new = new;  /* mark the first new node added */
+        }
     }
 
     freeaddrinfo(ai_list);
 
-    if (prev == NULL) {
+    if (first_new == NULL) {
+        /* No addresses were added (e.g., no AF_INET/AF_INET6 results) */
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "ogs_getaddrinfo(%d:%s:%d:%d) failed",
-                family, hostname, port, flags);
+                        "ogs_addaddrinfo(%d:%s:%d:0x%x) returned no addresses",
+                        family, hostname ? hostname : "(null)", port, flags);
         return OGS_ERROR;
     }
 
@@ -799,4 +842,38 @@ char *ogs_sockaddr_to_string_static(ogs_sockaddr_t *sa_list)
 
     /* No address */
     return NULL;
+}
+
+int ogs_sockaddr_from_ip_or_fqdn(ogs_sockaddr_t **sa_list,
+        int family, const char *ip_or_fqdn, uint16_t port)
+{
+    int rc;
+    int flags = 0;
+    ogs_sockaddr_t tmp;
+
+    ogs_assert(sa_list);
+    ogs_assert(ip_or_fqdn);
+
+    /* Determine if the input is an IP literal (numeric address).
+     * If so, use AI_NUMERICHOST to avoid DNS lookup. */
+    if (ogs_inet_pton(AF_INET, ip_or_fqdn, &tmp) == OGS_OK ||
+        ogs_inet_pton(AF_INET6, ip_or_fqdn, &tmp) == OGS_OK) {
+        flags |= AI_NUMERICHOST;
+    }
+
+    /* Use ogs_addaddrinfo
+     * to perform resolution and construct the sockaddr list */
+    *sa_list = NULL;
+    rc = ogs_addaddrinfo(sa_list, family, ip_or_fqdn, port, flags);
+    if (rc != OGS_OK) {
+        ogs_error("Failed to resolve address: %s", ip_or_fqdn);
+        /* Cleanup: free any nodes that might have been added before failure */
+        if (*sa_list) {
+            ogs_freeaddrinfo(*sa_list);
+            *sa_list = NULL;
+        }
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
 }
