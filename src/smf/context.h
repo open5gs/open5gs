@@ -129,10 +129,10 @@ typedef struct smf_context_s {
     const char      *dns6[MAX_NUM_OF_DNS];
 
 #define MAX_NUM_OF_P_CSCF           16
-    char            *p_cscf[MAX_NUM_OF_P_CSCF];
+    const char      *p_cscf[MAX_NUM_OF_P_CSCF];
     int             num_of_p_cscf;
     int             p_cscf_index;
-    char            *p_cscf6[MAX_NUM_OF_P_CSCF];
+    const char      *p_cscf6[MAX_NUM_OF_P_CSCF];
     int             num_of_p_cscf6;
     int             p_cscf6_index;
 
