@@ -111,6 +111,8 @@ void smf_context_init(void)
 
 void smf_context_final(void)
 {
+    int i;
+
     ogs_gtp_node_t *gnode = NULL, *next_gnode = NULL;
     ogs_assert(context_initialized == 1);
 
@@ -142,6 +144,11 @@ void smf_context_final(void)
         smf_gtp_node_free(smf_gnode);
         ogs_gtp_node_remove(&self.sgw_s5c_list, gnode);
     }
+
+    for (i = 0; i < self.num_of_p_cscf; i++)
+        ogs_free(self.p_cscf[i]);
+    for (i = 0; i < self.num_of_p_cscf6; i++)
+        ogs_free(self.p_cscf6[i]);
 
     ogs_pool_final(&smf_gtp_node_pool);
 
@@ -547,40 +554,69 @@ int smf_context_parse_config(void)
                     ogs_yaml_iter_t p_cscf_iter;
                     ogs_yaml_iter_recurse(&smf_iter, &p_cscf_iter);
                     ogs_assert(ogs_yaml_iter_type(&p_cscf_iter) !=
-                        YAML_MAPPING_NODE);
+                            YAML_MAPPING_NODE);
 
                     self.num_of_p_cscf = 0;
                     self.num_of_p_cscf6 = 0;
                     do {
                         const char *v = NULL;
+                        ogs_sockaddr_t *resolved_list = NULL;
+                        ogs_sockaddr_t *cur = NULL;
+                        char buf[OGS_ADDRSTRLEN];
+                        int res;
 
                         if (ogs_yaml_iter_type(&p_cscf_iter) ==
                                 YAML_SEQUENCE_NODE) {
                             if (!ogs_yaml_iter_next(&p_cscf_iter))
                                 break;
                         }
-
                         v = ogs_yaml_iter_value(&p_cscf_iter);
-                        if (v) {
-                            ogs_ipsubnet_t ipsub;
-                            rv = ogs_ipsubnet(&ipsub, v, NULL);
-                            ogs_assert(rv == OGS_OK);
-
-                            if (ipsub.family == AF_INET) {
-                                if (self.num_of_p_cscf >= MAX_NUM_OF_P_CSCF)
-                                    ogs_warn("Ignore P-CSCF : %s", v);
-                                else self.p_cscf[self.num_of_p_cscf++] = v;
-                            }
-                            else if (ipsub.family == AF_INET6) {
-                                if (self.num_of_p_cscf6 >= MAX_NUM_OF_P_CSCF)
-                                    ogs_warn("Ignore P-CSCF : %s", v);
-                                else self.p_cscf6[self.num_of_p_cscf6++] = v;
-                            } else
-                                ogs_warn("Ignore P-CSCF : %s", v);
+                        if (!v) {
+                            ogs_error("No value for P-CSCF in configuration");
+                            continue;
                         }
 
+                        /* Use the new API to resolve IP or FQDN
+                         * into one or more addresses */
+                        res = ogs_sockaddr_from_ip_or_fqdn(
+                                &resolved_list, AF_UNSPEC, v, 0);
+                        if (res != OGS_OK || !resolved_list) {
+                            ogs_error("Failed to resolve P-CSCF address: %s",
+                                    v);
+                            continue; /* Skip this entry and move to the next */
+                        }
+
+                        /* Iterate through all resolved addresses
+                         * and store them */
+                        for (cur = resolved_list; cur; cur = cur->next) {
+                            if (cur->ogs_sa_family == AF_INET) {
+                                if (self.num_of_p_cscf < MAX_NUM_OF_P_CSCF) {
+                                    self.p_cscf[self.num_of_p_cscf++] =
+                                        ogs_ipstrdup(cur);
+                                } else {
+                                    ogs_warn("Ignore P-CSCF IPv4 "
+                                            "(max %d reached): %s",
+                                             MAX_NUM_OF_P_CSCF,
+                                             OGS_ADDR(cur, buf));
+                                }
+                            } else if (cur->ogs_sa_family == AF_INET6) {
+                                if (self.num_of_p_cscf6 < MAX_NUM_OF_P_CSCF) {
+                                    self.p_cscf6[self.num_of_p_cscf6++] =
+                                        ogs_ipstrdup(cur);
+                                } else {
+                                    ogs_warn("Ignore P-CSCF IPv6 "
+                                            "(max %d reached): %s",
+                                             MAX_NUM_OF_P_CSCF,
+                                             OGS_ADDR(cur, buf));
+                                }
+                            }
+                        }
+                        /* free the linked list */
+                        ogs_freeaddrinfo(resolved_list);
+
                     } while (ogs_yaml_iter_type(&p_cscf_iter) ==
-                                YAML_SEQUENCE_NODE);
+                            YAML_SEQUENCE_NODE);
+
                 } else if (!strcmp(smf_key, "info")) {
                     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
