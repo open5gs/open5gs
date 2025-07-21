@@ -123,6 +123,8 @@ int ogs_ipsubnet(ogs_ipsubnet_t *ipsub,
 char *ogs_gethostname(ogs_sockaddr_t *addr);
 char *ogs_ipstrdup(ogs_sockaddr_t *addr);
 char *ogs_sockaddr_to_string_static(ogs_sockaddr_t *sa_list);
+int ogs_sockaddr_from_ip_or_fqdn(ogs_sockaddr_t **sa_list,
+        int family, const char *ip_or_fqdn, uint16_t port);
 
 #ifdef __cplusplus
 }
