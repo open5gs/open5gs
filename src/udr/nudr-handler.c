@@ -467,6 +467,7 @@ bool udr_nudr_dr_handle_subscription_provisioned(
     OpenAPI_ip_address_t *ipAddress = NULL;
     OpenAPI_list_t *FrameRouteList = NULL;
     OpenAPI_sm_subs_data_t smSubsData;
+    OpenAPI_trace_data_t *TraceData = NULL;
 
     char *supi = NULL;
 
@@ -664,6 +665,22 @@ bool udr_nudr_dr_handle_subscription_provisioned(
             if (DefaultSingleNssaiList->count)
                 AccessAndMobilitySubscriptionData.nssai = &NSSAI;
         }
+
+#if 1
+        /* TODO: move this to DB/WebUI */
+        char *trace_ref = ogs_strdup("00101-abcdef");
+        char *ne_type_list = ogs_strdup("todo");
+        char *event_list = ogs_strdup("todo");
+        TraceData = OpenAPI_trace_data_create(trace_ref,
+                OpenAPI_trace_depth_MAXIMUM,
+                ne_type_list,
+                event_list,
+                NULL/*collection_entity_ipv4_addr*/,
+                NULL/*collection_entity_ipv6_addr*/,
+                NULL/*interface_list*/);
+        ogs_assert(TraceData);
+        AccessAndMobilitySubscriptionData.trace_data = TraceData;
+#endif
 
         if (!returnProvisionedData) {
             memset(&sendmsg, 0, sizeof(sendmsg));
@@ -1100,6 +1117,7 @@ bool udr_nudr_dr_handle_subscription_provisioned(
             }
         }
         OpenAPI_list_free(SingleNssaiList);
+        OpenAPI_trace_data_free(TraceData);
     }
     if (processSmfSel) {
         OpenAPI_lnode_t *node = NULL, *node2 = NULL;
