@@ -219,6 +219,68 @@ bool pcf_npcf_am_policy_control_handle_create(pcf_ue_am_t *pcf_ue_am,
     }
 }
 
+bool pcf_npcf_am_policy_control_handle_update(pcf_ue_am_t *pcf_ue_am,
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
+{
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+    ogs_sbi_header_t header;
+    ogs_sbi_server_t *server = NULL;
+
+    ogs_assert(pcf_ue_am);
+    ogs_assert(stream);
+    ogs_assert(message);
+
+    server = ogs_sbi_server_from_stream(stream);
+    ogs_assert(server);
+
+    OpenAPI_policy_association_update_request_t *PolicyAssociationUpdateRequest = NULL;
+    OpenAPI_policy_update_t PolicyUpdate;
+
+
+    PolicyAssociationUpdateRequest = message->PolicyAssociationUpdateRequest;
+    if (!PolicyAssociationUpdateRequest) {
+        ogs_error("[%s] No PolicyAssociationUpdateRequest", pcf_ue_am->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            message, "[%s] No PolicyAssociationUpdateRequest", pcf_ue_am->supi, NULL));
+        return false;
+    }
+
+    if (PolicyAssociationUpdateRequest->trace_req) {
+        pcf_ue_am->trace_data = OpenAPI_trace_data_copy(pcf_ue_am->trace_data,
+            PolicyAssociationUpdateRequest->trace_req);
+
+    } else if (PolicyAssociationUpdateRequest->is_trace_req_null) {
+        PCF_UE_AM_TRACE_DATA_CLEAR(pcf_ue_am);
+        PCF_UE_AM_TRACE_PARENT_CLEAR(pcf_ue_am);
+    }
+
+    memset(&header, 0, sizeof(header));
+    header.service.name =
+        (char *)OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL;
+    header.api.version = (char *)OGS_SBI_API_V1;
+    header.resource.component[0] =
+        (char *)OGS_SBI_RESOURCE_NAME_POLICIES;
+    header.resource.component[1] = pcf_ue_am->association_id;
+
+    memset(&PolicyUpdate, 0, sizeof(PolicyUpdate));
+    PolicyUpdate.resource_uri = ogs_sbi_server_uri(server, &header);
+    ogs_assert(PolicyUpdate.resource_uri);
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    sendmsg.PolicyUpdate = &PolicyUpdate;
+
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    if (PolicyUpdate.resource_uri)
+        ogs_free(PolicyUpdate.resource_uri);
+
+    return true;
+}
+
 bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
@@ -556,6 +618,72 @@ cleanup:
             ogs_sbi_server_send_error(stream, status, message,
                     strerror, NULL, "ERROR_INITIAL_PARAMETERS"));
     ogs_free(strerror);
+
+    return false;
+}
+
+bool pcf_npcf_smpolicycontrol_handle_update(pcf_sess_t *sess,
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
+{
+    int status = 0;
+    char *strerror = NULL;
+    char *cause = NULL;
+    pcf_ue_sm_t *pcf_ue_sm = NULL;
+
+    OpenAPI_sm_policy_update_context_data_t *SmPolicyUpdateContextData = NULL;
+
+    ogs_assert(sess);
+
+    pcf_ue_sm = pcf_ue_sm_find_by_id(sess->pcf_ue_sm_id);
+    ogs_assert(pcf_ue_sm);
+    ogs_assert(pcf_ue_sm->supi);
+    ogs_assert(stream);
+    ogs_assert(message);
+
+    SmPolicyUpdateContextData = message->SmPolicyUpdateContextData;
+    if (!SmPolicyUpdateContextData) {
+        strerror = ogs_msprintf("[%s:%d] No SmPolicyUpdateContextData",
+                pcf_ue_sm->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
+    if (SmPolicyUpdateContextData->trace_req) {
+        pcf_ue_sm->trace_data = OpenAPI_trace_data_copy(pcf_ue_sm->trace_data,
+            SmPolicyUpdateContextData->trace_req);
+
+    } else if (SmPolicyUpdateContextData->is_trace_req_null) {
+        PCF_UE_AM_TRACE_DATA_CLEAR(pcf_ue_sm);
+        PCF_UE_AM_TRACE_PARENT_CLEAR(pcf_ue_sm);
+    }
+
+    /*
+     * An empty SmPolicyDecision data structure is included in the "200 OK"
+     * response when the PCF decides not to update policies.
+     */
+    ogs_sbi_message_t sendmsg;
+    OpenAPI_sm_policy_decision_t SmPolicyDecision;
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    memset(&SmPolicyDecision, 0, sizeof(SmPolicyDecision));
+    sendmsg.SmPolicyDecision = &SmPolicyDecision;
+
+    ogs_sbi_response_t *response = ogs_sbi_build_response(
+            &sendmsg, OGS_SBI_HTTP_STATUS_OK);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    return true;
+
+cleanup:
+    ogs_assert(status);
+    ogs_assert(strerror);
+    ogs_error("%s", strerror);
+    ogs_assert(true ==
+        ogs_sbi_server_send_error(stream, status, message, strerror,
+                NULL, cause));
+    ogs_free(strerror);
+    ogs_free(cause);
 
     return false;
 }

@@ -600,10 +600,12 @@ typedef struct ogs_sbi_message_s {
         *N1N2MsgTxfrFailureNotification;
     OpenAPI_sm_context_status_notification_t *SmContextStatusNotification;
     OpenAPI_policy_association_request_t *PolicyAssociationRequest;
+    OpenAPI_policy_association_update_request_t *PolicyAssociationUpdateRequest;
     OpenAPI_policy_association_t *PolicyAssociation;
     OpenAPI_policy_update_t *PolicyUpdate;
     OpenAPI_am_policy_data_t *AmPolicyData;
     OpenAPI_sm_policy_context_data_t *SmPolicyContextData;
+    OpenAPI_sm_policy_update_context_data_t *SmPolicyUpdateContextData;
     OpenAPI_sm_policy_decision_t *SmPolicyDecision;
     OpenAPI_sm_policy_data_t *SmPolicyData;
     OpenAPI_sm_policy_delete_data_t *SmPolicyDeleteData;

@@ -78,10 +78,11 @@ typedef struct smf_nsmf_pdusession_param_s {
     int gsm_cause;
 
     struct {
-    ED4(uint8_t serving_network:1;,
+    ED5(uint8_t serving_network:1;,
         uint8_t ue_location:1;,
         uint8_t ue_timezone:1;,
-        uint8_t spare:4;)
+        uint8_t trace_data:1;,
+        uint8_t spare:3;)
     };
 
     uint32_t dl_teid;

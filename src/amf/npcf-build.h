@@ -26,7 +26,20 @@
 extern "C" {
 #endif
 
+typedef struct amf_npcf_am_policy_control_param_s {
+    union {
+        struct {
+        ED2(uint8_t trace_data:1;,
+            uint8_t spare:7;)
+        };
+        uint8_t indications;
+    };
+
+} amf_npcf_am_policy_control_param_t;
+
 ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
+        amf_ue_t *amf_ue, void *data);
+ogs_sbi_request_t *amf_npcf_am_policy_control_build_update(
         amf_ue_t *amf_ue, void *data);
 ogs_sbi_request_t *amf_npcf_am_policy_control_build_delete(
         amf_ue_t *amf_ue, void *data);

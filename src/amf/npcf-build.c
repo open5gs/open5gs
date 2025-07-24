@@ -215,6 +215,50 @@ end:
     return request;
 }
 
+ogs_sbi_request_t *amf_npcf_am_policy_control_build_update(
+        amf_ue_t *amf_ue, void *data)
+{
+    amf_npcf_am_policy_control_param_t *param = data;
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    OpenAPI_policy_association_update_request_t PolicyAssociationUpdateRequest;
+
+    ogs_assert(amf_ue);
+    ogs_assert(amf_ue->policy_association.resource_uri);
+    ogs_assert(ran_ue_find_by_id(amf_ue->ran_ue_id));
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    message.h.uri = ogs_msprintf("%s/%s",
+        amf_ue->policy_association.resource_uri, OGS_SBI_RESOURCE_NAME_UPDATE);
+    ogs_assert(message.h.uri);
+
+    memset(&PolicyAssociationUpdateRequest, 0,
+            sizeof(PolicyAssociationUpdateRequest));
+
+    message.PolicyAssociationUpdateRequest = &PolicyAssociationUpdateRequest;
+
+    if (param->trace_data) {
+        if (amf_ue->trace_data)
+            PolicyAssociationUpdateRequest.trace_req = OpenAPI_trace_data_copy(
+                PolicyAssociationUpdateRequest.trace_req, amf_ue->trace_data);
+        else
+            PolicyAssociationUpdateRequest.is_trace_req_null = true;
+    }
+
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+
+    if (PolicyAssociationUpdateRequest.trace_req)
+        OpenAPI_trace_data_free(PolicyAssociationUpdateRequest.trace_req);
+    if (message.h.uri)
+        ogs_free(message.h.uri);
+
+    return request;
+}
+
 ogs_sbi_request_t *amf_npcf_am_policy_control_build_delete(
         amf_ue_t *amf_ue, void *data)
 {

@@ -139,7 +139,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
             SWITCH(message.h.method)
             CASE(OGS_SBI_HTTP_METHOD_POST)
-                if (message.PolicyAssociationRequest &&
+                if (message.h.resource.component[1]) {
+                    pcf_ue_am = pcf_ue_am_find_by_association_id(
+                            message.h.resource.component[1]);
+                } else if (message.PolicyAssociationRequest &&
                     message.PolicyAssociationRequest->supi) {
                     pcf_ue_am = pcf_ue_am_find_by_supi(
                                 message.PolicyAssociationRequest->supi);

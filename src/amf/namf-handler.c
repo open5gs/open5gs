@@ -932,6 +932,37 @@ static int update_ambr(OpenAPI_change_item_t *item_change,
     }
 }
 
+static int update_trace_data(OpenAPI_change_item_t *item_change,
+        amf_ue_t *amf_ue, bool *trace_data_changed)
+{
+    cJSON *json = item_change->new_value->json;
+
+    if (!item_change->path) {
+        return OGS_ERROR;
+    }
+
+    switch (item_change->op) {
+    case OpenAPI_change_type_REPLACE:
+    case OpenAPI_change_type_ADD:
+        if (!strcmp(item_change->path, "/traceData")) {
+            AMF_UE_TRACE_DATA_CLEAR(amf_ue);
+            amf_ue->trace_data = OpenAPI_trace_data_parseFromJSON(json);
+            *trace_data_changed = true;
+        }
+        return OGS_OK;
+
+    case OpenAPI_change_type__REMOVE:
+        if (!strcmp(item_change->path, "/traceData")) {
+            AMF_UE_TRACE_DATA_CLEAR(amf_ue);
+            AMF_UE_TRACE_PARENT_CLEAR(amf_ue);
+            *trace_data_changed = true;
+        }
+        return OGS_OK;
+    default:
+        return OGS_OK;
+    }
+}
+
 int amf_namf_callback_handle_sdm_data_change_notify(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
@@ -949,6 +980,7 @@ int amf_namf_callback_handle_sdm_data_change_notify(
     char *res_name = NULL;
 
     bool ambr_changed = false;
+    bool trace_data_changed = false;
 
     ogs_assert(stream);
     ogs_assert(recvmsg);
@@ -994,7 +1026,9 @@ int amf_namf_callback_handle_sdm_data_change_notify(
                 OpenAPI_change_item_t *change_item = node_ci->data;
                 if (update_rat_res(change_item, amf_ue->rat_restrictions) ||
                         update_ambr(change_item, &amf_ue->ue_ambr,
-                            &ambr_changed)) {
+                            &ambr_changed) ||
+                        update_trace_data(change_item, amf_ue,
+                            &trace_data_changed)) {
                     status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
                     goto cleanup;
                 }
@@ -1061,16 +1095,56 @@ int amf_namf_callback_handle_sdm_data_change_notify(
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             }
+        } else {
 
-        } else if (ambr_changed) {
-            ogs_pkbuf_t *ngapbuf;
+            if (ambr_changed) {
+                ogs_pkbuf_t *ngapbuf;
 
-            ngapbuf = ngap_build_ue_context_modification_request(amf_ue);
-            ogs_assert(ngapbuf);
+                ngapbuf = ngap_build_ue_context_modification_request(amf_ue);
+                ogs_assert(ngapbuf);
 
-            r = ngap_send_to_ran_ue(ran_ue, ngapbuf);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
+                r = ngap_send_to_ran_ue(ran_ue, ngapbuf);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            }
+
+            if (trace_data_changed) {
+                /* send modification to SMF & PCF */
+                amf_sess_t *sess = NULL;
+
+                ogs_list_for_each(&amf_ue->sess_list, sess) {
+                    if (SESSION_CONTEXT_IN_SMF(sess)) {
+                        amf_nsmf_pdusession_sm_context_param_t param;
+
+                        memset(&param, 0, sizeof(param));
+                        param.trace_data = true;
+
+                        r = amf_sess_sbi_discover_and_send(
+                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            amf_nsmf_pdusession_build_update_sm_context,
+                            ran_ue, sess, AMF_UPDATE_SM_CONTEXT_MODIFIED, &param);
+                        ogs_expect(r == OGS_OK);
+                        ogs_assert(r != OGS_ERROR);
+
+                        /* only need to send update for 1 session */
+                        break;
+                    }
+                }
+
+                if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
+                    amf_npcf_am_policy_control_param_t param;
+
+                    memset(&param, 0, sizeof(param));
+                    param.trace_data = true;
+
+                    r = amf_ue_sbi_discover_and_send(
+                        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
+                        amf_npcf_am_policy_control_build_update,
+                        amf_ue, AMF_UPDATE_SM_CONTEXT_MODIFIED, &param);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                }
+            }
         }
     }
 

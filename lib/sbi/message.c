@@ -189,12 +189,17 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
     if (message->PolicyAssociationRequest)
         OpenAPI_policy_association_request_free(
                 message->PolicyAssociationRequest);
+    if (message->PolicyAssociationUpdateRequest)
+        OpenAPI_policy_association_update_request_free(
+                message->PolicyAssociationUpdateRequest);
     if (message->PolicyAssociation)
         OpenAPI_policy_association_free(message->PolicyAssociation);
     if (message->AmPolicyData)
         OpenAPI_am_policy_data_free(message->AmPolicyData);
     if (message->SmPolicyContextData)
         OpenAPI_sm_policy_context_data_free(message->SmPolicyContextData);
+    if (message->SmPolicyUpdateContextData)
+        OpenAPI_sm_policy_update_context_data_free(message->SmPolicyUpdateContextData);
     if (message->SmPolicyDecision)
         OpenAPI_sm_policy_decision_free(message->SmPolicyDecision);
     if (message->SmPolicyData)
@@ -1669,6 +1674,10 @@ static char *build_json(ogs_sbi_message_t *message)
         item = OpenAPI_policy_association_request_convertToJSON(
                 message->PolicyAssociationRequest);
         ogs_assert(item);
+    } else if (message->PolicyAssociationUpdateRequest) {
+        item = OpenAPI_policy_association_update_request_convertToJSON(
+                message->PolicyAssociationUpdateRequest);
+        ogs_assert(item);
     } else if (message->PolicyAssociation) {
         item = OpenAPI_policy_association_convertToJSON(
                 message->PolicyAssociation);
@@ -1679,6 +1688,10 @@ static char *build_json(ogs_sbi_message_t *message)
     } else if (message->SmPolicyContextData) {
         item = OpenAPI_sm_policy_context_data_convertToJSON(
                 message->SmPolicyContextData);
+        ogs_assert(item);
+    } else if (message->SmPolicyUpdateContextData) {
+        item = OpenAPI_sm_policy_update_context_data_convertToJSON(
+                message->SmPolicyUpdateContextData);
         ogs_assert(item);
     } else if (message->SmPolicyDecision) {
         item = OpenAPI_sm_policy_decision_convertToJSON(
@@ -2735,21 +2748,49 @@ static int parse_json(ogs_sbi_message_t *message,
         CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
-                if (message->res_status == 0) {
-                    message->PolicyAssociationRequest =
-                        OpenAPI_policy_association_request_parseFromJSON(item);
-                    if (!message->PolicyAssociationRequest) {
-                        rv = OGS_ERROR;
-                        ogs_error("JSON parse error");
+                if (!message->h.resource.component[1]) {
+                    if (message->res_status == 0) {
+                        message->PolicyAssociationRequest =
+                            OpenAPI_policy_association_request_parseFromJSON(item);
+                        if (!message->PolicyAssociationRequest) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else if (message->res_status ==
+                            OGS_SBI_HTTP_STATUS_CREATED) {
+                        message->PolicyAssociation =
+                            OpenAPI_policy_association_parseFromJSON(item);
+                        if (!message->PolicyAssociation) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
                     }
-                } else if (message->res_status ==
-                        OGS_SBI_HTTP_STATUS_CREATED) {
-                    message->PolicyAssociation =
-                        OpenAPI_policy_association_parseFromJSON(item);
-                    if (!message->PolicyAssociation) {
+                } else {
+                    SWITCH(message->h.resource.component[2])
+                    CASE(OGS_SBI_RESOURCE_NAME_UPDATE)
+                        if (message->res_status == 0) {
+                            message->PolicyAssociationUpdateRequest =
+                                OpenAPI_policy_association_update_request_parseFromJSON(
+                                    item);
+                            if (!message->PolicyAssociationUpdateRequest) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                        else if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                            message->PolicyUpdate =
+                                OpenAPI_policy_update_parseFromJSON(item);
+                            if (!message->PolicyUpdate) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                        break;
+                    DEFAULT
                         rv = OGS_ERROR;
-                        ogs_error("JSON parse error");
-                    }
+                        ogs_error("Unknown resource name [%s]",
+                                message->h.resource.component[2]);
+                    END
                 }
                 break;
             DEFAULT
@@ -2787,6 +2828,17 @@ static int parse_json(ogs_sbi_message_t *message,
                                 OpenAPI_sm_policy_delete_data_parseFromJSON(
                                         item);
                             if (!message->SmPolicyDeleteData) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                        break;
+                    CASE(OGS_SBI_RESOURCE_NAME_UPDATE)
+                        if (message->res_status == 0) {
+                            message->SmPolicyUpdateContextData =
+                                OpenAPI_sm_policy_update_context_data_parseFromJSON(
+                                        item);
+                            if (!message->SmPolicyUpdateContextData) {
                                 rv = OGS_ERROR;
                                 ogs_error("JSON parse error");
                             }

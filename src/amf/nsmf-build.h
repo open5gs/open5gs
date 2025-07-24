@@ -37,9 +37,10 @@ typedef struct amf_nsmf_pdusession_sm_context_param_s {
     } ngApCause;
     union {
         struct {
-        ED3(uint8_t ue_location:1;,
+        ED4(uint8_t ue_location:1;,
             uint8_t ue_timezone:1;,
-            uint8_t spare:6;)
+            uint8_t trace_data:1;,
+            uint8_t spare:5;)
         };
         uint8_t indications;
     };

@@ -416,6 +416,14 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
     }
     SmContextUpdateData.cause = param->cause;
 
+    if (param->trace_data) {
+        if (amf_ue->trace_data)
+            SmContextUpdateData.trace_data = OpenAPI_trace_data_copy(
+                SmContextUpdateData.trace_data, amf_ue->trace_data);
+        else
+            SmContextUpdateData.is_trace_data_null = true;
+    }
+
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
 
@@ -431,6 +439,8 @@ end:
         ogs_free(SmContextUpdateData.ue_time_zone);
     if (SmContextUpdateData.target_id)
         amf_nsmf_pdusession_free_target_id(SmContextUpdateData.target_id);
+    if (SmContextUpdateData.trace_data)
+        OpenAPI_trace_data_free(SmContextUpdateData.trace_data);
 
     return request;
 }

@@ -28,6 +28,8 @@ extern "C" {
 
 ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         smf_sess_t *sess, void *data);
+ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_update(
+        smf_sess_t *sess, void *data);
 ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
         smf_sess_t *sess, void *data);
 

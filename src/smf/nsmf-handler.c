@@ -1174,6 +1174,14 @@ bool smf_nsmf_handle_update_sm_context(
             SMF_UE_TRACE_PARENT_CLEAR(smf_ue);
         }
 
+        sess->nsmf_param.trace_data = true;
+        r = smf_sbi_discover_and_send(
+                OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
+                smf_npcf_smpolicycontrol_build_update, sess, stream,
+                0, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+
     } else {
         ogs_error("[%s:%d] No UpdateData", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error_log(
