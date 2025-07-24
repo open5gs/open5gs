@@ -67,7 +67,8 @@ libsbi = library('ogssbi',
                     libcrypto_dep,
                     libnghttp2_dep,
                     libmicrohttpd_dep,
-                    libcurl_dep],
+                    libcurl_dep,
+                    libtrace_dep],
     install_rpath : libdir,
     install : true)
 
@@ -82,4 +83,5 @@ libsbi_dep = declare_dependency(
                     libcrypto_dep,
                     libnghttp2_dep,
                     libmicrohttpd_dep,
-                    libcurl_dep])
+                    libcurl_dep,
+                    libtrace_dep])

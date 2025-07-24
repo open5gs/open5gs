@@ -18,6 +18,7 @@
  */
 
 #include "ogs-sbi.h"
+#include "ogs-trace.h"
 #include "yuarel.h"
 
 #include "contrib/multipart_parser.h"
@@ -1297,8 +1298,16 @@ int ogs_sbi_parse_request(
         } else if (!ogs_strcasecmp(ogs_hash_this_key(hi),
                     OGS_SBI_CUSTOM_CALLBACK)) {
             message->http.custom.callback = ogs_hash_this_val(hi);
+        } else if (!ogs_strcasecmp(ogs_hash_this_key(hi),
+                    OGS_SBI_TRACEPARENT)) {
+            request->trace.span = ogs_trace_span_start(request->h.uri,
+                OGS_TRACE_KIND_SERVER, ogs_hash_this_val(hi));
+            message->trace.parent =
+                    ogs_trace_span_get_traceparent(request->trace.span);
         }
     }
+
+    ogs_sbi_trace_add_req(request->trace.span, request, NULL);
 
     if (parse_content(message, &request->http) != OGS_OK) {
         ogs_error("parse_content() failed");

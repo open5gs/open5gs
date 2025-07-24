@@ -18,6 +18,7 @@
  */
 
 #include "ogs-sbi.h"
+#include "ogs-trace.h"
 
 static int sepp_discover_handler(
         int status, ogs_sbi_response_t *response, void *data);
@@ -1130,4 +1131,105 @@ static void build_default_discovery_parameter(
 
     if (local_discovery_option)
         ogs_sbi_discovery_option_free(local_discovery_option);
+}
+
+
+int ogs_sbi_trace_create(ogs_sbi_request_t *request, char *traceparent,
+        char *ue_id)
+{
+    request->trace.span = ogs_trace_span_start("todo",
+            OGS_TRACE_KIND_CLIENT, traceparent);
+    if (request->trace.span) {
+        traceparent = ogs_trace_span_get_traceparent(request->trace.span);
+        if (traceparent) {
+            ogs_sbi_header_set(request->http.headers,
+                    "traceparent", traceparent);
+        }
+
+        if (ue_id)
+            ogs_trace_span_add_attr(request->trace.span, "5g.ueId", ue_id);
+    }
+
+    return OGS_OK;
+}
+
+void ogs_sbi_trace_add_req(ogs_trace_span_t *span,
+        ogs_sbi_request_t *request, ogs_sbi_client_t *client)
+{
+    char *name;
+
+    if (!span)
+        return;
+
+    name = ogs_msprintf("%s %s", request->h.method, request->h.uri);
+    ogs_assert(name);
+    ogs_trace_span_update_name(span, name);
+    ogs_free(name);
+
+    if ((client) && ((client->addr) || (client->addr6))) {
+        char addr_buf[OGS_ADDRSTRLEN];
+        int port = 0;
+
+        memset(addr_buf, 0, sizeof(addr_buf));
+
+        if (client->addr) {
+            OGS_ADDR(client->addr, addr_buf);
+            port = OGS_PORT(client->addr);
+        }
+        else if (client->addr6) {
+            OGS_ADDR(client->addr6, addr_buf);
+            port = OGS_PORT(client->addr6);
+        }
+
+        ogs_trace_span_add_attr(span, "server.address", addr_buf);
+        ogs_trace_span_add_attr_int(span, "server.port", port);
+        ogs_trace_span_add_attr(span, "http.scheme",
+                OpenAPI_uri_scheme_ToString(client->scheme));
+    }
+
+    ogs_trace_span_add_attr(span,
+            "http.request.method", request->h.method);
+    ogs_trace_span_add_attrs(span,
+            "http.request.header", request->http.headers);
+
+    ogs_trace_span_add_attr(span,
+            "url.full", request->h.uri);
+
+    ogs_trace_span_add_attr_int(span,
+            "http.request.body.size", request->http.content_length);
+    if (request->http.content) {
+        ogs_trace_span_add_attr(span,
+                "http.request.body", request->http.content);
+    }
+}
+
+void ogs_sbi_trace_add_resp(ogs_trace_span_t *span,
+        ogs_sbi_response_t *response)
+{
+    if (!span)
+        return;
+
+    ogs_trace_span_add_attr_int(span, "http.status_code",
+            response->status);
+    ogs_trace_span_add_attrs(span, "http.response.header",
+            response->http.headers);
+
+    ogs_trace_span_add_attr_int(span, "http.response.body.size",
+            response->http.content_length);
+    if (response->http.content) {
+        ogs_trace_span_add_attr(span, "http.response.body",
+                response->http.content);
+    }
+}
+
+char *ogs_sbi_trace_parent_copy(char *traceparent, ogs_sbi_message_t *message)
+{
+    char *new_traceparent = NULL;
+
+    if (traceparent)
+        ogs_free(traceparent);
+    if (message->trace.parent)
+        new_traceparent = ogs_strdup(message->trace.parent);
+
+    return new_traceparent;
 }

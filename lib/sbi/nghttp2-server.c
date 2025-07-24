@@ -637,6 +637,8 @@ static bool server_send_rspmem_persistent(
     ogs_assert(sbi_sess);
     ogs_assert(sbi_sess->session);
 
+    ogs_sbi_trace_add_resp(stream->request->trace.span, response);
+
     sock = sbi_sess->sock;
     ogs_assert(sock);
     fd = sock->fd;
@@ -787,6 +789,9 @@ static void stream_remove(ogs_sbi_stream_t *stream)
     ogs_list_remove(&sbi_sess->stream_list, stream);
 
     ogs_assert(stream->request);
+
+    if (stream->request->trace.span)
+        ogs_trace_span_stop(stream->request->trace.span);
     ogs_sbi_request_free(stream->request);
 
     ogs_pool_id_free(&stream_pool, stream);

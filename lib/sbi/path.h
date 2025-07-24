@@ -50,6 +50,15 @@ bool ogs_sbi_send_request_to_nrf(
         ogs_sbi_send_response(__sTREAM, OGS_SBI_HTTP_STATUS_NO_CONTENT)
 bool ogs_sbi_send_response(ogs_sbi_stream_t *stream, int status);
 
+int ogs_sbi_trace_create(ogs_sbi_request_t *request, char *traceparent,
+        char *ue_id);
+void ogs_sbi_trace_add_req(ogs_trace_span_t *span,
+        ogs_sbi_request_t *request, ogs_sbi_client_t *client);
+void ogs_sbi_trace_add_resp(ogs_trace_span_t *span,
+        ogs_sbi_response_t *response);
+char *ogs_sbi_trace_parent_copy(char *traceparent, ogs_sbi_message_t *message);
+
+
 #ifdef __cplusplus
 }
 #endif

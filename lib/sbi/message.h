@@ -28,6 +28,8 @@
 extern "C" {
 #endif
 
+#include "ogs-trace.h"
+
 #define OGS_SBI_HTTP_PORT                           80
 #define OGS_SBI_HTTPS_PORT                          443
 
@@ -266,6 +268,7 @@ extern "C" {
 #define OGS_SBI_CONTENT_TYPE                        "Content-Type"
 #define OGS_SBI_LOCATION                            "Location"
 #define OGS_SBI_EXPECT                              "Expect"
+#define OGS_SBI_TRACEPARENT                         "traceparent"
 #define OGS_SBI_APPLICATION_TYPE                    "application"
 #define OGS_SBI_APPLICATION_JSON_TYPE               "json"
 #define OGS_SBI_APPLICATION_PROBLEM_TYPE            "problem+json"
@@ -540,6 +543,10 @@ typedef struct ogs_sbi_message_s {
         ogs_5gs_tai_t tai;
     } param;
 
+    struct {
+        char *parent;
+    } trace;
+
     int res_status;
 
     OpenAPI_nf_profile_t *NFProfile;
@@ -647,6 +654,11 @@ typedef struct ogs_sbi_request_s {
     struct {
         ogs_poll_t *write;
     } poll;
+
+    struct {
+        ogs_trace_span_t *span;
+    } trace;
+
 } ogs_sbi_request_t;
 
 typedef struct ogs_sbi_response_s {

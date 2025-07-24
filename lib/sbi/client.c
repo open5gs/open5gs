@@ -18,6 +18,7 @@
  */
 
 #include "ogs-sbi.h"
+#include "ogs-trace.h"
 
 #include "curl/curl.h"
 
@@ -59,6 +60,8 @@ typedef struct connection_s {
 
     ogs_sbi_client_t *client;
     ogs_sbi_client_cb_f client_cb;
+    ogs_trace_span_t *trace_span;
+
 } connection_t;
 
 static OGS_POOL(client_pool, ogs_sbi_client_t);
@@ -424,6 +427,7 @@ static connection_t *connection_add(
     conn->client = client;
     conn->client_cb = client_cb;
     conn->data = data;
+    conn->trace_span = request->trace.span;
 
     conn->method = ogs_strdup(request->h.method);
     if (!conn->method) {
@@ -576,6 +580,7 @@ static connection_t *connection_add(
     curl_easy_setopt(conn->easy, CURLOPT_HEADERDATA, conn);
     curl_easy_setopt(conn->easy, CURLOPT_ERRORBUFFER, conn->error);
 
+    ogs_sbi_trace_add_req(conn->trace_span, request, client);
     ogs_assert(client->multi);
     rc = curl_multi_add_handle(client->multi, conn->easy);
     mcode_or_die("connection_add: curl_multi_add_handle", rc);
@@ -595,6 +600,9 @@ static void connection_remove(connection_t *conn)
 
     ogs_assert(client->multi);
     curl_multi_remove_handle(client->multi, conn->easy);
+
+    if (conn->trace_span)
+        ogs_trace_span_stop(conn->trace_span);
 
     connection_free(conn);
 }
@@ -763,8 +771,12 @@ static void check_multi_info(ogs_sbi_client_t *client)
                     break;
                 }
 
-            } else
+                ogs_sbi_trace_add_resp(conn->trace_span, response);
+
+            } else {
                 ogs_warn("%s (%d): %s", curl_easy_strerror(res), res, conn->error);
+                ogs_trace_span_add_attr(conn->trace_span, "error", conn->error);
+            }
 
             ogs_assert(conn->client_cb);
             if (res == CURLE_OK)
