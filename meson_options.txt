@@ -1,3 +1,3 @@
 option('fuzzing', type: 'boolean', value: false, description: 'Enable fuzzing tests')
 option('lib_fuzzing_engine', type : 'string', value : '', description : 'Path to the libFuzzer engine library')
-option('trace', type: 'boolean', value: false, description: 'Enable tracing events with OpenTelemetry')
+option('trace', type: 'boolean', value: true, description: 'Enable tracing events with OpenTelemetry')
