@@ -190,7 +190,9 @@ void ausf_ue_remove(ausf_ue_t *ausf_ue)
 
     if (ausf_ue->serving_network_name)
         ogs_free(ausf_ue->serving_network_name);
-    
+
+    AUSF_UE_TRACE_PARENT_CLEAR(ausf_ue);
+
     ogs_pool_id_free(&ausf_ue_pool, ausf_ue);
 }
 

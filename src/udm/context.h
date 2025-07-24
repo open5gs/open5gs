@@ -73,6 +73,18 @@ struct udm_ue_s {
     OpenAPI_auth_type_e auth_type;
     OpenAPI_rat_type_e rat_type;
 
+#define UDM_UE_TRACE_DATA_CLEAR(__uDM) \
+    OpenAPI_trace_data_free(__uDM->trace_data); \
+    __uDM->trace_data = NULL
+    OpenAPI_trace_data_t *trace_data;
+
+    struct {
+#define UDM_UE_TRACE_PARENT_CLEAR(__uDM) \
+        OGS_MEM_CLEAR(__uDM->trace.parent)
+
+        char *parent;
+    } trace;
+
     ogs_list_t sess_list;
     ogs_list_t sdm_subscription_list;
 };

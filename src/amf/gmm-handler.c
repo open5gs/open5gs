@@ -242,6 +242,11 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
          * when the UE changes USIM.
          */
         OGS_ASN_CLEAR_DATA(&amf_ue->ueRadioCapability);
+
+        /*
+         * Reset TraceId
+        */
+        AMF_UE_TRACE_PARENT_CLEAR(amf_ue);
     }
 
     amf_ue->nas.ue.tsc = registration_type->tsc;

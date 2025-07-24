@@ -78,6 +78,10 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate(
         AuthenticationInfo.resynchronization_info = &ResynchronizationInfo;
     }
 
+    if (amf_ue->trace_data)
+        AuthenticationInfo.trace_data = OpenAPI_trace_data_copy(
+                AuthenticationInfo.trace_data, amf_ue->trace_data);
+
     message.AuthenticationInfo = &AuthenticationInfo;
 
     request = ogs_sbi_build_request(&message);
@@ -86,6 +90,8 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate(
 end:
     if (AuthenticationInfo.serving_network_name)
         ogs_free(AuthenticationInfo.serving_network_name);
+    if (AuthenticationInfo.trace_data)
+        OpenAPI_trace_data_free(AuthenticationInfo.trace_data);
 
     return request;
 }

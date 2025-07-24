@@ -107,6 +107,11 @@ int ausf_sbi_discover_and_send(
     ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
             xact->assoc_stream_id <= OGS_MAX_POOL_ID);
 
+    if (ausf_ue->trace.parent) {
+        ogs_sbi_trace_create(xact->request, ausf_ue->trace.parent, ausf_ue->supi);
+        AUSF_UE_TRACE_PARENT_CLEAR(ausf_ue);
+    }
+
     r = ogs_sbi_discover_and_send(xact);
     if (r != OGS_OK) {
         ogs_error("ausf_sbi_discover_and_send() failed");

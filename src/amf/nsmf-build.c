@@ -170,6 +170,11 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
         goto end;
     }
 
+    if (amf_ue->trace_data)
+        SmContextCreateData.trace_data =
+            OpenAPI_trace_data_copy(SmContextCreateData.trace_data,
+                amf_ue->trace_data);
+
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_CALLBACK;
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] = amf_ue->supi;
@@ -288,6 +293,9 @@ end:
 
     if (SmContextCreateData.h_smf_uri)
         ogs_free(SmContextCreateData.h_smf_uri);
+
+    if (SmContextCreateData.trace_data)
+        OpenAPI_trace_data_free(SmContextCreateData.trace_data);
 
     if (message.http.custom.nrf_uri)
         ogs_free(message.http.custom.nrf_uri);

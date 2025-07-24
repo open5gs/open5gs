@@ -696,6 +696,10 @@ bool udm_nudr_dr_handle_subscription_provisioned(
             break;
         }
 
+        if (AccessAndMobilitySubscriptionData->trace_data)
+            udm_ue->trace_data = OpenAPI_trace_data_copy(udm_ue->trace_data,
+                    AccessAndMobilitySubscriptionData->trace_data);
+
         sendmsg.AccessAndMobilitySubscriptionData =
             OpenAPI_access_and_mobility_subscription_data_copy(
                 sendmsg.AccessAndMobilitySubscriptionData,

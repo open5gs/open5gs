@@ -76,6 +76,9 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             break;
         }
 
+        pcf_ue_sm->trace.parent = ogs_sbi_trace_parent_copy(
+                pcf_ue_sm->trace.parent, message);
+
         SWITCH(message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
             if (!message->h.resource.component[1]) {

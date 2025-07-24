@@ -169,6 +169,10 @@ bool pcf_npcf_am_policy_control_handle_create(pcf_ue_am_t *pcf_ue_am,
                 pcf_ue_am->subscribed_ue_ambr,
                 PolicyAssociationRequest->ue_ambr);
 
+    if (PolicyAssociationRequest->trace_req)
+        pcf_ue_am->trace_data = OpenAPI_trace_data_copy(
+                pcf_ue_am->trace_data, PolicyAssociationRequest->trace_req);
+
     if (ogs_sbi_supi_in_vplmn(pcf_ue_am->supi) == true) {
         /* Visited PLMN */
         OpenAPI_policy_association_t PolicyAssociation;
@@ -345,6 +349,10 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
     }
 
     sess->pdu_session_type = SmPolicyContextData->pdu_session_type;
+
+    if (SmPolicyContextData->trace_req)
+        pcf_ue_sm->trace_data = OpenAPI_trace_data_copy(
+                pcf_ue_sm->trace_data, SmPolicyContextData->trace_req);
 
     /* Serving PLMN & Home PLMN */
     if (servingNetwork) {

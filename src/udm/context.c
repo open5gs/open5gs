@@ -241,6 +241,9 @@ void udm_ue_remove(udm_ue_t *udm_ue)
     if (udm_ue->dereg_callback_uri)
         ogs_free(udm_ue->dereg_callback_uri);
 
+    UDM_UE_TRACE_DATA_CLEAR(udm_ue);
+    UDM_UE_TRACE_PARENT_CLEAR(udm_ue);
+
     ogs_pool_id_free(&udm_ue_pool, udm_ue);
 }
 

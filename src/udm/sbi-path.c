@@ -102,7 +102,9 @@ static int udm_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_build_f build,
-        void *context, ogs_sbi_stream_t *stream, int state, void *data)
+        void *context, ogs_sbi_stream_t *stream, int state, void *data,
+        OpenAPI_trace_data_t *trace_data, char *traceparent,
+        char *trace_ue_id)
 {
     ogs_sbi_xact_t *xact = NULL;
     int r;
@@ -130,6 +132,8 @@ static int udm_sbi_discover_and_send(
         ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                 xact->assoc_stream_id <= OGS_MAX_POOL_ID);
     }
+    if ((trace_data) || (traceparent))
+        ogs_sbi_trace_create(xact->request, traceparent, trace_ue_id);
 
     r = ogs_sbi_discover_and_send(xact);
     if (r != OGS_OK) {
@@ -153,16 +157,19 @@ int udm_ue_sbi_discover_and_send(
 
     r = udm_sbi_discover_and_send(
             udm_ue->id, &udm_ue->sbi, service_type, discovery_option,
-            (ogs_sbi_build_f)build, udm_ue, stream, state, data);
+            (ogs_sbi_build_f)build, udm_ue, stream, state, data,
+            udm_ue->trace_data, udm_ue->trace.parent, udm_ue->supi);
     if (r != OGS_OK) {
         ogs_error("udm_ue_sbi_discover_and_send() failed");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                 "Cannot discover", udm_ue->suci, NULL));
+        UDM_UE_TRACE_PARENT_CLEAR(udm_ue);
         return r;
     }
 
+    UDM_UE_TRACE_PARENT_CLEAR(udm_ue);
     return OGS_OK;
 }
 
@@ -173,20 +180,27 @@ int udm_sess_sbi_discover_and_send(
         udm_sess_t *sess, ogs_sbi_stream_t *stream, int state, void *data)
 {
     int r;
+    udm_ue_t *udm_ue;
 
     ogs_assert(sess->id >= OGS_MIN_POOL_ID && sess->id <= OGS_MAX_POOL_ID);
 
+    udm_ue = udm_ue_find_by_id(sess->udm_ue_id);
+    ogs_assert(udm_ue);
+
     r = udm_sbi_discover_and_send(
             sess->id, &sess->sbi, service_type, discovery_option,
-            (ogs_sbi_build_f)build, sess, stream, state, data);
+            (ogs_sbi_build_f)build, sess, stream, state, data,
+            udm_ue->trace_data, udm_ue->trace.parent, udm_ue->supi);
     if (r != OGS_OK) {
         ogs_error("udm_sess_sbi_discover_and_send() failed");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                 "Cannot discover", NULL, NULL));
+        UDM_UE_TRACE_PARENT_CLEAR(udm_ue);
         return r;
     }
 
+    UDM_UE_TRACE_PARENT_CLEAR(udm_ue);
     return OGS_OK;
 }

@@ -42,6 +42,8 @@ int amf_nudm_sdm_handle_provisioned(
                 recvmsg->AccessAndMobilitySubscriptionData->nssai;
             OpenAPI_list_t *RatRestrictions =
                 recvmsg->AccessAndMobilitySubscriptionData->rat_restrictions;
+            OpenAPI_trace_data_t *TraceData =
+                recvmsg->AccessAndMobilitySubscriptionData->trace_data;
 
             OpenAPI_lnode_t *node = NULL;
 
@@ -138,6 +140,11 @@ int amf_nudm_sdm_handle_provisioned(
                 OpenAPI_list_for_each(RatRestrictions, node) {
                     OpenAPI_list_add(amf_ue->rat_restrictions, node->data);
                 }
+            }
+
+            if (TraceData) {
+                amf_ue->trace_data =
+                        OpenAPI_trace_data_copy(amf_ue->trace_data, TraceData);
             }
         }
 

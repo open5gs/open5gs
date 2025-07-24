@@ -139,6 +139,17 @@ int amf_ue_sbi_discover_and_send(
     }
 
     xact->state = state;
+    if ((amf_ue->trace_data) || (amf_ue->trace.parent)) {
+        ogs_sbi_trace_create(xact->request, amf_ue->trace.parent, amf_ue->supi);
+
+        /* store the first trace parent id for subsequent requests*/
+        if (!amf_ue->trace.parent) {
+            char *tp = ogs_trace_span_get_traceparent(
+                    xact->request->trace.span);
+            if (tp)
+                amf_ue->trace.parent = ogs_strdup(tp);
+        }
+    }
 
     rv = ogs_sbi_discover_and_send(xact);
     if (rv != OGS_OK) {
@@ -163,10 +174,14 @@ int amf_sess_sbi_discover_and_send(
     int r;
     int rv;
     ogs_sbi_xact_t *xact = NULL;
+    amf_ue_t *amf_ue;
 
     ogs_assert(service_type);
     ogs_assert(sess);
     ogs_assert(build);
+
+    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
+    ogs_assert(amf_ue);
 
     if (ran_ue) {
         sess->ran_ue_id = ran_ue->id;
@@ -187,6 +202,17 @@ int amf_sess_sbi_discover_and_send(
     }
 
     xact->state = state;
+    if ((amf_ue->trace_data) || (amf_ue->trace.parent)) {
+        ogs_sbi_trace_create(xact->request, amf_ue->trace.parent, amf_ue->supi);
+
+        /* store the first trace parent id for subsequent requests*/
+        if (!amf_ue->trace.parent) {
+            char *tp = ogs_trace_span_get_traceparent(
+                    xact->request->trace.span);
+            if (tp)
+                amf_ue->trace.parent = ogs_strdup(tp);
+        }
+    }
 
     rv = ogs_sbi_discover_and_send(xact);
     if (rv != OGS_OK) {
@@ -468,12 +494,16 @@ int amf_sess_sbi_discover_by_nsi(
 {
     ogs_sbi_xact_t *xact = NULL;
     ogs_sbi_client_t *client = NULL;
+    amf_ue_t *amf_ue;
 
     ogs_assert(sess);
     client = sess->nssf.nrf.client;
     ogs_assert(client);
     ogs_assert(service_type);
     ogs_assert(state);
+
+    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
+    ogs_assert(amf_ue);
 
     ogs_warn("Try to discover by NsiInformation [%s]",
                 ogs_sbi_service_type_to_name(service_type));
@@ -497,6 +527,18 @@ int amf_sess_sbi_discover_by_nsi(
         ogs_error("amf_nnrf_disc_build_discover() failed");
         ogs_sbi_xact_remove(xact);
         return OGS_ERROR;
+    }
+
+    if ((amf_ue->trace_data) || (amf_ue->trace.parent)) {
+        ogs_sbi_trace_create(xact->request, amf_ue->trace.parent, amf_ue->supi);
+
+        /* store the first trace parent id for subsequent requests*/
+        if (!amf_ue->trace.parent) {
+            char *tp = ogs_trace_span_get_traceparent(
+                    xact->request->trace.span);
+            if (tp)
+                amf_ue->trace.parent = ogs_strdup(tp);
+        }
     }
 
     xact->state = state;
@@ -672,16 +714,32 @@ bool amf_sbi_send_n1_n2_failure_notify(
     bool rc;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
+    amf_ue_t *amf_ue;
 
     ogs_assert(cause);
     ogs_assert(sess);
     client = sess->paging.client;
     ogs_assert(client);
 
+    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
+    ogs_assert(amf_ue);
+
     request = amf_nsmf_callback_build_n1_n2_failure_notify(sess, cause);
     if (!request) {
         ogs_error("amf_nsmf_callback_build_n1_n2_failure_notify() failed");
         return false;
+    }
+
+    if ((amf_ue->trace_data) || (amf_ue->trace.parent)) {
+        ogs_sbi_trace_create(request, amf_ue->trace.parent, amf_ue->supi);
+
+        /* store the first trace parent id for subsequent requests*/
+        if (!amf_ue->trace.parent) {
+            char *tp = ogs_trace_span_get_traceparent(
+                    request->trace.span);
+            if (tp)
+                amf_ue->trace.parent = ogs_strdup(tp);
+        }
     }
 
     rc = ogs_sbi_send_request_to_client(

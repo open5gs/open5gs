@@ -165,6 +165,10 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
         goto end;
     }
 
+    if (amf_ue->trace_data)
+        PolicyAssociationRequest.trace_req = OpenAPI_trace_data_copy(
+            PolicyAssociationRequest.trace_req, amf_ue->trace_data);
+
     message.PolicyAssociationRequest = &PolicyAssociationRequest;
 
     request = ogs_sbi_build_request(&message);
@@ -205,6 +209,8 @@ end:
 
     if (PolicyAssociationRequest.guami)
         ogs_sbi_free_guami(PolicyAssociationRequest.guami);
+    if (PolicyAssociationRequest.trace_req)
+        OpenAPI_trace_data_free(PolicyAssociationRequest.trace_req);
 
     return request;
 }

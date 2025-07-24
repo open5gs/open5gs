@@ -279,12 +279,20 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
     SmPolicyContextData.slice_info = &sNssai;
 
+    if (smf_ue->trace_data)
+        SmPolicyContextData.trace_req =
+            OpenAPI_trace_data_copy(SmPolicyContextData.trace_req,
+                smf_ue->trace_data);
+
     message.SmPolicyContextData = &SmPolicyContextData;
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
 
 end:
+    if (SmPolicyContextData.trace_req)
+        OpenAPI_trace_data_free(SmPolicyContextData.trace_req);
+
     if (SmPolicyContextData.notification_uri)
         ogs_free(SmPolicyContextData.notification_uri);
 

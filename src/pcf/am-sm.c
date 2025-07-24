@@ -72,6 +72,9 @@ void pcf_am_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             break;
         }
 
+        pcf_ue_am->trace.parent = ogs_sbi_trace_parent_copy(
+                pcf_ue_am->trace.parent, message);
+
         SWITCH(message->h.method)
         CASE(OGS_SBI_HTTP_METHOD_POST)
             handled = pcf_npcf_am_policy_control_handle_create(

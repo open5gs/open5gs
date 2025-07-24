@@ -219,6 +219,9 @@ int smf_sbi_discover_and_send(
         ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                 xact->assoc_stream_id <= OGS_MAX_POOL_ID);
     }
+    if ((smf_ue->trace_data) || (smf_ue->trace.parent)) {
+        ogs_sbi_trace_create(xact->request, smf_ue->trace.parent, smf_ue->supi);
+    }
 
     r = ogs_sbi_discover_and_send(xact);
     if (r != OGS_OK) {
@@ -268,6 +271,10 @@ ogs_sbi_xact_t *smf_namf_comm_create_n1_n2_message_xact(
     }
 
     xact->state = param->state;
+
+    if ((smf_ue->trace_data) || (smf_ue->trace.parent)) {
+        ogs_sbi_trace_create(xact->request, smf_ue->trace.parent, smf_ue->supi);
+    }
 
     if (stream) {
         xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
@@ -933,15 +940,22 @@ bool smf_sbi_send_sm_context_status_notify(smf_sess_t *sess)
     bool rc;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
+    smf_ue_t *smf_ue;
 
     ogs_assert(sess);
     client = sess->namf.client;
     ogs_assert(client);
 
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+
     request = smf_namf_callback_build_sm_context_status(sess, NULL);
     if (!request) {
         ogs_error("smf_namf_callback_build_sm_context_status() failed");
         return false;
+    }
+    if ((smf_ue->trace_data) || (smf_ue->trace.parent)) {
+        ogs_sbi_trace_create(request, smf_ue->trace.parent, smf_ue->supi);
     }
 
     rc = ogs_sbi_send_request_to_client(

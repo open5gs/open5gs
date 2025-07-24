@@ -71,6 +71,9 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
             break;
         }
 
+        udm_ue->trace.parent = ogs_sbi_trace_parent_copy(
+                udm_ue->trace.parent, message);
+
         SWITCH(message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UEAU)
             SWITCH(message->h.method)

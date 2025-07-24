@@ -88,6 +88,9 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             break;
         }
 
+        ausf_ue->trace.parent = ogs_sbi_trace_parent_copy(
+            ausf_ue->trace.parent, message);
+
         SWITCH(message->h.method)
         CASE(OGS_SBI_HTTP_METHOD_POST)
             handled = ausf_nausf_auth_handle_authenticate(

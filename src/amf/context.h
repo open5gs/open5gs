@@ -669,6 +669,17 @@ struct amf_ue_s {
          */
         bool sbi_done;
     } explict_de_registered;
+#define AMF_UE_TRACE_DATA_CLEAR(__aMF) \
+    OpenAPI_trace_data_free(__aMF->trace_data); \
+    __aMF->trace_data = NULL
+    OpenAPI_trace_data_t *trace_data;
+
+    struct {
+#define AMF_UE_TRACE_PARENT_CLEAR(__aMF) \
+        OGS_MEM_CLEAR(__aMF->trace.parent)
+        char *parent;
+    } trace;
+
 
     ogs_list_t      sess_list;
 };

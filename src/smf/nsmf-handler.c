@@ -281,6 +281,10 @@ bool smf_nsmf_handle_create_sm_context(
         smf_ue->gpsi = ogs_strdup(SmContextCreateData->gpsi);
     }
 
+    if (SmContextCreateData->trace_data)
+        smf_ue->trace_data = OpenAPI_trace_data_copy(smf_ue->trace_data,
+                SmContextCreateData->trace_data);
+
     sess->request_type = SmContextCreateData->request_type;
 
     ogs_sbi_parse_plmn_id_nid(&sess->serving_plmn_id, servingNetwork);
@@ -1159,6 +1163,17 @@ bool smf_nsmf_handle_update_sm_context(
             &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
         ogs_assert(response);
         ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+    } else if (SmContextUpdateData->trace_data ||
+               SmContextUpdateData->is_trace_data_null) {
+
+        if (SmContextUpdateData->trace_data) {
+            smf_ue->trace_data = OpenAPI_trace_data_copy(smf_ue->trace_data,
+                    SmContextUpdateData->trace_data);
+        } else {
+            SMF_UE_TRACE_DATA_CLEAR(smf_ue);
+            SMF_UE_TRACE_PARENT_CLEAR(smf_ue);
+        }
+
     } else {
         ogs_error("[%s:%d] No UpdateData", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error_log(

@@ -79,6 +79,13 @@ struct ausf_ue_s {
     uint8_t hxres_star[OGS_MAX_RES_LEN];
     uint8_t kausf[OGS_SHA256_DIGEST_SIZE];
     uint8_t kseaf[OGS_SHA256_DIGEST_SIZE];
+
+    struct {
+#define AUSF_UE_TRACE_PARENT_CLEAR(__aUSF) \
+        OGS_MEM_CLEAR(__aUSF->trace.parent)
+
+        char *parent;
+    } trace;
 };
 
 void ausf_context_init(void);

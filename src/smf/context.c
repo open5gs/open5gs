@@ -1127,6 +1127,9 @@ void smf_ue_remove(smf_ue_t *smf_ue)
         ogs_hash_set(self.imsi_hash, smf_ue->imsi, smf_ue->imsi_len, NULL);
     }
 
+    SMF_UE_TRACE_DATA_CLEAR(smf_ue);
+    SMF_UE_TRACE_PARENT_CLEAR(smf_ue);
+
     ogs_pool_id_free(&smf_ue_pool, smf_ue);
 
     smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_UES_ACTIVE);

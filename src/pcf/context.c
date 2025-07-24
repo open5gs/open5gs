@@ -417,6 +417,9 @@ void pcf_ue_am_remove(pcf_ue_am_t *pcf_ue_am)
     if (pcf_ue_am->pei)
         ogs_free(pcf_ue_am->pei);
 
+    PCF_UE_AM_TRACE_DATA_CLEAR(pcf_ue_am);
+    PCF_UE_AM_TRACE_PARENT_CLEAR(pcf_ue_am);
+
     ogs_pool_id_free(&pcf_ue_am_pool, pcf_ue_am);
 }
 
@@ -472,6 +475,9 @@ void pcf_ue_sm_remove(pcf_ue_sm_t *pcf_ue_sm)
 
     if (pcf_ue_sm->gpsi)
         ogs_free(pcf_ue_sm->gpsi);
+
+    PCF_UE_SM_TRACE_DATA_CLEAR(pcf_ue_sm);
+    PCF_UE_SM_TRACE_PARENT_CLEAR(pcf_ue_sm);
 
     ogs_pool_id_free(&pcf_ue_sm_pool, pcf_ue_sm);
 }

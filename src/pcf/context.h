@@ -74,6 +74,19 @@ struct pcf_ue_am_s {
 
     OpenAPI_policy_association_request_t *policy_association_request;
     OpenAPI_ambr_t *subscribed_ue_ambr;
+
+#define PCF_UE_AM_TRACE_DATA_CLEAR(__uE_AM) \
+    OpenAPI_trace_data_free(__uE_AM->trace_data); \
+    __uE_AM->trace_data = NULL
+
+    OpenAPI_trace_data_t *trace_data;
+
+    struct {
+#define PCF_UE_AM_TRACE_PARENT_CLEAR(__uE_AM) \
+        OGS_MEM_CLEAR(__uE_AM->trace.parent)
+
+        char *parent;
+    } trace;
 };
 
 struct pcf_ue_sm_s {
@@ -82,6 +95,19 @@ struct pcf_ue_sm_s {
 
     char *supi;
     char *gpsi;
+
+#define PCF_UE_SM_TRACE_DATA_CLEAR(__uE_SM) \
+    OpenAPI_trace_data_free(__uE_SM->trace_data); \
+    __uE_SM->trace_data = NULL
+
+    OpenAPI_trace_data_t *trace_data;
+
+    struct {
+#define PCF_UE_SM_TRACE_PARENT_CLEAR(__uE_SM) \
+        OGS_MEM_CLEAR(__uE_SM->trace.parent)
+
+        char *parent;
+    } trace;
 
     ogs_list_t sess_list;
 };

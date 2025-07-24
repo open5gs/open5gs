@@ -1775,6 +1775,9 @@ void amf_ue_remove(amf_ue_t *amf_ue)
 
     amf_ue->ran_ue_id = OGS_INVALID_POOL_ID;
 
+    AMF_UE_TRACE_DATA_CLEAR(amf_ue);
+    AMF_UE_TRACE_PARENT_CLEAR(amf_ue);
+
     ogs_pool_id_free(&amf_ue_pool, amf_ue);
 
     ogs_info("[Removed] Number of AMF-UEs is now %d",

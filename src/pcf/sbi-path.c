@@ -132,7 +132,9 @@ static int pcf_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_build_f build,
-        void *context, ogs_sbi_stream_t *stream, void *data)
+        void *context, ogs_sbi_stream_t *stream, void *data,
+        OpenAPI_trace_data_t *trace_data, char *traceparent,
+        char *trace_ue_id)
 {
     ogs_sbi_xact_t *xact = NULL;
     int r;
@@ -158,6 +160,8 @@ static int pcf_sbi_discover_and_send(
         ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                 xact->assoc_stream_id <= OGS_MAX_POOL_ID);
     }
+    if ((trace_data) || (traceparent))
+        ogs_sbi_trace_create(xact->request, traceparent, trace_ue_id);
 
     r = ogs_sbi_discover_and_send(xact);
     if (r != OGS_OK) {
@@ -179,7 +183,8 @@ int pcf_ue_am_sbi_discover_and_send(
 
     r = pcf_sbi_discover_and_send(
             pcf_ue_am->id, &pcf_ue_am->sbi, service_type, discovery_option,
-            (ogs_sbi_build_f)build, pcf_ue_am, stream, data);
+            (ogs_sbi_build_f)build, pcf_ue_am, stream, data,
+            pcf_ue_am->trace_data, pcf_ue_am->trace.parent, pcf_ue_am->supi);
     if (r != OGS_OK) {
         ogs_error("pcf_ue_am_sbi_discover_and_send() failed");
         ogs_assert(true ==
@@ -199,10 +204,15 @@ int pcf_sess_sbi_discover_and_send(
         pcf_sess_t *sess, ogs_sbi_stream_t *stream, void *data)
 {
     int r;
+    pcf_ue_sm_t *pcf_ue_sm;
+
+    pcf_ue_sm = pcf_ue_sm_find_by_id(sess->pcf_ue_sm_id);
+    ogs_assert(pcf_ue_sm);
 
     r = pcf_sbi_discover_and_send(
             sess->id, &sess->sbi, service_type, discovery_option,
-            (ogs_sbi_build_f)build, sess, stream, data);
+            (ogs_sbi_build_f)build, sess, stream, data,
+            pcf_ue_sm->trace_data, pcf_ue_sm->trace.parent, pcf_ue_sm->supi);
     if (r != OGS_OK) {
         ogs_error("pcf_sess_sbi_discover_and_send() failed");
         ogs_assert(true ==
@@ -275,6 +285,8 @@ bool pcf_sbi_send_am_policy_control_notify(pcf_ue_am_t *pcf_ue_am)
         ogs_error("pcf_namf_callback_build_am_policy_control() failed");
         return false;
     }
+    if ((pcf_ue_am->trace_data) || ((pcf_ue_am->trace.parent)))
+        ogs_sbi_trace_create(request, pcf_ue_am->trace.parent, pcf_ue_am->supi);
 
     rc = ogs_sbi_send_request_to_client(
             client, client_notify_cb, request, NULL);
@@ -654,10 +666,14 @@ bool pcf_sbi_send_smpolicycontrol_delete_notify(
     bool rc;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
+    pcf_ue_sm_t *pcf_ue_sm;
 
     ogs_assert(sess);
     client = sess->nsmf.client;
     ogs_assert(client);
+
+    pcf_ue_sm = pcf_ue_sm_find_by_id(sess->pcf_ue_sm_id);
+    ogs_assert(pcf_ue_sm);
 
     request = pcf_nsmf_callback_build_smpolicycontrol_update(
                 sess, SmPolicyDecision);
@@ -665,6 +681,8 @@ bool pcf_sbi_send_smpolicycontrol_delete_notify(
         ogs_error("pcf_nsmf_callback_build_smpolicycontrol_update() failed");
         return false;
     }
+    if ((pcf_ue_sm->trace_data) || ((pcf_ue_sm->trace.parent)))
+        ogs_sbi_trace_create(request, pcf_ue_sm->trace.parent, pcf_ue_sm->supi);
 
     rc = ogs_sbi_send_request_to_client(
             client, client_delete_notify_cb, request, app_session);
@@ -683,10 +701,14 @@ bool pcf_sbi_send_policyauthorization_terminate_notify(pcf_app_t *app)
     bool rc;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
+    pcf_ue_sm_t *pcf_ue_sm;
 
     ogs_assert(app);
     client = app->naf.client;
     ogs_assert(client);
+
+    pcf_ue_sm = pcf_ue_sm_find_by_id(app->sess->pcf_ue_sm_id);
+    ogs_assert(pcf_ue_sm);
 
     request = pcf_naf_callback_build_policyauthorization_terminate(app, NULL);
     if (!request) {
@@ -694,6 +716,8 @@ bool pcf_sbi_send_policyauthorization_terminate_notify(pcf_app_t *app)
                 "failed");
         return false;
     }
+    if ((pcf_ue_sm->trace_data) || ((pcf_ue_sm->trace.parent)))
+        ogs_sbi_trace_create(request, pcf_ue_sm->trace.parent, pcf_ue_sm->supi);
 
     rc = ogs_sbi_send_request_to_client(
             client, client_notify_cb, request, NULL);

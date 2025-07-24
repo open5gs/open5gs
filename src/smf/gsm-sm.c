@@ -271,6 +271,11 @@ void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
             break;
         }
 
+        smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+        ogs_assert(smf_ue);
+        smf_ue->trace.parent = ogs_sbi_trace_parent_copy(
+                smf_ue->trace.parent, sbi_message);
+
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
             SWITCH(sbi_message->h.resource.component[0])

@@ -191,6 +191,18 @@ typedef struct smf_ue_s {
     char  imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
 
     ogs_list_t sess_list;
+
+#define SMF_UE_TRACE_DATA_CLEAR(__sMF) \
+    OpenAPI_trace_data_free(__sMF->trace_data); \
+    __sMF->trace_data = NULL
+    OpenAPI_trace_data_t *trace_data;
+
+    struct {
+#define SMF_UE_TRACE_PARENT_CLEAR(__sMF) \
+        OGS_MEM_CLEAR(__sMF->trace.parent)
+
+        char *parent;
+    } trace;
 } smf_ue_t;
 
 #define SMF_SESS_CLEAR(__sESS) \
