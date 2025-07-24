@@ -194,6 +194,8 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
                 message->PolicyAssociationUpdateRequest);
     if (message->PolicyAssociation)
         OpenAPI_policy_association_free(message->PolicyAssociation);
+    if (message->PolicyUpdate)
+        OpenAPI_policy_update_free(message->PolicyUpdate);
     if (message->AmPolicyData)
         OpenAPI_am_policy_data_free(message->AmPolicyData);
     if (message->SmPolicyContextData)
@@ -1681,6 +1683,10 @@ static char *build_json(ogs_sbi_message_t *message)
     } else if (message->PolicyAssociation) {
         item = OpenAPI_policy_association_convertToJSON(
                 message->PolicyAssociation);
+        ogs_assert(item);
+    } else if (message->PolicyUpdate) {
+        item = OpenAPI_policy_update_convertToJSON(
+                message->PolicyUpdate);
         ogs_assert(item);
     } else if (message->AmPolicyData) {
         item = OpenAPI_am_policy_data_convertToJSON(message->AmPolicyData);
