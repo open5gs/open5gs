@@ -1305,6 +1305,8 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                 OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST) {
 
             int i, j, k;
+            uint8_t cause =
+                OGS_5GMM_CAUSE_DNN_NOT_SUPPORTED_OR_NOT_SUBSCRIBED_IN_THE_SLICE;
 
             nas_s_nssai = &ul_nas_transport->s_nssai;
             ogs_assert(nas_s_nssai);
@@ -1359,6 +1361,8 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                                         "count overflow [%d>=%d]",
                                         amf_ue->slice[i].num_of_session,
                                         OGS_MAX_NUM_OF_SESS);
+                                    cause =
+                                        OGS_5GMM_CAUSE_MAXIMUM_NUMBER_OF_PDU_SESSIONS_REACHED;
                                     break;
                                 }
                                 if (!ogs_strcasecmp(dnn->value,
@@ -1402,8 +1406,8 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
             if (!selected_slice || !sess->dnn) {
                 ogs_warn("[%s] Ue requested DNN \"%s\" Not Supported OR "
                             "Not Subscribed in the Slice", amf_ue->supi, dnn->value);
-                r = nas_5gs_send_gmm_status(amf_ue,
-                        OGS_5GMM_CAUSE_DNN_NOT_SUPPORTED_OR_NOT_SUBSCRIBED_IN_THE_SLICE);
+                r = nas_5gs_send_back_gsm_message(
+                        ran_ue, sess, cause, AMF_NAS_BACKOFF_TIME);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 return OGS_ERROR;
