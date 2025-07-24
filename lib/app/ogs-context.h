@@ -35,6 +35,7 @@ typedef struct ogs_app_context_s {
     void *document;
 
     const char *db_uri;
+    const char *trace_uri;
 
     struct {
         ogs_log_ts_e timestamp;

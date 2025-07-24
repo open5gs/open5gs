@@ -18,6 +18,7 @@
  */
 
 #include "sbi-path.h"
+#include "ogs-trace.h"
 
 static ogs_thread_t *thread;
 static void ausf_main(void *data);
@@ -92,6 +93,7 @@ void ausf_terminate(void)
 
     ausf_context_final();
     ogs_sbi_context_final();
+    ogs_trace_final();
 }
 
 static void ausf_main(void *data)

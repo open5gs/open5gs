@@ -18,6 +18,7 @@
  */
 
 #include "sbi-path.h"
+#include "ogs-trace.h"
 
 static ogs_thread_t *thread;
 static void udr_main(void *data);
@@ -45,6 +46,9 @@ int udr_initialize(void)
     if (rv != OGS_OK) return rv;
 
     rv = ogs_dbi_init(ogs_app()->db_uri);
+    if (rv != OGS_OK) return rv;
+
+    rv = ogs_trace_init("UDR", ogs_app()->trace_uri);
     if (rv != OGS_OK) return rv;
 
     rv = udr_sbi_open();
@@ -97,6 +101,7 @@ void udr_terminate(void)
 
     udr_context_final();
     ogs_sbi_context_final();
+    ogs_trace_final();
 }
 
 static void udr_main(void *data)

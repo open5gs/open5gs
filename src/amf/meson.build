@@ -72,7 +72,8 @@ libamf = static_library('amf',
                     libsctp_dep,
                     libngap_dep,
                     libnas_5gs_dep,
-                    libsbi_dep],
+                    libsbi_dep,
+                    libtrace_dep],
     install : false)
 
 libamf_dep = declare_dependency(
@@ -81,7 +82,8 @@ libamf_dep = declare_dependency(
                     libsctp_dep,
                     libngap_dep,
                     libnas_5gs_dep,
-                    libsbi_dep])
+                    libsbi_dep,
+                    libtrace_dep])
 
 amf_sources = files('''
     app.c

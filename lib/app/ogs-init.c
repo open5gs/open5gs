@@ -126,6 +126,8 @@ int ogs_app_initialize(
      */
     if (ogs_env_get("DB_URI"))
         ogs_app()->db_uri = ogs_env_get("DB_URI");
+    if (ogs_env_get("TRACE_URI"))
+        ogs_app()->trace_uri = ogs_env_get("TRACE_URI");
 
     /**************************************************************************
      * Stage 6 : Setup configuration section ID for running multiple NF from

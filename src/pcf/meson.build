@@ -46,14 +46,16 @@ libpcf = static_library('pcf',
     sources : libpcf_sources,
     dependencies : [libdbi_dep,
                     libmetrics_dep,
-                    libsbi_dep],
+                    libsbi_dep,
+                    libtrace_dep],
     install : false)
 
 libpcf_dep = declare_dependency(
     link_with : libpcf,
     dependencies : [libdbi_dep,
                     libmetrics_dep,
-                    libsbi_dep])
+                    libsbi_dep,
+                    libtrace_dep])
 
 pcf_sources = files('''
     app.c

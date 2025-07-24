@@ -18,6 +18,7 @@
  */
 
 #include "sbi-path.h"
+#include "ogs-trace.h"
 
 static ogs_thread_t *thread;
 static void nrf_main(void *data);
@@ -42,6 +43,9 @@ int nrf_initialize(void)
     if (rv != OGS_OK) return rv;
 
     rv = nrf_context_parse_config();
+    if (rv != OGS_OK) return rv;
+
+    rv = ogs_trace_init("NRF", ogs_app()->trace_uri);
     if (rv != OGS_OK) return rv;
 
     rv = nrf_sbi_open();
@@ -86,6 +90,7 @@ void nrf_terminate(void)
 
     nrf_context_final();
     ogs_sbi_context_final();
+    ogs_trace_final();
 }
 
 static void nrf_main(void *data)

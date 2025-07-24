@@ -18,6 +18,7 @@
  */
 
 #include "sbi-path.h"
+#include "ogs-trace.h"
 #include "metrics.h"
 
 static ogs_thread_t *thread;
@@ -56,6 +57,10 @@ int pcf_initialize(void)
         rv = ogs_dbi_init(ogs_app()->db_uri);
         if (rv != OGS_OK) return rv;
     }
+
+    rv = ogs_trace_init("PCF", ogs_app()->trace_uri);
+    if (rv != OGS_OK) return rv;
+
 
     rv = pcf_sbi_open();
     if (rv != OGS_OK) return rv;
@@ -111,6 +116,7 @@ void pcf_terminate(void)
 
     pcf_context_final();
     ogs_sbi_context_final();
+    ogs_trace_final();
 
     pcf_metrics_final();
 }

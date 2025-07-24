@@ -19,6 +19,7 @@
 
 #include "context.h"
 #include "sbi-path.h"
+#include "ogs-trace.h"
 
 static ogs_thread_t *thread;
 static void bsf_main(void *data);
@@ -44,6 +45,9 @@ int bsf_initialize(void)
     if (rv != OGS_OK) return rv;
 
     rv = bsf_context_parse_config();
+    if (rv != OGS_OK) return rv;
+
+    rv = ogs_trace_init("BSF", ogs_app()->trace_uri);
     if (rv != OGS_OK) return rv;
 
     rv = bsf_sbi_open();
@@ -95,6 +99,7 @@ void bsf_terminate(void)
     bsf_context_final();
 
     ogs_sbi_context_final();
+    ogs_trace_final();
 }
 
 static void bsf_main(void *data)

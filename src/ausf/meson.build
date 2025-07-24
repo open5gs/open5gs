@@ -35,13 +35,15 @@ libausf_sources = files('''
 libausf = static_library('ausf',
     sources : libausf_sources,
     dependencies : [libcrypt_dep,
-                    libsbi_dep],
+                    libsbi_dep,
+                    libtrace_dep],
     install : false)
 
 libausf_dep = declare_dependency(
     link_with : libausf,
     dependencies : [libcrypt_dep,
-                    libsbi_dep])
+                    libsbi_dep,
+                    libtrace_dep])
 
 ausf_sources = files('''
     app.c

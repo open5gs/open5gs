@@ -126,7 +126,8 @@ libsmf = static_library('smf',
                     libdiameter_gx_dep,
                     libdiameter_gy_dep,
                     libdiameter_s6b_dep,
-                    libpfcp_dep],
+                    libpfcp_dep,
+                    libtrace_dep],
     install : false)
 
 libsmf_dep = declare_dependency(
@@ -138,7 +139,8 @@ libsmf_dep = declare_dependency(
                     libdiameter_gx_dep,
                     libdiameter_gy_dep,
                     libdiameter_s6b_dep,
-                    libpfcp_dep])
+                    libpfcp_dep,
+                    libtrace_dep])
 
 smf_sources = files('''
     app.c

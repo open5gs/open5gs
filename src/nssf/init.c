@@ -18,6 +18,7 @@
  */
 
 #include "sbi-path.h"
+#include "ogs-trace.h"
 
 static ogs_thread_t *thread;
 static void nssf_main(void *data);
@@ -42,6 +43,9 @@ int nssf_initialize(void)
     if (rv != OGS_OK) return rv;
 
     rv = nssf_context_parse_config();
+    if (rv != OGS_OK) return rv;
+
+    rv = ogs_trace_init("NSSF", ogs_app()->trace_uri);
     if (rv != OGS_OK) return rv;
 
     rv = nssf_sbi_open();
@@ -92,6 +96,7 @@ void nssf_terminate(void)
 
     nssf_context_final();
     ogs_sbi_context_final();
+    ogs_trace_final();
 }
 
 static void nssf_main(void *data)
