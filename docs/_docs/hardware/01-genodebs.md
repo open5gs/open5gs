@@ -42,10 +42,12 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Baicells Nova 436Q
  * Baicells Nova 227 (EBS & CBRS)
  * Baicells Nova 233
+ * Baicells Nova 430i (band 48/CBRS, SW version BaiBLQ_3.0.12)
  * Ericsson Baseband 6630 (21Q1 Software)
  * Ericsson RBS 6402 (18.Q1 software, B2 B25 B4 B7 B252 B255)
  * Ericsson RBS 6601 + DUL 20 01 + RUS 01 B8 
  * Gemtek WLTGFC-101 (S/W version 2.1.1746.1116)
+ * Gemtek WLTGFC-105 (band 3, SW version 2.1.2277.1720-wltgfc105-gemtek-fdd)
  * Huawei BTS3900 (S/W version V100R011C10SPC230)
  * Huawei BBU5900 with RRU5304W Band 7 FDD 2600Mhz 40W Version V100R016C10
  * Klas VoyagerCell Duo 4GAP1000/4GAP1000X
@@ -57,6 +59,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Nokia FWHG Flexi Zone Indoor Pico BTS, 2x250 mW Band 7
  * Nokia FW2HHD Flexi Zone Multiband Indoor Pico BTS, Band 38/41(S/W TLS18SP_ENB)
  * Ruckus Q710 and Q910
+ * Sercomm SCE4255W "Englewood" (band 48/CBRS, SW version DG3934v3@2308041842)
 
 ### 4G/5G Software Stacks + SDRs
 ---
