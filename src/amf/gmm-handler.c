@@ -785,6 +785,30 @@ ogs_nas_5gmm_cause_t gmm_handle_service_update(
         return gmm_handle_nas_message_container(
                 ran_ue, amf_ue, OGS_NAS_5GS_SERVICE_REQUEST,
                 &service_request->nas_message_container);
+    } else {
+        /*
+        * 3GPPTS 24.501, 5.6.1 Service request procedure
+        * c) the UE, in 5GMM-IDLE mode over 3GPP access,
+        *    has uplink signalling pending:
+        *    the Uplink data status IE shall not be included,
+        *    the UE shall set the service type IE to "signalling".
+        * d) the UE, in 5GMM-IDLE mode over 3GPP access,
+        *    has uplink user data pending:
+        *    the Uplink data status IE shall be included, the service type IE
+        *    in the SERVICE REQUEST message shall be set to "data".
+        */
+        if (service_request->ngksi.type == OGS_NAS_SERVICE_TYPE_DATA &&
+                !(service_request->presencemask &
+                OGS_NAS_5GS_SERVICE_REQUEST_UPLINK_DATA_STATUS_PRESENT)) {
+            ogs_info("Service type data, but no Uplink user data pending");
+            return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
+        }
+        if (service_request->ngksi.type == OGS_NAS_SERVICE_TYPE_SIGNALLING &&
+                (service_request->presencemask &
+                OGS_NAS_5GS_SERVICE_REQUEST_UPLINK_DATA_STATUS_PRESENT)) {
+            ogs_info("Service type signalling, but Uplink user data pending");
+            return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
+        }
     }
 
     xact_count = amf_sess_xact_count(amf_ue);
