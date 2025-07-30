@@ -170,7 +170,7 @@ ogs_sbi_client_t *ogs_sbi_client_add(
 
     ogs_list_add(&ogs_sbi_self()->client_list, client);
 
-    ogs_debug("CLEINT added with Ref [%d]", client->reference_count);
+    ogs_debug("CLIENT added with Ref [%d]", client->reference_count);
 
     return client;
 }
@@ -181,7 +181,7 @@ void ogs_sbi_client_remove(ogs_sbi_client_t *client)
 
     ogs_assert(client);
 
-    ogs_debug("CLEINT UnRef [%d]", client->reference_count);
+    ogs_debug("CLIENT UnRef [%d]", client->reference_count);
     if (client->fqdn)
         ogs_debug("- fqdn [%s:%d]", client->fqdn, client->fqdn_port);
     if (client->resolve)
@@ -199,7 +199,7 @@ void ogs_sbi_client_remove(ogs_sbi_client_t *client)
         return;
     }
 
-    ogs_debug("CLEINT removed [%d]", client->reference_count);
+    ogs_debug("CLIENT removed [%d]", client->reference_count);
 
     ogs_list_remove(&ogs_sbi_self()->client_list, client);
 
