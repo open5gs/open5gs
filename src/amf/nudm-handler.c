@@ -214,6 +214,12 @@ int amf_nudm_sdm_handle_provisioned(
                             DnnInfoList = SubscribedSnssaiInfo->dnn_infos;
                             if (DnnInfoList) {
                                 OpenAPI_list_for_each(DnnInfoList, node2) {
+                                    if (slice->num_of_session>=OGS_MAX_NUM_OF_DNN) {
+                                        ogs_error("DNN overflow at S-NSSAI"
+                                                "[SST:%d SD:0x%x]",
+                                                s_nssai.sst, s_nssai.sd.v);
+                                        break;
+                                    }
                                     DnnInfo = node2->data;
                                     if (DnnInfo) {
                                         ogs_session_t *session =

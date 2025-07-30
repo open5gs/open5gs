@@ -814,7 +814,7 @@ typedef struct ogs_slice_data_s {
     uint32_t all_apn_config_inc;
 
     int num_of_session;
-    ogs_session_t session[OGS_MAX_NUM_OF_SESS];
+    ogs_session_t session[OGS_MAX_NUM_OF_DNN];
 } ogs_slice_data_t;
 
 ogs_slice_data_t *ogs_slice_find_by_s_nssai(
