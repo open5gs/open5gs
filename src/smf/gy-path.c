@@ -1,6 +1,7 @@
 /* Gy Interface, 3GPP TS 32.299
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
+ * Copyright (C) 2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -1003,25 +1004,38 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
     ogs_assert(ret == 0);
     if (!sess_data) {
         ogs_error("No Session Data");
-        return;
+        goto cleanup;
     }
     ogs_assert((void *)sess_data == data);
 
     ogs_debug("    Retrieve its data: [%s]", sess_data->gy_sid);
 
+    /* Allocate gy_message early to ensure proper cleanup */
+    gy_message = ogs_calloc(1, sizeof(ogs_diam_gy_message_t));
+    if (!gy_message) {
+        ogs_error("Failed to allocate gy_message");
+        error++;
+        goto cleanup;
+    }
+
+    /* Set Credit Control Command */
+    gy_message->cmd_code = OGS_DIAM_GY_CMD_CODE_CREDIT_CONTROL;
+
+    /* Initialize some values */
+    gy_message->cca.result_code = ER_DIAMETER_SUCCESS;
+
     /* Value of CC-Request-Number */
     ret = fd_msg_search_avp(*msg, ogs_diam_gy_cc_request_number, &avp);
     ogs_assert(ret == 0);
     if (!avp && req) {
-        /* Attempt searching for CC-Request-* in original request. Error
-         * messages (like DIAMETER_UNABLE_TO_DELIVER) crafted internally may not
-         * have them. */
+        /* Attempt searching for CC-Request-* in original request */
         ret = fd_msg_search_avp(req, ogs_diam_gy_cc_request_number, &avp);
         ogs_assert(ret == 0);
     }
     if (!avp) {
         ogs_error("no_CC-Request-Number");
-        ogs_assert_if_reached();
+        error++;
+        goto cleanup;
     }
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
@@ -1030,18 +1044,19 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
 
     ogs_debug("    CC-Request-Number[%d]", cc_request_number);
 
-    ogs_assert(sess_data->xact_data[req_slot].cc_req_no == cc_request_number);
+    if (sess_data->xact_data[req_slot].cc_req_no != cc_request_number) {
+        ogs_error("CC-Request-Number mismatch: expected %d, got %d",
+                  sess_data->xact_data[req_slot].cc_req_no, cc_request_number);
+        error++;
+        goto cleanup;
+    }
+
     sess = smf_sess_find_by_id(sess_data->sess_id);
-    ogs_assert(sess);
-
-    gy_message = ogs_calloc(1, sizeof(ogs_diam_gy_message_t));
-    ogs_assert(gy_message);
-
-    /* Set Credit Control Command */
-    gy_message->cmd_code = OGS_DIAM_GY_CMD_CODE_CREDIT_CONTROL;
-
-    /* Initialize some values: */
-    gy_message->cca.result_code = ER_DIAMETER_SUCCESS;
+    if (!sess) {
+        ogs_error("Session not found: %d", sess_data->sess_id);
+        error++;
+        goto cleanup;
+    }
 
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
@@ -1070,6 +1085,7 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
         } else {
             ogs_error("no Result-Code");
             error++;
+            goto cleanup;
         }
     }
 
@@ -1084,6 +1100,7 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
     } else {
         ogs_error("no_Origin-Host");
         error++;
+        goto cleanup;
     }
 
     /* Value of Origin-Realm */
@@ -1097,21 +1114,21 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
     } else {
         ogs_error("no_Origin-Realm");
         error++;
+        goto cleanup;
     }
 
     /* Value of CC-Request-Type */
     ret = fd_msg_search_avp(*msg, ogs_diam_gy_cc_request_type, &avp);
     ogs_assert(ret == 0);
     if (!avp && req) {
-        /* Attempt searching for CC-Request-* in original request. Error
-         * messages (like DIAMETER_UNABLE_TO_DELIVER) crafted internally may not
-         * have them. */
+        /* Attempt searching for CC-Request-* in original request */
         ret = fd_msg_search_avp(req, ogs_diam_gy_cc_request_type, &avp);
         ogs_assert(ret == 0);
     }
     if (!avp) {
-        ogs_error("no_CC-Request-Number");
+        ogs_error("no_CC-Request-Type");
         error++;
+        goto cleanup;
     }
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
@@ -1119,9 +1136,10 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
 
     if (gy_message->result_code != ER_DIAMETER_SUCCESS) {
         ogs_warn("ERROR DIAMETER Result Code(%d)", gy_message->result_code);
-        goto out;
+        /* Continue processing even with error result code */
     }
 
+    /* Parse message AVPs */
     ret = fd_msg_browse(*msg, MSG_BRW_FIRST_CHILD, &avp, NULL);
     ogs_assert(ret == 0);
     while (avp) {
@@ -1134,7 +1152,11 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
                 ogs_free(sess_data->peer_host);
             sess_data->peer_host =
                 (os0_t)ogs_strdup((char *)hdr->avp_value->os.data);
-            ogs_assert(sess_data->peer_host);
+            if (!sess_data->peer_host) {
+                ogs_error("Failed to allocate peer_host");
+                error++;
+                goto cleanup;
+            }
             break;
         case AC_ORIGIN_REALM:
         case AC_DESTINATION_REALM:
@@ -1161,8 +1183,10 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
                 case OGS_DIAM_GY_AVP_CODE_GRANTED_SERVICE_UNIT:
                     rv = decode_granted_service_unit(
                             &gy_message->cca.granted, avpch1, &error);
-                    ogs_assert(rv == OGS_OK);
-                    /*TODO: apply gsu */
+                    if (rv != OGS_OK) {
+                        ogs_error("Failed to decode granted service unit");
+                        goto cleanup;
+                    }
                     break;
                 case OGS_DIAM_GY_AVP_CODE_VALIDITY_TIME:
                     gy_message->cca.validity_time = hdr->avp_value->u32;
@@ -1176,7 +1200,10 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
                 case OGS_DIAM_GY_AVP_CODE_FINAL_UNIT_INDICATION:
                     rv = decode_final_unit_indication(
                             &gy_message->cca.final, avpch1, &error);
-                    ogs_assert(rv == OGS_OK);
+                    if (rv != OGS_OK) {
+                        ogs_error("Failed to decode final unit indication");
+                        goto cleanup;
+                    }
                     break;
                 default:
                     ogs_warn("Not supported(%d)", hdr->avp_code);
@@ -1192,10 +1219,14 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
         fd_msg_browse(avp, MSG_BRW_NEXT, &avp, NULL);
     }
 
-out:
+    /* Send event to SMF if no errors */
     if (!error) {
         e = smf_event_new(SMF_EVT_GY_MESSAGE);
-        ogs_assert(e);
+        if (!e) {
+            ogs_error("Failed to create SMF event");
+            error++;
+            goto cleanup;
+        }
 
         e->sess_id = sess->id;
         e->gy_message = gy_message;
@@ -1207,34 +1238,45 @@ out:
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_error("ogs_queue_push() failed:%d", (int)rv);
-            ogs_free(gy_message);
             ogs_event_free(e);
+            error++;
+            goto cleanup;
         } else {
             ogs_pollset_notify(ogs_app()->pollset);
+            /* Transfer ownership of gy_message to event */
+            gy_message = NULL;
         }
-    } else {
+    }
+
+cleanup:
+    /* Free gy_message if it wasn't transferred to event */
+    if (gy_message) {
         ogs_free(gy_message);
     }
 
-    /* Free the message */
+    /* Update statistics */
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
-    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
-        ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (ogs_diam_stats_self()->stats.nb_recv) {
-        /* Ponderate in the avg */
-        ogs_diam_stats_self()->stats.avg = (ogs_diam_stats_self()->stats.avg *
-            ogs_diam_stats_self()->stats.nb_recv + dur) /
-            (ogs_diam_stats_self()->stats.nb_recv + 1);
-        /* Min, max */
-        if (dur < ogs_diam_stats_self()->stats.shortest)
+    if (sess_data) {
+        dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
+            ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+        if (ogs_diam_stats_self()->stats.nb_recv) {
+            /* Ponderate in the avg */
+            ogs_diam_stats_self()->stats.avg =
+                (ogs_diam_stats_self()->stats.avg *
+                 ogs_diam_stats_self()->stats.nb_recv + dur) /
+                (ogs_diam_stats_self()->stats.nb_recv + 1);
+            /* Min, max */
+            if (dur < ogs_diam_stats_self()->stats.shortest)
+                ogs_diam_stats_self()->stats.shortest = dur;
+            if (dur > ogs_diam_stats_self()->stats.longest)
+                ogs_diam_stats_self()->stats.longest = dur;
+        } else {
             ogs_diam_stats_self()->stats.shortest = dur;
-        if (dur > ogs_diam_stats_self()->stats.longest)
             ogs_diam_stats_self()->stats.longest = dur;
-    } else {
-        ogs_diam_stats_self()->stats.shortest = dur;
-        ogs_diam_stats_self()->stats.longest = dur;
-        ogs_diam_stats_self()->stats.avg = dur;
+            ogs_diam_stats_self()->stats.avg = dur;
+        }
     }
+
     if (error)
         ogs_diam_stats_self()->stats.nb_errs++;
     else
@@ -1242,36 +1284,40 @@ out:
 
     ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
-    /* Display how long it took */
-    if (ts.tv_nsec > sess_data->ts.tv_nsec)
-        ogs_trace("in %d.%06ld sec",
-                (int)(ts.tv_sec - sess_data->ts.tv_sec),
-                (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    else
-        ogs_trace("in %d.%06ld sec",
-                (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
-                (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    /* Display timing information */
+    if (sess_data) {
+        if (ts.tv_nsec > sess_data->ts.tv_nsec)
+            ogs_trace("in %d.%06ld sec",
+                    (int)(ts.tv_sec - sess_data->ts.tv_sec),
+                    (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+        else
+            ogs_trace("in %d.%06ld sec",
+                    (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
+                    (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec)
+                    / 1000);
 
-    ogs_debug("    CC-Request-Type[%d] Number[%d] in Session Data",
-        sess_data->cc_request_type, sess_data->cc_request_number);
-    ogs_debug("    Current CC-Request-Number[%d]", cc_request_number);
-    if (sess_data->cc_request_type ==
-            OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST &&
-        sess_data->cc_request_number <= cc_request_number) {
-        ogs_debug("    [LAST] state_cleanup(): [%s]", sess_data->gy_sid);
-        state_cleanup(sess_data, NULL, NULL);
-    } else {
-        ogs_debug("    fd_sess_state_store(): [%s]", sess_data->gy_sid);
-        ret = fd_sess_state_store(smf_gy_reg, session, &sess_data);
-        ogs_assert(ret == 0);
-        ogs_assert(sess_data == NULL);
+        ogs_debug("    CC-Request-Type[%d] Number[%d] in Session Data",
+            sess_data->cc_request_type, sess_data->cc_request_number);
+        ogs_debug("    Current CC-Request-Number[%d]", cc_request_number);
+
+        /* Clean up session if termination request */
+        if (sess_data->cc_request_type ==
+                OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST &&
+            sess_data->cc_request_number <= cc_request_number) {
+            ogs_debug("    [LAST] state_cleanup(): [%s]", sess_data->gy_sid);
+            state_cleanup(sess_data, NULL, NULL);
+        } else {
+            ogs_debug("    fd_sess_state_store(): [%s]", sess_data->gy_sid);
+            ret = fd_sess_state_store(smf_gy_reg, session, &sess_data);
+            ogs_assert(ret == 0);
+            ogs_assert(sess_data == NULL);
+        }
     }
 
+    /* Free the message */
     ret = fd_msg_free(*msg);
     ogs_assert(ret == 0);
     *msg = NULL;
-
-    return;
 }
 
 static int smf_gy_fb_cb(struct msg **msg, struct avp *avp,
@@ -1283,7 +1329,7 @@ static int smf_gy_fb_cb(struct msg **msg, struct avp *avp,
     return ENOTSUP;
 }
 
-static int smf_gy_rar_cb( struct msg **msg, struct avp *avp,
+static int smf_gy_rar_cb(struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
     int rv;
@@ -1292,68 +1338,96 @@ static int smf_gy_rar_cb( struct msg **msg, struct avp *avp,
     struct msg *ans;
     union avp_value val;
     struct sess_state *sess_data = NULL;
-
     smf_event_t *e = NULL;
     smf_sess_t *sess = NULL;
     ogs_diam_gy_message_t *gy_message = NULL;
-
     uint32_t result_code = OGS_DIAM_UNKNOWN_SESSION_ID;
 
     ogs_assert(msg);
 
     ogs_debug("Re-Auth-Request");
 
+    /* Allocate gy_message early for proper cleanup */
     gy_message = ogs_calloc(1, sizeof(ogs_diam_gy_message_t));
-    ogs_assert(gy_message);
+    if (!gy_message) {
+        ogs_error("Failed to allocate gy_message");
+        result_code = OGS_DIAM_OUT_OF_SPACE;
+        goto error_out;
+    }
 
     /* Set Credit Control Command */
     gy_message->cmd_code = OGS_DIAM_GY_CMD_RE_AUTH;
 
     /* Create answer header */
     ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to create answer message");
+        result_code = OGS_DIAM_OUT_OF_SPACE;
+        goto error_out;
+    }
     ans = *msg;
 
+    /* Retrieve session state */
     ret = fd_sess_state_retrieve(smf_gy_reg, session, &sess_data);
     ogs_assert(ret == 0);
     if (!sess_data) {
         ogs_error("No Session Data");
-        goto out;
+        result_code = OGS_DIAM_UNKNOWN_SESSION_ID;
+        goto error_out;
     }
 
     /* Get Session Information */
     sess = smf_sess_find_by_id(sess_data->sess_id);
-    ogs_assert(sess);
+    if (!sess) {
+        ogs_error("Session not found: %d", sess_data->sess_id);
+        result_code = OGS_DIAM_UNKNOWN_SESSION_ID;
+        goto error_out;
+    }
 
     /* TODO: parsing of msg into gy_message */
 
     /* Send Gy Event to SMF State Machine */
     e = smf_event_new(SMF_EVT_GY_MESSAGE);
-    ogs_assert(e);
+    if (!e) {
+        ogs_error("Failed to create SMF event");
+        result_code = OGS_DIAM_OUT_OF_SPACE;
+        goto error_out;
+    }
 
     e->sess_id = sess->id;
     e->gy_message = gy_message;
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        ogs_free(gy_message);
         ogs_event_free(e);
+        result_code = OGS_DIAM_OUT_OF_SPACE;
+        goto error_out;
     } else {
         ogs_pollset_notify(ogs_app()->pollset);
+        /* Transfer ownership of gy_message to event */
+        gy_message = NULL;
     }
 
     /* Set the Auth-Application-Id AVP */
     ret = fd_msg_avp_new(ogs_diam_auth_application_id, 0, &avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to create Auth-Application-Id AVP");
+        result_code = OGS_DIAM_OUT_OF_SPACE;
+        goto error_out;
+    }
     val.i32 = OGS_DIAM_GY_APPLICATION_ID;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
-    /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+    /* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
     ret = fd_msg_rescode_set(ans, (char *)"DIAMETER_SUCCESS", NULL, NULL, 1);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to set result code");
+        result_code = OGS_DIAM_OUT_OF_SPACE;
+        goto error_out;
+    }
 
     /* Store this value in the session */
     ret = fd_sess_state_store(smf_gy_reg, session, &sess_data);
@@ -1362,7 +1436,11 @@ static int smf_gy_rar_cb( struct msg **msg, struct avp *avp,
 
     /* Send the answer */
     ret = fd_msg_send(msg, NULL, NULL);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to send answer message");
+        /* Message is already freed by fd_msg_send on error */
+        return ret;
+    }
 
     ogs_debug("Re-Auth-Answer");
 
@@ -1373,7 +1451,13 @@ static int smf_gy_rar_cb( struct msg **msg, struct avp *avp,
 
     return 0;
 
-out:
+error_out:
+    /* Free gy_message if it wasn't transferred to event */
+    if (gy_message) {
+        ogs_free(gy_message);
+    }
+
+    /* Set appropriate error result code */
     if (result_code == OGS_DIAM_UNKNOWN_SESSION_ID) {
         ret = fd_msg_rescode_set(ans,
                     (char *)"DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
@@ -1383,14 +1467,13 @@ out:
         ogs_assert(ret == 0);
     }
 
-    /* Store this value in the session */
+    /* Store session state (may be NULL) */
     ret = fd_sess_state_store(smf_gy_reg, session, &sess_data);
     ogs_assert(sess_data == NULL);
 
+    /* Send error response */
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
-
-    ogs_free(gy_message);
 
     return 0;
 }

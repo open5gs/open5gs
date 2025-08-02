@@ -1,5 +1,5 @@
 /* 3GPP TS 29.273 section 9
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -357,7 +357,6 @@ void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact)
 static void smf_s6b_aaa_cb(void *data, struct msg **msg)
 {
     int ret;
-
     struct sess_state *sess_data = NULL;
     struct timespec ts;
     struct session *session;
@@ -366,7 +365,6 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
     unsigned long dur;
     int error = 0;
     int new;
-
     smf_sess_t *sess = NULL;
     smf_event_t *e = NULL;
     ogs_diam_s6b_message_t *s6b_message = NULL;
@@ -387,7 +385,7 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
     ogs_assert(ret == 0);
     if (!sess_data) {
         ogs_error("No Session Data");
-        return;
+        goto cleanup;
     }
     ogs_assert((void *)sess_data == data);
 
@@ -396,9 +394,14 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
     sess = sess_data->sess;
     ogs_assert(sess);
 
+    /* Allocate S6B message structure */
     s6b_message = ogs_calloc(1, sizeof(ogs_diam_s6b_message_t));
-    ogs_assert(s6b_message);
-    /* Set Session Termination Command */
+    if (!s6b_message) {
+        ogs_error("Failed to allocate s6b_message");
+        goto cleanup;
+    }
+
+    /* Set Authentication Authorization Command */
     s6b_message->cmd_code = OGS_DIAM_S6B_CMD_AUTHENTICATION_AUTHORIZATION;
 
     /* Value of Result Code */
@@ -425,7 +428,8 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
                 ogs_assert(ret == 0);
                 s6b_message->result_code = hdr->avp_value->i32;
-                ogs_error("Experimental Result Code: %d", s6b_message->result_code);
+                ogs_error("Experimental Result Code: %d",
+                         s6b_message->result_code);
             }
         } else {
             ogs_error("no Result-Code");
@@ -458,34 +462,52 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
         error++;
     }
 
+    /* Create and queue the event */
     e = smf_event_new(SMF_EVT_S6B_MESSAGE);
-    ogs_assert(e);
+    if (!e) {
+        ogs_error("Failed to create SMF event");
+        goto cleanup;
+    }
 
-    if (error && s6b_message->result_code == ER_DIAMETER_SUCCESS)
-            s6b_message->result_code = error;
+    /* Override result code if there were parsing errors */
+    if (error && s6b_message->result_code == ER_DIAMETER_SUCCESS) {
+        s6b_message->result_code = error;
+    }
 
     e->sess_id = sess->id;
     e->gtp_xact_id = sess_data->xact_id;
     e->s6b_message = s6b_message;
+
     ret = ogs_queue_push(ogs_app()->queue, e);
     if (ret != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)ret);
-        ogs_free(s6b_message);
         ogs_event_free(e);
-    } else {
-        ogs_pollset_notify(ogs_app()->pollset);
+        goto cleanup;
     }
 
-    /* Free the message */
+    /* Notify the event loop */
+    ogs_pollset_notify(ogs_app()->pollset);
+
+    /* Event successfully queued, clear pointer to avoid double-free */
+    s6b_message = NULL;
+    e = NULL;
+
+cleanup:
+    /* Update statistics and cleanup */
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+
+    /* Calculate response time */
     dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+
     if (ogs_diam_stats_self()->stats.nb_recv) {
-        /* Ponderate in the avg */
-        ogs_diam_stats_self()->stats.avg = (ogs_diam_stats_self()->stats.avg *
-            ogs_diam_stats_self()->stats.nb_recv + dur) /
+        /* Update average response time */
+        ogs_diam_stats_self()->stats.avg =
+            (ogs_diam_stats_self()->stats.avg *
+             ogs_diam_stats_self()->stats.nb_recv + dur) /
             (ogs_diam_stats_self()->stats.nb_recv + 1);
-        /* Min, max */
+
+        /* Update min/max response times */
         if (dur < ogs_diam_stats_self()->stats.shortest)
             ogs_diam_stats_self()->stats.shortest = dur;
         if (dur > ogs_diam_stats_self()->stats.longest)
@@ -495,27 +517,39 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
         ogs_diam_stats_self()->stats.longest = dur;
         ogs_diam_stats_self()->stats.avg = dur;
     }
-    if (error)
+
+    /* Update error/success counters */
+    if (error || s6b_message) /* s6b_message != NULL means cleanup case */
         ogs_diam_stats_self()->stats.nb_errs++;
     else
         ogs_diam_stats_self()->stats.nb_recv++;
 
     ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
-    /* Display how long it took */
-    if (ts.tv_nsec > sess_data->ts.tv_nsec)
-        ogs_debug("in %d.%06ld sec",
-                (int)(ts.tv_sec - sess_data->ts.tv_sec),
-                (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    else
-        ogs_debug("in %d.%06ld sec",
-                (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
-                (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    /* Display response time */
+    if (sess_data) {
+        if (ts.tv_nsec > sess_data->ts.tv_nsec)
+            ogs_debug("in %d.%06ld sec",
+                    (int)(ts.tv_sec - sess_data->ts.tv_sec),
+                    (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+        else
+            ogs_debug("in %d.%06ld sec",
+                    (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
+                    (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec)
+                    / 1000);
 
-    ret = fd_sess_state_store(smf_s6b_reg, session, &sess_data);
-    ogs_assert(ret == 0);
-    ogs_assert(sess_data == NULL);
+        /* Store session state */
+        ret = fd_sess_state_store(smf_s6b_reg, session, &sess_data);
+        ogs_assert(ret == 0);
+        ogs_assert(sess_data == NULL);
+    }
 
+    /* Free allocated memory if not successfully queued */
+    if (s6b_message) {
+        ogs_free(s6b_message);
+    }
+
+    /* Free the Diameter message */
     ret = fd_msg_free(*msg);
     ogs_assert(ret == 0);
     *msg = NULL;
@@ -656,7 +690,6 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
 {
     int ret;
     int rv;
-
     struct sess_state *sess_data = NULL;
     struct timespec ts;
     struct session *session;
@@ -665,7 +698,6 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
     unsigned long dur;
     int error = 0;
     int new;
-
     smf_event_t *e = NULL;
     smf_sess_t *sess = NULL;
     ogs_diam_s6b_message_t *s6b_message = NULL;
@@ -686,7 +718,7 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
     ogs_assert(ret == 0);
     if (!sess_data) {
         ogs_error("No Session Data");
-        return;
+        goto cleanup;
     }
     ogs_assert((void *)sess_data == data);
 
@@ -695,8 +727,13 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
     sess = sess_data->sess;
     ogs_assert(sess);
 
+    /* Allocate S6B message structure */
     s6b_message = ogs_calloc(1, sizeof(ogs_diam_s6b_message_t));
-    ogs_assert(s6b_message);
+    if (!s6b_message) {
+        ogs_error("Failed to allocate s6b_message");
+        goto cleanup;
+    }
+
     /* Set Session Termination Command */
     s6b_message->cmd_code = OGS_DIAM_S6B_CMD_SESSION_TERMINATION;
 
@@ -760,64 +797,92 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
         error++;
     }
 
+    /* Create and queue the event only if no critical errors */
     if (!error) {
         e = smf_event_new(SMF_EVT_S6B_MESSAGE);
-        ogs_assert(e);
+        if (!e) {
+            ogs_error("Failed to create SMF event");
+            goto cleanup;
+        }
 
         e->sess_id = sess->id;
         e->s6b_message = s6b_message;
+
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_error("ogs_queue_push() failed:%d", (int)rv);
-            ogs_free(s6b_message);
             ogs_event_free(e);
-        } else {
-            ogs_pollset_notify(ogs_app()->pollset);
+            goto cleanup;
         }
-    } else {
-        ogs_free(s6b_message);
+
+        /* Notify the event loop */
+        ogs_pollset_notify(ogs_app()->pollset);
+
+        /* Event successfully queued, clear pointer to avoid double-free */
+        s6b_message = NULL;
+        e = NULL;
     }
 
-    /* Free the message */
+cleanup:
+    /* Update statistics */
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
-    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
-        ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (ogs_diam_stats_self()->stats.nb_recv) {
-        /* Ponderate in the avg */
-        ogs_diam_stats_self()->stats.avg = (ogs_diam_stats_self()->stats.avg *
-            ogs_diam_stats_self()->stats.nb_recv + dur) /
-            (ogs_diam_stats_self()->stats.nb_recv + 1);
-        /* Min, max */
-        if (dur < ogs_diam_stats_self()->stats.shortest)
+
+    /* Calculate response time */
+    if (sess_data) {
+        dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
+            ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+
+        if (ogs_diam_stats_self()->stats.nb_recv) {
+            /* Update average response time */
+            ogs_diam_stats_self()->stats.avg =
+                (ogs_diam_stats_self()->stats.avg *
+                 ogs_diam_stats_self()->stats.nb_recv + dur) /
+                (ogs_diam_stats_self()->stats.nb_recv + 1);
+
+            /* Update min/max response times */
+            if (dur < ogs_diam_stats_self()->stats.shortest)
+                ogs_diam_stats_self()->stats.shortest = dur;
+            if (dur > ogs_diam_stats_self()->stats.longest)
+                ogs_diam_stats_self()->stats.longest = dur;
+        } else {
             ogs_diam_stats_self()->stats.shortest = dur;
-        if (dur > ogs_diam_stats_self()->stats.longest)
             ogs_diam_stats_self()->stats.longest = dur;
-    } else {
-        ogs_diam_stats_self()->stats.shortest = dur;
-        ogs_diam_stats_self()->stats.longest = dur;
-        ogs_diam_stats_self()->stats.avg = dur;
+            ogs_diam_stats_self()->stats.avg = dur;
+        }
     }
-    if (error)
+
+    /* Update error/success counters */
+    if (error || s6b_message) /* s6b_message != NULL means cleanup case */
         ogs_diam_stats_self()->stats.nb_errs++;
     else
         ogs_diam_stats_self()->stats.nb_recv++;
 
     ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
-    /* Display how long it took */
-    if (ts.tv_nsec > sess_data->ts.tv_nsec)
-        ogs_debug("in %d.%06ld sec",
-                (int)(ts.tv_sec - sess_data->ts.tv_sec),
-                (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    else
-        ogs_debug("in %d.%06ld sec",
-                (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
-                (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    /* Display response time */
+    if (sess_data) {
+        if (ts.tv_nsec > sess_data->ts.tv_nsec)
+            ogs_debug("in %d.%06ld sec",
+                    (int)(ts.tv_sec - sess_data->ts.tv_sec),
+                    (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+        else
+            ogs_debug("in %d.%06ld sec",
+                    (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
+                    (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec)
+                    / 1000);
 
-    ret = fd_sess_state_store(smf_s6b_reg, session, &sess_data);
-    ogs_assert(ret == 0);
-    ogs_assert(sess_data == NULL);
+        /* Store session state */
+        ret = fd_sess_state_store(smf_s6b_reg, session, &sess_data);
+        ogs_assert(ret == 0);
+        ogs_assert(sess_data == NULL);
+    }
 
+    /* Free allocated memory if not successfully queued */
+    if (s6b_message) {
+        ogs_free(s6b_message);
+    }
+
+    /* Free the Diameter message */
     ret = fd_msg_free(*msg);
     ogs_assert(ret == 0);
     *msg = NULL;
