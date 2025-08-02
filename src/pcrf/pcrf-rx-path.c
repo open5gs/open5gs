@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -104,156 +104,213 @@ static int pcrf_rx_fb_cb(struct msg **msg, struct avp *avp,
     return ENOTSUP;
 }
 
-static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
+static int pcrf_rx_aar_cb(struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
     int rv;
     int ret;
-
-    struct msg *ans, *qry;
-    struct avp *avpch1, *avpch2, *avpch3;
-    struct avp_hdr *hdr;
+    struct msg *ans = NULL, *qry = NULL;
+    struct avp *avpch1 = NULL, *avpch2 = NULL, *avpch3 = NULL;
+    struct avp_hdr *hdr = NULL;
     union avp_value val;
     struct sess_state *sess_data = NULL;
     size_t sidlen;
-
     ogs_diam_rx_message_t rx_message;
     ogs_media_component_t *media_component = NULL;
     ogs_media_sub_component_t *sub = NULL;
     ogs_flow_t *flow = NULL;
-
     char buf[OGS_ADDRSTRLEN];
     os0_t gx_sid = NULL;
     uint32_t result_code = OGS_DIAM_RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
+    int error_occurred = 0;
 
     ogs_debug("[PCRF] Rx AA-Request");
 
-    ogs_assert(msg);
-    ogs_assert(sess);
-
-    ret = fd_sess_state_retrieve(pcrf_rx_reg, sess, &sess_data);
-    ogs_assert(ret == 0);
-    if (!sess_data) {
-        os0_t sid = NULL;
-        ret = fd_sess_getsid(sess, &sid, &sidlen);
-        ogs_assert(ret == 0);
-
-        sess_data = new_state(sid);
-        ogs_assert(sess_data);
+    /* Validate input parameters */
+    if (!msg || !*msg || !sess) {
+        ogs_error("Invalid input parameters");
+        return EINVAL;
     }
 
     /* Initialize Message */
     memset(&rx_message, 0, sizeof(ogs_diam_rx_message_t));
     rx_message.cmd_code = OGS_DIAM_RX_CMD_CODE_AA;
 
+    /* Retrieve session state */
+    ret = fd_sess_state_retrieve(pcrf_rx_reg, sess, &sess_data);
+    if (ret != 0) {
+        ogs_error("Failed to retrieve session state");
+        error_occurred = 1;
+        goto out;
+    }
+
+    if (!sess_data) {
+        os0_t sid = NULL;
+        ret = fd_sess_getsid(sess, &sid, &sidlen);
+        if (ret != 0) {
+            ogs_error("Failed to get session ID");
+            error_occurred = 1;
+            goto out;
+        }
+
+        sess_data = new_state(sid);
+        if (!sess_data) {
+            ogs_error("Failed to create new session state");
+            error_occurred = 1;
+            goto out;
+        }
+    }
+
     /* Create answer header */
     qry = *msg;
     ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to create answer message");
+        error_occurred = 1;
+        goto out;
+    }
     ans = *msg;
 
     /* Set the Auth-Application-Id AVP */
     ret = fd_msg_avp_new(ogs_diam_auth_application_id, 0, &avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to create Auth-Application-Id AVP");
+        error_occurred = 1;
+        goto out;
+    }
     val.i32 = OGS_DIAM_RX_APPLICATION_ID;
     ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to set Auth-Application-Id value");
+        error_occurred = 1;
+        goto out;
+    }
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to add Auth-Application-Id AVP");
+        error_occurred = 1;
+        goto out;
+    }
 
     /* Set the Auth-Request-Type AVP */
     ret = fd_msg_avp_new(ogs_diam_auth_request_type, 0, &avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to create Auth-Request-Type AVP");
+        error_occurred = 1;
+        goto out;
+    }
     val.i32 = OGS_DIAM_AUTH_REQUEST_TYPE_AUTHENTICATE_ONLY;
     ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to set Auth-Request-Type value");
+        error_occurred = 1;
+        goto out;
+    }
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to add Auth-Request-Type AVP");
+        error_occurred = 1;
+        goto out;
+    }
 
     /* Get Framed-IP-Address */
     ret = fd_msg_search_avp(qry, ogs_diam_rx_framed_ip_address, &avp);
-    ogs_assert(ret == 0);
-    if (avp) {
+    if (ret == 0 && avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
-        gx_sid = (os0_t)pcrf_sess_find_by_ipv4(hdr->avp_value->os.data);
-        if (!gx_sid) {
-            ogs_warn("Cannot find Gx Sesson for IPv4:%s",
-                    OGS_INET_NTOP(hdr->avp_value->os.data, buf));
+        if (ret == 0 && hdr) {
+            gx_sid = (os0_t)pcrf_sess_find_by_ipv4(hdr->avp_value->os.data);
+            if (!gx_sid) {
+                ogs_warn("Cannot find Gx Session for IPv4:%s",
+                        OGS_INET_NTOP(hdr->avp_value->os.data, buf));
+            }
         }
     }
 
     if (!gx_sid) {
         /* Get Framed-IPv6-Prefix */
         ret = fd_msg_search_avp(qry, ogs_diam_rx_framed_ipv6_prefix, &avp);
-        ogs_assert(ret == 0);
-        if (avp) {
+        if (ret == 0 && avp) {
             ogs_paa_t *paa = NULL;
 
             ret = fd_msg_avp_hdr(avp, &hdr);
-            ogs_assert(ret == 0);
-            paa = (ogs_paa_t *)hdr->avp_value->os.data;
-            ogs_assert(paa);
-            ogs_assert(paa->len == OGS_IPV6_LEN * 8 /* 128bit */);
-            gx_sid = (os0_t)pcrf_sess_find_by_ipv6(paa->addr6);
-            if (!gx_sid) {
-                ogs_warn("Cannot find Gx Sesson for IPv6:%s",
-                        OGS_INET6_NTOP(hdr->avp_value->os.data, buf));
+            if (ret == 0 && hdr) {
+                paa = (ogs_paa_t *)hdr->avp_value->os.data;
+                if (paa && paa->len == OGS_IPV6_LEN * 8) {
+                    gx_sid = (os0_t)pcrf_sess_find_by_ipv6(paa->addr6);
+                    if (!gx_sid) {
+                        ogs_warn("Cannot find Gx Session for IPv6:%s",
+                                OGS_INET6_NTOP(hdr->avp_value->os.data, buf));
+                    }
+                }
             }
         }
     }
 
     if (!gx_sid) {
-        ogs_error("No Gx Session");
+        ogs_error("No Gx Session found");
+        result_code = OGS_DIAM_RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
+        error_occurred = 1;
         goto out;
     }
 
+    /* Parse AVPs - with error checking for each browse operation */
     ret = fd_msg_browse(qry, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to browse message");
+        error_occurred = 1;
+        goto out;
+    }
+
     while (avpch1) {
         ret = fd_msg_avp_hdr(avpch1, &hdr);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to get AVP header");
+            fd_msg_browse(avpch1, MSG_BRW_NEXT, &avpch1, NULL);
+            continue;
+        }
+
         switch(hdr->avp_code) {
         case AC_SESSION_ID:
         case AC_ORIGIN_HOST:
-            if (sess_data->peer_host)
+            if (sess_data->peer_host) {
                 ogs_free(sess_data->peer_host);
+                sess_data->peer_host = NULL;
+            }
             sess_data->peer_host =
                 (os0_t)ogs_strdup((char *)hdr->avp_value->os.data);
-            ogs_assert(sess_data->peer_host);
+            if (!sess_data->peer_host) {
+                ogs_error("Failed to duplicate peer host");
+                error_occurred = 1;
+                goto out;
+            }
             break;
-        case AC_ORIGIN_REALM:
-        case AC_DESTINATION_REALM:
-        case AC_ROUTE_RECORD:
-        case AC_PROXY_INFO:
-        case AC_AUTH_APPLICATION_ID:
-        case OGS_DIAM_AVP_CODE_FRAME_IP_ADDRESS:
-        case OGS_DIAM_AVP_CODE_FRAME_IPV6_PREFIX:
-        case OGS_DIAM_RX_AVP_CODE_SUBSCRIPTION_ID:
-            break;
-        /* Gwt Specific-Action */
-        case OGS_DIAM_RX_AVP_CODE_SPECIFIC_ACTION:
-            break;
-        /* Gwt Media-Component-Description */
+
         case OGS_DIAM_RX_AVP_CODE_MEDIA_COMPONENT_DESCRIPTION:
             if (rx_message.ims_data.num_of_media_component >=
                     OGS_ARRAY_SIZE(rx_message.ims_data.media_component)) {
-                ogs_error("OVERFLOW rx_message.ims_data.num_of_media_component "
-                        "[%d:%d:%d]",
-                        rx_message.ims_data.num_of_media_component,
-                        OGS_MAX_NUM_OF_MEDIA_COMPONENT,
+                ogs_error("OVERFLOW rx_message.ims_data.num_of_media_component"
+                        " [%d:%d]", rx_message.ims_data.num_of_media_component,
                         (int)OGS_ARRAY_SIZE(
                             rx_message.ims_data.media_component));
                 break;
             }
+
             media_component = &rx_message.ims_data.
                     media_component[rx_message.ims_data.num_of_media_component];
 
             ret = fd_msg_browse(avpch1, MSG_BRW_FIRST_CHILD, &avpch2, NULL);
-            ogs_assert(ret == 0);
+            if (ret != 0) {
+                ogs_error("Failed to browse media component");
+                break;
+            }
+
             while (avpch2) {
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
-                ogs_assert(ret == 0);
+                if (ret != 0) {
+                    fd_msg_browse(avpch2, MSG_BRW_NEXT, &avpch2, NULL);
+                    continue;
+                }
+
                 switch (hdr->avp_code) {
                 case OGS_DIAM_RX_AVP_CODE_MEDIA_COMPONENT_NUMBER:
                     media_component->media_component_number =
@@ -287,24 +344,32 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                 case OGS_DIAM_RX_AVP_CODE_FLOW_STATUS:
                     media_component->flow_status = hdr->avp_value->i32;
                     break;
+
                 case OGS_DIAM_RX_AVP_CODE_MEDIA_SUB_COMPONENT:
                     if (media_component->num_of_sub >=
                             OGS_ARRAY_SIZE(media_component->sub)) {
-                        ogs_error("OVERFLOW media_component->num_of_sub "
-                                "[%d:%d:%d]",
+                        ogs_error("OVERFLOW media_component->num_of_sub [%d:%d]",
                                 media_component->num_of_sub,
-                                OGS_MAX_NUM_OF_MEDIA_SUB_COMPONENT,
                                 (int)OGS_ARRAY_SIZE(media_component->sub));
                         break;
                     }
+
                     sub = &media_component->sub[media_component->num_of_sub];
 
                     ret = fd_msg_browse(avpch2, MSG_BRW_FIRST_CHILD,
-                            &avpch3, NULL);
-                    ogs_assert(ret == 0);
+                                        &avpch3, NULL);
+                    if (ret != 0) {
+                        ogs_error("Failed to browse sub component");
+                        break;
+                    }
+
                     while (avpch3) {
                         ret = fd_msg_avp_hdr(avpch3, &hdr);
-                        ogs_assert(ret == 0);
+                        if (ret != 0) {
+                            fd_msg_browse(avpch3, MSG_BRW_NEXT, &avpch3, NULL);
+                            continue;
+                        }
+
                         switch (hdr->avp_code) {
                         case OGS_DIAM_RX_AVP_CODE_FLOW_NUMBER:
                             sub->flow_number = hdr->avp_value->i32;
@@ -326,23 +391,26 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                             }
                             break;
                         case OGS_DIAM_RX_AVP_CODE_FLOW_DESCRIPTION:
-                            if (sub->num_of_flow >= OGS_ARRAY_SIZE(sub->flow)) {
-                                ogs_error(
-                                    "OVERFLOW sub->num_of_flow [%d:%d:%d]",
+                            if (sub->num_of_flow >=
+                                    OGS_ARRAY_SIZE(sub->flow)) {
+                                ogs_error("OVERFLOW sub->num_of_flow [%d:%d]",
                                     sub->num_of_flow,
-                                    OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT,
                                     (int)OGS_ARRAY_SIZE(sub->flow));
                                 break;
                             }
+
                             flow = &sub->flow[sub->num_of_flow];
                             flow->description = ogs_strndup(
                                     (char*)hdr->avp_value->os.data,
                                     hdr->avp_value->os.len);
-                            ogs_assert(flow->description);
+                            if (!flow->description) {
+                                ogs_error("Failed to duplicate flow description");
+                                break;
+                            }
                             sub->num_of_flow++;
                             break;
                         default:
-                            ogs_error("Not supported(%d)",
+                            ogs_warn("Not supported AVP code(%d)",
                                     hdr->avp_code);
                             break;
                         }
@@ -352,7 +420,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                     media_component->num_of_sub++;
                     break;
                 default:
-                    ogs_warn("Not supported(%d)", hdr->avp_code);
+                    ogs_warn("Not supported AVP code(%d)", hdr->avp_code);
                     break;
                 }
 
@@ -361,99 +429,148 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 
             rx_message.ims_data.num_of_media_component++;
             break;
+
+        case AC_ORIGIN_REALM:
+        case AC_DESTINATION_REALM:
+        case AC_ROUTE_RECORD:
+        case AC_PROXY_INFO:
+        case AC_AUTH_APPLICATION_ID:
+        case OGS_DIAM_AVP_CODE_FRAME_IP_ADDRESS:
+        case OGS_DIAM_AVP_CODE_FRAME_IPV6_PREFIX:
+        case OGS_DIAM_RX_AVP_CODE_SUBSCRIPTION_ID:
+        case OGS_DIAM_RX_AVP_CODE_SPECIFIC_ACTION:
+            break;
         default:
-            ogs_warn("Not supported(%d)", hdr->avp_code);
+            ogs_warn("Not supported AVP code(%d)", hdr->avp_code);
             break;
         }
         fd_msg_browse(avpch1, MSG_BRW_NEXT, &avpch1, NULL);
     }
 
-    /* Send Re-Auth Request */
-    rv = pcrf_gx_send_rar(gx_sid, sess_data->rx_sid, &rx_message);
-    if (rv != OGS_OK) {
-        result_code = rx_message.result_code;
-        if (result_code != ER_DIAMETER_SUCCESS) {
-            ogs_error("pcrf_gx_send_rar() failed");
+    if (!error_occurred) {
+        /* Send Re-Auth Request */
+        rv = pcrf_gx_send_rar(gx_sid, sess_data->rx_sid, &rx_message);
+        if (rv != OGS_OK) {
+            result_code = rx_message.result_code;
+            if (result_code != ER_DIAMETER_SUCCESS) {
+                ogs_error("pcrf_gx_send_rar() failed");
+                error_occurred = 1;
+                goto out;
+            }
+        }
+
+        /* Store Gx Session-Id in this session */
+        if (!sess_data->gx_sid) {
+            sess_data->gx_sid = (os0_t)ogs_strdup((char *)gx_sid);
+            if (!sess_data->gx_sid) {
+                ogs_error("Failed to duplicate gx_sid");
+                error_occurred = 1;
+                goto out;
+            }
+        }
+
+        /* Set IP-Can-Type */
+        ret = fd_msg_avp_new(ogs_diam_rx_ip_can_type, 0, &avp);
+        if (ret == 0) {
+            val.i32 = OGS_DIAM_RX_IP_CAN_TYPE_3GPP_EPS;
+            ret = fd_msg_avp_setvalue(avp, &val);
+            if (ret == 0) {
+                ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+            }
+        }
+        if (ret != 0) {
+            ogs_error("Failed to add IP-Can-Type AVP");
+        }
+
+        /* Set RAT-Type */
+        ret = fd_msg_avp_new(ogs_diam_rat_type, 0, &avp);
+        if (ret == 0) {
+            val.i32 = OGS_DIAM_RAT_TYPE_EUTRAN;
+            ret = fd_msg_avp_setvalue(avp, &val);
+            if (ret == 0) {
+                ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+            }
+        }
+        if (ret != 0) {
+            ogs_error("Failed to add RAT-Type AVP");
+        }
+
+        /* Set success result code */
+        ret = fd_msg_rescode_set(ans, (char *)"DIAMETER_SUCCESS", NULL, NULL, 1);
+        if (ret != 0) {
+            ogs_error("Failed to set success result code");
+            error_occurred = 1;
             goto out;
+        }
+
+        /* Store session state */
+        ret = fd_sess_state_store(pcrf_rx_reg, sess, &sess_data);
+        if (ret != 0) {
+            ogs_error("Failed to store session state");
+            error_occurred = 1;
+            goto out;
+        }
+        sess_data = NULL; /* Ownership transferred */
+
+        /* Send the answer */
+        ret = fd_msg_send(msg, NULL, NULL);
+        if (ret != 0) {
+            ogs_error("Failed to send message");
+            error_occurred = 1;
+            goto out;
+        }
+
+        ogs_debug("[PCRF] Tx AA-Answer");
+
+        /* Add to stats */
+        OGS_DIAM_STATS_MTX(
+            OGS_DIAM_STATS_INC(nb_echoed);
+            PCRF_DIAM_PRIV_STATS_INC(rx.rx_aar);
+            PCRF_DIAM_PRIV_STATS_INC(rx.tx_aaa);
+        )
+
+        ogs_ims_data_free(&rx_message.ims_data);
+        return 0;
+    }
+
+out:
+    /* Error handling */
+    if (ans) {
+        if (result_code == OGS_DIAM_AVP_UNSUPPORTED) {
+            ret = fd_msg_rescode_set(ans,
+                        (char *)"DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
+        } else if (result_code == OGS_DIAM_UNKNOWN_SESSION_ID) {
+            ret = fd_msg_rescode_set(ans,
+                        (char *)"DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
+        } else if (result_code == OGS_DIAM_MISSING_AVP) {
+            ret = fd_msg_rescode_set(ans,
+                        (char *)"DIAMETER_MISSING_AVP", NULL, NULL, 1);
+        } else {
+            ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
+        }
+
+        if (ret != 0) {
+            ogs_error("Failed to set error result code");
+        }
+
+        ret = fd_msg_send(msg, NULL, NULL);
+        if (ret != 0) {
+            ogs_error("Failed to send error response");
         }
     }
 
-    /* Store Gx Session-Id in this session */
-    if (!sess_data->gx_sid)
-        sess_data->gx_sid = (os0_t)ogs_strdup((char *)gx_sid);
-    ogs_assert(sess_data->gx_sid);
-
-    /* Set IP-Can-Type */
-    ret = fd_msg_avp_new(ogs_diam_rx_ip_can_type, 0, &avp);
-    ogs_assert(ret == 0);
-    val.i32 = OGS_DIAM_RX_IP_CAN_TYPE_3GPP_EPS;
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
-
-    /* Set RAT-Type */
-    ret = fd_msg_avp_new(ogs_diam_rat_type, 0, &avp);
-    ogs_assert(ret == 0);
-    val.i32 = OGS_DIAM_RAT_TYPE_EUTRAN;
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
-
-    /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-    ret = fd_msg_rescode_set(ans, (char *)"DIAMETER_SUCCESS", NULL, NULL, 1);
-    ogs_assert(ret == 0);
-
-    /* Store this value in the session */
-    ret = fd_sess_state_store(pcrf_rx_reg, sess, &sess_data);
-    ogs_assert(ret == 0);
-    ogs_assert(sess_data == NULL);
-
-    /* Send the answer */
-    ret = fd_msg_send(msg, NULL, NULL);
-    ogs_assert(ret == 0);
-
-    ogs_debug("[PCRF] Tx AA-Answer");
-
-    /* Add this value to the stats */
-    OGS_DIAM_STATS_MTX(
-        OGS_DIAM_STATS_INC(nb_echoed);
-        PCRF_DIAM_PRIV_STATS_INC(rx.rx_aar);
-        PCRF_DIAM_PRIV_STATS_INC(rx.tx_aaa);
-    )
-
-    ogs_ims_data_free(&rx_message.ims_data);
-
-    return 0;
-
-out:
-    if (result_code == OGS_DIAM_AVP_UNSUPPORTED) {
-        ret = fd_msg_rescode_set(ans,
-                    (char *)"DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
-        ogs_assert(ret == 0);
-    } else if (result_code == OGS_DIAM_UNKNOWN_SESSION_ID) {
-        ret = fd_msg_rescode_set(ans,
-                    (char *)"DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
-        ogs_assert(ret == 0);
-    } else if (result_code == OGS_DIAM_MISSING_AVP) {
-        ret = fd_msg_rescode_set(ans,
-                    (char *)"DIAMETER_MISSING_AVP", NULL, NULL, 1);
-        ogs_assert(ret == 0);
-    } else {
-        ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
-        ogs_assert(ret == 0);
-    }
-
-    ret = fd_msg_send(msg, NULL, NULL);
-    ogs_assert(ret == 0);
-
+    /* Update error stats */
     OGS_DIAM_STATS_MTX(
         PCRF_DIAM_PRIV_STATS_INC(rx.rx_aar);
         PCRF_DIAM_PRIV_STATS_INC(rx.rx_aar_error);
     )
 
-    state_cleanup(sess_data, NULL, NULL);
+    /* Cleanup session state if it wasn't stored */
+    if (sess_data) {
+        state_cleanup(sess_data, NULL, NULL);
+    }
+
+    /* Always free IMS data */
     ogs_ims_data_free(&rx_message.ims_data);
 
     return 0;
@@ -583,104 +700,144 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
 static void pcrf_rx_asa_cb(void *data, struct msg **msg)
 {
     int ret;
-
-    struct session *session;
-    struct avp *avp, *avpch1;
-    struct avp_hdr *hdr;
-    int new;
+    struct session *session = NULL;
+    struct avp *avp = NULL, *avpch1 = NULL;
+    struct avp_hdr *hdr = NULL;
+    int new = 0;
     int result_code = 0;
 
     ogs_debug("[PCRF] Rx Abort-Session-Answer");
 
+    /* Validate input parameters */
+    if (!msg || !*msg) {
+        ogs_error("Invalid message pointer");
+        return;
+    }
+
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_assert(ret == 0);
-    ogs_assert(new == 0);
+    if (ret != 0) {
+        ogs_error("Failed to get session from message");
+        goto cleanup;
+    }
+
+    if (new != 0) {
+        ogs_error("Session should already exist");
+        goto cleanup;
+    }
 
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to search Result-Code AVP");
+        goto cleanup;
+    }
+
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to get Result-Code AVP header");
+            goto cleanup;
+        }
         result_code = hdr->avp_value->i32;
-        ogs_debug("    Result Code: %d", hdr->avp_value->i32);
+        ogs_debug("    Result Code: %d", result_code);
     } else {
+        /* Try experimental result code */
         ret = fd_msg_search_avp(*msg, ogs_diam_experimental_result, &avp);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to search Experimental-Result AVP");
+            goto cleanup;
+        }
+
         if (avp) {
-            ret = fd_avp_search_avp(avp, ogs_diam_experimental_result_code, &avpch1);
-            ogs_assert(ret == 0);
+            ret = fd_avp_search_avp(avp, ogs_diam_experimental_result_code,
+                                    &avpch1);
+            if (ret != 0) {
+                ogs_error("Failed to search Experimental-Result-Code AVP");
+                goto cleanup;
+            }
+
             if (avpch1) {
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
-                ogs_assert(ret == 0);
+                if (ret != 0) {
+                    ogs_error("Failed to get Experimental-Result-Code header");
+                    goto cleanup;
+                }
                 result_code = hdr->avp_value->i32;
-                ogs_debug("    Experimental Result Code: %d",
-                        result_code);
+                ogs_debug("    Experimental Result Code: %d", result_code);
             }
         } else {
-            ogs_error("no Result-Code");
+            ogs_error("No Result-Code or Experimental-Result found");
+            result_code = -1; /* Set error indicator */
         }
     }
 
     /* Value of Origin-Host */
     ret = fd_msg_search_avp(*msg, ogs_diam_origin_host, &avp);
-    ogs_assert(ret == 0);
-    if (avp) {
+    if (ret == 0 && avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
-        ogs_debug("    From '%.*s'",
-                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+        if (ret == 0 && hdr) {
+            ogs_debug("    From '%.*s'",
+                    (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+        }
     } else {
-        ogs_error("no_Origin-Host ");
+        ogs_warn("No Origin-Host found");
     }
 
     /* Value of Origin-Realm */
     ret = fd_msg_search_avp(*msg, ogs_diam_origin_realm, &avp);
-    ogs_assert(ret == 0);
-    if (avp) {
+    if (ret == 0 && avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
-        ogs_debug("         ('%.*s')",
-                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+        if (ret == 0 && hdr) {
+            ogs_debug("         ('%.*s')",
+                    (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+        }
     } else {
-        ogs_error("no_Origin-Realm ");
+        ogs_warn("No Origin-Realm found");
     }
 
     if (result_code != ER_DIAMETER_SUCCESS) {
         ogs_error("ERROR DIAMETER Result Code(%d)", result_code);
     }
 
+    /* Update statistics */
     OGS_DIAM_STATS_MTX(
         PCRF_DIAM_PRIV_STATS_INC(rx.rx_asa);
     )
 
-    ret = fd_msg_free(*msg);
-    ogs_assert(ret == 0);
-    *msg = NULL;
+cleanup:
+    /* Always free the message */
+    if (msg && *msg) {
+        ret = fd_msg_free(*msg);
+        if (ret != 0) {
+            ogs_error("Failed to free message");
+        }
+        *msg = NULL;
+    }
 
     return;
 }
 
-static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
+static int pcrf_rx_str_cb(struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
     int rv;
     int ret;
-
-    struct msg *ans, *qry;
-    struct avp_hdr *hdr;
+    struct msg *ans = NULL, *qry = NULL;
+    struct avp_hdr *hdr = NULL;
     union avp_value val;
     struct sess_state *sess_data = NULL;
-
     ogs_diam_rx_message_t rx_message;
-
     uint32_t result_code = OGS_DIAM_RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
+    int error_occurred = 0;
 
     ogs_debug("[PCRF] Rx Session-Termination-Request");
 
-    ogs_assert(msg);
-    ogs_assert(sess);
+    /* Validate input parameters */
+    if (!msg || !*msg || !sess) {
+        ogs_error("Invalid input parameters");
+        return EINVAL;
+    }
 
     /* Initialize Message */
     memset(&rx_message, 0, sizeof(ogs_diam_rx_message_t));
@@ -689,121 +846,191 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     /* Create answer header */
     qry = *msg;
     ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to create answer message");
+        error_occurred = 1;
+        goto out;
+    }
     ans = *msg;
 
     /* Set the Auth-Application-Id AVP */
     ret = fd_msg_avp_new(ogs_diam_auth_application_id, 0, &avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to create Auth-Application-Id AVP");
+        error_occurred = 1;
+        goto out;
+    }
     val.i32 = OGS_DIAM_RX_APPLICATION_ID;
     ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to set Auth-Application-Id value");
+        error_occurred = 1;
+        goto out;
+    }
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to add Auth-Application-Id AVP");
+        error_occurred = 1;
+        goto out;
+    }
 
     /* Set the Auth-Request-Type AVP */
     ret = fd_msg_avp_new(ogs_diam_auth_request_type, 0, &avp);
-    ogs_assert(ret == 0);
-    val.i32 = OGS_DIAM_AUTH_REQUEST_TYPE_AUTHENTICATE_ONLY;
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
-
-    ret = fd_sess_state_retrieve(pcrf_rx_reg, sess, &sess_data);
-    ogs_assert(ret == 0);
-    if (!sess_data) {
-        ogs_error("Cannot find session in Session-Termination-Request");
+    if (ret != 0) {
+        ogs_error("Failed to create Auth-Request-Type AVP");
+        error_occurred = 1;
         goto out;
     }
-    ogs_assert(sess_data->rx_sid);
-    ogs_assert(sess_data->gx_sid);
+    val.i32 = OGS_DIAM_AUTH_REQUEST_TYPE_AUTHENTICATE_ONLY;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    if (ret != 0) {
+        ogs_error("Failed to set Auth-Request-Type value");
+        error_occurred = 1;
+        goto out;
+    }
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    if (ret != 0) {
+        ogs_error("Failed to add Auth-Request-Type AVP");
+        error_occurred = 1;
+        goto out;
+    }
+
+    /* Retrieve session state */
+    ret = fd_sess_state_retrieve(pcrf_rx_reg, sess, &sess_data);
+    if (ret != 0) {
+        ogs_error("Failed to retrieve session state");
+        error_occurred = 1;
+        goto out;
+    }
+
+    if (!sess_data) {
+        ogs_error("Cannot find session in Session-Termination-Request");
+        error_occurred = 1;
+        goto out;
+    }
+
+    if (!sess_data->rx_sid) {
+        ogs_error("No Rx Session-Id in session data");
+        error_occurred = 1;
+        goto out;
+    }
+
+    if (!sess_data->gx_sid) {
+        ogs_error("No Gx Session-Id in session data");
+        error_occurred = 1;
+        goto out;
+    }
 
     /* Get Termination-Cause */
     ret = fd_msg_search_avp(qry, ogs_diam_termination_cause, &avp);
-    ogs_assert(ret == 0);
-    if (avp) {
+    if (ret == 0 && avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
-        sess_data->termination_cause = hdr->avp_value->i32;
-        switch (sess_data->termination_cause) {
-        case OGS_DIAM_TERMINATION_CAUSE_DIAMETER_LOGOUT:
-            break;
-        default:
-            ogs_error("Termination-Cause Error : [%d]",
-                    sess_data->termination_cause);
-            break;
+        if (ret == 0 && hdr) {
+            sess_data->termination_cause = hdr->avp_value->i32;
+            switch (sess_data->termination_cause) {
+            case OGS_DIAM_TERMINATION_CAUSE_DIAMETER_LOGOUT:
+                break;
+            default:
+                ogs_error("Termination-Cause Error : [%d]",
+                        sess_data->termination_cause);
+                break;
+            }
+        } else {
+            ogs_error("Failed to get Termination-Cause AVP header");
         }
     } else {
-        ogs_error("no_Termination-Cause");
+        ogs_warn("No Termination-Cause found");
     }
 
     if (sess_data->state != SESSION_ABORTED) {
-        /* Send Re-Auth Request if Abort-Session-Request is not initaited */
+        /* Send Re-Auth Request if Abort-Session-Request is not initiated */
         rv = pcrf_gx_send_rar(
                 sess_data->gx_sid, sess_data->rx_sid, &rx_message);
         if (rv != OGS_OK) {
             result_code = rx_message.result_code;
             if (result_code != ER_DIAMETER_SUCCESS) {
                 ogs_error("pcrf_gx_send_rar() failed");
+                error_occurred = 1;
                 goto out;
             }
         }
     }
 
-    /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-    ret = fd_msg_rescode_set(ans, (char *)"DIAMETER_SUCCESS", NULL, NULL, 1);
-    ogs_assert(ret == 0);
+    if (!error_occurred) {
+        /* Set success result code */
+        ret = fd_msg_rescode_set(ans, (char *)"DIAMETER_SUCCESS", NULL, NULL, 1);
+        if (ret != 0) {
+            ogs_error("Failed to set success result code");
+            error_occurred = 1;
+            goto out;
+        }
 
-    /* Send the answer */
-    ret = fd_msg_send(msg, NULL, NULL);
-    ogs_assert(ret == 0);
+        /* Send the answer */
+        ret = fd_msg_send(msg, NULL, NULL);
+        if (ret != 0) {
+            ogs_error("Failed to send message");
+            error_occurred = 1;
+            goto out;
+        }
 
-    ogs_debug("[PCRF] Tx Session-Termination-Answer");
+        ogs_debug("[PCRF] Tx Session-Termination-Answer");
 
-    /* Add this value to the stats */
-    OGS_DIAM_STATS_MTX(
-        OGS_DIAM_STATS_INC(nb_echoed);
-        PCRF_DIAM_PRIV_STATS_INC(rx.rx_str);
-        PCRF_DIAM_PRIV_STATS_INC(rx.tx_sta);
-    )
+        /* Add to stats */
+        OGS_DIAM_STATS_MTX(
+            OGS_DIAM_STATS_INC(nb_echoed);
+            PCRF_DIAM_PRIV_STATS_INC(rx.rx_str);
+            PCRF_DIAM_PRIV_STATS_INC(rx.tx_sta);
+        )
 
-    state_cleanup(sess_data, NULL, NULL);
-    ogs_ims_data_free(&rx_message.ims_data);
+        /* Clean up session state */
+        state_cleanup(sess_data, NULL, NULL);
+        ogs_ims_data_free(&rx_message.ims_data);
 
-    return 0;
-
-out:
-    if (result_code == OGS_DIAM_AVP_UNSUPPORTED) {
-        ret = fd_msg_rescode_set(ans,
-                    (char *)"DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
-        ogs_assert(ret == 0);
-    } else if (result_code == OGS_DIAM_UNKNOWN_SESSION_ID) {
-        ret = fd_msg_rescode_set(ans,
-                    (char *)"DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
-        ogs_assert(ret == 0);
-    } else if (result_code == OGS_DIAM_MISSING_AVP) {
-        ret = fd_msg_rescode_set(ans,
-                    (char *)"DIAMETER_MISSING_AVP", NULL, NULL, 1);
-        ogs_assert(ret == 0);
-    } else {
-        ret = fd_msg_rescode_set(ans,
-                    (char *)"DIAMETER_MISSING_AVP", NULL, NULL, 1);
-        ogs_assert(ret == 0);
+        return 0;
     }
 
-    ret = fd_msg_send(msg, NULL, NULL);
-    ogs_assert(ret == 0);
-    ogs_debug("[PCRF] Tx Session-Termination-Answer");
+out:
+    /* Error handling */
+    if (ans) {
+        if (result_code == OGS_DIAM_AVP_UNSUPPORTED) {
+            ret = fd_msg_rescode_set(ans,
+                        (char *)"DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
+        } else if (result_code == OGS_DIAM_UNKNOWN_SESSION_ID) {
+            ret = fd_msg_rescode_set(ans,
+                        (char *)"DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
+        } else if (result_code == OGS_DIAM_MISSING_AVP) {
+            ret = fd_msg_rescode_set(ans,
+                        (char *)"DIAMETER_MISSING_AVP", NULL, NULL, 1);
+        } else {
+            ret = fd_msg_rescode_set(ans,
+                        (char *)"DIAMETER_UNABLE_TO_COMPLY", NULL, NULL, 1);
+        }
 
+        if (ret != 0) {
+            ogs_error("Failed to set error result code");
+        }
+
+        ret = fd_msg_send(msg, NULL, NULL);
+        if (ret != 0) {
+            ogs_error("Failed to send error response");
+        }
+
+        ogs_debug("[PCRF] Tx Session-Termination-Answer");
+    }
+
+    /* Update error stats */
     OGS_DIAM_STATS_MTX(
         PCRF_DIAM_PRIV_STATS_INC(rx.rx_str);
         PCRF_DIAM_PRIV_STATS_INC(rx.rx_str_error);
         PCRF_DIAM_PRIV_STATS_INC(rx.tx_sta);
     )
 
-    if (sess_data)
+    /* Clean up session state */
+    if (sess_data) {
         state_cleanup(sess_data, NULL, NULL);
+    }
+
+    /* Always free IMS data */
     ogs_ims_data_free(&rx_message.ims_data);
 
     return 0;

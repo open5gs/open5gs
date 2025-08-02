@@ -34,7 +34,9 @@ extern "C" {
 #define OGS_DIAM_AVP_CODE_FRAME_IPV6_PREFIX         97
 
 /* Result-Code AVP */
+#define OGS_DIAM_UNABLE_TO_DELIVER                  3002
 #define OGS_DIAM_UNKNOWN_PEER                       3010
+#define OGS_DIAM_OUT_OF_SPACE                       4002
 #define OGS_DIAM_AVP_UNSUPPORTED                    5001
 #define OGS_DIAM_UNKNOWN_SESSION_ID                 5002
 #define OGS_DIAM_AUTHORIZATION_REJECTED             5003

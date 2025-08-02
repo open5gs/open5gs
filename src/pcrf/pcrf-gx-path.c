@@ -1,5 +1,5 @@
 /* Gx Interface, 3GPP TS 29.212 section 4
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -221,27 +221,30 @@ static int pcrf_gx_fb_cb(struct msg **msg, struct avp *avp,
     return ENOTSUP;
 }
 
-static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
+static int pcrf_gx_ccr_cb(struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
     int rv;
     int ret = 0, i;
-
-    struct msg *ans, *qry;
-    struct avp *avpch1, *avpch2;
-    struct avp_hdr *hdr;
+    struct msg *ans = NULL, *qry = NULL;
+    struct avp *avpch1 = NULL, *avpch2 = NULL;
+    struct avp_hdr *hdr = NULL;
     union avp_value val;
     struct sess_state *sess_data = NULL;
-
     ogs_diam_gx_message_t gx_message;
-
     uint32_t cc_request_type = OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST;
     uint32_t cc_request_number = 0;
     uint32_t result_code = OGS_DIAM_MISSING_AVP;
+    int error_occurred = 0;
+    int charging_rule = 0;
 
     ogs_debug("Rx Credit-Control-Request");
 
-    ogs_assert(msg);
+    /* Validate input parameters */
+    if (!msg || !*msg || !sess) {
+        ogs_error("Invalid input parameters");
+        return EINVAL;
+    }
 
     /* Initialize Message */
     memset(&gx_message, 0, sizeof(ogs_diam_gx_message_t));
@@ -249,40 +252,78 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     /* Create answer header */
     qry = *msg;
     ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to create answer message");
+        error_occurred = 1;
+        goto out;
+    }
     ans = *msg;
 
     /* Set the Auth-Application-Id AVP */
     ret = fd_msg_avp_new(ogs_diam_auth_application_id, 0, &avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to create Auth-Application-Id AVP");
+        error_occurred = 1;
+        goto out;
+    }
     val.i32 = OGS_DIAM_GX_APPLICATION_ID;
     ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to set Auth-Application-Id value");
+        error_occurred = 1;
+        goto out;
+    }
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to add Auth-Application-Id AVP");
+        error_occurred = 1;
+        goto out;
+    }
 
     /* Get CC-Request-Type */
     ret = fd_msg_search_avp(qry, ogs_diam_gx_cc_request_type, &avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to search CC-Request-Type AVP");
+        error_occurred = 1;
+        goto out;
+    }
+
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to get CC-Request-Type AVP header");
+            error_occurred = 1;
+            goto out;
+        }
         cc_request_type = hdr->avp_value->i32;
     } else {
-        ogs_error("no_CC-Request-Type ");
-        ogs_assert_if_reached();
+        ogs_error("No CC-Request-Type found");
+        result_code = OGS_DIAM_MISSING_AVP;
+        error_occurred = 1;
+        goto out;
     }
 
     /* Get CC-Request-Number */
     ret = fd_msg_search_avp(qry, ogs_diam_gx_cc_request_number, &avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to search CC-Request-Number AVP");
+        error_occurred = 1;
+        goto out;
+    }
+
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to get CC-Request-Number AVP header");
+            error_occurred = 1;
+            goto out;
+        }
         cc_request_number = hdr->avp_value->i32;
     } else {
-        ogs_error("no_CC-Request-Number");
-        ogs_assert_if_reached();
+        ogs_error("No CC-Request-Number found");
+        result_code = OGS_DIAM_MISSING_AVP;
+        error_occurred = 1;
+        goto out;
     }
 
     ogs_debug("    CC-Request-Type[%d] Number[%d]",
@@ -290,25 +331,53 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
     /* Set CC-Request-Type */
     ret = fd_msg_avp_new(ogs_diam_gx_cc_request_type, 0, &avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to create CC-Request-Type AVP");
+        error_occurred = 1;
+        goto out;
+    }
     val.i32 = cc_request_type;
     ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to set CC-Request-Type value");
+        error_occurred = 1;
+        goto out;
+    }
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to add CC-Request-Type AVP");
+        error_occurred = 1;
+        goto out;
+    }
 
     /* Set CC-Request-Number */
     ret = fd_msg_avp_new(ogs_diam_gx_cc_request_number, 0, &avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to create CC-Request-Number AVP");
+        error_occurred = 1;
+        goto out;
+    }
     val.i32 = cc_request_number;
     ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to set CC-Request-Number value");
+        error_occurred = 1;
+        goto out;
+    }
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to add CC-Request-Number AVP");
+        error_occurred = 1;
+        goto out;
+    }
 
     /* Find Session */
     ret = fd_sess_state_retrieve(pcrf_gx_reg, sess, &sess_data);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to retrieve session state");
+        error_occurred = 1;
+        goto out;
+    }
 
     /* Check Session */
     if (!sess_data &&
@@ -316,128 +385,210 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         cc_request_type == OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)) {
         ogs_error("No Session for CC-Request-Type: [%d]", cc_request_type);
         result_code = OGS_DIAM_UNKNOWN_SESSION_ID;
+        error_occurred = 1;
         goto out;
     }
 
     if (!sess_data) {
-        os0_t sid;
+        os0_t sid = NULL;
         size_t sidlen;
 
         ret = fd_sess_getsid(sess, &sid, &sidlen);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to get session ID");
+            error_occurred = 1;
+            goto out;
+        }
 
         sess_data = new_state(sid);
-        ogs_assert(sess_data);
+        if (!sess_data) {
+            ogs_error("Failed to create new session state");
+            error_occurred = 1;
+            goto out;
+        }
     }
 
     /* Get Origin-Host */
     ret = fd_msg_search_avp(qry, ogs_diam_origin_host, &avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to search Origin-Host AVP");
+        error_occurred = 1;
+        goto out;
+    }
+
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to get Origin-Host AVP header");
+            error_occurred = 1;
+            goto out;
+        }
 
-        if (sess_data->peer_host)
+        if (sess_data->peer_host) {
             ogs_free(sess_data->peer_host);
+            sess_data->peer_host = NULL;
+        }
         sess_data->peer_host =
             (os0_t)ogs_strdup((char *)hdr->avp_value->os.data);
-        ogs_assert(sess_data->peer_host);
+        if (!sess_data->peer_host) {
+            ogs_error("Failed to duplicate peer host");
+            error_occurred = 1;
+            goto out;
+        }
     } else {
-        ogs_error("no_CC-Request-Type ");
+        ogs_error("No Origin-Host found");
         result_code = OGS_DIAM_MISSING_AVP;
+        error_occurred = 1;
         goto out;
     }
 
     /* Get Framed-IP-Address */
     ret = fd_msg_search_avp(qry, ogs_diam_gx_framed_ip_address, &avp);
-    ogs_assert(ret == 0);
-    if (avp) {
+    if (ret == 0 && avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
-
-        ogs_assert(hdr->avp_value->os.len == sizeof sess_data->addr);
-        memcpy(&sess_data->addr,
-                hdr->avp_value->os.data, hdr->avp_value->os.len);
-        pcrf_sess_set_ipv4(&sess_data->addr, sess_data->sid);
-        sess_data->ipv4 = 1;
+        if (ret == 0 && hdr &&
+            hdr->avp_value->os.len == sizeof(sess_data->addr)) {
+            memcpy(&sess_data->addr,
+                    hdr->avp_value->os.data, hdr->avp_value->os.len);
+            pcrf_sess_set_ipv4(&sess_data->addr, sess_data->sid);
+            sess_data->ipv4 = 1;
+        } else if (ret != 0) {
+            ogs_warn("Failed to get Framed-IP-Address AVP header");
+        }
     }
 
     /* Get Framed-IPv6-Prefix */
     ret = fd_msg_search_avp(qry, ogs_diam_gx_framed_ipv6_prefix, &avp);
-    ogs_assert(ret == 0);
-    if (avp) {
+    if (ret == 0 && avp) {
         ogs_paa_t *paa = NULL;
 
         ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
-
-        paa = (ogs_paa_t *)hdr->avp_value->os.data;
-        ogs_assert(paa);
-        ogs_assert(paa->len == OGS_IPV6_DEFAULT_PREFIX_LEN /* 64bit */);
-        memcpy(sess_data->addr6, paa->addr6, paa->len >> 3);
-        pcrf_sess_set_ipv6(sess_data->addr6, sess_data->sid);
-        sess_data->ipv6 = 1;
+        if (ret == 0 && hdr) {
+            paa = (ogs_paa_t *)hdr->avp_value->os.data;
+            if (paa && paa->len == OGS_IPV6_DEFAULT_PREFIX_LEN) {
+                memcpy(sess_data->addr6, paa->addr6, paa->len >> 3);
+                pcrf_sess_set_ipv6(sess_data->addr6, sess_data->sid);
+                sess_data->ipv6 = 1;
+            }
+        } else if (ret != 0) {
+            ogs_warn("Failed to get Framed-IPv6-Prefix AVP header");
+        }
     }
 
     /* Get IMSI + APN */
     ret = fd_msg_search_avp(qry, ogs_diam_subscription_id, &avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to search Subscription-Id AVP");
+        error_occurred = 1;
+        goto out;
+    }
+
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to get Subscription-Id AVP header");
+            error_occurred = 1;
+            goto out;
+        }
+
         ret = fd_avp_search_avp(avp, ogs_diam_subscription_id_type, &avpch1);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to search Subscription-Id-Type AVP");
+            error_occurred = 1;
+            goto out;
+        }
+
         if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
-            ogs_assert(ret == 0);
+            if (ret != 0) {
+                ogs_error("Failed to get Subscription-Id-Type AVP header");
+                error_occurred = 1;
+                goto out;
+            }
             if (hdr->avp_value->i32 !=
                     OGS_DIAM_SUBSCRIPTION_ID_TYPE_END_USER_IMSI) {
                 ogs_error("Not implemented Subscription-Id-Type(%d)",
                         hdr->avp_value->i32);
                 result_code = OGS_DIAM_AVP_UNSUPPORTED;
+                error_occurred = 1;
                 goto out;
             }
         } else {
-            ogs_error("no_Subscription-Id-Type");
+            ogs_error("No Subscription-Id-Type found");
             result_code = OGS_DIAM_MISSING_AVP;
+            error_occurred = 1;
             goto out;
         }
+
         ret = fd_avp_search_avp(avp, ogs_diam_subscription_id_data, &avpch1);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to search Subscription-Id-Data AVP");
+            error_occurred = 1;
+            goto out;
+        }
+
         if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
-            ogs_assert(ret == 0);
-            if (sess_data->imsi_bcd)
+            if (ret != 0) {
+                ogs_error("Failed to get Subscription-Id-Data AVP header");
+                error_occurred = 1;
+                goto out;
+            }
+            if (sess_data->imsi_bcd) {
                 ogs_free(sess_data->imsi_bcd);
+                sess_data->imsi_bcd = NULL;
+            }
             sess_data->imsi_bcd = ogs_strdup((char *)hdr->avp_value->os.data);
-            ogs_assert(sess_data->imsi_bcd);
+            if (!sess_data->imsi_bcd) {
+                ogs_error("Failed to duplicate IMSI");
+                error_occurred = 1;
+                goto out;
+            }
         } else {
-            ogs_error("no_Subscription-Id-Data");
+            ogs_error("No Subscription-Id-Data found");
             result_code = OGS_DIAM_MISSING_AVP;
+            error_occurred = 1;
             goto out;
         }
     }
 
-    if (sess_data->imsi_bcd == NULL) {
-        ogs_error("no_Subscription-Id");
+    if (!sess_data->imsi_bcd) {
+        ogs_error("No Subscription-Id");
         result_code = OGS_DIAM_MISSING_AVP;
+        error_occurred = 1;
         goto out;
     }
 
     ret = fd_msg_search_avp(qry, ogs_diam_gx_called_station_id, &avp);
-    ogs_assert(ret == 0);
-    if (avp) {
-        ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
-        if (sess_data->apn)
-            ogs_free(sess_data->apn);
-        sess_data->apn = ogs_strdup((char *)hdr->avp_value->os.data);
-        ogs_assert(sess_data->apn);
+    if (ret != 0) {
+        ogs_error("Failed to search Called-Station-Id AVP");
+        error_occurred = 1;
+        goto out;
     }
 
-    if (sess_data->apn == NULL) {
-        ogs_error("no_Called-Station-Id");
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        if (ret != 0) {
+            ogs_error("Failed to get Called-Station-Id AVP header");
+            error_occurred = 1;
+            goto out;
+        }
+        if (sess_data->apn) {
+            ogs_free(sess_data->apn);
+            sess_data->apn = NULL;
+        }
+        sess_data->apn = ogs_strdup((char *)hdr->avp_value->os.data);
+        if (!sess_data->apn) {
+            ogs_error("Failed to duplicate APN");
+            error_occurred = 1;
+            goto out;
+        }
+    }
+
+    if (!sess_data->apn) {
+        ogs_error("No Called-Station-Id");
         result_code = OGS_DIAM_MISSING_AVP;
+        error_occurred = 1;
         goto out;
     }
 
@@ -445,15 +596,15 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     rv = pcrf_db_qos_data(
             sess_data->imsi_bcd, sess_data->apn, &gx_message.session_data);
     if (rv != OGS_OK) {
-        ogs_error("Cannot get data for IMSI(%s)+APN(%s)'",
+        ogs_error("Cannot get data for IMSI(%s)+APN(%s)",
                 sess_data->imsi_bcd, sess_data->apn);
         result_code = OGS_DIAM_UNKNOWN_SESSION_ID;
+        error_occurred = 1;
         goto out;
     }
 
     if (cc_request_type == OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST ||
         cc_request_type == OGS_DIAM_GX_CC_REQUEST_TYPE_UPDATE_REQUEST) {
-        int charging_rule = 0;
 
         for (i = 0; i < gx_message.session_data.num_of_pcc_rule; i++) {
             ogs_pcc_rule_t *pcc_rule = &gx_message.session_data.pcc_rule[i];
@@ -461,137 +612,289 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
                 if (charging_rule == 0) {
                     ret = fd_msg_avp_new(
                             ogs_diam_gx_charging_rule_install, 0, &avp);
-                    ogs_assert(ret == 0);
-
+                    if (ret != 0) {
+                        ogs_error("Failed to create Charging-Rule-Install AVP");
+                        error_occurred = 1;
+                        goto out;
+                    }
                     charging_rule = 1;
                 }
 
                 rv = encode_pcc_rule_definition(avp, pcc_rule, 1);
-                ogs_assert(rv == OGS_OK);
+                if (rv != OGS_OK) {
+                    ogs_error("Failed to encode PCC rule definition");
+                    error_occurred = 1;
+                    goto out;
+                }
             }
         }
 
         if (charging_rule) {
             ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-            ogs_assert(ret == 0);
+            if (ret != 0) {
+                ogs_error("Failed to add Charging-Rule-Install AVP");
+                error_occurred = 1;
+                goto out;
+            }
         }
 
         /* Set QoS-Information */
         if (gx_message.session_data.session.ambr.downlink ||
                 gx_message.session_data.session.ambr.uplink) {
             ret = fd_msg_avp_new(ogs_diam_gx_qos_information, 0, &avp);
-            ogs_assert(ret == 0);
+            if (ret != 0) {
+                ogs_error("Failed to create QoS-Information AVP");
+                error_occurred = 1;
+                goto out;
+            }
 
             if (gx_message.session_data.session.ambr.uplink) {
                 ret = fd_msg_avp_new(
                         ogs_diam_gx_apn_aggregate_max_bitrate_ul, 0, &avpch1);
-                ogs_assert(ret == 0);
+                if (ret != 0) {
+                    ogs_error("Failed to create APN-AMBR-UL AVP");
+                    error_occurred = 1;
+                    goto out;
+                }
                 val.u32 = ogs_uint64_to_uint32(
                             gx_message.session_data.session.ambr.uplink);
-                ret = fd_msg_avp_setvalue (avpch1, &val);
-                ogs_assert(ret == 0);
-                ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-                ogs_assert(ret == 0);
+                ret = fd_msg_avp_setvalue(avpch1, &val);
+                if (ret != 0) {
+                    ogs_error("Failed to set APN-AMBR-UL value");
+                    error_occurred = 1;
+                    goto out;
+                }
+                ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
+                if (ret != 0) {
+                    ogs_error("Failed to add APN-AMBR-UL AVP");
+                    error_occurred = 1;
+                    goto out;
+                }
             }
 
             if (gx_message.session_data.session.ambr.downlink) {
                 ret = fd_msg_avp_new(
                         ogs_diam_gx_apn_aggregate_max_bitrate_dl, 0, &avpch1);
-                ogs_assert(ret == 0);
+                if (ret != 0) {
+                    ogs_error("Failed to create APN-AMBR-DL AVP");
+                    error_occurred = 1;
+                    goto out;
+                }
                 val.u32 = ogs_uint64_to_uint32(
                             gx_message.session_data.session.ambr.downlink);
-                ret = fd_msg_avp_setvalue (avpch1, &val);
-                ogs_assert(ret == 0);
-                ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-                ogs_assert(ret == 0);
+                ret = fd_msg_avp_setvalue(avpch1, &val);
+                if (ret != 0) {
+                    ogs_error("Failed to set APN-AMBR-DL value");
+                    error_occurred = 1;
+                    goto out;
+                }
+                ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
+                if (ret != 0) {
+                    ogs_error("Failed to add APN-AMBR-DL AVP");
+                    error_occurred = 1;
+                    goto out;
+                }
             }
 
             ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-            ogs_assert(ret == 0);
+            if (ret != 0) {
+                ogs_error("Failed to add QoS-Information AVP");
+                error_occurred = 1;
+                goto out;
+            }
         }
 
         /* Set Default-EPS-Bearer-QoS */
         ret = fd_msg_avp_new(ogs_diam_gx_default_eps_bearer_qos, 0, &avp);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to create Default-EPS-Bearer-QoS AVP");
+            error_occurred = 1;
+            goto out;
+        }
 
         ret = fd_msg_avp_new(ogs_diam_gx_qos_class_identifier, 0, &avpch1);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to create QoS-Class-Identifier AVP");
+            error_occurred = 1;
+            goto out;
+        }
         val.u32 = gx_message.session_data.session.qos.index;
-        ret = fd_msg_avp_setvalue (avpch1, &val);
-        ogs_assert(ret == 0);
-        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-        ogs_assert(ret == 0);
+        ret = fd_msg_avp_setvalue(avpch1, &val);
+        if (ret != 0) {
+            ogs_error("Failed to set QoS-Class-Identifier value");
+            error_occurred = 1;
+            goto out;
+        }
+        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
+        if (ret != 0) {
+            ogs_error("Failed to add QoS-Class-Identifier AVP");
+            error_occurred = 1;
+            goto out;
+        }
 
         ret = fd_msg_avp_new(
                 ogs_diam_gx_allocation_retention_priority, 0, &avpch1);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to create ARP AVP");
+            error_occurred = 1;
+            goto out;
+        }
 
         ret = fd_msg_avp_new(ogs_diam_gx_priority_level, 0, &avpch2);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to create Priority-Level AVP");
+            error_occurred = 1;
+            goto out;
+        }
         val.u32 = gx_message.session_data.session.qos.arp.priority_level;
-        ret = fd_msg_avp_setvalue (avpch2, &val);
-        ogs_assert(ret == 0);
-        ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
-        ogs_assert(ret == 0);
+        ret = fd_msg_avp_setvalue(avpch2, &val);
+        if (ret != 0) {
+            ogs_error("Failed to set Priority-Level value");
+            error_occurred = 1;
+            goto out;
+        }
+        ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        if (ret != 0) {
+            ogs_error("Failed to add Priority-Level AVP");
+            error_occurred = 1;
+            goto out;
+        }
 
         ret = fd_msg_avp_new(ogs_diam_gx_pre_emption_capability, 0, &avpch2);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to create Pre-emption-Capability AVP");
+            error_occurred = 1;
+            goto out;
+        }
         val.u32 = OGS_EPC_PRE_EMPTION_DISABLED;
         if (gx_message.session_data.session.qos.arp.pre_emption_capability ==
                 OGS_5GC_PRE_EMPTION_ENABLED)
             val.u32 = OGS_EPC_PRE_EMPTION_ENABLED;
-        ret = fd_msg_avp_setvalue (avpch2, &val);
-        ogs_assert(ret == 0);
-        ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
-        ogs_assert(ret == 0);
+        ret = fd_msg_avp_setvalue(avpch2, &val);
+        if (ret != 0) {
+            ogs_error("Failed to set Pre-emption-Capability value");
+            error_occurred = 1;
+            goto out;
+        }
+        ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        if (ret != 0) {
+            ogs_error("Failed to add Pre-emption-Capability AVP");
+            error_occurred = 1;
+            goto out;
+        }
 
         ret = fd_msg_avp_new(ogs_diam_gx_pre_emption_vulnerability, 0, &avpch2);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to create Pre-emption-Vulnerability AVP");
+            error_occurred = 1;
+            goto out;
+        }
         val.u32 = OGS_EPC_PRE_EMPTION_DISABLED;
         if (gx_message.session_data.session.qos.arp.pre_emption_vulnerability ==
                 OGS_5GC_PRE_EMPTION_ENABLED)
             val.u32 = OGS_EPC_PRE_EMPTION_ENABLED;
-        ret = fd_msg_avp_setvalue (avpch2, &val);
-        ogs_assert(ret == 0);
-        ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
-        ogs_assert(ret == 0);
+        ret = fd_msg_avp_setvalue(avpch2, &val);
+        if (ret != 0) {
+            ogs_error("Failed to set Pre-emption-Vulnerability value");
+            error_occurred = 1;
+            goto out;
+        }
+        ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        if (ret != 0) {
+            ogs_error("Failed to add Pre-emption-Vulnerability AVP");
+            error_occurred = 1;
+            goto out;
+        }
 
-        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
+        if (ret != 0) {
+            ogs_error("Failed to add ARP AVP");
+            error_occurred = 1;
+            goto out;
+        }
 
         ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to add Default-EPS-Bearer-QoS AVP");
+            error_occurred = 1;
+            goto out;
+        }
 
         /* Set Supported Features */
         ret = fd_msg_avp_new(ogs_diam_gx_supported_features, 0, &avp);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to create Supported-Features AVP");
+            error_occurred = 1;
+            goto out;
+        }
 
         ret = fd_msg_avp_new(ogs_diam_vendor_id, 0, &avpch1);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to create Vendor-Id AVP");
+            error_occurred = 1;
+            goto out;
+        }
         val.i32 = OGS_3GPP_VENDOR_ID;
-        ret = fd_msg_avp_setvalue (avpch1, &val);
-        ogs_assert(ret == 0);
-        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-        ogs_assert(ret == 0);
+        ret = fd_msg_avp_setvalue(avpch1, &val);
+        if (ret != 0) {
+            ogs_error("Failed to set Vendor-Id value");
+            error_occurred = 1;
+            goto out;
+        }
+        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
+        if (ret != 0) {
+            ogs_error("Failed to add Vendor-Id AVP");
+            error_occurred = 1;
+            goto out;
+        }
 
         ret = fd_msg_avp_new(ogs_diam_gx_feature_list_id, 0, &avpch1);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to create Feature-List-ID AVP");
+            error_occurred = 1;
+            goto out;
+        }
         val.i32 = 1;
-        ret = fd_msg_avp_setvalue (avpch1, &val);
-        ogs_assert(ret == 0);
-        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-        ogs_assert(ret == 0);
+        ret = fd_msg_avp_setvalue(avpch1, &val);
+        if (ret != 0) {
+            ogs_error("Failed to set Feature-List-ID value");
+            error_occurred = 1;
+            goto out;
+        }
+        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
+        if (ret != 0) {
+            ogs_error("Failed to add Feature-List-ID AVP");
+            error_occurred = 1;
+            goto out;
+        }
 
         ret = fd_msg_avp_new(ogs_diam_gx_feature_list, 0, &avpch1);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to create Feature-List AVP");
+            error_occurred = 1;
+            goto out;
+        }
         val.u32 = 0x0000000b;
-        ret = fd_msg_avp_setvalue (avpch1, &val);
-        ogs_assert(ret == 0);
-        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-        ogs_assert(ret == 0);
+        ret = fd_msg_avp_setvalue(avpch1, &val);
+        if (ret != 0) {
+            ogs_error("Failed to set Feature-List value");
+            error_occurred = 1;
+            goto out;
+        }
+        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
+        if (ret != 0) {
+            ogs_error("Failed to add Feature-List AVP");
+            error_occurred = 1;
+            goto out;
+        }
 
         ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to add Supported-Features AVP");
+            error_occurred = 1;
+            goto out;
+        }
+
     } else if (cc_request_type ==
             OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
         struct rx_sess_state *rx_sess_data = NULL, *next_rx_sess_data = NULL;
@@ -599,80 +902,110 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
                 next_rx_sess_data, rx_sess_data) {
             rv = pcrf_rx_send_asr(
                     rx_sess_data->sid, OGS_DIAM_RX_ABORT_CAUSE_BEARER_RELEASED);
-            ogs_expect(rv == OGS_OK);
+            if (rv != OGS_OK) {
+                ogs_warn("Failed to send ASR for RX session");
+                /* Continue processing other sessions */
+            }
 
             remove_rx_state(rx_sess_data);
         }
     }
 
-    /* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-    ret = fd_msg_rescode_set(ans, (char *)"DIAMETER_SUCCESS", NULL, NULL, 1);
-    ogs_assert(ret == 0);
+    if (!error_occurred) {
+        /* Set success result code */
+        ret = fd_msg_rescode_set(ans, (char *)"DIAMETER_SUCCESS", NULL, NULL, 1);
+        if (ret != 0) {
+            ogs_error("Failed to set success result code");
+            error_occurred = 1;
+            goto out;
+        }
 
-    if (cc_request_type != OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
-        /* Store this value in the session */
-        ret = fd_sess_state_store(pcrf_gx_reg, sess, &sess_data);
-        ogs_assert(ret == 0);
-        ogs_assert(sess_data == NULL);
-    } else {
-        state_cleanup(sess_data, NULL, NULL);
-    }
-
-    /* Send the answer */
-    ret = fd_msg_send(msg, NULL, NULL);
-    ogs_assert(ret == 0);
-
-    ogs_debug("Tx Credit-Control-Answer");
-
-    /* Add this value to the stats */
-    OGS_DIAM_STATS_MTX(
-        OGS_DIAM_STATS_INC(nb_echoed);
-        PCRF_DIAM_PRIV_STATS_INC(gx.rx_ccr);
-        PCRF_DIAM_PRIV_STATS_INC(gx.tx_cca);
-    )
-
-    OGS_SESSION_DATA_FREE(&gx_message.session_data);
-
-    return 0;
-
-out:
-    /* Set the Result-Code */
-    if (result_code == OGS_DIAM_AVP_UNSUPPORTED) {
-        ret = fd_msg_rescode_set(ans,
-                    (char *)"DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
-        ogs_assert(ret == 0);
-    } else if (result_code == OGS_DIAM_UNKNOWN_SESSION_ID) {
-        ret = fd_msg_rescode_set(ans,
-                    (char *)"DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
-        ogs_assert(ret == 0);
-    } else if (result_code == OGS_DIAM_MISSING_AVP) {
-        ret = fd_msg_rescode_set(ans,
-                    (char *)"DIAMETER_MISSING_AVP", NULL, NULL, 1);
-        ogs_assert(ret == 0);
-    } else {
-        ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
-        ogs_assert(ret == 0);
-    }
-
-    if (sess_data) {
-        if (cc_request_type !=
-                OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
+        /* Store or cleanup session based on request type */
+        if (cc_request_type != OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
             /* Store this value in the session */
             ret = fd_sess_state_store(pcrf_gx_reg, sess, &sess_data);
-            ogs_assert(sess_data == NULL);
+            if (ret != 0) {
+                ogs_error("Failed to store session state");
+                error_occurred = 1;
+                goto out;
+            }
+            sess_data = NULL; /* Ownership transferred */
         } else {
             state_cleanup(sess_data, NULL, NULL);
+            sess_data = NULL;
+        }
+
+        /* Send the answer */
+        ret = fd_msg_send(msg, NULL, NULL);
+        if (ret != 0) {
+            ogs_error("Failed to send message");
+            error_occurred = 1;
+            goto out;
+        }
+
+        ogs_debug("Tx Credit-Control-Answer");
+
+        /* Add to stats */
+        OGS_DIAM_STATS_MTX(
+            OGS_DIAM_STATS_INC(nb_echoed);
+            PCRF_DIAM_PRIV_STATS_INC(gx.rx_ccr);
+            PCRF_DIAM_PRIV_STATS_INC(gx.tx_cca);
+        )
+
+        OGS_SESSION_DATA_FREE(&gx_message.session_data);
+        return 0;
+    }
+
+out:
+    /* Error handling */
+    if (ans) {
+        /* Set the Result-Code */
+        if (result_code == OGS_DIAM_AVP_UNSUPPORTED) {
+            ret = fd_msg_rescode_set(ans,
+                        (char *)"DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
+        } else if (result_code == OGS_DIAM_UNKNOWN_SESSION_ID) {
+            ret = fd_msg_rescode_set(ans,
+                        (char *)"DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
+        } else if (result_code == OGS_DIAM_MISSING_AVP) {
+            ret = fd_msg_rescode_set(ans,
+                        (char *)"DIAMETER_MISSING_AVP", NULL, NULL, 1);
+        } else {
+            ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
+        }
+
+        if (ret != 0) {
+            ogs_error("Failed to set error result code");
+        }
+
+        /* Handle session state for error cases */
+        if (sess_data) {
+            if (cc_request_type !=
+                    OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
+                /* Store this value in the session */
+                ret = fd_sess_state_store(pcrf_gx_reg, sess, &sess_data);
+                if (ret != 0) {
+                    ogs_error("Failed to store session state in error path");
+                }
+                sess_data = NULL; /* Ownership transferred */
+            } else {
+                state_cleanup(sess_data, NULL, NULL);
+                sess_data = NULL;
+            }
+        }
+
+        ret = fd_msg_send(msg, NULL, NULL);
+        if (ret != 0) {
+            ogs_error("Failed to send error response");
         }
     }
 
-    ret = fd_msg_send(msg, NULL, NULL);
-    ogs_assert(ret == 0);
-
+    /* Update error stats */
     OGS_DIAM_STATS_MTX(
         PCRF_DIAM_PRIV_STATS_INC(gx.rx_ccr);
         PCRF_DIAM_PRIV_STATS_INC(gx.rx_ccr_error);
     )
 
+    /* Always free session data */
     OGS_SESSION_DATA_FREE(&gx_message.session_data);
 
     return 0;
@@ -1054,133 +1387,208 @@ out:
 static void pcrf_gx_raa_cb(void *data, struct msg **msg)
 {
     int ret;
-
     struct sess_state *sess_data = NULL;
     struct timespec ts;
-    struct session *session;
-    struct avp *avp, *avpch1;
-    struct avp_hdr *hdr;
+    struct session *session = NULL;
+    struct avp *avp = NULL, *avpch1 = NULL;
+    struct avp_hdr *hdr = NULL;
     unsigned long dur;
     int error = 0;
-    int new;
-
-    uint32_t result_code;
+    int new = 0;
+    uint32_t result_code = 0;
 
     ogs_debug("[PCRF] Rx Re-Auth-Answer");
 
+    /* Validate input parameters */
+    if (!msg || !*msg) {
+        ogs_error("Invalid message pointer");
+        return;
+    }
+
+    /* Get current timestamp */
     ret = clock_gettime(CLOCK_REALTIME, &ts);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to get current time");
+        goto cleanup;
+    }
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_assert(ret == 0);
-    ogs_assert(new == 0);
+    if (ret != 0) {
+        ogs_error("Failed to get session from message");
+        error++;
+        goto cleanup;
+    }
 
+    if (new != 0) {
+        ogs_error("Session should already exist");
+        error++;
+        goto cleanup;
+    }
+
+    /* Retrieve session state */
     ret = fd_sess_state_retrieve(pcrf_gx_reg, session, &sess_data);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to retrieve session state");
+        error++;
+        goto cleanup;
+    }
+
     if (!sess_data) {
         ogs_error("No Session Data");
-        return;
+        error++;
+        goto cleanup;
     }
-    ogs_assert((void *)sess_data == data);
+
+    /* Validate data pointer consistency */
+    if ((void *)sess_data != data) {
+        ogs_error("Session data pointer mismatch");
+        error++;
+        goto cleanup;
+    }
 
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("Failed to search Result-Code AVP");
+        error++;
+        goto parse_experimental_result;
+    }
+
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to get Result-Code AVP header");
+            error++;
+            goto parse_experimental_result;
+        }
         result_code = hdr->avp_value->i32;
-        ogs_debug("    Result Code: %d", hdr->avp_value->i32);
+        ogs_debug("    Result Code: %d", result_code);
     } else {
+parse_experimental_result:
+        /* Try experimental result code */
         ret = fd_msg_search_avp(*msg, ogs_diam_experimental_result, &avp);
-        ogs_assert(ret == 0);
+        if (ret != 0) {
+            ogs_error("Failed to search Experimental-Result AVP");
+            error++;
+            goto parse_origin_host;
+        }
+
         if (avp) {
-            ret = fd_avp_search_avp(
-                    avp, ogs_diam_experimental_result_code, &avpch1);
-            ogs_assert(ret == 0);
+            ret = fd_avp_search_avp(avp, ogs_diam_experimental_result_code,
+                                    &avpch1);
+            if (ret != 0) {
+                ogs_error("Failed to search Experimental-Result-Code AVP");
+                error++;
+                goto parse_origin_host;
+            }
+
             if (avpch1) {
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
-                ogs_assert(ret == 0);
+                if (ret != 0) {
+                    ogs_error("Failed to get Experimental-Result-Code header");
+                    error++;
+                    goto parse_origin_host;
+                }
                 result_code = hdr->avp_value->i32;
                 ogs_debug("    Experimental Result Code: %d", result_code);
             }
         } else {
-            ogs_error("no Result-Code");
+            ogs_error("No Result-Code or Experimental-Result found");
             error++;
         }
     }
 
+parse_origin_host:
     /* Value of Origin-Host */
     ret = fd_msg_search_avp(*msg, ogs_diam_origin_host, &avp);
-    ogs_assert(ret == 0);
-    if (avp) {
+    if (ret == 0 && avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
-        ogs_debug("    From '%.*s'",
-                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+        if (ret == 0 && hdr) {
+            ogs_debug("    From '%.*s'",
+                    (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+        } else {
+            ogs_warn("Failed to get Origin-Host AVP header");
+        }
     } else {
-        ogs_error("no_Origin-Host");
-        error++;
+        ogs_warn("No Origin-Host found");
     }
 
     /* Value of Origin-Realm */
     ret = fd_msg_search_avp(*msg, ogs_diam_origin_realm, &avp);
-    ogs_assert(ret == 0);
-    if (avp) {
+    if (ret == 0 && avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
-        ogs_debug("         ('%.*s')",
-                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+        if (ret == 0 && hdr) {
+            ogs_debug("         ('%.*s')",
+                    (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+        } else {
+            ogs_warn("Failed to get Origin-Realm AVP header");
+        }
     } else {
-        ogs_error("no_Origin-Realm");
-        error++;
+        ogs_warn("No Origin-Realm found");
     }
 
-    /* Free the message */
-    OGS_DIAM_STATS_MTX(
-        dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
-            ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-        if (ogs_diam_stats_self()->stats.nb_recv) {
-            /* Ponderate in the avg */
-            ogs_diam_stats_self()->stats.avg = (ogs_diam_stats_self()->stats.avg *
-                ogs_diam_stats_self()->stats.nb_recv + dur) /
-                (ogs_diam_stats_self()->stats.nb_recv + 1);
-            /* Min, max */
-            if (dur < ogs_diam_stats_self()->stats.shortest)
+    /* Update statistics and calculate duration if we have valid session data */
+    if (sess_data) {
+        OGS_DIAM_STATS_MTX(
+            dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
+                ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+
+            if (ogs_diam_stats_self()->stats.nb_recv) {
+                /* Ponderate in the avg */
+                ogs_diam_stats_self()->stats.avg =
+                    (ogs_diam_stats_self()->stats.avg *
+                     ogs_diam_stats_self()->stats.nb_recv + dur) /
+                    (ogs_diam_stats_self()->stats.nb_recv + 1);
+                /* Min, max */
+                if (dur < ogs_diam_stats_self()->stats.shortest)
+                    ogs_diam_stats_self()->stats.shortest = dur;
+                if (dur > ogs_diam_stats_self()->stats.longest)
+                    ogs_diam_stats_self()->stats.longest = dur;
+            } else {
                 ogs_diam_stats_self()->stats.shortest = dur;
-            if (dur > ogs_diam_stats_self()->stats.longest)
                 ogs_diam_stats_self()->stats.longest = dur;
+                ogs_diam_stats_self()->stats.avg = dur;
+            }
+
+            if (error)
+                ogs_diam_stats_self()->stats.nb_errs++;
+            else
+                ogs_diam_stats_self()->stats.nb_recv++;
+
+            PCRF_DIAM_PRIV_STATS_INC(gx.rx_raa);
+        )
+
+        /* Display processing duration */
+        if (ts.tv_nsec > sess_data->ts.tv_nsec) {
+            ogs_trace("Processed in %d.%06ld sec",
+                    (int)(ts.tv_sec - sess_data->ts.tv_sec),
+                    (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
         } else {
-            ogs_diam_stats_self()->stats.shortest = dur;
-            ogs_diam_stats_self()->stats.longest = dur;
-            ogs_diam_stats_self()->stats.avg = dur;
+            ogs_trace("Processed in %d.%06ld sec",
+                    (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
+                    (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) /
+                    1000);
         }
-        if (error)
-            ogs_diam_stats_self()->stats.nb_errs++;
-        else
-            ogs_diam_stats_self()->stats.nb_recv++;
 
-        PCRF_DIAM_PRIV_STATS_INC(gx.rx_raa);
-    )
+        /* Store session state back */
+        ret = fd_sess_state_store(pcrf_gx_reg, session, &sess_data);
+        if (ret != 0) {
+            ogs_error("Failed to store session state");
+        } else {
+            sess_data = NULL; /* Ownership transferred */
+        }
+    }
 
-    /* Display how long it took */
-    if (ts.tv_nsec > sess_data->ts.tv_nsec)
-        ogs_trace("in %d.%06ld sec",
-                (int)(ts.tv_sec - sess_data->ts.tv_sec),
-                (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    else
-        ogs_trace("in %d.%06ld sec",
-                (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
-                (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-
-    ret = fd_sess_state_store(pcrf_gx_reg, session, &sess_data);
-    ogs_assert(ret == 0);
-    ogs_assert(sess_data == NULL);
-
-    ret = fd_msg_free(*msg);
-    ogs_assert(ret == 0);
-    *msg = NULL;
+cleanup:
+    /* Always free the message */
+    if (msg && *msg) {
+        ret = fd_msg_free(*msg);
+        if (ret != 0) {
+            ogs_error("Failed to free message");
+        }
+        *msg = NULL;
+    }
 
     return;
 }
