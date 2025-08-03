@@ -1347,6 +1347,11 @@ static int smf_gy_rar_cb(struct msg **msg, struct avp *avp,
 
     ogs_debug("Re-Auth-Request");
 
+    /* Create answer header */
+    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    ogs_assert(ret == 0);
+    ans = *msg;
+
     /* Allocate gy_message early for proper cleanup */
     gy_message = ogs_calloc(1, sizeof(ogs_diam_gy_message_t));
     if (!gy_message) {
@@ -1357,15 +1362,6 @@ static int smf_gy_rar_cb(struct msg **msg, struct avp *avp,
 
     /* Set Credit Control Command */
     gy_message->cmd_code = OGS_DIAM_GY_CMD_RE_AUTH;
-
-    /* Create answer header */
-    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
-    if (ret != 0) {
-        ogs_error("Failed to create answer message");
-        result_code = OGS_DIAM_OUT_OF_SPACE;
-        goto error_out;
-    }
-    ans = *msg;
 
     /* Retrieve session state */
     ret = fd_sess_state_retrieve(smf_gy_reg, session, &sess_data);

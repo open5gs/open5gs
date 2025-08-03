@@ -2107,6 +2107,12 @@ static int mme_s6a_clr_cb(struct msg **msg, struct avp *avp,
 
     ogs_debug("Cancel-Location-Request");
 
+    /* Create answer header */
+    qry = *msg;
+    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    ogs_assert(ret == 0);
+    ans = *msg;
+
     /* Allocate message structure early for proper cleanup */
     s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
     if (!s6a_message) {
@@ -2117,16 +2123,6 @@ static int mme_s6a_clr_cb(struct msg **msg, struct avp *avp,
 
     s6a_message->cmd_code = OGS_DIAM_S6A_CMD_CODE_CANCEL_LOCATION;
     clr_message = &s6a_message->clr_message;
-
-    /* Create answer header */
-    qry = *msg;
-    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
-    if (ret != 0) {
-        ogs_error("Failed to create answer message");
-        result_code = OGS_DIAM_UNABLE_TO_DELIVER;
-        goto error_out;
-    }
-    ans = *msg;
 
     /* Get User-Name AVP */
     ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
@@ -2239,7 +2235,7 @@ error_out:
         ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
         ogs_assert(ret == 0);
     } else {
-        ret = fd_msg_rescode_set(ans, (char*)"OGS_DIAM_UNABLE_TO_DELIVER",
+        ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_UNABLE_TO_COMPLY",
                                 NULL, NULL, 1);
         ogs_assert(ret == 0);
     }
@@ -2298,6 +2294,12 @@ static int mme_s6a_idr_cb(struct msg **msg, struct avp *avp,
 
     ogs_debug("Insert-Subscriber-Data-Request");
 
+    /* Create answer header */
+    qry = *msg;
+    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    ogs_assert(ret == 0);
+    ans = *msg;
+
     /* Allocate message structure early for proper cleanup */
     s6a_message = ogs_calloc(1, sizeof(ogs_diam_s6a_message_t));
     if (!s6a_message) {
@@ -2309,12 +2311,6 @@ static int mme_s6a_idr_cb(struct msg **msg, struct avp *avp,
     s6a_message->cmd_code = OGS_DIAM_S6A_CMD_CODE_INSERT_SUBSCRIBER_DATA;
     idr_message = &s6a_message->idr_message;
     subscription_data = &idr_message->subscription_data;
-
-    /* Create answer header */
-    qry = *msg;
-    ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
-    ogs_assert(ret == 0);
-    ans = *msg;
 
     /* Get User-Name AVP */
     ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
@@ -2512,7 +2508,7 @@ static int mme_s6a_idr_cb(struct msg **msg, struct avp *avp,
                 "or no Subscriber-Data for IMSI[%s]", imsi_bcd);
         /* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
         ret = fd_msg_rescode_set(
-                ans, (char*)"OGS_DIAM_UNABLE_TO_DELIVER", NULL, NULL, 1);
+                ans, (char*)"DIAMETER_UNABLE_TO_COMPLY", NULL, NULL, 1);
         ogs_assert(ret == 0);
         goto outnoexp;
     }
