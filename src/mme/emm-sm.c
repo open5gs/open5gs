@@ -1575,7 +1575,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 
         switch (message->emm.h.message_type) {
         case OGS_NAS_EPS_ATTACH_COMPLETE:
-            ogs_info("[%s] Attach complete", mme_ue->imsi_bcd);
+          ogs_info("[%s] Attach complete: IMEI: %s", mme_ue->imsi_bcd, mme_ue->imeisv);
 
         /*
          * TS24.301
