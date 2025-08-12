@@ -2116,19 +2116,8 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
         ul_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
 
     ul_pdr->outer_header_removal_len = 1;
-    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        ul_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
-        ul_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
-    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        ul_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
-    } else {
-        ogs_error("Invalid session_type [%d]", sess->session.session_type);
-        ogs_assert_if_reached();
-    }
+    ul_pdr->outer_header_removal.description =
+        OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
 
     /* FAR */
     dl_far = ogs_pfcp_far_add(&sess->pfcp);
@@ -2332,19 +2321,8 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
             OGS_PFCP_3GPP_INTERFACE_TYPE_SGW_UPF_GTP_U_FOR_UL_DATA_FORWARDING;
 
         pdr->outer_header_removal_len = 1;
-        if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
-            pdr->outer_header_removal.description =
-                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
-            pdr->outer_header_removal.description =
-                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
-        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-            pdr->outer_header_removal.description =
-                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
-        } else {
-            ogs_error("Invalid session_type [%d]", sess->session.session_type);
-            ogs_assert_if_reached();
-        }
+        pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
 
         far = ogs_pfcp_far_add(&sess->pfcp);
         ogs_assert(far);
@@ -2527,19 +2505,8 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     cp2up_pdr->src_if = OGS_PFCP_INTERFACE_CP_FUNCTION;
 
     cp2up_pdr->outer_header_removal_len = 1;
-    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        cp2up_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
-        cp2up_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
-    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        cp2up_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
-    } else {
-        ogs_error("Invalid session_type [%d]", sess->session.session_type);
-        ogs_assert_if_reached();
-    }
+    cp2up_pdr->outer_header_removal.description =
+        OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
 
     up2cp_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(up2cp_pdr);
@@ -2557,19 +2524,8 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
         up2cp_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
 
     up2cp_pdr->outer_header_removal_len = 1;
-    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        up2cp_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
-        up2cp_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
-    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        up2cp_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
-    } else {
-        ogs_error("Invalid session_type [%d]", sess->session.session_type);
-        ogs_assert_if_reached();
-    }
+    up2cp_pdr->outer_header_removal.description =
+        OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
 
     qos_flow = smf_default_bearer_in_sess(sess);
     ogs_assert(qos_flow);
@@ -2705,19 +2661,8 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     ul_pdr->src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS;
 
     ul_pdr->outer_header_removal_len = 1;
-    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        ul_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
-        ul_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
-    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        ul_pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
-    } else {
-        ogs_error("Invalid session_type [%d]", sess->session.session_type);
-        ogs_assert_if_reached();
-    }
+    ul_pdr->outer_header_removal.description =
+        OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
 
     /* FAR */
     dl_far = ogs_pfcp_far_add(&sess->pfcp);

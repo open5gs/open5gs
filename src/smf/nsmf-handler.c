@@ -1897,37 +1897,15 @@ bool smf_nsmf_handle_created_data_in_vsmf(
         ogs_assert(dl_pdr);
 
         dl_pdr->outer_header_removal_len = 1;
-        if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
-            dl_pdr->outer_header_removal.description =
-                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
-            dl_pdr->outer_header_removal.description =
-                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
-        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-            dl_pdr->outer_header_removal.description =
-                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
-        } else {
-            ogs_error("Unknown session-type [%d]", sess->session.session_type);
-            return false;
-        }
+        dl_pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
 
         ul_pdr = qos_flow->ul_pdr;
         ogs_assert(ul_pdr);
 
         ul_pdr->outer_header_removal_len = 1;
-        if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
-            ul_pdr->outer_header_removal.description =
-                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
-            ul_pdr->outer_header_removal.description =
-                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
-        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-            ul_pdr->outer_header_removal.description =
-                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
-        } else {
-            ogs_error("Unknown session-type [%d]", sess->session.session_type);
-            return false;
-        }
+        ul_pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
 
         ul_far = qos_flow->ul_far;
         ogs_assert(ul_far);
