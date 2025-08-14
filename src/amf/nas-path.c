@@ -932,6 +932,10 @@ int nas_5gs_send_gmm_reject(
         rv = nas_5gs_send_service_reject(ran_ue, amf_ue, gmm_cause);
         ogs_expect(rv == OGS_OK);
         break;
+    case OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE:
+        rv = nas_5gs_send_de_registration_accept(amf_ue);
+        ogs_expect(rv == OGS_OK);
+        break;
     default:
         ogs_error("Unknown message type [%d]", amf_ue->nas.message_type);
         rv = OGS_ERROR;
