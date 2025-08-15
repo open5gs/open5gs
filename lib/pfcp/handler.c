@@ -303,6 +303,39 @@ bool ogs_pfcp_up_handle_pdr(
             sendhdr.pdu_type =
                 OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION;
             sendhdr.qos_flow_identifier = pdr->qer->qfi;
+        } else if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS &&
+                far->dst_if == OGS_PFCP_INTERFACE_ACCESS &&
+                recvhdr->qos_flow_identifier) {
+/*
+ * HR Indirect Forwarding (source gNB -> V-UPF -> target gNB)
+ *
+ * Context:
+ * - Home-Routed roaming: the V-UPF is controlled by the V-SMF, which
+ *   typically does not provision QER/QFI for the indirect path.
+ * - During Xn/N2 handover the source gNB may forward remaining DL data
+ *   to the core using UL PDU Session Information (PSC PDU type = UL).
+ *
+ * Goal:
+ * - Preserve the PDU Session Container across the V-UPF hop and deliver
+ *   it to the target gNB with PDU type = DL while keeping the same QFI.
+ *
+ * What we do here:
+ * - If this PDR has no QER/QFI and the path is Access->Access, derive
+ *   PSC fields from the received header (recvhdr).
+ * - Force sendhdr.pdu_type = DL PDU Session Information.
+ * - Copy recvhdr->qos_flow_identifier into sendhdr.qos_flow_identifier.
+ * - The encapsulation routine will build a fresh GTP-U header and
+ *   generate the PSC extension from sendhdr fields. This converts UL
+ *   PSC to DL PSC and preserves the QFI for the target gNB.
+ *
+ * Why this is needed in HR:
+ * - With OHR+OHC, the incoming GTP-U (extensions included) is removed
+ *   and a new one is created. Without recreating PSC from sendhdr.*, the
+ *   extension header would be lost when QER is absent on the V-UPF.
+ */
+            sendhdr.pdu_type =
+                OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION;
+            sendhdr.qos_flow_identifier = recvhdr->qos_flow_identifier;
         }
 
         if (recvhdr) {
@@ -960,6 +993,14 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
         if (message->pdi.qfi.presence) {
             pdr->qfi = message->pdi.qfi.u8;
         }
+    }
+
+    if (message->outer_header_removal.presence) {
+        pdr->outer_header_removal_len =
+            ogs_min(message->outer_header_removal.len,
+                    sizeof(pdr->outer_header_removal));
+        memcpy(&pdr->outer_header_removal, message->outer_header_removal.data,
+                pdr->outer_header_removal_len);
     }
 
     return pdr;
