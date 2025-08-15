@@ -199,6 +199,14 @@ void sgwu_sxa_handle_session_modification_request(
         goto cleanup;
 
     for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
+        if (ogs_pfcp_handle_update_pdr(&sess->pfcp, &req->update_pdr[i],
+                    &cause_value, &offending_ie_value) == NULL)
+            break;
+    }
+    if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+        goto cleanup;
+
+    for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
         if (ogs_pfcp_handle_remove_pdr(&sess->pfcp, &req->remove_pdr[i],
                 &cause_value, &offending_ie_value) == false)
             break;
