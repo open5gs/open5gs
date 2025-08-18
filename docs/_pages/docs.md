@@ -50,6 +50,7 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [5G Frame Routing](https://futuredon.medium.com/5g-frame-routing-6e34d8587123)
   - [5G SCTP LoadBalancer Using LoxiLB](https://futuredon.medium.com/5g-sctp-loadbalancer-using-loxilb-b525198a9103)([Video Link](https://youtu.be/k3ICc7MXcC8))
   - [5G Roaming With Mutual TLS](https://futuredon.medium.com/5g-roaming-with-mutual-tls-1468d109129c)
+  - [Building a Cloud-Native 5G Roaming Architecture with Open5GS](https://futuredon.medium.com/building-a-cloud-native-5g-roaming-architecture-with-open5gs-cert-manager-and-openbao-supporting-08168a937ddc)
 
 - @nickvsnetworking
   - [My first 5G Core : Open5GS and UERANSIM](http://nickvsnetworking.com/my-first-5g-core-open5gs-and-ueransim/)
