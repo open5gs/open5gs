@@ -233,9 +233,9 @@ mhd_server_access_handler(void *cls, struct MHD_Connection *connection,
     }
 
 
-    /* ... inside mhd_server_access_handler(...) ... */
+    /* Connected-UEs  */
     if (strcmp(url, "/connected-ues") == 0) {
-        if (!dump_connected_ues_cb) {
+        if (!dump_connected_ues_cb) {           /* for AMF,MME,UPF ..*/
             const char *msg = "Not available on this NF\n";
             struct MHD_Response *rsp = MHD_create_response_from_buffer(strlen(msg), (void*)msg, MHD_RESPMEM_PERSISTENT);
             if (!rsp) return MHD_NO;

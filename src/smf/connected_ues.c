@@ -2,8 +2,7 @@
 #include "context.h"       /* smf_self(), smf_ue_t, smf_sess_t */
 #include "connected_ues.h"
 
-/* Append into buf[off:], keeping NUL termination.
- * On truncation: returns buflen-1 (so caller can grow & retry). */
+
 static inline size_t json_append(char *buf, size_t off, size_t buflen,
                                  const char *fmt, ...)
 {
@@ -16,8 +15,8 @@ static inline size_t json_append(char *buf, size_t off, size_t buflen,
     int n = vsnprintf(buf + off, rem, fmt, ap);
     va_end(ap);
 
-    if (n < 0) return off;                 /* leave previous content */
-    if ((size_t)n >= rem) return buflen - 1; /* truncated; keep NUL at end */
+    if (n < 0) return off;                
+    if ((size_t)n >= rem) return buflen - 1; 
     return off + (size_t)n;
 }
 
@@ -52,7 +51,7 @@ size_t smf_dump_connected_ues(char *buf, size_t buflen)
             const unsigned psi = sess->psi;
             const char *dnn = (sess->session.name ? sess->session.name : "");
 
-            /* v4 */
+            /* IPv4 */
             if (sess->ipv4) {
                 char ip4[OGS_ADDRSTRLEN] = "";
                 OGS_INET_NTOP(&sess->ipv4->addr, ip4);
@@ -63,7 +62,7 @@ size_t smf_dump_connected_ues(char *buf, size_t buflen)
                     psi, dnn, ip4);
             }
 
-            /* v6 */
+            /* IPv6 */
             if (sess->ipv6) {
                 char ip6[OGS_ADDRSTRLEN] = "";
                 OGS_INET6_NTOP(&sess->ipv6->addr, ip6);
@@ -92,7 +91,7 @@ size_t smf_dump_connected_ues(char *buf, size_t buflen)
         off = json_append(buf, off, buflen, ",\"last_seen\":%lld", now_s);
         off = json_append(buf, off, buflen, "}");
 
-        if (off >= buflen - 256) break; /* end cleanly, caller can retry bigger */
+        if (off >= buflen - 256) break; 
     }
 
     off = json_append(buf, off, buflen, "]");
