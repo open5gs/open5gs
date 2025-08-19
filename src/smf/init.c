@@ -23,6 +23,8 @@
 #include "pfcp-path.h"
 #include "sbi-path.h"
 #include "metrics.h"
+#include "ogs-metrics.h"          /* for ogs_metrics_register_connected_ues */
+#include "connected_ues.h"        /* declare smf_dump_connected_ues() */
 
 static ogs_thread_t *thread;
 static void smf_main(void *data);
@@ -89,6 +91,8 @@ int smf_initialize(void)
 
     thread = ogs_thread_create(smf_main, NULL);
     if (!thread) return OGS_ERROR;
+
+    ogs_metrics_register_connected_ues(smf_dump_connected_ues);
 
     initialized = 1;
 
