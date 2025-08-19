@@ -1,7 +1,7 @@
 #include "ogs-core.h"      /* ogs_time_now, OGS_INET_NTOP, OGS_INET6_NTOP, OGS_ADDRSTRLEN */
 #include "context.h"       /* smf_self(), smf_ue_t, smf_sess_t */
 #include "connected_ues.h"
-
+#include <stdarg.h>
 
 static inline size_t json_append(char *buf, size_t off, size_t buflen,
                                  const char *fmt, ...)
@@ -38,7 +38,8 @@ size_t smf_dump_connected_ues(char *buf, size_t buflen)
 
         off = json_append(buf, off, buflen, "{");
 
-        const char *id = ue->supi ? ue->supi : (ue->imsi_bcd ? ue->imsi_bcd : "");
+        /* Prefer SUPI if present/non-empty, otherwise fall back to IMEI/IMSI_BCD if non-empty. */
+        const char *id = (ue->supi && ue->supi[0]) ? ue->supi : (ue->imsi_bcd[0] ? ue->imsi_bcd : "");
         off = json_append(buf, off, buflen, "\"supi\":\"%s\",", id);
 
         off = json_append(buf, off, buflen, "\"pdu\":[");
