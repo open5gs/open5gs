@@ -94,6 +94,8 @@ void testgsm_recv(test_sess_t *sess, ogs_pkbuf_t *pkbuf)
         testgsm_handle_pdu_session_establishment_accept(sess,
                 &message.gsm.pdu_session_establishment_accept);
         break;
+    case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST:
+        break;
     case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REJECT:
         break;
     case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND:
