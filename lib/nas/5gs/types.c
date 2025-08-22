@@ -843,6 +843,8 @@ static int parse_qos_rules_packet_filter_list(ogs_nas_qos_rule_t *rule, const ui
                     sizeof(rule->pf[i].content.component[j].type));
             len += sizeof(rule->pf[i].content.component[j].type);
             switch(rule->pf[i].content.component[j].type) {
+            case OGS_PACKET_FILTER_MATCH_ALL:
+                break;
             case OGS_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE:
                 if (size+len+
                     sizeof(rule->pf[i].content.component[j].proto) >

@@ -112,6 +112,8 @@ static int reconfigure_packet_filter(
     pf->direction = qos_rule->pf[i].direction;
     for (j = 0; j < qos_rule->pf[i].content.num_of_component; j++) {
         switch(qos_rule->pf[i].content.component[j].type) {
+        case OGS_PACKET_FILTER_MATCH_ALL:
+            break;
         case OGS_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE:
             pf->ipfw_rule.proto = qos_rule->pf[i].content.component[j].proto;
             break;
