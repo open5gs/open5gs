@@ -273,7 +273,7 @@ void ogs_nas_build_nssai(ogs_nas_nssai_t *nas_nssai,
             ogs_nas_build_s_nssai(&nas_s_nssai, nas_s_nssai_ie + i);
             memcpy(nas_nssai->buffer + nas_nssai->length, &nas_s_nssai,
                     sizeof(nas_s_nssai.length) + nas_s_nssai.length);
-            nas_nssai->length += 
+            nas_nssai->length +=
                     (sizeof(nas_s_nssai.length) + nas_s_nssai.length);
         }
     }
