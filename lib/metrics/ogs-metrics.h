@@ -26,6 +26,11 @@
 
 #include "metrics/context.h"
 
+/* Connected UEs JSON dumper registration (optional). If not registered,
+ * /connected-ues will return 404.
+ */
+void ogs_metrics_register_connected_ues(size_t (*fn)(char *buf, size_t buflen));
+
 #ifdef __cplusplus
 extern "C" {
 #endif
