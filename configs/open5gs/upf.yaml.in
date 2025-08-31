@@ -46,7 +46,7 @@ upf:
 #      - dev: ens3
 #        advertise: upf1.5gc.mnc001.mcc001.3gppnetwork.org
 #
-#  o User Plane IP Resource information
+#  o (DEPRECATED) User Plane IP Resource information
 #  gtpu:
 #    server:
 #      - address:
@@ -61,6 +61,31 @@ upf:
 #        teid_range: 5
 #        network_instance: ims
 #        source_interface: 1
+#
+########################################################################
+# GTP-U (N3/N9) binding
+# - By default, if only 'address' is given, both N3 and N9 use it.
+# - To separate N9, specify 'n9.address' under the same server entry.
+# - If 'n9.address' is missing, it falls back to the N3 address.
+# - 'port' is optional (default 2152). Define only when needed.
+########################################################################
+#  o [Case A] N3 and N9 share the same address
+#  gtpu:
+#    server:
+#      - address: 127.0.9.7
+#        # port: 2152   # optional
+#
+#        # [Optional] To bind N9 to a different address, enable below
+#        # n9:
+#        #   address: 127.0.0.8
+#        #   # port: 2152
+#
+#  o [Case B] Example with multiple NICs
+#  gtpu:
+#    server:
+#      - address: 127.0.3.7        # N3
+#        n9:
+#          address: 127.0.9.7      # N9
 #
 ################################################################################
 # 3GPP Specification
