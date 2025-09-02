@@ -752,7 +752,6 @@ void gsm_encode_qos_rule(
         qos_rule_code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS &&
         qos_rule_code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS)
     {
-        ogs_assert(dl_pdr->precedence > 0 && dl_pdr->precedence < 255);
         qos_rule->precedence = dl_pdr->precedence;
         qos_rule->flow.segregation = 0;
         qos_rule->flow.identifier = qos_flow->qfi;
