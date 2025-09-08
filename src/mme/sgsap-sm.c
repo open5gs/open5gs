@@ -165,9 +165,6 @@ void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
             break;
         case SGSAP_RESET_INDICATION:
             sgsap_handle_reset_indication(vlr, pkbuf);
-
-            mme_vlr_close(vlr);
-            OGS_FSM_TRAN(s, sgsap_state_will_connect);
             break;
         case SGSAP_RELEASE_REQUEST:
             sgsap_handle_release_request(vlr, pkbuf);
