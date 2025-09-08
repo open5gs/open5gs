@@ -499,7 +499,7 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     int nas_mobile_identity_imsi_len = 0;
     ogs_nas_lai_t *lai = NULL;
     char vlr_name[SGSAP_IE_VLR_NAME_LEN] = { 0, };
-    uint8_t service_indicator = 0;
+    uint8_t *service_indicator = NULL;
 
     ogs_assert(vlr);
     ogs_assert(pkbuf);
@@ -533,7 +533,7 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
             lai = iter->value;
             break;
         case SGSAP_IE_SERVICE_INDICATOR_TYPE:
-            service_indicator = *((uint8_t*)(iter->value));
+            service_indicator = iter->value;
             break;
         default:
             ogs_warn("Invalid Type [%d]", iter->type);
@@ -555,6 +555,12 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
         goto paging_reject;
     }
 
+    if (!service_indicator) {
+        ogs_error("No Service indicator");
+        sgs_cause = SGSAP_SGS_CAUSE_MISSING_MANDATORY_IE;
+        goto paging_reject;
+    }
+
     if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
 
         ogs_nas_eps_imsi_to_bcd(nas_mobile_identity_imsi,
@@ -571,8 +577,17 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
         goto paging_reject;
     }
 
-    ogs_assert(service_indicator);
-    mme_ue->service_indicator = service_indicator;
+    switch (*service_indicator) {
+    case SGSAP_CS_CALL_SERVICE_INDICATOR:
+    case SGSAP_SMS_SERVICE_INDICATOR:
+        mme_ue->service_indicator = *service_indicator;
+        break;
+    default:
+        /* 3GPP TS 29.118 9.4.17: Other vals "shall not be sent in this version
+         * of the protocol. If received, shall be treated as '00000001'" */
+        mme_ue->service_indicator = SGSAP_CS_CALL_SERVICE_INDICATOR;
+        break;
+    }
 
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
     ogs_debug("    VLR_NAME[%s]", vlr_name);
