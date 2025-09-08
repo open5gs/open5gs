@@ -491,8 +491,9 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     int r;
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
+    uint8_t sgs_cause = SGSAP_SGS_CAUSE_IMSI_UNKNOWN;
 
-    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1] = { 0, };
 
     ogs_nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
     int nas_mobile_identity_imsi_len = 0;
@@ -524,7 +525,8 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
             if (ogs_fqdn_parse(vlr_name, iter->value,
                 ogs_min(iter->length, SGSAP_IE_VLR_NAME_LEN)) <= 0) {
                 ogs_error("Invalid VLR-Name");
-                return;
+                sgs_cause = SGSAP_SGS_CAUSE_INVALID_MANDATORY_IE;
+                goto paging_reject;
             }
             break;
         case SGSAP_IE_LAI_TYPE:
@@ -544,11 +546,13 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     if (!nas_mobile_identity_imsi) {
         ogs_error("No IMSI");
-        return;
+        sgs_cause = SGSAP_SGS_CAUSE_MISSING_MANDATORY_IE;
+        goto paging_reject;
     }
     if (nas_mobile_identity_imsi_len != SGSAP_IE_IMSI_LEN) {
         ogs_error("Invalid IMSI len [%d]", nas_mobile_identity_imsi_len);
-        return;
+        sgs_cause = SGSAP_SGS_CAUSE_INVALID_MANDATORY_IE;
+        goto paging_reject;
     }
 
     if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
@@ -558,56 +562,63 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
     } else {
         ogs_error("Unknown type [%d]", nas_mobile_identity_imsi->type);
-        return;
+            sgs_cause = SGSAP_SGS_CAUSE_INVALID_MANDATORY_IE;
+            goto paging_reject;
     }
 
-    if (mme_ue) {
-        ogs_assert(service_indicator);
-        mme_ue->service_indicator = service_indicator;
+    if (!mme_ue) {
+        sgs_cause = SGSAP_SGS_CAUSE_IMSI_UNKNOWN;
+        goto paging_reject;
+    }
 
-        ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
-        ogs_debug("    VLR_NAME[%s]", vlr_name);
-        ogs_debug("    SERVICE_INDICATOR[%d]", mme_ue->service_indicator);
+    ogs_assert(service_indicator);
+    mme_ue->service_indicator = service_indicator;
 
-        if (lai) {
-            ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
-                        ogs_plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
-        }
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+    ogs_debug("    VLR_NAME[%s]", vlr_name);
+    ogs_debug("    SERVICE_INDICATOR[%d]", mme_ue->service_indicator);
 
-        if (ECM_IDLE(mme_ue)) {
-            if (CS_CALL_SERVICE_INDICATOR(mme_ue)) {
-                /* UE will respond Extended Service Request in PS CNDomain*/
-                MME_STORE_PAGING_INFO(mme_ue,
-                    MME_PAGING_TYPE_CS_CALL_SERVICE, NULL);
-                r = s1ap_send_paging(mme_ue, S1AP_CNDomain_cs);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-            } else if (SMS_SERVICE_INDICATOR(mme_ue)) {
-                /* UE will respond Service Request in PS CNDomain*/
-                MME_STORE_PAGING_INFO(mme_ue,
-                    MME_PAGING_TYPE_SMS_SERVICE, NULL);
-                r = s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-            } else
-                goto paging_reject;
+    if (lai) {
+        ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
+                    ogs_plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
+    }
 
+    if (ECM_IDLE(mme_ue)) {
+        if (CS_CALL_SERVICE_INDICATOR(mme_ue)) {
+            /* UE will respond Extended Service Request in CS CNDomain*/
+            MME_STORE_PAGING_INFO(mme_ue,
+                MME_PAGING_TYPE_CS_CALL_SERVICE, NULL);
+            r = s1ap_send_paging(mme_ue, S1AP_CNDomain_cs);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        } else if (SMS_SERVICE_INDICATOR(mme_ue)) {
+            /* UE will respond Service Request in PS CNDomain*/
+            MME_STORE_PAGING_INFO(mme_ue,
+                MME_PAGING_TYPE_SMS_SERVICE, NULL);
+            r = s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
         } else {
-            MME_CLEAR_PAGING_INFO(mme_ue);
-            if (CS_CALL_SERVICE_INDICATOR(mme_ue)) {
-                r = nas_eps_send_cs_service_notification(mme_ue);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-            } else if (SMS_SERVICE_INDICATOR(mme_ue)) {
-                ogs_assert(OGS_OK ==
-                    sgsap_send_service_request(
-                        mme_ue, SGSAP_EMM_CONNECTED_MODE));
-            } else
-                goto paging_reject;
+            sgs_cause = SGSAP_SGS_CAUSE_MT_CS_FALLBACK_REJECT_BY_USER;
+            goto paging_reject;
         }
-
-        return;
+    } else {
+        MME_CLEAR_PAGING_INFO(mme_ue);
+        if (CS_CALL_SERVICE_INDICATOR(mme_ue)) {
+            r = nas_eps_send_cs_service_notification(mme_ue);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        } else if (SMS_SERVICE_INDICATOR(mme_ue)) {
+            ogs_assert(OGS_OK ==
+                sgsap_send_service_request(
+                    mme_ue, SGSAP_EMM_CONNECTED_MODE));
+        } else {
+            sgs_cause = SGSAP_SGS_CAUSE_MT_CS_FALLBACK_REJECT_BY_USER;
+            goto paging_reject;
+        }
     }
+
+    return;
 
 paging_reject:
     ogs_debug("[SGSAP] PAGING-REJECT");
@@ -617,7 +628,7 @@ paging_reject:
         vlr,
         sgsap_build_paging_reject(
             nas_mobile_identity_imsi, nas_mobile_identity_imsi_len,
-            SGSAP_SGS_CAUSE_IMSI_UNKNOWN),
+            sgs_cause),
         0);
 }
 
