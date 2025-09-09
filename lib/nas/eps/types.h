@@ -291,17 +291,19 @@ ED2(uint8_t spare:5;,
 } __attribute__ ((packed)) ogs_nas_eps_attach_result_t;
 
 /* 9.9.3.11 EPS attach type
- * M V 1/2
- * 9.9.3.21 NAS key set identifier
+ * M V 1/2  */
+#define OGS_NAS_ATTACH_TYPE_EPS_ATTACH 1
+#define OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH 2
+#define OGS_NAS_ATTACH_TYPE_EPS_RLOS_ATTACH 3
+#define OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH 6
+#define OGS_NAS_ATTACH_TYPE_RESERVED 7
+
+ /* 9.9.3.21 NAS key set identifier
  * M V 1/2 */
 #define OGS_NAS_KEY_SET_IDENTIFIER_NATIVE 0
 #define OGS_NAS_KEY_SET_IDENTIFIER_MAPPED 1
 #define OGS_NAS_KEY_SET_IDENTIFIER_NOT_AVAILABLE 0x111
 
-#define OGS_NAS_ATTACH_TYPE_EPS_ATTACH 1
-#define OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH 2
-#define OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH 3
-#define OGS_NAS_ATTACH_TYPE_RESERVED 4
 typedef struct ogs_nas_eps_attach_type_s {
 ED4(uint8_t tsc:1;,
     uint8_t nas_key_set_identifier:3;,

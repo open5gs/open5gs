@@ -108,9 +108,19 @@ int emm_handle_attach_request(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
         case OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH:
             ogs_debug("    Requested EPS_ATTACH_TYPE[3, EPS_EMERGENCY_ATTACH]");
             break;
-        default:
+        case OGS_NAS_ATTACH_TYPE_RESERVED:
             ogs_error("    Invalid Requested EPS_ATTACH_TYPE[%d]",
-                mme_ue->nas_eps.attach.value);
+                      mme_ue->nas_eps.attach.value);
+            break;
+        case OGS_NAS_ATTACH_TYPE_EPS_RLOS_ATTACH:
+                /* fall-through: '"EPS RLOS attach" shall be interpreted as "EPS attach"
+                 * by a network not supporting attach for access to RLOS."'*/
+        default:
+            /* 'All other values are unused and shall be interpreted as "EPS attach",
+             * if received by the network' */
+            ogs_warn("    Requested EPS_ATTACH_TYPE[%d], assuming EPS_ATTACH",
+                     mme_ue->nas_eps.attach.value);
+            mme_ue->nas_eps.attach.value = OGS_NAS_ATTACH_TYPE_EPS_ATTACH;
     }
 
     /*
