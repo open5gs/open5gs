@@ -19,8 +19,19 @@
  */
 
 #include "ogs-metrics.h"
+#include "ogs-core.h"
+#include "metrics/ogs-metrics.h"
 
 #define DEFAULT_PROMETHEUS_HTTP_PORT       9090
+
+/* Global (optional) dumper. NULL when no NF registered. */
+size_t (*ogs_metrics_connected_ues_dumper)(char *buf, size_t buflen) = NULL;
+
+void ogs_metrics_register_connected_ues(size_t (*fn)(char *buf, size_t buflen))
+{
+    ogs_metrics_connected_ues_dumper = fn;
+}
+
 
 int __ogs_metrics_domain;
 static ogs_metrics_context_t self;

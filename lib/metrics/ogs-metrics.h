@@ -20,22 +20,26 @@
 #ifndef OGS_METRICS_H
 #define OGS_METRICS_H
 
+/* MUST come first to satisfy core headers like ogs-list.h */
+#include "core/ogs-core.h"
+
+/* App layer (logging domain, etc.) */
 #include "app/ogs-app.h"
 
+/* Expose internal metrics structures to metrics library users */
 #define OGS_METRICS_INSIDE
-
 #include "metrics/context.h"
-
-/* Connected UEs JSON dumper registration (optional). If not registered,
- * /connected-ues will return 404.
- */
-void ogs_metrics_register_connected_ues(size_t (*fn)(char *buf, size_t buflen));
+#undef OGS_METRICS_INSIDE
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#undef OGS_METRICS_INSIDE
+/* Connected UEs JSON dumper registration (optional). If not registered,
+ * /connected-ues will return 404.
+ */
+extern size_t (*ogs_metrics_connected_ues_dumper)(char *buf, size_t buflen);
+void ogs_metrics_register_connected_ues(size_t (*fn)(char *buf, size_t buflen));
 
 extern int __ogs_metrics_domain;
 
@@ -43,7 +47,8 @@ extern int __ogs_metrics_domain;
 #define OGS_LOG_DOMAIN __ogs_metrics_domain
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 #endif /* OGS_METRICS_H */
+
