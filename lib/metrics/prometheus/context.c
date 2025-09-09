@@ -18,13 +18,33 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-metrics.h"
+#include "ogs-core.h"
+#include "metrics/ogs-metrics.h"
 
 #include <netdb.h> /* AI_PASSIVE */
 #include "prom.h"
 #include "microhttpd.h"
+#include <string.h>
 
 #define MAX_LABELS 8
+
+#if MHD_VERSION >= 0x00096100
+static void free_callback(void *cls)
+{
+    /* MHD will call this when it’s done with the buffer */
+    ogs_free(cls);
+}
+#endif
+
+#if MHD_VERSION >= 0x00096100
+static void metrics_free_callback(void *cls)
+{
+    ogs_free(cls);
+}
+#endif
+
+/* Optional /connected-ues callback; NULL if not registered by the NF */
+static size_t (*dump_connected_ues_cb)(char *buf, size_t buflen) = NULL;
 
 typedef struct ogs_metrics_server_s {
     ogs_socknode_t node;
@@ -184,42 +204,197 @@ typedef enum MHD_Result _MHD_Result;
 typedef int _MHD_Result;
 #endif
 
-static _MHD_Result mhd_server_access_handler(void *cls, struct MHD_Connection *connection,
+static _MHD_Result
+mhd_server_access_handler(void *cls, struct MHD_Connection *connection,
         const char *url, const char *method, const char *version,
-        const char *upload_data, size_t *upload_data_size, void **con_cls) {
+        const char *upload_data, size_t *upload_data_size, void **con_cls)
+{
+    (void)cls; (void)version; (void)upload_data; (void)upload_data_size; (void)con_cls;
 
-    const char *buf;
-    struct MHD_Response *rsp;
-    int ret;
+    const char *buf = NULL;
+    struct MHD_Response *rsp = NULL;
+    int ret = MHD_NO;
 
+    /* Only GET is supported */
     if (strcmp(method, "GET") != 0) {
         buf = "Invalid HTTP Method\n";
         rsp = MHD_create_response_from_buffer(strlen(buf), (void *)buf, MHD_RESPMEM_PERSISTENT);
         ret = MHD_queue_response(connection, MHD_HTTP_BAD_REQUEST, rsp);
         MHD_destroy_response(rsp);
-        return ret;
+        return (_MHD_Result)ret;
     }
+
+    /* Health */
     if (strcmp(url, "/") == 0) {
         buf = "OK\n";
         rsp = MHD_create_response_from_buffer(strlen(buf), (void *)buf, MHD_RESPMEM_PERSISTENT);
         ret = MHD_queue_response(connection, MHD_HTTP_OK, rsp);
         MHD_destroy_response(rsp);
-        return ret;
+        return (_MHD_Result)ret;
     }
+
+    /* Prometheus metrics */
     if (strcmp(url, "/metrics") == 0) {
         buf = prom_collector_registry_bridge(PROM_COLLECTOR_REGISTRY_DEFAULT);
-        rsp = MHD_create_response_from_buffer(strlen(buf), (void *)buf, MHD_RESPMEM_MUST_FREE);
+        rsp = MHD_create_response_from_buffer(strlen(buf), (void *)buf, MHD_RESPMEM_MUST_COPY);
         MHD_add_response_header(rsp, "Content-Type", "text/plain; version=0.0.4; charset=utf-8");
         ret = MHD_queue_response(connection, MHD_HTTP_OK, rsp);
         MHD_destroy_response(rsp);
-        return ret;
+        return (_MHD_Result)ret;
     }
+
+    if (strcmp(url, "/connected-ues") == 0) {
+        /* per-request JSON buffer */
+        size_t cap = 512 * 1024;                   /* initial capacity */
+        char *bufjson = ogs_malloc(cap);
+        if (!bufjson) {
+            /* 500 OOM */
+            const char *msg = "Out of memory\n";
+            struct MHD_Response *rsp = MHD_create_response_from_buffer(strlen(msg), (void *)msg, MHD_RESPMEM_PERSISTENT);
+            int ret = MHD_queue_response(connection, MHD_HTTP_INTERNAL_SERVER_ERROR, rsp);
+            MHD_destroy_response(rsp);
+            return (_MHD_Result)ret;
+        }
+
+        /* Fill JSON via registered dumper; if nonexistent -> 404 */
+        size_t n = 0;
+        if (ogs_metrics_connected_ues_dumper) {
+            n = ogs_metrics_connected_ues_dumper(bufjson, cap);
+        } else {
+            /* No provider registered (AMF/MME/SMF not hooked) */
+            ogs_free(bufjson);
+            const char *msg = "connected-ues endpoint not available on this NF\n";
+            struct MHD_Response *rsp = MHD_create_response_from_buffer(strlen(msg), (void *)msg, MHD_RESPMEM_PERSISTENT);
+            int ret = MHD_queue_response(connection, MHD_HTTP_NOT_FOUND, rsp);
+            MHD_destroy_response(rsp);
+            return (_MHD_Result)ret;
+        }
+
+        /* If it exactly filled (or overflow signaled by your dumper), grow once and retry */
+        if (n >= cap - 1) {
+            size_t newcap = cap * 2;
+            char *tmp = ogs_realloc(bufjson, newcap);
+            if (!tmp) {
+                ogs_free(bufjson);
+                const char *msg = "Out of memory\n";
+                struct MHD_Response *rsp = MHD_create_response_from_buffer(strlen(msg), (void *)msg, MHD_RESPMEM_PERSISTENT);
+                int ret = MHD_queue_response(connection, MHD_HTTP_INTERNAL_SERVER_ERROR, rsp);
+                MHD_destroy_response(rsp);
+                return (_MHD_Result)ret;
+            }
+            bufjson = tmp;
+            cap = newcap;
+            n = ogs_metrics_connected_ues_dumper(bufjson, cap);
+            /* If still too big, truncate to a valid empty array (graceful degradation) */
+            if (n >= cap - 1) {
+                const char trunc[] = "[]";
+                memcpy(bufjson, trunc, sizeof(trunc)); /* includes '\0' */
+                n = strlen("[]");
+            }
+        }
+
+#if MHD_VERSION >= 0x00096100
+        /* Hand ownership to MHD; it will call free_callback(…) */
+        struct MHD_Response *rsp = MHD_create_response_from_buffer_with_free_callback( n, (void *)bufjson, free_callback);
+        bufjson = NULL; /* ownership moved to MHD */
+#else
+        /* Older MHD: copy into its private storage, then free our buffer */
+        struct MHD_Response *rsp = MHD_create_response_from_buffer(n, (void *)bufjson, MHD_RESPMEM_MUST_COPY); 
+        ogs_free(bufjson);
+#endif
+
+        if (!rsp) {
+            const char *msg = "Internal error\n";
+            struct MHD_Response *rsp2 = MHD_create_response_from_buffer(strlen(msg), (void *)msg, MHD_RESPMEM_PERSISTENT);
+            int ret2 = MHD_queue_response(connection, MHD_HTTP_INTERNAL_SERVER_ERROR, rsp2);
+            MHD_destroy_response(rsp2);
+            return (_MHD_Result)ret2;
+        }
+
+        /* Headers */
+        MHD_add_response_header(rsp, "Content-Type", "application/json");
+        MHD_add_response_header(rsp, "Access-Control-Allow-Origin", "*");
+
+        int ret = MHD_queue_response(connection, MHD_HTTP_OK, rsp);
+        MHD_destroy_response(rsp);
+        return (_MHD_Result)ret;
+    }
+
+    if (strcmp(url, "/connected-ues") == 0) {
+        if (!dump_connected_ues_cb) { /* not exposed by this NF */
+            const char *msg = "Not available on this NF\n";
+            struct MHD_Response *rsp = MHD_create_response_from_buffer(strlen(msg), (void*)msg, MHD_RESPMEM_PERSISTENT);
+            if (!rsp) return MHD_NO;
+            int ret = MHD_queue_response(connection, MHD_HTTP_NOT_FOUND, rsp);
+            MHD_destroy_response(rsp);
+            return (_MHD_Result)ret;
+        }
+
+        /* Allocate a fresh buffer per request (no TLS leak on shutdown) */
+        size_t cap = 512 * 1024;
+        char *bufjson = (char *)ogs_malloc(cap);
+        if (!bufjson) {
+            const char *msg = "OOM\n";
+            struct MHD_Response *rsp = MHD_create_response_from_buffer(strlen(msg), (void*)msg, MHD_RESPMEM_PERSISTENT);
+            if (!rsp) return MHD_NO;
+            int ret = MHD_queue_response(connection, MHD_HTTP_INTERNAL_SERVER_ERROR, rsp);
+            MHD_destroy_response(rsp);
+            return (_MHD_Result)ret;
+        }
+
+        size_t n = dump_connected_ues_cb(bufjson, cap);
+        if (n >= cap - 1) {
+            /* grow once */
+            cap *= 2;
+            char *tmp = (char *)ogs_realloc(bufjson, cap);
+            if (!tmp) {
+                ogs_free(bufjson);
+                const char *msg = "OOM\n";
+                struct MHD_Response *rsp = MHD_create_response_from_buffer(strlen(msg), (void*)msg, MHD_RESPMEM_PERSISTENT);
+                if (!rsp) return MHD_NO;
+                int ret = MHD_queue_response(connection, MHD_HTTP_INTERNAL_SERVER_ERROR, rsp);
+                MHD_destroy_response(rsp);
+                return (_MHD_Result)ret;
+            }
+            bufjson = tmp;
+            n = dump_connected_ues_cb(bufjson, cap);
+            if (n >= cap - 1) {
+                /* give up with empty array to be safe */
+                n = ogs_snprintf(bufjson, cap, "[]");
+            }
+        }
+
+        struct MHD_Response *rsp;
+#if MHD_VERSION >= 0x00096100
+        rsp = MHD_create_response_from_buffer_with_free_callback(n, (void*)bufjson, metrics_free_callback);
+        bufjson = NULL; /* ownership moved */
+#else
+        /* Safe fallback: MHD copies, we free right after queueing */
+        rsp = MHD_create_response_from_buffer(n, (void*)bufjson, MHD_RESPMEM_MUST_COPY);
+#endif
+        if (!rsp) {
+            ogs_free(bufjson);
+            return MHD_NO;
+        }
+        MHD_add_response_header(rsp, "Content-Type", "application/json");
+        MHD_add_response_header(rsp, "Access-Control-Allow-Origin", "*");
+        int ret = MHD_queue_response(connection, MHD_HTTP_OK, rsp);
+        MHD_destroy_response(rsp);
+#if MHD_VERSION < 0x00096100
+        ogs_free(bufjson);
+#endif
+        return (_MHD_Result)ret;
+    }
+ 
+
+    /* No matching route */
     buf = "Bad Request\n";
     rsp = MHD_create_response_from_buffer(strlen(buf), (void *)buf, MHD_RESPMEM_PERSISTENT);
     ret = MHD_queue_response(connection, MHD_HTTP_BAD_REQUEST, rsp);
     MHD_destroy_response(rsp);
-    return ret;
+    return (_MHD_Result)ret;
 }
+
 
 static int ogs_metrics_context_server_start(ogs_metrics_server_t *server)
 {
