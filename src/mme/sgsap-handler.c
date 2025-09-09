@@ -405,6 +405,98 @@ error:
     return;
 }
 
+void sgsap_handle_alert_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
+{
+    ogs_tlv_t *root = NULL, *iter = NULL;
+    mme_ue_t *mme_ue = NULL;
+    uint8_t sgs_cause = SGSAP_SGS_CAUSE_IMSI_UNKNOWN;
+
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1] = {0, };
+
+    ogs_nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
+    int nas_mobile_identity_imsi_len = 0;
+
+    ogs_assert(vlr);
+    ogs_assert(pkbuf);
+
+    ogs_warn("[SGSAP] Rx ALERT-REQUEST");
+
+    ogs_pkbuf_pull(pkbuf, 1);
+
+    root = ogs_tlv_parse_block(pkbuf->len, pkbuf->data, OGS_TLV_MODE_T1_L1);
+    if (!root) {
+        ogs_error("ogs_tlv_parse_block() failed");
+        sgs_cause = SGSAP_SGS_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
+        goto alert_reject;
+    }
+
+    iter = root;
+    while (iter) {
+        switch (iter->type) {
+        case SGSAP_IE_IMSI_TYPE:
+            nas_mobile_identity_imsi = iter->value;
+            nas_mobile_identity_imsi_len = iter->length;
+            break;
+        default:
+            ogs_warn("Invalid Type [%d]", iter->type);
+            break;
+        }
+        iter = iter->next;
+    }
+
+    ogs_tlv_free_all(root);
+
+    if (!nas_mobile_identity_imsi) {
+        ogs_error("No IMSI");
+        sgs_cause = SGSAP_SGS_CAUSE_MISSING_MANDATORY_IE;
+        goto alert_reject;
+    }
+    if (nas_mobile_identity_imsi_len != SGSAP_IE_IMSI_LEN) {
+        ogs_error("Invalid IMSI len [%d]", nas_mobile_identity_imsi_len);
+        sgs_cause = SGSAP_SGS_CAUSE_INVALID_MANDATORY_IE;
+        goto alert_reject;
+    }
+
+    if (nas_mobile_identity_imsi->type != OGS_NAS_MOBILE_IDENTITY_IMSI) {
+        ogs_error("nas_mobile_identity_imsi->type == "
+                    "OGS_NAS_MOBILE_IDENTITY_IMSI");
+        sgs_cause = SGSAP_SGS_CAUSE_INVALID_MANDATORY_IE;
+        goto alert_reject;
+    }
+
+    ogs_nas_eps_imsi_to_bcd(nas_mobile_identity_imsi,
+                            nas_mobile_identity_imsi_len, imsi_bcd);
+    mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
+
+    if (!mme_ue) {
+       ogs_error("No UE(mme-ue) context");
+       sgs_cause = SGSAP_SGS_CAUSE_IMSI_UNKNOWN;
+       goto alert_reject;
+    }
+
+    /* TODO: Set NEAF flag in UE */
+
+    ogs_warn("[SGSAP] Tx ALERT-ACK");
+
+    sgsap_send_to_vlr_with_sid(
+        vlr,
+        sgsap_build_alert_ack(mme_ue),
+        0);
+    return;
+
+alert_reject:
+    ogs_debug("[SGSAP] Tx ALERT-REJECT");
+    ogs_debug("    IMSI[%s]", imsi_bcd);
+
+    sgsap_send_to_vlr_with_sid(
+        vlr,
+        sgsap_build_alert_reject(
+            nas_mobile_identity_imsi, nas_mobile_identity_imsi_len,
+            sgs_cause),
+        0);
+    return;
+}
+
 void sgsap_handle_detach_ack(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 {
     ogs_tlv_t *root = NULL, *iter = NULL;
