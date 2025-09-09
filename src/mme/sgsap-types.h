@@ -33,6 +33,10 @@ extern "C" {
 #define SGSAP_LOCATION_UPDATE_ACCEPT            10
 #define SGSAP_LOCATION_UPDATE_REJECT            11
 #define SGSAP_TMSI_REALLOCATION_COMPLETE        12
+#define SGSAP_ALERT_REQUEST                     13
+#define SGSAP_ALERT_ACK                         14
+#define SGSAP_ALERT_REJECT                      15
+#define SGSAP_UE_ACTIVITY_INDICATION            16
 #define SGSAP_EPS_DETACH_INDICATION             17
 #define SGSAP_EPS_DETACH_ACK                    18
 #define SGSAP_IMSI_DETACH_INDICATION            19
