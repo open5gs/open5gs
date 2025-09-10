@@ -75,7 +75,7 @@ typedef struct ogs_gtp2_extension_header_s {
         };
 
 /* sizeof(extension_header.array[i]) */
-#define OGS_GTP2_MAX_EXTENSION_HEADER_LEN 4
+#define OGS_GTP2_MAX_EXTENSION_HEADER_LEN 8
 
 #define OGS_GTP2_NUM_OF_EXTENSION_HEADER 8
     } __attribute__ ((packed)) array[OGS_GTP2_NUM_OF_EXTENSION_HEADER];
