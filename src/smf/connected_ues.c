@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
  *
  * This file is part of Open5GS.
@@ -25,65 +24,109 @@
  * - UE-level: ue_activity ("active" if any PDU active; "unknown" if none active but any unknown; else "idle")
  */
 
-#include "ogs-core.h"          /* ogs_time_now, OGS_INET_NTOP, OGS_INET6_NTOP, OGS_ADDRSTRLEN, ogs_uint24_t */
-#include "context.h"           /* smf_self(), smf_ue_t, smf_sess_t, smf_bearer_t, ogs_s_nssai_t */
-#include "connected_ues.h"     /* size_t smf_dump_connected_ues(char *buf, size_t buflen) */
+/*
+ * JSON dumper for /connected-gnbs (AMF)
+ * Output (one item per connected gNB):
+ * [
+ *   {
+ *     "supi": "imsi-999700000083810",
+ *     "pdu": [
+ *       {
+ *         "psi": 1,
+ *         "dnn": "internet",
+ *         "ipv4": "10.45.0.2",
+ *         "snssai": {
+ *           "sst": 1,
+ *           "sd": "ffffff"
+ *         },
+ *         "qos_flows": [
+ *           {
+ *             "qfi": 1,
+ *             "5qi": 9
+ *           }
+ *         ],
+ *         "pdu_state": "inactive"
+ *       }
+ *     ],
+ *     "ue_activity": "idle"
+ *   },
+ * ]
+ */
+/*
+ * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
+ * This file is part of Open5GS (AGPLv3+)
+ *
+ * JSON dumper for /connected-ues (SMF)
+ * - 5G PDUs:  psi+dnn, snssai, qos_flows [{qfi,5qi}], pdu_state
+ * - LTE PDUs: ebi(+psi if non-zero)+apn, qos_flows [{ebi,qci}], pdu_state="unknown"
+ * - UE-level: ue_activity derived from PDU states
+ */
 
 #include <stdarg.h>
+#include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdint.h>
 
-#define JSON_NEAR_END_GUARD 256
+#include "ogs-core.h"      /* OGS_INET_NTOP, OGS_INET6_NTOP, OGS_ADDRSTRLEN, ogs_uint24_t */
+#include "context.h"       /* smf_self(), smf_ue_t, smf_sess_t, smf_bearer_t, ogs_s_nssai_t */
+#include "connected_ues.h" /* size_t smf_dump_connected_ues(char *buf, size_t buflen) */
 
-/* ---------- small safe helpers ---------- */
+/* ------------------------- small helpers ------------------------- */
 
-static inline size_t json_append(char *buf, size_t off, size_t buflen,
-                                 const char *fmt, ...)
+static inline size_t append_safe(char *buf, size_t off, size_t buflen, const char *fmt, ...)
 {
-    if (!buf || buflen == 0) return 0;
-    if (off >= buflen) return buflen - 1;
-
-    size_t rem = buflen - off;
+    if (!buf || off == (size_t)-1 || off >= buflen) return (size_t)-1;
     va_list ap;
     va_start(ap, fmt);
-    int n = vsnprintf(buf + off, rem, fmt, ap);
+    int n = vsnprintf(buf + off, buflen - off, fmt, ap);
     va_end(ap);
-
-    if (n < 0) return off;
-    if ((size_t)n >= rem) return buflen - 1;
+    if (n < 0 || (size_t)n >= buflen - off) return (size_t)-1;
     return off + (size_t)n;
 }
 
-static size_t json_append_escaped_string(char *buf, size_t off, size_t buflen,
-                                         const char *key, const char *val)
+/* Escapes \" \\ and control chars, emits: "key":"escaped" */
+static size_t append_json_kv_escaped(char *buf, size_t off, size_t buflen,
+                                     const char *key, const char *val)
 {
     if (!val) val = "";
-    off = json_append(buf, off, buflen, "\"%s\":\"", key);
+    off = append_safe(buf, off, buflen, "\"%s\":\"", key);
+    if (off == (size_t)-1) return off;
+
     for (const unsigned char *p = (const unsigned char *)val; *p; ++p) {
         unsigned char c = *p;
-        switch (c) {
-        case '\\': off = json_append(buf, off, buflen, "\\\\"); break;
-        case '\"': off = json_append(buf, off, buflen, "\\\""); break;
-        case '\b': off = json_append(buf, off, buflen, "\\b");  break;
-        case '\f': off = json_append(buf, off, buflen, "\\f");  break;
-        case '\n': off = json_append(buf, off, buflen, "\\n");  break;
-        case '\r': off = json_append(buf, off, buflen, "\\r");  break;
-        case '\t': off = json_append(buf, off, buflen, "\\t");  break;
-        default:
-            if (c < 0x20) off = json_append(buf, off, buflen, "\\u%04x", (unsigned)c);
-            else          off = json_append(buf, off, buflen, "%c", c);
+        if (c == '\\' || c == '\"') {
+            off = append_safe(buf, off, buflen, "\\%c", c);
+        } else if (c < 0x20) {
+            off = append_safe(buf, off, buflen, "\\u%04x", (unsigned)c);
+        } else {
+            off = append_safe(buf, off, buflen, "%c", c);
         }
+        if (off == (size_t)-1) return off;
     }
-    off = json_append(buf, off, buflen, "\"");
-    return off;
+    return append_safe(buf, off, buflen, "\"");
 }
 
+/* 24-bit helpers */
 static inline uint32_t u24_to_u32_portable(ogs_uint24_t v)
 {
     uint32_t x = 0;
     memcpy(&x, &v, sizeof(v) < sizeof(x) ? sizeof(v) : sizeof(x));
     return (x & 0xFFFFFFu);
 }
+
+/* Emit a S-NSSAI object */
+static size_t append_snssai_obj(char *buf, size_t off, size_t buflen, const ogs_s_nssai_t *sn)
+{
+    unsigned sst = (unsigned)sn->sst;
+    uint32_t sd_u32 = u24_to_u32_portable(sn->sd);
+    off = append_safe(buf, off, buflen, "{");
+    off = append_safe(buf, off, buflen, "\"sst\":%u", sst);
+    off = append_safe(buf, off, buflen, ",\"sd\":\"%06x\"}", (unsigned)(sd_u32 & 0xFFFFFFu));
+    return off;
+}
+
+/* ------------------------- state helpers ------------------------- */
 
 static inline int up_state_of(const smf_sess_t *s) {
     if (!s) return 0;
@@ -105,7 +148,7 @@ static inline bool bearer_list_has_qfi(const smf_sess_t *s) {
     return false;
 }
 
-/* Looks-5G heuristic: S-NSSAI present (sst != 0 or sd != 0) or any QFI bearer */
+/* Looks-5G heuristic: S-NSSAI present or any QFI bearer */
 static inline bool looks_5g_sess(const smf_sess_t *s) {
     if (!s) return false;
     if (s->s_nssai.sst != 0) return true;
@@ -114,176 +157,135 @@ static inline bool looks_5g_sess(const smf_sess_t *s) {
     return false;
 }
 
-/* ---------- PDU state calculators ---------- */
-
-/* 5G PDU state: conservative to avoid false 'active' during idle */
+/* 5G PDU state */
 static const char *pdu_state_from_5g(const smf_sess_t *sess)
 {
     if (!sess) return "unknown";
-
     if ((int)sess->resource_status == (int)OpenAPI_resource_status_RELEASED)
         return "inactive";
-
-    /* Explicit 'deactivated' => inactive */
     if (up_state_of(sess) == (int)OpenAPI_up_cnx_state_DEACTIVATED)
         return "inactive";
-
-    /* control plane down => inactive */
     if (sess->n1_released || sess->n2_released)
         return "inactive";
-
-    /* no N3 user-plane binding => inactive */
     if (!has_n3_teid(sess))
         return "inactive";
-
     return "active";
 }
 
-/*
- * LTE/EPC PDU state:
- * SMF does not own/track S1-U (eNB<->SGW-U) TEIDs
- * Therefore, at SMF scope the LTE PDU state is not reliably derivable.
- */
+/* LTE/EPC PDU state at SMF scope: unknown */
 static const char *pdu_state_from_4g(const smf_sess_t *sess)
 {
     (void)sess;
     return "unknown";
 }
 
-/* ---------- JSON field emitters ---------- */
-
-static size_t append_snssai(char *buf, size_t off, size_t buflen, const ogs_s_nssai_t *snssai)
-{
-    if (!snssai)
-        return json_append(buf, off, buflen, "\"snssai\":{}");
-
-    unsigned sst = (unsigned)snssai->sst;
-    uint32_t sd_u32 = u24_to_u32_portable(snssai->sd);
-
-    off = json_append(buf, off, buflen, "\"snssai\":{");
-    off = json_append(buf, off, buflen, "\"sst\":%u,", sst);
-    off = json_append(buf, off, buflen, "\"sd\":\"%06x\"}", (unsigned)(sd_u32 & 0xFFFFFFu));
-    return off;
-}
-
-/* QoS (5G -> {qfi,5qi}) */
+/* QoS emitters */
 static size_t append_qos_info_5g(char *buf, size_t off, size_t buflen, const smf_sess_t *sess)
 {
     smf_bearer_t *b = NULL;
-    int first = 1;
-
-    off = json_append(buf, off, buflen, ",\"qos_flows\":[");
+    bool first = true;
+    off = append_safe(buf, off, buflen, ",\"qos_flows\":[");
     ogs_list_for_each(&((smf_sess_t *)sess)->bearer_list, b) {
         if (!b || b->qfi == 0) continue;
-
-        if (!first) off = json_append(buf, off, buflen, ",");
-        first = 0;
-
-        off = json_append(buf, off, buflen, "{");
-        off = json_append(buf, off, buflen, "\"qfi\":%u", (unsigned)b->qfi);
+        if (!first) off = append_safe(buf, off, buflen, ",");
+        first = false;
+        off = append_safe(buf, off, buflen, "{");
+        off = append_safe(buf, off, buflen, "\"qfi\":%u", (unsigned)b->qfi);
         if (b->qos.index > 0)
-            off = json_append(buf, off, buflen, ",\"5qi\":%u", (unsigned)b->qos.index);
-        off = json_append(buf, off, buflen, "}");
-
-        if (off >= buflen - JSON_NEAR_END_GUARD) break;
+            off = append_safe(buf, off, buflen, ",\"5qi\":%u", (unsigned)b->qos.index);
+        off = append_safe(buf, off, buflen, "}");
+        if (off == (size_t)-1) break;
     }
-    off = json_append(buf, off, buflen, "]");
+    off = append_safe(buf, off, buflen, "]");
     return off;
 }
 
-/* QoS (LTE -> {ebi,qci}); includes fallback to session-level QCI if bearer-level is 0 */
 static size_t append_qos_info_4g(char *buf, size_t off, size_t buflen, const smf_sess_t *sess)
 {
     smf_bearer_t *b = NULL;
-    int first = 1;
-
-    off = json_append(buf, off, buflen, ",\"qos_flows\":[");
+    bool first = true;
+    off = append_safe(buf, off, buflen, ",\"qos_flows\":[");
     ogs_list_for_each(&((smf_sess_t *)sess)->bearer_list, b) {
         if (!b || b->ebi == 0) continue;
-
-        if (!first) off = json_append(buf, off, buflen, ",");
-        first = 0;
+        if (!first) off = append_safe(buf, off, buflen, ",");
+        first = false;
 
         unsigned qci_val = (unsigned)b->qos.index;
-        if (qci_val == 0 && sess)
-            qci_val = (unsigned)sess->session.qos.index; 
+        if (qci_val == 0 && sess) qci_val = (unsigned)sess->session.qos.index;
 
-        off = json_append(buf, off, buflen, "{");
-        off = json_append(buf, off, buflen, "\"ebi\":%u", (unsigned)b->ebi);
+        off = append_safe(buf, off, buflen, "{");
+        off = append_safe(buf, off, buflen, "\"ebi\":%u", (unsigned)b->ebi);
         if (qci_val > 0)
-            off = json_append(buf, off, buflen, ",\"qci\":%u", qci_val);
-        off = json_append(buf, off, buflen, "}");
-
-        if (off >= buflen - JSON_NEAR_END_GUARD) break;
+            off = append_safe(buf, off, buflen, ",\"qci\":%u", qci_val);
+        off = append_safe(buf, off, buflen, "}");
+        if (off == (size_t)-1) break;
     }
-    off = json_append(buf, off, buflen, "]");
+    off = append_safe(buf, off, buflen, "]");
     return off;
 }
 
-/* ---------- main dump ---------- */
+/* Macros for safe appends */
+#define APPF(...)  do { off = append_safe(buf, off, buflen, __VA_ARGS__); if (off==(size_t)-1) goto trunc; } while(0)
+#define APPX(expr) do { off = (expr); if (off==(size_t)-1) goto trunc; } while(0)
+
+/* ------------------------------- main ------------------------------- */
 
 size_t smf_dump_connected_ues(char *buf, size_t buflen)
 {
-    if (!buf || buflen < 3) return 0; /* need at least "[]" */
-    buf[0] = '\0';
-
     size_t off = 0;
-    off = json_append(buf, off, buflen, "[");
-    int first_ue = 1;
+    if (!buf || buflen == 0) return 0;
+
+    APPF("[");
+    bool first_ue = true;
 
     smf_ue_t *ue = NULL;
     ogs_list_for_each(&smf_self()->smf_ue_list, ue) {
         if (!ue) continue;
 
-        if (!first_ue) off = json_append(buf, off, buflen, ",");
-        first_ue = 0;
+        if (!first_ue) APPF(",");
+        first_ue = false;
 
-        off = json_append(buf, off, buflen, "{");
+        bool any_active = false, any_unknown = false;
 
-        /* UE identity (escaped) */
+        APPF("{");
+
+        /* UE identity */
         const char *id = (ue->supi && ue->supi[0]) ? ue->supi :
                          (ue->imsi_bcd[0] ? ue->imsi_bcd : "");
-        off = json_append_escaped_string(buf, off, buflen, "supi", id);
-        off = json_append(buf, off, buflen, ",");
+        APPX(append_json_kv_escaped(buf, off, buflen, "supi", id));
 
-        /* PDU sessions array */
-        off = json_append(buf, off, buflen, "\"pdu\":[");
-        int first_pdu = 1;
-
-        /* UE-level activity aggregation from PDU state */
-        bool any_active  = false;
-        bool any_unknown = false;
+        /* PDU array */
+        APPF(",\"pdu\":[");
+        bool first_pdu = true;
 
         smf_sess_t *sess = NULL;
         ogs_list_for_each(&ue->sess_list, sess) {
             if (!sess) continue;
-
             const bool is_5g = looks_5g_sess(sess);
             const char *pstate = is_5g ? pdu_state_from_5g(sess)
                                        : pdu_state_from_4g(sess);
 
-            if (!first_pdu) off = json_append(buf, off, buflen, ",");
-            first_pdu = 0;
+            if (!first_pdu) APPF(",");
+            first_pdu = false;
 
-            off = json_append(buf, off, buflen, "{");
+            APPF("{");
 
             if (is_5g) {
                 /* 5G: PSI + DNN */
-                off = json_append(buf, off, buflen, "\"psi\":%u,", (unsigned)sess->psi);
-                off = json_append_escaped_string(buf, off, buflen, "dnn",
-                            (sess->session.name ? sess->session.name : ""));
+                APPF("\"psi\":%u,", (unsigned)sess->psi);
+                APPX(append_json_kv_escaped(buf, off, buflen, "dnn",
+                    (sess->session.name ? sess->session.name : "")));
             } else {
-                /* LTE: include PSI if non-zero, EBI + APN */
+                /* LTE: PSI if non-zero, EBI root + APN */
                 unsigned ebi_root = 0;
                 smf_bearer_t *b0 = NULL;
                 ogs_list_for_each(&((smf_sess_t *)sess)->bearer_list, b0) {
                     if (b0 && b0->ebi > 0) { ebi_root = (unsigned)b0->ebi; break; }
                 }
-                if (sess->psi > 0)
-                    off = json_append(buf, off, buflen, "\"psi\":%u,", (unsigned)sess->psi);
-                off = json_append(buf, off, buflen, "\"ebi\":%u,", ebi_root);
-                off = json_append_escaped_string(buf, off, buflen, "apn",
-                            (sess->session.name ? sess->session.name : ""));
+                if (sess->psi > 0) APPF("\"psi\":%u,", (unsigned)sess->psi);
+                APPF("\"ebi\":%u,", ebi_root);
+                APPX(append_json_kv_escaped(buf, off, buflen, "apn",
+                    (sess->session.name ? sess->session.name : "")));
             }
 
             /* IPs if present */
@@ -291,49 +293,41 @@ size_t smf_dump_connected_ues(char *buf, size_t buflen)
             char ip6[OGS_ADDRSTRLEN] = "";
             if (sess->ipv4) OGS_INET_NTOP(&sess->ipv4->addr, ip4);
             if (sess->ipv6) OGS_INET6_NTOP(&sess->ipv6->addr, ip6);
-            if (ip4[0]) { off = json_append(buf, off, buflen, ","); off = json_append_escaped_string(buf, off, buflen, "ipv4", ip4); }
-            if (ip6[0]) { off = json_append(buf, off, buflen, ","); off = json_append_escaped_string(buf, off, buflen, "ipv6", ip6); }
+            if (ip4[0]) { APPF(","); APPX(append_json_kv_escaped(buf, off, buflen, "ipv4", ip4)); }
+            if (ip6[0]) { APPF(","); APPX(append_json_kv_escaped(buf, off, buflen, "ipv6", ip6)); }
 
             if (is_5g) {
-                /* S-NSSAI (5G only) */
-                off = json_append(buf, off, buflen, ",");
-                off = append_snssai(buf, off, buflen, &sess->s_nssai);
-
-                /* QoS flows (5G) */
-                off = append_qos_info_5g(buf, off, buflen, sess);
+                /* S-NSSAI */
+                APPF(",\"snssai\":");
+                APPX(append_snssai_obj(buf, off, buflen, &sess->s_nssai));
+                /* QoS flows */
+                APPX(append_qos_info_5g(buf, off, buflen, sess));
             } else {
-                /* QoS flows (LTE, with QCI restored + fallback) */
-                off = append_qos_info_4g(buf, off, buflen, sess);
+                /* LTE QoS */
+                APPX(append_qos_info_4g(buf, off, buflen, sess));
             }
 
-            /* Single string pdu_state */
-            off = json_append(buf, off, buflen, ",\"pdu_state\":\"%s\"", pstate);
+            APPF(",\"pdu_state\":\"%s\"", pstate);
+            APPF("}");
 
-            /* end PDU object */
-            off = json_append(buf, off, buflen, "}");
-
-            if (strcmp(pstate, "active") == 0)
-                any_active = true;
-            else if (strcmp(pstate, "unknown") == 0)
-                any_unknown = true;
-
-            if (off >= buflen - JSON_NEAR_END_GUARD) break;
+            if (strcmp(pstate, "active") == 0) any_active = true;
+            else if (strcmp(pstate, "unknown") == 0) any_unknown = true;
         }
-        off = json_append(buf, off, buflen, "]");
+        APPF("]");
 
-        /* UE activity from PDUs:
-           - "active" if any active
-           - else "unknown" if none active but some unknown
-           - else "idle" */
         const char *ue_act = any_active ? "active" : (any_unknown ? "unknown" : "idle");
-        off = json_append(buf, off, buflen, ",\"ue_activity\":\"%s\"", ue_act);
+        APPF(",\"ue_activity\":\"%s\"", ue_act);
 
-        off = json_append(buf, off, buflen, "}");
-
-        if (off >= buflen - JSON_NEAR_END_GUARD) break;
+        APPF("}");
     }
 
-    off = json_append(buf, off, buflen, "]");
+    APPF("]");
     return off;
+
+trunc:
+    /* Minimal valid JSON on overflow */
+    if (buf && buflen >= 3) { buf[0]='['; buf[1]=']'; buf[2]='\0'; return 2; }
+    if (buf && buflen) buf[0]='\0';
+    return 0;
 }
 

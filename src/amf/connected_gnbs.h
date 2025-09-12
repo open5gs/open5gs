@@ -18,10 +18,10 @@
  */
 
 /*
- * Minimal public API for connected_ues
+ * /connected-gnbs — AMF-side JSON exporter (Prometheus HTTP endpoint)
+ *
  */
-#ifndef SMF_CONNECTED_UES_H
-#define SMF_CONNECTED_UES_H
+#pragma once
 
 #include <stddef.h>
 
@@ -29,14 +29,12 @@
 extern "C" {
 #endif
 
-/* Fills buf with a compact JSON array.
- * Returns the number of bytes written (excluding the terminating NUL). */
-size_t smf_dump_connected_ues(char *buf, size_t buflen);
+/* JSON dumper for /connected-gnbs.
+ * Returns number of bytes written (<= buflen-1), buffer is always NUL-terminated.
+ */
+size_t amf_dump_connected_gnbs(char *buf, size_t buflen);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* SMF_CONNECTED_UES_H */
-
 

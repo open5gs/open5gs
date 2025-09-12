@@ -21,6 +21,9 @@
 #include "ngap-path.h"
 #include "metrics.h"
 
+#include "ogs-metrics.h"
+#include "connected_gnbs.h" 
+
 static ogs_thread_t *thread;
 static void amf_main(void *data);
 static int initialized = 0;
@@ -55,6 +58,7 @@ int amf_initialize(void)
     if (rv != OGS_OK) return rv;
 
     ogs_metrics_context_open(ogs_metrics_self());
+    ogs_metrics_register_connected_gnbs(amf_dump_connected_gnbs);
 
     rv = amf_sbi_open();
     if (rv != OGS_OK) return rv;

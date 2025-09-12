@@ -79,6 +79,7 @@ libmme_sources = files('''
     mme-path.c
     sbc-handler.c
     metrics.c
+    connected_enbs.c
 '''.split())
 
 libmme = static_library('mme',

@@ -31,17 +31,26 @@
 #include "metrics/context.h"
 #undef OGS_METRICS_INSIDE
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Connected UEs JSON dumper registration (optional). If not registered,
- * /connected-ues will return 404.
- */
+/* Already present for UEs */
 extern size_t (*ogs_metrics_connected_ues_dumper)(char *buf, size_t buflen);
 void ogs_metrics_register_connected_ues(size_t (*fn)(char *buf, size_t buflen));
 
-extern int __ogs_metrics_domain;
+/* New: gNBs dumper hook (AMF) */
+extern size_t (*ogs_metrics_connected_gnbs_dumper)(char *buf, size_t buflen);
+void ogs_metrics_register_connected_gnbs(size_t (*fn)(char *buf, size_t buflen));
+
+/* New: eNBs dumper hook (AMF) */
+extern size_t (*ogs_metrics_connected_enbs_dumper)(char *buf, size_t buflen);
+void ogs_metrics_register_connected_enbs(size_t (*fn)(char *buf, size_t buflen));
+
+#ifdef __cplusplus
+}
+#endif
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __ogs_metrics_domain

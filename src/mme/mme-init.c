@@ -30,6 +30,7 @@
 #include "sgsap-path.h"
 #include "mme-gtp-path.h"
 #include "metrics.h"
+#include "connected_enbs.h"
 
 static ogs_thread_t *thread;
 static void mme_main(void *data);
@@ -66,6 +67,7 @@ int mme_initialize(void)
     if (rv != OGS_OK) return rv;
 
     ogs_metrics_context_open(ogs_metrics_self());
+    ogs_metrics_register_connected_enbs(mme_dump_connected_enbs);
 
     rv = mme_fd_init();
     if (rv != OGS_OK) return OGS_ERROR;

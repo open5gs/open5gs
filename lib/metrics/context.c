@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  * Copyright (C) 2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -26,12 +27,23 @@
 
 /* Global (optional) dumper. NULL when no NF registered. */
 size_t (*ogs_metrics_connected_ues_dumper)(char *buf, size_t buflen) = NULL;
+size_t (*ogs_metrics_connected_gnbs_dumper)(char *buf, size_t buflen) = NULL;
+size_t (*ogs_metrics_connected_enbs_dumper)(char *buf, size_t buflen) = NULL;
 
 void ogs_metrics_register_connected_ues(size_t (*fn)(char *buf, size_t buflen))
 {
     ogs_metrics_connected_ues_dumper = fn;
 }
 
+void ogs_metrics_register_connected_gnbs(size_t (*fn)(char *buf, size_t buflen))
+{
+    ogs_metrics_connected_gnbs_dumper = fn;
+}
+
+void ogs_metrics_register_connected_enbs(size_t (*fn)(char *buf, size_t buflen))
+{
+    ogs_metrics_connected_enbs_dumper = fn;
+}
 
 int __ogs_metrics_domain;
 static ogs_metrics_context_t self;
