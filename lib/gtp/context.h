@@ -50,6 +50,14 @@ typedef struct ogs_gtp_context_s {
     ogs_list_t      gtpu_peer_list; /* GTPU Node List */
     ogs_list_t      gtpu_resource_list; /* UP IP Resource List */
 
+    /*
+     * Note:
+     *  We do not introduce new global sockets for N9 because each GTP-U
+     *  server entry may optionally carry a distinct n9 binding. We keep
+     *  using per-entry allocation paths already used for N3. This keeps
+     *  backward compatibility and limits scope of changes.
+     */
+
     ogs_sockaddr_t *link_local_addr;
 } ogs_gtp_context_t;
 
