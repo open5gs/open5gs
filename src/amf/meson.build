@@ -61,6 +61,7 @@ libamf_sources = files('''
 
     init.c
     metrics.c
+    connected_gnbs.c
 '''.split())
 
 libamf = static_library('amf',

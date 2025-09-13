@@ -19,13 +19,15 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * CableFree Small Cell Indoor radios (5G n77, n78 and other bands)
  * CableFree Macro (BBU+RRH) radios (4G and 5G, various bands)
  * Ericsson Baseband 6630 (21.Q3 Software) + Radio 2217, Radio 2219 (4G and 5G, various bands)
+ * Ericsson Baseband 6648/6651 IRU 8848 Dots 4475 (N78, N1,N3) 
  * Ericsson StreetMacro 6701 (21.Q3 Software) (5G mmWave, n261) (Baseband 6318 and AIR 1281 packaged together)
- * Huawei BTS5900
+ * Huawei BTS5900 V100R019C10SPC220 (N78, N28)
  * LIONS RANathon O-CU and O-DU + RANathon RS8601 Indoor O-RU + RANathon XG8600 Fronthaul Gateway
  * NOKIA AEQE (SW: 5G20A)
  * NOKIA AEQD (SW: 5G20A)
  * NOKIA AEQP (SW: 5G21A)
- * MOSO Networks Canopy 5GID1 Indoor 2T2R (5G n48 n78) 
+ * MOSO Networks Canopy 5GID1 Indoor 2T2R (5G n48 n78)
+ * ZTE ITBBU ITRAN-PNF V5.65.20.20F10 (n78, n1, n3) 
 
 ### Commercial 4G
 ---
@@ -44,7 +46,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Baicells Nova 227 (EBS & CBRS)
  * Baicells Nova 233
  * Baicells Nova 430i (band 48/CBRS, SW version BaiBLQ_3.0.12)
- * Ericsson Baseband 6630 (21Q1 Software)
+ * Ericsson Baseband 6630/6648/6651 (21Q1 Software)
  * Ericsson RBS 6402 (18.Q1 software, B2 B25 B4 B7 B252 B255)
  * Ericsson RBS 6601 + DUL 20 01 + RUS 01 B8 
  * Gemtek WLTGFC-101 (S/W version 2.1.1746.1116)
@@ -62,6 +64,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Mikrotik Intercell B1+B3 IC322GC-b1D+b3D
  * Ruckus Q710 and Q910
  * Sercomm SCE4255W "Englewood" (band 48/CBRS, SW version DG3934v3@2308041842)
+ * ZTE ITBBU ITRAN-PNF V5.65.20.20F10
 
 ### 4G/5G Software Stacks + SDRs
 ---
@@ -69,9 +72,11 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * [Amarisoft](https://www.amarisoft.com/) + LimeSDR, USRP, Amarisoft PCI Express Card
  * Open Air Interface 5G ([NR_SA_F1AP_5GRECORDS branch](https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/NR_SA_F1AP_5GRECORDS)) + USRP B210
  * [srsLTE / srsENB](https://github.com/srsLTE/srsLTE) + LimeSDR, USRP, BladeRF x40 (BladeRF Not stable)
+ * [srsRAN_Project](https://github.com/srsran/srsRAN_Project) 5G O-RAN CU/DU based on USRP SDR.
 
 ### Misc Radio Hardware
 ---
  * [OpenAirInterface v1.0.3](https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/v1.0.3) 4G RAN Simulator
  * [OsmoBTS](https://osmocom.org/projects/osmobts/wiki) controlled ip.access NanoBTS (Used for CSFB with Osmocom)
  * [UERANSIM](https://github.com/aligungr/UERANSIM) 5G RAN Simulator
+ * [PacketRusher](https://github.com/HewlettPackard/PacketRusher) 5G performance testing and validation tool

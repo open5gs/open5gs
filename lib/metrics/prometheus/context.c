@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  * Copyright (C) 2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -18,13 +19,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-metrics.h"
+ /*
+ * Prometheus HTTP server (MicroHTTPD) with optional JSON endpoints:
+ *   - /                (provide health check)
+ *   - /metrics         (provide prometheus metrics metrics according to the relevant NF)
+ *   - /connected-ues   (provided by NF registering ogs_metrics_connected_ues_dumper)
+ *   - /connected-gnbs  (provided by NF registering ogs_metrics_connected_gnbs_dumper)
+ *   - /connected-enbs  (provided by NF registering ogs_metrics_connected_enbs_dumper)
+ */
+
+#include "ogs-core.h"
+#include "metrics/ogs-metrics.h"
 
 #include <netdb.h> /* AI_PASSIVE */
 #include "prom.h"
 #include "microhttpd.h"
+#include <string.h>
 
+extern int __ogs_metrics_domain;
 #define MAX_LABELS 8
+
+#if MHD_VERSION >= 0x00096100
+static void free_callback(void *cls) { ogs_free(cls); }
+#endif
 
 typedef struct ogs_metrics_server_s {
     ogs_socknode_t node;
@@ -32,7 +49,7 @@ typedef struct ogs_metrics_server_s {
 } ogs_metrics_server_t;
 
 typedef struct ogs_metrics_spec_s {
-    ogs_metrics_context_t       *ctx; /* backpointer */
+    ogs_metrics_context_t       *ctx;  /* backpointer */ 
     ogs_list_t                  entry; /* included in ogs_metrics_context_t */
     ogs_metrics_metric_type_t   type;
     char                        *name;
@@ -54,6 +71,7 @@ typedef struct ogs_metrics_inst_s {
 static OGS_POOL(metrics_spec_pool, ogs_metrics_spec_t);
 static OGS_POOL(metrics_server_pool, ogs_metrics_server_t);
 
+/* Forward decls */
 static int ogs_metrics_context_server_start(ogs_metrics_server_t *server);
 static int ogs_metrics_context_server_stop(ogs_metrics_server_t *server);
 
@@ -66,7 +84,6 @@ void ogs_metrics_server_init(ogs_metrics_context_t *ctx)
 void ogs_metrics_server_open(ogs_metrics_context_t *ctx)
 {
     ogs_metrics_server_t *server = NULL;
-
     ogs_list_for_each(&ctx->server_list, server)
         ogs_metrics_context_server_start(server);
 }
@@ -74,35 +91,33 @@ void ogs_metrics_server_open(ogs_metrics_context_t *ctx)
 void ogs_metrics_server_close(ogs_metrics_context_t *ctx)
 {
     ogs_metrics_server_t *server = NULL, *next = NULL;
-
     ogs_list_for_each_safe(&ctx->server_list, next, server)
         ogs_metrics_context_server_stop(server);
 }
 
 void ogs_metrics_server_final(ogs_metrics_context_t *ctx)
 {
-    ogs_metrics_server_remove_all();
+    ogs_metrics_server_t *server = NULL, *next = NULL;
+
+    ogs_list_for_each_safe(&ctx->server_list, next, server)
+        ogs_metrics_server_remove(server);
 
     ogs_pool_final(&metrics_server_pool);
 }
 
-ogs_metrics_server_t *ogs_metrics_server_add(
-        ogs_sockaddr_t *addr, ogs_sockopt_t *option)
+ogs_metrics_server_t *ogs_metrics_server_add(ogs_sockaddr_t *addr, ogs_sockopt_t *option)
 {
     ogs_metrics_server_t *server = NULL;
 
     ogs_assert(addr);
-
     ogs_pool_alloc(&metrics_server_pool, &server);
     ogs_assert(server);
-    memset(server, 0, sizeof(ogs_metrics_server_t));
+    memset(server, 0, sizeof *server);
 
     ogs_assert(OGS_OK == ogs_copyaddrinfo(&server->node.addr, addr));
-    if (option)
-        server->node.option = ogs_memdup(option, sizeof *option);
+    if (option) server->node.option = ogs_memdup(option, sizeof *option);
 
     ogs_list_add(&ogs_metrics_self()->server_list, server);
-
     return server;
 }
 
@@ -114,67 +129,47 @@ void ogs_metrics_server_remove(ogs_metrics_server_t *server)
 
     ogs_assert(server->node.addr);
     ogs_freeaddrinfo(server->node.addr);
-    if (server->node.option)
-        ogs_free(server->node.option);
+    if (server->node.option) ogs_free(server->node.option);
 
     ogs_pool_free(&metrics_server_pool, server);
 }
 
-void ogs_metrics_server_remove_all(void)
-{
-    ogs_metrics_server_t *server = NULL, *next_server = NULL;
-
-    ogs_list_for_each_safe(
-            &ogs_metrics_self()->server_list, next_server, server) {
-        ogs_metrics_server_remove(server);
-    }
-}
-
 static void mhd_server_run(short when, ogs_socket_t fd, void *data)
 {
+    (void)when; (void)fd;
     struct MHD_Daemon *mhd_daemon = data;
-
     ogs_assert(mhd_daemon);
     MHD_run(mhd_daemon);
 }
 
 static void mhd_server_notify_connection(void *cls,
-        struct MHD_Connection *connection,
-        void **socket_context,
+        struct MHD_Connection *connection, void **socket_context,
         enum MHD_ConnectionNotificationCode toe)
 {
+    (void)cls;
     struct MHD_Daemon *mhd_daemon = NULL;
     MHD_socket mhd_socket = INVALID_SOCKET;
 
     const union MHD_ConnectionInfo *mhd_info = NULL;
-    struct {
-        ogs_poll_t *read;
-    } poll;
+    struct { ogs_poll_t *read; } poll = {0};
 
     switch (toe) {
-        case MHD_CONNECTION_NOTIFY_STARTED:
-            mhd_info = MHD_get_connection_info(
-                    connection, MHD_CONNECTION_INFO_DAEMON);
-            ogs_assert(mhd_info);
-            mhd_daemon = mhd_info->daemon;
-            ogs_assert(mhd_daemon);
+    case MHD_CONNECTION_NOTIFY_STARTED:
+        mhd_info = MHD_get_connection_info(connection, MHD_CONNECTION_INFO_DAEMON);
+        ogs_assert(mhd_info); mhd_daemon = mhd_info->daemon; ogs_assert(mhd_daemon);
 
-            mhd_info = MHD_get_connection_info(
-                    connection, MHD_CONNECTION_INFO_CONNECTION_FD);
-            ogs_assert(mhd_info);
-            mhd_socket = mhd_info->connect_fd;
-            ogs_assert(mhd_socket != INVALID_SOCKET);
+        mhd_info = MHD_get_connection_info(connection, MHD_CONNECTION_INFO_CONNECTION_FD);
+        ogs_assert(mhd_info); mhd_socket = mhd_info->connect_fd; ogs_assert(mhd_socket != INVALID_SOCKET);
 
-            poll.read = ogs_pollset_add(ogs_app()->pollset,
-                    OGS_POLLIN, mhd_socket, mhd_server_run, mhd_daemon);
-            ogs_assert(poll.read);
-            *socket_context = poll.read;
-            break;
-        case MHD_CONNECTION_NOTIFY_CLOSED:
-            poll.read = *socket_context;
-            if (poll.read)
-                ogs_pollset_remove(poll.read);
-            break;
+        poll.read = ogs_pollset_add(ogs_app()->pollset, OGS_POLLIN, mhd_socket, mhd_server_run, mhd_daemon);
+        ogs_assert(poll.read);
+        *socket_context = poll.read;
+        break;
+
+    case MHD_CONNECTION_NOTIFY_CLOSED:
+        poll.read = *socket_context;
+        if (poll.read) ogs_pollset_remove(poll.read);
+        break;
     }
 }
 
@@ -184,41 +179,142 @@ typedef enum MHD_Result _MHD_Result;
 typedef int _MHD_Result;
 #endif
 
-static _MHD_Result mhd_server_access_handler(void *cls, struct MHD_Connection *connection,
-        const char *url, const char *method, const char *version,
-        const char *upload_data, size_t *upload_data_size, void **con_cls) {
+/* Small helper to serve JSON from a registered dumper */
+static _MHD_Result serve_json_from_dumper(struct MHD_Connection *connection,
+                                          size_t (*dumper)(char*, size_t),
+                                          const char *missing_msg)
+{
+    if (!dumper) {
+        struct MHD_Response *rsp = MHD_create_response_from_buffer(strlen(missing_msg),
+                                (void*)missing_msg, MHD_RESPMEM_PERSISTENT);
+        if (!rsp) return (_MHD_Result)MHD_NO;
+        int ret = MHD_queue_response(connection, MHD_HTTP_NOT_FOUND, rsp);
+        MHD_destroy_response(rsp);
+        return (_MHD_Result)ret;
+    }
 
-    const char *buf;
+    size_t cap = 512 * 1024;
+    char *bufjson = (char *)ogs_malloc(cap);
+    if (!bufjson) {
+        const char *msg = "Out of memory\n";
+        struct MHD_Response *rsp = MHD_create_response_from_buffer(strlen(msg),
+                                (void*)msg, MHD_RESPMEM_PERSISTENT);
+        if (!rsp) return (_MHD_Result)MHD_NO;
+        int ret = MHD_queue_response(connection, MHD_HTTP_INTERNAL_SERVER_ERROR, rsp);
+        MHD_destroy_response(rsp);
+        return (_MHD_Result)ret;
+    }
+
+    size_t n = dumper(bufjson, cap);
+    if (n >= cap - 1) {
+        /* grow once */
+        size_t newcap = cap * 2;
+        char *tmp = (char *)ogs_realloc(bufjson, newcap);
+        if (!tmp) {
+            ogs_free(bufjson);
+            const char *msg = "Out of memory\n";
+            struct MHD_Response *rsp = MHD_create_response_from_buffer(strlen(msg),
+                                    (void*)msg, MHD_RESPMEM_PERSISTENT);
+            if (!rsp) return (_MHD_Result)MHD_NO;
+            int ret = MHD_queue_response(connection, MHD_HTTP_INTERNAL_SERVER_ERROR, rsp);
+            MHD_destroy_response(rsp);
+            return (_MHD_Result)ret;
+        }
+        bufjson = tmp; cap = newcap;
+        n = dumper(bufjson, cap);
+        if (n >= cap - 1) {
+            /* graceful fallback */
+            n = ogs_snprintf(bufjson, cap, "[]");
+        }
+    }
+
     struct MHD_Response *rsp;
-    int ret;
+#if MHD_VERSION >= 0x00096100
+    rsp = MHD_create_response_from_buffer_with_free_callback(n, (void*)bufjson, free_callback);
+    bufjson = NULL; /* ownership moved to MHD */
+#else
+    rsp = MHD_create_response_from_buffer(n, (void*)bufjson, MHD_RESPMEM_MUST_COPY);
+#endif
+    if (!rsp) {
+#if MHD_VERSION < 0x00096100
+        ogs_free(bufjson);
+#endif
+        return (_MHD_Result)MHD_NO;
+    }
 
+    MHD_add_response_header(rsp, "Content-Type", "application/json");
+    MHD_add_response_header(rsp, "Access-Control-Allow-Origin", "*");
+    int ret = MHD_queue_response(connection, MHD_HTTP_OK, rsp);
+    MHD_destroy_response(rsp);
+#if MHD_VERSION < 0x00096100
+    ogs_free(bufjson);
+#endif
+    return (_MHD_Result)ret;
+}
+
+static _MHD_Result
+mhd_server_access_handler(void *cls, struct MHD_Connection *connection,
+        const char *url, const char *method, const char *version,
+        const char *upload_data, size_t *upload_data_size, void **con_cls)
+{
+    (void)cls; (void)version; (void)upload_data; (void)upload_data_size; (void)con_cls;
+
+    const char *buf = NULL;
+    struct MHD_Response *rsp = NULL;
+    int ret = MHD_NO;
+
+    /* Only GET is supported */
     if (strcmp(method, "GET") != 0) {
         buf = "Invalid HTTP Method\n";
         rsp = MHD_create_response_from_buffer(strlen(buf), (void *)buf, MHD_RESPMEM_PERSISTENT);
         ret = MHD_queue_response(connection, MHD_HTTP_BAD_REQUEST, rsp);
         MHD_destroy_response(rsp);
-        return ret;
+        return (_MHD_Result)ret;
     }
+
+    /* Health */
     if (strcmp(url, "/") == 0) {
         buf = "OK\n";
         rsp = MHD_create_response_from_buffer(strlen(buf), (void *)buf, MHD_RESPMEM_PERSISTENT);
         ret = MHD_queue_response(connection, MHD_HTTP_OK, rsp);
         MHD_destroy_response(rsp);
-        return ret;
+        return (_MHD_Result)ret;
     }
+
+    /* Prometheus metrics plain-text */
     if (strcmp(url, "/metrics") == 0) {
         buf = prom_collector_registry_bridge(PROM_COLLECTOR_REGISTRY_DEFAULT);
-        rsp = MHD_create_response_from_buffer(strlen(buf), (void *)buf, MHD_RESPMEM_MUST_FREE);
+        rsp = MHD_create_response_from_buffer(strlen(buf), (void *)buf, MHD_RESPMEM_MUST_COPY);
         MHD_add_response_header(rsp, "Content-Type", "text/plain; version=0.0.4; charset=utf-8");
         ret = MHD_queue_response(connection, MHD_HTTP_OK, rsp);
         MHD_destroy_response(rsp);
-        return ret;
+        return (_MHD_Result)ret;
     }
+
+    /* JSON: connected UEs (SMF/MME/etc.) */
+    if (strcmp(url, "/connected-ues") == 0) {
+        return serve_json_from_dumper(connection, ogs_metrics_connected_ues_dumper,
+                                      "connected-ues endpoint not available on this NF\n");
+    }
+
+    /* JSON: connected gNBs (AMF) */
+    if (strcmp(url, "/connected-gnbs") == 0) {
+        return serve_json_from_dumper(connection, ogs_metrics_connected_gnbs_dumper,
+                                      "connected-gnbs endpoint not available on this NF\n");
+    }
+
+    /* JSON: connected eNBs (MME) */
+    if (strcmp(url, "/connected-enbs") == 0) {
+        return serve_json_from_dumper(connection, ogs_metrics_connected_enbs_dumper,
+                                      "connected-enbs endpoint not available on this NF\n");
+    }
+
+    /* No matching route */
     buf = "Bad Request\n";
     rsp = MHD_create_response_from_buffer(strlen(buf), (void *)buf, MHD_RESPMEM_PERSISTENT);
     ret = MHD_queue_response(connection, MHD_HTTP_BAD_REQUEST, rsp);
     MHD_destroy_response(rsp);
-    return ret;
+    return (_MHD_Result)ret;
 }
 
 static int ogs_metrics_context_server_start(ogs_metrics_server_t *server)
@@ -254,31 +350,26 @@ static int ogs_metrics_context_server_start(ogs_metrics_server_t *server)
 
     mhd_ops[index].option = MHD_OPTION_NOTIFY_CONNECTION;
     mhd_ops[index].value = (intptr_t)&mhd_server_notify_connection;
-    mhd_ops[index].ptr_value = NULL;
-    index++;
+    mhd_ops[index].ptr_value = NULL; index++;
 
     mhd_ops[index].option = MHD_OPTION_SOCK_ADDR;
     mhd_ops[index].value = 0;
-    mhd_ops[index].ptr_value = (void *)&addr->sa;
-    index++;
+    mhd_ops[index].ptr_value = (void *)&addr->sa; index++;
 
     mhd_ops[index].option = MHD_OPTION_END;
     mhd_ops[index].value = 0;
-    mhd_ops[index].ptr_value = NULL;
-    index++;
+    mhd_ops[index].ptr_value = NULL; index++;
 
     if (server->mhd) {
         ogs_error("Prometheus HTTP server is already opened!");
         return OGS_ERROR;
     }
 
-    server->mhd = MHD_start_daemon(
-                mhd_flags,
-                0,
-                NULL, NULL,
-                mhd_server_access_handler, server,
-                MHD_OPTION_ARRAY, mhd_ops,
-                MHD_OPTION_END);
+    server->mhd = MHD_start_daemon(mhd_flags, 0,
+                                   NULL, NULL,
+                                   mhd_server_access_handler, server,
+                                   MHD_OPTION_ARRAY, mhd_ops,
+                                   MHD_OPTION_END);
     if (!server->mhd) {
         ogs_error("Cannot start Prometheus HTTP server");
         return OGS_ERROR;
@@ -288,17 +379,15 @@ static int ogs_metrics_context_server_start(ogs_metrics_server_t *server)
     mhd_info = MHD_get_daemon_info(server->mhd, MHD_DAEMON_INFO_LISTEN_FD);
     ogs_assert(mhd_info);
 
-    server->node.poll = ogs_pollset_add(ogs_app()->pollset,
-            OGS_POLLIN, mhd_info->listen_fd, mhd_server_run, server->mhd);
+    server->node.poll = ogs_pollset_add(ogs_app()->pollset, OGS_POLLIN,
+                                        mhd_info->listen_fd, mhd_server_run, server->mhd);
     ogs_assert(server->node.poll);
 
     hostname = ogs_gethostname(addr);
     if (hostname)
-        ogs_info("metrics_server() [http://%s]:%d",
-                hostname, OGS_PORT(addr));
+        ogs_info("metrics_server() [http://%s]:%d", hostname, OGS_PORT(addr));
     else
-        ogs_info("metrics_server() [http://%s]:%d",
-                OGS_ADDR(addr, buf), OGS_PORT(addr));
+        ogs_info("metrics_server() [http://%s]:%d", OGS_ADDR(addr, buf), OGS_PORT(addr));
 
     return OGS_OK;
 }
@@ -317,11 +406,12 @@ static int ogs_metrics_context_server_stop(ogs_metrics_server_t *server)
     return OGS_OK;
 }
 
+/* ---- Metric spec/inst API (unchanged) ---------------------------------- */
+
 void ogs_metrics_spec_init(ogs_metrics_context_t *ctx)
 {
     ogs_list_init(&ctx->spec_list);
     ogs_pool_init(&metrics_spec_pool, ogs_app()->metrics.max_specs);
-
     prom_collector_registry_default_init();
 }
 
@@ -329,11 +419,10 @@ void ogs_metrics_spec_final(ogs_metrics_context_t *ctx)
 {
     ogs_metrics_spec_t *spec = NULL, *next = NULL;
 
-    ogs_list_for_each_entry_safe(&ctx->spec_list, next, spec, entry) {
+    ogs_list_for_each_entry_safe(&ctx->spec_list, next, spec, entry)
         ogs_metrics_spec_free(spec);
-    }
-    prom_collector_registry_destroy(PROM_COLLECTOR_REGISTRY_DEFAULT);
 
+    prom_collector_registry_destroy(PROM_COLLECTOR_REGISTRY_DEFAULT);
     ogs_pool_final(&metrics_spec_pool);
 }
 
@@ -345,8 +434,7 @@ ogs_metrics_spec_t *ogs_metrics_spec_new(
 {
     ogs_metrics_spec_t *spec;
     unsigned int i;
-
-    prom_histogram_buckets_t *buckets;
+    prom_histogram_buckets_t *buckets = NULL;
     double *upper_bounds;
 
     ogs_assert(name);
@@ -393,17 +481,14 @@ ogs_metrics_spec_t *ogs_metrics_spec_new(
         case OGS_METRICS_HISTOGRAM_BUCKET_TYPE_VARIABLE:
             buckets = (prom_histogram_buckets_t *)prom_malloc(sizeof(prom_histogram_buckets_t));
             ogs_assert(buckets);
-
             ogs_assert(histogram_params->count <= OGS_METRICS_HIST_VAR_BUCKETS_MAX);
             buckets->count = histogram_params->count;
 
-            upper_bounds = (double *)prom_malloc(
-                    sizeof(double) * histogram_params->count);
+            upper_bounds = (double *)prom_malloc(sizeof(double) * histogram_params->count);
             ogs_assert(upper_bounds);
             for (i = 0; i < histogram_params->count; i++) {
                 upper_bounds[i] = histogram_params->var.buckets[i];
-                if (i > 0)
-                    ogs_assert(upper_bounds[i] > upper_bounds[i - 1]);
+                if (i > 0) ogs_assert(upper_bounds[i] > upper_bounds[i - 1]);
             }
             buckets->upper_bounds = upper_bounds;
             break;
@@ -432,9 +517,8 @@ void ogs_metrics_spec_free(ogs_metrics_spec_t *spec)
 
     ogs_list_remove(&spec->ctx->spec_list, &spec->entry);
 
-    ogs_list_for_each_entry_safe(&spec->inst_list, next, inst, entry) {
+    ogs_list_for_each_entry_safe(&spec->inst_list, next, inst, entry)
         ogs_metrics_inst_free(inst);
-    }
 
     ogs_free(spec->name);
     ogs_free(spec->description);
@@ -443,7 +527,6 @@ void ogs_metrics_spec_free(ogs_metrics_spec_t *spec)
 
     ogs_pool_free(&metrics_spec_pool, spec);
 }
-
 
 ogs_metrics_inst_t *ogs_metrics_inst_new(
         ogs_metrics_spec_t *spec,
@@ -455,7 +538,7 @@ ogs_metrics_inst_t *ogs_metrics_inst_new(
     ogs_assert(spec);
     ogs_assert(num_labels == spec->num_labels);
 
-    inst = ogs_calloc(1, sizeof(ogs_metrics_inst_t));
+    inst = ogs_calloc(1, sizeof *inst);
     ogs_assert(inst);
     inst->spec = spec;
     inst->num_labels = num_labels;
@@ -502,7 +585,6 @@ void ogs_metrics_inst_reset(ogs_metrics_inst_t *inst)
         prom_gauge_set(inst->spec->prom, (double)inst->spec->initial_val, (const char **)inst->label_values);
         break;
     default:
-        /* Other types have no way to reset */
         break;
     }
 }
@@ -529,3 +611,4 @@ void ogs_metrics_inst_add(ogs_metrics_inst_t *inst, int val)
         break;
     }
 }
+
