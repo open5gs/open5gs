@@ -781,8 +781,10 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     break;
                 }
 
-                ogs_error("[%s:%s] Cannot receive SBI message",
-                        amf_ue->supi, amf_ue->suci);
+                ogs_error("[%s:%s] Cannot receive SBI message "
+                        "[type:%d,value:%d]", amf_ue->supi, amf_ue->suci,
+                        amf_ue->nas.message_type,
+                        amf_ue->nas.registration.value);
 
                 /*
                 * TS 23.502
@@ -808,6 +810,10 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
                         break;
                     }
+                } else if (amf_ue->nas.message_type ==
+                        OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE) {
+                    ogs_error("T3522 expired");
+                    break;
                 }
 
                 r = nas_5gs_send_gmm_reject_from_sbi(amf_ue,
