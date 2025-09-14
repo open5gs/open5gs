@@ -1072,14 +1072,21 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             }
 
             if (state == SMF_UECM_STATE_REGISTERED) {
-                ogs_assert(stream);
-                ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+                if (stream)
+                    ogs_assert(true ==
+                            ogs_sbi_send_http_status_no_content(stream));
+                else
+                    ogs_error("Stream has already been removed");
+
                 smf_metrics_inst_by_slice_add(
                         &sess->serving_plmn_id, &sess->s_nssai,
                         SMF_METR_CTR_SM_PDUSESSIONCREATIONSUCC, 1);
             } else if (state == SMF_UECM_STATE_REGISTERED_HR) {
-                ogs_assert(stream);
-                smf_sbi_send_pdu_session_created_data(sess, stream);
+                if (stream)
+                    smf_sbi_send_pdu_session_created_data(sess, stream);
+                else
+                    ogs_error("Stream has already been removed");
+
                 smf_metrics_inst_by_slice_add(
                         &sess->serving_plmn_id, &sess->s_nssai,
                         SMF_METR_CTR_SM_PDUSESSIONCREATIONSUCC, 1);
