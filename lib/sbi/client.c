@@ -32,6 +32,8 @@ typedef struct sockinfo_s {
 typedef struct connection_s {
     ogs_lnode_t lnode;
 
+    ogs_pool_id_t id;
+
     void *data;
 
     char *method;
@@ -413,12 +415,11 @@ static connection_t *connection_add(
     ogs_assert(request);
     ogs_assert(request->h.method);
 
-    ogs_pool_alloc(&connection_pool, &conn);
+    ogs_pool_id_calloc(&connection_pool, &conn);
     if (!conn) {
         ogs_error("ogs_pool_alloc() failed");
         return NULL;
     }
-    memset(conn, 0, sizeof(connection_t));
 
     conn->client = client;
     conn->client_cb = client_cb;
@@ -456,7 +457,8 @@ static connection_t *connection_add(
     }
 
     conn->timer = ogs_timer_add(
-            ogs_app()->timer_mgr, connection_timer_expired, conn);
+            ogs_app()->timer_mgr, connection_timer_expired,
+            OGS_UINT_TO_POINTER(conn->id));
     if (!conn->timer) {
         ogs_error("conn->timer is NULL");
         connection_free(conn);
@@ -633,7 +635,7 @@ static void connection_free(connection_t *conn)
     if (conn->method)
         ogs_free(conn->method);
 
-    ogs_pool_free(&connection_pool, conn);
+    ogs_pool_id_free(&connection_pool, conn);
 }
 
 static void connection_remove_all(ogs_sbi_client_t *client)
@@ -648,12 +650,20 @@ static void connection_remove_all(ogs_sbi_client_t *client)
 
 static void connection_timer_expired(void *data)
 {
+    ogs_pool_id_t conn_id = OGS_POINTER_TO_UINT(data);
     connection_t *conn = NULL;
     CURLcode res;
     char *effective_url = NULL;
 
-    conn = data;
-    ogs_assert(conn);
+    if (conn_id >= OGS_MIN_POOL_ID && conn_id <= OGS_MAX_POOL_ID)
+        conn = ogs_pool_find_by_id(&connection_pool, conn_id);
+    else
+        ogs_error("Invalid Connection ID [%d]", conn_id);
+
+    if (!conn) {
+        ogs_error("No Connection");
+        return;
+    }
 
     ogs_error("Connection timer expired [METHOD:%s]", conn->method);
 
