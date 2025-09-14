@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 /*
- * /connected-gnbs — AMF-side JSON exporter (Prometheus HTTP endpoint)
+ * /connected-gnbs — MME-side JSON exporter (Prometheus HTTP endpoint)
  *
  * License: AGPLv3+
  */

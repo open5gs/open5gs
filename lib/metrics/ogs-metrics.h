@@ -36,15 +36,15 @@
 extern "C" {
 #endif
 
-/* Already present for UEs */
+/* UEs dumper hook (SMF) */
 extern size_t (*ogs_metrics_connected_ues_dumper)(char *buf, size_t buflen);
 void ogs_metrics_register_connected_ues(size_t (*fn)(char *buf, size_t buflen));
 
-/* New: gNBs dumper hook (AMF) */
+/* gNBs dumper hook (AMF) */
 extern size_t (*ogs_metrics_connected_gnbs_dumper)(char *buf, size_t buflen);
 void ogs_metrics_register_connected_gnbs(size_t (*fn)(char *buf, size_t buflen));
 
-/* New: eNBs dumper hook (AMF) */
+/* eNBs dumper hook (MME) */
 extern size_t (*ogs_metrics_connected_enbs_dumper)(char *buf, size_t buflen);
 void ogs_metrics_register_connected_enbs(size_t (*fn)(char *buf, size_t buflen));
 
