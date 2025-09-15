@@ -2059,6 +2059,14 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                      */
                     ogs_error("[%s] Ignore SBI message", amf_ue->supi);
                     break;
+                CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                    /*
+                     * Issue #4074
+                     *
+                     * We need to ignore this message in this state.
+                     */
+                    ogs_error("[%s] Ignore SBI message", amf_ue->supi);
+                    break;
                 DEFAULT
                     ogs_error("[%s] Invalid HTTP method [%s]",
                             amf_ue->suci, sbi_message->h.method);
