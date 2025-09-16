@@ -2115,7 +2115,9 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                     }
                     ogs_error("[%s] Ignore SBI message", amf_ue->supi);
                     break;
-
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    ogs_error("[%s] Ignore SBI message", amf_ue->supi);
+                    break;
                 DEFAULT
                     ogs_error("Unknown method [%s]", sbi_message->h.method);
                     ogs_assert_if_reached();
