@@ -17,6 +17,7 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [VoLTE Setup with Kamailio IMS and Open5GS](tutorial/02-VoLTE-setup)
   - [Dockerized VoLTE Setup](tutorial/03-VoLTE-dockerized)
   - [Roaming](tutorial/05-roaming)
+  - [Non-NAT bridge](tutorial/06-NonNAT-bridge)
 
 - In the lab
   - [A Demonstration of 30 Gbps Load Testing for Accelerated UPF with Open5gs](https://nextepc.com/technology)
