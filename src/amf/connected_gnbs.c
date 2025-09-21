@@ -82,7 +82,10 @@ static inline size_t append_safe(char *buf, size_t off, size_t buflen, const cha
     if (!buf || off == (size_t)-1 || off >= buflen) return (size_t)-1;
     va_list ap;
     va_start(ap, fmt);
-    int n = vsnprintf(buf + off, buflen - off, fmt, ap);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+    int n = ogs_vsnprintf(buf + off, buflen - off, fmt, ap);
+#pragma GCC diagnostic pop
     va_end(ap);
     if (n < 0 || (size_t)n >= buflen - off) return (size_t)-1;
     return off + (size_t)n;
