@@ -87,7 +87,7 @@ void mme_send_delete_session_or_detach(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
                         S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
             } else {
                 ogs_warn("[%s] MME-UE Context Removed", mme_ue->imsi_bcd);
-                mme_ue_remove(mme_ue);
+                MME_UE_REMOVE_WITH_PAGING_FAIL(mme_ue);
             }
         }
         break;
