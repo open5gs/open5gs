@@ -367,6 +367,8 @@ typedef struct ogs_pfcp_subnet_s {
     ogs_ipsubnet_t  sub;                    /* Subnet : 2001:db8:cafe::0/48 */
     ogs_ipsubnet_t  gw;                     /* Gateway : 2001:db8:cafe::1 */
     char            dnn[OGS_MAX_DNN_LEN+1]; /* DNN : "internet", "volte", .. */
+    uint8_t         mac_addr[6];            /* Gateway MAC address: 48:A9:8A:8C:E1:15 */
+    bool            bridge;                 /* Bridge mode enable? */
 
 #define OGS_MAX_NUM_OF_SUBNET_RANGE 16
     struct {
@@ -511,7 +513,8 @@ ogs_pfcp_dev_t *ogs_pfcp_dev_find_by_ifname(const char *ifname);
 
 ogs_pfcp_subnet_t *ogs_pfcp_subnet_add(
         const char *ipstr, const char *mask_or_numbits,
-        const char *gateway, const char *dnn, const char *ifname);
+        const char *gateway, const char *dnn, const char *ifname,
+        const char *mac_address);
 ogs_pfcp_subnet_t *ogs_pfcp_subnet_next(ogs_pfcp_subnet_t *subnet);
 void ogs_pfcp_subnet_remove(ogs_pfcp_subnet_t *subnet);
 void ogs_pfcp_subnet_remove_all(void);
