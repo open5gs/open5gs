@@ -183,6 +183,18 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         return;
     }
 
+    if (globalGNB_ID->pLMNIdentity.size != sizeof(gnb->plmn_id)) {
+        ogs_error("Invalid PLMNIdentity size = %d (expected %d)",
+                (int)globalGNB_ID->pLMNIdentity.size,
+                (int)sizeof(gnb->plmn_id));
+        group = NGAP_Cause_PR_protocol;
+        cause = NGAP_CauseProtocol_semantic_error;
+        r = ngap_send_ng_setup_failure(gnb, group, cause);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     if (!SupportedTAList) {
         ogs_error("No SupportedTAList");
         group = NGAP_Cause_PR_protocol;
@@ -273,6 +285,18 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
             pLMNIdentity = (NGAP_PLMNIdentity_t *)
                     &BroadcastPLMNItem->pLMNIdentity;
             ogs_assert(pLMNIdentity);
+
+            if (pLMNIdentity->size != sizeof(ogs_plmn_id_t)) {
+                ogs_error("Invalid PLMNIdentity size = %d (expected %d)",
+                        (int)pLMNIdentity->size,
+                        (int)sizeof(ogs_plmn_id_t));
+                group = NGAP_Cause_PR_protocol;
+                cause = NGAP_CauseProtocol_semantic_error;
+                r = ngap_send_ng_setup_failure(gnb, group, cause);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+                return;
+            }
 
             memcpy(&gnb->supported_ta_list[i].bplmn_list[j].plmn_id,
                     pLMNIdentity->buf, sizeof(ogs_plmn_id_t));

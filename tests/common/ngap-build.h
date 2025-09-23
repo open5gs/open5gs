@@ -79,6 +79,7 @@ ogs_pkbuf_t *testngap_build_handover_failure(test_ue_t *test_ue,
 ogs_pkbuf_t *testngap_build_handover_cancel(test_ue_t *test_ue,
         NGAP_Cause_PR group, long cause);
 
+ogs_pkbuf_t *test_ngap_build_malformed_ng_setup_request(int i);
 ogs_pkbuf_t *test_ngap_build_amf_configuration_ack(int i);
 ogs_pkbuf_t *test_ngap_build_malformed_initial_ue_message(int i);
 
