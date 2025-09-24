@@ -100,6 +100,8 @@ typedef struct mme_context_s {
     ogs_list_t      csmap_list;     /* TAI-LAI Map List */
     ogs_list_t      hssmap_list;    /* PLMN HSS Map List */
 
+    ogs_list_t      emerg_list;     /* Emergency number list */
+
     /* Served GUMME */
     int             num_of_served_gummei;
     served_gummei_t served_gummei[OGS_MAX_NUM_OF_SERVED_GUMMEI];
@@ -270,6 +272,15 @@ typedef struct mme_enb_s {
     ogs_list_t      enb_ue_list;
 
 } mme_enb_t;
+
+typedef struct mme_emerg_s {
+    ogs_lnode_t     lnode;
+    ogs_pool_id_t   id;
+
+    uint8_t         categories; /* Service categories */
+    const char      *digits;    /* Emergency number */
+
+} mme_emerg_t;
 
 struct enb_ue_s {
     ogs_lnode_t     lnode;
@@ -1229,6 +1240,8 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue);
 
 void mme_ue_save_memento(mme_ue_t *mme_ue, mme_ue_memento_t *memento);
 void mme_ue_restore_memento(mme_ue_t *mme_ue, const mme_ue_memento_t *memento);
+
+mme_emerg_t *mme_emerg_add(uint8_t categories, const char *digits);
 
 #ifdef __cplusplus
 }
