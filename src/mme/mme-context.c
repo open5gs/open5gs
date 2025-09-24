@@ -53,6 +53,7 @@ static OGS_POOL(enb_ue_pool, enb_ue_t);
 static OGS_POOL(sgw_ue_pool, sgw_ue_t);
 static OGS_POOL(mme_sess_pool, mme_sess_t);
 static OGS_POOL(mme_bearer_pool, mme_bearer_t);
+static OGS_POOL(mme_emerg_pool, mme_emerg_t);
 
 static OGS_POOL(m_tmsi_pool, mme_m_tmsi_t);
 
@@ -99,6 +100,7 @@ void mme_context_init(void)
     ogs_list_init(&self.vlr_list);
     ogs_list_init(&self.csmap_list);
     ogs_list_init(&self.hssmap_list);
+    ogs_list_init(&self.emerg_list);
 
     ogs_pool_init(&mme_sgsn_route_pool, ogs_app()->pool.nf);
     ogs_pool_init(&mme_sgsn_pool, ogs_app()->pool.nf);
@@ -107,6 +109,7 @@ void mme_context_init(void)
     ogs_pool_init(&mme_vlr_pool, ogs_app()->pool.nf);
     ogs_pool_init(&mme_csmap_pool, ogs_app()->pool.csmap);
     ogs_pool_init(&mme_hssmap_pool, ogs_app()->pool.nf);
+    ogs_pool_init(&mme_emerg_pool, ogs_app()->pool.emerg);
 
     /* Allocate TWICE the pool to check if maximum number of eNBs is reached */
     ogs_pool_init(&mme_enb_pool, ogs_global_conf()->max.peer*2);
@@ -175,6 +178,7 @@ void mme_context_final(void)
     ogs_hash_destroy(self.mme_gn_teid_hash);
 
     ogs_pool_final(&m_tmsi_pool);
+    ogs_pool_final(&mme_emerg_pool);
     ogs_pool_final(&mme_bearer_pool);
     ogs_pool_final(&mme_sess_pool);
     ogs_pool_final(&mme_ue_pool);
@@ -2540,6 +2544,84 @@ int mme_context_parse_config(void)
                                 const char *dnn = ogs_yaml_iter_value(&emerg_iter);
                                 ogs_assert(dnn);
                                 self.emergency.dnn = dnn;
+                        } else if (!strcmp(emerg_key, "number")) {
+                            ogs_yaml_iter_t number_array, number_iter;
+                            ogs_yaml_iter_recurse(&emerg_iter, &number_array);
+                            do {
+                                const char *digits = NULL;
+                                uint8_t categories = 0;
+
+                                if (ogs_yaml_iter_type(&number_array) ==
+                                        YAML_MAPPING_NODE) {
+                                    memcpy(&number_iter, &number_array,
+                                            sizeof(ogs_yaml_iter_t));
+                                } else if (ogs_yaml_iter_type(&number_array) ==
+                                        YAML_SEQUENCE_NODE) {
+                                    if (!ogs_yaml_iter_next(&number_array))
+                                        break;
+                                    ogs_yaml_iter_recurse(&number_array, &number_iter);
+                                } else if (ogs_yaml_iter_type(&number_array) ==
+                                        YAML_SCALAR_NODE) {
+                                    break;
+                                } else
+                                    ogs_assert_if_reached();
+
+                                while (ogs_yaml_iter_next(&number_iter)) {
+                                    const char *number_key =
+                                        ogs_yaml_iter_key(&number_iter);
+                                    ogs_assert(number_key);
+                                    if (!strcmp(number_key, "digits")) {
+                                        digits = ogs_yaml_iter_value(&number_iter);
+                                    } else if (!strcmp(number_key, "categories")) {
+                                        ogs_yaml_iter_t categories_iter;
+                                        ogs_yaml_iter_recurse(&number_iter,
+                                                &categories_iter);
+                                        ogs_assert(ogs_yaml_iter_type(
+                                                &categories_iter) != YAML_MAPPING_NODE);
+
+                                        do {
+                                            const char *v = NULL;
+
+                                            if (ogs_yaml_iter_type(&categories_iter) ==
+                                                    YAML_SEQUENCE_NODE) {
+                                                if (!ogs_yaml_iter_next(
+                                                            &categories_iter))
+                                                    break;
+                                            }
+
+                                            v = ogs_yaml_iter_value(&categories_iter);
+                                            if (v) {
+                                                if (strstr(v, "police")) {
+                                                    categories |=
+                                                        OGS_NAS_SERVICE_CATEGORY_POLICE;
+                                                } else if (strstr(v, "ambulance")) {
+                                                    categories |=
+                                                        OGS_NAS_SERVICE_CATEGORY_AMBULANCE;
+                                                } else if (strstr(v, "fire")) {
+                                                    categories |=
+                                                        OGS_NAS_SERVICE_CATEGORY_FIRE_BRIGARDE;
+                                                } else if (strstr(v, "marine")) {
+                                                    categories |=
+                                                        OGS_NAS_SERVICE_CATEGORY_MARINE_GUARD;
+                                                } else if (strstr(v, "mountain")) {
+                                                    categories |=
+                                                        OGS_NAS_SERVICE_CATEGORY_MOUNTAIN_RESCUE;
+                                                } else {
+                                                    categories = strtol(v, NULL, 0);
+                                                    if (categories < 1 || categories > 0x1f)
+                                                        ogs_warn("invalid categories `%s`", v);
+                                                }
+                                            }
+                                        } while (
+                                            ogs_yaml_iter_type(&categories_iter) ==
+                                                YAML_SEQUENCE_NODE);
+                                    } else
+                                        ogs_warn("unknown key `%s`", number_key);
+                                }
+                                if (digits && categories > 0 && categories <= 0x1f)
+                                    mme_emerg_add(categories, digits);
+                            } while (ogs_yaml_iter_type(&number_array) ==
+                                YAML_SEQUENCE_NODE);
                         } else
                             ogs_warn("unknown key `%s`", emerg_key);
                     }
@@ -5185,4 +5267,22 @@ static void stats_remove_mme_session(void)
     mme_metrics_inst_global_dec(MME_METR_GLOB_GAUGE_MME_SESS);
     num_of_mme_sess = num_of_mme_sess - 1;
     ogs_info("[Removed] Number of MME-Sessions is now %d", num_of_mme_sess);
+}
+
+mme_emerg_t *mme_emerg_add(uint8_t categories, const char *digits)
+{
+    mme_emerg_t *emerg = NULL;
+
+    ogs_pool_id_calloc(&mme_emerg_pool, &emerg);
+    ogs_assert(emerg);
+
+    emerg->categories = categories;
+    emerg->digits = digits;
+
+    ogs_list_add(&self.emerg_list, emerg);
+
+    ogs_debug("Added Emergency Number %s (categories 0x%02x)",
+            digits, categories);
+
+    return emerg;
 }
