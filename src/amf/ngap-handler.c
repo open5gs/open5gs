@@ -2944,6 +2944,56 @@ void ngap_handle_path_switch_request(
     eUTRAintegrityProtectionAlgorithms =
         &UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms;
 
+    if (nRencryptionAlgorithms->size != sizeof(nr_ea)) {
+        ogs_error("Invalid nRencryptionAlgorithms->size = %d (expected %d)",
+                (int)nRencryptionAlgorithms->size,
+                (int)sizeof(nr_ea));
+        r = ngap_send_error_indication(
+                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                NGAP_Cause_PR_protocol,
+                NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+    if (nRintegrityProtectionAlgorithms->size != sizeof(nr_ia)) {
+        ogs_error("Invalid nRintegrityProtectionAlgorithms->size = %d "
+                "(expected %d)",
+                (int)nRintegrityProtectionAlgorithms->size,
+                (int)sizeof(nr_ia));
+        r = ngap_send_error_indication(
+                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                NGAP_Cause_PR_protocol,
+                NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+    if (eUTRAencryptionAlgorithms->size != sizeof(eutra_ea)) {
+        ogs_error("Invalid eUTRAencryptionAlgorithms->size = %d (expected %d)",
+                (int)eUTRAencryptionAlgorithms->size,
+                (int)sizeof(eutra_ea));
+        r = ngap_send_error_indication(
+                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                NGAP_Cause_PR_protocol,
+                NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+    if (eUTRAintegrityProtectionAlgorithms->size != sizeof(eutra_ia)) {
+        ogs_error("Invalid eUTRAintegrityProtectionAlgorithms->size = %d "
+                "(expected %d)",
+                (int)eUTRAintegrityProtectionAlgorithms->size,
+                (int)sizeof(eutra_ia));
+        r = ngap_send_error_indication(
+                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                NGAP_Cause_PR_protocol,
+                NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
     memcpy(&nr_ea, nRencryptionAlgorithms->buf, sizeof(nr_ea));
     nr_ea = be16toh(nr_ea);
     nr_ea0 = amf_ue->ue_security_capability.nr_ea0;
@@ -4411,6 +4461,19 @@ void ngap_handle_ran_configuration_update(
                 pLMNIdentity = (NGAP_PLMNIdentity_t *)
                         &BroadcastPLMNItem->pLMNIdentity;
                 ogs_assert(pLMNIdentity);
+
+                if (pLMNIdentity->size != sizeof(ogs_plmn_id_t)) {
+                    ogs_error("Invalid PLMNIdentity size = %d (expected %d)",
+                            (int)pLMNIdentity->size,
+                            (int)sizeof(ogs_plmn_id_t));
+                    group = NGAP_Cause_PR_protocol;
+                    cause = NGAP_CauseProtocol_semantic_error;
+                    r = ngap_send_ran_configuration_update_failure(
+                            gnb, group, cause);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                    return;
+                }
 
                 memcpy(&gnb->supported_ta_list[i].bplmn_list[j].plmn_id,
                         pLMNIdentity->buf, sizeof(ogs_plmn_id_t));
