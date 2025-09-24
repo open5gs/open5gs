@@ -163,6 +163,10 @@ typedef struct mme_context_s {
             ogs_time_t value;       /* Timer Value(Seconds) */
         } t3402, t3412, t3423;
     } time;
+
+    struct {
+        const char *dnn;            /* Emergency APN */
+    } emergency;
 } mme_context_t;
 
 typedef struct mme_sgsn_route_s {

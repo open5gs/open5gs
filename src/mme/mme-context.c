@@ -2530,6 +2530,19 @@ int mme_context_parse_config(void)
                     }
                 } else if (!strcmp(mme_key, "metrics")) {
                     /* handle config in metrics library */
+                } else if (!strcmp(mme_key, "emergency")) {
+                    ogs_yaml_iter_t emerg_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &emerg_iter);
+                    while (ogs_yaml_iter_next(&emerg_iter)) {
+                        const char *emerg_key = ogs_yaml_iter_key(&emerg_iter);
+                        ogs_assert(emerg_key);
+                        if (!strcmp(emerg_key, "dnn")) {
+                                const char *dnn = ogs_yaml_iter_value(&emerg_iter);
+                                ogs_assert(dnn);
+                                self.emergency.dnn = dnn;
+                        } else
+                            ogs_warn("unknown key `%s`", emerg_key);
+                    }
                 } else
                     ogs_warn("unknown key `%s`", mme_key);
             }
@@ -4725,7 +4738,8 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
                     pdn_connectivity_request->access_point_name.apn);
                 return NULL;
             }
-        } else {
+        } else if (pdn_connectivity_request->request_type.value !=
+                OGS_NAS_EPS_REQUEST_TYPE_EMERGENCY) {
             sess = mme_sess_first(mme_ue);
             ogs_debug("[%s:%p]", mme_ue->imsi_bcd, mme_ue);
             if (sess) {
