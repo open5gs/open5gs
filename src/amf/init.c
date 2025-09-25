@@ -22,7 +22,10 @@
 #include "metrics.h"
 
 #include "ogs-metrics.h"
-#include "connected_gnbs.h" 
+#include "metrics/prometheus/json_pager.h"
+#include "metrics/prometheus/pager.h"
+#include "gnb-info.h"
+#include "ue-info.h"
 
 static ogs_thread_t *thread;
 static void amf_main(void *data);
@@ -58,7 +61,12 @@ int amf_initialize(void)
     if (rv != OGS_OK) return rv;
 
     ogs_metrics_context_open(ogs_metrics_self());
-    ogs_metrics_register_connected_gnbs(amf_dump_connected_gnbs);
+
+    /* dumpers /gnb-info /ue-info */
+    ogs_metrics_register_gnb_info(amf_dump_gnb_info);
+    ogs_metrics_register_ue_info(amf_dump_ue_info);
+    ogs_metrics_gnb_info_set_pager = amf_metrics_gnb_info_set_pager;
+    ogs_metrics_ue_info_set_pager  = amf_metrics_ue_info_set_pager;
 
     rv = amf_sbi_open();
     if (rv != OGS_OK) return rv;

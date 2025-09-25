@@ -23,8 +23,10 @@
 #include "pfcp-path.h"
 #include "sbi-path.h"
 #include "metrics.h"
-#include "ogs-metrics.h"          /* for ogs_metrics_register_connected_ues */
-#include "connected_ues.h"        /* declare smf_dump_connected_ues() */
+#include "ogs-metrics.h"
+#include "metrics/prometheus/json_pager.h"
+#include "metrics/prometheus/pager.h"
+#include "pdu-info.h"
 
 static ogs_thread_t *thread;
 static void smf_main(void *data);
@@ -92,7 +94,9 @@ int smf_initialize(void)
     thread = ogs_thread_create(smf_main, NULL);
     if (!thread) return OGS_ERROR;
 
-    ogs_metrics_register_connected_ues(smf_dump_connected_ues);
+    /* dumper /pdu-info */
+    ogs_metrics_register_pdu_info(smf_dump_pdu_info);
+    smf_register_metrics_pager();
 
     initialized = 1;
 
