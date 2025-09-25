@@ -18,10 +18,10 @@
  */
 
 /*
- * Minimal public API for connected_ues
+ * /ue-info — AMF-side JSON exporter (Prometheus HTTP endpoint)
+ *
  */
-#ifndef SMF_CONNECTED_UES_H
-#define SMF_CONNECTED_UES_H
+#pragma once
 
 #include <stddef.h>
 
@@ -29,14 +29,15 @@
 extern "C" {
 #endif
 
-/* Fills buf with a compact JSON array.
- * Returns the number of bytes written (excluding the terminating NUL). */
-size_t smf_dump_connected_ues(char *buf, size_t buflen);
+#ifndef UE_INFO_PAGE_SIZE_DEFAULT
+#define UE_INFO_PAGE_SIZE_DEFAULT 100U
+#endif
+
+size_t amf_dump_ue_info(char *buf, size_t buflen);
+size_t amf_dump_ue_info_paged(char *buf, size_t buflen, size_t page, size_t page_size);
+void amf_metrics_ue_info_set_pager(size_t page, size_t page_size);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* SMF_CONNECTED_UES_H */
-
 

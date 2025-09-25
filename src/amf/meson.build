@@ -61,7 +61,9 @@ libamf_sources = files('''
 
     init.c
     metrics.c
-    connected_gnbs.c
+    gnb-info.c
+    ue-info.c
+    ../../lib/metrics/prometheus/json_pager.c
 '''.split())
 
 libamf = static_library('amf',

@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 /*
- * /connected-gnbs — AMF-side JSON exporter (Prometheus HTTP endpoint)
+ * /enb-info — MME-side JSON exporter (Prometheus HTTP endpoint)
  *
+ * License: AGPLv3+
  */
 #pragma once
 
@@ -29,10 +29,13 @@
 extern "C" {
 #endif
 
-/* JSON dumper for /connected-gnbs.
- * Returns number of bytes written (<= buflen-1), buffer is always NUL-terminated.
- */
-size_t amf_dump_connected_gnbs(char *buf, size_t buflen);
+#ifndef ENB_INFO_PAGE_SIZE_DEFAULT
+#define ENB_INFO_PAGE_SIZE_DEFAULT 100U
+#endif
+
+size_t mme_dump_enb_info(char *buf, size_t buflen);
+size_t mme_dump_enb_info_paged(char *buf, size_t buflen, size_t page, size_t page_size);
+void   mme_metrics_enb_info_set_pager(size_t page, size_t page_size);
 
 #ifdef __cplusplus
 }
