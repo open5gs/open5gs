@@ -557,20 +557,31 @@ sgwc_bearer_t *sgwc_bearer_add(sgwc_sess_t *sess)
     ogs_assert(sgwc_ue);
 
     ogs_pool_id_calloc(&sgwc_bearer_pool, &bearer);
-    ogs_assert(bearer);
+    if (!bearer) {
+        ogs_error("ogs_pool_id_calloc() failed");
+        return NULL;
+    }
+
+    ogs_list_add(&sess->bearer_list, bearer);
 
     bearer->sgwc_ue_id = sgwc_ue->id;
     bearer->sess_id = sess->id;
 
     /* Downlink */
     tunnel = sgwc_tunnel_add(bearer, OGS_GTP2_F_TEID_S5_S8_SGW_GTP_U);
-    ogs_assert(tunnel);
+    if (!tunnel) {
+        ogs_error("sgwc_tunnel_add() failed");
+        sgwc_bearer_remove(bearer);
+        return NULL;
+    }
 
     /* Uplink */
     tunnel = sgwc_tunnel_add(bearer, OGS_GTP2_F_TEID_S1_U_SGW_GTP_U);
-    ogs_assert(tunnel);
-
-    ogs_list_add(&sess->bearer_list, bearer);
+    if (!tunnel) {
+        ogs_error("sgwc_tunnel_add() failed");
+        sgwc_bearer_remove(bearer);
+        return NULL;
+    }
 
     return bearer;
 }
@@ -691,12 +702,23 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     }
 
     ogs_pool_id_calloc(&sgwc_tunnel_pool, &tunnel);
-    ogs_assert(tunnel);
+    if (!tunnel) {
+        ogs_error("ogs_pool_id_calloc() failed");
+        return NULL;
+    }
+
+    ogs_list_add(&bearer->tunnel_list, tunnel);
 
     tunnel->interface_type = interface_type;
+    tunnel->bearer_id = bearer->id;
 
     pdr = ogs_pfcp_pdr_add(&sess->pfcp);
-    ogs_assert(pdr);
+    if (!pdr) {
+        ogs_error("ogs_pfcp_pdr_add() failed");
+        sgwc_tunnel_remove(tunnel);
+        return NULL;
+    }
+    tunnel->pdr = pdr;
 
     ogs_assert(sess->session.name);
     pdr->apn = ogs_strdup(sess->session.name);
@@ -708,7 +730,12 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     pdr->src_if_type = src_if_type;
 
     far = ogs_pfcp_far_add(&sess->pfcp);
-    ogs_assert(far);
+    if (!far) {
+        ogs_error("ogs_pfcp_far_add() failed");
+        sgwc_tunnel_remove(tunnel);
+        return NULL;
+    }
+    tunnel->far = far;
 
     ogs_assert(sess->session.name);
     far->apn = ogs_strdup(sess->session.name);
@@ -782,13 +809,6 @@ sgwc_tunnel_t *sgwc_tunnel_add(
         pdr->f_teid.teid = tunnel->local_teid;
     }
 
-    tunnel->pdr = pdr;
-    tunnel->far = far;
-
-    tunnel->bearer_id = bearer->id;
-
-    ogs_list_add(&bearer->tunnel_list, tunnel);
-
     return tunnel;
 }
 
@@ -802,8 +822,10 @@ int sgwc_tunnel_remove(sgwc_tunnel_t *tunnel)
 
     ogs_list_remove(&bearer->tunnel_list, tunnel);
 
-    ogs_pfcp_pdr_remove(tunnel->pdr);
-    ogs_pfcp_far_remove(tunnel->far);
+    if (tunnel->pdr)
+        ogs_pfcp_pdr_remove(tunnel->pdr);
+    if (tunnel->far)
+        ogs_pfcp_far_remove(tunnel->far);
 
     if (tunnel->local_addr)
         ogs_freeaddrinfo(tunnel->local_addr);

@@ -810,6 +810,15 @@ struct mme_ue_s {
     mme_hssmap_t    *hssmap;
 };
 
+#define MME_UE_REMOVE_WITH_PAGING_FAIL(__mME) \
+    do { \
+        if (MME_PAGING_ONGOING(__mME)) { \
+            ogs_error("Paging is ON-Going [%d]", (__mME)->paging.type); \
+            mme_send_after_paging(__mME, false); \
+        } \
+        mme_ue_remove(__mME); \
+    } while(0)
+
 #define SESSION_CONTEXT_IS_AVAILABLE(__mME) \
     ((__mME) && \
      ((__mME)->sgw_ue_id >= OGS_MIN_POOL_ID) && \

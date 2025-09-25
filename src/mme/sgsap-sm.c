@@ -153,6 +153,9 @@ void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
         case SGSAP_LOCATION_UPDATE_REJECT:
             sgsap_handle_location_update_reject(vlr, pkbuf);
             break;
+        case SGSAP_ALERT_REQUEST:
+            sgsap_handle_alert_request(vlr, pkbuf);
+            break;
         case SGSAP_EPS_DETACH_ACK:
         case SGSAP_IMSI_DETACH_ACK:
             sgsap_handle_detach_ack(vlr, pkbuf);
@@ -165,9 +168,6 @@ void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
             break;
         case SGSAP_RESET_INDICATION:
             sgsap_handle_reset_indication(vlr, pkbuf);
-
-            mme_vlr_close(vlr);
-            OGS_FSM_TRAN(s, sgsap_state_will_connect);
             break;
         case SGSAP_RELEASE_REQUEST:
             sgsap_handle_release_request(vlr, pkbuf);

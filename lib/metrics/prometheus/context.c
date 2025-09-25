@@ -347,6 +347,7 @@ mhd_server_access_handler(void *cls, struct MHD_Connection *connection,
             ogs_metrics_ue_info_set_pager(page, page_size);
         return serve_json_from_dumper(connection, ogs_metrics_ue_info_dumper,
                                       "ue-info endpoint not available on this NF\n");
+
     }
 
     /* No matching route */

@@ -47,6 +47,8 @@ ED3(uint8_t     ipv4:1;,
 
     ogs_list_t  rx_list;
 
+    uint32_t    rat_type;            /* RAT-Type */
+
     struct timespec ts;             /* Time of sending the message */
 };
 
@@ -557,6 +559,23 @@ static int pcrf_gx_ccr_cb(struct msg **msg, struct avp *avp,
         result_code = OGS_DIAM_MISSING_AVP;
         error_occurred = 1;
         goto out;
+    }
+
+    ret = fd_msg_search_avp(qry, ogs_diam_rat_type, &avp);
+    if (ret != 0) {
+        ogs_error("Failed to search RAT-Type AVP");
+        error_occurred = 1;
+        goto out;
+    }
+
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        if (ret != 0) {
+            ogs_error("Failed to get RAT-Type AVP header");
+            error_occurred = 1;
+            goto out;
+        }
+        sess_data->rat_type = hdr->avp_value->i32;
     }
 
     ret = fd_msg_search_avp(qry, ogs_diam_gx_called_station_id, &avp);
@@ -1139,12 +1158,13 @@ int pcrf_gx_send_rar(
                     == OGS_DIAM_RX_MEDIA_TYPE_CONTROL)) {
                 /*
                  * Check for default bearer for IMS signalling
-                 * QCI 5 and ARP 1
+                 * QCI 5 and ARP 1 only in case of 3GPP RAT.
                  */
-                if (gx_message.session_data.
+                if (sess_data->rat_type != OGS_DIAM_RAT_TYPE_WLAN &&
+                    (gx_message.session_data.
                         session.qos.index != OGS_QOS_INDEX_5 ||
                     gx_message.session_data.
-                        session.qos.arp.priority_level != 1) {
+                        session.qos.arp.priority_level != 1)) {
                     ogs_error("CHECK WEBUI : Even the Default "
                         "Bearer(QCI:%d,ARP:%d) cannot support IMS signalling.",
                         gx_message.session_data.session.qos.index,

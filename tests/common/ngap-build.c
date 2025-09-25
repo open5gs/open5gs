@@ -2622,6 +2622,31 @@ static ogs_pkbuf_t *testngap_build_handover_request_ack_transfer(
 
 #define TEST_NGAP_MAX_MESSAGE 64
 
+ogs_pkbuf_t *test_ngap_build_malformed_ng_setup_request(int i)
+{
+    ogs_pkbuf_t *pkbuf = NULL;
+    const char *payload[TEST_NGAP_MAX_MESSAGE] = {
+        "00150035"
+        "000004001b0008c0 02f8391000010200 5240090300667265 6535676300660010"
+        "00000000010002f8 3900001008010203 0015400140000000",
+        "",
+    };
+
+    uint16_t len[TEST_NGAP_MAX_MESSAGE] = {
+        60,
+        0,
+    };
+
+    char hexbuf[OGS_HUGE_LEN];
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_put_data(pkbuf,
+        ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
+
+    return pkbuf;
+}
+
 ogs_pkbuf_t *test_ngap_build_amf_configuration_ack(int i)
 {
     ogs_pkbuf_t *pkbuf = NULL;

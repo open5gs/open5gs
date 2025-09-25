@@ -828,7 +828,7 @@ void mme_s11_handle_delete_session_response(
     } else if (action == OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
             if (ECM_IDLE(mme_ue)) {
-                mme_ue_remove(mme_ue);
+                MME_UE_REMOVE_WITH_PAGING_FAIL(mme_ue);
 
                 /* mme_sess_remove() should not be called here
                  * since mme_ue_remove() has already been executed. */

@@ -91,6 +91,7 @@ ogs_pkbuf_t *sgsap_build_location_update_request(mme_ue_t *mme_ue)
 
     return pkbuf;
 }
+
 ogs_pkbuf_t *sgsap_build_tmsi_reallocation_complete(mme_ue_t *mme_ue)
 {
     mme_csmap_t *csmap = NULL;
@@ -114,6 +115,96 @@ ogs_pkbuf_t *sgsap_build_tmsi_reallocation_complete(mme_ue_t *mme_ue)
         return NULL;
     }
     ogs_pkbuf_put_u8(pkbuf, SGSAP_TMSI_REALLOCATION_COMPLETE);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-1);
+
+    ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,
+            pkbuf->data+1, OGS_MAX_SDU_LEN-1));
+
+    ogs_tlv_free_all(root);
+
+    return pkbuf;
+}
+
+ogs_pkbuf_t *sgsap_build_ue_activity_indication(mme_ue_t *mme_ue)
+{
+    ogs_tlv_t *root = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(mme_ue);
+
+    root = ogs_tlv_add(NULL, OGS_TLV_MODE_T1_L1, SGSAP_IE_IMSI_TYPE,
+            SGSAP_IE_IMSI_LEN, 0, &mme_ue->nas_mobile_identity_imsi);
+
+    /* TODO: Maximum UE Availability Time */
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    if (!pkbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        ogs_tlv_free_all(root);
+        return NULL;
+    }
+    ogs_pkbuf_put_u8(pkbuf, SGSAP_UE_ACTIVITY_INDICATION);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-1);
+
+    ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,
+            pkbuf->data+1, OGS_MAX_SDU_LEN-1));
+
+    ogs_tlv_free_all(root);
+
+    return pkbuf;
+}
+
+ogs_pkbuf_t *sgsap_build_alert_ack(mme_ue_t *mme_ue)
+{
+    ogs_tlv_t *root = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(mme_ue);
+
+    root = ogs_tlv_add(NULL, OGS_TLV_MODE_T1_L1, SGSAP_IE_IMSI_TYPE,
+            SGSAP_IE_IMSI_LEN, 0, &mme_ue->nas_mobile_identity_imsi);
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    if (!pkbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        ogs_tlv_free_all(root);
+        return NULL;
+    }
+    ogs_pkbuf_put_u8(pkbuf, SGSAP_ALERT_ACK);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-1);
+
+    ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,
+            pkbuf->data+1, OGS_MAX_SDU_LEN-1));
+
+    ogs_tlv_free_all(root);
+
+    return pkbuf;
+}
+
+ogs_pkbuf_t *sgsap_build_alert_reject(
+    ogs_nas_mobile_identity_imsi_t *nas_mobile_identity_imsi,
+    int nas_mobile_identity_imsi_len, uint8_t sgs_cause)
+{
+    ogs_tlv_t *root = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(nas_mobile_identity_imsi);
+    ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
+
+    root = ogs_tlv_add(NULL, OGS_TLV_MODE_T1_L1,
+            SGSAP_IE_IMSI_TYPE, SGSAP_IE_IMSI_LEN, 0, nas_mobile_identity_imsi);
+    ogs_tlv_add(root, OGS_TLV_MODE_T1_L1,
+            SGSAP_IE_SGS_CAUSE_TYPE, SGSAP_IE_SGS_CAUSE_LEN, 0, &sgs_cause);
+
+    ogs_debug("    CAUSE[%d]", sgs_cause);
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    if (!pkbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        ogs_tlv_free_all(root);
+        return NULL;
+    }
+    ogs_pkbuf_put_u8(pkbuf, SGSAP_ALERT_REJECT);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-1);
 
     ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,

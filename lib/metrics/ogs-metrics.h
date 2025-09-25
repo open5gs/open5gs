@@ -48,6 +48,7 @@ void ogs_metrics_register_gnb_info(size_t (*fn)(char *buf, size_t buflen));
 extern size_t (*ogs_metrics_enb_info_dumper)(char *buf, size_t buflen);
 void ogs_metrics_register_enb_info(size_t (*fn)(char *buf, size_t buflen));
 
+
 #ifdef __cplusplus
 }
 #endif

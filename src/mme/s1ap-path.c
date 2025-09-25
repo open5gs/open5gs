@@ -879,27 +879,16 @@ int s1ap_send_error_indication(
     return rv;
 }
 
-int s1ap_send_error_indication2(
-        mme_ue_t *mme_ue, S1AP_Cause_PR group, long cause)
+int s1ap_send_error_indication1(
+        enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause)
 {
     int rv;
     mme_enb_t *enb;
-    enb_ue_t *enb_ue;
 
     S1AP_MME_UE_S1AP_ID_t mme_ue_s1ap_id;
     S1AP_ENB_UE_S1AP_ID_t enb_ue_s1ap_id;
 
-    if (!mme_ue) {
-        ogs_error("UE(mme-ue) context has already been removed");
-        return OGS_NOTFOUND;
-    }
-
-    enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
-    if (!enb_ue) {
-        ogs_error("S1 context has already been removed");
-        return OGS_NOTFOUND;
-    }
-
+    ogs_assert(enb_ue);
     enb = mme_enb_find_by_id(enb_ue->enb_id);
     if (!enb) {
         ogs_error("eNB has already been removed");
@@ -914,6 +903,25 @@ int s1ap_send_error_indication2(
     ogs_expect(rv == OGS_OK);
 
     return rv;
+}
+
+int s1ap_send_error_indication2(
+        mme_ue_t *mme_ue, S1AP_Cause_PR group, long cause)
+{
+    enb_ue_t *enb_ue;
+
+    if (!mme_ue) {
+        ogs_error("UE(mme-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+    if (!enb_ue) {
+        ogs_error("S1 context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    return s1ap_send_error_indication1(enb_ue, group, cause);
 }
 
 int s1ap_send_s1_reset_ack(

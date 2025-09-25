@@ -1286,6 +1286,7 @@ void sgwc_s11_handle_release_access_bearers_request(
 
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
 
+        ogs_assert(ogs_list_count(&sess->bearer_list));
         ogs_assert(OGS_OK ==
             sgwc_pfcp_send_session_modification_request(
                 sess, s11_xact->id, gtpbuf,
@@ -1411,7 +1412,16 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
 
         bearer = sgwc_bearer_find_by_ue_ebi(sgwc_ue,
                     req->bearer_contexts[i].eps_bearer_id.u8);
-        ogs_assert(bearer);
+        if (!bearer) {
+            ogs_error("No Bearer Context [%d]",
+                    req->bearer_contexts[i].eps_bearer_id.u8);
+            ogs_gtp_send_error_message(
+                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE,
+                OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
+            return;
+        }
+
         sess = sgwc_sess_find_by_id(bearer->sess_id);
         ogs_assert(sess);
 
@@ -1421,7 +1431,14 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
 
             tunnel = sgwc_tunnel_add(bearer,
                     OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING);
-            ogs_assert(tunnel);
+            if (!tunnel) {
+                ogs_error("sgwc_tunnel_add() failed");
+                ogs_gtp_send_error_message(
+                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                    OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE,
+                    OGS_GTP2_CAUSE_SYSTEM_FAILURE);
+                return;
+            }
 
             tunnel->remote_teid = be32toh(req_teid->teid);
 
@@ -1463,7 +1480,14 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
 
             tunnel = sgwc_tunnel_add(bearer,
                     OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING);
-            ogs_assert(tunnel);
+            if (!tunnel) {
+                ogs_error("sgwc_tunnel_add() failed");
+                ogs_gtp_send_error_message(
+                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                    OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE,
+                    OGS_GTP2_CAUSE_SYSTEM_FAILURE);
+                return;
+            }
 
             tunnel->remote_teid = be32toh(req_teid->teid);
 
@@ -1502,6 +1526,7 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
 
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
 
+        ogs_assert(ogs_list_count(&sess->bearer_list));
         ogs_assert(OGS_OK ==
             sgwc_pfcp_send_session_modification_request(
                 sess, s11_xact->id, gtpbuf,
@@ -1548,10 +1573,18 @@ void sgwc_s11_handle_delete_indirect_data_forwarding_tunnel_request(
 
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
 
-        ogs_assert(OGS_OK ==
-            sgwc_pfcp_send_session_modification_request(
-                sess, s11_xact->id, gtpbuf,
-                OGS_PFCP_MODIFY_INDIRECT| OGS_PFCP_MODIFY_REMOVE));
+        if (ogs_list_count(&sess->bearer_list)) {
+            ogs_assert(OGS_OK ==
+                sgwc_pfcp_send_session_modification_request(
+                    sess, s11_xact->id, gtpbuf,
+                    OGS_PFCP_MODIFY_INDIRECT| OGS_PFCP_MODIFY_REMOVE));
+        } else {
+            ogs_error("No Bearer");
+            ogs_error("    UE IMSI[%s] APN[%s]",
+                    sgwc_ue->imsi_bcd, sess->session.name);
+            ogs_error("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+                    sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
+        }
     }
 }
 

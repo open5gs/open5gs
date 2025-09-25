@@ -30,6 +30,11 @@ extern "C" {
 
 ogs_pkbuf_t *sgsap_build_location_update_request(mme_ue_t *mme_ue);
 ogs_pkbuf_t *sgsap_build_tmsi_reallocation_complete(mme_ue_t *mme_ue);
+ogs_pkbuf_t *sgsap_build_ue_activity_indication(mme_ue_t *mme_ue);
+ogs_pkbuf_t *sgsap_build_alert_ack(mme_ue_t *mme_ue);
+ogs_pkbuf_t *sgsap_build_alert_reject(
+    ogs_nas_mobile_identity_imsi_t *nas_mobile_identity_imsi,
+    int nas_mobile_identity_imsi_len, uint8_t sgs_cause);
 ogs_pkbuf_t *sgsap_build_detach_indication(mme_ue_t *mme_ue);
 ogs_pkbuf_t *sgsap_build_mo_csfb_indication(mme_ue_t *mme_ue);
 ogs_pkbuf_t *sgsap_build_paging_reject(

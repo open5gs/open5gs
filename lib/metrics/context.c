@@ -25,8 +25,6 @@
 
 #define DEFAULT_PROMETHEUS_HTTP_PORT       9090
 
-/* Global (optional) dumper. NULL when no NF registered. */
-
 size_t (*ogs_metrics_pdu_info_dumper)(char *buf, size_t buflen) = NULL;
 size_t (*ogs_metrics_ue_info_dumper)(char *buf, size_t buflen) = NULL;
 size_t (*ogs_metrics_gnb_info_dumper)(char *buf, size_t buflen) = NULL;
@@ -51,8 +49,6 @@ void ogs_metrics_register_enb_info(size_t (*fn)(char *buf, size_t buflen))
 {
     ogs_metrics_enb_info_dumper = fn;
 }
-
-
 int __ogs_metrics_domain;
 static ogs_metrics_context_t self;
 static int context_initialized = 0;
