@@ -1580,11 +1580,11 @@ void sgwc_s11_handle_delete_indirect_data_forwarding_tunnel_request(
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
         bool has_indirect = false;
         ogs_list_for_each(&sess->bearer_list, bearer) {
-            ogs_list_for_each(&bearer->tunnel_list, bearer) {
+            ogs_list_for_each(&bearer->tunnel_list, tunnel) {
                 if (tunnel->interface_type ==
-                      OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING ||
+                        OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING ||
                     tunnel->interface_type ==
-                      OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING) {
+                        OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING) {
                     has_indirect = true;
                     break;
                 }
