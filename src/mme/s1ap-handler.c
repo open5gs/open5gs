@@ -4340,22 +4340,24 @@ void s1ap_handle_handover_notification(
 
     ogs_list_for_each(&mme_ue->sess_list, sess) {
         ogs_list_for_each(&sess->bearer_list, bearer) {
-            bearer->enb_s1u_teid = bearer->target_s1u_teid;
-            ogs_debug("UE[%s] EBI[%d] Update enb_s1u_teid = 0x%x",
-                    mme_ue->imsi_bcd, bearer->ebi, bearer->enb_s1u_teid);
+            if (bearer->target_s1u_ip.ipv4 || bearer->target_s1u_ip.ipv6) {
+                bearer->enb_s1u_teid = bearer->target_s1u_teid;
+                ogs_debug("UE[%s] EBI[%d] Update enb_s1u_teid = 0x%x",
+                        mme_ue->imsi_bcd, bearer->ebi, bearer->enb_s1u_teid);
 
-            memcpy(&bearer->enb_s1u_ip, &bearer->target_s1u_ip,
-                    sizeof(ogs_ip_t));
+                memcpy(&bearer->enb_s1u_ip, &bearer->target_s1u_ip,
+                        sizeof(ogs_ip_t));
 
-            ogs_debug("    IPv4(%d): 0x%x",
-                    bearer->enb_s1u_ip.ipv4, bearer->enb_s1u_ip.addr);
-            ogs_debug("    IPv6(%d):", bearer->enb_s1u_ip.ipv6);
-            ogs_log_hexdump(OGS_LOG_DEBUG,
-                    bearer->enb_s1u_ip.addr6, OGS_IPV6_LEN);
+                ogs_debug("    IPv4(%d): 0x%x",
+                        bearer->enb_s1u_ip.ipv4, bearer->enb_s1u_ip.addr);
+                ogs_debug("    IPv6(%d):", bearer->enb_s1u_ip.ipv6);
+                ogs_log_hexdump(OGS_LOG_DEBUG,
+                        bearer->enb_s1u_ip.addr6, OGS_IPV6_LEN);
 
-            ogs_list_add(
-                    &mme_ue->bearer_to_modify_list, &bearer->to_modify_node);
-
+                ogs_list_add(
+                        &mme_ue->bearer_to_modify_list,
+                        &bearer->to_modify_node);
+            }
         }
     }
 
