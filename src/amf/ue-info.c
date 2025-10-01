@@ -115,7 +115,6 @@
 #include "sbi/openapi/external/cJSON.h"
 #include "metrics/prometheus/json_pager.h"
 
-/* -------- pager state (wired from init) -------- */
 static size_t g_ue_page = 0;
 static size_t g_ue_page_size = 0;
 
@@ -133,7 +132,6 @@ size_t amf_dump_ue_info(char *buf, size_t buflen)
     return amf_dump_ue_info_paged(buf, buflen, page, page_size);
 }
 
-/* -------- small local helpers (no JSON helpers) -------- */
 static inline uint32_t u24_to_u32(ogs_uint24_t v)
 {
     uint32_t x = 0;
@@ -174,37 +172,44 @@ static const char *am_policy_feature_names[64] = {
     /*15*/ "Policy Control Event Exposure",
 };
 
-/* -------- JSON builders: each returns 0 on success, -1 on OOM; they free their own partial trees on failure -------- */
-
-static int add_plmn_string(cJSON *obj, const char *key, const ogs_plmn_id_t *plmn)
-{
-    char s[OGS_PLMNIDSTRLEN] = {0};
-    if (plmn) ogs_plmn_id_to_string(plmn, s);
-    if (!cJSON_AddStringToObject(obj, key, s)) return -1;
-    return 0;
-}
-
+/* -------- JSON builders: 0=OK, -1=OOM. Children are attached only when complete. -------- */
 static int add_snssai_sd_string(cJSON *obj, const char *key, const void *sd_ptr)
 {
     char sd_hex[7] = "ffffff";
     if (sd_ptr) bytes3_to_hex_lower(sd_ptr, sd_hex);
-    if (!cJSON_AddStringToObject(obj, key, sd_hex)) return -1;
+    cJSON *s = cJSON_CreateString(sd_hex);
+    if (!s) return -1;
+    cJSON_AddItemToObjectCS(obj, key, s);
     return 0;
 }
 
 static int add_basic_identity(cJSON *o, const amf_ue_t *ue)
 {
-    if (ue->supi && !cJSON_AddStringToObject(o, "supi", ue->supi)) return -1;
-    if (ue->suci && !cJSON_AddStringToObject(o, "suci", ue->suci)) return -1;
-    if (ue->pei  && !cJSON_AddStringToObject(o, "pei",  ue->pei))  return -1;
+    if (ue->supi && ue->supi[0]) {
+        cJSON *v = cJSON_CreateString(ue->supi); if (!v) return -1;
+        cJSON_AddItemToObjectCS(o, "supi", v);
+    }
+    if (ue->suci && ue->suci[0]) {
+        cJSON *v = cJSON_CreateString(ue->suci); if (!v) return -1;
+        cJSON_AddItemToObjectCS(o, "suci", v);
+    }
+    if (ue->pei && ue->pei[0]) {
+        cJSON *v = cJSON_CreateString(ue->pei); if (!v) return -1;
+        cJSON_AddItemToObjectCS(o, "pei", v);
+    }
 
-    if (!cJSON_AddStringToObject(o, "cm_state", CM_CONNECTED(ue) ? "connected" : "idle"))
-        return -1;
+    {
+        const char *cm = CM_CONNECTED(ue) ? "connected" : "idle";
+        cJSON *v = cJSON_CreateString(cm); if (!v) return -1;
+        cJSON_AddItemToObjectCS(o, "cm_state", v);
+    }
 
+    /* If M-TMSI present, expose GUTI string and m_tmsi numeric */
     if (ue->current.m_tmsi) {
         char plmn_str[OGS_PLMNIDSTRLEN] = {0};
         ogs_plmn_id_to_string(&ue->guami->plmn_id, plmn_str);
 
+        /* ogs_amf_id_to_string() returns heap memory — free it */
         char *amf_hex = ogs_amf_id_to_string(&ue->guami->amf_id);
         const char *amf_str = amf_hex ? amf_hex : "";
 
@@ -212,11 +217,14 @@ static int add_basic_identity(cJSON *o, const amf_ue_t *ue)
         (void)snprintf(guti_buf, sizeof guti_buf, "%s-%s-C%08X",
                        plmn_str, amf_str, (unsigned)ue->current.guti.m_tmsi);
 
-        bool ok = cJSON_AddStringToObject(o, "guti", guti_buf) != NULL
-               && cJSON_AddNumberToObject(o, "m_tmsi", (double)ue->current.guti.m_tmsi) != NULL;
-
+        cJSON *g = cJSON_CreateString(guti_buf);
         if (amf_hex) ogs_free(amf_hex);
-        if (!ok) return -1;
+        if (!g) return -1;
+        cJSON_AddItemToObjectCS(o, "guti", g);
+
+        cJSON *m = cJSON_CreateNumber((double)ue->current.guti.m_tmsi);
+        if (!m) return -1;
+        cJSON_AddItemToObjectCS(o, "m_tmsi", m);
     }
     return 0;
 }
@@ -226,7 +234,9 @@ static int add_gnb(cJSON *parent, const amf_ue_t *ue)
     cJSON *gnb = cJSON_CreateObject();
     if (!gnb) return -1;
 
-    if (!cJSON_AddNumberToObject(gnb, "ostream_id", (double)ue->gnb_ostream_id)) goto fail;
+    cJSON *osid = cJSON_CreateNumber((double)ue->gnb_ostream_id);
+    if (!osid) { cJSON_Delete(gnb); return -1; }
+    cJSON_AddItemToObjectCS(gnb, "ostream_id", osid);
 
     ran_ue_t *ran = ran_ue_find_by_id(ue->ran_ue_id);
     if (ran) {
@@ -234,20 +244,30 @@ static int add_gnb(cJSON *parent, const amf_ue_t *ue)
         uint32_t gnb_id  = (uint32_t)((nci >> 14) & 0x3FFFFF);
         uint32_t cell_id = (uint32_t)(nci & 0x3FFF);
 
-        if (!cJSON_AddNumberToObject(gnb, "amf_ue_ngap_id", (double)ran->amf_ue_ngap_id)) goto fail;
-        if (!cJSON_AddNumberToObject(gnb, "ran_ue_ngap_id", (double)ran->ran_ue_ngap_id)) goto fail;
-        if (!cJSON_AddNumberToObject(gnb, "gnb_id", (double)gnb_id)) goto fail;
-        if (!cJSON_AddNumberToObject(gnb, "cell_id", (double)cell_id)) goto fail;
+        cJSON *a = cJSON_CreateNumber((double)ran->amf_ue_ngap_id);
+        cJSON *r = cJSON_CreateNumber((double)ran->ran_ue_ngap_id);
+        cJSON *g = cJSON_CreateNumber((double)gnb_id);
+        cJSON *c = cJSON_CreateNumber((double)cell_id);
+        if (!a || !r || !g || !c) {
+            if (a) cJSON_Delete(a);
+            if (r) cJSON_Delete(r);
+            if (g) cJSON_Delete(g);
+            if (c) cJSON_Delete(c);
+            cJSON_Delete(gnb);
+            return -1;
+        }
+        cJSON_AddItemToObjectCS(gnb, "amf_ue_ngap_id", a);
+        cJSON_AddItemToObjectCS(gnb, "ran_ue_ngap_id", r);
+        cJSON_AddItemToObjectCS(gnb, "gnb_id", g);
+        cJSON_AddItemToObjectCS(gnb, "cell_id", c);
     } else {
-        if (!cJSON_AddStringToObject(gnb, "status", "not-connected")) goto fail;
+        cJSON *st = cJSON_CreateString("not-connected");
+        if (!st) { cJSON_Delete(gnb); return -1; }
+        cJSON_AddItemToObjectCS(gnb, "status", st);
     }
 
-    cJSON_AddItemToObject(parent, "gnb", gnb);
+    cJSON_AddItemToObjectCS(parent, "gnb", gnb);
     return 0;
-
-fail:
-    cJSON_Delete(gnb);
-    return -1;
 }
 
 static int add_location(cJSON *parent, const amf_ue_t *ue)
@@ -255,48 +275,85 @@ static int add_location(cJSON *parent, const amf_ue_t *ue)
     cJSON *loc = cJSON_CreateObject();
     if (!loc) return -1;
 
-    if (!cJSON_AddNumberToObject(loc, "timestamp", (double)ue->ue_location_timestamp)) goto fail;
+    cJSON *ts = cJSON_CreateNumber((double)ue->ue_location_timestamp);
+    if (!ts) { cJSON_Delete(loc); return -1; }
+    cJSON_AddItemToObjectCS(loc, "timestamp", ts);
 
     /* nr_tai */
     {
         cJSON *tai = cJSON_CreateObject();
-        if (!tai) goto fail;
+        if (!tai) { cJSON_Delete(loc); return -1; }
 
-        if (add_plmn_string(tai, "plmn", &ue->nr_tai.plmn_id) < 0) { cJSON_Delete(tai); goto fail; }
+        char plmn_str[OGS_PLMNIDSTRLEN] = {0};
+        ogs_plmn_id_to_string(&ue->nr_tai.plmn_id, plmn_str);
+        cJSON *p = cJSON_CreateString(plmn_str);
+        if (!p) { cJSON_Delete(tai); cJSON_Delete(loc); return -1; }
+        cJSON_AddItemToObjectCS(tai, "plmn", p);
 
-        const char *tac_hex = ogs_uint24_to_0string(ue->nr_tai.tac);
-        if (!cJSON_AddStringToObject(tai, "tac_hex", tac_hex)) { cJSON_Delete(tai); goto fail; }
-        if (!cJSON_AddNumberToObject(tai, "tac", (double)u24_to_u32(ue->nr_tai.tac))) { cJSON_Delete(tai); goto fail; }
+        char tac_hex[7];
+        (void)snprintf(tac_hex, sizeof tac_hex, "%06x", (unsigned)u24_to_u32(ue->nr_tai.tac));
+        cJSON *th = cJSON_CreateString(tac_hex);
+        cJSON *tn = cJSON_CreateNumber((double)u24_to_u32(ue->nr_tai.tac));
+        if (!th || !tn) { if (th) cJSON_Delete(th); if (tn) cJSON_Delete(tn); cJSON_Delete(tai); cJSON_Delete(loc); return -1; }
+        cJSON_AddItemToObjectCS(tai, "tac_hex", th);
+        cJSON_AddItemToObjectCS(tai, "tac", tn);
 
-        cJSON_AddItemToObject(loc, "nr_tai", tai);
+        cJSON_AddItemToObjectCS(loc, "nr_tai", tai);
     }
 
     /* nr_cgi */
     {
         cJSON *cgi = cJSON_CreateObject();
-        if (!cgi) goto fail;
+        if (!cgi) { cJSON_Delete(loc); return -1; }
 
-        if (add_plmn_string(cgi, "plmn", &ue->nr_cgi.plmn_id) < 0) { cJSON_Delete(cgi); goto fail; }
+        char plmn_str[OGS_PLMNIDSTRLEN] = {0};
+        ogs_plmn_id_to_string(&ue->nr_cgi.plmn_id, plmn_str);
+        cJSON *p = cJSON_CreateString(plmn_str);
+        if (!p) { cJSON_Delete(cgi); cJSON_Delete(loc); return -1; }
+        cJSON_AddItemToObjectCS(cgi, "plmn", p);
 
-        uint64_t nci = ue->nr_cgi.cell_id & 0xFFFFFFFFFULL; /* 36-bit */
+        uint64_t nci     = ue->nr_cgi.cell_id & 0xFFFFFFFFFULL; /* 36-bit */
         uint32_t gnb_id  = (uint32_t)((nci >> 14) & 0x3FFFFF);
         uint32_t cell_id = (uint32_t)(nci & 0x3FFF);
 
-        if (!cJSON_AddNumberToObject(cgi, "nci", (double)nci))            { cJSON_Delete(cgi); goto fail; }
-        if (!cJSON_AddNumberToObject(cgi, "gnb_id", (double)gnb_id))      { cJSON_Delete(cgi); goto fail; }
-        if (!cJSON_AddNumberToObject(cgi, "cell_id", (double)cell_id))    { cJSON_Delete(cgi); goto fail; }
+        cJSON *n = cJSON_CreateNumber((double)nci);
+        cJSON *g = cJSON_CreateNumber((double)gnb_id);
+        cJSON *c = cJSON_CreateNumber((double)cell_id);
+        if (!n || !g || !c) { if (n) cJSON_Delete(n); if (g) cJSON_Delete(g); if (c) cJSON_Delete(c); cJSON_Delete(cgi); cJSON_Delete(loc); return -1; }
+        cJSON_AddItemToObjectCS(cgi, "nci", n);
+        cJSON_AddItemToObjectCS(cgi, "gnb_id", g);
+        cJSON_AddItemToObjectCS(cgi, "cell_id", c);
 
-        cJSON_AddItemToObject(loc, "nr_cgi", cgi);
+        cJSON_AddItemToObjectCS(loc, "nr_cgi", cgi);
     }
 
-    if (add_plmn_string(loc, "last_visited_plmn_id", &ue->last_visited_plmn_id) < 0) goto fail;
+    /* last_visited_plmn_id */
+    {
+        char plmn_str[OGS_PLMNIDSTRLEN] = {0};
+        ogs_plmn_id_to_string(&ue->last_visited_plmn_id, plmn_str);
+        cJSON *lv = cJSON_CreateString(plmn_str);
+        if (!lv) { cJSON_Delete(loc); return -1; }
+        cJSON_AddItemToObjectCS(loc, "last_visited_plmn_id", lv);
+    }
 
-    cJSON_AddItemToObject(parent, "location", loc);
+    cJSON_AddItemToObjectCS(parent, "location", loc);
     return 0;
+}
 
-fail:
-    cJSON_Delete(loc);
-    return -1;
+static int add_msisdn_array(cJSON *parent, const amf_ue_t *ue)
+{
+    cJSON *arr = cJSON_CreateArray();
+    if (!arr) return -1;
+
+    for (int i = 0; i < ue->num_of_msisdn; i++) {
+        if (!ue->msisdn[i] || !ue->msisdn[i][0]) continue;
+        cJSON *s = cJSON_CreateString(ue->msisdn[i]);
+        if (!s) { cJSON_Delete(arr); return -1; }
+        cJSON_AddItemToArray(arr, s);
+    }
+
+    cJSON_AddItemToObjectCS(parent, "msisdn", arr);
+    return 0;
 }
 
 static int add_security(cJSON *parent, const amf_ue_t *ue)
@@ -304,7 +361,12 @@ static int add_security(cJSON *parent, const amf_ue_t *ue)
     cJSON *sec = cJSON_CreateObject();
     if (!sec) return -1;
 
-    if (!cJSON_AddNumberToObject(sec, "valid", (double)SECURITY_CONTEXT_IS_VALID(ue))) goto fail;
+    {
+        int valid_ctx = SECURITY_CONTEXT_IS_VALID(ue);
+        cJSON *v = cJSON_CreateNumber((double)valid_ctx);
+        if (!v) { cJSON_Delete(sec); return -1; }
+        cJSON_AddItemToObjectCS(sec, "valid", v);
+    }
 
     const char *enc =
         ue->selected_enc_algorithm == OGS_NAS_SECURITY_ALGORITHMS_128_NEA2 ? "nea2" :
@@ -316,15 +378,14 @@ static int add_security(cJSON *parent, const amf_ue_t *ue)
         ue->selected_int_algorithm == OGS_NAS_SECURITY_ALGORITHMS_128_NIA1 ? "nia1" :
         ue->selected_int_algorithm == OGS_NAS_SECURITY_ALGORITHMS_128_NIA3 ? "nia3" : "nia0";
 
-    if (!cJSON_AddStringToObject(sec, "enc", enc)) goto fail;
-    if (!cJSON_AddStringToObject(sec, "int", integ)) goto fail;
+    cJSON *e = cJSON_CreateString(enc);
+    cJSON *i = cJSON_CreateString(integ);
+    if (!e || !i) { if (e) cJSON_Delete(e); if (i) cJSON_Delete(i); cJSON_Delete(sec); return -1; }
+    cJSON_AddItemToObjectCS(sec, "enc", e);
+    cJSON_AddItemToObjectCS(sec, "int", i);
 
-    cJSON_AddItemToObject(parent, "security", sec);
+    cJSON_AddItemToObjectCS(parent, "security", sec);
     return 0;
-
-fail:
-    cJSON_Delete(sec);
-    return -1;
 }
 
 static int add_ambr(cJSON *parent, const amf_ue_t *ue)
@@ -332,70 +393,14 @@ static int add_ambr(cJSON *parent, const amf_ue_t *ue)
     cJSON *ambr = cJSON_CreateObject();
     if (!ambr) return -1;
 
-    if (!cJSON_AddNumberToObject(ambr, "downlink", (double)ue->ue_ambr.downlink)) goto fail;
-    if (!cJSON_AddNumberToObject(ambr, "uplink",   (double)ue->ue_ambr.uplink))   goto fail;
+    cJSON *dl = cJSON_CreateNumber((double)ue->ue_ambr.downlink);
+    cJSON *ul = cJSON_CreateNumber((double)ue->ue_ambr.uplink);
+    if (!dl || !ul) { if (dl) cJSON_Delete(dl); if (ul) cJSON_Delete(ul); cJSON_Delete(ambr); return -1; }
 
-    cJSON_AddItemToObject(parent, "ambr", ambr);
-    return 0;
+    cJSON_AddItemToObjectCS(ambr, "downlink", dl);
+    cJSON_AddItemToObjectCS(ambr, "uplink", ul);
 
-fail:
-    cJSON_Delete(ambr);
-    return -1;
-}
-
-static int add_requested_allowed_slices(cJSON *parent, const amf_ue_t *ue)
-{
-    cJSON *req = cJSON_CreateArray();
-    cJSON *allow = cJSON_CreateArray();
-    if (!req || !allow) { if (req) cJSON_Delete(req); if (allow) cJSON_Delete(allow); return -1; }
-
-    /* requested */
-    for (int i = 0; i < ue->requested_nssai.num_of_s_nssai; i++) {
-        const ogs_nas_s_nssai_ie_t *ie = &ue->requested_nssai.s_nssai[i];
-        cJSON *sn = cJSON_CreateObject(); if (!sn) goto fail;
-        if (!cJSON_AddNumberToObject(sn, "sst", (double)ie->sst))       { cJSON_Delete(sn); goto fail; }
-        if (add_snssai_sd_string(sn, "sd", &ie->sd) < 0)                { cJSON_Delete(sn); goto fail; }
-        cJSON_AddItemToArray(req, sn);
-    }
-
-    /* allowed */
-    for (int i = 0; i < ue->allowed_nssai.num_of_s_nssai; i++) {
-        const ogs_nas_s_nssai_ie_t *ie = &ue->allowed_nssai.s_nssai[i];
-        cJSON *sn = cJSON_CreateObject(); if (!sn) goto fail;
-        if (!cJSON_AddNumberToObject(sn, "sst", (double)ie->sst))       { cJSON_Delete(sn); goto fail; }
-        if (add_snssai_sd_string(sn, "sd", &ie->sd) < 0)                { cJSON_Delete(sn); goto fail; }
-        cJSON_AddItemToArray(allow, sn);
-    }
-
-    if (!cJSON_AddItemToObject(parent, "requested_slices", req)) { /* void in cJSON, keep for symmetry */ }
-    if (!cJSON_AddItemToObject(parent, "allowed_slices", allow)) { /* void */ }
-
-    if (!cJSON_AddNumberToObject(parent, "requested_slices_count",
-                                 (double)ue->requested_nssai.num_of_s_nssai)) return -1;
-    if (!cJSON_AddNumberToObject(parent, "allowed_slices_count",
-                                 (double)ue->allowed_nssai.num_of_s_nssai))   return -1;
-
-    return 0;
-
-fail:
-    cJSON_Delete(req);
-    cJSON_Delete(allow);
-    return -1;
-}
-
-static int add_msisdn_array(cJSON *parent, const amf_ue_t *ue)
-{
-    cJSON *arr = cJSON_CreateArray();
-    if (!arr) return -1;
-
-    for (int i = 0; i < ue->num_of_msisdn; i++) {
-        if (!ue->msisdn[i]) continue;
-        cJSON *s = cJSON_CreateString(ue->msisdn[i]);
-        if (!s) { cJSON_Delete(arr); return -1; }
-        cJSON_AddItemToArray(arr, s);
-    }
-
-    cJSON_AddItemToObject(parent, "msisdn", arr);
+    cJSON_AddItemToObjectCS(parent, "ambr", ambr);
     return 0;
 }
 
@@ -410,40 +415,123 @@ static int add_pdu_sessions(cJSON *parent, const amf_ue_t *ue)
         cJSON *it = cJSON_CreateObject();
         if (!it) { cJSON_Delete(arr); return -1; }
 
-        if (!cJSON_AddNumberToObject(it, "psi", (double)sess->psi)) { cJSON_Delete(it); cJSON_Delete(arr); return -1; }
-        if (sess->dnn && !cJSON_AddStringToObject(it, "dnn", sess->dnn)) { cJSON_Delete(it); cJSON_Delete(arr); return -1; }
+        /* PSI */
+        {
+            cJSON *n = cJSON_CreateNumber((double)sess->psi);
+            if (!n) { cJSON_Delete(it); cJSON_Delete(arr); return -1; }
+            cJSON_AddItemToObjectCS(it, "psi", n);
+        }
 
-        cJSON *sn = cJSON_CreateObject();
-        if (!sn) { cJSON_Delete(it); cJSON_Delete(arr); return -1; }
-        if (!cJSON_AddNumberToObject(sn, "sst", (double)sess->s_nssai.sst)) { cJSON_Delete(sn); cJSON_Delete(it); cJSON_Delete(arr); return -1; }
-        if (add_snssai_sd_string(sn, "sd", &sess->s_nssai.sd) < 0) { cJSON_Delete(sn); cJSON_Delete(it); cJSON_Delete(arr); return -1; }
-        cJSON_AddItemToObject(it, "snssai", sn);
+        /* DNN */
+        if (sess->dnn && sess->dnn[0]) {
+            cJSON *d = cJSON_CreateString(sess->dnn);
+            if (!d) { cJSON_Delete(it); cJSON_Delete(arr); return -1; }
+            cJSON_AddItemToObjectCS(it, "dnn", d);
+        }
 
-        if (!cJSON_AddBoolToObject(it, "lbo_roaming_allowed", sess->lbo_roaming_allowed)) { cJSON_Delete(it); cJSON_Delete(arr); return -1; }
-        if (!cJSON_AddNumberToObject(it, "resource_status", (double)sess->resource_status)) { cJSON_Delete(it); cJSON_Delete(arr); return -1; }
-        if (!cJSON_AddBoolToObject(it, "n1_released", sess->n1_released)) { cJSON_Delete(it); cJSON_Delete(arr); return -1; }
-        if (!cJSON_AddBoolToObject(it, "n2_released", sess->n2_released)) { cJSON_Delete(it); cJSON_Delete(arr); return -1; }
+        /* S-NSSAI */
+        {
+            cJSON *sn = cJSON_CreateObject();
+            if (!sn) { cJSON_Delete(it); cJSON_Delete(arr); return -1; }
+            cJSON *sst = cJSON_CreateNumber((double)sess->s_nssai.sst);
+            if (!sst) { cJSON_Delete(sn); cJSON_Delete(it); cJSON_Delete(arr); return -1; }
+            cJSON_AddItemToObjectCS(sn, "sst", sst);
+            if (add_snssai_sd_string(sn, "sd", &sess->s_nssai.sd) < 0) { cJSON_Delete(sn); cJSON_Delete(it); cJSON_Delete(arr); return -1; }
+            cJSON_AddItemToObjectCS(it, "snssai", sn);
+        }
+
+        /* Flags/counters mirrored as-is */
+        {
+            cJSON *lbo = cJSON_CreateBool(sess->lbo_roaming_allowed);
+            cJSON *rs  = cJSON_CreateNumber((double)sess->resource_status);
+            cJSON *n1  = cJSON_CreateBool(sess->n1_released);
+            cJSON *n2  = cJSON_CreateBool(sess->n2_released);
+            if (!lbo || !rs || !n1 || !n2) {
+                if (lbo) cJSON_Delete(lbo);
+                if (rs)  cJSON_Delete(rs);
+                if (n1)  cJSON_Delete(n1);
+                if (n2)  cJSON_Delete(n2);
+                cJSON_Delete(it);
+                cJSON_Delete(arr);
+                return -1;
+            }
+            cJSON_AddItemToObjectCS(it, "lbo_roaming_allowed", lbo);
+            cJSON_AddItemToObjectCS(it, "resource_status", rs);
+            cJSON_AddItemToObjectCS(it, "n1_released", n1);
+            cJSON_AddItemToObjectCS(it, "n2_released", n2);
+        }
 
         cJSON_AddItemToArray(arr, it);
         count++;
     }
 
-    cJSON_AddItemToObject(parent, "pdu_sessions", arr);
-    if (!cJSON_AddNumberToObject(parent, "pdu_sessions_count", (double)count)) return -1;
+    cJSON_AddItemToObjectCS(parent, "pdu_sessions", arr);
+    {
+        cJSON *n = cJSON_CreateNumber((double)count);
+        if (!n) return -1;
+        cJSON_AddItemToObjectCS(parent, "pdu_sessions_count", n);
+    }
+    return 0;
+}
+
+static int add_requested_allowed_slices(cJSON *parent, const amf_ue_t *ue)
+{
+    cJSON *req = cJSON_CreateArray();
+    cJSON *allow = cJSON_CreateArray();
+    if (!req || !allow) { if (req) cJSON_Delete(req); if (allow) cJSON_Delete(allow); return -1; }
+
+    /* requested */
+    for (int i = 0; i < ue->requested_nssai.num_of_s_nssai; i++) {
+        const ogs_nas_s_nssai_ie_t *ie = &ue->requested_nssai.s_nssai[i];
+        cJSON *sn = cJSON_CreateObject();
+        if (!sn) { cJSON_Delete(req); cJSON_Delete(allow); return -1; }
+        cJSON *sst = cJSON_CreateNumber((double)ie->sst);
+        if (!sst) { cJSON_Delete(sn); cJSON_Delete(req); cJSON_Delete(allow); return -1; }
+        cJSON_AddItemToObjectCS(sn, "sst", sst);
+        if (add_snssai_sd_string(sn, "sd", &ie->sd) < 0) { cJSON_Delete(sn); cJSON_Delete(req); cJSON_Delete(allow); return -1; }
+        cJSON_AddItemToArray(req, sn);
+    }
+
+    /* allowed */
+    for (int i = 0; i < ue->allowed_nssai.num_of_s_nssai; i++) {
+        const ogs_nas_s_nssai_ie_t *ie = &ue->allowed_nssai.s_nssai[i];
+        cJSON *sn = cJSON_CreateObject();
+        if (!sn) { cJSON_Delete(req); cJSON_Delete(allow); return -1; }
+        cJSON *sst = cJSON_CreateNumber((double)ie->sst);
+        if (!sst) { cJSON_Delete(sn); cJSON_Delete(req); cJSON_Delete(allow); return -1; }
+        cJSON_AddItemToObjectCS(sn, "sst", sst);
+        if (add_snssai_sd_string(sn, "sd", &ie->sd) < 0) { cJSON_Delete(sn); cJSON_Delete(req); cJSON_Delete(allow); return -1; }
+        cJSON_AddItemToArray(allow, sn);
+    }
+
+    cJSON_AddItemToObjectCS(parent, "requested_slices", req);
+    cJSON_AddItemToObjectCS(parent, "allowed_slices", allow);
+
+    cJSON *rc = cJSON_CreateNumber((double)ue->requested_nssai.num_of_s_nssai);
+    cJSON *ac = cJSON_CreateNumber((double)ue->allowed_nssai.num_of_s_nssai);
+    if (!rc || !ac) { if (rc) cJSON_Delete(rc); if (ac) cJSON_Delete(ac); return -1; }
+    cJSON_AddItemToObjectCS(parent, "requested_slices_count", rc);
+    cJSON_AddItemToObjectCS(parent, "allowed_slices_count", ac);
+
     return 0;
 }
 
 static int add_am_policy_features(cJSON *parent, const amf_ue_t *ue)
 {
     uint64_t f = ue->am_policy_control_features;
-    if (!cJSON_AddNumberToObject(parent, "am_policy_features", (double)f)) return -1;
+
+    cJSON *fv = cJSON_CreateNumber((double)f);
+    if (!fv) return -1;
+    cJSON_AddItemToObjectCS(parent, "am_policy_features", fv);
 
     cJSON *feat = cJSON_CreateObject();
     if (!feat) return -1;
 
     char hex[2 + 16 + 1];
     (void)snprintf(hex, sizeof hex, "0x%016" PRIx64, f);
-    if (!cJSON_AddStringToObject(feat, "hex", hex)) { cJSON_Delete(feat); return -1; }
+    cJSON *hx = cJSON_CreateString(hex);
+    if (!hx) { cJSON_Delete(feat); return -1; }
+    cJSON_AddItemToObjectCS(feat, "hex", hx);
 
     cJSON *bits = cJSON_CreateArray();
     cJSON *labels = cJSON_CreateArray();
@@ -466,9 +554,9 @@ static int add_am_policy_features(cJSON *parent, const amf_ue_t *ue)
         }
     }
 
-    cJSON_AddItemToObject(feat, "bits", bits);
-    cJSON_AddItemToObject(feat, "labels", labels);
-    cJSON_AddItemToObject(parent, "am_policy_features_info", feat);
+    cJSON_AddItemToObjectCS(feat, "bits", bits);
+    cJSON_AddItemToObjectCS(feat, "labels", labels);
+    cJSON_AddItemToObjectCS(parent, "am_policy_features_info", feat);
     return 0;
 }
 
@@ -494,8 +582,6 @@ fail:
     return NULL;
 }
 
-/* -------- top-level (paged) -------- */
-
 size_t amf_dump_ue_info_paged(char *buf, size_t buflen, size_t page, size_t page_size)
 {
     if (!buf || buflen == 0) return 0;
@@ -514,11 +600,11 @@ size_t amf_dump_ue_info_paged(char *buf, size_t buflen, size_t page, size_t page
     amf_context_t *ctxt = amf_self();
 
     cJSON *root = cJSON_CreateObject();
-    if (!root) { if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; } if (buflen) buf[0] = '\0'; return 0; }
+    if (!root) { if (buflen) buf[0] = '\0'; return 0; }
 
     cJSON *items = cJSON_CreateArray();
-    if (!items) { cJSON_Delete(root); if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; } if (buflen) buf[0] = '\0'; return 0; }
-    cJSON_AddItemToObject(root, "items", items);
+    if (!items) { cJSON_Delete(root); if (buflen) buf[0] = '\0'; return 0; }
+    cJSON_AddItemToObjectCS(root, "items", items);
 
     size_t idx = 0, emitted = 0;
     bool has_next = false;

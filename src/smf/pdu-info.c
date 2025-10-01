@@ -60,18 +60,16 @@
  * }
  */ 
 
-
 #include <string.h>
 #include <stdbool.h>
-#include <limits.h> 
+#include <limits.h>
 
-#include "ogs-core.h"      
-#include "context.h"      
+#include "ogs-core.h"
+#include "context.h"
 #include "pdu-info.h"
 #include "metrics/prometheus/pager.h"
 #include "sbi/openapi/external/cJSON.h"
 #include "metrics/prometheus/json_pager.h"
-
 
 static size_t g_page      = SIZE_MAX;
 static size_t g_page_size = 0;
@@ -153,18 +151,17 @@ static cJSON *build_snssai_object(const smf_sess_t *sess)
     cJSON *sn = cJSON_CreateObject();
     if (!sn) return NULL;
 
-    if (!cJSON_AddNumberToObject(sn, "sst", (unsigned)sess->s_nssai.sst))
-        goto end;
+    cJSON *sst = cJSON_CreateNumber((double)sess->s_nssai.sst);
+    if (!sst) { cJSON_Delete(sn); return NULL; }
+    cJSON_AddItemToObjectCS(sn, "sst", sst);
 
     char sd[7];
     snprintf(sd, sizeof sd, "%06x", (unsigned)u24_to_u32(sess->s_nssai.sd));
-    if (!cJSON_AddStringToObject(sn, "sd", sd))
-        goto end;
+    cJSON *sdj = cJSON_CreateString(sd);
+    if (!sdj) { cJSON_Delete(sn); return NULL; }
+    cJSON_AddItemToObjectCS(sn, "sd", sdj);
 
     return sn;
-end:
-    cJSON_Delete(sn);
-    return NULL;
 }
 
 static cJSON *build_qos_flows_array_5g(const smf_sess_t *sess)
@@ -177,20 +174,22 @@ static cJSON *build_qos_flows_array_5g(const smf_sess_t *sess)
         if (!b || b->qfi == 0) continue;
 
         cJSON *q = cJSON_CreateObject();
-        if (!q) goto end;
+        if (!q) { cJSON_Delete(arr); return NULL; }
 
-        if (!cJSON_AddNumberToObject(q, "qfi", (unsigned)b->qfi)) { cJSON_Delete(q); goto end; }
+        cJSON *qfi = cJSON_CreateNumber((double)(unsigned)b->qfi);
+        if (!qfi) { cJSON_Delete(q); cJSON_Delete(arr); return NULL; }
+        cJSON_AddItemToObjectCS(q, "qfi", qfi);
+
         if (b->qos.index > 0) {
-            if (!cJSON_AddNumberToObject(q, "5qi", (unsigned)b->qos.index)) { cJSON_Delete(q); goto end; }
+            cJSON *q5 = cJSON_CreateNumber((double)(unsigned)b->qos.index);
+            if (!q5) { cJSON_Delete(q); cJSON_Delete(arr); return NULL; }
+            cJSON_AddItemToObjectCS(q, "5qi", q5);
         }
 
-        cJSON_AddItemToArray(arr, q); 
+        cJSON_AddItemToArray(arr, q);
     }
 
     return arr;
-end:
-    cJSON_Delete(arr);
-    return NULL;
 }
 
 static cJSON *build_qos_flows_array_lte(const smf_sess_t *sess)
@@ -206,20 +205,22 @@ static cJSON *build_qos_flows_array_lte(const smf_sess_t *sess)
         if (qci_val == 0) qci_val = (unsigned)sess->session.qos.index;
 
         cJSON *q = cJSON_CreateObject();
-        if (!q) goto end;
+        if (!q) { cJSON_Delete(arr); return NULL; }
 
-        if (!cJSON_AddNumberToObject(q, "ebi", (unsigned)b->ebi)) { cJSON_Delete(q); goto end; }
+        cJSON *ebi = cJSON_CreateNumber((double)(unsigned)b->ebi);
+        if (!ebi) { cJSON_Delete(q); cJSON_Delete(arr); return NULL; }
+        cJSON_AddItemToObjectCS(q, "ebi", ebi);
+
         if (qci_val > 0) {
-            if (!cJSON_AddNumberToObject(q, "qci", qci_val)) { cJSON_Delete(q); goto end; }
+            cJSON *qci = cJSON_CreateNumber((double)qci_val);
+            if (!qci) { cJSON_Delete(q); cJSON_Delete(arr); return NULL; }
+            cJSON_AddItemToObjectCS(q, "qci", qci);
         }
 
-        cJSON_AddItemToArray(arr, q); 
+        cJSON_AddItemToArray(arr, q);
     }
 
     return arr;
-end:
-    cJSON_Delete(arr);
-    return NULL;
 }
 
 static cJSON *build_single_pdu_object(const smf_sess_t *sess, int *any_active, int *any_unknown)
@@ -230,11 +231,20 @@ static cJSON *build_single_pdu_object(const smf_sess_t *sess, int *any_active, i
     /* 5G vs LTE fields */
     const bool is5g = looks_5g_sess(sess);
     if (is5g) {
-        if (!cJSON_AddNumberToObject(pdu, "psi", (unsigned)sess->psi)) goto end;
-        if (!cJSON_AddStringToObject(pdu, "dnn", sess->session.name ? sess->session.name : "")) goto end;
+        cJSON *psi = cJSON_CreateNumber((double)(unsigned)sess->psi);
+        if (!psi) { cJSON_Delete(pdu); return NULL; }
+        cJSON_AddItemToObjectCS(pdu, "psi", psi);
+
+        const char *dnn_c = (sess->session.name ? sess->session.name : "");
+        cJSON *dnn = cJSON_CreateString(dnn_c);
+        if (!dnn) { cJSON_Delete(pdu); return NULL; }
+        cJSON_AddItemToObjectCS(pdu, "dnn", dnn);
     } else {
-        if (sess->psi > 0)
-            if (!cJSON_AddNumberToObject(pdu, "psi", (unsigned)sess->psi)) goto end;
+        if (sess->psi > 0) {
+            cJSON *psi = cJSON_CreateNumber((double)(unsigned)sess->psi);
+            if (!psi) { cJSON_Delete(pdu); return NULL; }
+            cJSON_AddItemToObjectCS(pdu, "psi", psi);
+        }
 
         /* EBI root if present */
         unsigned ebi_root = 0;
@@ -242,8 +252,14 @@ static cJSON *build_single_pdu_object(const smf_sess_t *sess, int *any_active, i
         ogs_list_for_each(&((smf_sess_t *)sess)->bearer_list, b0) {
             if (b0 && b0->ebi > 0) { ebi_root = (unsigned)b0->ebi; break; }
         }
-        if (!cJSON_AddNumberToObject(pdu, "ebi", ebi_root)) goto end;
-        if (!cJSON_AddStringToObject(pdu, "apn", sess->session.name ? sess->session.name : "")) goto end;
+        cJSON *ebi = cJSON_CreateNumber((double)ebi_root);
+        if (!ebi) { cJSON_Delete(pdu); return NULL; }
+        cJSON_AddItemToObjectCS(pdu, "ebi", ebi);
+
+        const char *apn_c = (sess->session.name ? sess->session.name : "");
+        cJSON *apn = cJSON_CreateString(apn_c);
+        if (!apn) { cJSON_Delete(pdu); return NULL; }
+        cJSON_AddItemToObjectCS(pdu, "apn", apn);
     }
 
     /* IPs */
@@ -252,39 +268,46 @@ static cJSON *build_single_pdu_object(const smf_sess_t *sess, int *any_active, i
         char ip6[OGS_ADDRSTRLEN] = "";
         if (sess->ipv4) OGS_INET_NTOP(&sess->ipv4->addr, ip4);
         if (sess->ipv6) OGS_INET6_NTOP(&sess->ipv6->addr, ip6);
-        if (ip4[0]) { if (!cJSON_AddStringToObject(pdu, "ipv4", ip4)) goto end; }
-        if (ip6[0]) { if (!cJSON_AddStringToObject(pdu, "ipv6", ip6)) goto end; }
+
+        if (ip4[0]) {
+            cJSON *s = cJSON_CreateString(ip4);
+            if (!s) { cJSON_Delete(pdu); return NULL; }
+            cJSON_AddItemToObjectCS(pdu, "ipv4", s);
+        }
+        if (ip6[0]) {
+            cJSON *s = cJSON_CreateString(ip6);
+            if (!s) { cJSON_Delete(pdu); return NULL; }
+            cJSON_AddItemToObjectCS(pdu, "ipv6", s);
+        }
     }
 
     /* S-NSSAI */
     {
         cJSON *sn = build_snssai_object(sess);
-        if (!sn) goto end;
-        cJSON_AddItemToObject(pdu, "snssai", sn); 
+        if (!sn) { cJSON_Delete(pdu); return NULL; }
+        cJSON_AddItemToObjectCS(pdu, "snssai", sn);
     }
 
     /* QoS flows */
     {
         cJSON *qarr = is5g ? build_qos_flows_array_5g(sess)
                            : build_qos_flows_array_lte(sess);
-        if (!qarr) goto end;
-        cJSON_AddItemToObject(pdu, "qos_flows", qarr);
+        if (!qarr) { cJSON_Delete(pdu); return NULL; }
+        cJSON_AddItemToObjectCS(pdu, "qos_flows", qarr);
     }
 
     /* PDU state + UE activity aggregation */
     {
         const char *state = is5g ? pdu_state_from_5g(sess) : pdu_state_from_lte(sess);
-        if (!cJSON_AddStringToObject(pdu, "pdu_state", state)) goto end;
+        cJSON *st = cJSON_CreateString(state);
+        if (!st) { cJSON_Delete(pdu); return NULL; }
+        cJSON_AddItemToObjectCS(pdu, "pdu_state", st);
 
         if (any_active && !strcmp(state, "active")) *any_active = 1;
         else if (any_unknown && !strcmp(state, "unknown")) *any_unknown = 1;
     }
 
     return pdu;
-
-end:
-    cJSON_Delete(pdu);
-    return NULL;
 }
 
 static cJSON *build_ue_object(const smf_ue_t *ue)
@@ -295,32 +318,33 @@ static cJSON *build_ue_object(const smf_ue_t *ue)
     /* UE identity */
     const char *id = (ue->supi && ue->supi[0]) ? ue->supi :
                      (ue->imsi_bcd[0] ? ue->imsi_bcd : "");
-    if (!cJSON_AddStringToObject(ueo, "supi", id)) goto end;
+    cJSON *idj = cJSON_CreateString(id);
+    if (!idj) { cJSON_Delete(ueo); return NULL; }
+    cJSON_AddItemToObjectCS(ueo, "supi", idj);
 
     /* PDUs */
-    cJSON *pdus = cJSON_AddArrayToObject(ueo, "pdu");
-    if (!pdus) goto end;
+    cJSON *pdus = cJSON_CreateArray();
+    if (!pdus) { cJSON_Delete(ueo); return NULL; }
 
     int any_active = 0, any_unknown = 0;
 
     smf_sess_t *sess = NULL;
     ogs_list_for_each(&ue->sess_list, sess) {
         cJSON *pdu = build_single_pdu_object(sess, &any_active, &any_unknown);
-        if (!pdu) goto end;
-        cJSON_AddItemToArray(pdus, pdu); 
+        if (!pdu) { cJSON_Delete(pdus); cJSON_Delete(ueo); return NULL; }
+        cJSON_AddItemToArray(pdus, pdu);
     }
+    cJSON_AddItemToObjectCS(ueo, "pdu", pdus);
 
     /* UE activity */
     {
         const char *ue_act = any_active ? "active" : (any_unknown ? "unknown" : "idle");
-        if (!cJSON_AddStringToObject(ueo, "ue_activity", ue_act)) goto end;
+        cJSON *ua = cJSON_CreateString(ue_act);
+        if (!ua) { cJSON_Delete(ueo); return NULL; }
+        cJSON_AddItemToObjectCS(ueo, "ue_activity", ua);
     }
 
     return ueo;
-
-end:
-    cJSON_Delete(ueo);
-    return NULL;
 }
 
 size_t smf_dump_pdu_info_paged(char *buf, size_t buflen, size_t page, size_t page_size)
@@ -358,12 +382,12 @@ size_t smf_dump_pdu_info_paged(char *buf, size_t buflen, size_t page, size_t pag
         cJSON *ueo = build_ue_object(ue);
         if (!ueo) { oom = true; break; }
 
-        cJSON_AddItemToArray(items, ueo); 
+        cJSON_AddItemToArray(items, ueo);
         emitted++;
         idx++;
     }
 
-    cJSON_AddItemToObject(root, "items", items);
+    cJSON_AddItemToObjectCS(root, "items", items);
     json_pager_add_trailing(root, no_paging, page, page_size, emitted, has_next && !oom, "/pdu-info", oom);
 
     return json_pager_finalize(root, buf, buflen);

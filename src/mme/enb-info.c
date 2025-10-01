@@ -54,7 +54,7 @@
  *     "count": 1
  *   }
  * }
- */
+*/
 
 #include <stdio.h>
 #include <string.h>
@@ -63,7 +63,6 @@
 
 #include "ogs-core.h"
 #include "ogs-proto.h"
-#include "ogs-app.h"
 #include "mme-context.h"
 #include "enb-info.h"
 
@@ -74,7 +73,6 @@
 #define ENB_INFO_PAGE_SIZE_DEFAULT 100U
 #endif
 
-/* -------- pager state (set by metrics glue) -------- */
 static size_t g_enb_page = 0;
 static size_t g_enb_page_size = 0;
 
@@ -92,18 +90,13 @@ size_t mme_dump_enb_info(char *buf, size_t buflen)
     return mme_dump_enb_info_paged(buf, buflen, page, page_size);
 }
 
-/* -------- small helpers (no heap alloc; safe) -------- */
-
 static inline const char *safe_sa_str(const ogs_sockaddr_t *sa)
 {
     if (!sa) return "";
     int fam = ((const struct sockaddr *)&sa->sa)->sa_family;
     if (fam != AF_INET && fam != AF_INET6) return "";
-    /* library returns a static buffer; safe to use */
     return ogs_sockaddr_to_string_static((ogs_sockaddr_t *)sa);
 }
-
-/* -------- main (paged) -------- */
 
 size_t mme_dump_enb_info_paged(char *buf, size_t buflen, size_t page, size_t page_size)
 {
@@ -124,11 +117,20 @@ size_t mme_dump_enb_info_paged(char *buf, size_t buflen, size_t page, size_t pag
 
     /* root */
     cJSON *root = cJSON_CreateObject();
-    if (!root) { if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; } if (buflen) buf[0] = '\0'; return 0; }
+    if (!root) {
+        if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; }
+        if (buflen) buf[0] = '\0';
+        return 0;
+    }
 
     /* items array */
     cJSON *items = cJSON_AddArrayToObject(root, "items");
-    if (!items) { cJSON_Delete(root); if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; } if (buflen) buf[0] = '\0'; return 0; }
+    if (!items) {
+        cJSON_Delete(root);
+        if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; }
+        if (buflen) buf[0] = '\0';
+        return 0;
+    }
 
     size_t idx = 0, emitted = 0;
     bool has_next = false;
@@ -137,116 +139,112 @@ size_t mme_dump_enb_info_paged(char *buf, size_t buflen, size_t page, size_t pag
     mme_enb_t *enb = NULL;
     ogs_list_for_each(&ctxt->enb_list, enb) {
         int act = json_pager_advance(no_paging, idx, start_index, emitted, page_size, &has_next);
-        if (act == 1) { idx++; continue; }   /* skip */
-        if (act == 2) break;                 /* stop */
+        if (act == 1) { idx++; continue; }
+        if (act == 2) break;
 
-        /* count UEs for this eNB */
+        /* Count connected UEs on this eNB */
         size_t num_connected_ues = 0;
         {
-            enb_ue_t *ue = NULL;
-            ogs_list_for_each(&enb->enb_ue_list, ue) num_connected_ues++;
+            enb_ue_t *ue_it = NULL;
+            ogs_list_for_each(&enb->enb_ue_list, ue_it) num_connected_ues++;
         }
 
-        /* eNB object */
+        /* eNB object (build fully before attaching) */
         cJSON *e = cJSON_CreateObject();
         if (!e) { oom = true; break; }
 
-        /* "enb_id" */
-        if (!cJSON_AddNumberToObject(e, "enb_id", (double)(unsigned)enb->enb_id)) { goto e_fail; }
+        /* enb_id */
+        if (!cJSON_AddNumberToObject(e, "enb_id", (double)(unsigned)enb->enb_id)) { cJSON_Delete(e); oom = true; break; }
 
-        /* "plmn" */
+        /* plmn */
         {
-            char s[OGS_PLMNIDSTRLEN] = {0};
-            ogs_plmn_id_to_string(&enb->plmn_id, s);
-            if (!cJSON_AddStringToObject(e, "plmn", s)) { goto e_fail; }
+            char plmn_str[OGS_PLMNIDSTRLEN] = {0};
+            ogs_plmn_id_to_string(&enb->plmn_id, plmn_str);
+            if (!cJSON_AddStringToObject(e, "plmn", plmn_str)) { cJSON_Delete(e); oom = true; break; }
         }
 
-        /* network { "mme_name": ... } */
+        /* network */
         {
             cJSON *network = cJSON_CreateObject();
-            if (!network) goto e_fail;
+            if (!network) { cJSON_Delete(e); oom = true; break; }
             if (!cJSON_AddStringToObject(network, "mme_name", ctxt->mme_name ? ctxt->mme_name : "")) {
-                cJSON_Delete(network); goto e_fail;
+                cJSON_Delete(network); cJSON_Delete(e); oom = true; break;
             }
-            cJSON_AddItemToObject(e, "network", network);
+            cJSON_AddItemToObjectCS(e, "network", network);
         }
 
-        /* s1 + nested sctp */
+        /* s1 + sctp block */
         {
             cJSON *s1 = cJSON_CreateObject();
-            if (!s1) goto e_fail;
+            if (!s1) { cJSON_Delete(e); oom = true; break; }
 
             if (!cJSON_AddBoolToObject(s1, "setup_success", enb->state.s1_setup_success ? 1 : 0)) {
-                cJSON_Delete(s1); goto e_fail;
+                cJSON_Delete(s1); cJSON_Delete(e); oom = true; break;
             }
 
+            /*  sctp  */
             cJSON *sctp = cJSON_CreateObject();
-            if (!sctp) { cJSON_Delete(s1); goto e_fail; }
+            if (!sctp) { cJSON_Delete(s1); cJSON_Delete(e); oom = true; break; }
 
             if (!cJSON_AddStringToObject(sctp, "peer", safe_sa_str(enb->sctp.addr))) {
-                cJSON_Delete(sctp); cJSON_Delete(s1); goto e_fail;
+                cJSON_Delete(sctp); cJSON_Delete(s1); cJSON_Delete(e); oom = true; break;
             }
             if (!cJSON_AddNumberToObject(sctp, "max_out_streams", (double)enb->max_num_of_ostreams)) {
-                cJSON_Delete(sctp); cJSON_Delete(s1); goto e_fail;
+                cJSON_Delete(sctp); cJSON_Delete(s1); cJSON_Delete(e); oom = true; break;
             }
             if (!cJSON_AddNumberToObject(sctp, "next_ostream_id", (double)(unsigned)enb->ostream_id)) {
-                cJSON_Delete(sctp); cJSON_Delete(s1); goto e_fail;
+                cJSON_Delete(sctp); cJSON_Delete(s1); cJSON_Delete(e); oom = true; break;
             }
 
-            cJSON_AddItemToObject(s1, "sctp", sctp);
-            cJSON_AddItemToObject(e, "s1", s1);
+            cJSON_AddItemToObjectCS(s1, "sctp", sctp);
+            cJSON_AddItemToObjectCS(e, "s1", s1);
         }
 
-        /* supported_ta_list (LTE: 16-bit TAC) */
+        /* supported_ta_list (LTE TAC is 16-bit) */
         {
             cJSON *tas = cJSON_CreateArray();
-            if (!tas) goto e_fail;
+            if (!tas) { cJSON_Delete(e); oom = true; break; }
+
+            bool inner_oom = false;
 
             for (int t = 0; t < enb->num_of_supported_ta_list; t++) {
                 cJSON *ta = cJSON_CreateObject();
-                if (!ta) { cJSON_Delete(tas); goto e_fail; }
+                if (!ta) { inner_oom = true; break; }
 
                 char tac_hex[5];
                 snprintf(tac_hex, sizeof tac_hex, "%04X", (unsigned)enb->supported_ta_list[t].tac);
                 if (!cJSON_AddStringToObject(ta, "tac", tac_hex)) {
-                    cJSON_Delete(ta); cJSON_Delete(tas); goto e_fail;
+                    cJSON_Delete(ta); inner_oom = true; break;
                 }
 
-                /* plmn string for TA entry */
-                char plmn_s[OGS_PLMNIDSTRLEN] = {0};
-                ogs_plmn_id_to_string(&enb->supported_ta_list[t].plmn_id, plmn_s);
-                if (!cJSON_AddStringToObject(ta, "plmn", plmn_s)) {
-                    cJSON_Delete(ta); cJSON_Delete(tas); goto e_fail;
+                char ta_plmn[OGS_PLMNIDSTRLEN] = {0};
+                ogs_plmn_id_to_string(&enb->supported_ta_list[t].plmn_id, ta_plmn);
+                if (!cJSON_AddStringToObject(ta, "plmn", ta_plmn)) {
+                    cJSON_Delete(ta); inner_oom = true; break;
                 }
 
                 cJSON_AddItemToArray(tas, ta);
             }
 
-            cJSON_AddItemToObject(e, "supported_ta_list", tas);
+            if (inner_oom) { cJSON_Delete(tas); cJSON_Delete(e); oom = true; break; }
+
+            cJSON_AddItemToObjectCS(e, "supported_ta_list", tas);
         }
 
         /* num_connected_ues */
         if (!cJSON_AddNumberToObject(e, "num_connected_ues", (double)num_connected_ues)) {
-            goto e_fail;
+            cJSON_Delete(e); oom = true; break;
         }
 
-        /* success: append to items */
+        /* success -> append to items[] */
         cJSON_AddItemToArray(items, e);
         emitted++;
         idx++;
-        continue;
-
-    e_fail:
-        cJSON_Delete(e);
-        oom = true;
-        idx++;
-        break;
     }
 
-    /* trailing pager block */
-    json_pager_add_trailing(root, no_paging, page, page_size, emitted, has_next && !oom, "/enb-info", oom);
+    json_pager_add_trailing(root, no_paging, page, page_size,
+                            emitted, has_next && !oom, "/enb-info", oom);
 
-    /* print & free */
     return json_pager_finalize(root, buf, buflen);
 }
 

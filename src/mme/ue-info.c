@@ -75,7 +75,6 @@
  * }
  */
 
-
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -91,13 +90,12 @@
 
 #include "metrics/prometheus/pager.h"
 #include "metrics/prometheus/json_pager.h"
-#include "metrics/ogs-metrics.h"       
+#include "metrics/ogs-metrics.h"
 #include "sbi/openapi/external/cJSON.h"
 
 #ifndef MME_UE_INFO_PAGE_SIZE_DEFAULT
 #define MME_UE_INFO_PAGE_SIZE_DEFAULT 100U
 #endif
-
 
 static size_t g_ue_page      = SIZE_MAX;
 static size_t g_ue_page_size = 0;
@@ -129,15 +127,6 @@ static inline const char *cm_state_str(const mme_ue_t *ue)
 {
     return (ue && ECM_CONNECTED(ue)) ? "connected" : "idle";
 }
-
-static void add_plmn_string(cJSON *obj, const char *key, const ogs_plmn_id_t *plmn)
-{
-    char s[OGS_PLMNIDSTRLEN] = {0};
-    if (plmn) ogs_plmn_id_to_string(plmn, s);
-    /* if add fails, caller cleans the parent */
-    (void)cJSON_AddStringToObject(obj, key, s);
-}
-
 
 static cJSON *build_enb(const mme_ue_t *ue)
 {
@@ -188,15 +177,17 @@ static cJSON *build_location(const mme_ue_t *ue)
     cJSON *tai = cJSON_CreateObject();
     if (!tai) goto end;
 
-    /* fill TAI */
-    add_plmn_string(tai, "plmn", &ue->tai.plmn_id);
+    /* TAI: PLMN + TAC (hex and numeric) */
+    char plmn_str[OGS_PLMNIDSTRLEN] = {0};
+    ogs_plmn_id_to_string(&ue->tai.plmn_id, plmn_str);
+    if (!cJSON_AddStringToObject(tai, "plmn", plmn_str)) { cJSON_Delete(tai); goto end; }
 
     char tac_hex[8];
-    snprintf(tac_hex, sizeof tac_hex, "%04x", (unsigned)ue->tai.tac);
+    (void)snprintf(tac_hex, sizeof tac_hex, "%04x", (unsigned)ue->tai.tac);
     if (!cJSON_AddStringToObject(tai, "tac_hex", tac_hex)) { cJSON_Delete(tai); goto end; }
     if (!cJSON_AddNumberToObject(tai, "tac", (double)ue->tai.tac)) { cJSON_Delete(tai); goto end; }
 
-    cJSON_AddItemToObject(loc, "tai", tai); 
+    cJSON_AddItemToObjectCS(loc, "tai", tai);
     return loc;
 
 end:
@@ -225,7 +216,6 @@ static cJSON *build_pdn_array(const mme_ue_t *ue)
     if (!arr) return NULL;
 
     mme_sess_t *sess = NULL;
-    size_t pdn_count = 0;
 
     ogs_list_for_each(&(ue->sess_list), sess) {
         cJSON *it = cJSON_CreateObject();
@@ -238,7 +228,7 @@ static cJSON *build_pdn_array(const mme_ue_t *ue)
             if (!cJSON_AddStringToObject(it, "apn", apn)) { cJSON_Delete(it); goto oom_all; }
         }
 
-        /* QoS flows -list EBIs; QCI at session-level if present */
+        /* QoS flows: list EBIs; QCI at session-level if present */
         unsigned ebi_root = 0;
         unsigned bearer_count = 0;
 
@@ -257,18 +247,16 @@ static cJSON *build_pdn_array(const mme_ue_t *ue)
             if (!q) { cJSON_Delete(qarr); cJSON_Delete(it); goto oom_all; }
             if (!cJSON_AddNumberToObject(q, "ebi", (double)b->ebi)) { cJSON_Delete(q); cJSON_Delete(qarr); cJSON_Delete(it); goto oom_all; }
 
-            cJSON_AddItemToArray(qarr, q); 
+            cJSON_AddItemToArray(qarr, q);
         }
 
-        /* attach flows */
-        cJSON_AddItemToObject(it, "qos_flows", qarr); 
+        cJSON_AddItemToObjectCS(it, "qos_flows", qarr);
 
         /* Session-level QCI (if known) */
         if (sess->session && sess->session->qos.index > 0) {
             if (!cJSON_AddNumberToObject(it, "qci", (double)sess->session->qos.index)) { cJSON_Delete(it); goto oom_all; }
         }
 
-        /* EBI root, bearer_count, state */
         if (ebi_root) {
             if (!cJSON_AddNumberToObject(it, "ebi", (double)ebi_root)) { cJSON_Delete(it); goto oom_all; }
         }
@@ -277,12 +265,9 @@ static cJSON *build_pdn_array(const mme_ue_t *ue)
         const char *state = bearer_count ? "active" : "unknown";
         if (!cJSON_AddStringToObject(it, "pdu_state", state)) { cJSON_Delete(it); goto oom_all; }
 
-        cJSON_AddItemToArray(arr, it); 
-        pdn_count++;
+        cJSON_AddItemToArray(arr, it);
     }
 
-    /* pdn_count is added by the caller into the UE root after attaching arr */
-    (void)pdn_count;
     return arr;
 
 oom_all:
@@ -307,21 +292,21 @@ static cJSON *ue_to_json(const mme_ue_t *ue)
     {
         cJSON *enb = build_enb(ue);
         if (!enb) goto end;
-        cJSON_AddItemToObject(o, "enb", enb);
+        cJSON_AddItemToObjectCS(o, "enb", enb);
     }
 
     /* location */
     {
         cJSON *loc = build_location(ue);
         if (!loc) goto end;
-        cJSON_AddItemToObject(o, "location", loc);
+        cJSON_AddItemToObjectCS(o, "location", loc);
     }
 
     /* ambr */
     {
         cJSON *ambr = build_ambr(ue);
         if (!ambr) goto end;
-        cJSON_AddItemToObject(o, "ambr", ambr);
+        cJSON_AddItemToObjectCS(o, "ambr", ambr);
     }
 
     /* pdn + pdn_count */
@@ -329,14 +314,14 @@ static cJSON *ue_to_json(const mme_ue_t *ue)
         cJSON *pdn = build_pdn_array(ue);
         if (!pdn) goto end;
 
-        /* Count PDNs */
+        /* Count PDNs before attaching */
         size_t pdn_count = 0;
         {
             cJSON *it = NULL;
             cJSON_ArrayForEach(it, pdn) pdn_count++;
         }
 
-        cJSON_AddItemToObject(o, "pdn", pdn);
+        cJSON_AddItemToObjectCS(o, "pdn", pdn);
         if (!cJSON_AddNumberToObject(o, "pdn_count", (double)pdn_count)) goto end;
     }
 
@@ -346,7 +331,6 @@ end:
     cJSON_Delete(o);
     return NULL;
 }
-
 
 size_t mme_dump_ue_info_paged(char *buf, size_t buflen, size_t page, size_t page_size)
 {
@@ -364,17 +348,33 @@ size_t mme_dump_ue_info_paged(char *buf, size_t buflen, size_t page, size_t page
     const size_t start_index = json_pager_safe_start_index(no_paging, page, page_size);
 
     cJSON *root  = cJSON_CreateObject();
-    if (!root) { if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; } if (buflen) buf[0] = '\0'; return 0; }
+    if (!root) {
+        if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; }
+        if (buflen) buf[0] = '\0';
+        return 0;
+    }
 
     cJSON *items = cJSON_CreateArray();
-    if (!items) { cJSON_Delete(root); if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; } if (buflen) buf[0] = '\0'; return 0; }
+    if (!items) {
+        cJSON_Delete(root);
+        if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; }
+        if (buflen) buf[0] = '\0';
+        return 0;
+    }
 
     size_t idx = 0, emitted = 0;
     bool has_next = false, oom = false;
 
     mme_context_t *ctxt = mme_self();
-    mme_ue_t *ue = NULL;
+    if (!ctxt) {
+        cJSON_Delete(items);
+        cJSON_Delete(root);
+        if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; }
+        if (buflen) buf[0] = '\0';
+        return 0;
+    }
 
+    mme_ue_t *ue = NULL;
     ogs_list_for_each(&ctxt->mme_ue_list, ue) {
         int act = json_pager_advance(no_paging, idx, start_index, emitted, page_size, &has_next);
         if (act == 1) { idx++; continue; }
@@ -383,12 +383,13 @@ size_t mme_dump_ue_info_paged(char *buf, size_t buflen, size_t page, size_t page
         cJSON *one = ue_to_json(ue);
         if (!one) { oom = true; break; }
 
-        cJSON_AddItemToArray(items, one); 
+        cJSON_AddItemToArray(items, one);
         emitted++;
         idx++;
     }
 
-    cJSON_AddItemToObject(root, "items", items);
+    /* attach only when array is fully built */
+    cJSON_AddItemToObjectCS(root, "items", items);
     json_pager_add_trailing(root, no_paging, page, page_size, emitted,
                             has_next && !oom, "/ue-info", oom);
 
