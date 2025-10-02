@@ -1,5 +1,5 @@
-## Open5GS JSON infoAPI for accessing UE, gNB/eNB, and session data
-
+---
+title: Open5GS JSON infoAPI for accessing UE, gNB/eNB, and session data
 ---
 
 ## How it works
