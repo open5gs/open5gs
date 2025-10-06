@@ -1605,7 +1605,7 @@ void sgwc_s11_handle_delete_indirect_data_forwarding_tunnel_request(
                     sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
             ogs_list_for_each(&sess->bearer_list, bearer) {
                 ogs_error("    EBI[%d]", bearer->ebi);
-                ogs_list_for_each(&bearer->tunnel_list, bearer) {
+                ogs_list_for_each(&bearer->tunnel_list, tunnel) {
                     ogs_error("TUNNEL[%d] INF[%d]",
                             tunnel->id, tunnel->interface_type);
                 }
