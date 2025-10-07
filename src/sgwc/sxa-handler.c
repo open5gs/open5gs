@@ -1261,12 +1261,14 @@ void sgwc_sxa_handle_session_modification_response(
 
         } else {
             s11_xact = ogs_gtp_xact_find_by_id(pfcp_xact->assoc_xact_id);
-            ogs_assert(s11_xact);
+            if (!s11_xact)
+                ogs_error("GTP xact has already been removed [%d]",
+                        pfcp_xact->assoc_xact_id);
 
             ogs_pfcp_xact_commit(pfcp_xact);
 
             ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
-            if (SGWC_SESSION_SYNC_DONE(sgwc_ue,
+            if (s11_xact && SGWC_SESSION_SYNC_DONE(sgwc_ue,
                     OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE, flags)) {
 
                 ogs_gtp2_release_access_bearers_response_t *gtp_rsp = NULL;
