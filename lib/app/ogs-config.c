@@ -93,6 +93,9 @@ static void recalculate_pool_size(void)
 #define MAX_NUM_OF_IMPU         8
     ogs_app()->pool.impi = global_conf.max.ue;
     ogs_app()->pool.impu = ogs_app()->pool.impi * MAX_NUM_OF_IMPU;
+
+#define MAX_NUM_EMERG           8
+    ogs_app()->pool.emerg = MAX_NUM_EMERG;
 }
 
 ogs_app_global_conf_t *ogs_global_conf(void)
