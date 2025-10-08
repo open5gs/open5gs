@@ -21,13 +21,13 @@ extern "C" {
 
 typedef struct OpenAPI_sm_subs_data_s OpenAPI_sm_subs_data_t;
 typedef struct OpenAPI_sm_subs_data_s {
-    OpenAPI_list_t *shared_sm_subs_data_ids;
-    OpenAPI_list_t *individual_sm_subs_data;
+    OpenAPI_list_t *session_management_subscription_data_list;
+    struct OpenAPI_extended_sm_subs_data_s *extended_sm_subs_data;
 } OpenAPI_sm_subs_data_t;
 
 OpenAPI_sm_subs_data_t *OpenAPI_sm_subs_data_create(
-    OpenAPI_list_t *shared_sm_subs_data_ids,
-    OpenAPI_list_t *individual_sm_subs_data
+    OpenAPI_list_t *session_management_subscription_data_list,
+    OpenAPI_extended_sm_subs_data_t *extended_sm_subs_data
 );
 void OpenAPI_sm_subs_data_free(OpenAPI_sm_subs_data_t *sm_subs_data);
 OpenAPI_sm_subs_data_t *OpenAPI_sm_subs_data_parseFromJSON(cJSON *sm_subs_dataJSON);

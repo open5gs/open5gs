@@ -221,7 +221,15 @@ ogs_sbi_request_t *udm_nudr_dr_build_query_subscription_provisioned(
         (char *)ogs_plmn_id_to_string(&udm_ue->guami.plmn_id, buf);
     sendmsg.h.resource.component[3] =
         (char *)OGS_SBI_RESOURCE_NAME_PROVISIONED_DATA;
-    sendmsg.h.resource.component[4] = recvmsg->h.resource.component[1];
+    if (recvmsg->h.resource.component[1]) {
+        sendmsg.h.resource.component[4] = recvmsg->h.resource.component[1];
+    } else if (recvmsg->param.num_of_dataset_names) {
+        int i;
+        for (i = 0; i < recvmsg->param.num_of_dataset_names; i++) {
+            sendmsg.param.dataset_names[i] = recvmsg->param.dataset_names[i];
+            sendmsg.param.num_of_dataset_names++;
+        }
+    }
 
     SWITCH(recvmsg->h.resource.component[1])
     CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
