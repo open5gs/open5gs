@@ -100,6 +100,7 @@
 #include "model/ue_reg_status_update_req_data.h"
 #include "model/ue_reg_status_update_rsp_data.h"
 #include "model/status_notification.h"
+#include "model/provisioned_data_sets.h"
 
 #include "custom/links.h"
 

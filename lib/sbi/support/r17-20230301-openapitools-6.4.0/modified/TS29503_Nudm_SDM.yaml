@@ -3351,12 +3351,15 @@ components:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
 
     SmSubsData:
-      oneOf:
-        - type: array
+      type: object
+      properties:
+        SessionManagementSubscriptionDataList:
+          type: array
           items:
             $ref: '#/components/schemas/SessionManagementSubscriptionData'
-          minItems: 1
-        - $ref: '#/components/schemas/ExtendedSmSubsData'
+            minItems: 1
+        ExtendedSmSubsData:
+          $ref: '#/components/schemas/ExtendedSmSubsData'
 
     ExtendedSmSubsData:
       description: Contains identifiers of shared Session Management Subscription Data and optionally individual Session Management Subscription Data.

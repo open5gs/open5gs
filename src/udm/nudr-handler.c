@@ -622,6 +622,37 @@ bool udm_nudr_dr_handle_subscription_provisioned(
 
     ogs_assert(recvmsg);
 
+    if (state == UDM_SBI_UE_PROVISIONED_DATASETS) {
+        OpenAPI_provisioned_data_sets_t *ProvisionedDataSets;
+
+        ProvisionedDataSets = recvmsg->ProvisionedDataSets;
+        if (!ProvisionedDataSets) {
+            ogs_error("[%s] No ProvisionedDataSets",
+                    udm_ue->supi);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No ProvisionedDataSets",
+                    udm_ue->supi, NULL));
+            return false;
+        }
+
+        memset(&sendmsg, 0, sizeof(sendmsg));
+
+        sendmsg.ProvisionedDataSets =
+            OpenAPI_provisioned_data_sets_copy(
+                sendmsg.ProvisionedDataSets,
+                    recvmsg->ProvisionedDataSets);
+
+        response = ogs_sbi_build_response(&sendmsg, recvmsg->res_status);
+        ogs_assert(response);
+        ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+        OpenAPI_provisioned_data_sets_free(sendmsg.ProvisionedDataSets);
+
+        return true;
+    }
+
     SWITCH(recvmsg->h.resource.component[4])
     CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
         OpenAPI_access_and_mobility_subscription_data_t
