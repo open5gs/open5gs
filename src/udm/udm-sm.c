@@ -153,8 +153,6 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 break;
             }
 
-            //Ensure that num_of_dataset_names only passes if there isn't a component 1.
-
             if (!message.param.num_of_dataset_names) {
                 if (!message.h.resource.component[1]) {
                     ogs_error("Invalid resource name [%s]", message.h.method);
