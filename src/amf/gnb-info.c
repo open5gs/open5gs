@@ -199,8 +199,9 @@ size_t amf_dump_gnb_info_paged(char *buf, size_t buflen, size_t page, size_t pag
             if (!tas) { cJSON_Delete(g); oom = true; break; }
 
             bool inner_oom = false;
+            int t;
 
-            for (int t = 0; t < gnb->num_of_supported_ta_list; t++) {
+            for (t = 0; t < gnb->num_of_supported_ta_list; t++) {
                 const ogs_uint24_t tac = gnb->supported_ta_list[t].tac;
                 const int nbp = gnb->supported_ta_list[t].num_of_bplmn_list;
 
@@ -214,8 +215,9 @@ size_t amf_dump_gnb_info_paged(char *buf, size_t buflen, size_t page, size_t pag
                 if (!bplmns) { cJSON_Delete(ta); inner_oom = true; break; }
 
                 bool inner2_oom = false;
+                int p;
 
-                for (int p = 0; p < nbp; p++) {
+                for (p = 0; p < nbp; p++) {
                     const ogs_plmn_id_t *bp_plmn = &gnb->supported_ta_list[t].bplmn_list[p].plmn_id;
                     const int ns = gnb->supported_ta_list[t].bplmn_list[p].num_of_s_nssai;
                     const ogs_s_nssai_t *sn = gnb->supported_ta_list[t].bplmn_list[p].s_nssai;
@@ -229,8 +231,9 @@ size_t amf_dump_gnb_info_paged(char *buf, size_t buflen, size_t page, size_t pag
                     if (!sns) { cJSON_Delete(bp); inner2_oom = true; break; }
 
                     bool inner3_oom = false;
+                    int i;
 
-                    for (int i = 0; i < ns; i++) {
+                    for (i = 0; i < ns; i++) {
                         cJSON *o = cJSON_CreateObject();
                         if (!o) { inner3_oom = true; break; }
 

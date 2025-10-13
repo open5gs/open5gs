@@ -198,8 +198,9 @@ size_t mme_dump_enb_info_paged(char *buf, size_t buflen, size_t page, size_t pag
             if (!tas) { cJSON_Delete(e); oom = true; break; }
 
             bool inner_oom = false;
+            int t;
 
-            for (int t = 0; t < enb->num_of_supported_ta_list; t++) {
+            for (t = 0; t < enb->num_of_supported_ta_list; t++) {
                 cJSON *ta = cJSON_CreateObject();
                 if (!ta) { inner_oom = true; break; }
 
