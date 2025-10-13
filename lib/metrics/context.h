@@ -41,6 +41,9 @@ typedef struct ogs_metrics_context_s {
     ogs_list_t  spec_list;
 
     uint16_t    metrics_port;
+
+    /* custom endpoints */
+    ogs_list_t custom_eps;
 } ogs_metrics_context_t;
 
 typedef enum ogs_metrics_histogram_bucket_type_s  {
@@ -111,6 +114,21 @@ static inline void ogs_metrics_inst_dec(ogs_metrics_inst_t *inst)
 {
     ogs_metrics_inst_add(inst, -1);
 }
+
+
+typedef size_t (*ogs_metrics_custom_ep_hdlr_t)(
+    char *buf, size_t buflen, size_t page, size_t page_size);
+
+typedef struct ogs_metrics_custom_ep_s {
+    ogs_lnode_t lnode;
+
+    char *endpoint;
+    ogs_metrics_custom_ep_hdlr_t handler;
+} ogs_metrics_custom_ep_t;
+
+
+void ogs_metrics_register_custom_ep(ogs_metrics_custom_ep_hdlr_t handler,
+        const char *endpoint);
 
 #ifdef __cplusplus
 }
