@@ -1140,23 +1140,32 @@ void sgwc_s11_handle_delete_bearer_response(
         ogs_assert(bearer_id >= OGS_MIN_POOL_ID &&
                 bearer_id <= OGS_MAX_POOL_ID);
 
+        rv = ogs_gtp_xact_commit(s11_xact);
+        ogs_expect(rv == OGS_OK);
+
         bearer = sgwc_bearer_find_by_id(bearer_id);
-        ogs_assert(bearer);
+        if (!bearer) {
+            ogs_error("No Bearer Context [%d]", bearer_id);
+            return;
+        }
     } else {
         ogs_assert(s11_xact->data);
         bearer_id = OGS_POINTER_TO_UINT(s11_xact->data);
         ogs_assert(bearer_id >= OGS_MIN_POOL_ID &&
                 bearer_id <= OGS_MAX_POOL_ID);
 
+        rv = ogs_gtp_xact_commit(s11_xact);
+        ogs_expect(rv == OGS_OK);
+
         bearer = sgwc_bearer_find_by_id(bearer_id);
-        ogs_assert(bearer);
+        if (!bearer) {
+            ogs_error("No Bearer Context [ID:%d]", bearer_id);
+            return;
+        }
     }
 
     sess = sgwc_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
-
-    rv = ogs_gtp_xact_commit(s11_xact);
-    ogs_expect(rv == OGS_OK);
 
     /************************
      * Check SGWC-UE Context
