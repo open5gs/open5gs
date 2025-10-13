@@ -36,17 +36,17 @@
 extern "C" {
 #endif
 
-extern size_t (*ogs_metrics_pdu_info_dumper)(char *buf, size_t buflen);
-void ogs_metrics_register_pdu_info(size_t (*fn)(char *buf, size_t buflen));
+extern size_t (*ogs_metrics_pdu_info_dumper)(char *buf, size_t buflen, size_t page, size_t page_size);
+void ogs_metrics_register_pdu_info(size_t (*fn)(char *buf, size_t buflen, size_t page, size_t page_size));
 
-extern size_t (*ogs_metrics_ue_info_dumper)(char *buf, size_t buflen);
-void ogs_metrics_register_ue_info(size_t (*fn)(char *buf, size_t buflen));
+extern size_t (*ogs_metrics_ue_info_dumper)(char *buf, size_t buflen, size_t page, size_t page_size);
+void ogs_metrics_register_ue_info(size_t (*fn)(char *buf, size_t buflen, size_t page, size_t page_size));
 
-extern size_t (*ogs_metrics_gnb_info_dumper)(char *buf, size_t buflen);
-void ogs_metrics_register_gnb_info(size_t (*fn)(char *buf, size_t buflen));
+extern size_t (*ogs_metrics_gnb_info_dumper)(char *buf, size_t buflen, size_t page, size_t page_size);
+void ogs_metrics_register_gnb_info(size_t (*fn)(char *buf, size_t buflen, size_t page, size_t page_size));
 
-extern size_t (*ogs_metrics_enb_info_dumper)(char *buf, size_t buflen);
-void ogs_metrics_register_enb_info(size_t (*fn)(char *buf, size_t buflen));
+extern size_t (*ogs_metrics_enb_info_dumper)(char *buf, size_t buflen, size_t page, size_t page_size);
+void ogs_metrics_register_enb_info(size_t (*fn)(char *buf, size_t buflen, size_t page, size_t page_size));
 
 
 #ifdef __cplusplus

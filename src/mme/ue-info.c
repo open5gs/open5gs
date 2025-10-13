@@ -88,7 +88,6 @@
 #include "ue-info.h"
 #include "mme-context.h"
 
-#include "metrics/prometheus/pager.h"
 #include "metrics/prometheus/json_pager.h"
 #include "metrics/ogs-metrics.h"
 #include "sbi/openapi/external/cJSON.h"
@@ -97,20 +96,9 @@
 #define MME_UE_INFO_PAGE_SIZE_DEFAULT 100U
 #endif
 
-static size_t g_ue_page      = SIZE_MAX;
-static size_t g_ue_page_size = 0;
 
-void mme_metrics_ue_info_set_pager(size_t page, size_t page_size)
+size_t mme_dump_ue_info(char *buf, size_t buflen, size_t page, size_t page_size)
 {
-    g_ue_page = page;
-    g_ue_page_size = page_size;
-}
-
-size_t mme_dump_ue_info(char *buf, size_t buflen)
-{
-    size_t page = g_ue_page;
-    size_t page_size = g_ue_page_size;
-
     if (page == SIZE_MAX) {
         page = 0;
         page_size = MME_UE_INFO_PAGE_SIZE_DEFAULT;

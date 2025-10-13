@@ -36,12 +36,7 @@
 #include "prom.h"
 #include "microhttpd.h"
 #include <string.h>
-#include "prometheus/pager.h"
 
-ogs_metrics_pager_fn ogs_metrics_pdu_info_set_pager  = NULL;
-ogs_metrics_pager_fn ogs_metrics_gnb_info_set_pager = NULL;
-ogs_metrics_pager_fn ogs_metrics_enb_info_set_pager = NULL;
-ogs_metrics_pager_fn ogs_metrics_ue_info_set_pager  = NULL;
 
 extern int __ogs_metrics_domain;
 #define MAX_LABELS 8
@@ -199,7 +194,8 @@ typedef int _MHD_Result;
 
 /* Small helper to serve JSON from a registered dumper */
 static _MHD_Result serve_json_from_dumper(struct MHD_Connection *connection,
-                                          size_t (*dumper)(char*, size_t),
+                                          size_t (*dumper)(char*, size_t, size_t, size_t),
+                                          size_t page, size_t page_size,
                                           const char *missing_msg)
 {
     if (!dumper) {
@@ -223,7 +219,7 @@ static _MHD_Result serve_json_from_dumper(struct MHD_Connection *connection,
         return (_MHD_Result)ret;
     }
 
-    size_t n = dumper(bufjson, cap);
+    size_t n = dumper(bufjson, cap, page, page_size);
     if (n >= cap - 1) {
         /* grow once */
         size_t newcap = cap * 2;
@@ -239,7 +235,7 @@ static _MHD_Result serve_json_from_dumper(struct MHD_Connection *connection,
             return (_MHD_Result)ret;
         }
         bufjson = tmp; cap = newcap;
-        n = dumper(bufjson, cap);
+        n = dumper(bufjson, cap, page, page_size);
         if (n >= cap - 1) {
             /* graceful fallback */
             n = ogs_snprintf(bufjson, cap, "[]");
@@ -308,44 +304,35 @@ mhd_server_access_handler(void *cls, struct MHD_Connection *connection,
         MHD_destroy_response(rsp);
         return (_MHD_Result)ret;
     }
+
+    size_t page = get_query_size_t(connection, "page", 0);
+    size_t page_size = get_query_size_t(connection, "page_size", 100);
  
     /* JSON: connected PDUs (SMF) */
     if (strcmp(url, "/pdu-info") == 0) {
-        size_t page = get_query_size_t(connection, "page", 0);
-        size_t page_size = get_query_size_t(connection, "page_size", 100);
-        if (ogs_metrics_pdu_info_set_pager)
-            ogs_metrics_pdu_info_set_pager(page, page_size);
         return serve_json_from_dumper(connection, ogs_metrics_pdu_info_dumper,
+                                      page, page_size,
                                       "pdu-info endpoint not available on this NF\n");
     }
 
     /* JSON: connected gNBs (AMF) */
     if (strcmp(url, "/gnb-info") == 0) {
-        size_t page = get_query_size_t(connection, "page", 0);
-        size_t page_size = get_query_size_t(connection, "page_size", 100);
-        if (ogs_metrics_gnb_info_set_pager)
-            ogs_metrics_gnb_info_set_pager(page, page_size);
         return serve_json_from_dumper(connection, ogs_metrics_gnb_info_dumper,
+                                      page, page_size,
                                       "gnb-info endpoint not available on this NF\n");
     }
 
     /* JSON: connected eNBs (MME) */
     if (strcmp(url, "/enb-info") == 0) {
-        size_t page = get_query_size_t(connection, "page", 0);
-        size_t page_size = get_query_size_t(connection, "page_size", 100);
-        if (ogs_metrics_enb_info_set_pager)
-            ogs_metrics_enb_info_set_pager(page, page_size);
         return serve_json_from_dumper(connection, ogs_metrics_enb_info_dumper,
+                                      page, page_size,
                                       "enb-info endpoint not available on this NF\n");
     }
 
     /* JSON: connected UEs (AMF/MME) */
     if (strcmp(url, "/ue-info") == 0) {
-        size_t page = get_query_size_t(connection, "page", 0);
-        size_t page_size = get_query_size_t(connection, "page_size", 100);
-        if (ogs_metrics_ue_info_set_pager)
-            ogs_metrics_ue_info_set_pager(page, page_size);
         return serve_json_from_dumper(connection, ogs_metrics_ue_info_dumper,
+                                      page, page_size,
                                       "ue-info endpoint not available on this NF\n");
 
     }

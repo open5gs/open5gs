@@ -33,9 +33,8 @@ extern "C" {
 #define GNB_INFO_PAGE_SIZE_DEFAULT 100U
 #endif
 
-size_t amf_dump_gnb_info(char *buf, size_t buflen);
+size_t amf_dump_gnb_info(char *buf, size_t buflen, size_t page, size_t page_size);
 size_t amf_dump_gnb_info_paged(char *buf, size_t buflen, size_t page, size_t page_size);
-void amf_metrics_gnb_info_set_pager(size_t page, size_t page_size);
 
 #ifdef __cplusplus
 }

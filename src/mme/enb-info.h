@@ -33,9 +33,8 @@ extern "C" {
 #define ENB_INFO_PAGE_SIZE_DEFAULT 100U
 #endif
 
-size_t mme_dump_enb_info(char *buf, size_t buflen);
+size_t mme_dump_enb_info(char *buf, size_t buflen, size_t page, size_t page_size);
 size_t mme_dump_enb_info_paged(char *buf, size_t buflen, size_t page, size_t page_size);
-void   mme_metrics_enb_info_set_pager(size_t page, size_t page_size);
 
 #ifdef __cplusplus
 }
