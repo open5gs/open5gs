@@ -94,7 +94,7 @@ int smf_initialize(void)
     if (!thread) return OGS_ERROR;
 
     /* dumper /pdu-info */
-    ogs_metrics_register_pdu_info(smf_dump_pdu_info);
+    ogs_metrics_register_custom_ep(smf_dump_pdu_info, "/pdu-info");
 
     initialized = 1;
 

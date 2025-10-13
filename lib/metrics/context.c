@@ -25,31 +25,6 @@
 
 #define DEFAULT_PROMETHEUS_HTTP_PORT       9090
 
-size_t (*ogs_metrics_pdu_info_dumper)(char *buf, size_t buflen, size_t page, size_t page_size) = NULL;
-size_t (*ogs_metrics_ue_info_dumper)(char *buf, size_t buflen, size_t page, size_t page_size) = NULL;
-size_t (*ogs_metrics_gnb_info_dumper)(char *buf, size_t buflen, size_t page, size_t page_size) = NULL;
-size_t (*ogs_metrics_enb_info_dumper)(char *buf, size_t buflen, size_t page, size_t page_size) = NULL;
-
-void ogs_metrics_register_ue_info(size_t (*fn)(char *buf, size_t buflen, size_t page, size_t page_size))
-{
-    ogs_metrics_ue_info_dumper = fn;
-}
-
-void ogs_metrics_register_pdu_info(size_t (*fn)(char *buf, size_t buflen, size_t page, size_t page_size))
-{
-    ogs_metrics_pdu_info_dumper = fn;
-}
-
-void ogs_metrics_register_gnb_info(size_t (*fn)(char *buf, size_t buflen, size_t page, size_t page_size))
-{
-    ogs_metrics_gnb_info_dumper = fn;
-}
-
-void ogs_metrics_register_enb_info(size_t (*fn)(char *buf, size_t buflen, size_t page, size_t page_size))
-{
-    ogs_metrics_enb_info_dumper = fn;
-}
-
 int __ogs_metrics_domain;
 static ogs_metrics_context_t self;
 static int context_initialized = 0;
@@ -66,6 +41,8 @@ void ogs_metrics_context_init(void)
     ogs_metrics_spec_init(ogs_metrics_self());
     ogs_metrics_server_init(ogs_metrics_self());
 
+    ogs_list_init(&self.custom_eps);
+
     context_initialized = 1;
 }
 
@@ -75,7 +52,15 @@ void ogs_metrics_context_open(ogs_metrics_context_t *ctx)
 }
 void ogs_metrics_context_close(ogs_metrics_context_t *ctx)
 {
+    ogs_metrics_custom_ep_t *node = NULL, *node_next = NULL;
+
     ogs_metrics_server_close(ctx);
+
+    ogs_list_for_each_safe(&self.custom_eps, node_next, node) {
+        if (node->endpoint) ogs_free(node->endpoint);
+        ogs_list_remove(&self.custom_eps, node);
+        ogs_free(node);
+    }
 }
 
 void ogs_metrics_context_final(void)
@@ -290,4 +275,19 @@ int ogs_metrics_context_parse_config(const char *local)
     }
 
     return OGS_OK;
+}
+
+
+void ogs_metrics_register_custom_ep(ogs_metrics_custom_ep_hdlr_t handler,
+        const char *endpoint)
+{
+    ogs_metrics_custom_ep_t *ep;
+
+    ep = ogs_calloc(1, sizeof(*ep));
+    ogs_assert(ep);
+
+    ep->endpoint = ogs_strdup(endpoint);
+    ep->handler = handler;
+
+    ogs_list_add(&self.custom_eps, ep);
 }

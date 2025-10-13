@@ -62,8 +62,8 @@ int amf_initialize(void)
     ogs_metrics_context_open(ogs_metrics_self());
 
     /* dumpers /gnb-info /ue-info */
-    ogs_metrics_register_gnb_info(amf_dump_gnb_info);
-    ogs_metrics_register_ue_info(amf_dump_ue_info);
+    ogs_metrics_register_custom_ep(amf_dump_gnb_info, "/gnb-info");
+    ogs_metrics_register_custom_ep(amf_dump_ue_info, "/ue-info");
 
     rv = amf_sbi_open();
     if (rv != OGS_OK) return rv;

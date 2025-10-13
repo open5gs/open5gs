@@ -71,8 +71,8 @@ int mme_initialize(void)
     ogs_metrics_context_open(ogs_metrics_self());
 
     /* dumpers /enb-info /ue-info */
-    ogs_metrics_register_enb_info(mme_dump_enb_info);
-    ogs_metrics_register_ue_info(mme_dump_ue_info);
+    ogs_metrics_register_custom_ep(mme_dump_enb_info, "/enb-info");
+    ogs_metrics_register_custom_ep(mme_dump_ue_info, "/ue-info");
 
     rv = mme_fd_init();
     if (rv != OGS_OK) return OGS_ERROR;

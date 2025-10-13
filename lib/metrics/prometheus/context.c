@@ -194,18 +194,11 @@ typedef int _MHD_Result;
 
 /* Small helper to serve JSON from a registered dumper */
 static _MHD_Result serve_json_from_dumper(struct MHD_Connection *connection,
-                                          size_t (*dumper)(char*, size_t, size_t, size_t),
-                                          size_t page, size_t page_size,
-                                          const char *missing_msg)
+                                          ogs_metrics_custom_ep_hdlr_t handler,
+                                          size_t page, size_t page_size)
 {
-    if (!dumper) {
-        struct MHD_Response *rsp = MHD_create_response_from_buffer(strlen(missing_msg),
-                                (void*)missing_msg, MHD_RESPMEM_PERSISTENT);
-        if (!rsp) return (_MHD_Result)MHD_NO;
-        int ret = MHD_queue_response(connection, MHD_HTTP_NOT_FOUND, rsp);
-        MHD_destroy_response(rsp);
-        return (_MHD_Result)ret;
-    }
+    ogs_assert(connection);
+    ogs_assert(handler);
 
     size_t cap = 512 * 1024;
     char *bufjson = (char *)ogs_malloc(cap);
@@ -219,7 +212,7 @@ static _MHD_Result serve_json_from_dumper(struct MHD_Connection *connection,
         return (_MHD_Result)ret;
     }
 
-    size_t n = dumper(bufjson, cap, page, page_size);
+    size_t n = handler(bufjson, cap, page, page_size);
     if (n >= cap - 1) {
         /* grow once */
         size_t newcap = cap * 2;
@@ -235,7 +228,7 @@ static _MHD_Result serve_json_from_dumper(struct MHD_Connection *connection,
             return (_MHD_Result)ret;
         }
         bufjson = tmp; cap = newcap;
-        n = dumper(bufjson, cap, page, page_size);
+        n = handler(bufjson, cap, page, page_size);
         if (n >= cap - 1) {
             /* graceful fallback */
             n = ogs_snprintf(bufjson, cap, "[]");
@@ -307,34 +300,14 @@ mhd_server_access_handler(void *cls, struct MHD_Connection *connection,
 
     size_t page = get_query_size_t(connection, "page", 0);
     size_t page_size = get_query_size_t(connection, "page_size", 100);
- 
-    /* JSON: connected PDUs (SMF) */
-    if (strcmp(url, "/pdu-info") == 0) {
-        return serve_json_from_dumper(connection, ogs_metrics_pdu_info_dumper,
-                                      page, page_size,
-                                      "pdu-info endpoint not available on this NF\n");
-    }
 
-    /* JSON: connected gNBs (AMF) */
-    if (strcmp(url, "/gnb-info") == 0) {
-        return serve_json_from_dumper(connection, ogs_metrics_gnb_info_dumper,
-                                      page, page_size,
-                                      "gnb-info endpoint not available on this NF\n");
-    }
-
-    /* JSON: connected eNBs (MME) */
-    if (strcmp(url, "/enb-info") == 0) {
-        return serve_json_from_dumper(connection, ogs_metrics_enb_info_dumper,
-                                      page, page_size,
-                                      "enb-info endpoint not available on this NF\n");
-    }
-
-    /* JSON: connected UEs (AMF/MME) */
-    if (strcmp(url, "/ue-info") == 0) {
-        return serve_json_from_dumper(connection, ogs_metrics_ue_info_dumper,
-                                      page, page_size,
-                                      "ue-info endpoint not available on this NF\n");
-
+    ogs_metrics_custom_ep_t *node = NULL;
+    ogs_list_for_each(&ogs_metrics_self()->custom_eps, node) {
+        if (!strcmp(node->endpoint, url)) {
+            return serve_json_from_dumper(connection,
+                    node->handler,
+                    page, page_size);
+        }
     }
 
     /* No matching route */
