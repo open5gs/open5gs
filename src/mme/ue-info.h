@@ -33,9 +33,10 @@ extern "C" {
 #define UE_INFO_PAGE_SIZE_DEFAULT 100U
 #endif
 
-void mme_metrics_ue_info_set_pager(size_t page, size_t page_size);
-size_t mme_dump_ue_info(char *buf, size_t buflen);
-size_t mme_dump_ue_info_paged(char *buf, size_t buflen, size_t page, size_t page_size);
+size_t mme_dump_ue_info(char *buf, size_t buflen,
+        size_t page, size_t page_size);
+size_t mme_dump_ue_info_paged(char *buf, size_t buflen,
+        size_t page, size_t page_size);
 
 #ifdef __cplusplus
 }

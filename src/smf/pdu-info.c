@@ -67,23 +67,9 @@
 #include "ogs-core.h"
 #include "context.h"
 #include "pdu-info.h"
-#include "metrics/prometheus/pager.h"
 #include "sbi/openapi/external/cJSON.h"
 #include "metrics/prometheus/json_pager.h"
 
-static size_t g_page      = SIZE_MAX;
-static size_t g_page_size = 0;
-
-static void smf_metrics_pdu_info_set_pager(size_t page, size_t page_size)
-{
-    g_page = page;
-    g_page_size = page_size;
-}
-
-void smf_register_metrics_pager(void)
-{
-    ogs_metrics_pdu_info_set_pager = smf_metrics_pdu_info_set_pager;
-}
 
 static inline uint32_t u24_to_u32(ogs_uint24_t v)
 {
@@ -393,11 +379,8 @@ size_t smf_dump_pdu_info_paged(char *buf, size_t buflen, size_t page, size_t pag
     return json_pager_finalize(root, buf, buflen);
 }
 
-size_t smf_dump_pdu_info(char *buf, size_t buflen)
+size_t smf_dump_pdu_info(char *buf, size_t buflen, size_t page, size_t page_size)
 {
-    size_t page = g_page;
-    size_t page_size = g_page_size;
-
     if (page == SIZE_MAX) {
         page = 0;
         page_size = PDU_INFO_PAGE_SIZE_DEFAULT;

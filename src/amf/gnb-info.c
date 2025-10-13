@@ -94,18 +94,9 @@
 #define GNB_INFO_PAGE_SIZE_DEFAULT 100U
 #endif
 
-static size_t g_page = SIZE_MAX;      /* SIZE_MAX => no paging */
-static size_t g_page_size = 0;        /* 0 => use default in dumper */
-
-void amf_metrics_gnb_info_set_pager(size_t page, size_t page_size)
+size_t amf_dump_gnb_info(char *buf, size_t buflen, size_t page, size_t page_size)
 {
-    g_page = page;
-    g_page_size = page_size;
-}
-
-size_t amf_dump_gnb_info(char *buf, size_t buflen)
-{
-    return amf_dump_gnb_info_paged(buf, buflen, g_page, g_page_size);
+    return amf_dump_gnb_info_paged(buf, buflen, page, page_size);
 }
 
 static inline uint32_t u24_to_u32(ogs_uint24_t v)

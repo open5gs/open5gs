@@ -34,9 +34,10 @@ extern "C" {
 #define PDU_INFO_PAGE_SIZE_DEFAULT 100U
 #endif
 
-void   smf_register_metrics_pager(void);
-size_t smf_dump_pdu_info(char *buf, size_t buflen);
-size_t smf_dump_pdu_info_paged(char *buf, size_t buflen, size_t page, size_t page_size);
+size_t smf_dump_pdu_info(char *buf, size_t buflen,
+        size_t page, size_t page_size);
+size_t smf_dump_pdu_info_paged(char *buf, size_t buflen,
+        size_t page, size_t page_size);
 #ifdef __cplusplus
 }
 #endif

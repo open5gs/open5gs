@@ -115,20 +115,12 @@
 #include "sbi/openapi/external/cJSON.h"
 #include "metrics/prometheus/json_pager.h"
 
-static size_t g_ue_page = 0;
-static size_t g_ue_page_size = 0;
 
-void amf_metrics_ue_info_set_pager(size_t page, size_t page_size)
+size_t amf_dump_ue_info(char *buf, size_t buflen, size_t page, size_t page_size)
 {
-    g_ue_page = page;
-    g_ue_page_size = page_size;
-}
-
-size_t amf_dump_ue_info(char *buf, size_t buflen)
-{
-    size_t page = g_ue_page;
-    size_t page_size = g_ue_page_size ? g_ue_page_size : 100;
+    page_size = page_size ? page_size : 100;
     if (page_size > 100) page_size = 100;
+
     return amf_dump_ue_info_paged(buf, buflen, page, page_size);
 }
 
