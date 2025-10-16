@@ -138,10 +138,11 @@ uint8_t mme_s6a_handle_ula(
              OGS_NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING_WITH_IMSI_ATTACH)) {
 
             mme_ue->tracking_area_update_request_type =
-                MME_TAU_TYPE_UNPROTECTED_INGERITY;
+                MME_TAU_TYPE_UNPROTECTED_INTEGRITY;
             ogs_assert(OGS_OK == sgsap_send_location_update_request(mme_ue));
 
         } else {
+            ogs_info("[%s] TAU accept(Diameter ULA)", mme_ue->imsi_bcd);
             r = nas_eps_send_tau_accept(mme_ue,
                     S1AP_ProcedureCode_id_InitialContextSetup);
             ogs_expect(r == OGS_OK);

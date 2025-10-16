@@ -325,3 +325,71 @@ cleanup:
     if (failed)
         mme_ue->paging.failed = true;
 }
+
+/* ----------------------------------------------------------------------
+ * Function: mme_send_delete_session_or_tau_accept
+ * ----------------------------------------------------------------------
+ * - If active_flag == 0, check UE's EPS Bearer Context Status (BCS)
+ *   against MME's sessions before sending TAU ACCEPT.
+ * - If UE does not report the default bearer EBI, delete that session.
+ * - Otherwise, send TAU ACCEPT immediately.
+ * ---------------------------------------------------------------------- */
+void mme_send_delete_session_or_tau_accept(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
+{
+    int r;
+    sgw_ue_t *sgw_ue = NULL;
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *def = NULL;
+
+    uint16_t mask;
+    uint8_t ebi;
+    int deleted = 0;
+
+    ogs_assert(enb_ue);
+    ogs_assert(mme_ue);
+
+    mask = mme_ue->tracking_area_update_request_ebcs_value;
+
+    ogs_list_for_each(&mme_ue->sess_list, sess) {
+        def = mme_default_bearer_in_sess(sess);
+        if (!def) {
+            ogs_warn("[%s] No default bearer; skip session", mme_ue->imsi_bcd);
+            continue;
+        }
+
+        ebi = def->ebi;
+        if (ebi > 15) {
+            ogs_warn("[%s] Invalid EBI=%u; skip", mme_ue->imsi_bcd, ebi);
+            continue;
+        }
+
+        /* If UE's BCS bit for this EBI is 0,
+         * delete the session */
+        if (!(mask & (1 << ebi))) {
+            ogs_warn("[%s] BCS mismatch: UE missing EBI=%u",
+                    mme_ue->imsi_bcd, ebi);
+            sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
+            ogs_assert(sgw_ue);
+
+            GTP_COUNTER_INCREMENT(
+                mme_ue, GTP_COUNTER_DELETE_SESSION_BY_TAU);
+
+            mme_gtp_send_delete_session_request(
+                enb_ue, sgw_ue, sess,
+                OGS_GTP_DELETE_SEND_TAU_ACCEPT);
+
+            deleted++;
+        }
+    }
+
+    if (deleted > 0) {
+        ogs_warn("[%s] Deleted %d session(s) due to BCS mismatch",
+                mme_ue->imsi_bcd, deleted);
+    } else {
+        ogs_info("[%s] TAU accept(BCS match)", mme_ue->imsi_bcd);
+        r = nas_eps_send_tau_accept(mme_ue,
+                S1AP_ProcedureCode_id_downlinkNASTransport);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+    }
+}

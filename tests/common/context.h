@@ -177,7 +177,7 @@ typedef struct test_attach_request_param_s {
 typedef struct test_tau_request_param_s {
     struct {
     ED8(uint8_t ue_network_capability:1;,
-        uint8_t eps_bearer_context_status:1;,
+        uint8_t reserved:1;,
         uint8_t guti:1;,
         uint8_t last_visited_registered_tai:1;,
         uint8_t drx_parameter:1;,
@@ -200,6 +200,7 @@ typedef struct test_tau_request_param_s {
         uint8_t device_properties:1;,
         uint8_t spare2:6;)
     };
+    uint8_t eps_bearer_context_status;
 } __attribute__ ((packed)) test_tau_request_param_t;
 
 typedef struct test_service_request_param_s {

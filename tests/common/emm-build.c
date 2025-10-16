@@ -649,20 +649,12 @@ ogs_pkbuf_t *testemm_build_tau_request(
     }
 
     if (test_ue->tau_request_param.eps_bearer_context_status) {
-        test_sess_t *sess = NULL;
-        test_bearer_t *bearer = NULL;
-
         tau_request->presencemask |=
             OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_PRESENT;
         eps_bearer_context_status->length = 2;
 
-        ogs_list_for_each(&test_ue->sess_list, sess) {
-            ogs_list_for_each(&sess->bearer_list, bearer) {
-                if (bearer->ebi == 5) eps_bearer_context_status->ebi5 = 1;
-                else if (bearer->ebi == 6) eps_bearer_context_status->ebi6 = 1;
-                else if (bearer->ebi == 7) eps_bearer_context_status->ebi7 = 1;
-            }
-        }
+        eps_bearer_context_status->value =
+            test_ue->tau_request_param.eps_bearer_context_status;
     }
 
     if (test_ue->tau_request_param.ms_network_capability) {

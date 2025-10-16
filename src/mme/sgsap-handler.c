@@ -150,26 +150,38 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                 ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
                 mme_ue->nhcc = 1;
 
+                ogs_info("[%s] LU accept + TAU accept(active_flag==1)",
+                        mme_ue->imsi_bcd);
                 r = nas_eps_send_tau_accept(mme_ue,
                         S1AP_ProcedureCode_id_InitialContextSetup);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-            } else {
+            } else if (!(mme_ue->tracking_area_update_request_presencemask &
+                        OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE)) {
+                ogs_info("[%s] LU accept + TAU accept(NO Bearer Context Status)",
+                        mme_ue->imsi_bcd);
                 r = nas_eps_send_tau_accept(mme_ue,
                         S1AP_ProcedureCode_id_downlinkNASTransport);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
+            } else {
+                ogs_info("[%s] LU accept + TAU accept"
+                        "(WITH Bearer Context Status)",
+                        mme_ue->imsi_bcd);
+                mme_send_delete_session_or_tau_accept(enb_ue, mme_ue);
             }
         } else if (mme_ue->tracking_area_update_request_type ==
                 MME_TAU_TYPE_UPLINK_NAS_TRANPORT) {
-            ogs_debug("    Uplink NAS Transport");
+            ogs_info("[%s] LU accept + accept(UplinkNASTransport)",
+                    mme_ue->imsi_bcd);
             r = nas_eps_send_tau_accept(mme_ue,
                     S1AP_ProcedureCode_id_downlinkNASTransport);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
         } else if (mme_ue->tracking_area_update_request_type ==
-                MME_TAU_TYPE_UNPROTECTED_INGERITY) {
-            ogs_debug("    Unprotected Integrity");
+                MME_TAU_TYPE_UNPROTECTED_INTEGRITY) {
+            ogs_info("[%s] LU accept + TAU accept(Unprotected Integrity)",
+                    mme_ue->imsi_bcd);
             r = nas_eps_send_tau_accept(mme_ue,
                     S1AP_ProcedureCode_id_InitialContextSetup);
             ogs_expect(r == OGS_OK);
@@ -347,25 +359,40 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                 ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
                 mme_ue->nhcc = 1;
 
+                ogs_fatal("[%s] LU reject + TAU accept(active_flag==1)",
+                        mme_ue->imsi_bcd);
                 r = nas_eps_send_tau_accept(mme_ue,
                         S1AP_ProcedureCode_id_InitialContextSetup);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-            } else {
+            } else if (!(mme_ue->tracking_area_update_request_presencemask &
+                        OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE)) {
+                ogs_fatal("[%s] LU reject + TAU accept"
+                        "(NO Bearer Context Status)",
+                        mme_ue->imsi_bcd);
                 r = nas_eps_send_tau_accept(mme_ue,
                         S1AP_ProcedureCode_id_downlinkNASTransport);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
+            } else {
+                ogs_fatal("[%s] LU reject + TAU accept"
+                        "(WITH Bearer Context Status)",
+                        mme_ue->imsi_bcd);
+                mme_send_delete_session_or_tau_accept(enb_ue, mme_ue);
             }
         } else if (mme_ue->tracking_area_update_request_type ==
                 MME_TAU_TYPE_UPLINK_NAS_TRANPORT) {
             ogs_debug("    Uplink NAS Transport");
+            ogs_fatal("[%s] LU reject + TAU accept(UplinkNASTransport)",
+                    mme_ue->imsi_bcd);
             r = nas_eps_send_tau_accept(mme_ue,
                     S1AP_ProcedureCode_id_downlinkNASTransport);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
         } else if (mme_ue->tracking_area_update_request_type ==
-                MME_TAU_TYPE_UNPROTECTED_INGERITY) {
+                MME_TAU_TYPE_UNPROTECTED_INTEGRITY) {
+            ogs_fatal("[%s] LU reject + TAU accept(Unprotected Integrity)",
+                    mme_ue->imsi_bcd);
             ogs_debug("    Unprotected Integrity");
             r = nas_eps_send_tau_accept(mme_ue,
                     S1AP_ProcedureCode_id_InitialContextSetup);
