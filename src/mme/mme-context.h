@@ -433,8 +433,10 @@ struct mme_ue_s {
 
 #define MME_TAU_TYPE_INITIAL_UE_MESSAGE    1
 #define MME_TAU_TYPE_UPLINK_NAS_TRANPORT   2
-#define MME_TAU_TYPE_UNPROTECTED_INGERITY  3
+#define MME_TAU_TYPE_UNPROTECTED_INTEGRITY  3
     uint8_t tracking_area_update_request_type;
+    uint64_t tracking_area_update_request_presencemask;
+    uint16_t tracking_area_update_request_ebcs_value;
 
     /* 1. MME initiated detach request to the UE.
      *    (nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE)
@@ -799,6 +801,7 @@ struct mme_ue_s {
 
 #define GTP_COUNTER_CREATE_SESSION_BY_PATH_SWITCH               1
 #define GTP_COUNTER_DELETE_SESSION_BY_PATH_SWITCH               2
+#define GTP_COUNTER_DELETE_SESSION_BY_TAU                       3
     struct {
         uint8_t request;
         uint8_t response;

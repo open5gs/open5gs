@@ -880,6 +880,22 @@ void mme_s11_handle_delete_session_response(
 
         return;
 
+    } else if (action == OGS_GTP_DELETE_SEND_TAU_ACCEPT) {
+
+        MME_SESS_CLEAR(sess);
+
+        GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION_BY_TAU,
+
+            ogs_info("[%s] TAU accept(BCS mismatch)", mme_ue->imsi_bcd);
+            r = nas_eps_send_tau_accept(mme_ue,
+                    S1AP_ProcedureCode_id_downlinkNASTransport);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+
+        );
+
+        return;
+
     } else {
         ogs_fatal("Invalid action = %d", action);
         ogs_assert_if_reached();

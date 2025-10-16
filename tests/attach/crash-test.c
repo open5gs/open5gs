@@ -304,7 +304,7 @@ static void test4_func(abts_case *tc, void *data)
     test_ue->tau_request_param.ue_network_capability = 1;
     test_ue->tau_request_param.last_visited_registered_tai = 1;
     test_ue->tau_request_param.drx_parameter = 1;
-    test_ue->tau_request_param.eps_bearer_context_status = 1;
+    test_ue->tau_request_param.ebcs_value = 0x20; /* EBI:5 */
     test_ue->tau_request_param.ms_network_capability = 1;
     test_ue->tau_request_param.tmsi_status = 1;
     test_ue->tau_request_param.mobile_station_classmark_2 = 1;
