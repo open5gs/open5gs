@@ -708,7 +708,7 @@ ED3(uint8_t type:4;,
  * O TLV 5-50 */
 #define OGS_NAS_MAX_EMERGENCY_NUMBER_LIST_LEN 48
 typedef struct ogs_nas_emergency_number_list_s {
-    uint16_t length;
+    uint8_t length;
     uint8_t buffer[OGS_NAS_MAX_EMERGENCY_NUMBER_LIST_LEN];
 } __attribute__ ((packed)) ogs_nas_emergency_number_list_t;
 
