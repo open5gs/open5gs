@@ -5,15 +5,15 @@
 #include "sm_subs_data.h"
 
 OpenAPI_sm_subs_data_t *OpenAPI_sm_subs_data_create(
-    OpenAPI_list_t *shared_sm_subs_data_ids,
-    OpenAPI_list_t *individual_sm_subs_data
+    OpenAPI_list_t *session_management_subscription_data_list,
+    OpenAPI_extended_sm_subs_data_t *extended_sm_subs_data
 )
 {
     OpenAPI_sm_subs_data_t *sm_subs_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_subs_data_t));
     ogs_assert(sm_subs_data_local_var);
 
-    sm_subs_data_local_var->shared_sm_subs_data_ids = shared_sm_subs_data_ids;
-    sm_subs_data_local_var->individual_sm_subs_data = individual_sm_subs_data;
+    sm_subs_data_local_var->session_management_subscription_data_list = session_management_subscription_data_list;
+    sm_subs_data_local_var->extended_sm_subs_data = extended_sm_subs_data;
 
     return sm_subs_data_local_var;
 }
@@ -25,19 +25,16 @@ void OpenAPI_sm_subs_data_free(OpenAPI_sm_subs_data_t *sm_subs_data)
     if (NULL == sm_subs_data) {
         return;
     }
-    if (sm_subs_data->shared_sm_subs_data_ids) {
-        OpenAPI_list_for_each(sm_subs_data->shared_sm_subs_data_ids, node) {
-            ogs_free(node->data);
-        }
-        OpenAPI_list_free(sm_subs_data->shared_sm_subs_data_ids);
-        sm_subs_data->shared_sm_subs_data_ids = NULL;
-    }
-    if (sm_subs_data->individual_sm_subs_data) {
-        OpenAPI_list_for_each(sm_subs_data->individual_sm_subs_data, node) {
+    if (sm_subs_data->session_management_subscription_data_list) {
+        OpenAPI_list_for_each(sm_subs_data->session_management_subscription_data_list, node) {
             OpenAPI_session_management_subscription_data_free(node->data);
         }
-        OpenAPI_list_free(sm_subs_data->individual_sm_subs_data);
-        sm_subs_data->individual_sm_subs_data = NULL;
+        OpenAPI_list_free(sm_subs_data->session_management_subscription_data_list);
+        sm_subs_data->session_management_subscription_data_list = NULL;
+    }
+    if (sm_subs_data->extended_sm_subs_data) {
+        OpenAPI_extended_sm_subs_data_free(sm_subs_data->extended_sm_subs_data);
+        sm_subs_data->extended_sm_subs_data = NULL;
     }
     ogs_free(sm_subs_data);
 }
@@ -53,35 +50,32 @@ cJSON *OpenAPI_sm_subs_data_convertToJSON(OpenAPI_sm_subs_data_t *sm_subs_data)
     }
 
     item = cJSON_CreateObject();
-    if (!sm_subs_data->shared_sm_subs_data_ids) {
-        ogs_error("OpenAPI_sm_subs_data_convertToJSON() failed [shared_sm_subs_data_ids]");
-        return NULL;
-    }
-    cJSON *shared_sm_subs_data_idsList = cJSON_AddArrayToObject(item, "sharedSmSubsDataIds");
-    if (shared_sm_subs_data_idsList == NULL) {
-        ogs_error("OpenAPI_sm_subs_data_convertToJSON() failed [shared_sm_subs_data_ids]");
+    if (sm_subs_data->session_management_subscription_data_list) {
+    cJSON *session_management_subscription_data_listList = cJSON_AddArrayToObject(item, "SessionManagementSubscriptionDataList");
+    if (session_management_subscription_data_listList == NULL) {
+        ogs_error("OpenAPI_sm_subs_data_convertToJSON() failed [session_management_subscription_data_list]");
         goto end;
     }
-    OpenAPI_list_for_each(sm_subs_data->shared_sm_subs_data_ids, node) {
-        if (cJSON_AddStringToObject(shared_sm_subs_data_idsList, "", (char*)node->data) == NULL) {
-            ogs_error("OpenAPI_sm_subs_data_convertToJSON() failed [shared_sm_subs_data_ids]");
-            goto end;
-        }
-    }
-
-    if (sm_subs_data->individual_sm_subs_data) {
-    cJSON *individual_sm_subs_dataList = cJSON_AddArrayToObject(item, "individualSmSubsData");
-    if (individual_sm_subs_dataList == NULL) {
-        ogs_error("OpenAPI_sm_subs_data_convertToJSON() failed [individual_sm_subs_data]");
-        goto end;
-    }
-    OpenAPI_list_for_each(sm_subs_data->individual_sm_subs_data, node) {
+    OpenAPI_list_for_each(sm_subs_data->session_management_subscription_data_list, node) {
         cJSON *itemLocal = OpenAPI_session_management_subscription_data_convertToJSON(node->data);
         if (itemLocal == NULL) {
-            ogs_error("OpenAPI_sm_subs_data_convertToJSON() failed [individual_sm_subs_data]");
+            ogs_error("OpenAPI_sm_subs_data_convertToJSON() failed [session_management_subscription_data_list]");
             goto end;
         }
-        cJSON_AddItemToArray(individual_sm_subs_dataList, itemLocal);
+        cJSON_AddItemToArray(session_management_subscription_data_listList, itemLocal);
+    }
+    }
+
+    if (sm_subs_data->extended_sm_subs_data) {
+    cJSON *extended_sm_subs_data_local_JSON = OpenAPI_extended_sm_subs_data_convertToJSON(sm_subs_data->extended_sm_subs_data);
+    if (extended_sm_subs_data_local_JSON == NULL) {
+        ogs_error("OpenAPI_sm_subs_data_convertToJSON() failed [extended_sm_subs_data]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ExtendedSmSubsData", extended_sm_subs_data_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_sm_subs_data_convertToJSON() failed [extended_sm_subs_data]");
+        goto end;
     }
     }
 
@@ -93,77 +87,60 @@ OpenAPI_sm_subs_data_t *OpenAPI_sm_subs_data_parseFromJSON(cJSON *sm_subs_dataJS
 {
     OpenAPI_sm_subs_data_t *sm_subs_data_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
-    cJSON *shared_sm_subs_data_ids = NULL;
-    OpenAPI_list_t *shared_sm_subs_data_idsList = NULL;
-    cJSON *individual_sm_subs_data = NULL;
-    OpenAPI_list_t *individual_sm_subs_dataList = NULL;
-    shared_sm_subs_data_ids = cJSON_GetObjectItemCaseSensitive(sm_subs_dataJSON, "sharedSmSubsDataIds");
-    if (!shared_sm_subs_data_ids) {
-        ogs_error("OpenAPI_sm_subs_data_parseFromJSON() failed [shared_sm_subs_data_ids]");
+    cJSON *session_management_subscription_data_list = NULL;
+    OpenAPI_list_t *session_management_subscription_data_listList = NULL;
+    cJSON *extended_sm_subs_data = NULL;
+    OpenAPI_extended_sm_subs_data_t *extended_sm_subs_data_local_nonprim = NULL;
+    session_management_subscription_data_list = cJSON_GetObjectItemCaseSensitive(sm_subs_dataJSON, "SessionManagementSubscriptionDataList");
+    if (session_management_subscription_data_list) {
+        cJSON *session_management_subscription_data_list_local = NULL;
+        if (!cJSON_IsArray(session_management_subscription_data_list)) {
+            ogs_error("OpenAPI_sm_subs_data_parseFromJSON() failed [session_management_subscription_data_list]");
+            goto end;
+        }
+
+        session_management_subscription_data_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(session_management_subscription_data_list_local, session_management_subscription_data_list) {
+            if (!cJSON_IsObject(session_management_subscription_data_list_local)) {
+                ogs_error("OpenAPI_sm_subs_data_parseFromJSON() failed [session_management_subscription_data_list]");
+                goto end;
+            }
+            OpenAPI_session_management_subscription_data_t *session_management_subscription_data_listItem = OpenAPI_session_management_subscription_data_parseFromJSON(session_management_subscription_data_list_local);
+            if (!session_management_subscription_data_listItem) {
+                ogs_error("No session_management_subscription_data_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(session_management_subscription_data_listList, session_management_subscription_data_listItem);
+        }
+    }
+
+    extended_sm_subs_data = cJSON_GetObjectItemCaseSensitive(sm_subs_dataJSON, "ExtendedSmSubsData");
+    if (extended_sm_subs_data) {
+    extended_sm_subs_data_local_nonprim = OpenAPI_extended_sm_subs_data_parseFromJSON(extended_sm_subs_data);
+    if (!extended_sm_subs_data_local_nonprim) {
+        ogs_error("OpenAPI_extended_sm_subs_data_parseFromJSON failed [extended_sm_subs_data]");
         goto end;
     }
-        cJSON *shared_sm_subs_data_ids_local = NULL;
-        if (!cJSON_IsArray(shared_sm_subs_data_ids)) {
-            ogs_error("OpenAPI_sm_subs_data_parseFromJSON() failed [shared_sm_subs_data_ids]");
-            goto end;
-        }
-
-        shared_sm_subs_data_idsList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(shared_sm_subs_data_ids_local, shared_sm_subs_data_ids) {
-            double *localDouble = NULL;
-            int *localInt = NULL;
-            if (!cJSON_IsString(shared_sm_subs_data_ids_local)) {
-                ogs_error("OpenAPI_sm_subs_data_parseFromJSON() failed [shared_sm_subs_data_ids]");
-                goto end;
-            }
-            OpenAPI_list_add(shared_sm_subs_data_idsList, ogs_strdup(shared_sm_subs_data_ids_local->valuestring));
-        }
-
-    individual_sm_subs_data = cJSON_GetObjectItemCaseSensitive(sm_subs_dataJSON, "individualSmSubsData");
-    if (individual_sm_subs_data) {
-        cJSON *individual_sm_subs_data_local = NULL;
-        if (!cJSON_IsArray(individual_sm_subs_data)) {
-            ogs_error("OpenAPI_sm_subs_data_parseFromJSON() failed [individual_sm_subs_data]");
-            goto end;
-        }
-
-        individual_sm_subs_dataList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(individual_sm_subs_data_local, individual_sm_subs_data) {
-            if (!cJSON_IsObject(individual_sm_subs_data_local)) {
-                ogs_error("OpenAPI_sm_subs_data_parseFromJSON() failed [individual_sm_subs_data]");
-                goto end;
-            }
-            OpenAPI_session_management_subscription_data_t *individual_sm_subs_dataItem = OpenAPI_session_management_subscription_data_parseFromJSON(individual_sm_subs_data_local);
-            if (!individual_sm_subs_dataItem) {
-                ogs_error("No individual_sm_subs_dataItem");
-                goto end;
-            }
-            OpenAPI_list_add(individual_sm_subs_dataList, individual_sm_subs_dataItem);
-        }
     }
 
     sm_subs_data_local_var = OpenAPI_sm_subs_data_create (
-        shared_sm_subs_data_idsList,
-        individual_sm_subs_data ? individual_sm_subs_dataList : NULL
+        session_management_subscription_data_list ? session_management_subscription_data_listList : NULL,
+        extended_sm_subs_data ? extended_sm_subs_data_local_nonprim : NULL
     );
 
     return sm_subs_data_local_var;
 end:
-    if (shared_sm_subs_data_idsList) {
-        OpenAPI_list_for_each(shared_sm_subs_data_idsList, node) {
-            ogs_free(node->data);
-        }
-        OpenAPI_list_free(shared_sm_subs_data_idsList);
-        shared_sm_subs_data_idsList = NULL;
-    }
-    if (individual_sm_subs_dataList) {
-        OpenAPI_list_for_each(individual_sm_subs_dataList, node) {
+    if (session_management_subscription_data_listList) {
+        OpenAPI_list_for_each(session_management_subscription_data_listList, node) {
             OpenAPI_session_management_subscription_data_free(node->data);
         }
-        OpenAPI_list_free(individual_sm_subs_dataList);
-        individual_sm_subs_dataList = NULL;
+        OpenAPI_list_free(session_management_subscription_data_listList);
+        session_management_subscription_data_listList = NULL;
+    }
+    if (extended_sm_subs_data_local_nonprim) {
+        OpenAPI_extended_sm_subs_data_free(extended_sm_subs_data_local_nonprim);
+        extended_sm_subs_data_local_nonprim = NULL;
     }
     return NULL;
 }

@@ -354,6 +354,7 @@ extern "C" {
 #define OGS_SBI_PARAM_SLICE_INFO_REQUEST_FOR_PDU_SESSION \
         "slice-info-request-for-pdu-session"
 #define OGS_SBI_PARAM_FIELDS                        "fields"
+#define OGS_SBI_PARAM_DATASET_NAMES                 "dataset-names"
 #define OGS_SBI_PARAM_IPV4ADDR                      "ipv4Addr"
 #define OGS_SBI_PARAM_IPV6PREFIX                    "ipv6Prefix"
 #define OGS_SBI_PARAM_HOME_PLMN_ID                  "home-plmn-id"
@@ -368,6 +369,11 @@ extern "C" {
 #define OGS_SBI_PARAM_FIELDS_SUBSCRIBED_UE_AMBR          "subscribedUeAmbr"
 #define OGS_SBI_PARAM_FIELDS_NSSAI                       "nssai"
 #define OGS_SBI_MAX_NUM_OF_FIELDS                         8
+
+#define OGS_SBI_PARAM_DATASET_NAME_AM                    "AM"
+#define OGS_SBI_PARAM_DATASET_NAME_SMF_SEL               "SMF_SEL"
+#define OGS_SBI_PARAM_DATASET_NAME_SM                    "SM"
+#define OGS_SBI_MAX_NUM_OF_DATASETNAMES                   8
 
 #define OGS_SBI_CONTENT_JSON_TYPE                   \
     OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_JSON_TYPE
@@ -509,6 +515,8 @@ typedef struct ogs_sbi_message_s {
         char *dnn;
         int num_of_fields;
         char *fields[OGS_SBI_MAX_NUM_OF_FIELDS];
+        int num_of_dataset_names;
+        char *dataset_names[OGS_SBI_MAX_NUM_OF_DATASETNAMES];
 
         /* Shared memory */
         bool plmn_id_presence;
@@ -552,6 +560,7 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_amf3_gpp_access_registration_t *Amf3GppAccessRegistration;
     OpenAPI_amf3_gpp_access_registration_modification_t
         *Amf3GppAccessRegistrationModification;
+    OpenAPI_provisioned_data_sets_t *ProvisionedDataSets;
     OpenAPI_nssai_t *Nssai;
     OpenAPI_access_and_mobility_subscription_data_t
         *AccessAndMobilitySubscriptionData;

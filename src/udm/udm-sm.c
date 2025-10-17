@@ -153,24 +153,26 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 break;
             }
 
-            if (!message.h.resource.component[1]) {
-                ogs_error("Invalid resource name [%s]", message.h.method);
-                ogs_assert(true ==
-                    ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        &message, "Invalid resource name", message.h.method,
-                        NULL));
-                break;
-            }
-
-            SWITCH(message.h.resource.component[1])
-            CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
-                if (message.h.resource.component[2]) {
-                    udm_ue = udm_ue_find_by_ctx_id(
-                            message.h.resource.component[2]);
+            if (!message.param.num_of_dataset_names) {
+                if (!message.h.resource.component[1]) {
+                    ogs_error("Invalid resource name [%s]", message.h.method);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            &message, "Invalid resource name", message.h.method,
+                            NULL));
+                    break;
                 }
-            DEFAULT
-            END
+
+                SWITCH(message.h.resource.component[1])
+                CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
+                    if (message.h.resource.component[2]) {
+                        udm_ue = udm_ue_find_by_ctx_id(
+                                message.h.resource.component[2]);
+                    }
+                DEFAULT
+                END
+            }
 
             if (!udm_ue) {
                 udm_ue = udm_ue_find_by_suci_or_supi(
