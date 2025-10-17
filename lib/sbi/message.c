@@ -1207,7 +1207,7 @@ int ogs_sbi_parse_request(
 
             token = ogs_strtok_r(v, ",", &saveptr);
             while (token != NULL) {
-                if (message->param.num_of_fields <
+                if (message->param.num_of_dataset_names <
                         OGS_SBI_MAX_NUM_OF_DATASETNAMES) {
                     message->param.dataset_names
                         [message->param.num_of_dataset_names] =

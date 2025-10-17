@@ -804,7 +804,7 @@ bool udr_nudr_dr_handle_subscription_provisioned(
 
             singleNSSAI = ogs_calloc(1, sizeof(*singleNSSAI));
             ogs_assert(singleNSSAI);
-            
+
             dnnConfigurationList = ogs_calloc(1, sizeof(*dnnConfigurationList));
             ogs_assert(dnnConfigurationList);
 
@@ -1016,7 +1016,7 @@ bool udr_nudr_dr_handle_subscription_provisioned(
         }
 
         memset(&smSubsData, 0, sizeof(smSubsData));
-        smSubsData.session_management_subscription_data_list = 
+        smSubsData.session_management_subscription_data_list =
             SessionManagementSubscriptionDataList;
 
         if (!returnProvisionedData) {
