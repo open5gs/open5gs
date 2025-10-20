@@ -26,7 +26,7 @@
  *
  * path: http://SMF_IP:9090/pdu-info
  *
- * curl -s "http://127.0.0.4:9090/pdu-info?page_size=1" |jq . 
+ * curl -s "http://127.0.0.4:9090/pdu-info" |jq .
  * {
  *   "items": [
  *     {
@@ -35,7 +35,7 @@
  *         {
  *           "psi": 1,
  *           "dnn": "internet",
- *           "ipv4": "10.45.0.11",
+ *           "ipv4": "10.45.0.22",
  *           "snssai": {
  *             "sst": 1,
  *             "sd": "ffffff"
@@ -46,7 +46,17 @@
  *               "5qi": 9
  *             }
  *           ],
- *           "pdu_state": "inactive"
+ *           "n3": {
+ *             "gnb": {
+ *               "teid": 40,
+ *               "addr": "[192.168.168.100]:2152"
+ *             },
+ *             "upf": {
+ *               "teid": 60071,
+ *               "addr": "[192.168.168.7]:2152"
+ *             }
+ *           },
+ *           "pdu_state": "inactive",
  *         }
  *       ],
  *       "ue_activity": "idle"
@@ -55,10 +65,10 @@
  *   "pager": {
  *     "page": 0,
  *     "page_size": 100,
- *     "count": 1,
+ *     "count": 1
  *   }
  * }
- */ 
+ */
 
 #include <string.h>
 #include <stdbool.h>
@@ -85,6 +95,48 @@ static inline int up_state_of(const smf_sess_t *s)
     if (u == 0) u = (int)s->nsmf_param.up_cnx_state;
     return u;
 }
+
+static int ip_to_text(const ogs_ip_t *ip, char *out, size_t outlen);
+static cJSON *addr_string_item(const ogs_ip_t *ip, int port);
+static cJSON *addr_string_from_sockaddr(ogs_sockaddr_t *sa4, ogs_sockaddr_t *sa6, int default_port);
+
+static bool ip_is_unspecified(const ogs_ip_t *ip)
+{
+    if (!ip) return true;
+    char buf[OGS_ADDRSTRLEN] = "";
+    if (!ip_to_text(ip, buf, sizeof buf)) return true;
+    return (strcmp(buf, "0.0.0.0") == 0) || (strcmp(buf, "::") == 0) || (strcmp(buf, "::0") == 0);
+}
+
+static cJSON *addr_string_from_sockaddr(ogs_sockaddr_t *sa4, ogs_sockaddr_t *sa6, int default_port)
+{
+    ogs_ip_t ip;
+    memset(&ip, 0, sizeof(ip));
+
+    if (OGS_OK != ogs_sockaddr_to_ip(sa4, sa6, &ip))
+        return NULL;
+
+    return addr_string_item(&ip, default_port);
+}
+
+static int ip_to_text(const ogs_ip_t *ip, char *out, size_t outlen)
+{
+    if (!ip || !out || outlen == 0) return 0;
+    out[0] = '\0';
+    OGS_INET_NTOP(ip, out);
+    return out[0] != '\0';
+}
+
+static cJSON *addr_string_item(const ogs_ip_t *ip, int port)
+{
+    if (!ip) return NULL;
+    char ipbuf[OGS_ADDRSTRLEN] = "";
+    if (!ip_to_text(ip, ipbuf, sizeof ipbuf)) return NULL;
+    char buf[OGS_ADDRSTRLEN + 16];
+    snprintf(buf, sizeof buf, "[%s]:%d", ipbuf, port);
+    return cJSON_CreateString(buf);
+}
+
 
 static inline bool has_n3_teid(const smf_sess_t *s)
 {
@@ -131,6 +183,96 @@ static const char *pdu_state_from_lte(const smf_sess_t *sess)
     (void)sess;
     return "unknown";
 }
+
+static cJSON *build_n3_object_5g(const smf_sess_t *sess)
+{   
+    if (!sess) return NULL;
+    
+    cJSON *n3  = cJSON_CreateObject();
+    cJSON *gnb = cJSON_CreateObject();
+    cJSON *upf = cJSON_CreateObject();
+    if (!n3 || !gnb || !upf) { cJSON_Delete(n3); cJSON_Delete(gnb); cJSON_Delete(upf); return NULL; }
+    
+    /* gNB side: (N3 DL: UPF -> gNB) */
+    if (sess->remote_dl_teid) {
+        cJSON *t = cJSON_CreateNumber((double)(unsigned)sess->remote_dl_teid);
+        if (!t) { cJSON_Delete(n3); cJSON_Delete(gnb); cJSON_Delete(upf); return NULL; }
+        cJSON_AddItemToObjectCS(gnb, "teid", t);
+    }
+    /* UPF side: N3 UL: gNB -> UP */
+    if (sess->remote_ul_teid) {
+        cJSON *t = cJSON_CreateNumber((double)(unsigned)sess->remote_ul_teid);
+        if (!t) { cJSON_Delete(n3); cJSON_Delete(gnb); cJSON_Delete(upf); return NULL; }
+        cJSON_AddItemToObjectCS(upf, "teid", t);
+    }
+    
+    /*  "[IP]:PORT" (GTP-U defaults to OGS_GTPV1_U_UDP_PORT=2152) */
+    {   
+        cJSON *gs = addr_string_item(&sess->remote_dl_ip, OGS_GTPV1_U_UDP_PORT);
+        if (gs) cJSON_AddItemToObjectCS(gnb, "addr", gs); 
+        cJSON *us = addr_string_item(&sess->remote_ul_ip, OGS_GTPV1_U_UDP_PORT);
+        if (us) cJSON_AddItemToObjectCS(upf, "addr", us);
+    }
+    
+    cJSON_AddItemToObjectCS(n3, "gnb", gnb);
+    cJSON_AddItemToObjectCS(n3, "upf", upf);
+    return n3;
+}
+
+/* handover view showing target gNB and DL indirect forwarding */
+static cJSON *build_handover_object_5g(const smf_sess_t *sess)
+{   
+    if (!sess) return NULL;
+    int any = 0;
+    cJSON *ho = cJSON_CreateObject();
+    if (!ho) return NULL;
+    
+    if (sess->handover.prepared) {
+        cJSON_AddItemToObjectCS(ho, "prepared", cJSON_CreateBool(1)); any = 1;
+    }
+    if (sess->handover.indirect_data_forwarding) {
+        cJSON_AddItemToObjectCS(ho, "indirect_data_forwarding", cJSON_CreateBool(1)); any = 1;
+    }
+    if (sess->handover.data_forwarding_not_possible) {
+        cJSON_AddItemToObjectCS(ho, "data_forwarding_not_possible", cJSON_CreateBool(1)); any = 1;
+    }
+    
+    if (sess->handover.gnb_n3_teid || !ip_is_unspecified(&sess->handover.gnb_n3_ip)) {
+        cJSON *gnb = cJSON_CreateObject();
+        if (sess->handover.gnb_n3_teid)
+            cJSON_AddItemToObjectCS(gnb, "teid", cJSON_CreateNumber((double)(unsigned)sess->handover.gnb_n3_teid));
+        cJSON *addr = addr_string_item(&sess->handover.gnb_n3_ip, 2152);
+        if (addr) cJSON_AddItemToObjectCS(gnb, "addr", addr);
+        cJSON_AddItemToObjectCS(ho, "target_gnb", gnb);
+        any = 1;
+    }
+    
+    if (sess->handover.local_dl_teid || sess->handover.remote_dl_teid ||
+        sess->handover.local_dl_addr || sess->handover.local_dl_addr6 ||
+        !ip_is_unspecified(&sess->handover.remote_dl_ip)) {
+        cJSON *fwd = cJSON_CreateObject();
+        cJSON *loc = cJSON_CreateObject();
+        if (sess->handover.local_dl_teid)
+            cJSON_AddItemToObjectCS(loc, "teid", cJSON_CreateNumber((double)(unsigned)sess->handover.local_dl_teid));
+        cJSON *laddr = addr_string_from_sockaddr(sess->handover.local_dl_addr, sess->handover.local_dl_addr6, 2152);
+        if (laddr) cJSON_AddItemToObjectCS(loc, "addr", laddr);
+        cJSON_AddItemToObjectCS(fwd, "local", loc);
+        
+        cJSON *rem = cJSON_CreateObject();
+        if (sess->handover.remote_dl_teid)
+            cJSON_AddItemToObjectCS(rem, "teid", cJSON_CreateNumber((double)(unsigned)sess->handover.remote_dl_teid));
+        cJSON *raddr = addr_string_item(&sess->handover.remote_dl_ip, 2152);
+        if (raddr) cJSON_AddItemToObjectCS(rem, "addr", raddr);
+        cJSON_AddItemToObjectCS(fwd, "upf", rem);
+        
+        cJSON_AddItemToObjectCS(ho, "dl_forwarding", fwd);
+        any = 1;
+    }
+    
+    if (!any) { cJSON_Delete(ho); return NULL; }
+    return ho;
+}
+
 
 static cJSON *build_snssai_object(const smf_sess_t *sess)
 {
@@ -280,6 +422,19 @@ static cJSON *build_single_pdu_object(const smf_sess_t *sess, int *any_active, i
                            : build_qos_flows_array_lte(sess);
         if (!qarr) { cJSON_Delete(pdu); return NULL; }
         cJSON_AddItemToObjectCS(pdu, "qos_flows", qarr);
+    }
+
+    /* N3 GTP-U details (5GS only) */
+    if (is5g) {
+        cJSON *n3 = build_n3_object_5g(sess);
+        if (n3) cJSON_AddItemToObjectCS(pdu, "n3", n3);
+
+        /* Handover view (5GS only): target gNB + indirect DL forwarding */
+        {
+            cJSON *ho = build_handover_object_5g(sess);
+            if (ho) cJSON_AddItemToObjectCS(pdu, "handover", ho);
+        }
+
     }
 
     /* PDU state + UE activity aggregation */
