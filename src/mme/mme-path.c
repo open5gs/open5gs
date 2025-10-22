@@ -329,7 +329,7 @@ cleanup:
 /* ----------------------------------------------------------------------
  * Function: mme_send_delete_session_or_tau_accept
  * ----------------------------------------------------------------------
- * - If active_flag == 0, check UE's EPS Bearer Context Status (BCS)
+ * - Check UE's EPS Bearer Context Status (BCS) regardless of active_flag
  *   against MME's sessions before sending TAU ACCEPT.
  * - If UE does not report the default bearer EBI, delete that session.
  * - Otherwise, send TAU ACCEPT immediately.
@@ -383,11 +383,21 @@ void mme_send_delete_session_or_tau_accept(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     }
 
     if (deleted > 0) {
-        ogs_warn("[%s] Deleted %d session(s) due to BCS mismatch",
-                mme_ue->imsi_bcd, deleted);
+        ogs_warn("[%s] Deleted %d session(s) due to BCS mismatch, "
+                "active_flag=%d",
+                mme_ue->imsi_bcd, deleted,
+                mme_ue->nas_eps.update.active_flag);
     } else {
-        ogs_info("[%s] TAU accept(BCS match)", mme_ue->imsi_bcd);
+        /*
+         * Choose S1AP procedure based on active_flag:
+         *  - active_flag==1 : InitialContextSetup
+         *  - active_flag==0 : DownlinkNASTransport
+         */
+        ogs_info("[%s] Send TAU accept(BCS match, active_flag=%d)",
+                 mme_ue->imsi_bcd, mme_ue->nas_eps.update.active_flag);
         r = nas_eps_send_tau_accept(mme_ue,
+                mme_ue->nas_eps.update.active_flag ?
+                S1AP_ProcedureCode_id_InitialContextSetup :
                 S1AP_ProcedureCode_id_downlinkNASTransport);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
