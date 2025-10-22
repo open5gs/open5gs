@@ -729,24 +729,27 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                         ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
                         mme_ue->nhcc = 1;
 
-                        ogs_info("[%s] TAU accept(active_flag=1)",
+                        ogs_info("[%s] KDF update(active_flag=1)",
                                 mme_ue->imsi_bcd);
+                    }
+
+                    /* check BCS regardless of active_flag */
+                    if (mme_ue->tracking_area_update_request_presencemask &
+                        OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE) {
+                        ogs_info("[%s] TAU accept(active_flag=%d, BCS check)",
+                            mme_ue->imsi_bcd,
+                            mme_ue->nas_eps.update.active_flag);
+                        mme_send_delete_session_or_tau_accept(enb_ue, mme_ue);
+                    } else {
+                        ogs_info("[%s] TAU accept(active_flag=%d, No BCS)",
+                            mme_ue->imsi_bcd,
+                            mme_ue->nas_eps.update.active_flag);
                         r = nas_eps_send_tau_accept(mme_ue,
-                                S1AP_ProcedureCode_id_InitialContextSetup);
-                        ogs_expect(r == OGS_OK);
-                        ogs_assert(r != OGS_ERROR);
-                    } else if (!(mme_ue->tracking_area_update_request_presencemask &
-                                OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE)) {
-                        ogs_info("[%s] TAU accept(NO Bearer Context Status)",
-                                mme_ue->imsi_bcd);
-                        r = nas_eps_send_tau_accept(mme_ue,
+                                mme_ue->nas_eps.update.active_flag ?
+                                S1AP_ProcedureCode_id_InitialContextSetup :
                                 S1AP_ProcedureCode_id_downlinkNASTransport);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
-                    } else {
-                        ogs_info("[%s] TAU accept(WITH Bearer Context Status)",
-                                mme_ue->imsi_bcd);
-                        mme_send_delete_session_or_tau_accept(enb_ue, mme_ue);
                     }
                 } else if (e->s1ap_code ==
                         S1AP_ProcedureCode_id_uplinkNASTransport) {

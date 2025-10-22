@@ -886,8 +886,11 @@ void mme_s11_handle_delete_session_response(
 
         GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION_BY_TAU,
 
-            ogs_info("[%s] TAU accept(BCS mismatch)", mme_ue->imsi_bcd);
+            ogs_info("[%s] Send TAU accept(BCS match, active_flag=%d)",
+                     mme_ue->imsi_bcd, mme_ue->nas_eps.update.active_flag);
             r = nas_eps_send_tau_accept(mme_ue,
+                    mme_ue->nas_eps.update.active_flag ?
+                    S1AP_ProcedureCode_id_InitialContextSetup :
                     S1AP_ProcedureCode_id_downlinkNASTransport);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);

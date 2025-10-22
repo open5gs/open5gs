@@ -150,25 +150,26 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                 ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
                 mme_ue->nhcc = 1;
 
-                ogs_info("[%s] LU accept + TAU accept(active_flag==1)",
-                        mme_ue->imsi_bcd);
+                ogs_info("[%s] KDF update(active_flag=1)", mme_ue->imsi_bcd);
+            }
+
+            /* check BCS regardless of active_flag */
+            if (mme_ue->tracking_area_update_request_presencemask &
+                OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE) {
+                ogs_info("[%s] LU accept + TAU accept(active_flag=%d, BCS)",
+                    mme_ue->imsi_bcd,
+                    mme_ue->nas_eps.update.active_flag);
+                mme_send_delete_session_or_tau_accept(enb_ue, mme_ue);
+            } else {
+                ogs_info("[%s] LU accept + TAU accept(active_flag=%d, No BCS)",
+                    mme_ue->imsi_bcd,
+                    mme_ue->nas_eps.update.active_flag);
                 r = nas_eps_send_tau_accept(mme_ue,
-                        S1AP_ProcedureCode_id_InitialContextSetup);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-            } else if (!(mme_ue->tracking_area_update_request_presencemask &
-                        OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE)) {
-                ogs_info("[%s] LU accept + TAU accept(NO Bearer Context Status)",
-                        mme_ue->imsi_bcd);
-                r = nas_eps_send_tau_accept(mme_ue,
+                        mme_ue->nas_eps.update.active_flag ?
+                        S1AP_ProcedureCode_id_InitialContextSetup :
                         S1AP_ProcedureCode_id_downlinkNASTransport);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-            } else {
-                ogs_info("[%s] LU accept + TAU accept"
-                        "(WITH Bearer Context Status)",
-                        mme_ue->imsi_bcd);
-                mme_send_delete_session_or_tau_accept(enb_ue, mme_ue);
             }
         } else if (mme_ue->tracking_area_update_request_type ==
                 MME_TAU_TYPE_UPLINK_NAS_TRANPORT) {
@@ -359,31 +360,30 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                 ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
                 mme_ue->nhcc = 1;
 
-                ogs_fatal("[%s] LU reject + TAU accept(active_flag==1)",
-                        mme_ue->imsi_bcd);
+                ogs_info("[%s] KDF update(active_flag=1)", mme_ue->imsi_bcd);
+            }
+
+            /* check BCS regardless of active_flag */
+            if (mme_ue->tracking_area_update_request_presencemask &
+                OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE) {
+                ogs_info("[%s] LU reject + TAU accept(active_flag=%d, BCS)",
+                    mme_ue->imsi_bcd,
+                    mme_ue->nas_eps.update.active_flag);
+                mme_send_delete_session_or_tau_accept(enb_ue, mme_ue);
+            } else {
+                ogs_info("[%s] LU reject + TAU accept(active_flag=%d, No BCS)",
+                    mme_ue->imsi_bcd,
+                    mme_ue->nas_eps.update.active_flag);
                 r = nas_eps_send_tau_accept(mme_ue,
-                        S1AP_ProcedureCode_id_InitialContextSetup);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-            } else if (!(mme_ue->tracking_area_update_request_presencemask &
-                        OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE)) {
-                ogs_fatal("[%s] LU reject + TAU accept"
-                        "(NO Bearer Context Status)",
-                        mme_ue->imsi_bcd);
-                r = nas_eps_send_tau_accept(mme_ue,
+                        mme_ue->nas_eps.update.active_flag ?
+                        S1AP_ProcedureCode_id_InitialContextSetup :
                         S1AP_ProcedureCode_id_downlinkNASTransport);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
-            } else {
-                ogs_fatal("[%s] LU reject + TAU accept"
-                        "(WITH Bearer Context Status)",
-                        mme_ue->imsi_bcd);
-                mme_send_delete_session_or_tau_accept(enb_ue, mme_ue);
             }
         } else if (mme_ue->tracking_area_update_request_type ==
                 MME_TAU_TYPE_UPLINK_NAS_TRANPORT) {
-            ogs_debug("    Uplink NAS Transport");
-            ogs_fatal("[%s] LU reject + TAU accept(UplinkNASTransport)",
+            ogs_info("[%s] LU reject + TAU accept(UplinkNASTransport)",
                     mme_ue->imsi_bcd);
             r = nas_eps_send_tau_accept(mme_ue,
                     S1AP_ProcedureCode_id_downlinkNASTransport);
@@ -391,9 +391,8 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
             ogs_assert(r != OGS_ERROR);
         } else if (mme_ue->tracking_area_update_request_type ==
                 MME_TAU_TYPE_UNPROTECTED_INTEGRITY) {
-            ogs_fatal("[%s] LU reject + TAU accept(Unprotected Integrity)",
+            ogs_info("[%s] LU reject + TAU accept(Unprotected Integrity)",
                     mme_ue->imsi_bcd);
-            ogs_debug("    Unprotected Integrity");
             r = nas_eps_send_tau_accept(mme_ue,
                     S1AP_ProcedureCode_id_InitialContextSetup);
             ogs_expect(r == OGS_OK);
@@ -414,7 +413,6 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
          */
         if (!mme_ue->nas_eps.update.active_flag &&
             !MME_NEXT_P_TMSI_IS_AVAILABLE(mme_ue)) {
-            ogs_fatal("NEXT = %d", MME_NEXT_P_TMSI_IS_AVAILABLE(mme_ue));
             enb_ue->relcause.group = S1AP_Cause_PR_nas;
             enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
             mme_send_release_access_bearer_or_ue_context_release(enb_ue);
