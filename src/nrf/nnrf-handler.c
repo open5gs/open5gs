@@ -524,8 +524,13 @@ bool nrf_nnrf_handle_nf_status_subscribe(
 
     /* Issue #2630 : The format of subscrCond is invalid. Must be 'oneOf'. */
         if (SubscrCond->nf_type && SubscrCond->service_name) {
-            ogs_error("SubscrCond must be 'oneOf'");
+            ogs_error("SubscrCond must be either an NF type or a service name");
             ogs_sbi_subscription_data_remove(subscription_data);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "SubscrCond must be either an NF type or a service name",
+                    NULL, NULL));
             return false;
         }
 
@@ -538,10 +543,24 @@ bool nrf_nnrf_handle_nf_status_subscribe(
             subscription_data->subscr_cond.nf_instance_id = 
                 ogs_strdup(SubscrCond->nf_instance_id);
         else {
-            ogs_error("No SubscrCond");
+            ogs_error("Requested SubscrCond is not supported yet");
             ogs_sbi_subscription_data_remove(subscription_data);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "Requested SubscrCond is not supported yet",
+                    NULL, NULL));
             return false;
         }
+    } else {
+        ogs_error("No SubscrCond found in NF Subscription message");
+        ogs_sbi_subscription_data_remove(subscription_data);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No SubscrCond found in NF Subscription message",
+                NULL, NULL));
+        return false;
     }
 
     subscription_data->notification_uri =
