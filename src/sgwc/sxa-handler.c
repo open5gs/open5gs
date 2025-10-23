@@ -493,42 +493,58 @@ void sgwc_sxa_handle_session_modification_response(
         if (!sess) {
             ogs_pool_id_t sess_id = OGS_INVALID_POOL_ID;
 
-            ogs_error("No Context");
+            ogs_error("No Session Context");
 
             sess_id = OGS_POINTER_TO_UINT(pfcp_xact->data);
-            ogs_assert(sess_id >= OGS_MIN_POOL_ID &&
-                    sess_id <= OGS_MAX_POOL_ID);
-
-            sess = sgwc_sess_find_by_id(sess_id);
-            ogs_assert(sess);
-
-            cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+            if (sess_id >= OGS_MIN_POOL_ID && sess_id <= OGS_MAX_POOL_ID) {
+                sess = sgwc_sess_find_by_id(sess_id);
+                if (!sess) {
+                    ogs_error("Session not found [%d]", sess_id);
+                    cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+                }
+            } else {
+                ogs_error("Invalid session id: %u", sess_id);
+                cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+            }
         }
 
-        sgwc_ue = sgwc_ue_find_by_id(sess->sgwc_ue_id);
-        ogs_assert(sgwc_ue);
+        if (sess && cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+            sgwc_ue = sgwc_ue_find_by_id(sess->sgwc_ue_id);
+            if (!sgwc_ue) {
+                ogs_error("UE not found [%d]", sess->sgwc_ue_id);
+                cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+            }
+        }
 
     } else {
         ogs_pool_id_t bearer_id = OGS_POINTER_TO_UINT(pfcp_xact->data);
-        ogs_assert(bearer_id >= OGS_MIN_POOL_ID &&
-                bearer_id <= OGS_MAX_POOL_ID);
-
-        bearer = sgwc_bearer_find_by_id(bearer_id);
-        if (!bearer) {
-            ogs_error("No Bearer Context");
-            cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-        } else {
-            if (!sess) {
-                ogs_error("No Context");
-
-                sess = sgwc_sess_find_by_id(bearer->sess_id);
-                ogs_assert(sess);
-
+        if (bearer_id >= OGS_MIN_POOL_ID && bearer_id <= OGS_MAX_POOL_ID) {
+            bearer = sgwc_bearer_find_by_id(bearer_id);
+            if (!bearer) {
+                ogs_error("No Bearer Context [%d]", bearer_id);
                 cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
-            }
+            } else {
+                if (!sess) {
+                    ogs_error("No Session Context");
 
-            sgwc_ue = sgwc_ue_find_by_id(bearer->sgwc_ue_id);
-            ogs_assert(sgwc_ue);
+                    sess = sgwc_sess_find_by_id(bearer->sess_id);
+                    if (!sess) {
+                        ogs_error("Session not found [%d]", bearer->sess_id);
+                        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+                    }
+                }
+
+                if (sess && cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+                    sgwc_ue = sgwc_ue_find_by_id(sess->sgwc_ue_id);
+                    if (!sgwc_ue) {
+                        ogs_error("UE not found [%d]", sess->sgwc_ue_id);
+                        cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+                    }
+                }
+            }
+        } else {
+            ogs_error("Invalid bearer id: %u", bearer_id);
+            cause_value = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
         }
     }
 
@@ -1245,12 +1261,14 @@ void sgwc_sxa_handle_session_modification_response(
 
         } else {
             s11_xact = ogs_gtp_xact_find_by_id(pfcp_xact->assoc_xact_id);
-            ogs_assert(s11_xact);
+            if (!s11_xact)
+                ogs_error("GTP xact has already been removed [%d]",
+                        pfcp_xact->assoc_xact_id);
 
             ogs_pfcp_xact_commit(pfcp_xact);
 
             ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
-            if (SGWC_SESSION_SYNC_DONE(sgwc_ue,
+            if (s11_xact && SGWC_SESSION_SYNC_DONE(sgwc_ue,
                     OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE, flags)) {
 
                 ogs_gtp2_release_access_bearers_response_t *gtp_rsp = NULL;

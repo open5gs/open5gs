@@ -1235,6 +1235,10 @@ void s1ap_handle_initial_context_setup_response(
             memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf,
                     sizeof(bearer->enb_s1u_teid));
             bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
+
+            ogs_debug("UE[%s] EBI[%d] Update enb_s1u_teid = 0x%x",
+                    mme_ue->imsi_bcd, bearer->ebi, bearer->enb_s1u_teid);
+
             rv = ogs_asn_BIT_STRING_to_ip(
                     &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
             if (rv != OGS_OK) {
@@ -1248,8 +1252,14 @@ void s1ap_handle_initial_context_setup_response(
                 return;
             }
 
-            ogs_debug("    EBI[%d] ENB-S1U-TEID[%d]",
-                    bearer->ebi, bearer->enb_s1u_teid);
+            ogs_log_hexdump(OGS_LOG_DEBUG,
+                    e_rab->transportLayerAddress.buf,
+                    e_rab->transportLayerAddress.size);
+            ogs_debug("    IPv4(%d): 0x%x",
+                    bearer->enb_s1u_ip.ipv4, bearer->enb_s1u_ip.addr);
+            ogs_debug("    IPv6(%d):", bearer->enb_s1u_ip.ipv6);
+            ogs_log_hexdump(OGS_LOG_DEBUG,
+                    bearer->enb_s1u_ip.addr6, OGS_IPV6_LEN);
 
             if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
                 ogs_debug("    NAS_EPS Type[%d]", mme_ue->nas_eps.type);
@@ -1780,6 +1790,10 @@ void s1ap_handle_e_rab_setup_response(
             memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf,
                     sizeof(bearer->enb_s1u_teid));
             bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
+
+            ogs_debug("UE[%s] EBI[%d] Update enb_s1u_teid = 0x%x",
+                    mme_ue->imsi_bcd, bearer->ebi, bearer->enb_s1u_teid);
+
             rv = ogs_asn_BIT_STRING_to_ip(
                     &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
             if (rv != OGS_OK) {
@@ -1793,7 +1807,14 @@ void s1ap_handle_e_rab_setup_response(
                 return;
             }
 
-            ogs_debug("    EBI[%d]", bearer->ebi);
+            ogs_log_hexdump(OGS_LOG_DEBUG,
+                    e_rab->transportLayerAddress.buf,
+                    e_rab->transportLayerAddress.size);
+            ogs_debug("    IPv4(%d): 0x%x",
+                    bearer->enb_s1u_ip.ipv4, bearer->enb_s1u_ip.addr);
+            ogs_debug("    IPv6(%d):", bearer->enb_s1u_ip.ipv6);
+            ogs_log_hexdump(OGS_LOG_DEBUG,
+                    bearer->enb_s1u_ip.addr6, OGS_IPV6_LEN);
 
             if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
                 mme_bearer_t *linked_bearer = mme_linked_bearer(bearer);
@@ -2437,6 +2458,10 @@ void s1ap_handle_e_rab_modification_indication(
         memcpy(&bearer->enb_s1u_teid, e_rab->dL_GTP_TEID.buf,
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
+
+        ogs_debug("UE[%s] EBI[%d] Update enb_s1u_teid = 0x%x",
+                mme_ue->imsi_bcd, bearer->ebi, bearer->enb_s1u_teid);
+
         rv = ogs_asn_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
         if (rv != OGS_OK) {
@@ -2449,6 +2474,15 @@ void s1ap_handle_e_rab_modification_indication(
             ogs_assert(r != OGS_ERROR);
             return;
         }
+
+        ogs_log_hexdump(OGS_LOG_DEBUG,
+                e_rab->transportLayerAddress.buf,
+                e_rab->transportLayerAddress.size);
+        ogs_debug("    IPv4(%d): 0x%x",
+                bearer->enb_s1u_ip.ipv4, bearer->enb_s1u_ip.addr);
+        ogs_debug("    IPv6(%d):", bearer->enb_s1u_ip.ipv6);
+        ogs_log_hexdump(OGS_LOG_DEBUG,
+                bearer->enb_s1u_ip.addr6, OGS_IPV6_LEN);
 
         if (ogs_list_exists(
                     &mme_ue->bearer_to_modify_list,
@@ -3021,6 +3055,10 @@ void s1ap_handle_path_switch_request(
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf,
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
+
+        ogs_debug("UE[%s] EBI[%d] Update enb_s1u_teid = 0x%x",
+                mme_ue->imsi_bcd, bearer->ebi, bearer->enb_s1u_teid);
+
         rv = ogs_asn_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
         if (rv != OGS_OK) {
@@ -3033,6 +3071,15 @@ void s1ap_handle_path_switch_request(
             ogs_assert(r != OGS_ERROR);
             return;
         }
+
+        ogs_log_hexdump(OGS_LOG_DEBUG,
+                e_rab->transportLayerAddress.buf,
+                e_rab->transportLayerAddress.size);
+        ogs_debug("    IPv4(%d): 0x%x",
+                bearer->enb_s1u_ip.ipv4, bearer->enb_s1u_ip.addr);
+        ogs_debug("    IPv6(%d):", bearer->enb_s1u_ip.ipv6);
+        ogs_log_hexdump(OGS_LOG_DEBUG,
+                bearer->enb_s1u_ip.addr6, OGS_IPV6_LEN);
 
         if (ogs_list_exists(
                     &mme_ue->bearer_to_modify_list,
@@ -3594,6 +3641,10 @@ void s1ap_handle_handover_request_ack(
         memcpy(&bearer->target_s1u_teid, e_rab->gTP_TEID.buf,
                 sizeof(bearer->target_s1u_teid));
         bearer->target_s1u_teid = be32toh(bearer->target_s1u_teid);
+
+        ogs_debug("UE[%s] EBI[%d] Update target_s1u_teid = 0x%x",
+                mme_ue->imsi_bcd, bearer->ebi, bearer->target_s1u_teid);
+
         rv = ogs_asn_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->target_s1u_ip);
         if (rv != OGS_OK) {
@@ -3606,6 +3657,15 @@ void s1ap_handle_handover_request_ack(
             ogs_assert(r != OGS_ERROR);
             return;
         }
+
+        ogs_log_hexdump(OGS_LOG_DEBUG,
+                e_rab->transportLayerAddress.buf,
+                e_rab->transportLayerAddress.size);
+        ogs_debug("    IPv4(%d): 0x%x",
+                bearer->target_s1u_ip.ipv4, bearer->target_s1u_ip.addr);
+        ogs_debug("    IPv6(%d):", bearer->target_s1u_ip.ipv6);
+        ogs_log_hexdump(OGS_LOG_DEBUG,
+                bearer->target_s1u_ip.addr6, OGS_IPV6_LEN);
 
         if (e_rab->dL_transportLayerAddress && e_rab->dL_gTP_TEID) {
             if (e_rab->dL_gTP_TEID->size != sizeof(bearer->enb_dl_teid)) {
@@ -3622,6 +3682,10 @@ void s1ap_handle_handover_request_ack(
             memcpy(&bearer->enb_dl_teid, e_rab->dL_gTP_TEID->buf,
                     sizeof(bearer->enb_dl_teid));
             bearer->enb_dl_teid = be32toh(bearer->enb_dl_teid);
+
+            ogs_debug("UE[%s] EBI[%d] Update enb_dl_teid = 0x%x",
+                    mme_ue->imsi_bcd, bearer->ebi, bearer->enb_dl_teid);
+
             rv = ogs_asn_BIT_STRING_to_ip(
                     e_rab->dL_transportLayerAddress, &bearer->enb_dl_ip);
             if (rv != OGS_OK) {
@@ -3634,6 +3698,15 @@ void s1ap_handle_handover_request_ack(
                 ogs_assert(r != OGS_ERROR);
                 return;
             }
+
+            ogs_log_hexdump(OGS_LOG_DEBUG,
+                    e_rab->dL_transportLayerAddress->buf,
+                    e_rab->dL_transportLayerAddress->size);
+            ogs_debug("    IPv4(%d): 0x%x",
+                    bearer->enb_dl_ip.ipv4, bearer->enb_dl_ip.addr);
+            ogs_debug("    IPv6(%d):", bearer->enb_dl_ip.ipv6);
+            ogs_log_hexdump(OGS_LOG_DEBUG,
+                    bearer->enb_dl_ip.addr6, OGS_IPV6_LEN);
         }
 
         if (e_rab->uL_TransportLayerAddress && e_rab->uL_GTP_TEID) {
@@ -3663,6 +3736,15 @@ void s1ap_handle_handover_request_ack(
                 ogs_assert(r != OGS_ERROR);
                 return;
             }
+
+            ogs_log_hexdump(OGS_LOG_DEBUG,
+                    e_rab->uL_TransportLayerAddress->buf,
+                    e_rab->uL_TransportLayerAddress->size);
+            ogs_debug("    IPv4(%d): 0x%x",
+                    bearer->enb_ul_ip.ipv4, bearer->enb_ul_ip.addr);
+            ogs_debug("    IPv6(%d):", bearer->enb_ul_ip.ipv6);
+            ogs_log_hexdump(OGS_LOG_DEBUG,
+                    bearer->enb_ul_ip.addr6, OGS_IPV6_LEN);
         }
     }
 
@@ -4258,13 +4340,24 @@ void s1ap_handle_handover_notification(
 
     ogs_list_for_each(&mme_ue->sess_list, sess) {
         ogs_list_for_each(&sess->bearer_list, bearer) {
-            bearer->enb_s1u_teid = bearer->target_s1u_teid;
-            memcpy(&bearer->enb_s1u_ip, &bearer->target_s1u_ip,
-                    sizeof(ogs_ip_t));
+            if (bearer->target_s1u_ip.ipv4 || bearer->target_s1u_ip.ipv6) {
+                bearer->enb_s1u_teid = bearer->target_s1u_teid;
+                ogs_debug("UE[%s] EBI[%d] Update enb_s1u_teid = 0x%x",
+                        mme_ue->imsi_bcd, bearer->ebi, bearer->enb_s1u_teid);
 
-            ogs_list_add(
-                    &mme_ue->bearer_to_modify_list, &bearer->to_modify_node);
+                memcpy(&bearer->enb_s1u_ip, &bearer->target_s1u_ip,
+                        sizeof(ogs_ip_t));
 
+                ogs_debug("    IPv4(%d): 0x%x",
+                        bearer->enb_s1u_ip.ipv4, bearer->enb_s1u_ip.addr);
+                ogs_debug("    IPv6(%d):", bearer->enb_s1u_ip.ipv6);
+                ogs_log_hexdump(OGS_LOG_DEBUG,
+                        bearer->enb_s1u_ip.addr6, OGS_IPV6_LEN);
+
+                ogs_list_add(
+                        &mme_ue->bearer_to_modify_list,
+                        &bearer->to_modify_node);
+            }
         }
     }
 
