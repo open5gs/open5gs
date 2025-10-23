@@ -299,6 +299,7 @@ int sgwc_pfcp_send_bearer_to_modify_list(
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
     h.seid = sess->sgwu_sxa_seid;
 
+    ogs_debug("sgwc_pfcp_send_bearer_to_modify_list");
     sxabuf = sgwc_sxa_build_bearer_to_modify_list(h.type, sess, xact);
     if (!sxabuf) {
         ogs_error("sgwc_sxa_build_bearer_to_modify_list() failed");
@@ -429,6 +430,7 @@ int sgwc_pfcp_send_session_modification_request(
     ogs_list_for_each(&sess->bearer_list, bearer)
         ogs_list_add(&xact->bearer_to_modify_list, &bearer->to_modify_node);
 
+    ogs_debug("sgwc_pfcp_send_session_modification_request");
     return sgwc_pfcp_send_bearer_to_modify_list(sess, xact);
 }
 
@@ -470,6 +472,7 @@ int sgwc_pfcp_send_bearer_modification_request(
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
     h.seid = sess->sgwu_sxa_seid;
 
+    ogs_debug("sgwc_pfcp_send_bearer_modification_request");
     sxabuf = sgwc_sxa_build_bearer_to_modify_list(h.type, sess, xact);
     if (!sxabuf) {
         ogs_error("sgwc_sxa_build_bearer_to_modify_list() failed");

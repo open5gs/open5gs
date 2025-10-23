@@ -670,6 +670,7 @@ void sgwc_s5c_handle_create_bearer_request(
             &far->outer_header_creation, &far->outer_header_creation_len));
     far->outer_header_creation.teid = ul_tunnel->remote_teid;
 
+    ogs_debug("sgwc_s5c_handle_create_bearer_request");
     ogs_assert(OGS_OK ==
         sgwc_pfcp_send_bearer_modification_request(
             bearer, s5c_xact->id, gtpbuf,
