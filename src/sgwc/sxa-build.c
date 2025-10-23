@@ -157,11 +157,7 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
 
     ogs_list_for_each_entry(
             &xact->bearer_to_modify_list, bearer, to_modify_node) {
-        ogs_debug("EBI[%d]", bearer->ebi);
         ogs_list_for_each(&bearer->tunnel_list, tunnel) {
-            ogs_debug("TUNNEL[%d] INF[%d] modify flags %llx",
-                    tunnel->id, tunnel->interface_type,
-                    (long long)modify_flags);
             if (((modify_flags &
                   (OGS_PFCP_MODIFY_DL_ONLY|
                    OGS_PFCP_MODIFY_UL_ONLY|
@@ -191,7 +187,6 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
                         message->pdr_id.u16 = pdr->id;
 
                         num_of_remove_pdr++;
-                        ogs_debug("num_of_remove_pdr = %d", num_of_remove_pdr);
                     } else
                         ogs_assert_if_reached();
 
@@ -205,7 +200,6 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
                         message->far_id.u32 = far->id;
 
                         num_of_remove_far++;
-                        ogs_debug("num_of_remove_far = %d", num_of_remove_far);
                     } else
                         ogs_assert_if_reached();
 
@@ -217,7 +211,6 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
                                 &req->create_pdr[num_of_create_pdr],
                                 num_of_create_pdr, pdr);
                         num_of_create_pdr++;
-                        ogs_debug("num_of_create_pdr = %d", num_of_create_pdr);
 
                         ogs_list_add(&xact->pdr_to_create_list,
                                         &pdr->to_create_node);
@@ -231,7 +224,6 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
                                 num_of_create_far, far);
 
                         num_of_create_far++;
-                        ogs_debug("num_of_create_far = %d", num_of_create_far);
                     } else
                         ogs_assert_if_reached();
                 }
@@ -245,7 +237,6 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
                                 num_of_update_far, far);
 
                         num_of_update_far++;
-                        ogs_debug("num_of_update_far = %d", num_of_update_far);
                     } else
                         ogs_assert_if_reached();
 
@@ -262,7 +253,6 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
                                 num_of_update_far, far);
 
                         num_of_update_far++;
-                        ogs_debug("num_of_update_far = %d", num_of_update_far);
 
                         /* Clear all FAR flags */
                         tunnel->far->smreq_flags.value = 0;
@@ -279,7 +269,6 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
                                 &req->update_pdr[num_of_update_pdr],
                                 num_of_update_pdr, pdr, modify_flags);
                         num_of_update_pdr++;
-                        ogs_debug("num_of_update_pdr = %d", num_of_update_pdr);
                     } else
                         ogs_assert_if_reached();
                 }

@@ -621,7 +621,6 @@ void sgwc_s11_handle_modify_bearer_request(
             sess = sgwc_sess_find_by_id(sess_id);
             ogs_assert(sess);
 
-            ogs_debug("sgwc_s11_handle_modify_bearer_request");
             sgwc_pfcp_send_bearer_to_modify_list(sess, pfcp_xact);
         }
     }
@@ -851,7 +850,6 @@ void sgwc_s11_handle_create_bearer_response(
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         if (bearer) {
-            ogs_debug("sgwc_s11_handle_create_bearer_response");
             ogs_assert(OGS_OK ==
                 sgwc_pfcp_send_bearer_modification_request(
                     bearer, OGS_INVALID_POOL_ID, NULL,
@@ -962,7 +960,6 @@ void sgwc_s11_handle_create_bearer_response(
             ogs_error("Invalid User Location Info(ULI)");
     }
 
-    ogs_debug("sgwc_s11_handle_create_bearer_response");
     ogs_assert(OGS_OK ==
         sgwc_pfcp_send_bearer_modification_request(
             bearer, s5c_xact->id, gtpbuf,
@@ -1249,7 +1246,6 @@ void sgwc_s11_handle_delete_bearer_response(
         ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
-        ogs_debug("sgwc_s11_handle_delete_bearer_response");
         ogs_assert(OGS_OK ==
             sgwc_pfcp_send_bearer_modification_request(
                 bearer, s5c_xact->id, gtpbuf, OGS_PFCP_MODIFY_REMOVE));
