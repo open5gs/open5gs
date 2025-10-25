@@ -43,6 +43,8 @@ ogs_pkbuf_t *emm_build_attach_accept(
         &attach_accept->location_area_identification;
     ogs_nas_mobile_identity_t *ms_identity = &attach_accept->ms_identity;
     ogs_nas_mobile_identity_tmsi_t *tmsi = &ms_identity->tmsi;;
+    ogs_nas_emergency_number_list_t *emerg_numbers =
+        &attach_accept->emergency_number_list;
 
     ogs_assert(mme_ue);
     ogs_assert(esmbuf);
@@ -202,6 +204,30 @@ ogs_pkbuf_t *emm_build_attach_accept(
             OGS_NAS_EPS_ATTACH_ACCEPT_T3423_VALUE_PRESENT;
     }
 
+    /* Set emergency number(s) */
+    if (!ogs_list_empty(&mme_self()->emerg_list)) {
+        mme_emerg_t *emerg;
+        ogs_nas_emergency_number_item_t *item;
+        int len, o = 0;
+        ogs_list_for_each(&mme_self()->emerg_list, emerg) {
+            len = (strlen(emerg->digits) + 1) >> 1;
+            if (o + 2 + len > OGS_NAS_MAX_EMERGENCY_NUMBER_LIST_LEN) {
+                ogs_debug("    Too many list EMERG_NUM_LIST items.");
+                break;
+            }
+            ogs_debug("    EMERG_NUM_LIST[CAT:0x%02x,DIGITS:%s]",
+                    emerg->categories, emerg->digits);
+            item = (ogs_nas_emergency_number_item_t *)(emerg_numbers->buffer + o);
+            item->service_category = emerg->categories;
+            ogs_bcd_to_buffer(emerg->digits, item->digits, &len);
+            item->length = 1 + len;
+            o += 2 + len;
+        }
+        attach_accept->presencemask |=
+            OGS_NAS_EPS_ATTACH_ACCEPT_EMERGENCY_NUMBER_LIST_PRESENT;
+        emerg_numbers->length = o;
+    }
+
     attach_accept->presencemask |=
         OGS_NAS_EPS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
     if (ogs_global_conf()->parameter.use_openair == false) {
@@ -211,6 +237,8 @@ ogs_pkbuf_t *emm_build_attach_accept(
     }
     eps_network_feature_support->ims_voice_over_ps_session_in_s1_mode = 1;
     eps_network_feature_support->extended_protocol_configuration_options = 1;
+    if (mme_self()->emergency.dnn)
+        eps_network_feature_support->emergency_bearer_services_in_s1_mode = 1;
 
     if (MME_NEXT_P_TMSI_IS_AVAILABLE(mme_ue)) {
         ogs_assert(mme_ue->csmap);

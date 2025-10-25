@@ -76,6 +76,7 @@ typedef struct ogs_app_context_s {
         uint64_t gtp_node;
 
         uint64_t csmap;
+        uint64_t emerg;
 
         uint64_t impi;
         uint64_t impu;
