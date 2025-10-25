@@ -1370,6 +1370,12 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint64_t ran_ue_ngap_id)
 
     ogs_assert(gnb);
 
+    if ((gnb->max_num_of_ostreams - 1) < 1) {
+        ogs_error("gnb->max_num_of_ostreams too small (%d)",
+                gnb->max_num_of_ostreams);
+        return NULL;
+    }
+
     ogs_pool_id_calloc(&ran_ue_pool, &ran_ue);
     if (ran_ue == NULL) {
         ogs_error("Could not allocate ran_ue context from pool");

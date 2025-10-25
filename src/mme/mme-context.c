@@ -3139,6 +3139,12 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
 
     ogs_assert(enb);
 
+    if ((enb->max_num_of_ostreams - 1) < 1) {
+        ogs_error("enb->max_num_of_ostreams too small (%d)",
+                enb->max_num_of_ostreams);
+        return NULL;
+    }
+
     ogs_pool_id_calloc(&enb_ue_pool, &enb_ue);
     if (enb_ue == NULL) {
         ogs_error("Could not allocate enb_ue context from pool");
@@ -3166,7 +3172,6 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
      *   0 : Non UE signalling
      *   1-29 : UE specific association
      */
-    ogs_assert((enb->max_num_of_ostreams-1) >= 1); /* NEXT_ID(MAX >= MIN) */
     enb_ue->enb_ostream_id =
         OGS_NEXT_ID(enb->ostream_id, 1, enb->max_num_of_ostreams-1);
 
