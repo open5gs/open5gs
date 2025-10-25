@@ -67,6 +67,24 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
 
     rv = OGS_ERROR;
 
+    /* If present, update session's gNB N3 (DL) TEID and IP from ModifyResponseTransfer */
+    dLQosFlowPerTNLInformation = &message.dLQosFlowPerTNLInformation;
+    if (dLQosFlowPerTNLInformation) {
+        uPTransportLayerInformation = &dLQosFlowPerTNLInformation->uPTransportLayerInformation;
+        if (uPTransportLayerInformation->present == NGAP_UPTransportLayerInformation_PR_gTPTunnel) {
+            gTPTunnel = uPTransportLayerInformation->choice.gTPTunnel;
+            if (gTPTunnel) {
+                ogs_ip_t ip_tmp;
+                uint32_t teid_tmp = 0;
+                if (ogs_asn_BIT_STRING_to_ip(&gTPTunnel->transportLayerAddress, &ip_tmp) == OGS_OK) {
+                    ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &teid_tmp);
+                    sess->remote_dl_ip = ip_tmp;
+                    sess->remote_dl_teid = teid_tmp;
+                }
+            }
+        }
+    }
+
     dLQosFlowPerTNLInformation = &message.dLQosFlowPerTNLInformation;
     uPTransportLayerInformation =
         &dLQosFlowPerTNLInformation->uPTransportLayerInformation;

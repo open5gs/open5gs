@@ -229,6 +229,21 @@ uint8_t smf_5gc_n4_handle_session_establishment_response(
                         &pdr->f_teid, pdr->f_teid_len,
                         &sess->local_ul_addr, &sess->local_ul_addr6));
                 sess->local_ul_teid = pdr->f_teid.teid;
+
+                /* Set UPF UL F-TEID (teid, ip) into session */
+                if (pdr->f_teid_len) {
+                    sess->remote_ul_teid = pdr->f_teid.teid;
+
+                    ogs_sockaddr_t *tmp4 = NULL, *tmp6 = NULL;
+                    if (OGS_OK == ogs_pfcp_f_teid_to_sockaddr(&pdr->f_teid, pdr->f_teid_len, &tmp4, &tmp6)) {
+                       ogs_ip_t ip;
+                       memset(&ip, 0, sizeof(ip));
+                       if (OGS_OK == ogs_sockaddr_to_ip(tmp4, tmp6, &ip)) sess->remote_ul_ip = ip;
+                       if (tmp4) ogs_freeaddrinfo(tmp4);
+                       if (tmp6) ogs_freeaddrinfo(tmp6);
+                    }
+                }
+
             }
         } else if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
             ogs_assert(OGS_ERROR != ogs_pfcp_setup_pdr_gtpu_node(pdr));
@@ -377,6 +392,21 @@ void smf_5gc_n4_handle_session_modification_response(
                                 &sess->handover.local_dl_addr,
                                 &sess->handover.local_dl_addr6));
                         sess->handover.local_dl_teid = pdr->f_teid.teid;
+
+                       /* set UPF UL F-TEID (teid, ip) into session */
+                       if (pdr->f_teid_len) {
+                           sess->remote_ul_teid = pdr->f_teid.teid;
+
+                           ogs_sockaddr_t *tmp4 = NULL, *tmp6 = NULL;
+                           if (OGS_OK == ogs_pfcp_f_teid_to_sockaddr(&pdr->f_teid, pdr->f_teid_len, &tmp4, &tmp6)) {
+                             ogs_ip_t ip;
+                             memset(&ip, 0, sizeof(ip));
+                             if (OGS_OK == ogs_sockaddr_to_ip(tmp4, tmp6, &ip)) sess->remote_ul_ip = ip;
+                             if (tmp4) ogs_freeaddrinfo(tmp4);
+                             if (tmp6) ogs_freeaddrinfo(tmp6);
+                           }
+                       }
+
                     }
                 }
             } else if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
