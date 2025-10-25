@@ -170,7 +170,7 @@ int ogs_asn_BIT_STRING_to_ip(BIT_STRING_t *bit_string, ogs_ip_t *ip)
     } else if (bit_string->size == OGS_IPV6_LEN) {
         ip->ipv6 = 1;
         memcpy(&ip->addr6, bit_string->buf, OGS_IPV6_LEN);
-        ogs_debug("    IPv6[%s]", OGS_INET_NTOP(&ip->addr6, buf));
+        ogs_debug("    IPv6[%s]", OGS_INET6_NTOP(&ip->addr6, buf));
     } else {
         ogs_error("ogs_asn_BIT_STRING_to_ip(size=%d) failed", bit_string->size);
         return OGS_ERROR;
@@ -204,7 +204,7 @@ int ogs_asn_ip_to_BIT_STRING(ogs_ip_t *ip, BIT_STRING_t *bit_string)
         bit_string->size = OGS_IPV6_LEN;
         bit_string->buf = CALLOC(bit_string->size, sizeof(uint8_t));
         memcpy(bit_string->buf, &ip->addr6, OGS_IPV6_LEN);
-        ogs_debug("    IPv6[%s]", OGS_INET_NTOP(&ip->addr6, buf));
+        ogs_debug("    IPv6[%s]", OGS_INET6_NTOP(&ip->addr6, buf));
     } else {
         ogs_error("No IPv4 or IPv6");
         return OGS_ERROR;

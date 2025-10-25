@@ -129,67 +129,42 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
-        if (mme_ue->tracking_area_update_request_type ==
-                MME_TAU_TYPE_INITIAL_UE_MESSAGE) {
-            ogs_debug("    Iniital UE Message");
-            if (mme_ue->nas_eps.update.active_flag) {
+        if (mme_ue->nas_eps.update.active_flag) {
 
-/*
-* TS33.401
-* 7 Security procedures between UE and EPS access network elements
-* 7.2 Handling of user-related keys in E-UTRAN
-* 7.2.7 Key handling for the TAU procedure when registered in E-UTRAN
-*
-* If the "active flag" is set in the TAU request message or
-* the MME chooses to establish radio bearers when there is pending downlink
-* UP data or pending downlink signalling, radio bearers will be established
-* as part of the TAU procedure and a KeNB derivation is necessary.
-*/
-                ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32,
-                        mme_ue->kenb);
-                ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
-                mme_ue->nhcc = 1;
+    /*
+     * TS33.401
+     * 7 Security procedures between UE and EPS access network elements
+     * 7.2 Handling of user-related keys in E-UTRAN
+     * 7.2.7 Key handling for the TAU procedure when registered in E-UTRAN
+     *
+     * If the "active flag" is set in the TAU request message or
+     * the MME chooses to establish radio bearers when there is pending downlink
+     * UP data or pending downlink signalling, radio bearers will be established
+     * as part of the TAU procedure and a KeNB derivation is necessary.
+     */
+            ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32,
+                    mme_ue->kenb);
+            ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+            mme_ue->nhcc = 1;
 
-                ogs_info("[%s] KDF update(active_flag=1)", mme_ue->imsi_bcd);
-            }
+            ogs_info("[%s] KDF update(active_flag=1)", mme_ue->imsi_bcd);
+        }
 
-            /* check BCS regardless of active_flag */
-            if (mme_ue->tracking_area_update_request_presencemask &
-                OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE) {
-                ogs_info("[%s] LU accept + TAU accept(active_flag=%d, BCS)",
-                    mme_ue->imsi_bcd,
-                    mme_ue->nas_eps.update.active_flag);
-                mme_send_delete_session_or_tau_accept(enb_ue, mme_ue);
-            } else {
-                ogs_info("[%s] LU accept + TAU accept(active_flag=%d, No BCS)",
-                    mme_ue->imsi_bcd,
-                    mme_ue->nas_eps.update.active_flag);
-                r = nas_eps_send_tau_accept(mme_ue,
-                        mme_ue->nas_eps.update.active_flag ?
-                        S1AP_ProcedureCode_id_InitialContextSetup :
-                        S1AP_ProcedureCode_id_downlinkNASTransport);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-            }
-        } else if (mme_ue->tracking_area_update_request_type ==
-                MME_TAU_TYPE_UPLINK_NAS_TRANPORT) {
-            ogs_info("[%s] LU accept + accept(UplinkNASTransport)",
-                    mme_ue->imsi_bcd);
+        /* check BCS regardless of active_flag */
+        if (mme_ue->tracking_area_update_request_presencemask &
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE) {
+            ogs_info("[%s] LU accept + TAU accept(active_flag=%d, BCS)",
+                mme_ue->imsi_bcd,
+                mme_ue->nas_eps.update.active_flag);
+            mme_send_delete_session_or_tau_accept(enb_ue, mme_ue);
+        } else {
+            ogs_info("[%s] LU accept + TAU accept(active_flag=%d, No BCS)",
+                mme_ue->imsi_bcd,
+                mme_ue->nas_eps.update.active_flag);
             r = nas_eps_send_tau_accept(mme_ue,
-                    S1AP_ProcedureCode_id_downlinkNASTransport);
+                    mme_ue->tracking_area_update_accept_proc);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
-        } else if (mme_ue->tracking_area_update_request_type ==
-                MME_TAU_TYPE_UNPROTECTED_INTEGRITY) {
-            ogs_info("[%s] LU accept + TAU accept(Unprotected Integrity)",
-                    mme_ue->imsi_bcd);
-            r = nas_eps_send_tau_accept(mme_ue,
-                    S1AP_ProcedureCode_id_InitialContextSetup);
-            ogs_expect(r == OGS_OK);
-        } else {
-            ogs_error("Invalid TAU Type[%d]",
-                    mme_ue->tracking_area_update_request_type);
-            return;
         }
 
         /*
@@ -339,67 +314,41 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
-        if (mme_ue->tracking_area_update_request_type ==
-                MME_TAU_TYPE_INITIAL_UE_MESSAGE) {
-            ogs_debug("    Iniital UE Message");
-            if (mme_ue->nas_eps.update.active_flag) {
+        if (mme_ue->nas_eps.update.active_flag) {
+    /*
+     * TS33.401
+     * 7 Security procedures between UE and EPS access network elements
+     * 7.2 Handling of user-related keys in E-UTRAN
+     * 7.2.7 Key handling for the TAU procedure when registered in E-UTRAN
+     *
+     * If the "active flag" is set in the TAU request message or
+     * the MME chooses to establish radio bearers when there is pending downlink
+     * UP data or pending downlink signalling, radio bearers will be established
+     * as part of the TAU procedure and a KeNB derivation is necessary.
+     */
+            ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32,
+                    mme_ue->kenb);
+            ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+            mme_ue->nhcc = 1;
 
-/*
-* TS33.401
-* 7 Security procedures between UE and EPS access network elements
-* 7.2 Handling of user-related keys in E-UTRAN
-* 7.2.7 Key handling for the TAU procedure when registered in E-UTRAN
-*
-* If the "active flag" is set in the TAU request message or
-* the MME chooses to establish radio bearers when there is pending downlink
-* UP data or pending downlink signalling, radio bearers will be established
-* as part of the TAU procedure and a KeNB derivation is necessary.
-*/
-                ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32,
-                        mme_ue->kenb);
-                ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
-                mme_ue->nhcc = 1;
+            ogs_info("[%s] KDF update(active_flag=1)", mme_ue->imsi_bcd);
+        }
 
-                ogs_info("[%s] KDF update(active_flag=1)", mme_ue->imsi_bcd);
-            }
-
-            /* check BCS regardless of active_flag */
-            if (mme_ue->tracking_area_update_request_presencemask &
-                OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE) {
-                ogs_info("[%s] LU reject + TAU accept(active_flag=%d, BCS)",
-                    mme_ue->imsi_bcd,
-                    mme_ue->nas_eps.update.active_flag);
-                mme_send_delete_session_or_tau_accept(enb_ue, mme_ue);
-            } else {
-                ogs_info("[%s] LU reject + TAU accept(active_flag=%d, No BCS)",
-                    mme_ue->imsi_bcd,
-                    mme_ue->nas_eps.update.active_flag);
-                r = nas_eps_send_tau_accept(mme_ue,
-                        mme_ue->nas_eps.update.active_flag ?
-                        S1AP_ProcedureCode_id_InitialContextSetup :
-                        S1AP_ProcedureCode_id_downlinkNASTransport);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-            }
-        } else if (mme_ue->tracking_area_update_request_type ==
-                MME_TAU_TYPE_UPLINK_NAS_TRANPORT) {
-            ogs_info("[%s] LU reject + TAU accept(UplinkNASTransport)",
-                    mme_ue->imsi_bcd);
+        /* check BCS regardless of active_flag */
+        if (mme_ue->tracking_area_update_request_presencemask &
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE) {
+            ogs_info("[%s] LU reject + TAU accept(active_flag=%d, BCS)",
+                mme_ue->imsi_bcd,
+                mme_ue->nas_eps.update.active_flag);
+            mme_send_delete_session_or_tau_accept(enb_ue, mme_ue);
+        } else {
+            ogs_info("[%s] LU reject + TAU accept(active_flag=%d, No BCS)",
+                mme_ue->imsi_bcd,
+                mme_ue->nas_eps.update.active_flag);
             r = nas_eps_send_tau_accept(mme_ue,
-                    S1AP_ProcedureCode_id_downlinkNASTransport);
+                    mme_ue->tracking_area_update_accept_proc);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
-        } else if (mme_ue->tracking_area_update_request_type ==
-                MME_TAU_TYPE_UNPROTECTED_INTEGRITY) {
-            ogs_info("[%s] LU reject + TAU accept(Unprotected Integrity)",
-                    mme_ue->imsi_bcd);
-            r = nas_eps_send_tau_accept(mme_ue,
-                    S1AP_ProcedureCode_id_InitialContextSetup);
-            ogs_expect(r == OGS_OK);
-        } else {
-            ogs_error("Invalid TAU Type[%d]",
-                    mme_ue->tracking_area_update_request_type);
-            return;
         }
 
         /*

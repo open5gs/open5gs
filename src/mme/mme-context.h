@@ -431,12 +431,10 @@ struct mme_ue_s {
         ogs_nas_detach_type_t detach;
     } nas_eps;
 
-#define MME_TAU_TYPE_INITIAL_UE_MESSAGE    1
-#define MME_TAU_TYPE_UPLINK_NAS_TRANPORT   2
-#define MME_TAU_TYPE_UNPROTECTED_INTEGRITY  3
-    uint8_t tracking_area_update_request_type;
     uint64_t tracking_area_update_request_presencemask;
     uint16_t tracking_area_update_request_ebcs_value;
+    S1AP_ProcedureCode_t tracking_area_update_accept_proc;
+
 
     /* 1. MME initiated detach request to the UE.
      *    (nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE)

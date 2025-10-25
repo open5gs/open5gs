@@ -396,9 +396,7 @@ void mme_send_delete_session_or_tau_accept(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
         ogs_info("[%s] Send TAU accept(BCS match, active_flag=%d)",
                  mme_ue->imsi_bcd, mme_ue->nas_eps.update.active_flag);
         r = nas_eps_send_tau_accept(mme_ue,
-                mme_ue->nas_eps.update.active_flag ?
-                S1AP_ProcedureCode_id_InitialContextSetup :
-                S1AP_ProcedureCode_id_downlinkNASTransport);
+                mme_ue->tracking_area_update_accept_proc);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     }
