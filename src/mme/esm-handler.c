@@ -106,9 +106,9 @@ int esm_handle_pdn_connectivity_request(
         if (emergency) {
             apn = emergency_dnn;
             sess->ue_request_type.value = 1;
-	} else {
+        } else {
             apn = req->access_point_name.apn;
-	}
+        }
         sess->session = mme_session_find_by_apn(mme_ue, apn);
         if (!sess->session) {
             /* Invalid APN */
