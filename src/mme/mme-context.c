@@ -162,6 +162,7 @@ void mme_context_final(void)
     mme_vlr_remove_all();
     mme_sgsn_remove_all();
     mme_hssmap_remove_all();
+    mme_emerg_remove_all();
 
     ogs_assert(self.enb_addr_hash);
     ogs_hash_destroy(self.enb_addr_hash);
@@ -2599,7 +2600,7 @@ int mme_context_parse_config(void)
                                                         OGS_NAS_SERVICE_CATEGORY_AMBULANCE;
                                                 } else if (strstr(v, "fire")) {
                                                     categories |=
-                                                        OGS_NAS_SERVICE_CATEGORY_FIRE_BRIGARDE;
+                                                        OGS_NAS_SERVICE_CATEGORY_FIRE_BRIGADE;
                                                 } else if (strstr(v, "marine")) {
                                                     categories |=
                                                         OGS_NAS_SERVICE_CATEGORY_MARINE_GUARD;
@@ -5274,20 +5275,55 @@ static void stats_remove_mme_session(void)
     ogs_info("[Removed] Number of MME-Sessions is now %d", num_of_mme_sess);
 }
 
+/*--------------------------------------------------------------
+ *  Emergency Number (EMERG) Management Functions
+ *-------------------------------------------------------------*/
 mme_emerg_t *mme_emerg_add(uint8_t categories, const char *digits)
 {
     mme_emerg_t *emerg = NULL;
 
     ogs_pool_id_calloc(&mme_emerg_pool, &emerg);
-    ogs_assert(emerg);
 
+    /* Try to allocate an emergency entry from the pool */
+    if (!emerg) {
+        ogs_error("Failed to allocate mme_emerg_t from mme_emerg_pool");
+        return NULL;
+    }
+
+    /* Set attributes */
     emerg->categories = categories;
     emerg->digits = digits;
 
+    /* Add to the golbal emergency list */
     ogs_list_add(&self.emerg_list, emerg);
 
     ogs_debug("Added Emergency Number %s (categories 0x%02x)",
             digits, categories);
 
     return emerg;
+}
+
+void mme_emerg_remove(mme_emerg_t *emerg)
+{
+    if (!emerg)
+        return;
+
+    /* Remove from the list */
+    ogs_list_remove(&self.emerg_list, emerg);
+
+    /* Release object back to the pool */
+    ogs_pool_id_free(&mme_emerg_pool, emerg);
+
+    ogs_debug("Emergency number entry removed");
+}
+
+void mme_emerg_remove_all(void)
+{
+    mme_emerg_t *emerg, *tmp;
+
+    /* Iterate safely and free all entries */
+    ogs_list_for_each_safe(&self.emerg_list, tmp, emerg)
+        ogs_pool_id_free(&mme_emerg_pool, emerg);
+
+    ogs_debug("All emergency number entries removed");
 }

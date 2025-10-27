@@ -610,12 +610,11 @@ ED3(uint8_t type:4;,
  * See subclause 10.5.3.13 and 10.5.4.33 in 3GPP TS 24.008 [13]. */
 #define OGS_NAS_SERVICE_CATEGORY_POLICE                 0x01
 #define OGS_NAS_SERVICE_CATEGORY_AMBULANCE              0x02
-#define OGS_NAS_SERVICE_CATEGORY_FIRE_BRIGARDE          0x04
+#define OGS_NAS_SERVICE_CATEGORY_FIRE_BRIGADE           0x04
 #define OGS_NAS_SERVICE_CATEGORY_MARINE_GUARD           0x08
 #define OGS_NAS_SERVICE_CATEGORY_MOUNTAIN_RESCUE        0x10
 #define OGS_NAS_SERVICE_CATEGORY_MANUAL_ECALL           0x20
 #define OGS_NAS_SERVICE_CATEGORY_AUTOMATICALLY_ECALL    0x40
-#define OGS_NAS_MAX_EMERGENCY_NUMBER_LIST_LEN           48
 typedef struct ogs_nas_emergency_number_item_s {
     uint8_t length;
 ED2(uint8_t spare:3;,

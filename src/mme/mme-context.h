@@ -1242,6 +1242,8 @@ void mme_ue_save_memento(mme_ue_t *mme_ue, mme_ue_memento_t *memento);
 void mme_ue_restore_memento(mme_ue_t *mme_ue, const mme_ue_memento_t *memento);
 
 mme_emerg_t *mme_emerg_add(uint8_t categories, const char *digits);
+void mme_emerg_remove(mme_emerg_t *emerg);
+void mme_emerg_remove_all(void);
 
 #ifdef __cplusplus
 }
