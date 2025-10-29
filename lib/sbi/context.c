@@ -2160,6 +2160,16 @@ bool ogs_sbi_discovery_option_is_matched(
                 nf_instance, discovery_option) == false)
         return false;
 
+    bool need_smf_slice = false;
+    bool need_smf_tai = false;
+    bool smf_match_found = false;
+
+    if (nf_instance->nf_type == OpenAPI_nf_type_SMF) {
+        need_smf_slice =
+            discovery_option->num_of_snssais && discovery_option->dnn;
+        need_smf_tai = discovery_option->tai_presence;
+    }
+
     ogs_list_for_each(&nf_instance->nf_info_list, nf_info) {
         if (nf_instance->nf_type != nf_info->nf_type) {
             ogs_error("Invalid NF-Type [%d:%d]",
@@ -2176,20 +2186,30 @@ bool ogs_sbi_discovery_option_is_matched(
                 return false;
             break;
         case OpenAPI_nf_type_SMF:
-            if (discovery_option->num_of_snssais && discovery_option->dnn &&
-                ogs_sbi_check_smf_info_slice(&nf_info->smf,
-                    &discovery_option->snssais[0],
-                    discovery_option->dnn) == false)
-                return false;
-            if (discovery_option->tai_presence &&
-                ogs_sbi_check_smf_info_tai(&nf_info->smf,
-                    &discovery_option->tai) == false)
-                return false;
+            bool match = true;
+
+            if (need_smf_slice) {
+                match = ogs_sbi_check_smf_info_slice(&nf_info->smf,
+                        &discovery_option->snssais[0],
+                        discovery_option->dnn);
+            }
+
+            if (match && need_smf_tai) {
+                match = ogs_sbi_check_smf_info_tai(&nf_info->smf,
+                        &discovery_option->tai);
+            }
+
+            if (match)
+                smf_match_found = true;
             break;
         default:
             break;
         }
     }
+
+    if (nf_instance->nf_type == OpenAPI_nf_type_SMF &&
+        (need_smf_slice || need_smf_tai) && smf_match_found == false)
+        return false;
 
     return true;
 }
