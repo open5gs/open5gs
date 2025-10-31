@@ -2163,6 +2163,7 @@ bool ogs_sbi_discovery_option_is_matched(
     bool need_smf_slice = false;
     bool need_smf_tai = false;
     bool smf_match_found = false;
+    bool smf_info_checked = false;
 
     if (nf_instance->nf_type == OpenAPI_nf_type_SMF) {
         need_smf_slice =
@@ -2185,8 +2186,10 @@ bool ogs_sbi_discovery_option_is_matched(
                     &discovery_option->guami) == false)
                 return false;
             break;
-        case OpenAPI_nf_type_SMF:
+        case OpenAPI_nf_type_SMF: {
             bool match = true;
+
+            smf_info_checked = true;
 
             if (need_smf_slice) {
                 match = ogs_sbi_check_smf_info_slice(&nf_info->smf,
@@ -2202,12 +2205,13 @@ bool ogs_sbi_discovery_option_is_matched(
             if (match)
                 smf_match_found = true;
             break;
+        }
         default:
             break;
         }
     }
 
-    if (nf_instance->nf_type == OpenAPI_nf_type_SMF &&
+    if (nf_instance->nf_type == OpenAPI_nf_type_SMF && smf_info_checked &&
         (need_smf_slice || need_smf_tai) && smf_match_found == false)
         return false;
 
