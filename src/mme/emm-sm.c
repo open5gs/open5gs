@@ -738,27 +738,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                     ogs_info("[%s] TAU accept(active_flag=%d, No BCS)",
                         mme_ue->imsi_bcd,
                         mme_ue->nas_eps.update.active_flag);
-                    r = nas_eps_send_tau_accept(mme_ue,
-                            mme_ue->tracking_area_update_accept_proc);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                }
-
-        /*
-         * When active_flag is 0, check if the P-TMSI has been updated.
-         * If the P-TMSI has changed, wait to receive the TAU Complete message
-         * from the UE before sending the UEContextReleaseCommand.
-         *
-         * This ensures that the UE has acknowledged the new P-TMSI,
-         * allowing the TAU procedure to complete successfully
-         * and maintaining synchronization between the UE and the network.
-         */
-                if (!mme_ue->nas_eps.update.active_flag &&
-                    !MME_NEXT_P_TMSI_IS_AVAILABLE(mme_ue)) {
-                    enb_ue->relcause.group = S1AP_Cause_PR_nas;
-                    enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
-                    mme_send_release_access_bearer_or_ue_context_release(
-                            enb_ue);
+                    mme_send_tau_accept_and_check_release(enb_ue, mme_ue);
                 }
             }
 
