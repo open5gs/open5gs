@@ -3286,6 +3286,24 @@ static void s1ap_handle_handover_required_intralte(enb_ue_t *source_ue,
         return;
     }
 
+    if (!SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+        ogs_error("No Session Context : IMSI[%s]", mme_ue->imsi_bcd);
+        r = s1ap_send_handover_preparation_failure(source_ue,
+                S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (!ACTIVE_EPS_BEARERS_IS_AVAIABLE(mme_ue)) {
+        ogs_error("No active EPS bearers : IMSI[%s]", mme_ue->imsi_bcd);
+        r = s1ap_send_handover_preparation_failure(source_ue,
+                S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     source_ue->handover_type = S1AP_HandoverType_intralte;
 
     mme_ue->nhcc++;
