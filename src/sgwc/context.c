@@ -418,14 +418,20 @@ void sgwc_sess_select_sgwu(sgwc_sess_t *sess)
         ogs_pfcp_self()->pfcp_node =
             ogs_list_last(&ogs_pfcp_self()->pfcp_peer_list);
 
-    /* setup GTP session with selected SGW-U */
-    ogs_pfcp_self()->pfcp_node =
-        selected_sgwu_node(ogs_pfcp_self()->pfcp_node, sess);
-    ogs_assert(ogs_pfcp_self()->pfcp_node);
-    OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->pfcp_node);
-    ogs_debug("UE using SGW-U on IP %s",
-            ogs_sockaddr_to_string_static(
-                ogs_pfcp_self()->pfcp_node->addr_list));
+    if (ogs_pfcp_self()->pfcp_node) {
+
+        /* setup GTP session with selected SGW-U */
+        ogs_pfcp_self()->pfcp_node =
+            selected_sgwu_node(ogs_pfcp_self()->pfcp_node, sess);
+        ogs_assert(ogs_pfcp_self()->pfcp_node);
+        OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->pfcp_node);
+        ogs_debug("UE using SGW-U on IP %s",
+                ogs_sockaddr_to_string_static(
+                    ogs_pfcp_self()->pfcp_node->addr_list));
+    } else {
+        ogs_error("No suitable SGWU found for session");
+        ogs_assert(sess->pfcp_node == NULL);
+    }
 }
 
 int sgwc_sess_remove(sgwc_sess_t *sess)
