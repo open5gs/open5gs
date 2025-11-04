@@ -491,8 +491,14 @@ bool smf_nsmf_handle_create_sm_context(
     /* Select UPF based on UE Location Information */
     smf_sess_select_upf(sess);
 
+    /* Check if UPF selection was successful */
+    if (!sess->pfcp_node) {
+        ogs_error("[%s:%d] No UPF available for session",
+                  smf_ue->supi, sess->psi);
+        return false;
+    }
+
     /* Check if selected UPF is associated with SMF */
-    ogs_assert(sess->pfcp_node);
     if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
         ogs_error("[%s:%d] No associated UPF", smf_ue->supi, sess->psi);
         return false;
