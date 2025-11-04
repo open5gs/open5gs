@@ -494,8 +494,8 @@ static connection_t *connection_add(
     /* HTTPS certificate-related settings */
     if (client->scheme == OpenAPI_uri_scheme_https) {
         if (client->insecure_skip_verify) {
-            curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYHOST, 0L);
         } else {
             if (client->cacert)
                 curl_easy_setopt(conn->easy, CURLOPT_CAINFO, client->cacert);
