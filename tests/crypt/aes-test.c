@@ -34,12 +34,16 @@ static void aes_test1(abts_case *tc, void *data)
 {
     const int key_bits = 128;
     unsigned int rk[OGS_AES_RKLENGTH(128)];
-    unsigned char key[16] =
-            "\x00\x01\x02\x03\x05\x06\x07\x08\x0A\x0B\x0C\x0D\x0F\x10\x11\x12";
-    unsigned char pt[16] = "\x50\x68\x12\xA4\x5F\x08\xC8\x89\xB9\x7F\x59\x80\x03\x8B\x83\x59";
+    unsigned char key[16] = {
+        0x00, 0x01, 0x02, 0x03, 0x05, 0x06, 0x07, 0x08,
+        0x0A, 0x0B, 0x0C, 0x0D, 0x0F, 0x10, 0x11, 0x12 };
+    unsigned char pt[16] = {
+        0x50, 0x68, 0x12, 0xA4, 0x5F, 0x08, 0xC8, 0x89,
+        0xB9, 0x7F, 0x59, 0x80, 0x03, 0x8B, 0x83, 0x59 };
     unsigned char ct[16];
-    unsigned char expected[16] =
-        "\xD8\xF5\x32\x53\x82\x89\xEF\x7D\x06\xB5\x06\xA4\xFD\x5B\xE9\xC9";
+    unsigned char expected[16] = {
+        0xD8, 0xF5, 0x32, 0x53, 0x82, 0x89, 0xEF, 0x7D,
+        0x06, 0xB5, 0x06, 0xA4, 0xFD, 0x5B, 0xE9, 0xC9 };
     int nrounds;
     int rc;
 

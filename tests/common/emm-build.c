@@ -67,7 +67,8 @@ ogs_pkbuf_t *testemm_build_attach_request(
         *ue_additional_security_capability =
             &attach_request->ue_additional_security_capability;
 
-    uint8_t classmark_3[11] = "\x60\x14\x04\xef\x65\x23\x3b\x88\x78\xd2\x90";
+    uint8_t classmark_3[11] = {
+        0x60, 0x14, 0x04, 0xef, 0x65, 0x23, 0x3b, 0x88, 0x78, 0xd2, 0x90 };
 
     ogs_assert(test_ue);
     ogs_assert(esmbuf);
@@ -591,7 +592,7 @@ ogs_pkbuf_t *testemm_build_tau_request(
         *ue_additional_security_capability =
             &tau_request->ue_additional_security_capability;
 
-    uint8_t classmark_3[11] = "\x60\x14\x04\xef\x65\x23\x3b\x88\x78\xd2\x90";
+    uint8_t classmark_3[11] = { 0x60, 0x14, 0x04, 0xef, 0x65, 0x23, 0x3b, 0x88, 0x78, 0xd2, 0x90 };
 
     ogs_assert(test_ue);
 
