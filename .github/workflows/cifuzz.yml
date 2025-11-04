@@ -7,6 +7,8 @@ jobs:
    permissions:
      security-events: write
    steps:
+   - name: Upgrade Meson
+     run: pip install --upgrade 'meson>=0.55.0'
    - name: Build Fuzzers
      id: build
      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
