@@ -115,7 +115,7 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
 
     bearer = sgwc_bearer_find_by_id(bearer_id);
     if (!bearer) {
-        ogs_error("Bearer has already been removed [%d]", type);
+        ogs_warn("Bearer has already been removed [%d]", type);
         return;
     }
 
