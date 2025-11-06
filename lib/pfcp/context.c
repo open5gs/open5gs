@@ -1429,12 +1429,18 @@ void ogs_pfcp_object_teid_hash_set(
                     &ogs_gtp_self()->gtpu_resource_list,
                     pdr->dnn, pdr->src_if);
             if (resource) {
-                ogs_assert(
-                    (resource->info.v4 && pdr->f_teid.ipv4) ||
-                    (resource->info.v6 && pdr->f_teid.ipv6));
-                ogs_assert(OGS_OK ==
-                    ogs_pfcp_user_plane_ip_resource_info_to_f_teid(
-                    &resource->info, &pdr->f_teid, &pdr->f_teid_len));
+                if (!((resource->info.v4 && pdr->f_teid.ipv4) ||
+                      (resource->info.v6 && pdr->f_teid.ipv6))) {
+                    ogs_error("CH F-TEID address family mismatch: resource[v4:%d v6:%d] fteid[v4:%d v6:%d]",
+                              resource->info.v4, resource->info.v6,
+                              pdr->f_teid.ipv4, pdr->f_teid.ipv6);
+                    return;
+                }
+                if (OGS_OK != ogs_pfcp_user_plane_ip_resource_info_to_f_teid(
+                        &resource->info, &pdr->f_teid, &pdr->f_teid_len)) {
+                    ogs_error("user_plane_ip_resource_info_to_f_teid() failed in CH path");
+                    return;
+                }
                 if (resource->info.teidri)
                     pdr->f_teid.teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
                             pdr->teid, resource->info.teidri,
@@ -1442,16 +1448,22 @@ void ogs_pfcp_object_teid_hash_set(
                 else
                     pdr->f_teid.teid = pdr->teid;
             } else {
-                ogs_assert(
-                    (ogs_gtp_self()->gtpu_addr && pdr->f_teid.ipv4) ||
-                    (ogs_gtp_self()->gtpu_addr6 && pdr->f_teid.ipv6));
-                ogs_assert(OGS_OK ==
-                    ogs_pfcp_sockaddr_to_f_teid(
+                if (!((ogs_gtp_self()->gtpu_addr && pdr->f_teid.ipv4) ||
+                      (ogs_gtp_self()->gtpu_addr6 && pdr->f_teid.ipv6))) {
+                    ogs_error("CH F-TEID address family mismatch with local GTP-U address: gtpu[v4:%p v6:%p] fteid[v4:%d v6:%d]",
+                              ogs_gtp_self()->gtpu_addr, ogs_gtp_self()->gtpu_addr6,
+                              pdr->f_teid.ipv4, pdr->f_teid.ipv6);
+                    return;
+                }
+                if (OGS_OK != ogs_pfcp_sockaddr_to_f_teid(
                         pdr->f_teid.ipv4 ?
                             ogs_gtp_self()->gtpu_addr : NULL,
                         pdr->f_teid.ipv6 ?
                             ogs_gtp_self()->gtpu_addr6 : NULL,
-                        &pdr->f_teid, &pdr->f_teid_len));
+                        &pdr->f_teid, &pdr->f_teid_len)) {
+                    ogs_error("ogs_pfcp_sockaddr_to_f_teid() failed in CH path");
+                    return;
+                }
                 pdr->f_teid.teid = pdr->teid;
             }
         }
