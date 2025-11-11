@@ -111,6 +111,8 @@ static char *log_linefeed(char *buf, char *last);
 static void file_writer(
         ogs_log_t *log, ogs_log_level_e level, const char *string);
 
+static ogs_log_level_e ogs_log_level_from_string(const char *string);
+
 void ogs_log_init(void)
 {
     ogs_pool_init(&log_pool, ogs_core()->log.pool);
@@ -314,6 +316,7 @@ void ogs_log_install_domain(int *domain_id,
 void ogs_log_set_mask_level(const char *_mask, ogs_log_level_e level)
 {
     ogs_log_domain_t *domain = NULL;
+    ogs_log_domain_t *save_domain = NULL;
 
     if (_mask) {
         const char *delim = " \t\n,:";
@@ -330,7 +333,22 @@ void ogs_log_set_mask_level(const char *_mask, ogs_log_level_e level)
 
             domain = ogs_log_find_domain(name);
             if (domain)
+            {
                 domain->level = level;
+                save_domain = domain;
+            } else {
+                int l;
+
+                l = ogs_log_level_from_string(name);
+                if (l != OGS_ERROR) {
+                    if (save_domain) {
+                        if (l != save_domain->level) {
+                            save_domain->level = l;
+                        }
+                    }
+                }
+                save_domain = NULL;
+            }
         }
 
         ogs_free(mask);
