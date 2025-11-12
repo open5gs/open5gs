@@ -28,8 +28,6 @@ static OGS_POOL(nf_service_pool, ogs_sbi_nf_service_t);
 static OGS_POOL(xact_pool, ogs_sbi_xact_t);
 static OGS_POOL(subscription_spec_pool, ogs_sbi_subscription_spec_t);
 static OGS_POOL(subscription_data_pool, ogs_sbi_subscription_data_t);
-static OGS_POOL(smf_info_pool, ogs_sbi_smf_info_t);
-static OGS_POOL(amf_info_pool, ogs_sbi_amf_info_t);
 static OGS_POOL(nf_info_pool, ogs_sbi_nf_info_t);
 
 void ogs_sbi_context_init(OpenAPI_nf_type_e nf_type)
@@ -60,9 +58,6 @@ void ogs_sbi_context_init(OpenAPI_nf_type_e nf_type)
 
     ogs_list_init(&self.subscription_data_list);
     ogs_pool_init(&subscription_data_pool, ogs_app()->pool.subscription);
-
-    ogs_pool_init(&smf_info_pool, ogs_app()->pool.nf);
-    ogs_pool_init(&amf_info_pool, ogs_app()->pool.nf);
 
     ogs_pool_init(&nf_info_pool, ogs_app()->pool.nf * OGS_MAX_NUM_OF_NF_INFO);
 
@@ -108,9 +103,6 @@ void ogs_sbi_context_final(void)
 
     ogs_pool_final(&nf_instance_pool);
     ogs_pool_final(&nf_service_pool);
-    ogs_pool_final(&smf_info_pool);
-    ogs_pool_final(&amf_info_pool);
-
     ogs_pool_final(&nf_info_pool);
 
     ogs_sbi_client_final();
@@ -1700,8 +1692,6 @@ static void amf_info_free(ogs_sbi_amf_info_t *amf_info)
     amf_info->num_of_guami = 0;
     amf_info->num_of_nr_tai = 0;
     amf_info->num_of_nr_tai_range = 0;
-
-    ogs_pool_free(&amf_info_pool, amf_info);
 }
 
 static void smf_info_free(ogs_sbi_smf_info_t *smf_info)
@@ -1717,8 +1707,6 @@ static void smf_info_free(ogs_sbi_smf_info_t *smf_info)
     smf_info->num_of_slice = 0;
     smf_info->num_of_nr_tai = 0;
     smf_info->num_of_nr_tai_range = 0;
-
-    ogs_pool_free(&smf_info_pool, smf_info);
 }
 
 static void scp_info_free(ogs_sbi_scp_info_t *scp_info)
