@@ -295,6 +295,7 @@ mhd_server_access_handler(void *cls, struct MHD_Connection *connection,
         MHD_add_response_header(rsp, "Content-Type", "text/plain; version=0.0.4; charset=utf-8");
         ret = MHD_queue_response(connection, MHD_HTTP_OK, rsp);
         MHD_destroy_response(rsp);
+        prom_free((void *)buf);
         return (_MHD_Result)ret;
     }
 
