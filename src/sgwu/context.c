@@ -142,7 +142,10 @@ sgwu_sess_t *sgwu_sess_add(ogs_pfcp_f_seid_t *cp_f_seid)
     ogs_assert(cp_f_seid);
 
     ogs_pool_id_calloc(&sgwu_sess_pool, &sess);
-    ogs_assert(sess);
+    if (!sess) {
+        ogs_error("ogs_pool_id_calloc() is failed");
+        return NULL;
+    }
 
     ogs_pfcp_pool_init(&sess->pfcp);
 
