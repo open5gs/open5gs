@@ -365,11 +365,6 @@ extern "C" {
 #define OGS_SBI_PARAM_FIELDS_NSSAI                       "nssai"
 #define OGS_SBI_MAX_NUM_OF_FIELDS                         8
 
-#define OGS_SBI_PARAM_FIELDS_GPSIS                       "gpsis"
-#define OGS_SBI_PARAM_FIELDS_SUBSCRIBED_UE_AMBR          "subscribedUeAmbr"
-#define OGS_SBI_PARAM_FIELDS_NSSAI                       "nssai"
-#define OGS_SBI_MAX_NUM_OF_FIELDS                         8
-
 #define OGS_SBI_PARAM_DATASET_NAME_AM                    "AM"
 #define OGS_SBI_PARAM_DATASET_NAME_SMF_SEL               "SMF_SEL"
 #define OGS_SBI_PARAM_DATASET_NAME_SM                    "SM"
