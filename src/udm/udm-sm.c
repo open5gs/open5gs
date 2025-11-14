@@ -38,6 +38,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
 {
     int rv;
     const char *api_version = NULL;
+    char *supi = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
@@ -175,8 +176,12 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
             }
 
             if (!udm_ue) {
-                udm_ue = udm_ue_find_by_suci_or_supi(
-                        message.h.resource.component[0]);
+                supi = ogs_supi_from_supi_or_suci(
+                    message.h.resource.component[0]);
+                if (supi) {
+                    udm_ue = udm_ue_find_by_supi(supi);
+                }
+                ogs_free(supi);
                 if (!udm_ue) {
                     SWITCH(message.h.method)
                     CASE(OGS_SBI_HTTP_METHOD_POST)
