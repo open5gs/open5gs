@@ -112,7 +112,6 @@ void udm_ue_remove(udm_ue_t *udm_ue);
 void udm_ue_remove_all(void);
 udm_ue_t *udm_ue_find_by_suci(char *suci);
 udm_ue_t *udm_ue_find_by_supi(char *supi);
-udm_ue_t *udm_ue_find_by_suci_or_supi(char *suci_or_supi);
 udm_ue_t *udm_ue_find_by_ctx_id(char *ctx_id);
 
 udm_sess_t *udm_sess_add(udm_ue_t *udm_ue, uint8_t psi);

@@ -264,15 +264,6 @@ udm_ue_t *udm_ue_find_by_supi(char *supi)
     return (udm_ue_t *)ogs_hash_get(self.supi_hash, supi, strlen(supi));
 }
 
-udm_ue_t *udm_ue_find_by_suci_or_supi(char *suci_or_supi)
-{
-    ogs_assert(suci_or_supi);
-    if (strncmp(suci_or_supi, "suci-", strlen("suci-")) == 0)
-        return udm_ue_find_by_suci(suci_or_supi);
-    else
-        return udm_ue_find_by_supi(suci_or_supi);
-}
-
 udm_ue_t *udm_ue_find_by_ctx_id(char *ctx_id)
 {
     ogs_assert(ctx_id);
