@@ -210,6 +210,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
         case OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE:
             if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
+            if (!sess) {
+                ogs_error("No Session");
+                rv = ogs_gtp_xact_commit(gtp_xact);
+                ogs_expect(rv == OGS_OK);
+                break;
+            }
             smf_s5c_handle_create_bearer_response(
                 sess, gtp_xact, &gtp2_message.create_bearer_response);
             break;
