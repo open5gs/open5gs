@@ -316,6 +316,42 @@ int ngap_send_ng_setup_response(amf_gnb_t *gnb)
     return rv;
 }
 
+int ngap_send_amf_configuration_update(amf_gnb_t *gnb)
+{
+    int rv;
+    ogs_pkbuf_t *ngap_buffer;
+
+    ogs_assert(gnb);
+
+    ogs_debug("AMF-Configuration update");
+
+    ngap_buffer = ngap_build_amf_configuration_update();
+    if (!ngap_buffer) {
+        ogs_error("ngap_build_amf_configuration_update() failed");
+        return OGS_ERROR;
+    }
+
+    rv = ngap_send_to_gnb(gnb, ngap_buffer, NGAP_NON_UE_SIGNALLING);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
+void ngap_send_amf_configuration_update_all(void)
+{
+    amf_gnb_t *gnb = NULL;
+    int count = 0;
+
+    ogs_list_for_each(&amf_self()->gnb_list, gnb) {
+        if (gnb->state.ng_setup_success == true) {
+            ngap_send_amf_configuration_update(gnb);
+            count++;
+        }
+    }
+
+    ogs_info("AMFConfigurationUpdate sent to %d connected gNB(s)", count);
+}
+
 int ngap_send_ng_setup_failure(
         amf_gnb_t *gnb, NGAP_Cause_PR group, long cause)
 {

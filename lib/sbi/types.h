@@ -48,6 +48,7 @@ typedef enum {
     OGS_SBI_SERVICE_TYPE_NAMF_EVTS,
     OGS_SBI_SERVICE_TYPE_NAMF_MT,
     OGS_SBI_SERVICE_TYPE_NAMF_LOC,
+    OGS_SBI_SERVICE_TYPE_NAMF_OAM,
     OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION,
     OGS_SBI_SERVICE_TYPE_NSMF_EVENT_EXPOSURE,
     OGS_SBI_SERVICE_TYPE_NSMF_NIDD,
@@ -160,6 +161,7 @@ typedef enum {
 
 #define OGS_SBI_SERVICE_NAME_NAMF_CALLBACK "namf-callback"
 #define OGS_SBI_SERVICE_NAME_NSMF_CALLBACK "nsmf-callback"
+#define OGS_SBI_SERVICE_NAME_NAMF_OAM "namf-oam"
 
 OpenAPI_nf_type_e ogs_sbi_service_type_to_nf_type(
         ogs_sbi_service_type_e service_type);
