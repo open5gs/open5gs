@@ -16,7 +16,7 @@ RUN dnf -y install \
 COPY setup.sh /root
 
 ARG username=acetcom
-RUN useradd -m --uid=1000 ${username} && \
+RUN useradd -m --uid=2000 ${username} && \
     echo "${username} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${username} && \
     chmod 0440 /etc/sudoers.d/${username}
 

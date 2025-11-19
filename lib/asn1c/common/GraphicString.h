@@ -23,6 +23,7 @@ extern asn_TYPE_operation_t asn_OP_GraphicString;
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 #define GraphicString_compare OCTET_STRING_compare
+#define GraphicString_copy    OCTET_STRING_copy
 
 #define GraphicString_constraint asn_generic_unknown_constraint
 
@@ -37,6 +38,7 @@ extern asn_TYPE_operation_t asn_OP_GraphicString;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+#define GraphicString_decode_jer OCTET_STRING_decode_jer
 #define GraphicString_encode_jer OCTET_STRING_encode_jer
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 

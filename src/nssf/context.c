@@ -77,6 +77,7 @@ int nssf_context_parse_config(void)
     int rv;
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
+    int idx = 0;
 
     document = ogs_app()->document;
     ogs_assert(document);
@@ -88,7 +89,8 @@ int nssf_context_parse_config(void)
     while (ogs_yaml_iter_next(&root_iter)) {
         const char *root_key = ogs_yaml_iter_key(&root_iter);
         ogs_assert(root_key);
-        if (!strcmp(root_key, "nssf")) {
+        if ((!strcmp(root_key, "nssf")) &&
+            (idx++ == ogs_app()->config_section_id)) {
             ogs_yaml_iter_t nssf_iter;
             ogs_yaml_iter_recurse(&root_iter, &nssf_iter);
             while (ogs_yaml_iter_next(&nssf_iter)) {
@@ -233,6 +235,10 @@ int nssf_context_parse_config(void)
                                                     addr, addr6, port, &h);
                                             ogs_assert(nrf_id);
 
+					    /* Clang scan-build SA: Argument with nonnull attribute passed null:
+					     * sst may be NULL in atoi(sst) if the "uri" key path is followed. */
+					    ogs_assert(sst);
+
                                             nsi = nssf_nsi_add(
                                                     nrf_id,
                                                     atoi(sst),
@@ -279,7 +285,6 @@ nssf_nsi_t *nssf_nsi_add(char *nrf_id, uint8_t sst, ogs_uint24_t sd)
     nssf_nsi_t *nsi = NULL;
 
     ogs_assert(nrf_id);
-    ogs_assert(sst);
 
     ogs_pool_alloc(&nssf_nsi_pool, &nsi);
     ogs_assert(nsi);

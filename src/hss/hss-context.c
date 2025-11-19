@@ -20,6 +20,7 @@
 #include "ogs-dbi.h"
 #include "hss-context.h"
 #include "hss-event.h"
+#include "hss-fd-path.h"
 #include "hss-s6a-path.h"
 
 
@@ -144,6 +145,7 @@ static int hss_context_prepare(void)
 {
     self.diam_config->cnf_port = DIAMETER_PORT;
     self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
+    self.diam_config->stats.priv_stats_size = sizeof(hss_diam_stats_t);
 
     return OGS_OK;
 }
@@ -270,6 +272,7 @@ int hss_context_parse_config(void)
                                     const char *identity = NULL;
                                     const char *addr = NULL;
                                     uint16_t port = 0;
+                                    int tc_timer = 0;
 
                                     if (ogs_yaml_iter_type(&conn_array) ==
                                         YAML_MAPPING_NODE) {
@@ -304,6 +307,10 @@ int hss_context_parse_config(void)
                                             const char *v =
                                                 ogs_yaml_iter_value(&conn_iter);
                                             if (v) port = atoi(v);
+                                        } else if (!strcmp(conn_key, "tc_timer")) {
+                                            const char *v =
+                                                ogs_yaml_iter_value(&conn_iter);
+                                            if (v) tc_timer = atoi(v);
                                         } else
                                             ogs_warn("unknown key `%s`",
                                                     conn_key);
@@ -319,24 +326,35 @@ int hss_context_parse_config(void)
                                         self.diam_config->
                                             conn[self.diam_config->num_of_conn].
                                                 port = port;
+                                        self.diam_config->
+                                            conn[self.diam_config->num_of_conn].
+                                                tc_timer = tc_timer;
                                         self.diam_config->num_of_conn++;
                                     }
                                 } while (ogs_yaml_iter_type(&conn_array) ==
                                         YAML_SEQUENCE_NODE);
+                            } else if (!strcmp(fd_key, "tc_timer")) {
+                                const char *v = ogs_yaml_iter_value(&fd_iter);
+                                if (v) self.diam_config->cnf_timer_tc = atoi(v);
                             } else
                                 ogs_warn("unknown key `%s`", fd_key);
                         }
                     }
+                } else if (!strcmp(hss_key, "diameter_stats_interval")) {
+                    const char *v = ogs_yaml_iter_value(&hss_iter);
+                    if (v) self.diam_config->stats.interval_sec = atoi(v);
                 } else if (!strcmp(hss_key, "sms_over_ims")) {
                             self.sms_over_ims =
                                 ogs_yaml_iter_value(&hss_iter);
                 } else if (!strcmp(hss_key, "use_mongodb_change_stream")) {
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
+#if MONGOC_CHECK_VERSION(1, 9, 0)
                     self.use_mongodb_change_stream =
                         ogs_yaml_iter_bool(&hss_iter);
 #else
                     self.use_mongodb_change_stream = false;
 #endif
+                } else if (!strcmp(hss_key, "metrics")) {
+                    /* handle config in metrics library */
                 } else
                     ogs_warn("unknown key `%s`", hss_key);
             }
@@ -519,6 +537,7 @@ static hss_imsi_t *imsi_add(char *id)
     ogs_hash_set(self.imsi_hash, imsi->id, strlen(imsi->id), imsi);
 
     ogs_list_add(&self.imsi_list, imsi);
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_GAUGE_IMSI);
 
     return imsi;
 }
@@ -528,6 +547,7 @@ static void imsi_remove(hss_imsi_t *imsi)
     ogs_assert(imsi);
 
     ogs_list_remove(&self.imsi_list, imsi);
+    hss_metrics_inst_global_dec(HSS_METR_GLOB_GAUGE_IMSI);
 
     ogs_assert(imsi->id);
     ogs_hash_set(self.imsi_hash, imsi->id, strlen(imsi->id), NULL);
@@ -569,6 +589,7 @@ static hss_impi_t *impi_add(char *id)
     ogs_hash_set(self.impi_hash, impi->id, strlen(impi->id), impi);
 
     ogs_list_add(&self.impi_list, impi);
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_GAUGE_IMPI);
 
     return impi;
 }
@@ -578,6 +599,7 @@ static void impi_remove(hss_impi_t *impi)
     ogs_assert(impi);
 
     ogs_list_remove(&self.impi_list, impi);
+    hss_metrics_inst_global_dec(HSS_METR_GLOB_GAUGE_IMPI);
 
     impu_remove_all(impi);
 
@@ -633,7 +655,9 @@ static hss_impu_t *impu_add(hss_impi_t *impi, char *id)
     ogs_hash_set(self.impu_hash, impu->id, strlen(impu->id), impu);
 
     impu->impi = impi;
+
     ogs_list_add(&impi->impu_list, impu);
+    hss_metrics_inst_global_inc(HSS_METR_GLOB_GAUGE_IMPU);
 
     return impu;
 }
@@ -647,6 +671,7 @@ static void impu_remove(hss_impu_t *impu)
     ogs_assert(impi);
 
     ogs_list_remove(&impi->impu_list, impu);
+    hss_metrics_inst_global_dec(HSS_METR_GLOB_GAUGE_IMPU);
 
     ogs_assert(impu->id);
     ogs_hash_set(self.impu_hash, impu->id, strlen(impu->id), NULL);
@@ -898,7 +923,7 @@ char *hss_cx_download_user_data(
     hss_impu_t *impu = NULL;
 
     bool barring_indication_presence = true;
-    int i;
+    int i, n, m;
 
     ogs_assert(user_name);
     ogs_assert(visited_network_identifier);
@@ -986,7 +1011,160 @@ char *hss_cx_download_user_data(
             ogs_assert(user_data);
         }
 
-        if(self.sms_over_ims) {
+        /* IFC data */
+        for (n = 0; n < ims_data->num_of_ifc; n++) {
+            user_data = ogs_mstrcatf(user_data, "%s",
+                        ogs_diam_cx_xml_ifc_s);
+            ogs_assert(user_data);
+
+              /* priority */
+              user_data = ogs_mstrcatf(user_data, "%s%d%s",
+                          ogs_diam_cx_xml_priority_s,
+                          ims_data->ifc[n].priority,
+                          ogs_diam_cx_xml_priority_e);
+              ogs_assert(user_data);
+
+              /* trigger point */
+              user_data = ogs_mstrcatf(user_data, "%s",
+                          ogs_diam_cx_xml_tp_s);
+              ogs_assert(user_data);
+
+                user_data = ogs_mstrcatf(user_data, "%s%d%s",
+                            ogs_diam_cx_xml_cnf_s,
+                            ims_data->ifc[n].trigger_point.condition_type_cnf,
+                            ogs_diam_cx_xml_cnf_e);
+                ogs_assert(user_data);
+
+                /* SPTs */
+                for (m = 0; m < ims_data->ifc[n].trigger_point.num_of_spt;
+                        m++) {
+                    user_data = ogs_mstrcatf(user_data, "%s",
+                                ogs_diam_cx_xml_spt_s);
+                    ogs_assert(user_data);
+
+                      /* condition negated */
+                      user_data = ogs_mstrcatf(user_data, "%s%d%s",
+                                  ogs_diam_cx_xml_condition_negated_s,
+                                  ims_data->ifc[n].trigger_point.spt[m].
+                                    condition_negated,
+                                  ogs_diam_cx_xml_condition_negated_e);
+                      ogs_assert(user_data);
+
+                      /* group */
+                      user_data = ogs_mstrcatf(user_data, "%s%d%s",
+                                  ogs_diam_cx_xml_group_s,
+                                  ims_data->ifc[n].trigger_point.spt[m].group,
+                                  ogs_diam_cx_xml_group_e);
+                      ogs_assert(user_data);
+
+                      /* method */
+                      if (ims_data->ifc[n].trigger_point.spt[m].type ==
+                              OGS_SPT_HAS_METHOD) {
+                          user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                                      ogs_diam_cx_xml_method_s,
+                                      ims_data->ifc[n].trigger_point.spt[m].
+                                          method,
+                                      ogs_diam_cx_xml_method_e);
+                          ogs_assert(user_data);
+                      }
+
+                      /* session case */
+                      if (ims_data->ifc[n].trigger_point.spt[m].type ==
+                              OGS_SPT_HAS_SESSION_CASE) {
+                          user_data = ogs_mstrcatf(user_data, "%s%d%s",
+                                      ogs_diam_cx_xml_session_case_s,
+                                      ims_data->ifc[n].trigger_point.spt[m].
+                                          session_case,
+                                      ogs_diam_cx_xml_session_case_e);
+                          ogs_assert(user_data);
+                      }
+
+                      /* sip header */
+                      if (ims_data->ifc[n].trigger_point.spt[m].type ==
+                              OGS_SPT_HAS_SIP_HEADER) {
+                          user_data = ogs_mstrcatf(user_data, "%s",
+                                      ogs_diam_cx_xml_sip_hdr_s);
+                          ogs_assert(user_data);
+
+                            user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                                        ogs_diam_cx_xml_header_s,
+                                        ims_data->ifc[n].trigger_point.spt[m].
+                                            header,
+                                        ogs_diam_cx_xml_header_e);
+                            ogs_assert(user_data);
+
+                            if  (ims_data->ifc[n].trigger_point.spt[m].
+                                    header_content) {
+                                user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                                            ogs_diam_cx_xml_content_s,
+                                            ims_data->ifc[n].trigger_point.
+                                                spt[m].header_content,
+                                            ogs_diam_cx_xml_content_e);
+                                ogs_assert(user_data);
+                            }
+
+                          user_data = ogs_mstrcatf(user_data, "%s",
+                                      ogs_diam_cx_xml_sip_hdr_e);
+                          ogs_assert(user_data);
+                      }
+
+                      /* request uri */
+                      if (ims_data->ifc[n].trigger_point.spt[m].type ==
+                              OGS_SPT_HAS_REQUEST_URI) {
+                          user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                                    ogs_diam_cx_xml_req_uri_s,
+                                    ims_data->ifc[n].trigger_point.spt[m].
+                                        request_uri,
+                                    ogs_diam_cx_xml_req_uri_e);
+                          ogs_assert(user_data);
+                      }
+
+                      /* extension */
+                      user_data = ogs_mstrcatf(user_data, "%s",
+                                  ogs_diam_cx_xml_extension_s);
+                      ogs_assert(user_data);
+
+                      user_data = ogs_mstrcatf(user_data, "%s",
+                                  ogs_diam_cx_xml_extension_e);
+                      ogs_assert(user_data);
+
+                    user_data = ogs_mstrcatf(user_data, "%s",
+                                ogs_diam_cx_xml_spt_e);
+                    ogs_assert(user_data);
+                }
+
+              user_data = ogs_mstrcatf(user_data, "%s",
+                          ogs_diam_cx_xml_tp_e);
+              ogs_assert(user_data);
+
+              /* application server */
+              user_data = ogs_mstrcatf(user_data, "%s",
+                          ogs_diam_cx_xml_app_server_s);
+              ogs_assert(user_data);
+
+                user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                            ogs_diam_cx_xml_server_name_s,
+                            ims_data->ifc[n].application_server.server_name,
+                            ogs_diam_cx_xml_server_name_e);
+                ogs_assert(user_data);
+
+                user_data = ogs_mstrcatf(user_data, "%s%d%s",
+                            ogs_diam_cx_xml_default_handling_s,
+                            ims_data->ifc[n].application_server.
+                                default_handling,
+                            ogs_diam_cx_xml_default_handling_e);
+                ogs_assert(user_data);
+
+              user_data = ogs_mstrcatf(user_data, "%s",
+                          ogs_diam_cx_xml_app_server_e);
+              ogs_assert(user_data);
+
+            user_data = ogs_mstrcatf(user_data, "%s",
+                        ogs_diam_cx_xml_ifc_e);
+            ogs_assert(user_data);
+        }
+
+        if (self.sms_over_ims) {
             user_data = ogs_mstrcatf(user_data, "%s",
                         ogs_diam_cx_xml_ifc_s);
             ogs_assert(user_data);
@@ -1201,7 +1379,7 @@ int hss_db_poll_change_stream(void)
 
 static int poll_change_stream(void)
 {
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
+#if MONGOC_CHECK_VERSION(1, 9, 0)
     int rv;
 
     const bson_t *document;

@@ -36,7 +36,7 @@ static ogs_inline void *ogs_hex_from_string(
     return out;
 }
 
-void *ogs_hex_to_ascii(void *in, int in_len, void *out, int out_len);
+void *ogs_hex_to_ascii(const void *in, int in_len, void *out, int out_len);
 void *ogs_uint64_to_buffer(uint64_t num, int size, void *buffer);
 uint64_t ogs_buffer_to_uint64(void *buffer, int size);
 void *ogs_bcd_to_buffer(const char *in, void *out, int *out_len);
@@ -53,8 +53,17 @@ char *ogs_uint36_to_0string(uint64_t x);
 char *ogs_uint64_to_0string(uint64_t x);
 char *ogs_uint64_to_string(uint64_t x);
 
-ogs_uint24_t ogs_uint24_from_string(char *str);
-uint64_t ogs_uint64_from_string(char *str);
+#define ogs_uint24_from_string_decimal(str) \
+    ogs_uint24_from_string((str), 10)
+#define ogs_uint24_from_string_hexadecimal(str) \
+    ogs_uint24_from_string((str), 16)
+ogs_uint24_t ogs_uint24_from_string(char *str, int base);
+
+#define ogs_uint64_from_string_decimal(str) \
+    ogs_uint64_from_string((str), 10)
+#define ogs_uint64_from_string_hexadecimal(str) \
+    ogs_uint64_from_string((str), 16)
+uint64_t ogs_uint64_from_string(char *str, int base);
 
 double *ogs_alloc_double(double value);
 

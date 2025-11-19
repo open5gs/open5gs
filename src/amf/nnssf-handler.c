@@ -39,16 +39,23 @@ int amf_nnssf_nsselection_handle_get(
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *ran_ue = NULL;
 
-    ogs_assert(sess);
-    amf_ue = sess->amf_ue;
-    ogs_assert(amf_ue);
     ogs_assert(recvmsg);
-
     ogs_assert(!SESSION_CONTEXT_IN_SMF(sess));
 
-    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    if (!sess) {
+        ogs_error("Session has already been removed");
+        return OGS_ERROR;
+    }
+
+    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
+    if (!amf_ue) {
+        ogs_error("UE(amf_ue) Context has already been removed");
+        return OGS_ERROR;
+    }
+
+    ran_ue = ran_ue_find_by_id(sess->ran_ue_id);
     if (!ran_ue) {
-        ogs_error("NG context has already been removed");
+        ogs_error("[%s] RAN-NG Context has already been removed", amf_ue->supi);
         return OGS_ERROR;
     }
 
@@ -113,7 +120,7 @@ int amf_nnssf_nsselection_handle_get(
         r = amf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, discovery_option,
                 amf_nsmf_pdusession_build_create_sm_context,
-                sess, AMF_CREATE_SM_CONTEXT_NO_STATE, &param);
+                ran_ue, sess, AMF_CREATE_SM_CONTEXT_NO_STATE, &param);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     } else {
@@ -155,7 +162,8 @@ int amf_nnssf_nsselection_handle_get(
         ogs_freeaddrinfo(addr6);
 
         r = amf_sess_sbi_discover_by_nsi(
-                sess, OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, discovery_option);
+                ran_ue, sess,
+                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, discovery_option);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     }

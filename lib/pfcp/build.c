@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -355,6 +355,11 @@ void ogs_pfcp_build_create_pdr(
     message->pdi.source_interface.presence = 1;
     message->pdi.source_interface.u8 = pdr->src_if;
 
+    if (pdr->src_if_type_presence) {
+        message->pdi.source_interface_type.presence = 1;
+        message->pdi.source_interface_type.u8 = pdr->src_if_type;
+    }
+
     if (pdr->dnn) {
         message->pdi.network_instance.presence = 1;
         message->pdi.network_instance.len = ogs_fqdn_build(
@@ -364,10 +369,19 @@ void ogs_pfcp_build_create_pdr(
 
     memset(pfcp_sdf_filter, 0, sizeof(pfcp_sdf_filter));
     for (j = 0; j < pdr->num_of_flow && j < OGS_MAX_NUM_OF_FLOW_IN_PDR; j++) {
-        pfcp_sdf_filter[j].fd = 1;
-        pfcp_sdf_filter[j].flow_description_len =
-                strlen(pdr->flow_description[j]);
-        pfcp_sdf_filter[j].flow_description = pdr->flow_description[j];
+        ogs_assert(pdr->flow[j].fd || pdr->flow[j].bid);
+
+        if (pdr->flow[j].fd) {
+            pfcp_sdf_filter[j].fd = 1;
+            pfcp_sdf_filter[j].flow_description_len =
+                    strlen(pdr->flow[j].description);
+            pfcp_sdf_filter[j].flow_description = pdr->flow[j].description;
+        }
+        if (pdr->flow[j].bid) {
+            pfcp_sdf_filter[j].bid = 1;
+            pfcp_sdf_filter[j].sdf_filter_id = pdr->flow[j].sdf_filter_id;
+        }
+
         len = sizeof(ogs_pfcp_sdf_filter_t) +
                 pfcp_sdf_filter[j].flow_description_len;
 
@@ -467,7 +481,8 @@ bool ogs_pfcp_build_created_pdr(
 }
 
 void ogs_pfcp_build_update_pdr(
-    ogs_pfcp_tlv_update_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr)
+    ogs_pfcp_tlv_update_pdr_t *message, int i,
+    ogs_pfcp_pdr_t *pdr, uint64_t modify_flags)
 {
     ogs_pfcp_sdf_filter_t pfcp_sdf_filter[OGS_MAX_NUM_OF_FLOW_IN_PDR];
     int j = 0;
@@ -476,55 +491,60 @@ void ogs_pfcp_build_update_pdr(
     ogs_assert(message);
     ogs_assert(pdr);
 
+    ogs_assert(modify_flags &
+            (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
+             OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE|
+             OGS_PFCP_MODIFY_EPC_TFT_UPDATE|
+             OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL));
+
     message->presence = 1;
     message->pdr_id.presence = 1;
     message->pdr_id.u16 = pdr->id;
 
-    message->pdi.presence = 1;
-    message->pdi.source_interface.presence = 1;
-    message->pdi.source_interface.u8 = pdr->src_if;
+    if (modify_flags &
+            (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
+             OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE|
+             OGS_PFCP_MODIFY_EPC_TFT_UPDATE)) {
+        message->pdi.presence = 1;
+        message->pdi.source_interface.presence = 1;
+        message->pdi.source_interface.u8 = pdr->src_if;
 
-    if (pdr->dnn) {
-        message->pdi.network_instance.presence = 1;
-        message->pdi.network_instance.len = ogs_fqdn_build(
-            pdrbuf[i].dnn, pdr->dnn, strlen(pdr->dnn));
-        message->pdi.network_instance.data = pdrbuf[i].dnn;
+        if (pdr->src_if_type_presence) {
+            message->pdi.source_interface_type.presence = 1;
+            message->pdi.source_interface_type.u8 = pdr->src_if_type;
+        }
+
+        memset(pfcp_sdf_filter, 0, sizeof(pfcp_sdf_filter));
+        for (j = 0; j < pdr->num_of_flow && j < OGS_MAX_NUM_OF_FLOW_IN_PDR; j++) {
+            ogs_assert(pdr->flow[j].fd || pdr->flow[j].bid);
+
+            if (pdr->flow[j].fd) {
+                pfcp_sdf_filter[j].fd = 1;
+                pfcp_sdf_filter[j].flow_description_len =
+                        strlen(pdr->flow[j].description);
+                pfcp_sdf_filter[j].flow_description = pdr->flow[j].description;
+            }
+            if (pdr->flow[j].bid) {
+                pfcp_sdf_filter[j].bid = 1;
+                pfcp_sdf_filter[j].sdf_filter_id = pdr->flow[j].sdf_filter_id;
+            }
+
+            len = sizeof(ogs_pfcp_sdf_filter_t) +
+                    pfcp_sdf_filter[j].flow_description_len;
+
+            message->pdi.sdf_filter[j].presence = 1;
+            pdrbuf[i].sdf_filter[j] = ogs_calloc(1, len);
+            ogs_assert(pdrbuf[i].sdf_filter[j]);
+            ogs_pfcp_build_sdf_filter(&message->pdi.sdf_filter[j],
+                    &pfcp_sdf_filter[j], pdrbuf[i].sdf_filter[j], len);
+        }
     }
-
-    memset(pfcp_sdf_filter, 0, sizeof(pfcp_sdf_filter));
-    for (j = 0; j < pdr->num_of_flow && j < OGS_MAX_NUM_OF_FLOW_IN_PDR; j++) {
-        pfcp_sdf_filter[j].fd = 1;
-        pfcp_sdf_filter[j].flow_description_len =
-                strlen(pdr->flow_description[j]);
-        pfcp_sdf_filter[j].flow_description = pdr->flow_description[j];
-        len = sizeof(ogs_pfcp_sdf_filter_t) +
-                pfcp_sdf_filter[j].flow_description_len;
-
-        message->pdi.sdf_filter[j].presence = 1;
-        pdrbuf[i].sdf_filter[j] = ogs_calloc(1, len);
-        ogs_assert(pdrbuf[i].sdf_filter[j]);
-        ogs_pfcp_build_sdf_filter(&message->pdi.sdf_filter[j],
-                &pfcp_sdf_filter[j], pdrbuf[i].sdf_filter[j], len);
-    }
-
-    if (pdr->ue_ip_addr_len) {
-        message->pdi.ue_ip_address.presence = 1;
-        message->pdi.ue_ip_address.data = &pdr->ue_ip_addr;
-        message->pdi.ue_ip_address.len = pdr->ue_ip_addr_len;
-    }
-
-    if (pdr->f_teid_len) {
-        memcpy(&pdrbuf[i].f_teid, &pdr->f_teid, pdr->f_teid_len);
-        pdrbuf[i].f_teid.teid = htobe32(pdr->f_teid.teid);
-
-        message->pdi.local_f_teid.presence = 1;
-        message->pdi.local_f_teid.data = &pdrbuf[i].f_teid;
-        message->pdi.local_f_teid.len = pdr->f_teid_len;
-    }
-
-    if (pdr->qfi) {
-        message->pdi.qfi.presence = 1;
-        message->pdi.qfi.u8 = pdr->qfi;
+    if (modify_flags & OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL) {
+        if (pdr->outer_header_removal_len) {
+            message->outer_header_removal.presence = 1;
+            message->outer_header_removal.data = &pdr->outer_header_removal;
+            message->outer_header_removal.len = pdr->outer_header_removal_len;
+        }
     }
 }
 
@@ -555,6 +575,13 @@ void ogs_pfcp_build_create_far(
         message->forwarding_parameters.destination_interface.presence = 1;
         message->forwarding_parameters.destination_interface.u8 =
             far->dst_if;
+
+        if (far->dst_if_type_presence) {
+            message->forwarding_parameters.destination_interface_type.
+                presence = 1;
+            message->forwarding_parameters.destination_interface_type.
+                u8 = far->dst_if_type;
+        }
 
         if (far->dnn) {
             message->forwarding_parameters.network_instance.presence = 1;
@@ -626,6 +653,13 @@ void ogs_pfcp_build_update_far_activate(
     message->update_forwarding_parameters.destination_interface.presence = 1;
     message->update_forwarding_parameters.
         destination_interface.u8 = far->dst_if;
+
+    if (far->dst_if_type_presence) {
+        message->update_forwarding_parameters.destination_interface_type.
+            presence = 1;
+        message->update_forwarding_parameters.destination_interface_type.
+            u8 = far->dst_if_type;
+    }
 
     if (far->dnn) {
         message->update_forwarding_parameters.network_instance.presence = 1;
@@ -755,21 +789,23 @@ void ogs_pfcp_build_update_urr(
     /* No change requested, skip. */
     if (!(modify_flags & (OGS_PFCP_MODIFY_URR_MEAS_METHOD|
                           OGS_PFCP_MODIFY_URR_REPORT_TRIGGER|
-                          OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME|
-                          OGS_PFCP_MODIFY_URR_VOLUME_QUOTA|
                           OGS_PFCP_MODIFY_URR_VOLUME_THRESH|
+                          OGS_PFCP_MODIFY_URR_VOLUME_QUOTA|
+                          OGS_PFCP_MODIFY_URR_TIME_THRESH|
                           OGS_PFCP_MODIFY_URR_TIME_QUOTA|
-                          OGS_PFCP_MODIFY_URR_TIME_THRESH)))
+                          OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME)))
         return;
 
     /* Change request: Send only changed IEs */
     message->presence = 1;
     message->urr_id.presence = 1;
     message->urr_id.u32 = urr->id;
+
     if (modify_flags & OGS_PFCP_MODIFY_URR_MEAS_METHOD) {
         message->measurement_method.presence = 1;
         message->measurement_method.u8 = urr->meas_method;
     }
+
     if (modify_flags & OGS_PFCP_MODIFY_URR_REPORT_TRIGGER) {
         message->reporting_triggers.presence = 1;
         message->reporting_triggers.u24 = (urr->rep_triggers.reptri_5 << 16)
@@ -786,10 +822,33 @@ void ogs_pfcp_build_update_urr(
         }
     }
 
+    if (modify_flags & OGS_PFCP_MODIFY_URR_VOLUME_QUOTA) {
+        if (urr->vol_quota.flags) {
+            message->volume_quota.presence = 1;
+            ogs_pfcp_build_volume(
+                    &message->volume_quota, &urr->vol_quota,
+                    &urrbuf[i].vol_quota, sizeof(urrbuf[i].vol_quota));
+        }
+    }
+
     if (modify_flags & OGS_PFCP_MODIFY_URR_TIME_THRESH) {
         if (urr->time_threshold) {
             message->time_threshold.presence = 1;
             message->time_threshold.u32 = urr->time_threshold;
+        }
+    }
+
+    if (modify_flags & OGS_PFCP_MODIFY_URR_TIME_QUOTA) {
+        if (urr->time_quota) {
+            message->time_quota.presence = 1;
+            message->time_quota.u32 = urr->time_quota;
+        }
+    }
+
+    if (modify_flags & OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME) {
+        if (urr->quota_validity_time) {
+            message->quota_validity_time.presence = 1;
+            message->quota_validity_time.u32 = urr->quota_validity_time;
         }
     }
 }

@@ -66,7 +66,10 @@ static __inline__ struct sess_state *new_state(os0_t sid)
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No session state");
+        return;
+    }
 
     if (sess_data->sid)
         ogs_free(sess_data->sid);
@@ -175,9 +178,9 @@ static int test_s6b_aar_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
 
     /* Add this value to the stats */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_echoed++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) ==0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    ogs_diam_stats_self()->stats.nb_echoed++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) ==0);
 
     return 0;
 
@@ -275,9 +278,9 @@ static int test_s6b_str_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
 
     /* Add this value to the stats */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_echoed++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) ==0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    ogs_diam_stats_self()->stats.nb_echoed++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) ==0);
 
     return 0;
 

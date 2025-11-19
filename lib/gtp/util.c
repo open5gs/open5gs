@@ -65,7 +65,8 @@ int ogs_gtpu_parse_header(
          * then the value of the Next Extension Header Type shall be 0. */
 
         i = 0;
-        while (*(ext_h = (((uint8_t *)gtp_h) + len - 1))) {
+        while (*(ext_h = (((uint8_t *)gtp_h) + len - 1)) &&
+                i < OGS_GTP2_NUM_OF_EXTENSION_HEADER) {
         /*
          * The length of the Extension header shall be defined
          * in a variable length of 4 octets, i.e. m+1 = n*4 octets,
@@ -125,6 +126,11 @@ int ogs_gtpu_parse_header(
             i++;
         }
 
+        if (i >= OGS_GTP2_NUM_OF_EXTENSION_HEADER) {
+            ogs_error("The number of extension headers is limited to [%d]", i);
+            return -1;
+        }
+
     } else if (gtp_h->flags & (OGS_GTPU_FLAGS_S|OGS_GTPU_FLAGS_PN)) {
         /*
          * If and only if one or more of these three flags are set,
@@ -173,4 +179,69 @@ uint16_t ogs_in_cksum(uint16_t *addr, int len)
     answer = ~sum;
 
     return answer;
+}
+
+void ogs_gtp2_sender_f_teid(
+        ogs_gtp2_sender_f_teid_t *sender_f_teid, ogs_gtp2_message_t *message)
+{
+    ogs_gtp2_tlv_f_teid_t *tlv_f_teid = NULL;
+    ogs_gtp2_f_teid_t *f_teid = NULL;
+
+    ogs_assert(sender_f_teid);
+    ogs_assert(message);
+
+    memset(sender_f_teid, 0, sizeof(*sender_f_teid));
+
+    switch (message->h.type) {
+    case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
+        tlv_f_teid = &message->create_session_request.
+            sender_f_teid_for_control_plane;
+        break;
+    case OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE:
+        tlv_f_teid = &message->create_session_response.
+            sender_f_teid_for_control_plane;
+        break;
+    case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
+        tlv_f_teid = &message->modify_bearer_request.
+            sender_f_teid_for_control_plane;
+        break;
+    case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
+        tlv_f_teid = &message->delete_session_request.
+            sender_f_teid_for_control_plane;
+        break;
+    case OGS_GTP2_MODIFY_BEARER_COMMAND_TYPE:
+        tlv_f_teid = &message->modify_bearer_command.
+            sender_f_teid_for_control_plane;
+        break;
+    case OGS_GTP2_DELETE_BEARER_COMMAND_TYPE:
+        tlv_f_teid = &message->delete_bearer_command.
+            sender_f_teid_for_control_plane;
+        break;
+    case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
+        tlv_f_teid = &message->bearer_resource_command.
+            sender_f_teid_for_control_plane;
+        break;
+    case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+        tlv_f_teid = &message->create_indirect_data_forwarding_tunnel_request.
+            sender_f_teid_for_control_plane;
+        break;
+    case OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+        tlv_f_teid = &message->create_indirect_data_forwarding_tunnel_response.
+            sender_f_teid_for_control_plane;
+        break;
+    case OGS_GTP2_DOWNLINK_DATA_NOTIFICATION_TYPE:
+        tlv_f_teid = &message->downlink_data_notification.
+            sender_f_teid_for_control_plane;
+        break;
+    case OGS_GTP2_MODIFY_ACCESS_BEARERS_REQUEST_TYPE:
+        tlv_f_teid = &message->modify_access_bearers_request.
+            sender_f_teid_for_control_plane;
+    default:
+        break;
+    }
+
+    if (tlv_f_teid && tlv_f_teid->presence && (f_teid = tlv_f_teid->data)) {
+        sender_f_teid->teid_presence = true;
+        sender_f_teid->teid = be32toh(f_teid->teid);
+    }
 }

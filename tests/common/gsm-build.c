@@ -159,7 +159,7 @@ ogs_pkbuf_t *testgsm_build_pdu_session_modification_request(
             qos_rule[0].num_of_packet_filter = 1;
 
             qos_rule[0].pf[0].direction = OGS_NAS_QOS_DIRECTION_UPLINK;
-            qos_rule[0].pf[0].identifier = 4;
+            qos_rule[0].pf[0].identifier = 0;
 
             qos_rule[0].pf[0].content.length = 18;
             qos_rule[0].pf[0].content.num_of_component = 1;
@@ -175,7 +175,7 @@ ogs_pkbuf_t *testgsm_build_pdu_session_modification_request(
             qos_rule[0].pf[0].content.component[0].ipv6.prefixlen = 120;
 
         } else if (qos_rule_code ==
-                OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_PACKET_FILTERS) {
+                OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_ALL_PACKET_FILTERS) {
             qos_rule[0].DQR_bit = 0;
             qos_rule[0].num_of_packet_filter = 1;
 
@@ -198,10 +198,10 @@ ogs_pkbuf_t *testgsm_build_pdu_session_modification_request(
             qos_rule[0].DQR_bit = 0;
             qos_rule[0].num_of_packet_filter = 4;
 
-            qos_rule[0].pf[0].identifier = 0;
-            qos_rule[0].pf[1].identifier = 1;
-            qos_rule[0].pf[2].identifier = 2;
-            qos_rule[0].pf[3].identifier = 3;
+            qos_rule[0].pf[0].identifier = 1;
+            qos_rule[0].pf[1].identifier = 2;
+            qos_rule[0].pf[2].identifier = 3;
+            qos_rule[0].pf[3].identifier = 4;
 
         } else {
             ogs_fatal("Unknown qos_rule_code[%d]", qos_rule_code);

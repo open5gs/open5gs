@@ -80,14 +80,14 @@ Import the public key used by the package management system.
 ```bash
 $ sudo apt update
 $ sudo apt install gnupg
-$ curl -fsSL https://pgp.mongodb.com/server-6.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg --dearmor
+$ curl -fsSL https://pgp.mongodb.com/server-8.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
 ```
 
-Create the list file /etc/apt/sources.list.d/mongodb-org-6.0.list for your version of Ubuntu.
+Create the list file /etc/apt/sources.list.d/mongodb-org-8.0.list for your version of Ubuntu.
 
 On ubuntu 22.04 (Jammy)
 ```bash
-$ echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+$ echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
 ```
 
 Install the MongoDB packages.
@@ -224,7 +224,7 @@ Okay - you have installed the software, now what to do with it? Well, there are 
 Out of the box, the default configurations see all of the Open5GS components fully configured for use on a single computer. They are set to communicate with each other using the local loopback address space (`127.0.0.X`). The default addresses for each of the bind interfaces for these components and functions are as follows:
 
 ```
-MongoDB   = 127.0.0.1 (subscriber data) - http://localhost:3000
+MongoDB   = 127.0.0.1 (subscriber data) - http://localhost:9999
 
 MME-s1ap  = 127.0.0.2 :36412 for S1-MME
 MME-gtpc  = 127.0.0.2 :2123 for S11
@@ -233,7 +233,7 @@ MME-frDi  = 127.0.0.2 :3868 for S6a
 SGWC-gtpc = 127.0.0.3 :2123 for S11
 SGWC-pfcp = 127.0.0.3 :8805 for Sxa
 
-SMF-gtpc  = 127.0.0.4 :2123 for S5c, N11
+SMF-gtpc  = 127.0.0.4 :2123 for S5c
 SMF-gtpu  = 127.0.0.4 :2152 for N4u (Sxu)
 SMF-pfcp  = 127.0.0.4 :8805 for N4 (Sxb)
 SMF-frDi  = 127.0.0.4 :3868 for Gx auth
@@ -335,10 +335,29 @@ $ sudo systemctl restart open5gs-sgwud
 
 #### Setup a 5G Core
 
-You will need to modify your 5G AMF config to support your PLMN and TAC. The international test PLMN is 001/01, and the international private network PLMN is 999/99. You should stick to using either of these PLMNs unless you have been issued a PLMN by your national regulator. (This PLMN will need to be configured in your gNB).
+You will need to modify the PLMN in your NRF and AMF config, and in case of AMF, further modify the TAC information. The international test PLMN is 001/01, and the international private network PLMN is 999/99. You should stick to using either of these PLMNs unless you have been issued a PLMN by your national regulator. (This PLMN will need to be configured in your gNB).
 
 If you are aiming to connect an external gNB to your core, you will also need to change the NGAP bind address of the AMF **and** the GTPU bind address of the UPF. If you are running an gNB stack locally, you will not need to make these changes.
 
+Modify [/etc/open5gs/nrf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/nrf.yaml.in) to set the Serving PLMN ID.
+
+```diff
+$ diff --git a/configs/open5gs/nrf.yaml.in b/configs/open5gs/nrf.yaml.in
+index cd9e45feb..58e8cbbce 100644
+--- a/configs/open5gs/nrf.yaml.in
++++ b/configs/open5gs/nrf.yaml.in
+@@ -10,8 +10,8 @@ global:
+ nrf:
+   serving:  # 5G roaming requires PLMN in NRF
+     - plmn_id:
+-        mcc: 999
+-        mnc: 70
++        mcc: 001
++        mnc: 01
+   sbi:
+     server:
+       - address: 127.0.0.10
+```
 
 Modify [/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI.
 
@@ -404,15 +423,44 @@ index e78b018f1..35a54419e 100644
 After changing config files, please restart Open5GS daemons.
 
 ```bash
+$ sudo systemctl restart open5gs-nrfd
 $ sudo systemctl restart open5gs-amfd
 $ sudo systemctl restart open5gs-upfd
 ```
 
+#### Configure logging
+
+The Open5GS components log to `/var/log/open5gs/*.log` and to `stderr` by
+default.
+
+##### Avoid duplicate timestamps in journalctl
+
+Open5GS adds timestamps to each log line in the log file, and on `stderr`. If
+you run Open5GS with systemd and prefer looking at the logs with `journalctl`,
+then each line will have two timestamps. To fix this, disable the timestamp for
+`stderr` with the following configuration change:
+
+```diff
+diff --git a/configs/open5gs/mme.yaml.in b/configs/open5gs/mme.yaml.in
+index 87c251b9d..599032b8a 100644
+--- a/configs/open5gs/mme.yaml.in
++++ b/configs/open5gs/mme.yaml.in
+@@ -1,6 +1,9 @@
+ logger:
++  default:
++    timestamp: false
+   file:
+     path: /var/log/open5gs/mme.log
++    timestamp: true
+ #  level: info   # fatal|error|warn|info(default)|debug|trace
+
+ global:
+```
 
 #### Register Subscriber Information
 ---
 
-Connect to `http://localhost:3000` and login with **admin** account.
+Connect to `http://localhost:9999` and login with **admin** account.
 
 > Username : admin  
 > Password : 1423

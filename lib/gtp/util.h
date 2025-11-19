@@ -32,6 +32,14 @@ int ogs_gtpu_parse_header(
         ogs_gtp2_header_desc_t *header_desc, ogs_pkbuf_t *pkbuf);
 uint16_t ogs_in_cksum(uint16_t *addr, int len);
 
+typedef struct ogs_gtp2_sender_f_teid_s {
+    bool teid_presence;
+    uint32_t teid;
+} ogs_gtp2_sender_f_teid_t;
+
+void ogs_gtp2_sender_f_teid(
+        ogs_gtp2_sender_f_teid_t *sender_f_teid, ogs_gtp2_message_t *message);
+
 #ifdef __cplusplus
 }
 #endif

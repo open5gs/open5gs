@@ -1255,6 +1255,12 @@ int ogs_aes_cbc_encrypt(const uint8_t *key, const uint32_t keybits,
 
     *outlen = ((inlen - 1) / OGS_AES_BLOCK_SIZE + 1) * OGS_AES_BLOCK_SIZE;
 
+    /* Clang scan-build SA: Result of operation is garbage: The function ogs_aes_encrypt() is reporting that the
+     * array parameter rk has garbage/uninitialized values. The garbage values are because the SA is taking a path
+     * through ogs_aes_setup_enc() that doesn't match a valid keybits value and therefore the function is not
+     * populating rk. Fix the issue by initializing rk to 0 here. */
+    memset(rk, 0, sizeof(rk));
+
     nrounds = ogs_aes_setup_enc(rk, key, keybits);
 
     while (len >= OGS_AES_BLOCK_SIZE)
@@ -1309,6 +1315,12 @@ int ogs_aes_cbc_decrypt(const uint8_t *key, const uint32_t keybits,
     }
 
     *outlen = inlen;
+
+    /* Clang scan-build SA: Result of operation is garbage: The function ogs_aes_decrypt() is reporting that the
+     * array parameter rk has garbage/uninitialized values. The garbage values are because the SA is taking a path
+     * through ogs_aes_setup_enc() (from ogs_aes_setup_dec()) that doesn't match a valid keybits value and
+     * therefore the function is not populating rk. Fix the issue by initializing rk to 0 here. */
+    memset(rk, 0, sizeof(rk));
 
     nrounds = ogs_aes_setup_dec(rk, key, keybits);
 

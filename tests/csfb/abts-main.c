@@ -25,6 +25,7 @@ abts_suite *test_mo_active(abts_suite *suite);
 abts_suite *test_mt_active(abts_suite *suite);
 abts_suite *test_mo_sms(abts_suite *suite);
 abts_suite *test_mt_sms(abts_suite *suite);
+abts_suite *test_tau(abts_suite *suite);
 abts_suite *test_crash(abts_suite *suite);
 
 const struct testlist {
@@ -36,6 +37,7 @@ const struct testlist {
     {test_mt_active},
     {test_mo_sms},
     {test_mt_sms},
+    {test_tau},
     {test_crash},
     {NULL},
 };

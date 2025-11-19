@@ -14,6 +14,7 @@ asn_TYPE_operation_t asn_OP_SET_OF = {
     0,
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
     SET_OF_compare,
+    SET_OF_copy,
 #if !defined(ASN_DISABLE_BER_SUPPORT)
     SET_OF_decode_ber,
     SET_OF_encode_der,
@@ -29,8 +30,10 @@ asn_TYPE_operation_t asn_OP_SET_OF = {
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+    SET_OF_decode_jer,
     SET_OF_encode_jer,
 #else
+    0,
     0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -365,6 +368,61 @@ SET_OF_compare(const asn_TYPE_descriptor_t *td, const void *aptr,
         return -1;
     } else if(!b) {
         return 1;
+    }
+
+	return 0;
+}
+
+int
+SET_OF_copy(const asn_TYPE_descriptor_t *td, void **aptr,
+            const void *bptr) {
+    if(!td) return -1;
+
+    const asn_SET_OF_specifics_t *specs = 
+        (const asn_SET_OF_specifics_t *)td->specifics;
+    void *st = *aptr;
+
+    if(!bptr) {
+        if(*aptr) {
+            asn_set_empty(_A_SET_FROM_VOID(*aptr));
+            *aptr = 0;
+        }
+        return 0;
+    }
+
+    if(st == 0) {
+        st = *aptr = CALLOC(1, specs->struct_size);
+        if(st == 0) return -1;
+    }
+
+    asn_anonymous_set_ *a = _A_SET_FROM_VOID(*aptr);
+    const asn_anonymous_set_ *b = _A_CSET_FROM_VOID(bptr);
+
+    if(b->size) {
+		void *_new_arr;
+		_new_arr = REALLOC(a->array, b->size * sizeof(b->array[0]));
+		if(_new_arr) {
+			a->array = (void **)_new_arr;
+			a->size = b->size;
+		} else {
+            return -1;
+        }
+        a->count = b->count;
+
+        for(int i = 0; i < b->count; i++) {
+            void *bmemb = b->array[i];
+            if(bmemb) {
+                void *amemb = 0;
+                int ret;
+                ret = td->elements->type->op->copy_struct(
+                                                    td->elements->type,
+                                                    &amemb, bmemb);
+                if(ret != 0) return ret;
+                a->array[i] = amemb;
+            } else {
+                a->array[i] = 0;
+            }
+        }
     }
 
 	return 0;

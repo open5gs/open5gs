@@ -57,7 +57,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_assert(test_ue);
 
     test_ue->e_cgi.cell_id = 0x1079baf;
-    test_ue->nas.ksi = 0;
+    test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
@@ -97,7 +97,8 @@ static void test1_func(abts_case *tc, void *data)
     sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess, false);
+    esmbuf = testesm_build_pdn_connectivity_request(
+            sess, false, OGS_NAS_EPS_PDN_TYPE_IPV4V6);
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     memset(&test_ue->attach_request_param,
@@ -214,7 +215,8 @@ static void test1_func(abts_case *tc, void *data)
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess, true);
+    esmbuf = testesm_build_pdn_connectivity_request(
+            sess, true, OGS_NAS_EPS_PDN_TYPE_IPV4V6);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);

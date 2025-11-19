@@ -61,6 +61,28 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_register(void)
         goto end;
     }
 
+    /*
+     * TS29510
+     * 6.1.6.2 Structured data types
+     * 6.1.6.2.2 Type: NFProfile
+     * Table 6.1.6.2.2-1: Definition of type NFProfile
+     *
+     * NF Profile Changes Support Indicator.
+     * See Annex B.
+     *
+     * This IE may be present in the NFRegister or
+     * NFUpdate (NF Profile Complete Replacement)
+     * request and shall be absent in the response.
+     *
+     * true: the NF Service Consumer supports receiving
+     * NF Profile Changes in the response.
+     *
+     * false (default): the NF Service Consumer does not
+     * support receiving NF Profile Changes in the response.
+     */
+    NFProfile->is_nf_profile_changes_support_ind = true;
+    NFProfile->nf_profile_changes_support_ind = true;
+
     message.NFProfile = NFProfile;
 
     request = ogs_sbi_build_request(&message);
@@ -145,9 +167,6 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         else
             OpenAPI_list_free(PlmnIdList);
     }
-
-    NFProfile->is_nf_profile_changes_support_ind = true;
-    NFProfile->nf_profile_changes_support_ind = true;
 
     if (nf_instance->fqdn)
         NFProfile->fqdn = ogs_strdup(nf_instance->fqdn);
@@ -242,12 +261,6 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         return NULL;
     }
 
-    if (service_map == true) {
-        NFProfile->nf_service_list = NFServiceList;
-    } else {
-        NFProfile->nf_services = NFServiceList;
-    }
-
     ogs_list_for_each(&nf_instance->nf_service_list, nf_service) {
         OpenAPI_nf_service_t *NFService = NULL;
 
@@ -289,6 +302,16 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
             OpenAPI_list_add(NFServiceList, NFService);
         }
     }
+
+    if (NFServiceList->count) {
+        if (service_map == true) {
+            NFProfile->nf_service_list = NFServiceList;
+        } else {
+            NFProfile->nf_services = NFServiceList;
+        }
+    }
+    else
+        OpenAPI_list_free(NFServiceList);
 
     InfoList = OpenAPI_list_create();
     ogs_assert(InfoList);
@@ -816,12 +839,8 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
             ogs_uint24_to_0string(nf_info->smf.nr_tai[i].tac);
         if (!TaiItem->tac) {
             ogs_error("No TaiItem->tac");
-            if (TaiItem) {
-                if (TaiItem->plmn_id)
-                    ogs_sbi_free_plmn_id(TaiItem->plmn_id);
-                ogs_free(TaiItem);
-            }
-            free_smf_info(SmfInfo);
+            OpenAPI_tai_free(TaiItem);
+            OpenAPI_smf_info_free(SmfInfo);
             OpenAPI_list_free(TaiList);
             return NULL;
         }
@@ -933,6 +952,7 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
         return NULL;
     }
 
+    /* Guami list */
     guamiAmfInfoList = OpenAPI_list_create();
     if (!guamiAmfInfoList) {
         ogs_error("No guamiAmfInfoList");
@@ -944,8 +964,8 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
 
         guamiAmfInfoItem = ogs_calloc(1, sizeof(*guamiAmfInfoItem));
         if (!guamiAmfInfoItem) {
-            ogs_error("guamiAmfInfoItem");
-            free_amf_info(AmfInfo);
+            ogs_error("No guamiAmfInfoItem");
+            OpenAPI_amf_info_free(AmfInfo);
             OpenAPI_list_free(guamiAmfInfoList);
             return NULL;
         }
@@ -953,23 +973,18 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
         guamiAmfInfoItem->plmn_id =
                 ogs_sbi_build_plmn_id_nid(&nf_info->amf.guami[i].plmn_id);
         if (!guamiAmfInfoItem->plmn_id) {
-            ogs_error("guamiAmfInfoItem->plmn_id");
-            if (guamiAmfInfoItem)
-                ogs_free(guamiAmfInfoItem);
-            free_amf_info(AmfInfo);
+            ogs_error("No guamiAmfInfoItem->plmn_id");
+            OpenAPI_guami_free(guamiAmfInfoItem);
+            OpenAPI_amf_info_free(AmfInfo);
             OpenAPI_list_free(guamiAmfInfoList);
             return NULL;
         }
         guamiAmfInfoItem->amf_id =
                 ogs_amf_id_to_string(&nf_info->amf.guami[i].amf_id);
         if (!guamiAmfInfoItem->amf_id) {
-            ogs_error("guamiAmfInfoItem->amf_id");
-            if (guamiAmfInfoItem) {
-                if (guamiAmfInfoItem->plmn_id)
-                    ogs_free(guamiAmfInfoItem->plmn_id);
-                ogs_free(guamiAmfInfoItem);
-            }
-            free_amf_info(AmfInfo);
+            ogs_error("No guamiAmfInfoItem->amf_id");
+            OpenAPI_guami_free(guamiAmfInfoItem);
+            OpenAPI_amf_info_free(AmfInfo);
             OpenAPI_list_free(guamiAmfInfoList);
             return NULL;
         }
@@ -982,6 +997,8 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
     else
         OpenAPI_list_free(guamiAmfInfoList);
 
+
+    /* TAI list */
     TaiList = OpenAPI_list_create();
     if (!TaiList) {
         ogs_error("No TaiList");
@@ -991,7 +1008,7 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
 
     for (i = 0; i < nf_info->amf.num_of_nr_tai; i++) {
         TaiItem = ogs_calloc(1, sizeof(*TaiItem));
-        if (!TaiList) {
+        if (!TaiItem) {
             ogs_error("No TaiItem");
             free_amf_info(AmfInfo);
             OpenAPI_list_free(TaiList);
@@ -1001,22 +1018,16 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
                 &nf_info->amf.nr_tai[i].plmn_id);
         if (!TaiItem->plmn_id) {
             ogs_error("No TaiItem->plmn_id");
-            if (TaiItem)
-                ogs_free(TaiItem);
-            free_amf_info(AmfInfo);
+            OpenAPI_tai_free(TaiItem);
+            OpenAPI_amf_info_free(AmfInfo);
             OpenAPI_list_free(TaiList);
             return NULL;
         }
-        TaiItem->tac =
-            ogs_uint24_to_0string(nf_info->amf.nr_tai[i].tac);
+        TaiItem->tac = ogs_uint24_to_0string(nf_info->amf.nr_tai[i].tac);
         if (!TaiItem->tac) {
             ogs_error("No TaiItem->tac");
-            if (TaiItem) {
-                if (TaiItem->plmn_id)
-                    ogs_sbi_free_plmn_id(TaiItem->plmn_id);
-                ogs_free(TaiItem);
-            }
-            free_amf_info(AmfInfo);
+            OpenAPI_tai_free(TaiItem);
+            OpenAPI_amf_info_free(AmfInfo);
             OpenAPI_list_free(TaiList);
             return NULL;
         }
@@ -1029,6 +1040,8 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
     else
         OpenAPI_list_free(TaiList);
 
+
+    /* TAI range list */
     TaiRangeList = OpenAPI_list_create();
     if (!TaiRangeList) {
         ogs_error("No TaiRangeList");
@@ -1673,9 +1686,6 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
 
     message.SubscriptionData = SubscriptionData;
 
-    message.http.custom.callback =
-        (char *)OGS_SBI_CALLBACK_NNRF_NFMANAGEMENT_NF_STATUS_NOTIFY;
-
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
 
@@ -1708,11 +1718,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_update(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PATCH;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
-    message.h.api.version = (char *)OGS_SBI_API_V1;
-    message.h.resource.component[0] =
-        (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS;
-    message.h.resource.component[1] = subscription_data->id;
+    message.h.uri = subscription_data->resource_uri;
 
     message.http.content_type = (char *)OGS_SBI_CONTENT_PATCH_TYPE;
 
@@ -1722,10 +1728,9 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_update(
         goto end;
     }
 
-    ogs_assert(subscription_data->time.validity_duration);
+    ogs_assert(subscription_data->validity_duration);
     validity_time = ogs_sbi_localtime_string(
-            ogs_time_now() +
-            ogs_time_from_sec(subscription_data->time.validity_duration));
+            ogs_time_now() + subscription_data->validity_duration);
     ogs_assert(validity_time);
 
     ValidityItem.op = OpenAPI_patch_operation_replace;
@@ -1767,14 +1772,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_unsubscribe(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
-    message.h.api.version = (char *)OGS_SBI_API_V1;
-    message.h.resource.component[0] =
-        (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS;
-    message.h.resource.component[1] = subscription_data->id;
-
-    message.http.custom.callback =
-        (char *)OGS_SBI_CALLBACK_NNRF_NFMANAGEMENT_NF_STATUS_NOTIFY;
+    message.h.uri = subscription_data->resource_uri;
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
@@ -1796,6 +1794,24 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_profile_retrieve(char *nf_instance_id)
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_NF_INSTANCES;
     message.h.resource.component[1] = nf_instance_id;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_expect(request);
+
+    return request;
+}
+
+ogs_sbi_request_t *ogs_nnrf_nfm_build_nflist_retrieve(void)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+    message.h.resource.component[0] =
+        (char *)OGS_SBI_RESOURCE_NAME_NF_INSTANCES;
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);

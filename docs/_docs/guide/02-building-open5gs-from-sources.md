@@ -18,14 +18,14 @@ Import the public key used by the package management system.
 ```bash
 $ sudo apt update
 $ sudo apt install gnupg
-$ curl -fsSL https://pgp.mongodb.com/server-6.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg --dearmor
+$ curl -fsSL https://pgp.mongodb.com/server-8.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
 ```
 
-Create the list file /etc/apt/sources.list.d/mongodb-org-6.0.list for your version of Ubuntu.
+Create the list file /etc/apt/sources.list.d/mongodb-org-8.0.list for your version of Ubuntu.
 
 On ubuntu 22.04 (Jammy)
 ```bash
-$ echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+$ echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
 ```
 
 Install the MongoDB packages.
@@ -58,10 +58,19 @@ $ sudo ip link set ogstun up
 ### Building Open5GS
 ---
 
-Install the dependencies for building the source code.
+Install the common dependencies for building the source code.
 
 ```bash
-$ sudo apt install python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git cmake libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn11-dev libmongoc-dev libbson-dev libyaml-dev libnghttp2-dev libmicrohttpd-dev libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev meson
+$ sudo apt install python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git cmake libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libmongoc-dev libbson-dev libyaml-dev libnghttp2-dev libmicrohttpd-dev libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev meson
+```
+
+Install libidn-dev or libidn11-dev depending on your system
+```bash
+$ if apt-cache show libidn-dev > /dev/null 2>&1; then
+    sudo apt-get install -y --no-install-recommends libidn-dev
+else
+    sudo apt-get install -y --no-install-recommends libidn11-dev
+fi
 ```
 
 Git clone.
@@ -109,6 +118,26 @@ $ cd ../
 ---
 
 ##### 5G Core
+
+Modify [install/etc/open5gs/nrf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/nrf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI.
+
+```diff
+$ diff --git a/configs/open5gs/nrf.yaml.in b/configs/open5gs/nrf.yaml.in
+index cd9e45feb..58e8cbbce 100644
+--- a/configs/open5gs/nrf.yaml.in
++++ b/configs/open5gs/nrf.yaml.in
+@@ -10,8 +10,8 @@ global:
+ nrf:
+   serving:  # 5G roaming requires PLMN in NRF
+     - plmn_id:
+-        mcc: 999
+-        mnc: 70
++        mcc: 001
++        mnc: 01
+   sbi:
+     server:
+       - address: 127.0.0.10
+```
 
 Modify [install/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI.
 
@@ -427,7 +456,7 @@ $ cp open5gs* /usr/bin/
 For convenience, you can execute all NFs at once by using the following command.
 ```bash
 $ ./build/tests/app/5gc ## 5G Core Only with ./build/configs/sample.yaml
-$ ./build/tests/app/epc -c ./build/configs/srslte.yaml ## EPC Only with ./build/configs/srslte.yaml
+$ ./build/tests/app/epc -c ./build/configs/srsenb.yaml ## EPC Only with ./build/configs/srsenb.yaml
 $ ./build/tests/app/app ## Both 5G Core and EPC with ./build/configs/sample.yaml
 ```
 
@@ -475,7 +504,7 @@ $ PORT=7777 npm run dev
 ### Register Subscriber Information
 ---
 
-Connect to `http://127.0.0.1:3000` and login with **admin** account.
+Connect to `http://127.0.0.1:9999` and login with **admin** account.
 
 > Username : admin  
 > Password : 1423

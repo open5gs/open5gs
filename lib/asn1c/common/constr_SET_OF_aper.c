@@ -129,13 +129,12 @@ SET_OF_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         if(value) ct = 0;  /* Not restricted! */
     }
 
-    if(ct && ct->effective_bits >= 0) {
+    if(ct && ct->upper_bound >= 1 && ct->upper_bound <= 65535
+       && ct->upper_bound == ct->lower_bound) {
         /* X.691, #19.5: No length determinant */
-        nelems = aper_get_nsnnwn(pd, ct->upper_bound - ct->lower_bound + 1);
-        ASN_DEBUG("Preparing to fetch %ld+%lld elements from %s",
-                  (long)nelems, (long long int)ct->lower_bound, td->name);
-        if(nelems < 0)  ASN__DECODE_STARVED;
-        nelems += ct->lower_bound;
+        nelems = ct->upper_bound;
+        ASN_DEBUG("Preparing to fetch %ld elements from %s",
+                  (long)nelems, td->name);
     } else {
         nelems = -1;
     }

@@ -5,18 +5,18 @@ subject: Support
 permalink: /support/
 ---
 
-###### Updated Sep, 2022
+Open5GS receives strong and ongoing support from [NewPlane Inc.](https://newplane.io), which proudly backs the project and contributes to its continuous development and success.
 
-### Open5GS Licensing
+### Licensing Options:
 
-Open5GS is licensed under a dual licensing model designed to meet the development and distribution needs of both commercial and open source projects.
+- **Commercial License**: Available for those who wish to develop and distribute their software without adhering to open-source license requirements. This option allows for full utilization of Open5GS capabilities and involves a strategic partnership with NewPlane. For more information, reach out to NewPlane at
+[sales@newplane.io](mailto:sales@newplane.io).
 
-The commercial Open5GS license gives you the full rights to create and distribute software on your own terms without any open source license obligations. You can grow with Open5GS by establishing a close strategic relationship with [NeoPlane](https://neoplane.io).
+- **AGPL-3.0 License**: Ideal for open-source projects, academic research, and internal use where compliance with AGPL-3.0 is feasible. This license supports the open-source ethos and is suitable for a wide range of uses. If you have concerns about AGPL compliance, consider the commercial licensing option instead.
 
+### Support and Customization:
 
-Open5GS is also available under AGPL-3.0 open source licenses. The Open5GS open source licensing is ideal for use cases such as open source projects with open source distribution, student/academic purposes, hobby projects, internal research projects without external distribution, or other projects where all AGPL-3.0 obligations can be met.
-
-If your legal department has policies regarding use of software licensed under the AGPL, you may prefer to have a commercial license. Contact [Sukchan Lee \<sales@neoplane.io\>](mailto:sales@neoplane.io) for more information on commercial licenses.
+NewPlane offers comprehensive support and customization services to enhance your experience with Open5GS. Their team is equipped to assist with troubleshooting, address specific issues, and implement customized solutions. For support and customization inquiries, please contact NewPlane at [support@newplane.io](mailto:support@newplane.io).
 
 ### Our Partners
 

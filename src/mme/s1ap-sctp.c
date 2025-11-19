@@ -160,14 +160,19 @@ void s1ap_recv_handler(ogs_sock_t *sock)
             if (not->sn_assoc_change.sac_state == SCTP_COMM_UP) {
                 ogs_debug("SCTP_COMM_UP");
 
-                addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-                ogs_assert(addr);
-                memcpy(addr, &from, sizeof(ogs_sockaddr_t));
+                if ((not->sn_assoc_change.sac_outbound_streams-1) >= 1) {
+                    /* NEXT_ID(MAX >= MIN) */
+                    addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
+                    ogs_assert(addr);
+                    memcpy(addr, &from, sizeof(ogs_sockaddr_t));
 
-                s1ap_event_push(MME_EVENT_S1AP_LO_SCTP_COMM_UP,
-                        sock, addr, NULL,
-                        not->sn_assoc_change.sac_inbound_streams,
-                        not->sn_assoc_change.sac_outbound_streams);
+                    s1ap_event_push(MME_EVENT_S1AP_LO_SCTP_COMM_UP,
+                            sock, addr, NULL,
+                            not->sn_assoc_change.sac_inbound_streams,
+                            not->sn_assoc_change.sac_outbound_streams);
+                } else
+                    ogs_error("Invalid sn_assoc_change.sac_outbound_streams %d",
+                            not->sn_assoc_change.sac_outbound_streams);
             } else if (not->sn_assoc_change.sac_state == SCTP_SHUTDOWN_COMP ||
                     not->sn_assoc_change.sac_state == SCTP_COMM_LOST) {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -36,67 +36,89 @@ ogs_sock_t *ogs_pfcp_server(ogs_socknode_t *node)
     return pfcp;
 }
 
-int ogs_pfcp_connect(
-        ogs_sock_t *ipv4, ogs_sock_t *ipv6, ogs_pfcp_node_t *node)
+/* Minimum PFCP header length (e.g., 12 bytes) */
+#define MIN_PFCP_HEADER_LENGTH 12
+
+/*
+ * ogs_pfcp_recvfrom
+ *
+ * Receives a PFCP message from the socket 'fd'. It allocates a pkbuf,
+ * receives the message, trims the pkbuf, and verifies the header.
+ * If any error occurs (e.g., too short message, unsupported version, or
+ * incomplete message), the function frees the pkbuf and returns NULL.
+ *
+ * The sender's address is stored in 'from'.
+ *
+ * Returns a pointer to ogs_pkbuf_t on success, or NULL on failure.
+ */
+ogs_pkbuf_t *ogs_pfcp_recvfrom(ogs_socket_t fd, ogs_sockaddr_t *from)
 {
-    ogs_sockaddr_t *addr;
-    char buf[OGS_ADDRSTRLEN];
+    ogs_pkbuf_t *pkbuf;
+    ssize_t size;
+    ogs_pfcp_header_t *h;
+    uint16_t pfcp_body_length;
+    size_t expected_total_length;
 
-    ogs_assert(ipv4 || ipv6);
-    ogs_assert(node);
-    ogs_assert(node->sa_list);
+    ogs_assert(fd != INVALID_SOCKET);
+    ogs_assert(from);
 
-    addr = node->sa_list;
-    while (addr) {
-        ogs_sock_t *sock = NULL;
-
-        if (addr->ogs_sa_family == AF_INET)
-            sock = ipv4;
-        else if (addr->ogs_sa_family == AF_INET6)
-            sock = ipv6;
-        else
-            ogs_assert_if_reached();
-
-        if (sock) {
-            ogs_info("ogs_pfcp_connect() [%s]:%d",
-                    OGS_ADDR(addr, buf), OGS_PORT(addr));
-
-            node->sock = sock;
-            memcpy(&node->addr, addr, sizeof node->addr);
-            break;
-        }
-
-        addr = addr->next;
+    /* Allocate buffer for maximum SDU length */
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    if (pkbuf == NULL) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        return NULL;
     }
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
 
-    if (addr == NULL) {
-        ogs_error("ogs_pfcp_connect() [%s]:%d failed",
-                OGS_ADDR(node->sa_list, buf), OGS_PORT(node->sa_list));
-        ogs_error("Please check the IP version between SMF and UPF nodes.");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
-
-int ogs_pfcp_send(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf)
-{
-    ssize_t sent;
-    ogs_sock_t *sock = NULL;
-
-    ogs_assert(node);
-    ogs_assert(pkbuf);
-    sock = node->sock;
-    ogs_assert(sock);
-
-    sent = ogs_send(sock->fd, pkbuf->data, pkbuf->len, 0);
-    if (sent < 0 || sent != pkbuf->len) {
+    size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, from);
+    if (size <= 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "ogs_pfcp_send() failed");
-        return OGS_ERROR;
+            "ogs_recvfrom() failed");
+        ogs_pkbuf_free(pkbuf);
+        return NULL;
+    }
+    ogs_pkbuf_trim(pkbuf, size);
+
+    /* Check that the data is at least as long as the header */
+    if (size < MIN_PFCP_HEADER_LENGTH) {
+        ogs_error("Received PFCP message too short: %ld bytes (min %d)",
+            (long)size, MIN_PFCP_HEADER_LENGTH);
+        ogs_pkbuf_free(pkbuf);
+        return NULL;
     }
 
-    return OGS_OK;
+    h = (ogs_pfcp_header_t *)pkbuf->data;
+
+    /* Verify PFCP version */
+    if (h->version != OGS_PFCP_VERSION) {
+        ogs_pfcp_header_t rsp;
+        memset(&rsp, 0, sizeof(rsp));
+        ogs_error("Not supported version[%d]", h->version);
+        rsp.flags = (OGS_PFCP_VERSION << 5);
+        rsp.type = OGS_PFCP_VERSION_NOT_SUPPORTED_RESPONSE_TYPE;
+        rsp.length = htobe16(4);
+        rsp.sqn_only = h->sqn_only;
+        if (ogs_sendto(fd, &rsp, 8, 0, from) < 0) {
+            ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "ogs_sendto() failed");
+        }
+        ogs_pkbuf_free(pkbuf);
+        return NULL;
+    }
+
+    /* Check total PFCP message length.
+       Assume the header's length field indicates the body length,
+       excluding the first 4 bytes. */
+    pfcp_body_length = be16toh(h->length);
+    expected_total_length = pfcp_body_length + 4;
+    if ((size_t)size != expected_total_length) {
+        ogs_error("Invalid PFCP Header Length: expected %zu bytes, "
+            "received %ld bytes", expected_total_length, (long)size);
+        ogs_pkbuf_free(pkbuf);
+        return NULL;
+    }
+
+    return pkbuf;
 }
 
 int ogs_pfcp_sendto(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf)
@@ -107,10 +129,33 @@ int ogs_pfcp_sendto(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf)
 
     ogs_assert(node);
     ogs_assert(pkbuf);
-    sock = node->sock;
-    ogs_assert(sock);
-    addr = &node->addr;
+    ogs_assert(node->addr_list);
+
+    /* Initialize round-robin iterator if needed */
+    if (node->current_addr == NULL) {
+        node->current_addr = node->addr_list;
+    }
+    addr = node->current_addr;
     ogs_assert(addr);
+
+    if (addr->ogs_sa_family == AF_INET) {
+        sock = ogs_pfcp_self()->pfcp_sock;
+        if (!sock) {
+            ogs_error("IPv4 socket (pfcp_sock) is not available. "
+                    "Ensure that 'pfcp.server.address: 127.0.0.1' "
+                    "is set in the YAML configuration file.");
+            return OGS_ERROR;
+        }
+    } else if (addr->ogs_sa_family == AF_INET6) {
+        sock = ogs_pfcp_self()->pfcp_sock6;
+        if (!sock) {
+            ogs_error("IPv6 socket (pfcp_sock) is not available. "
+                    "Ensure that 'pfcp.server.address: [::1]' "
+                    "is set in the YAML configuration file.");
+            return OGS_ERROR;
+        }
+    } else
+        ogs_assert_if_reached();
 
     sent = ogs_sendto(sock->fd, pkbuf->data, pkbuf->len, 0, addr);
     if (sent < 0 || sent != pkbuf->len) {
@@ -118,12 +163,19 @@ int ogs_pfcp_sendto(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf)
             char buf[OGS_ADDRSTRLEN];
             int err = ogs_socket_errno;
             ogs_log_message(OGS_LOG_ERROR, err,
-                    "ogs_gtp_sendto(%u, %p, %u, 0, %s:%u) failed",
+                    "ogs_sendto(%u, %p, %u, 0, %s:%u) failed",
                     sock->fd, pkbuf->data, pkbuf->len,
                     OGS_ADDR(addr, buf), OGS_PORT(addr));
         }
         return OGS_ERROR;
     }
+
+    /* Move to next address in round-robin sequence */
+    if (node->current_addr->next)
+        node->current_addr = node->current_addr->next;
+    else
+        /* If end of list reached, wrap around to the start */
+        node->current_addr = node->addr_list;
 
     return OGS_OK;
 }

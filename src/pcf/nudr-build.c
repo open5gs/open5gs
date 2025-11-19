@@ -51,7 +51,7 @@ ogs_sbi_request_t *pcf_nudr_dr_build_query_sm_data(
     ogs_sbi_request_t *request = NULL;
 
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(pcf_ue);
 
     memset(&message, 0, sizeof(message));

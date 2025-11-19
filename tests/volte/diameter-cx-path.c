@@ -52,6 +52,11 @@ static void test_cx_lia_cb(void *data, struct msg **msg);
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
+    if (!sess_data) {
+        ogs_error("No session state");
+        return;
+    }
+
     if (sess_data->user_name)
         ogs_free(sess_data->user_name);
     if (sess_data->public_identity)
@@ -205,9 +210,9 @@ void test_cx_send_uar(test_ue_t *test_ue, int id_type)
     ogs_assert(ret == 0);
 
     /* Increment the counter */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_sent++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    ogs_diam_stats_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 }
 
 /* Callback for incoming User-Authorization-Answer messages */
@@ -295,30 +300,30 @@ static void test_cx_uaa_cb(void *data, struct msg **msg)
     ogs_assert(!err && exp_err);
 
     /* Free the message */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
     dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (ogs_diam_logger_self()->stats.nb_recv) {
+    if (ogs_diam_stats_self()->stats.nb_recv) {
         /* Ponderate in the avg */
-        ogs_diam_logger_self()->stats.avg = (ogs_diam_logger_self()->stats.avg *
-            ogs_diam_logger_self()->stats.nb_recv + dur) /
-            (ogs_diam_logger_self()->stats.nb_recv + 1);
+        ogs_diam_stats_self()->stats.avg = (ogs_diam_stats_self()->stats.avg *
+            ogs_diam_stats_self()->stats.nb_recv + dur) /
+            (ogs_diam_stats_self()->stats.nb_recv + 1);
         /* Min, max */
-        if (dur < ogs_diam_logger_self()->stats.shortest)
-            ogs_diam_logger_self()->stats.shortest = dur;
-        if (dur > ogs_diam_logger_self()->stats.longest)
-            ogs_diam_logger_self()->stats.longest = dur;
+        if (dur < ogs_diam_stats_self()->stats.shortest)
+            ogs_diam_stats_self()->stats.shortest = dur;
+        if (dur > ogs_diam_stats_self()->stats.longest)
+            ogs_diam_stats_self()->stats.longest = dur;
     } else {
-        ogs_diam_logger_self()->stats.shortest = dur;
-        ogs_diam_logger_self()->stats.longest = dur;
-        ogs_diam_logger_self()->stats.avg = dur;
+        ogs_diam_stats_self()->stats.shortest = dur;
+        ogs_diam_stats_self()->stats.longest = dur;
+        ogs_diam_stats_self()->stats.avg = dur;
     }
     if (error)
-        ogs_diam_logger_self()->stats.nb_errs++;
+        ogs_diam_stats_self()->stats.nb_errs++;
     else
-        ogs_diam_logger_self()->stats.nb_recv++;
+        ogs_diam_stats_self()->stats.nb_recv++;
 
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
     /* Display how long it took */
     if (ts.tv_nsec > sess_data->ts.tv_nsec)
@@ -526,9 +531,9 @@ static void test_cx_send_mar(struct sess_state *sess_data)
     ogs_assert(ret == 0);
 
     /* Increment the counter */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_sent++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    ogs_diam_stats_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 }
 
 /* Callback for incoming Multimedia-Auth-Answer messages */
@@ -616,30 +621,30 @@ static void test_cx_maa_cb(void *data, struct msg **msg)
     ogs_assert(err && !exp_err && result_code == ER_DIAMETER_SUCCESS);
 
     /* Free the message */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
     dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (ogs_diam_logger_self()->stats.nb_recv) {
+    if (ogs_diam_stats_self()->stats.nb_recv) {
         /* Ponderate in the avg */
-        ogs_diam_logger_self()->stats.avg = (ogs_diam_logger_self()->stats.avg *
-            ogs_diam_logger_self()->stats.nb_recv + dur) /
-            (ogs_diam_logger_self()->stats.nb_recv + 1);
+        ogs_diam_stats_self()->stats.avg = (ogs_diam_stats_self()->stats.avg *
+            ogs_diam_stats_self()->stats.nb_recv + dur) /
+            (ogs_diam_stats_self()->stats.nb_recv + 1);
         /* Min, max */
-        if (dur < ogs_diam_logger_self()->stats.shortest)
-            ogs_diam_logger_self()->stats.shortest = dur;
-        if (dur > ogs_diam_logger_self()->stats.longest)
-            ogs_diam_logger_self()->stats.longest = dur;
+        if (dur < ogs_diam_stats_self()->stats.shortest)
+            ogs_diam_stats_self()->stats.shortest = dur;
+        if (dur > ogs_diam_stats_self()->stats.longest)
+            ogs_diam_stats_self()->stats.longest = dur;
     } else {
-        ogs_diam_logger_self()->stats.shortest = dur;
-        ogs_diam_logger_self()->stats.longest = dur;
-        ogs_diam_logger_self()->stats.avg = dur;
+        ogs_diam_stats_self()->stats.shortest = dur;
+        ogs_diam_stats_self()->stats.longest = dur;
+        ogs_diam_stats_self()->stats.avg = dur;
     }
     if (error)
-        ogs_diam_logger_self()->stats.nb_errs++;
+        ogs_diam_stats_self()->stats.nb_errs++;
     else
-        ogs_diam_logger_self()->stats.nb_recv++;
+        ogs_diam_stats_self()->stats.nb_recv++;
 
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
     /* Display how long it took */
     if (ts.tv_nsec > sess_data->ts.tv_nsec)
@@ -809,9 +814,9 @@ static void test_cx_send_sar(struct sess_state *sess_data)
     ogs_assert(ret == 0);
 
     /* Increment the counter */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_sent++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    ogs_diam_stats_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 }
 
 /* Callback for incoming Server-Assignment-Answer messages */
@@ -899,30 +904,30 @@ static void test_cx_saa_cb(void *data, struct msg **msg)
     ogs_assert(err && !exp_err && result_code == ER_DIAMETER_SUCCESS);
 
     /* Free the message */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
     dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (ogs_diam_logger_self()->stats.nb_recv) {
+    if (ogs_diam_stats_self()->stats.nb_recv) {
         /* Ponderate in the avg */
-        ogs_diam_logger_self()->stats.avg = (ogs_diam_logger_self()->stats.avg *
-            ogs_diam_logger_self()->stats.nb_recv + dur) /
-            (ogs_diam_logger_self()->stats.nb_recv + 1);
+        ogs_diam_stats_self()->stats.avg = (ogs_diam_stats_self()->stats.avg *
+            ogs_diam_stats_self()->stats.nb_recv + dur) /
+            (ogs_diam_stats_self()->stats.nb_recv + 1);
         /* Min, max */
-        if (dur < ogs_diam_logger_self()->stats.shortest)
-            ogs_diam_logger_self()->stats.shortest = dur;
-        if (dur > ogs_diam_logger_self()->stats.longest)
-            ogs_diam_logger_self()->stats.longest = dur;
+        if (dur < ogs_diam_stats_self()->stats.shortest)
+            ogs_diam_stats_self()->stats.shortest = dur;
+        if (dur > ogs_diam_stats_self()->stats.longest)
+            ogs_diam_stats_self()->stats.longest = dur;
     } else {
-        ogs_diam_logger_self()->stats.shortest = dur;
-        ogs_diam_logger_self()->stats.longest = dur;
-        ogs_diam_logger_self()->stats.avg = dur;
+        ogs_diam_stats_self()->stats.shortest = dur;
+        ogs_diam_stats_self()->stats.longest = dur;
+        ogs_diam_stats_self()->stats.avg = dur;
     }
     if (error)
-        ogs_diam_logger_self()->stats.nb_errs++;
+        ogs_diam_stats_self()->stats.nb_errs++;
     else
-        ogs_diam_logger_self()->stats.nb_recv++;
+        ogs_diam_stats_self()->stats.nb_recv++;
 
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
     /* Display how long it took */
     if (ts.tv_nsec > sess_data->ts.tv_nsec)
@@ -1051,9 +1056,9 @@ static void test_cx_send_lir(struct sess_state *sess_data)
     ogs_assert(ret == 0);
 
     /* Increment the counter */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_sent++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    ogs_diam_stats_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
     ogs_free(public_identity);
 }
@@ -1143,30 +1148,30 @@ static void test_cx_lia_cb(void *data, struct msg **msg)
     ogs_assert(err && !exp_err && result_code == ER_DIAMETER_SUCCESS);
 
     /* Free the message */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
     dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (ogs_diam_logger_self()->stats.nb_recv) {
+    if (ogs_diam_stats_self()->stats.nb_recv) {
         /* Ponderate in the avg */
-        ogs_diam_logger_self()->stats.avg = (ogs_diam_logger_self()->stats.avg *
-            ogs_diam_logger_self()->stats.nb_recv + dur) /
-            (ogs_diam_logger_self()->stats.nb_recv + 1);
+        ogs_diam_stats_self()->stats.avg = (ogs_diam_stats_self()->stats.avg *
+            ogs_diam_stats_self()->stats.nb_recv + dur) /
+            (ogs_diam_stats_self()->stats.nb_recv + 1);
         /* Min, max */
-        if (dur < ogs_diam_logger_self()->stats.shortest)
-            ogs_diam_logger_self()->stats.shortest = dur;
-        if (dur > ogs_diam_logger_self()->stats.longest)
-            ogs_diam_logger_self()->stats.longest = dur;
+        if (dur < ogs_diam_stats_self()->stats.shortest)
+            ogs_diam_stats_self()->stats.shortest = dur;
+        if (dur > ogs_diam_stats_self()->stats.longest)
+            ogs_diam_stats_self()->stats.longest = dur;
     } else {
-        ogs_diam_logger_self()->stats.shortest = dur;
-        ogs_diam_logger_self()->stats.longest = dur;
-        ogs_diam_logger_self()->stats.avg = dur;
+        ogs_diam_stats_self()->stats.shortest = dur;
+        ogs_diam_stats_self()->stats.longest = dur;
+        ogs_diam_stats_self()->stats.avg = dur;
     }
     if (error)
-        ogs_diam_logger_self()->stats.nb_errs++;
+        ogs_diam_stats_self()->stats.nb_errs++;
     else
-        ogs_diam_logger_self()->stats.nb_recv++;
+        ogs_diam_stats_self()->stats.nb_recv++;
 
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
     /* Display how long it took */
     if (ts.tv_nsec > sess_data->ts.tv_nsec)

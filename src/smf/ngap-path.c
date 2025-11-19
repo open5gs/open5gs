@@ -30,10 +30,17 @@ void ngap_send_to_n2sm(smf_sess_t *sess,
 
     e = smf_event_new(SMF_EVT_NGAP_MESSAGE);
     ogs_assert(e);
-    e->sess = sess;
-    e->h.sbi.data = stream;
+    e->sess_id = sess->id;
     e->pkbuf = pkbuf;
     e->ngap.type = type;
+
+    if (stream) {
+        ogs_pool_id_t stream_id = ogs_sbi_id_from_stream(stream);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+        e->h.sbi.data = OGS_UINT_TO_POINTER(stream_id);;
+    }
+
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);

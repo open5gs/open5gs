@@ -1,4 +1,4 @@
-/*
+/* 3GPP TS 29.273 section 9
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
@@ -26,7 +26,7 @@ struct sess_state {
     smf_sess_t *sess;
     os0_t       s6b_sid;             /* S6B Session-Id */
 
-    ogs_gtp_xact_t *xact;
+    ogs_pool_id_t xact_id;
 
     struct timespec ts; /* Time of sending the message */
 };
@@ -64,6 +64,11 @@ static __inline__ struct sess_state *new_state(os0_t sid)
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
+    if (!sess_data) {
+        ogs_error("No session state");
+        return;
+    }
+
     if (sess_data->s6b_sid)
         ogs_free(sess_data->s6b_sid);
 
@@ -102,7 +107,7 @@ void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact)
 
     ogs_assert(xact);
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_debug("[AA-Request]");
@@ -165,17 +170,34 @@ void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact)
 
     /* Update session state */
     sess_data->sess = sess;
-    sess_data->xact = xact;
+    sess_data->xact_id = xact ? xact->id : OGS_INVALID_POOL_ID;
 
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
     ogs_assert(ret == 0);
 
+    /* Set the Destination-Host AVP */
+    if (sess->aaa_server_identifier.name) {
+        ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
+        ogs_assert(ret == 0);
+        val.os.data = (unsigned char *)sess->aaa_server_identifier.name;
+        val.os.len  = strlen(sess->aaa_server_identifier.name);
+        ret = fd_msg_avp_setvalue(avp, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);
+    }
+
     /* Set the Destination-Realm AVP */
     ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    if (sess->aaa_server_identifier.realm) {
+        val.os.data = (unsigned char *)(sess->aaa_server_identifier.realm);
+        val.os.len  = strlen(sess->aaa_server_identifier.realm);
+    } else {
+        val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
+        val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    }
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
@@ -324,9 +346,9 @@ void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact)
     ogs_assert(ret == 0);
 
     /* Increment the counter */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_sent++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    ogs_diam_stats_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
     ogs_free(user_name);
     ogs_free(visited_network_identifier);
@@ -344,11 +366,10 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
     unsigned long dur;
     int error = 0;
     int new;
-    int result_code = 0;
-    int exp_result_code = 0;
 
     smf_sess_t *sess = NULL;
-    ogs_gtp_xact_t *xact = NULL;
+    smf_event_t *e = NULL;
+    ogs_diam_s6b_message_t *s6b_message = NULL;
 
     ogs_debug("[AA-Answer]");
 
@@ -364,15 +385,21 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
 
     ret = fd_sess_state_retrieve(smf_s6b_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        return;
+    }
     ogs_assert((void *)sess_data == data);
 
     ogs_debug("    Retrieve its data: [%s]", sess_data->s6b_sid);
 
     sess = sess_data->sess;
     ogs_assert(sess);
-    xact = sess_data->xact;
-    ogs_assert(xact);
+
+    s6b_message = ogs_calloc(1, sizeof(ogs_diam_s6b_message_t));
+    ogs_assert(s6b_message);
+    /* Set Session Termination Command */
+    s6b_message->cmd_code = OGS_DIAM_S6B_CMD_AUTHENTICATION_AUTHORIZATION;
 
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
@@ -380,9 +407,9 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
-        result_code = hdr->avp_value->i32;
-        if (result_code != ER_DIAMETER_SUCCESS) {
-            ogs_error("Result Code: %d", result_code);
+        s6b_message->result_code = hdr->avp_value->i32;
+        if (s6b_message->result_code != ER_DIAMETER_SUCCESS) {
+            ogs_error("Result Code: %d", s6b_message->result_code);
             error++;
         }
     } else {
@@ -397,8 +424,8 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
             if (avpch1) {
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
                 ogs_assert(ret == 0);
-                exp_result_code = hdr->avp_value->i32;
-                ogs_error("Experimental Result Code: %d", exp_result_code);
+                s6b_message->result_code = hdr->avp_value->i32;
+                ogs_error("Experimental Result Code: %d", s6b_message->result_code);
             }
         } else {
             ogs_error("no Result-Code");
@@ -431,36 +458,49 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
         error++;
     }
 
-    if (!error) {
-        smf_gx_send_ccr(sess, xact,
-            OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
+    e = smf_event_new(SMF_EVT_S6B_MESSAGE);
+    ogs_assert(e);
+
+    if (error && s6b_message->result_code == ER_DIAMETER_SUCCESS)
+            s6b_message->result_code = error;
+
+    e->sess_id = sess->id;
+    e->gtp_xact_id = sess_data->xact_id;
+    e->s6b_message = s6b_message;
+    ret = ogs_queue_push(ogs_app()->queue, e);
+    if (ret != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)ret);
+        ogs_free(s6b_message);
+        ogs_event_free(e);
+    } else {
+        ogs_pollset_notify(ogs_app()->pollset);
     }
 
     /* Free the message */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
     dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (ogs_diam_logger_self()->stats.nb_recv) {
+    if (ogs_diam_stats_self()->stats.nb_recv) {
         /* Ponderate in the avg */
-        ogs_diam_logger_self()->stats.avg = (ogs_diam_logger_self()->stats.avg *
-            ogs_diam_logger_self()->stats.nb_recv + dur) /
-            (ogs_diam_logger_self()->stats.nb_recv + 1);
+        ogs_diam_stats_self()->stats.avg = (ogs_diam_stats_self()->stats.avg *
+            ogs_diam_stats_self()->stats.nb_recv + dur) /
+            (ogs_diam_stats_self()->stats.nb_recv + 1);
         /* Min, max */
-        if (dur < ogs_diam_logger_self()->stats.shortest)
-            ogs_diam_logger_self()->stats.shortest = dur;
-        if (dur > ogs_diam_logger_self()->stats.longest)
-            ogs_diam_logger_self()->stats.longest = dur;
+        if (dur < ogs_diam_stats_self()->stats.shortest)
+            ogs_diam_stats_self()->stats.shortest = dur;
+        if (dur > ogs_diam_stats_self()->stats.longest)
+            ogs_diam_stats_self()->stats.longest = dur;
     } else {
-        ogs_diam_logger_self()->stats.shortest = dur;
-        ogs_diam_logger_self()->stats.longest = dur;
-        ogs_diam_logger_self()->stats.avg = dur;
+        ogs_diam_stats_self()->stats.shortest = dur;
+        ogs_diam_stats_self()->stats.longest = dur;
+        ogs_diam_stats_self()->stats.avg = dur;
     }
     if (error)
-        ogs_diam_logger_self()->stats.nb_errs++;
+        ogs_diam_stats_self()->stats.nb_errs++;
     else
-        ogs_diam_logger_self()->stats.nb_recv++;
+        ogs_diam_stats_self()->stats.nb_recv++;
 
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
     /* Display how long it took */
     if (ts.tv_nsec > sess_data->ts.tv_nsec)
@@ -498,9 +538,8 @@ void smf_s6b_send_str(smf_sess_t *sess, ogs_gtp_xact_t *xact, uint32_t cause)
     smf_ue_t *smf_ue = NULL;
     char *user_name = NULL;
 
-    //ogs_assert(xact);
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_debug("[Session-Termination-Request]");
@@ -534,12 +573,15 @@ void smf_s6b_send_str(smf_sess_t *sess, ogs_gtp_xact_t *xact, uint32_t cause)
     /* Retrieve session state in this session */
     ret = fd_sess_state_retrieve(smf_s6b_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        return;
+    }
     ogs_debug("    Retrieve session: [%s]", sess_data->s6b_sid);
 
     /* Update session state */
     sess_data->sess = sess;
-    sess_data->xact = xact;
+    sess_data->xact_id = xact ? xact->id : OGS_INVALID_POOL_ID;
 
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
@@ -603,9 +645,9 @@ void smf_s6b_send_str(smf_sess_t *sess, ogs_gtp_xact_t *xact, uint32_t cause)
     ogs_assert(ret == 0);
 
     /* Increment the counter */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_sent++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    ogs_diam_stats_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
     ogs_free(user_name);
 }
@@ -642,12 +684,16 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
 
     ret = fd_sess_state_retrieve(smf_s6b_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        return;
+    }
     ogs_assert((void *)sess_data == data);
 
     ogs_debug("    Retrieve its data: [%s]", sess_data->s6b_sid);
 
     sess = sess_data->sess;
+    ogs_assert(sess);
 
     s6b_message = ogs_calloc(1, sizeof(ogs_diam_s6b_message_t));
     ogs_assert(s6b_message);
@@ -718,7 +764,7 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
         e = smf_event_new(SMF_EVT_S6B_MESSAGE);
         ogs_assert(e);
 
-        e->sess = sess;
+        e->sess_id = sess->id;
         e->s6b_message = s6b_message;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
@@ -733,30 +779,30 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
     }
 
     /* Free the message */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
     dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (ogs_diam_logger_self()->stats.nb_recv) {
+    if (ogs_diam_stats_self()->stats.nb_recv) {
         /* Ponderate in the avg */
-        ogs_diam_logger_self()->stats.avg = (ogs_diam_logger_self()->stats.avg *
-            ogs_diam_logger_self()->stats.nb_recv + dur) /
-            (ogs_diam_logger_self()->stats.nb_recv + 1);
+        ogs_diam_stats_self()->stats.avg = (ogs_diam_stats_self()->stats.avg *
+            ogs_diam_stats_self()->stats.nb_recv + dur) /
+            (ogs_diam_stats_self()->stats.nb_recv + 1);
         /* Min, max */
-        if (dur < ogs_diam_logger_self()->stats.shortest)
-            ogs_diam_logger_self()->stats.shortest = dur;
-        if (dur > ogs_diam_logger_self()->stats.longest)
-            ogs_diam_logger_self()->stats.longest = dur;
+        if (dur < ogs_diam_stats_self()->stats.shortest)
+            ogs_diam_stats_self()->stats.shortest = dur;
+        if (dur > ogs_diam_stats_self()->stats.longest)
+            ogs_diam_stats_self()->stats.longest = dur;
     } else {
-        ogs_diam_logger_self()->stats.shortest = dur;
-        ogs_diam_logger_self()->stats.longest = dur;
-        ogs_diam_logger_self()->stats.avg = dur;
+        ogs_diam_stats_self()->stats.shortest = dur;
+        ogs_diam_stats_self()->stats.longest = dur;
+        ogs_diam_stats_self()->stats.avg = dur;
     }
     if (error)
-        ogs_diam_logger_self()->stats.nb_errs++;
+        ogs_diam_stats_self()->stats.nb_errs++;
     else
-        ogs_diam_logger_self()->stats.nb_recv++;
+        ogs_diam_stats_self()->stats.nb_recv++;
 
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
 
     /* Display how long it took */
     if (ts.tv_nsec > sess_data->ts.tv_nsec)

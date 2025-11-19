@@ -51,7 +51,8 @@ bool pcf_npcf_am_policy_control_handle_create(pcf_ue_t *pcf_ue,
         ogs_error("[%s] No PolicyAssociationRequest", pcf_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "[%s] No PolicyAssociationRequest", pcf_ue->supi));
+                message, "[%s] No PolicyAssociationRequest", pcf_ue->supi,
+                NULL));
         return false;
     }
 
@@ -59,7 +60,7 @@ bool pcf_npcf_am_policy_control_handle_create(pcf_ue_t *pcf_ue,
         ogs_error("[%s] No notificationUri", pcf_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No notificationUri", pcf_ue->supi));
+                message, "No notificationUri", pcf_ue->supi, NULL));
         return false;
     }
 
@@ -67,7 +68,7 @@ bool pcf_npcf_am_policy_control_handle_create(pcf_ue_t *pcf_ue,
         ogs_error("[%s] No supi", pcf_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No supi", pcf_ue->supi));
+                message, "No supi", pcf_ue->supi, NULL));
         return false;
     }
 
@@ -75,7 +76,7 @@ bool pcf_npcf_am_policy_control_handle_create(pcf_ue_t *pcf_ue,
         ogs_error("[%s] No suppFeat", pcf_ue->supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No suppFeat", pcf_ue->supi));
+                message, "No suppFeat", pcf_ue->supi, NULL));
         return false;
     }
 
@@ -86,7 +87,7 @@ bool pcf_npcf_am_policy_control_handle_create(pcf_ue_t *pcf_ue,
                 pcf_ue->supi, PolicyAssociationRequest->notification_uri);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "[%s] Invalid URI", pcf_ue->supi));
+                message, "[%s] Invalid URI", pcf_ue->supi, NULL));
         return false;
     }
 
@@ -117,7 +118,8 @@ bool pcf_npcf_am_policy_control_handle_create(pcf_ue_t *pcf_ue,
     ogs_freeaddrinfo(addr6);
 
     supported_features =
-        ogs_uint64_from_string(PolicyAssociationRequest->supp_feat);
+        ogs_uint64_from_string_hexadecimal(
+                PolicyAssociationRequest->supp_feat);
     pcf_ue->am_policy_control_features &= supported_features;
 
     if (PolicyAssociationRequest->gpsi) {
@@ -234,7 +236,7 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
     char *home_network_domain = NULL;
 
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(stream);
     ogs_assert(message);
 
@@ -298,13 +300,6 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
-    if (!sliceInfo->sst) {
-        strerror = ogs_msprintf("[%s:%d] No sliceInfo->sst",
-                pcf_ue->supi, sess->psi);
-        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-        goto cleanup;
-    }
-
     servingNetwork = SmPolicyContextData->serving_network;
     if (servingNetwork) {
         if (!servingNetwork->mcc) {
@@ -334,7 +329,8 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
 
     if (SmPolicyContextData->supp_feat) {
         uint64_t supported_features =
-            ogs_uint64_from_string(SmPolicyContextData->supp_feat);
+            ogs_uint64_from_string_hexadecimal(
+                    SmPolicyContextData->supp_feat);
         sess->smpolicycontrol_features &= supported_features;
     } else {
         sess->smpolicycontrol_features = 0;
@@ -499,36 +495,12 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
 
     if (ogs_sbi_supi_in_vplmn(pcf_ue->supi) == true) {
         /* Visited PLMN */
-        ogs_sbi_nf_instance_t *nf_instance = NULL;
-        ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
-
-        service_type = OGS_SBI_SERVICE_TYPE_NPCF_POLICYAUTHORIZATION;
-
-        nf_instance = sess->sbi.service_type_array[service_type].nf_instance;
-        if (!nf_instance) {
-            OpenAPI_nf_type_e requester_nf_type =
-                        NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);
-            ogs_assert(requester_nf_type);
-            nf_instance = ogs_sbi_nf_instance_find_by_service_type(
-                            service_type, requester_nf_type);
-            if (nf_instance)
-                OGS_SBI_SETUP_NF_INSTANCE(
-                        sess->sbi.service_type_array[service_type],
-                        nf_instance);
-        }
-
-        if (nf_instance) {
-            r = pcf_sess_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
-                        pcf_nbsf_management_build_register,
-                        sess, stream, nf_instance);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-        } else {
-            r = pcf_sess_sbi_discover_only(sess, stream, service_type);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-        }
+        r = pcf_sess_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
+                    pcf_nbsf_management_build_register,
+                    sess, stream, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
 
         return (r == OGS_OK);
     } else {
@@ -546,8 +518,21 @@ cleanup:
     ogs_assert(status);
     ogs_assert(strerror);
     ogs_error("%s", strerror);
+    /*
+     * TS29.512
+     * 4.2.2.2 SM Policy Association establishment 
+     *
+     * If the PCF is, due to incomplete, erroneous or missing
+     * information (e.g. QoS, RAT type, subscriber information)
+     * not able to provision a policy decision as response to
+     * the request for PCC rules by the SMF, the PCF may reject
+     * the request and include in an HTTP "400 Bad Request"
+     * response message the "cause" attribute of the ProblemDetails
+     * data structure set to "ERROR_INITIAL_PARAMETERS". 
+     */
     ogs_assert(true ==
-        ogs_sbi_server_send_error(stream, status, message, strerror, NULL));
+            ogs_sbi_server_send_error(stream, status, message,
+                    strerror, NULL, "ERROR_INITIAL_PARAMETERS"));
     ogs_free(strerror);
 
     return false;
@@ -565,7 +550,7 @@ bool pcf_npcf_smpolicycontrol_handle_delete(pcf_sess_t *sess,
     OpenAPI_sm_policy_delete_data_t *SmPolicyDeleteData = NULL;
 
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(stream);
     ogs_assert(message);
 
@@ -583,19 +568,17 @@ bool pcf_npcf_smpolicycontrol_handle_delete(pcf_sess_t *sess,
 
     if (pcf_sessions_number_by_snssai_and_dnn(
                 pcf_ue, &sess->s_nssai, sess->dnn) > 1) {
-        ogs_sbi_message_t sendmsg;
-        memset(&sendmsg, 0, sizeof(sendmsg));
-
-        ogs_sbi_response_t *response = ogs_sbi_build_response(
-                &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
-        ogs_assert(response);
-        ogs_assert(true == ogs_sbi_server_send_response(stream, response));
-    } else {
+        ogs_expect(true ==
+                ogs_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT));
+    } else if (sess->binding.resource_uri) {
         r = pcf_sess_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
                 pcf_nbsf_management_build_de_register, sess, stream, NULL);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
+    } else {
+        ogs_expect(true ==
+                ogs_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT));
     }
 
     return true;
@@ -605,7 +588,8 @@ cleanup:
     ogs_assert(strerror);
     ogs_error("%s", strerror);
     ogs_assert(true ==
-        ogs_sbi_server_send_error(stream, status, message, strerror, NULL));
+        ogs_sbi_server_send_error(stream, status, message, strerror, NULL,
+                NULL));
     ogs_free(strerror);
 
     return false;
@@ -665,7 +649,7 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     OpenAPI_lnode_t *node = NULL, *node2 = NULL, *node3 = NULL;
 
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(stream);
     ogs_assert(recvmsg);
 
@@ -721,7 +705,8 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
-    supported_features = ogs_uint64_from_string(AscReqData->supp_feat);
+    supported_features = ogs_uint64_from_string_hexadecimal(
+            AscReqData->supp_feat);
     sess->policyauthorization_features &= supported_features;
 
     if (sess->policyauthorization_features != supported_features) {
@@ -737,6 +722,15 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         if (MediaComponentMap) {
             MediaComponent = MediaComponentMap->value;
             if (MediaComponent) {
+                if (ims_data.num_of_media_component >=
+                        OGS_ARRAY_SIZE(ims_data.media_component)) {
+                    ogs_error("OVERFLOW ims_data.num_of_media_component "
+                            "[%d:%d:%d]",
+                            ims_data.num_of_media_component,
+                            OGS_MAX_NUM_OF_MEDIA_COMPONENT,
+                            (int)OGS_ARRAY_SIZE(ims_data.media_component));
+                    break;
+                }
                 media_component = &ims_data.
                     media_component[ims_data.num_of_media_component];
                 media_component->media_component_number =
@@ -764,6 +758,15 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
 
                 SubComponentList = MediaComponent->med_sub_comps;
                 OpenAPI_list_for_each(SubComponentList, node2) {
+                    if (media_component->num_of_sub >=
+                            OGS_ARRAY_SIZE(media_component->sub)) {
+                        ogs_error("OVERFLOW media_component->num_of_sub "
+                                "[%d:%d:%d]",
+                                media_component->num_of_sub,
+                                OGS_MAX_NUM_OF_MEDIA_SUB_COMPONENT,
+                                (int)OGS_ARRAY_SIZE(media_component->sub));
+                        break;
+                    }
                     sub = &media_component->sub[media_component->num_of_sub];
 
                     SubComponentMap = node2->data;
@@ -777,8 +780,15 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
                             OpenAPI_list_for_each(fDescList, node3) {
                                 ogs_flow_t *flow = NULL;
 
-                                ogs_assert(sub->num_of_flow <
-                                    OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT);
+                                if (sub->num_of_flow >=
+                                        OGS_ARRAY_SIZE(sub->flow)) {
+                                    ogs_error(
+                                        "OVERFLOW sub->num_of_flow [%d:%d:%d]",
+                                        sub->num_of_flow,
+                                        OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT,
+                                        (int)OGS_ARRAY_SIZE(sub->flow));
+                                    break;
+                                }
                                 flow = &sub->flow[sub->num_of_flow];
                                 if (node3->data) {
                                     flow->description = ogs_strdup(node3->data);
@@ -1071,7 +1081,8 @@ cleanup:
     ogs_assert(strerror);
     ogs_error("%s", strerror);
     ogs_assert(true ==
-        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL,
+                NULL));
     ogs_free(strerror);
 
     OpenAPI_list_for_each(PccRuleList, node) {
@@ -1129,7 +1140,7 @@ bool pcf_npcf_policyauthorization_handle_update(
 
     OpenAPI_list_t *SubComponentList = NULL;
     OpenAPI_map_t *SubComponentMap = NULL;
-    OpenAPI_media_sub_component_t *SubComponent = NULL;
+    OpenAPI_media_sub_component_rm_t *SubComponent = NULL;
 
     OpenAPI_list_t *fDescList = NULL;
 
@@ -1146,7 +1157,7 @@ bool pcf_npcf_policyauthorization_handle_update(
     OpenAPI_lnode_t *node = NULL, *node2 = NULL, *node3 = NULL;
 
     ogs_assert(sess);
-    pcf_ue = sess->pcf_ue;
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
     ogs_assert(app_session);
     ogs_assert(stream);
     ogs_assert(recvmsg);
@@ -1184,6 +1195,15 @@ bool pcf_npcf_policyauthorization_handle_update(
         if (MediaComponentMap) {
             MediaComponent = MediaComponentMap->value;
             if (MediaComponent) {
+                if (ims_data.num_of_media_component >=
+                        OGS_ARRAY_SIZE(ims_data.media_component)) {
+                    ogs_error("OVERFLOW ims_data.num_of_media_component "
+                            "[%d:%d:%d]",
+                            ims_data.num_of_media_component,
+                            OGS_MAX_NUM_OF_MEDIA_COMPONENT,
+                            (int)OGS_ARRAY_SIZE(ims_data.media_component));
+                    break;
+                }
                 media_component = &ims_data.
                     media_component[ims_data.num_of_media_component];
 
@@ -1212,6 +1232,15 @@ bool pcf_npcf_policyauthorization_handle_update(
 
                 SubComponentList = MediaComponent->med_sub_comps;
                 OpenAPI_list_for_each(SubComponentList, node2) {
+                    if (media_component->num_of_sub >=
+                            OGS_ARRAY_SIZE(media_component->sub)) {
+                        ogs_error("OVERFLOW media_component->num_of_sub "
+                                "[%d:%d:%d]",
+                                media_component->num_of_sub,
+                                OGS_MAX_NUM_OF_MEDIA_SUB_COMPONENT,
+                                (int)OGS_ARRAY_SIZE(media_component->sub));
+                        break;
+                    }
                     sub = &media_component->sub[media_component->num_of_sub];
 
                     SubComponentMap = node2->data;
@@ -1225,8 +1254,15 @@ bool pcf_npcf_policyauthorization_handle_update(
                             OpenAPI_list_for_each(fDescList, node3) {
                                 ogs_flow_t *flow = NULL;
 
-                                ogs_assert(sub->num_of_flow <
-                                    OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT);
+                                if (sub->num_of_flow >=
+                                        OGS_ARRAY_SIZE(sub->flow)) {
+                                    ogs_error(
+                                        "OVERFLOW sub->num_of_flow [%d:%d:%d]",
+                                        sub->num_of_flow,
+                                        OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT,
+                                        (int)OGS_ARRAY_SIZE(sub->flow));
+                                    break;
+                                }
                                 flow = &sub->flow[sub->num_of_flow];
                                 if (node3->data) {
                                     flow->description = ogs_strdup(node3->data);
@@ -1483,7 +1519,8 @@ cleanup:
     ogs_assert(strerror);
     ogs_error("%s", strerror);
     ogs_assert(true ==
-        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror,
+                NULL, NULL));
     ogs_free(strerror);
 
     OpenAPI_list_for_each(PccRuleList, node) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -26,8 +26,9 @@
 extern "C" {
 #endif
 
-void mme_send_delete_session_or_detach(mme_ue_t *mme_ue);
-void mme_send_delete_session_or_mme_ue_context_release(mme_ue_t *mme_ue);
+void mme_send_delete_session_or_detach(enb_ue_t *enb_ue, mme_ue_t *mme_ue);
+void mme_send_delete_session_or_mme_ue_context_release(
+        enb_ue_t *enb_ue, mme_ue_t *mme_ue);
 void mme_send_release_access_bearer_or_ue_context_release(enb_ue_t *enb_ue);
 
 void mme_send_after_paging(mme_ue_t *mme_ue, bool failed);

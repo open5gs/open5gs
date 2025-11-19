@@ -39,12 +39,19 @@ int ogs_dbi_auth_info(char *supi, ogs_dbi_auth_info_t *auth_info)
     ogs_assert(auth_info);
 
     supi_type = ogs_id_get_type(supi);
-    ogs_assert(supi_type);
+    if (!supi_type) {
+        ogs_error("Invalid supi=%s", supi);
+        return OGS_ERROR;
+    }
     supi_id = ogs_id_get_value(supi);
-    ogs_assert(supi_id);
+    if (!supi_id) {
+        ogs_error("Invalid supi=%s", supi);
+        ogs_free(supi_type);
+        return OGS_ERROR;
+    }
 
     query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 5
+#if MONGOC_CHECK_VERSION(1, 5, 0)
     cursor = mongoc_collection_find_with_opts(
             ogs_mongoc()->collection.subscriber, query, NULL, NULL);
 #else
@@ -315,15 +322,10 @@ int ogs_dbi_subscription_data(char *supi,
     char *supi_type = NULL;
     char *supi_id = NULL;
 
-    ogs_subscription_data_t zero_data;
-
     ogs_assert(subscription_data);
     ogs_assert(supi);
 
-    memset(&zero_data, 0, sizeof(zero_data));
-
-    /* subscription_data should be initialized to zero */
-    ogs_assert(memcmp(subscription_data, &zero_data, sizeof(zero_data)) == 0);
+    memset(subscription_data, 0, sizeof(*subscription_data));
 
     supi_type = ogs_id_get_type(supi);
     ogs_assert(supi_type);
@@ -331,7 +333,7 @@ int ogs_dbi_subscription_data(char *supi,
     ogs_assert(supi_id);
 
     query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 5
+#if MONGOC_CHECK_VERSION(1, 5, 0)
     cursor = mongoc_collection_find_with_opts(
             ogs_mongoc()->collection.subscriber, query, NULL, NULL);
 #else
@@ -464,6 +466,7 @@ int ogs_dbi_subscription_data(char *supi,
             bson_iter_recurse(&iter, &child1_iter);
             while (bson_iter_next(&child1_iter)) {
                 ogs_slice_data_t *slice_data = NULL;
+                bool sst_presence = false;
 
                 ogs_assert(
                         subscription_data->num_of_slice < OGS_MAX_NUM_OF_SLICE);
@@ -481,6 +484,7 @@ int ogs_dbi_subscription_data(char *supi,
                     if (!strcmp(child2_key, OGS_SST_STRING) &&
                         BSON_ITER_HOLDS_INT32(&child2_iter)) {
                         slice_data->s_nssai.sst = bson_iter_int32(&child2_iter);
+                        sst_presence = true;
                     } else if (!strcmp(child2_key, OGS_SD_STRING) &&
                         BSON_ITER_HOLDS_UTF8(&child2_iter)) {
                         utf8 = bson_iter_utf8(&child2_iter, &length);
@@ -792,6 +796,12 @@ int ogs_dbi_subscription_data(char *supi,
                         }
                     }
                 }
+
+                if (!sst_presence) {
+                    ogs_error("No SST");
+                    continue;
+                }
+
                 subscription_data->num_of_slice++;
             }
         } else if (!strcmp(key, OGS_MME_HOST_STRING) &&

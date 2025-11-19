@@ -51,8 +51,10 @@ typedef void (xer_type_encoder_f)(void);
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+#include <jer_decoder.h>  /* Decoder of JER (JSON, text) */
 #include <jer_encoder.h>  /* Encoder into JER (JSON, text) */
 #else
+typedef void (jer_type_decoder_f)(void);
 typedef void (jer_type_encoder_f)(void);
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 
@@ -142,6 +144,16 @@ typedef int (asn_struct_compare_f)(
 		const void *struct_B);
 
 /*
+ * Copies struct B into struct A.
+ * Allocates memory for struct A, if necessary.
+ */
+typedef int (asn_struct_copy_f)(
+		const struct asn_TYPE_descriptor_s *type_descriptor,
+		void **struct_A,
+		const void *struct_B
+        );
+
+/*
  * Return the outmost tag of the type.
  * If the type is untagged CHOICE, the dynamic operation is performed.
  * NOTE: This function pointer type is only useful internally.
@@ -173,10 +185,12 @@ typedef struct asn_TYPE_operation_s {
     asn_struct_free_f *free_struct;     /* Free the structure */
     asn_struct_print_f *print_struct;   /* Human readable output */
     asn_struct_compare_f *compare_struct; /* Compare two structures */
+    asn_struct_copy_f *copy_struct;       /* Copy method */
     ber_type_decoder_f *ber_decoder;      /* Generic BER decoder */
     der_type_encoder_f *der_encoder;      /* Canonical DER encoder */
     xer_type_decoder_f *xer_decoder;      /* Generic XER decoder */
     xer_type_encoder_f *xer_encoder;      /* [Canonical] XER encoder */
+    jer_type_decoder_f *jer_decoder;      /* Generic JER encoder */
     jer_type_encoder_f *jer_encoder;      /* Generic JER encoder */
     oer_type_decoder_f *oer_decoder;      /* Generic OER decoder */
     oer_type_encoder_f *oer_encoder;      /* Canonical OER encoder */
@@ -287,6 +301,17 @@ typedef struct asn_TYPE_tag2member_s {
 int asn_fprint(FILE *stream, /* Destination stream descriptor */
                const asn_TYPE_descriptor_t *td, /* ASN.1 type descriptor */
                const void *struct_ptr);         /* Structure to be printed */
+
+/*
+ * Copies a source structure (struct_src) into destination structure 
+ * (struct_dst). Allocates memory for the destination structure, if necessary.
+ * RETURN VALUES:
+ *   0: Copy OK.
+ * 	-1: Problem copying the structure.
+ */
+int asn_copy(const asn_TYPE_descriptor_t *td, /* ASN.1 type descriptor */
+             void **struct_dst,               /* Structure to be populated */
+             const void *struct_src);         /* Structure to be copied */
 
 #ifdef __cplusplus
 }

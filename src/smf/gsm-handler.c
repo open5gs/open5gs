@@ -212,7 +212,7 @@ int gsm_handle_pdu_session_modification_request(
     ogs_pkbuf_t *n1smbuf = NULL;
 
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
     ogs_assert(stream);
     ogs_assert(pdu_session_modification_request);
@@ -229,7 +229,11 @@ int gsm_handle_pdu_session_modification_request(
         int num_of_rule = 0;
 
         num_of_rule = ogs_nas_parse_qos_rules(qos_rule, requested_qos_rules);
-        ogs_assert(num_of_rule > 0);
+        if (!num_of_rule) {
+            ogs_error("[%s:%d] Invalid modification request",
+                    smf_ue->supi, sess->psi);
+            goto cleanup;
+        }
 
         for (i = 0; i < num_of_rule; i++) {
             qos_flow = smf_qos_flow_find_by_qfi(
@@ -248,86 +252,20 @@ int gsm_handle_pdu_session_modification_request(
                 qos_flow_find_or_add(&sess->qos_flow_to_modify_list,
                                         qos_flow, to_modify_node);
             } else if (qos_rule[i].code ==
-                OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_PACKET_FILTERS) {
-                for (j = 0; j < qos_rule[i].num_of_packet_filter &&
-                            j < OGS_MAX_NUM_OF_FLOW_IN_NAS; j++) {
-
-                    pf = smf_pf_find_by_id(
-                            qos_flow, qos_rule[i].pf[j].identifier+1);
-                    if (pf) {
-                        ogs_assert(
-                            reconfigure_packet_filter(pf, &qos_rule[i], i) > 0);
-            /*
-             * Refer to lib/ipfw/ogs-ipfw.h
-             * Issue #338
-             *
-             * <DOWNLINK>
-             * TFT : Local <UE_IP> <UE_PORT> REMOTE <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
-             * -->
-             * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
-             *
-             * <UPLINK>
-             * TFT : Local <UE_IP> <UE_PORT> REMOTE <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
-             * -->
-             * RULE : Source <UE_IP> <UE_PORT> Destination <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
-             */
-                        if (pf->direction == OGS_FLOW_DOWNLINK_ONLY)
-                            ogs_ipfw_rule_swap(&pf->ipfw_rule);
-
-                        if (pf->flow_description)
-                            ogs_free(pf->flow_description);
-
-            /*
-             * Issue #338
-             *
-             * <DOWNLINK>
-             * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
-             * -->
-             * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
-             * PFCP : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
-             *
-             * <UPLINK>
-             * RULE : Source <UE_IP> <UE_PORT> Destination <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
-             * -->
-             * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
-             * PFCP : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
-             */
-                        if (pf->direction == OGS_FLOW_UPLINK_ONLY) {
-                            ogs_ipfw_rule_t tmp;
-                            ogs_ipfw_copy_and_swap(&tmp, &pf->ipfw_rule);
-                            pf->flow_description =
-                                ogs_ipfw_encode_flow_description(&tmp);
-                            ogs_assert(pf->flow_description);
-                        } else {
-                            pf->flow_description =
-                                ogs_ipfw_encode_flow_description(
-                                        &pf->ipfw_rule);
-                            ogs_assert(pf->flow_description);
-                        }
-
-                        pfcp_flags |= OGS_PFCP_MODIFY_TFT_REPLACE;
-                        qos_flow_find_or_add(&sess->qos_flow_to_modify_list,
-                                                qos_flow, to_modify_node);
-
-                        ogs_list_add(
-                                &qos_flow->pf_to_add_list, &pf->to_add_node);
-                    }
-                }
-            } else if (qos_rule[i].code ==
                 OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE ||
                         qos_rule[i].code ==
-                OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS) {
+                OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS ||
+                        qos_rule[i].code ==
+                OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_ALL_PACKET_FILTERS) {
 
-                if (qos_rule[i].code == OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE)
+                if (qos_rule[i].code == OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE ||
+                    qos_rule[i].code == OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_ALL_PACKET_FILTERS)
                     smf_pf_remove_all(qos_flow);
 
                 for (j = 0; j < qos_rule[i].num_of_packet_filter &&
                             j < OGS_MAX_NUM_OF_FLOW_IN_NAS; j++) {
 
-                    pf = smf_pf_find_by_id(
-                            qos_flow, qos_rule[i].pf[j].identifier+1);
-                    if (!pf)
-                        pf = smf_pf_add(qos_flow);
+                    pf = smf_pf_add(qos_flow);
                     ogs_assert(pf);
 
                     ogs_assert(
@@ -336,7 +274,7 @@ int gsm_handle_pdu_session_modification_request(
          * Refer to lib/ipfw/ogs-ipfw.h
          * Issue #338
          *
-         * <DOWNLINK>
+         * <DOWNLINK/BI-DIRECTIONAL>
          * TFT : Local <UE_IP> <UE_PORT> REMOTE <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
          * -->
          * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
@@ -355,7 +293,7 @@ int gsm_handle_pdu_session_modification_request(
         /*
          * Issue #338
          *
-         * <DOWNLINK>
+         * <DOWNLINK/BI-DIRECTIONAL>
          * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
          * -->
          * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
@@ -385,6 +323,9 @@ int gsm_handle_pdu_session_modification_request(
                     } else if (qos_rule[i].code ==
                             OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS) {
                         pfcp_flags |= OGS_PFCP_MODIFY_TFT_ADD;
+                    } else if (qos_rule[i].code ==
+                            OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_ALL_PACKET_FILTERS) {
+                        pfcp_flags |= OGS_PFCP_MODIFY_TFT_REPLACE;
                     } else
                         ogs_assert_if_reached();
 
@@ -401,8 +342,8 @@ int gsm_handle_pdu_session_modification_request(
                 for (j = 0; j < qos_rule[i].num_of_packet_filter &&
                             j < OGS_MAX_NUM_OF_FLOW_IN_NAS; j++) {
 
-                    pf = smf_pf_find_by_id(
-                            qos_flow, qos_rule[i].pf[j].identifier+1);
+                    pf = smf_pf_find_by_identifier(
+                            qos_flow, qos_rule[i].pf[j].identifier);
                     if (pf) {
                         qos_flow->pf_to_delete
                             [qos_flow->num_of_pf_to_delete++] =
@@ -430,7 +371,11 @@ int gsm_handle_pdu_session_modification_request(
 
         num_of_description = ogs_nas_parse_qos_flow_descriptions(
                 qos_flow_description, requested_qos_flow_descriptions);
-        ogs_assert(num_of_description > 0);
+        if (!num_of_description) {
+            ogs_error("[%s:%d] Invalid modification request",
+                    smf_ue->supi, sess->psi);
+            goto cleanup;
+        }
 
         for (i = 0; i < num_of_description; i++) {
             qos_flow = smf_qos_flow_find_by_qfi(
@@ -478,16 +423,7 @@ int gsm_handle_pdu_session_modification_request(
         ogs_error("[%s:%d] Invalid modification request [modify:%d]",
                 smf_ue->supi, sess->psi,
                 ogs_list_count(&sess->qos_flow_to_modify_list));
-
-        n1smbuf = gsm_build_pdu_session_modification_reject(sess,
-            OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
-        ogs_assert(n1smbuf);
-
-        smf_sbi_send_sm_context_update_error_n1_n2_message(
-                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                n1smbuf, OpenAPI_n2_sm_info_type_NULL, NULL);
-
-        return OGS_ERROR;
+        goto cleanup;
     }
 
     if (pfcp_flags & OGS_PFCP_MODIFY_REMOVE) {
@@ -522,4 +458,15 @@ int gsm_handle_pdu_session_modification_request(
                 OGS_PFCP_MODIFY_UE_REQUESTED|pfcp_flags, 0));
 
     return OGS_OK;
+
+cleanup:
+    n1smbuf = gsm_build_pdu_session_modification_reject(sess,
+        OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
+    ogs_assert(n1smbuf);
+
+    smf_sbi_send_sm_context_update_error_n1_n2_message(
+            stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            n1smbuf, OpenAPI_n2_sm_info_type_NULL, NULL);
+
+    return OGS_ERROR;
 }

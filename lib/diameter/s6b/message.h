@@ -1,4 +1,4 @@
-/*
+/* 3GPP TS 29.273 section 9
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
@@ -35,7 +35,8 @@ extern struct dict_object *ogs_diam_s6b_application;
 extern struct dict_object *ogs_diam_s6b_mip6_feature_vector;
 
 typedef struct ogs_diam_s6b_message_s {
-#define OGS_DIAM_S6B_CMD_SESSION_TERMINATION                        1
+#define OGS_DIAM_S6B_CMD_AUTHENTICATION_AUTHORIZATION               1
+#define OGS_DIAM_S6B_CMD_SESSION_TERMINATION                        2
     uint16_t            cmd_code;
     uint32_t            result_code;
     uint32_t            *err;

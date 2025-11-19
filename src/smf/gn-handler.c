@@ -110,7 +110,7 @@ uint8_t smf_gn_handle_create_pdp_context_request(
         cause_value = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
     }
 
-    if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
+    if (!ogs_diam_is_relay_or_app_advertised(OGS_DIAM_GX_APPLICATION_ID)) {
         ogs_error("No Gx Diameter Peer");
         cause_value = OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE;
     }
@@ -118,7 +118,7 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     if (cause_value != OGS_GTP1_CAUSE_REQUEST_ACCEPTED)
         return cause_value;
 
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     /* Store NSAPI */
@@ -309,7 +309,7 @@ uint8_t smf_gn_handle_delete_pdp_context_request(
 {
     ogs_debug("Delete PDP Context Request");
 
-    if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
+    if (!ogs_diam_is_relay_or_app_advertised(OGS_DIAM_GX_APPLICATION_ID)) {
         ogs_error("No Gx Diameter Peer");
         return OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE;
     }
@@ -383,7 +383,7 @@ void smf_gn_handle_update_pdp_context_request(
     }
 
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
@@ -485,7 +485,7 @@ void smf_gn_handle_update_pdp_context_request(
     h.teid = sess->sgw_s5c_teid;
 
     /* Set bearer so it's accessible later when handling PFCP Session Modification Response */
-    xact->data = bearer;
+    xact->data = OGS_UINT_TO_POINTER(bearer->id);
 
     /* Update remote TEID and GTP-U IP address on the UPF. UpdatePDPContextResp
      * will be sent when UPF answers back this request
@@ -509,7 +509,7 @@ void smf_gn_handle_update_pdp_context_request(
         }
     }
 
-    rv = smf_epc_pfcp_send_all_pdr_modification_request(sess, xact, NULL,
+    rv = smf_epc_pfcp_send_all_pdr_modification_request(sess, xact->id, NULL,
             OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE,
             OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
             OGS_GTP1_CAUSE_REACTIACTION_REQUESTED);

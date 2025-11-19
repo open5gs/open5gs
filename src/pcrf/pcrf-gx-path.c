@@ -1,4 +1,4 @@
-/*
+/* Gx Interface, 3GPP TS 29.212 section 4
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
@@ -55,8 +55,8 @@ static OGS_POOL(rx_sess_state_pool, struct rx_sess_state);
 static ogs_thread_mutex_t sess_state_mutex;
 
 static struct session_handler *pcrf_gx_reg = NULL;
-static struct disp_hdl *hdl_gx_fb = NULL; 
-static struct disp_hdl *hdl_gx_ccr = NULL; 
+static struct disp_hdl *hdl_gx_fb = NULL;
+static struct disp_hdl *hdl_gx_ccr = NULL;
 
 static void pcrf_gx_raa_cb(void *data, struct msg **msg);
 
@@ -169,7 +169,7 @@ static struct rx_sess_state *find_rx_state(struct sess_state *gx, os0_t sid)
 
     ogs_assert(gx);
     ogs_assert(sid);
-    
+
     ogs_list_for_each(&gx->rx_list, rx_sess_data) {
         if (!strcmp((char *)rx_sess_data->sid, (char *)sid))
             return rx_sess_data;
@@ -180,7 +180,10 @@ static struct rx_sess_state *find_rx_state(struct sess_state *gx, os0_t sid)
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No session state");
+        return;
+    }
 
     if (sess_data->peer_host)
         ogs_free(sess_data->peer_host);
@@ -199,22 +202,26 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
         ogs_free(sess_data->sid);
 
     remove_rx_state_all(sess_data);
-    
+
     ogs_thread_mutex_lock(&sess_state_mutex);
     ogs_pool_free(&sess_state_pool, sess_data);
     ogs_thread_mutex_unlock(&sess_state_mutex);
 }
 
-static int pcrf_gx_fb_cb(struct msg **msg, struct avp *avp, 
+static int pcrf_gx_fb_cb(struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
     /* This CB should never be called */
     ogs_warn("Unexpected message received!");
 
+    OGS_DIAM_STATS_MTX(
+        PCRF_DIAM_PRIV_STATS_INC(gx.rx_unknown);
+    )
+
     return ENOTSUP;
 }
 
-static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp, 
+static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
     int rv;
@@ -232,7 +239,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     uint32_t cc_request_number = 0;
     uint32_t result_code = OGS_DIAM_MISSING_AVP;
 
-    ogs_debug("[Credit-Control-Request]");
+    ogs_debug("Rx Credit-Control-Request");
 
     ogs_assert(msg);
 
@@ -486,7 +493,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
                 ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
                 ogs_assert(ret == 0);
             }
-            
+
             if (gx_message.session_data.session.ambr.downlink) {
                 ret = fd_msg_avp_new(
                         ogs_diam_gx_apn_aggregate_max_bitrate_dl, 0, &avpch1);
@@ -615,12 +622,14 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("[Credit-Control-Answer]");
+    ogs_debug("Tx Credit-Control-Answer");
 
     /* Add this value to the stats */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_echoed++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) ==0);
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_echoed);
+        PCRF_DIAM_PRIV_STATS_INC(gx.rx_ccr);
+        PCRF_DIAM_PRIV_STATS_INC(gx.tx_cca);
+    )
 
     OGS_SESSION_DATA_FREE(&gx_message.session_data);
 
@@ -659,6 +668,11 @@ out:
     ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
+    OGS_DIAM_STATS_MTX(
+        PCRF_DIAM_PRIV_STATS_INC(gx.rx_ccr);
+        PCRF_DIAM_PRIV_STATS_INC(gx.rx_ccr_error);
+    )
+
     OGS_SESSION_DATA_FREE(&gx_message.session_data);
 
     return 0;
@@ -686,7 +700,7 @@ int pcrf_gx_send_rar(
     ogs_assert(rx_sid);
     ogs_assert(rx_message);
 
-    ogs_debug("[PCRF] Re-Auth-Request");
+    ogs_debug("[PCRF] Tx Re-Auth-Request");
 
     /* Initialize Message */
     memset(&gx_message, 0, sizeof(ogs_diam_gx_message_t));
@@ -728,7 +742,7 @@ int pcrf_gx_send_rar(
     ret = fd_sess_state_retrieve(pcrf_gx_reg, session, &sess_data);
     ogs_assert(ret == 0);
     if (sess_data == NULL) {
-        ogs_error("No session data");
+        ogs_error("No Session Data");
         ret = fd_msg_free(req);
         ogs_assert(ret == 0);
         rx_message->result_code = OGS_DIAM_UNKNOWN_SESSION_ID;
@@ -779,7 +793,7 @@ int pcrf_gx_send_rar(
                 rx_message->result_code = OGS_DIAM_INVALID_AVP_VALUE;
                 goto out;
             }
-            
+
             for (j = 0; j < gx_message.session_data.num_of_pcc_rule; j++) {
                 if (gx_message.session_data.pcc_rule[j].qos.index ==
                         qos_index) {
@@ -814,7 +828,7 @@ int pcrf_gx_send_rar(
                 ogs_error("CHECK WEBUI : No PCC Rule in DB [QoS Index:%d]",
                         qos_index);
                 ogs_error("Please add PCC Rule using WEBUI");
-                rx_message->result_code = 
+                rx_message->result_code =
                     OGS_DIAM_RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
                 goto out;
             }
@@ -827,7 +841,7 @@ int pcrf_gx_send_rar(
             }
 
             if (!pcc_rule) {
-                pcc_rule = 
+                pcc_rule =
                     &rx_sess_data->pcc_rule[rx_sess_data->num_of_pcc_rule];
 
                 /* Device PCC Rule Info from DB Profile */
@@ -871,7 +885,7 @@ int pcrf_gx_send_rar(
                     rv = ogs_pcc_rule_install_flow_from_media(
                             pcc_rule, media_component);
                     if (rv != OGS_OK) {
-                        rx_message->result_code = 
+                        rx_message->result_code =
                             OGS_DIAM_RX_DIAMETER_FILTER_RESTRICTIONS;
                         ogs_error("install_flow() failed");
                         goto out;
@@ -995,24 +1009,25 @@ int pcrf_gx_send_rar(
 
     ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
     ogs_assert(ret == 0);
-    
-    /* Keep a pointer to the session data for debug purpose, 
+
+    /* Keep a pointer to the session data for debug purpose,
      * in real life we would not need it */
     svg = sess_data;
-    
+
     /* Store this value in the session */
     ret = fd_sess_state_store(pcrf_gx_reg, session, &sess_data);
     ogs_assert(ret == 0);
     ogs_assert(sess_data == NULL);
-    
+
     /* Send the request */
     ret = fd_msg_send(&req, pcrf_gx_raa_cb, svg);
     ogs_assert(ret == 0);
 
     /* Increment the counter */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    ogs_diam_logger_self()->stats.nb_sent++;
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_sent);
+        PCRF_DIAM_PRIV_STATS_INC(gx.tx_rar);
+    )
 
     /* Set no error */
     rx_message->result_code = ER_DIAMETER_SUCCESS;
@@ -1025,6 +1040,11 @@ out:
     /* Store this value in the session */
     ret = fd_sess_state_store(pcrf_gx_reg, session, &sess_data);
     ogs_assert(sess_data == NULL);
+
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_sent);
+        PCRF_DIAM_PRIV_STATS_INC(gx.tx_rar_error);
+    )
 
     OGS_SESSION_DATA_FREE(&gx_message.session_data);
 
@@ -1043,10 +1063,10 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
     unsigned long dur;
     int error = 0;
     int new;
-    
+
     uint32_t result_code;
 
-    ogs_debug("[PCRF] Re-Auth-Answer");
+    ogs_debug("[PCRF] Rx Re-Auth-Answer");
 
     ret = clock_gettime(CLOCK_REALTIME, &ts);
     ogs_assert(ret == 0);
@@ -1055,10 +1075,13 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
     ogs_assert(ret == 0);
     ogs_assert(new == 0);
-    
+
     ret = fd_sess_state_retrieve(pcrf_gx_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data);
+    if (!sess_data) {
+        ogs_error("No Session Data");
+        return;
+    }
     ogs_assert((void *)sess_data == data);
 
     /* Value of Result Code */
@@ -1115,38 +1138,39 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
     }
 
     /* Free the message */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
-    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) + 
-        ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (ogs_diam_logger_self()->stats.nb_recv) {
-        /* Ponderate in the avg */
-        ogs_diam_logger_self()->stats.avg = (ogs_diam_logger_self()->stats.avg * 
-            ogs_diam_logger_self()->stats.nb_recv + dur) /
-            (ogs_diam_logger_self()->stats.nb_recv + 1);
-        /* Min, max */
-        if (dur < ogs_diam_logger_self()->stats.shortest)
-            ogs_diam_logger_self()->stats.shortest = dur;
-        if (dur > ogs_diam_logger_self()->stats.longest)
-            ogs_diam_logger_self()->stats.longest = dur;
-    } else {
-        ogs_diam_logger_self()->stats.shortest = dur;
-        ogs_diam_logger_self()->stats.longest = dur;
-        ogs_diam_logger_self()->stats.avg = dur;
-    }
-    if (error)
-        ogs_diam_logger_self()->stats.nb_errs++;
-    else 
-        ogs_diam_logger_self()->stats.nb_recv++;
+    OGS_DIAM_STATS_MTX(
+        dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
+            ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+        if (ogs_diam_stats_self()->stats.nb_recv) {
+            /* Ponderate in the avg */
+            ogs_diam_stats_self()->stats.avg = (ogs_diam_stats_self()->stats.avg *
+                ogs_diam_stats_self()->stats.nb_recv + dur) /
+                (ogs_diam_stats_self()->stats.nb_recv + 1);
+            /* Min, max */
+            if (dur < ogs_diam_stats_self()->stats.shortest)
+                ogs_diam_stats_self()->stats.shortest = dur;
+            if (dur > ogs_diam_stats_self()->stats.longest)
+                ogs_diam_stats_self()->stats.longest = dur;
+        } else {
+            ogs_diam_stats_self()->stats.shortest = dur;
+            ogs_diam_stats_self()->stats.longest = dur;
+            ogs_diam_stats_self()->stats.avg = dur;
+        }
+        if (error)
+            ogs_diam_stats_self()->stats.nb_errs++;
+        else
+            ogs_diam_stats_self()->stats.nb_recv++;
 
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
-    
+        PCRF_DIAM_PRIV_STATS_INC(gx.rx_raa);
+    )
+
     /* Display how long it took */
     if (ts.tv_nsec > sess_data->ts.tv_nsec)
-        ogs_trace("in %d.%06ld sec", 
+        ogs_trace("in %d.%06ld sec",
                 (int)(ts.tv_sec - sess_data->ts.tv_sec),
                 (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
     else
-        ogs_trace("in %d.%06ld sec", 
+        ogs_trace("in %d.%06ld sec",
                 (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
                 (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
 
@@ -1157,7 +1181,7 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
     ret = fd_msg_free(*msg);
     ogs_assert(ret == 0);
     *msg = NULL;
-    
+
     return;
 }
 
@@ -1202,7 +1226,7 @@ void pcrf_gx_final(void)
     int ret;
 
     ret = fd_sess_handler_destroy(&pcrf_gx_reg, NULL);
-    ogs_assert(ret == 0); 
+    ogs_assert(ret == 0);
 
     if (hdl_gx_fb)
         (void) fd_disp_unregister(&hdl_gx_fb, NULL);
@@ -1242,7 +1266,7 @@ static int encode_pcc_rule_definition(
             ret = fd_msg_avp_new(ogs_diam_gx_flow_information, 0, &avpch2);
             ogs_assert(ret == 0);
 
-            ret = fd_msg_avp_new(ogs_diam_gx_flow_direction, 0, &avpch3); 
+            ret = fd_msg_avp_new(ogs_diam_gx_flow_direction, 0, &avpch3);
             ogs_assert(ret == 0);
             val.i32 = flow->direction;
             ret = fd_msg_avp_setvalue(avpch3, &val);
@@ -1250,7 +1274,7 @@ static int encode_pcc_rule_definition(
             ret = fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3);
             ogs_assert(ret == 0);
 
-            ret = fd_msg_avp_new(ogs_diam_gx_flow_description, 0, &avpch3); 
+            ret = fd_msg_avp_new(ogs_diam_gx_flow_description, 0, &avpch3);
             ogs_assert(ret == 0);
             val.os.data = (uint8_t *)flow->description;
             val.os.len = strlen(flow->description);
@@ -1373,6 +1397,6 @@ static int encode_pcc_rule_definition(
 
     ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
     ogs_assert(ret == 0);
-    
+
     return OGS_OK;
 }

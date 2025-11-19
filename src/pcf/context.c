@@ -119,6 +119,7 @@ static int parse_slice_conf(
     do {
         ogs_app_slice_conf_t *slice_conf = NULL;
         ogs_s_nssai_t s_nssai;
+        bool sst_presence = false;
         bool default_indicator = false;
 
         s_nssai.sst = 0;
@@ -131,13 +132,8 @@ static int parse_slice_conf(
             if (!strcmp(slice_key, OGS_SST_STRING)) {
                 const char *v = ogs_yaml_iter_value(&slice_iter);
                 if (v) {
+                    sst_presence = true;
                     s_nssai.sst = atoi(v);
-                    if (s_nssai.sst == 1 || s_nssai.sst == 2 ||
-                            s_nssai.sst == 3 || s_nssai.sst == 4) {
-                    } else {
-                        ogs_error("Unknown SST [%d]", s_nssai.sst);
-                        return OGS_ERROR;
-                    }
                 }
             } else if (!strcmp(slice_key, OGS_SD_STRING)) {
                 const char *v = ogs_yaml_iter_value(&slice_iter);
@@ -147,7 +143,7 @@ static int parse_slice_conf(
             }
         }
 
-        if (s_nssai.sst) {
+        if (sst_presence) {
             slice_conf = ogs_app_slice_conf_add(policy_conf, &s_nssai);
             if (!slice_conf) {
                 ogs_error("ogs_app_slice_conf_add() failed [SST:%d,SD:0x%x]",
@@ -213,6 +209,9 @@ static int parse_policy_conf(ogs_yaml_iter_t *parent)
     do {
         const char *mnc = NULL, *mcc = NULL;
         ogs_app_policy_conf_t *policy_conf = NULL;
+        ogs_supi_range_t supi_range;
+
+        memset(&supi_range, 0, sizeof(ogs_supi_range_t));
 
         OGS_YAML_ARRAY_NEXT(&policy_array, &policy_iter);
         while (ogs_yaml_iter_next(&policy_iter)) {
@@ -231,21 +230,31 @@ static int parse_policy_conf(ogs_yaml_iter_t *parent)
                         mnc = ogs_yaml_iter_value(&plmn_id_iter);
                     }
                 }
-
+            } else if (!strcmp(policy_key, "supi_range")) {
+                rv = ogs_app_parse_supi_range_conf(&policy_iter, &supi_range);
+                if (rv != OGS_OK) {
+                    ogs_error("ogs_app_parse_supi_range_conf() failed");
+                    return rv;
+                }
             }
         }
 
-        if (mcc && mnc) {
+        if (supi_range.num || (mcc && mnc)) {
             ogs_plmn_id_t plmn_id;
-            ogs_plmn_id_build(&plmn_id, atoi(mcc), atoi(mnc), strlen(mnc));
-            policy_conf = ogs_app_policy_conf_add(&plmn_id);
+            if (mcc && mnc)
+                ogs_plmn_id_build(&plmn_id, atoi(mcc), atoi(mnc), strlen(mnc));
+            policy_conf = ogs_app_policy_conf_add(
+                    supi_range.num ? &supi_range : NULL,
+                    (mcc && mnc) ? &plmn_id : NULL);
             if (!policy_conf) {
                 ogs_error("ogs_app_policy_conf_add() failed "
-                        "[MCC:%s,MNC:%s]", mcc, mnc);
+                        "[supi_range.num:%d] [MCC:%s, MNC:%s]",
+                        supi_range.num, mcc, mnc);
                 return OGS_ERROR;
             }
         } else {
-            ogs_error("No PLMN-ID [MCC:%s, MNC:%s]", mcc, mnc);
+            ogs_error("No SUPI Range[%d] OR PLMN-ID [MCC:%s, MNC:%s]",
+                    supi_range.num, mcc, mnc);
             return OGS_ERROR;
         }
 
@@ -275,6 +284,7 @@ int pcf_context_parse_config(void)
     int rv;
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
+    int idx = 0;
 
     document = ogs_app()->document;
     ogs_assert(document);
@@ -286,7 +296,8 @@ int pcf_context_parse_config(void)
     while (ogs_yaml_iter_next(&root_iter)) {
         const char *root_key = ogs_yaml_iter_key(&root_iter);
         ogs_assert(root_key);
-        if (!strcmp(root_key, "pcf")) {
+        if ((!strcmp(root_key, "pcf")) &&
+            (idx++ == ogs_app()->config_section_id)) {
             ogs_yaml_iter_t pcf_iter;
             ogs_yaml_iter_recurse(&root_iter, &pcf_iter);
             while (ogs_yaml_iter_next(&pcf_iter)) {
@@ -331,9 +342,8 @@ pcf_ue_t *pcf_ue_add(char *supi)
 
     ogs_assert(supi);
 
-    ogs_pool_alloc(&pcf_ue_pool, &pcf_ue);
+    ogs_pool_id_calloc(&pcf_ue_pool, &pcf_ue);
     ogs_assert(pcf_ue);
-    memset(pcf_ue, 0, sizeof *pcf_ue);
 
     /* SBI Type */
     pcf_ue->sbi.type = OGS_SBI_OBJ_UE_TYPE;
@@ -351,7 +361,7 @@ pcf_ue_t *pcf_ue_add(char *supi)
     ogs_hash_set(self.supi_hash, pcf_ue->supi, strlen(pcf_ue->supi), pcf_ue);
 
     memset(&e, 0, sizeof(e));
-    e.pcf_ue = pcf_ue;
+    e.pcf_ue_id = pcf_ue->id;
     ogs_fsm_init(&pcf_ue->sm, pcf_am_state_initial, pcf_am_state_final, &e);
 
     ogs_list_add(&self.pcf_ue_list, pcf_ue);
@@ -368,7 +378,7 @@ void pcf_ue_remove(pcf_ue_t *pcf_ue)
     ogs_list_remove(&self.pcf_ue_list, pcf_ue);
 
     memset(&e, 0, sizeof(e));
-    e.pcf_ue = pcf_ue;
+    e.pcf_ue_id = pcf_ue->id;
     ogs_fsm_fini(&pcf_ue->sm, &e);
 
     /* Free SBI object memory */
@@ -400,7 +410,7 @@ void pcf_ue_remove(pcf_ue_t *pcf_ue)
     if (pcf_ue->pei)
         ogs_free(pcf_ue->pei);
 
-    ogs_pool_free(&pcf_ue_pool, pcf_ue);
+    ogs_pool_id_free(&pcf_ue_pool, pcf_ue);
 }
 
 void pcf_ue_remove_all(void)
@@ -431,9 +441,8 @@ pcf_sess_t *pcf_sess_add(pcf_ue_t *pcf_ue, uint8_t psi)
     ogs_assert(pcf_ue);
     ogs_assert(psi != OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED);
 
-    ogs_pool_alloc(&pcf_sess_pool, &sess);
+    ogs_pool_id_calloc(&pcf_sess_pool, &sess);
     ogs_assert(sess);
-    memset(sess, 0, sizeof *sess);
 
     ogs_list_init(&sess->app_list);
 
@@ -456,14 +465,14 @@ pcf_sess_t *pcf_sess_add(pcf_ue_t *pcf_ue, uint8_t psi)
             (int)ogs_pool_index(&pcf_sess_pool, sess));
     ogs_assert(sess->sm_policy_id);
 
-    sess->pcf_ue = pcf_ue;
+    sess->pcf_ue_id = pcf_ue->id;
     sess->psi = psi;
 
     sess->s_nssai.sst = 0;
     sess->s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
 
     memset(&e, 0, sizeof(e));
-    e.sess = sess;
+    e.sess_id = sess->id;
     ogs_fsm_init(&sess->sm, pcf_sm_state_initial, pcf_sm_state_final, &e);
 
     ogs_list_add(&pcf_ue->sess_list, sess);
@@ -474,14 +483,16 @@ pcf_sess_t *pcf_sess_add(pcf_ue_t *pcf_ue, uint8_t psi)
 void pcf_sess_remove(pcf_sess_t *sess)
 {
     pcf_event_t e;
+    pcf_ue_t *pcf_ue = NULL;
 
     ogs_assert(sess);
-    ogs_assert(sess->pcf_ue);
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
+    ogs_assert(pcf_ue);
 
-    ogs_list_remove(&sess->pcf_ue->sess_list, sess);
+    ogs_list_remove(&pcf_ue->sess_list, sess);
 
     memset(&e, 0, sizeof(e));
-    e.sess = sess;
+    e.sess_id = sess->id;
     ogs_fsm_fini(&sess->sm, &e);
 
     /* Free SBI object memory */
@@ -495,8 +506,9 @@ void pcf_sess_remove(pcf_sess_t *sess)
     ogs_assert(sess->sm_policy_id);
     ogs_free(sess->sm_policy_id);
 
-    if (sess->binding_id)
-        ogs_free(sess->binding_id);
+    PCF_BINDING_CLEAR(sess);
+    if (sess->binding.client)
+        ogs_sbi_client_remove(sess->binding.client);
 
     if (sess->dnn)
         ogs_free(sess->dnn);
@@ -519,7 +531,7 @@ void pcf_sess_remove(pcf_sess_t *sess)
     if (sess->subscribed_default_qos)
         OpenAPI_subscribed_default_qos_free(sess->subscribed_default_qos);
 
-    ogs_pool_free(&pcf_sess_pool, sess);
+    ogs_pool_id_free(&pcf_sess_pool, sess);
 }
 
 void pcf_sess_remove_all(pcf_ue_t *pcf_ue)
@@ -709,14 +721,14 @@ pcf_sess_t *pcf_sess_find_by_ipv6prefix(char *ipv6prefix_string)
             &ipv6prefix, (ipv6prefix.len >> 3) + 1);
 }
 
-pcf_ue_t *pcf_ue_cycle(pcf_ue_t *pcf_ue)
+pcf_ue_t *pcf_ue_find_by_id(ogs_pool_id_t id)
 {
-    return ogs_pool_cycle(&pcf_ue_pool, pcf_ue);
+    return ogs_pool_find_by_id(&pcf_ue_pool, id);
 }
 
-pcf_sess_t *pcf_sess_cycle(pcf_sess_t *sess)
+pcf_sess_t *pcf_sess_find_by_id(ogs_pool_id_t id)
 {
-    return ogs_pool_cycle(&pcf_sess_pool, sess);
+    return ogs_pool_find_by_id(&pcf_sess_pool, id);
 }
 
 pcf_app_t *pcf_app_add(pcf_sess_t *sess)
@@ -798,7 +810,6 @@ int pcf_db_qos_data(char *supi,
         ogs_session_data_t *session_data)
 {
     int rv;
-    ogs_session_data_t zero_data;
 
     ogs_app_policy_conf_t *policy_conf = NULL;
 
@@ -807,19 +818,12 @@ int pcf_db_qos_data(char *supi,
     ogs_assert(dnn);
     ogs_assert(session_data);
 
-    memset(&zero_data, 0, sizeof(zero_data));
+    memset(session_data, 0, sizeof(*session_data));
 
-    /* session_data should be initialized to zero */
-    ogs_assert(memcmp(session_data, &zero_data, sizeof(zero_data)) == 0);
-
-    if (plmn_id)
-        policy_conf = ogs_app_policy_conf_find_by_plmn_id(plmn_id);
-    else
-        ogs_warn("No PLMN_ID");
-
+    policy_conf = ogs_app_policy_conf_find(supi, plmn_id);
     if (policy_conf) {
         rv = ogs_app_config_session_data(
-                plmn_id, s_nssai, dnn, session_data);
+                supi, plmn_id, s_nssai, dnn, session_data);
         if (rv != OGS_OK)
             ogs_error("ogs_app_config_session_data() failed - "
                     "MCC[%d] MNC[%d] SST[%d] SD[0x%x] DNN[%s]",

@@ -20,7 +20,7 @@
 #include "ogs-nas-eps.h"
 
 void ogs_nas_eps_imsi_to_bcd(
-    ogs_nas_mobile_identity_imsi_t *imsi, uint8_t imsi_len, char *bcd)
+    const ogs_nas_mobile_identity_imsi_t *imsi, uint8_t imsi_len, char *bcd)
 {
     int bcd_len;
 
@@ -54,22 +54,22 @@ void ogs_nas_eps_imsi_to_bcd(
 }
 
 void ogs_nas_imsi_to_buffer(
-    ogs_nas_mobile_identity_imsi_t *imsi, uint8_t imsi_len, 
+    const ogs_nas_mobile_identity_imsi_t *imsi, uint8_t imsi_len,
     uint8_t *buf, uint8_t *buf_len)
 {
-    buf[0] = ((('0' + imsi->digit2) << 4) & 0xf0) | 
+    buf[0] = ((('0' + imsi->digit2) << 4) & 0xf0) |
                 (('0' + imsi->digit1) & 0x0f);
-    buf[1] = ((('0' + imsi->digit4) << 4) & 0xf0) | 
+    buf[1] = ((('0' + imsi->digit4) << 4) & 0xf0) |
                 (('0' + imsi->digit3) & 0x0f);
-    buf[2] = ((('0' + imsi->digit6) << 4) & 0xf0) | 
+    buf[2] = ((('0' + imsi->digit6) << 4) & 0xf0) |
                 (('0' + imsi->digit5) & 0x0f);
-    buf[3] = ((('0' + imsi->digit8) << 4) & 0xf0) | 
+    buf[3] = ((('0' + imsi->digit8) << 4) & 0xf0) |
                 (('0' + imsi->digit7) & 0x0f);
     buf[4] = ((('0' + imsi->digit10) << 4) & 0xf0) |
                 (('0' + imsi->digit9) & 0x0f);
-    buf[5] = ((('0' + imsi->digit12) << 4) & 0xf0) | 
+    buf[5] = ((('0' + imsi->digit12) << 4) & 0xf0) |
                 (('0' + imsi->digit11) & 0x0f);
-    buf[6] = ((('0' + imsi->digit14) << 4) & 0xf0) | 
+    buf[6] = ((('0' + imsi->digit14) << 4) & 0xf0) |
                 (('0' + imsi->digit13) & 0x0f);
     buf[7] = ((('0' + imsi->digit15)) & 0x0f);
 

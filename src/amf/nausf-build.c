@@ -46,8 +46,18 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate(
 
     memset(&AuthenticationInfo, 0, sizeof(AuthenticationInfo));
 
-    ogs_assert(amf_ue->suci);
-    AuthenticationInfo.supi_or_suci = amf_ue->suci;
+    if (amf_ue->suci)
+        AuthenticationInfo.supi_or_suci = amf_ue->suci;
+    else
+        AuthenticationInfo.supi_or_suci = amf_ue->supi;
+
+    if (!AuthenticationInfo.supi_or_suci) {
+        ogs_error("No SUPI[%s] or SUCI[%s]",
+                amf_ue->supi ? amf_ue->supi : "NULL",
+                amf_ue->suci ? amf_ue->suci : "NULL");
+        goto end;
+    }
+
     AuthenticationInfo.serving_network_name =
         ogs_serving_network_name_from_plmn_id(&amf_ue->nr_tai.plmn_id);
     if (!AuthenticationInfo.serving_network_name) {
@@ -87,11 +97,11 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate_delete(
     ogs_sbi_request_t *request = NULL;
 
     ogs_assert(amf_ue);
-    ogs_assert(amf_ue->confirmation_url_for_5g_aka);
+    ogs_assert(amf_ue->confirmation_for_5g_aka.resource_uri);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
-    message.h.uri = amf_ue->confirmation_url_for_5g_aka;
+    message.h.uri = amf_ue->confirmation_for_5g_aka.resource_uri;
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
@@ -110,11 +120,11 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate_confirmation(
     OpenAPI_confirmation_data_t *ConfirmationData = NULL;
 
     ogs_assert(amf_ue);
-    ogs_assert(amf_ue->confirmation_url_for_5g_aka);
+    ogs_assert(amf_ue->confirmation_for_5g_aka.resource_uri);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PUT;
-    message.h.uri = amf_ue->confirmation_url_for_5g_aka;
+    message.h.uri = amf_ue->confirmation_for_5g_aka.resource_uri;
 
     ConfirmationData = ogs_calloc(1, sizeof(*ConfirmationData));
     if (!ConfirmationData) {

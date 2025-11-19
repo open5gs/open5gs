@@ -1,0 +1,271 @@
+db_uri: mongodb://localhost/open5gs
+
+logger:
+
+test:
+  serving:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+
+global:
+  parameter:
+#    no_nrf: true
+#    no_scp: true
+    no_sepp: true
+#    no_amf: true
+#    no_smf: true
+#    no_upf: true
+#    no_ausf: true
+#    no_udm: true
+#    no_pcf: true
+#    no_nssf: true
+#    no_bsf: true
+#    no_udr: true
+    no_mme: true
+    no_sgwc: true
+    no_sgwu: true
+    no_pcrf: true
+    no_hss: true
+
+smf:
+  sbi:
+    server:
+      - address: 127.0.0.4
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.0.200:7777
+  pfcp:
+    server:
+      - address: 127.0.0.4
+    client:
+      upf:
+        - address: 127.0.0.7
+  gtpc:
+    server:
+      - address: 127.0.0.4
+  gtpu:
+    server:
+      - address: 127.0.0.4
+  metrics:
+    server:
+      - address: 127.0.0.4
+        port: 9090
+  session:
+    - subnet: 10.45.0.0/16
+      gateway: 10.45.0.1
+    - subnet: 2001:db8:cafe::/48
+      gateway: 2001:db8:cafe::1
+  dns:
+    - 8.8.8.8
+    - 8.8.4.4
+    - 2001:4860:4860::8888
+    - 2001:4860:4860::8844
+  mtu: 1400
+  freeDiameter:
+    identity: smf.localdomain
+    realm: localdomain
+    listen_on: 127.0.0.4
+    no_fwd: true
+    load_extension:
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dbg_msg_dumps.fdx
+        conf: 0x8888
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_rfc5777.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_mip6i.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nasreq.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_nas_mipv6.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca.fdx
+      - module: @build_subprojects_freeDiameter_extensions_dir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
+    connect:
+      - identity: pcrf.localdomain
+        address: 127.0.0.9
+
+amf:
+  sbi:
+    server:
+      - address: 127.0.0.5
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.0.200:7777
+  ngap:
+    server:
+      - address: 127.0.0.5
+  metrics:
+    server:
+      - address: 127.0.0.5
+        port: 9090
+  guami:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+      amf_id:
+        region: 2
+        set: 1
+        pointer: 31
+  tai:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+      tac: 1
+  plmn_support:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+      s_nssai:
+        - sst: 1
+  security:
+    integrity_order : [ NIA2, NIA1, NIA0 ]
+    ciphering_order : [ NEA0, NEA1, NEA2 ]
+  network_name:
+    full: Open5GS
+  amf_name: open5gs-amf0
+  time:
+    t3512:
+      value: 540     # 9 mintues * 60 = 540 seconds
+
+# amf #2
+amf:
+  sbi:
+    server:
+      - address: 127.0.0.50
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.0.200:7777
+  ngap:
+    server:
+      - address: 127.0.0.50
+  metrics:
+    server:
+      - address: 127.0.0.50
+        port: 9090
+  guami:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+      amf_id:
+        region: 2
+        set: 1
+        pointer: 30
+  tai:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+      tac: 1
+  plmn_support:
+    - plmn_id:
+        mcc: 999
+        mnc: 70
+      s_nssai:
+        - sst: 1
+  security:
+    integrity_order : [ NIA2, NIA1, NIA0 ]
+    ciphering_order : [ NEA0, NEA1, NEA2 ]
+  network_name:
+    full: Open5GS
+  amf_name: open5gs-amf1
+  time:
+    t3512:
+      value: 540     # 9 mintues * 60 = 540 seconds
+
+upf:
+  pfcp:
+    server:
+      - address: 127.0.0.7
+  gtpu:
+    server:
+      - address: 127.0.0.7
+  session:
+    - subnet: 10.45.0.0/16
+      gateway: 10.45.0.1
+    - subnet: 2001:db8:cafe::/48
+      gateway: 2001:db8:cafe::1
+  metrics:
+    server:
+      - address: 127.0.0.7
+        port: 9090
+
+nrf:
+  sbi:
+    server:
+      - address: 127.0.0.10
+        port: 7777
+
+scp:
+  sbi:
+    server:
+      - address: 127.0.0.200
+        port: 7777
+    client:
+      nrf:
+        - uri: http://127.0.0.10:7777
+
+ausf:
+  sbi:
+    server:
+      - address: 127.0.0.11
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.0.200:7777
+
+udm:
+  hnet:
+    - id: 1
+      scheme: 1
+      key: @build_configs_dir@/open5gs/hnet/curve25519-1.key
+    - id: 2
+      scheme: 2
+      key: @build_configs_dir@/open5gs/hnet/secp256r1-2.key
+  sbi:
+    server:
+      - address: 127.0.0.12
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.0.200:7777
+
+pcf:
+  sbi:
+    server:
+      - address: 127.0.0.13
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.0.200:7777
+  metrics:
+    server:
+      - address: 127.0.0.13
+        port: 9090
+
+nssf:
+  sbi:
+    server:
+      - address: 127.0.0.14
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.0.200:7777
+      nsi:
+        - uri: http://127.0.0.10:7777
+          s_nssai:
+            sst: 1
+bsf:
+  sbi:
+    server:
+      - address: 127.0.0.15
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.0.200:7777
+
+udr:
+  sbi:
+    server:
+      - address: 127.0.0.20
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.0.200:7777

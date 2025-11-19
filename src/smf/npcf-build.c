@@ -34,11 +34,12 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     OpenAPI_subscribed_default_qos_t SubsDefQos;
     OpenAPI_arp_t Arp;
     OpenAPI_snssai_t sNssai;
+    OpenAPI_user_location_t ueLocation;
 
     ogs_assert(sess);
     ogs_assert(sess->sm_context_ref);
     ogs_assert(sess->session.name);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     memset(&message, 0, sizeof(message));
@@ -50,6 +51,7 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     memset(&SmPolicyContextData, 0, sizeof(SmPolicyContextData));
     memset(&sNssai, 0, sizeof(sNssai));
     memset(&SubsSessAmbr, 0, sizeof(SubsSessAmbr));
+    memset(&ueLocation, 0, sizeof(ueLocation));
 
     SmPolicyContextData.supi = smf_ue->supi;
     if (!SmPolicyContextData.supi) {
@@ -66,6 +68,12 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         ogs_error("No pdu_session_type");
         goto end;
     }
+
+    /*
+     * TODO: Currently hard-coded to "00000800";
+     * replace with dynamic value if needed in future
+     */
+    SmPolicyContextData.chargingcharacteristics = (char *)"00000800";
 
     /*
      * Use ogs_sbi_supi_in_vplmn() instead of ogs_sbi_plmn_id_in_vplmn().
@@ -139,10 +147,34 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         goto end;
     }
 
+    SmPolicyContextData.rat_type = OpenAPI_rat_type_NR;
+
     SmPolicyContextData.serving_network =
         ogs_sbi_build_plmn_id_nid(&sess->serving_plmn_id);
     if (!SmPolicyContextData.serving_network) {
         ogs_error("No serving_network");
+        goto end;
+    }
+
+    ueLocation.nr_location = ogs_sbi_build_nr_location(
+            &sess->nr_tai, &sess->nr_cgi);
+    if (!ueLocation.nr_location) {
+        ogs_error("ueLocation.nr_location");
+        goto end;
+    }
+    ueLocation.nr_location->ue_location_timestamp =
+        ogs_sbi_gmtime_string(sess->ue_location_timestamp);
+    if (!ueLocation.nr_location->ue_location_timestamp) {
+        ogs_error("ueLocation.nr_location->ue_location_timestamp");
+        goto end;
+    }
+
+    SmPolicyContextData.user_location_info = &ueLocation;
+
+    SmPolicyContextData.ue_time_zone =
+        ogs_sbi_timezone_string(ogs_timezone());
+    if (!SmPolicyContextData.ue_time_zone) {
+        ogs_error("SmPolicyContextData.ue_time_zone");
         goto end;
     }
 
@@ -263,6 +295,14 @@ end:
     if (SmPolicyContextData.serving_network)
         ogs_sbi_free_plmn_id_nid(SmPolicyContextData.serving_network);
 
+    if (ueLocation.nr_location) {
+        if (ueLocation.nr_location->ue_location_timestamp)
+            ogs_free(ueLocation.nr_location->ue_location_timestamp);
+        ogs_sbi_free_nr_location(ueLocation.nr_location);
+    }
+    if (SmPolicyContextData.ue_time_zone)
+        ogs_free(SmPolicyContextData.ue_time_zone);
+
     if (sNssai.sd)
         ogs_free(sNssai.sd);
 
@@ -301,17 +341,15 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
 
     ogs_assert(sess);
     ogs_assert(sess->sm_context_ref);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
-    ogs_assert(sess->policy_association_id);
+    ogs_assert(sess->policy_association.resource_uri);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL;
-    message.h.api.version = (char *)OGS_SBI_API_V1;
-    message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_SM_POLICIES;
-    message.h.resource.component[1] = sess->policy_association_id;
-    message.h.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_DELETE;
+    message.h.uri = ogs_msprintf("%s/%s",
+            sess->policy_association.resource_uri,
+            OGS_SBI_RESOURCE_NAME_DELETE);
 
     memset(&SmPolicyDeleteData, 0, sizeof(SmPolicyDeleteData));
 
@@ -399,6 +437,9 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
     ogs_expect(request);
 
 end:
+
+    if (message.h.uri)
+        ogs_free(message.h.uri);
 
     if (ueLocation.nr_location) {
         if (ueLocation.nr_location->ue_location_timestamp)

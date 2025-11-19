@@ -259,15 +259,16 @@ void smf_5gc_n4_handle_session_modification_response(
     ogs_assert(flags);
 
     /* 'stream' could be NULL in smf_qos_flow_binding() */
-    stream = xact->assoc_stream;
+    if (xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+            xact->assoc_stream_id <= OGS_MAX_POOL_ID)
+        stream = ogs_sbi_stream_find_by_id(xact->assoc_stream_id);
 
     if (flags & OGS_PFCP_MODIFY_SESSION) {
         /* If smf_5gc_pfcp_send_all_pdr_modification_request() is called */
 
     } else {
         /* If smf_5gc_pfcp_send_qos_flow_modification_request() is called */
-        qos_flow = xact->data;
-        ogs_assert(qos_flow);
+        qos_flow = smf_qos_flow_find_by_id(OGS_POINTER_TO_UINT(xact->data));
     }
 
     ogs_list_copy(&pdr_to_create_list, &xact->pdr_to_create_list);
@@ -495,10 +496,12 @@ void smf_5gc_n4_handle_session_modification_response(
 
             ogs_list_for_each_entry_safe(&sess->qos_flow_to_modify_list,
                     next, qos_flow, to_modify_node) {
+                smf_sess_t *sess = smf_sess_find_by_id(qos_flow->sess_id);
+                ogs_assert(sess);
                 smf_metrics_inst_by_5qi_add(
-                        &qos_flow->sess->serving_plmn_id,
-                        &qos_flow->sess->s_nssai,
-                        qos_flow->sess->session.qos.index,
+                        &sess->serving_plmn_id,
+                        &sess->s_nssai,
+                        sess->session.qos.index,
                         SMF_METR_GAUGE_SM_QOSFLOWNBR, -1);
                 smf_bearer_remove(qos_flow);
             }
@@ -527,10 +530,12 @@ void smf_5gc_n4_handle_session_modification_response(
 
             ogs_list_for_each_entry_safe(&sess->qos_flow_to_modify_list,
                     next, qos_flow, to_modify_node) {
+                smf_sess_t *sess = smf_sess_find_by_id(qos_flow->sess_id);
+                ogs_assert(sess);
                 smf_metrics_inst_by_5qi_add(
-                        &qos_flow->sess->serving_plmn_id,
-                        &qos_flow->sess->s_nssai,
-                        qos_flow->sess->session.qos.index,
+                        &sess->serving_plmn_id,
+                        &sess->s_nssai,
+                        sess->session.qos.index,
                         SMF_METR_GAUGE_SM_QOSFLOWNBR, -1);
                 smf_bearer_remove(qos_flow);
             }
@@ -598,7 +603,7 @@ void smf_5gc_n4_handle_session_modification_response(
         } else if (flags & OGS_PFCP_MODIFY_TFT_ADD) {
             qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS;
         } else if (flags & OGS_PFCP_MODIFY_TFT_REPLACE) {
-            qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_PACKET_FILTERS;
+            qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_ALL_PACKET_FILTERS;
         } else if (flags & OGS_PFCP_MODIFY_TFT_DELETE) {
             qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS;
         }
@@ -706,7 +711,7 @@ int smf_5gc_n4_handle_session_deletion_response(
             ogs_assert(stream);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(
-                    stream, status, NULL, strerror, NULL));
+                    stream, status, NULL, strerror, NULL, NULL));
         } else if (trigger == OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED) {
             /* No stream - Nothing */
         } else {
@@ -856,8 +861,7 @@ void smf_epc_n4_handle_session_modification_response(
         /* If smf_epc_pfcp_send_pdr_modification_request() is called */
     } else {
         /* If smf_epc_pfcp_send_bearer_modification_request() is called */
-        bearer = xact->data;
-        ogs_assert(bearer);
+        bearer = smf_bearer_find_by_id(OGS_POINTER_TO_UINT(xact->data));
     }
     flags = xact->modify_flags;
     ogs_assert(flags);
@@ -866,7 +870,7 @@ void smf_epc_n4_handle_session_modification_response(
        PFCP Session Report Request, xact->assoc_xact is not a gtp_xact. No
        need to do anything. */
     if (!(flags & OGS_PFCP_MODIFY_URR)) {
-        gtp_xact = xact->assoc_xact;
+        gtp_xact = ogs_gtp_xact_find_by_id(xact->assoc_xact_id);
         gtp_pti = xact->gtp_pti;
         gtp_cause = xact->gtp_cause;
     }
@@ -947,6 +951,10 @@ void smf_epc_n4_handle_session_modification_response(
     } else if (flags & OGS_PFCP_MODIFY_CREATE) {
         ogs_assert(bearer);
         ogs_assert(OGS_OK == smf_gtp2_send_create_bearer_request(bearer));
+    
+    } else if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
+        ogs_assert(bearer);
+        ogs_assert(OGS_OK == smf_gtp2_send_update_bearer_request(bearer));
 
     } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
         /*
@@ -1004,7 +1012,7 @@ void smf_epc_n4_handle_session_modification_response(
          *
          * To do this, I saved Bearer Context in Transaction Context.
          */
-            gtp_xact->data = bearer;
+            gtp_xact->data = OGS_UINT_TO_POINTER(bearer->id);
 
             rv = ogs_gtp_xact_commit(gtp_xact);
             ogs_expect(rv == OGS_OK);
@@ -1058,9 +1066,15 @@ void smf_epc_n4_handle_session_modification_response(
 
             /* SMF send Update PDP Context Response (GTPv1C) to SGSN */
             if (gtp_xact->gtp_version == 1) {
+                ogs_pool_id_t bearer_id = OGS_POINTER_TO_UINT(gtp_xact->data);
 
-                bearer = gtp_xact->data;
-                smf_gtp1_send_update_pdp_context_response(bearer, gtp_xact);
+                ogs_assert(bearer_id >= OGS_MIN_POOL_ID &&
+                        bearer_id <= OGS_MAX_POOL_ID);
+                bearer = smf_bearer_find_by_id(bearer_id);
+                if (bearer)
+                    smf_gtp1_send_update_pdp_context_response(bearer, gtp_xact);
+                else
+                    ogs_error("Bearer has already been removed");
 
             } else {
 
@@ -1148,7 +1162,9 @@ uint8_t smf_epc_n4_handle_session_deletion_response(
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
 
-void smf_n4_handle_session_report_request(
+/* Returns OGS_PFCP_CAUSE_REQUEST_ACCEPTED on success,
+ * other cause value on failure */
+uint8_t smf_n4_handle_session_report_request(
         smf_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
         ogs_pfcp_session_report_request_t *pfcp_req)
 {
@@ -1186,11 +1202,11 @@ void smf_n4_handle_session_report_request(
         ogs_pfcp_send_error_message(pfcp_xact, 0,
                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                 cause_value, 0);
-        return;
+        return cause_value;
     }
 
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     report_type.value = pfcp_req->report_type.u8;
@@ -1226,7 +1242,7 @@ void smf_n4_handle_session_report_request(
                         ogs_pfcp_send_error_message(pfcp_xact, 0,
                                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                                 OGS_PFCP_CAUSE_SERVICE_NOT_SUPPORTED, 0);
-                        return;
+                        return OGS_PFCP_CAUSE_SERVICE_NOT_SUPPORTED;
                     }
 
                     if (qfi) {
@@ -1236,7 +1252,7 @@ void smf_n4_handle_session_report_request(
                             ogs_pfcp_send_error_message(pfcp_xact, 0,
                                 OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
-                            return;
+                            return OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
                         }
                     }
                 } else {
@@ -1261,7 +1277,7 @@ void smf_n4_handle_session_report_request(
             ogs_pfcp_send_error_message(pfcp_xact, 0,
                     OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                     OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
-            return;
+            return OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
         }
 
         switch (sess->up_cnx_state) {
@@ -1333,14 +1349,22 @@ void smf_n4_handle_session_report_request(
             sess->gy.reporting_reason =
                 smf_pfcp_urr_usage_report_trigger2diam_gy_reporting_reason(&rep_trig);
         }
-        switch(smf_use_gy_iface()) {
+        switch (smf_use_gy_iface()) {
         case 1:
-            smf_gy_send_ccr(sess, pfcp_xact,
-                    OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST);
+            if (!sess->gy.final_unit) {
+                smf_gy_send_ccr(
+                        sess, pfcp_xact->id,
+                        OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST);
+            } else {
+                ogs_debug("[%s:%s] Rx PFCP report after Gy Final Unit Indication",
+                          smf_ue->imsi_bcd, sess->session.name);
+                /* This effectively triggers session release: */
+                cause_value = OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE;
+            }
             break;
         case -1:
             ogs_error("No Gy Diameter Peer");
-            /* TODO: terminate connection */
+            cause_value = OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE;
             break;
         /* default: continue below */
         }
@@ -1368,7 +1392,7 @@ void smf_n4_handle_session_report_request(
                 smf_ue->imsi_bcd, sess->session.name);
             ogs_assert(OGS_OK ==
                 smf_epc_pfcp_send_session_deletion_request(
-                    sess, NULL));
+                    sess, OGS_INVALID_POOL_ID));
         } else {
             ogs_warn("[%s:%s] Error Indication from gNB",
                 smf_ue->supi, sess->session.name);
@@ -1380,4 +1404,5 @@ void smf_n4_handle_session_report_request(
                     0));
         }
     }
+    return cause_value;
 }

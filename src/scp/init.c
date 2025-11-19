@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -36,14 +36,14 @@ int scp_initialize(void)
     ogs_sbi_context_init(OpenAPI_nf_type_SCP);
     scp_context_init();
 
+    rv = ogs_log_config_domain(
+            ogs_app()->logger.domain, ogs_app()->logger.level);
+    if (rv != OGS_OK) return rv;
+
     rv = ogs_sbi_context_parse_config(APP_NAME, "nrf", "next_scp");
     if (rv != OGS_OK) return rv;
 
     rv = scp_context_parse_config();
-    if (rv != OGS_OK) return rv;
-
-    rv = ogs_log_config_domain(
-            ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
     rv = scp_sbi_open();
@@ -66,6 +66,9 @@ static void event_termination(void)
     /* Sending NF Instance De-registeration to NRF */
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance)
         ogs_sbi_nf_fsm_fini(nf_instance);
+
+    /* Gracefully shutdown the server by sending GOAWAY to each session. */
+    ogs_sbi_server_graceful_shutdown_all();
 
     /* Starting holding timer */
     t_termination_holding = ogs_timer_add(ogs_app()->timer_mgr, NULL, NULL);

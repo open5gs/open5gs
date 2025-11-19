@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,6 +28,7 @@
 #include "gy-handler.h"
 #include "nnrf-handler.h"
 #include "namf-handler.h"
+#include "nsmf-handler.h"
 #include "npcf-handler.h"
 
 void smf_state_initial(ogs_fsm_t *s, smf_event_t *e)
@@ -58,6 +59,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
     ogs_gtp_xact_t *gtp_xact = NULL;
     ogs_gtp2_message_t gtp2_message;
+    ogs_gtp2_sender_f_teid_t gtp2_sender_f_teid;
     ogs_gtp1_message_t gtp1_message;
 
     ogs_diam_gx_message_t *gx_message = NULL;
@@ -69,6 +71,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
     ogs_pfcp_message_t *pfcp_message = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *sbi_request = NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -76,6 +79,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
     ogs_sbi_response_t *sbi_response = NULL;
     ogs_sbi_message_t sbi_message;
     ogs_sbi_xact_t *sbi_xact = NULL;
+    ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
+    ogs_pool_id_t sbi_object_id = OGS_INVALID_POOL_ID;
 
     ogs_nas_5gs_message_t nas_message;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -108,12 +113,14 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         }
         e->gtp2_message = &gtp2_message;
 
+        ogs_gtp2_sender_f_teid(&gtp2_sender_f_teid, &gtp2_message);
+
         rv = ogs_gtp_xact_receive(smf_gnode->gnode, &gtp2_message.h, &gtp_xact);
         if (rv != OGS_OK) {
             ogs_pkbuf_free(recvbuf);
             break;
         }
-        e->gtp_xact = gtp_xact;
+        e->gtp_xact_id = gtp_xact ? gtp_xact->id : OGS_INVALID_POOL_ID;
 
         if (gtp2_message.h.teid_presence && gtp2_message.h.teid != 0) {
             sess = smf_sess_find_by_teid(gtp2_message.h.teid);
@@ -144,12 +151,22 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             }
             if (!sess) {
                 ogs_error("No Session");
-                ogs_gtp2_send_error_message(gtp_xact, 0,
+                ogs_gtp2_send_error_message(gtp_xact,
+                        gtp2_sender_f_teid.teid_presence == true ?
+                            gtp2_sender_f_teid.teid : 0,
                         OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
                         OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
                 break;
             }
-            e->sess = sess;
+
+            if (gtp2_sender_f_teid.teid_presence == true)
+                sess->sgw_s5c_teid = gtp2_sender_f_teid.teid;
+
+            ogs_debug("    SGW_S5C_TEID[0x%x], Sender F-TEID(%d)[0x%x]",
+                    sess->sgw_s5c_teid,
+                    gtp2_sender_f_teid.teid_presence, gtp2_sender_f_teid.teid);
+
+            e->sess_id = sess->id;
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
@@ -158,18 +175,33 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             smf_metrics_inst_gtp_node_inc(smf_gnode->metrics, SMF_METR_GTP_NODE_CTR_S5C_RX_DELETESESSIONREQ);
             if (!sess) {
                 ogs_error("No Session");
-                ogs_gtp2_send_error_message(gtp_xact, 0,
+                ogs_gtp2_send_error_message(gtp_xact,
+                        gtp2_sender_f_teid.teid_presence == true ?
+                            gtp2_sender_f_teid.teid : 0,
                         OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE,
                         OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
                 break;
             }
-            e->sess = sess;
+            if (gtp2_sender_f_teid.teid_presence == true) {
+                if (sess->sgw_s5c_teid != gtp2_sender_f_teid.teid) {
+                    ogs_error("Invalid Sender F-TEID [0x%x != 0x%x]",
+                        sess->sgw_s5c_teid, gtp2_sender_f_teid.teid);
+                    ogs_gtp2_send_error_message(gtp_xact,
+                            gtp2_sender_f_teid.teid_presence == true ?
+                                gtp2_sender_f_teid.teid : 0,
+                            OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE,
+                            OGS_GTP2_CAUSE_INVALID_MESSAGE_FORMAT);
+                    break;
+                }
+            }
+            e->sess_id = sess->id;
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP2_MODIFY_BEARER_REQUEST_TYPE:
             if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             smf_s5c_handle_modify_bearer_request(
-                sess, gtp_xact, recvbuf, &gtp2_message.modify_bearer_request);
+                sess, gtp_xact, recvbuf,
+                &gtp2_message.modify_bearer_request, &gtp2_sender_f_teid);
             break;
         case OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE:
             if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
@@ -178,23 +210,31 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
         case OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE:
             if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
+            if (!sess) {
+                ogs_error("No Session");
+                rv = ogs_gtp_xact_commit(gtp_xact);
+                ogs_expect(rv == OGS_OK);
+                break;
+            }
             smf_s5c_handle_update_bearer_response(
                 sess, gtp_xact, &gtp2_message.update_bearer_response);
             break;
         case OGS_GTP2_DELETE_BEARER_RESPONSE_TYPE:
             if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             if (!sess) {
-                /* TODO: NACK the message */
-                ogs_error("TODO: NACK the message");
+                ogs_error("No Session");
+                rv = ogs_gtp_xact_commit(gtp_xact);
+                ogs_expect(rv == OGS_OK);
                 break;
             }
-            e->sess = sess;
+            e->sess_id = sess->id;
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
             if (!gtp2_message.h.teid_presence) ogs_error("No TEID");
             smf_s5c_handle_bearer_resource_command(
-                sess, gtp_xact, &gtp2_message.bearer_resource_command);
+                sess, gtp_xact,
+                &gtp2_message.bearer_resource_command, &gtp2_sender_f_teid);
             break;
         default:
             ogs_warn("Not implemented(type:%d)", gtp2_message.h.type);
@@ -229,7 +269,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_pkbuf_free(recvbuf);
             break;
         }
-        e->gtp_xact = gtp_xact;
+        e->gtp_xact_id = gtp_xact ? gtp_xact->id : OGS_INVALID_POOL_ID;
 
         switch(gtp1_message.h.type) {
         case OGS_GTP1_ECHO_REQUEST_TYPE:
@@ -253,7 +293,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         OGS_GTP1_CAUSE_CONTEXT_NOT_FOUND);
                 break;
             }
-            e->sess = sess;
+            e->sess_id = sess->id;
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP1_DELETE_PDP_CONTEXT_REQUEST_TYPE:
@@ -265,7 +305,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         OGS_GTP1_CAUSE_NON_EXISTENT);
                 break;
             }
-            e->sess = sess;
+            e->sess_id = sess->id;
             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_GTP1_UPDATE_PDP_CONTEXT_REQUEST_TYPE:
@@ -288,7 +328,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         gx_message = e->gx_message;
         ogs_assert(gx_message);
 
-        sess = e->sess;
+        sess = smf_sess_find_by_id(e->sess_id);
         ogs_assert(sess);
 
         switch(gx_message->cmd_code) {
@@ -323,28 +363,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         gy_message = e->gy_message;
         ogs_assert(gy_message);
 
-        sess = e->sess;
+        sess = smf_sess_find_by_id(e->sess_id);
         ogs_assert(sess);
 
         switch(gy_message->cmd_code) {
         case OGS_DIAM_GY_CMD_CODE_CREDIT_CONTROL:
-            switch(gy_message->cc_request_type) {
-            case OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST:
-                ogs_fsm_dispatch(&sess->sm, e);
-                break;
-            case OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST:
-                ogs_assert(e->pfcp_xact);
-                smf_gy_handle_cca_update_request(
-                        sess, gy_message, e->pfcp_xact);
-            break;
-            case OGS_DIAM_GY_CC_REQUEST_TYPE_TERMINATION_REQUEST:
-                ogs_fsm_dispatch(&sess->sm, e);
-                break;
-            default:
-                ogs_error("Not implemented(%d)", gy_message->cc_request_type);
-                break;
-            }
-
+             ogs_fsm_dispatch(&sess->sm, e);
             break;
         case OGS_DIAM_GY_CMD_RE_AUTH:
             smf_gy_handle_re_auth_request(sess, gy_message);
@@ -361,10 +385,11 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(e);
         s6b_message = e->s6b_message;
         ogs_assert(s6b_message);
-        sess = e->sess;
+        sess = smf_sess_find_by_id(e->sess_id);
         ogs_assert(sess);
 
         switch(s6b_message->cmd_code) {
+        case OGS_DIAM_S6B_CMD_AUTHENTICATION_AUTHORIZATION:
         case OGS_DIAM_S6B_CMD_SESSION_TERMINATION:
             ogs_fsm_dispatch(&sess->sm, e);
             break;
@@ -380,22 +405,11 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(e);
         recvbuf = e->pkbuf;
         ogs_assert(recvbuf);
+        pfcp_message = e->pfcp_message;
+        ogs_assert(pfcp_message);
         pfcp_node = e->pfcp_node;
         ogs_assert(pfcp_node);
         ogs_assert(OGS_FSM_STATE(&pfcp_node->sm));
-
-        /*
-         * Issue #1911
-         *
-         * Because ogs_pfcp_message_t is over 80kb in size,
-         * it can cause stack overflow.
-         * To avoid this, the pfcp_message structure uses heap memory.
-         */
-        if ((pfcp_message = ogs_pfcp_parse_msg(recvbuf)) == NULL) {
-            ogs_error("ogs_pfcp_parse_msg() failed");
-            ogs_pkbuf_free(recvbuf);
-            break;
-        }
 
         rv = ogs_pfcp_xact_receive(pfcp_node, &pfcp_message->h, &pfcp_xact);
         if (rv != OGS_OK) {
@@ -404,8 +418,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
         }
 
-        e->pfcp_message = pfcp_message;
-        e->pfcp_xact = pfcp_xact;
+        e->pfcp_xact_id = pfcp_xact ? pfcp_xact->id : OGS_INVALID_POOL_ID;
 
         e->gtp2_message = NULL;
         if (pfcp_xact->gtpbuf) {
@@ -434,8 +447,16 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         sbi_request = e->h.sbi.request;
         ogs_assert(sbi_request);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         rv = ogs_sbi_parse_request(&sbi_message, sbi_request);
         if (rv != OGS_OK) {
@@ -444,7 +465,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_assert(true ==
                 ogs_sbi_server_send_error(
                     stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    NULL, "cannot parse HTTP sbi_message", NULL));
+                    NULL, "cannot parse HTTP sbi_message", NULL,
+                    NULL));
             break;
         }
 
@@ -462,7 +484,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_assert(true ==
                 ogs_sbi_server_send_error(
                     stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    &sbi_message, "Not supported version", NULL));
+                    &sbi_message, "Not supported version", NULL, NULL));
             ogs_sbi_message_free(&sbi_message);
             break;
         }
@@ -482,7 +504,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     ogs_assert(true ==
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_FORBIDDEN, &sbi_message,
-                            "Invalid HTTP method", sbi_message.h.method));
+                            "Invalid HTTP method", sbi_message.h.method, NULL));
                 END
                 break;
 
@@ -493,7 +515,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
                         "Invalid resource name",
-                        sbi_message.h.resource.component[0]));
+                        sbi_message.h.resource.component[0], NULL));
             END
             break;
 
@@ -548,16 +570,17 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     ogs_assert(true ==
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
-                            "Invalid HTTP method", sbi_message.h.method));
+                            "Invalid HTTP method", sbi_message.h.method,
+                            NULL));
                     break;
                 END
 
                 if (sess) {
-                    smf_ue = sess->smf_ue;
+                    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
                     ogs_assert(smf_ue);
                     ogs_assert(OGS_FSM_STATE(&sess->sm));
 
-                    e->sess = sess;
+                    e->sess_id = sess->id;
                     e->h.sbi.message = &sbi_message;
                     ogs_fsm_dispatch(&sess->sm, e);
                 }
@@ -570,7 +593,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
                         "Invalid resource name",
-                        sbi_message.h.resource.component[0]));
+                        sbi_message.h.resource.component[0], NULL));
             END
             break;
 
@@ -588,7 +611,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
                             "No smContextRef",
-                            sbi_message.h.resource.component[1]));
+                            sbi_message.h.resource.component[1], NULL));
                     break;
                 }
 
@@ -601,7 +624,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_NOT_FOUND, &sbi_message,
                             "Not found",
-                            sbi_message.h.resource.component[1]));
+                            sbi_message.h.resource.component[1], NULL));
                     break;
                 }
 
@@ -621,8 +644,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
                             "Invalid resource name",
-                            sbi_message.h.resource.component[0]));
+                            sbi_message.h.resource.component[0], NULL));
                 END
+                break;
+            CASE(OGS_SBI_RESOURCE_NAME_SDMSUBSCRIPTION_NOTIFY)
+                smf_nsmf_callback_handle_sdm_data_change_notify(
+                        stream, &sbi_message);
                 break;
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
@@ -631,7 +658,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
                         "Invalid resource name",
-                        sbi_message.h.resource.component[0]));
+                        sbi_message.h.resource.component[0], NULL));
             END
             break;
 
@@ -640,7 +667,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
-                    "Invalid API name", sbi_message.h.service.name));
+                    "Invalid API name", sbi_message.h.service.name, NULL));
         END
 
         /* In lib/sbi/server.c, notify_completed() releases 'request' buffer. */
@@ -747,8 +774,18 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
             SWITCH(sbi_message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                sbi_xact = e->h.sbi.data;
-                ogs_assert(sbi_xact);
+                sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+                ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                        sbi_xact_id <= OGS_MAX_POOL_ID);
+
+                sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
+                if (!sbi_xact) {
+                    /* CLIENT_WAIT timer could remove SBI transaction
+                     * before receiving SBI message */
+                    ogs_error("SBI transaction has already been removed [%d]",
+                            sbi_xact_id);
+                    break;
+                }
 
                 SWITCH(sbi_message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
@@ -775,35 +812,41 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
         CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
         CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
-            sbi_xact = e->h.sbi.data;
-            ogs_assert(sbi_xact);
+            sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                    sbi_xact_id <= OGS_MAX_POOL_ID);
 
-            sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
+            sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
             if (!sbi_xact) {
                 /* CLIENT_WAIT timer could remove SBI transaction
                  * before receiving SBI message */
-                ogs_error("SBI transaction has already been removed");
+                ogs_error("SBI transaction has already been removed [%d]",
+                        sbi_xact_id);
                 break;
             }
 
-            sess = (smf_sess_t *)sbi_xact->sbi_object;
-            ogs_assert(sess);
+            sbi_object_id = sbi_xact->sbi_object_id;
+            ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
+                    sbi_object_id <= OGS_MAX_POOL_ID);
 
-            e->h.sbi.data = sbi_xact->assoc_stream;
+            if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
+                e->h.sbi.data = OGS_UINT_TO_POINTER(sbi_xact->assoc_stream_id);
+
             e->h.sbi.state = sbi_xact->state;
 
             ogs_sbi_xact_remove(sbi_xact);
 
-            sess = smf_sess_cycle(sess);
+            sess = smf_sess_find_by_id(sbi_object_id);
             if (!sess) {
                 ogs_error("Session has already been removed");
                 break;
             }
-            smf_ue = smf_ue_cycle(sess->smf_ue);
+            smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
             ogs_assert(smf_ue);
             ogs_assert(OGS_FSM_STATE(&sess->sm));
 
-            e->sess = sess;
+            e->sess_id = sess->id;
             e->h.sbi.message = &sbi_message;
 
             ogs_fsm_dispatch(&sess->sm, e);
@@ -813,32 +856,38 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             int state = 0;
             bool unknown_res_status = false;
 
-            sbi_xact = e->h.sbi.data;
-            ogs_assert(sbi_xact);
+            sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                    sbi_xact_id <= OGS_MAX_POOL_ID);
 
-            sbi_xact = ogs_sbi_xact_cycle(sbi_xact);
+            sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
             if (!sbi_xact) {
                 /* CLIENT_WAIT timer could remove SBI transaction
                  * before receiving SBI message */
-                ogs_error("SBI transaction has already been removed");
+                ogs_error("SBI transaction has already been removed [%d]",
+                        sbi_xact_id);
                 break;
             }
 
-            sess = (smf_sess_t *)sbi_xact->sbi_object;
-            ogs_assert(sess);
+            sbi_object_id = sbi_xact->sbi_object_id;
+            ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
+                    sbi_object_id <= OGS_MAX_POOL_ID);
 
-            stream = sbi_xact->assoc_stream;
+            if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
+                stream = ogs_sbi_stream_find_by_id(sbi_xact->assoc_stream_id);
+
             state = sbi_xact->state;
             ogs_assert(state);
 
             ogs_sbi_xact_remove(sbi_xact);
 
-            sess = smf_sess_cycle(sess);
+            sess = smf_sess_find_by_id(sbi_object_id);
             if (!sess) {
                 ogs_error("Session has already been removed");
                 break;
             }
-            smf_ue = smf_ue_cycle(sess->smf_ue);
+            smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
             ogs_assert(smf_ue);
 
             if (state == SMF_UECM_STATE_REGISTERED) {
@@ -867,10 +916,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     ogs_assert(true ==
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                            NULL, strerror, NULL));
+                            NULL, strerror, NULL, NULL));
                 ogs_free(strerror);
-
-                OGS_FSM_TRAN(s, smf_gsm_state_exception);
                 break;
             }
 
@@ -974,15 +1021,22 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
              * 4. timer expiration event is processed. (double-free SBI xact)
              *
              * To avoid double-free SBI xact,
-             * we need to check ogs_sbi_xact_cycle()
+             * we need to check ogs_sbi_xact_find_by_id()
              */
-            sbi_xact = ogs_sbi_xact_cycle(e->h.sbi.data);
+            sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+            ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                    sbi_xact_id <= OGS_MAX_POOL_ID);
+
+            sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
             if (!sbi_xact) {
-                ogs_error("SBI transaction has already been removed");
+                ogs_error("SBI transaction has already been removed [%d]",
+                        sbi_xact_id);
                 break;
             }
 
-            stream = sbi_xact->assoc_stream;
+            if (sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID)
+                stream = ogs_sbi_stream_find_by_id(sbi_xact->assoc_stream_id);
             /* Here, we should not use ogs_assert(stream)
              * since 'namf-comm' service has no an associated stream. */
 
@@ -993,7 +1047,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                        "Cannot receive SBI message", NULL));
+                        "Cannot receive SBI message", NULL, NULL));
             }
             break;
 
@@ -1004,10 +1058,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         break;
 
     case SMF_EVT_5GSM_MESSAGE:
-        sess = e->sess;
-        ogs_assert(sess);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
 
@@ -1017,8 +1067,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             return;
         }
 
-        ogs_assert(sess);
-        sess = smf_sess_cycle(sess);
+        sess = smf_sess_find_by_id(e->sess_id);
         if (!sess) {
             ogs_error("Session has already been removed");
             ogs_pkbuf_free(pkbuf);
@@ -1032,16 +1081,11 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         break;
 
     case SMF_EVT_NGAP_MESSAGE:
-        sess = e->sess;
-        ogs_assert(sess);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
         ogs_assert(e->ngap.type);
 
-        ogs_assert(sess);
-        sess = smf_sess_cycle(sess);
+        sess = smf_sess_find_by_id(e->sess_id);
         if (!sess) {
             ogs_error("Session has already been removed");
             ogs_pkbuf_free(pkbuf);

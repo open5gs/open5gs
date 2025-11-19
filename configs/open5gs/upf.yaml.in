@@ -1,5 +1,6 @@
 logger:
-  file: @localstatedir@/log/open5gs/upf.log
+  file:
+    path: @localstatedir@/log/open5gs/upf.log
 #  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
@@ -18,8 +19,10 @@ upf:
     server:
       - address: 127.0.0.7
   session:
-    - subnet: 10.45.0.1/16
-    - subnet: 2001:db8:cafe::1/48
+    - subnet: 10.45.0.0/16
+      gateway: 10.45.0.1
+    - subnet: 2001:db8:cafe::/48
+      gateway: 2001:db8:cafe::1
   metrics:
     server:
       - address: 127.0.0.7
@@ -70,14 +73,16 @@ upf:
 #  $ sudo ip addr add 2001:db8:babe::1/48 dev ogstun3
 #
 #  session:
-#    - subnet: 10.45.0.1/16
+#    - subnet: 10.45.0.0/16
+#      gateway: 10.45.0.1
 #      dnn: internet
-#    - subnet: 2001:db8:cafe::1/48
+#    - subnet: 2001:db8:cafe::/48
 #      dnn: internet
 #      dev: ogstun2
-#    - subnet: 10.46.0.1/16
+#    - subnet: 10.46.0.0/16
+#      gateway: 10.46.0.1
 #      dnn: ims
 #      dev: ogstun3
-#    - subnet: 2001:db8:babe::1/48
+#    - subnet: 2001:db8:babe::/48
 #      dnn: ims
 #      dev: ogstun3

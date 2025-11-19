@@ -239,6 +239,12 @@ ogs_sbi_request_t *udm_nudr_dr_build_query_subscription_provisioned(
             (char *)OGS_SBI_RESOURCE_NAME_SMF_SELECTION_SUBSCRIPTION_DATA;
         break;
 
+    CASE(OGS_SBI_RESOURCE_NAME_NSSAI)
+        sendmsg.h.resource.component[4] = (char *)OGS_SBI_RESOURCE_NAME_AM_DATA;
+        sendmsg.param.fields[0] = (char *)OGS_SBI_RESOURCE_NAME_NSSAI;
+        sendmsg.param.num_of_fields = 1;
+        break;
+
     DEFAULT
     END
 
@@ -256,7 +262,7 @@ ogs_sbi_request_t *udm_nudr_dr_build_update_smf_context(
     ogs_sbi_request_t *request = NULL;
 
     ogs_assert(sess);
-    udm_ue = sess->udm_ue;
+    udm_ue = udm_ue_find_by_id(sess->udm_ue_id);
     ogs_assert(udm_ue);
 
     memset(&message, 0, sizeof(message));
@@ -301,7 +307,7 @@ ogs_sbi_request_t *udm_nudr_dr_build_delete_smf_context(
     ogs_sbi_request_t *request = NULL;
 
     ogs_assert(sess);
-    udm_ue = sess->udm_ue;
+    udm_ue = udm_ue_find_by_id(sess->udm_ue_id);
     ogs_assert(udm_ue);
 
     memset(&message, 0, sizeof(message));

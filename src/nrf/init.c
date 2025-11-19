@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -34,14 +34,14 @@ int nrf_initialize(void)
     ogs_sbi_context_init(OpenAPI_nf_type_NRF);
     nrf_context_init();
 
+    rv = ogs_log_config_domain(
+            ogs_app()->logger.domain, ogs_app()->logger.level);
+    if (rv != OGS_OK) return rv;
+
     rv = ogs_sbi_context_parse_config(APP_NAME, NULL, NULL);
     if (rv != OGS_OK) return rv;
 
     rv = nrf_context_parse_config();
-    if (rv != OGS_OK) return rv;
-
-    rv = ogs_log_config_domain(
-            ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
     rv = nrf_sbi_open();
@@ -59,9 +59,8 @@ static ogs_timer_t *t_termination_holding = NULL;
 
 static void event_termination(void)
 {
-    /*
-     * Add business-login during Daemon termination
-     */
+    /* Gracefully shutdown the server by sending GOAWAY to each session. */
+    ogs_sbi_server_graceful_shutdown_all();
 
     /* Start holding timer */
     t_termination_holding = ogs_timer_add(ogs_app()->timer_mgr, NULL, NULL);

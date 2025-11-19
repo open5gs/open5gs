@@ -1,5 +1,6 @@
 logger:
-  file: @localstatedir@/log/open5gs/mme.log
+  file:
+    path: @localstatedir@/log/open5gs/mme.log
 #  level: info   # fatal|error|warn|info(default)|debug|trace
 
 global:
@@ -163,8 +164,9 @@ mme:
 ################################################################################
 #  o MSC/VLR
 #  sgsap:
-#    server:
-#      - address: 127.0.0.2
+#    client:
+#      - address: msc.open5gs.org # SCTP server address configured on the MSC/VLR
+#        local_address: 127.0.0.2 # SCTP local IP addresses to be bound in the MME
 #        map:
 #          tai:
 #            plmn_id:
@@ -187,7 +189,15 @@ mme:
 #              mcc: 002
 #              mnc: 02
 #            lac: 43692
-#      - address: msc.open5gs.org
+#      - address:       # SCTP server address configured on the MSC/VLR
+#          - 127.0.0.88
+#          - 10.0.0.88
+#          - 172.16.0.88
+#          - 2001:db8:babe::88
+#        local_address: # SCTP local IP addresses to be bound in the MME
+#          - 127.0.0.2
+#          - 192.168.1.4
+#          - 2001:db8:cafe::2
 #        map:
 #          tai:
 #            plmn_id:
@@ -275,6 +285,24 @@ mme:
 #    - plmn_id:
 #        mcc: 999
 #        mnc: 70
+#
+#  o HSS Selection
+#    o realm and host are optional
+#    o realm will be generated from plmn_id if not provided
+#    o host will not be used if not provided
+#  hss_map:
+#    - plmn_id:
+#        mcc: 001
+#        mnc: 01
+#    - plmn_id:
+#        mcc: 002
+#        mnc: 02
+#      realm: epc.mnc002.mcc002.3gppnetwork.org
+#    - plmn_id:
+#        mcc: 999
+#        mnc: 70
+#      realm: localdomain
+#      host: hss.localdomain
 #
 #  o Relative Capacity
 #  relative_capacity: 100

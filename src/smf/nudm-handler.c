@@ -29,13 +29,6 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     smf_ue_t *smf_ue = NULL;
     ogs_pkbuf_t *n1smbuf = NULL;
 
-    OpenAPI_sm_context_created_data_t SmContextCreatedData;
-
-    ogs_sbi_server_t *server = NULL;
-    ogs_sbi_header_t header;
-    ogs_sbi_message_t sendmsg;
-    ogs_sbi_response_t *response = NULL;
-
     OpenAPI_session_management_subscription_data_t
         *SessionManagementSubscriptionData = NULL;
     OpenAPI_list_t *dnnConfigurationList = NULL;
@@ -53,11 +46,8 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
 
     ogs_assert(sess);
     ogs_assert(stream);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
-    server = ogs_sbi_server_from_stream(stream);
-    ogs_assert(server);
-
     ogs_assert(recvmsg);
 
 
@@ -94,7 +84,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
             OGS_5GSM_CAUSE_MISSING_OR_UNKNOWN_DNN);
         ogs_assert(n1smbuf);
 
-        ogs_warn("%s", strerror);
+        ogs_error("%s", strerror);
         smf_sbi_send_sm_context_create_error(stream,
                 OGS_SBI_HTTP_STATUS_NOT_FOUND, OGS_SBI_APP_ERRNO_NULL,
                 strerror, NULL, n1smbuf);
@@ -129,6 +119,12 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
                 continue;
             }
 
+            sessionAmbr = dnnConfiguration->session_ambr;
+            if (!sessionAmbr) {
+                ogs_error("No Session-AMBR");
+                continue;
+            }
+
             if (sess->session.name &&
                 ogs_strcasecmp(sess->session.name,
                     dnnConfigurationMap->key) != 0)
@@ -146,6 +142,12 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
                         }
                     }
                 }
+
+                if (sess->ue_session_type ==
+                        pduSessionTypeList->default_session_type) {
+                    sess->session.session_type =
+                            pduSessionTypeList->default_session_type;
+                }
             }
 
             if (!sess->session.session_type)
@@ -162,18 +164,16 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
                         }
                     }
                 }
+
+                if (sess->ue_ssc_mode == sscModeList->default_ssc_mode) {
+                    sess->session.ssc_mode = sess->ue_ssc_mode;
+                }
             } else {
                 sess->session.ssc_mode = sscModeList->default_ssc_mode;
             }
 
             if (!sess->session.ssc_mode) {
                 ogs_error("SSCMode is not allowed");
-                continue;
-            }
-
-            sessionAmbr = dnnConfiguration->session_ambr;
-            if (!sessionAmbr) {
-                ogs_error("No Session-AMBR");
                 continue;
             }
 
@@ -301,9 +301,39 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     }
 
     if (!sess->session.name) {
-        strerror = ogs_msprintf("[%s:%d] No dnnConfiguration",
+        strerror = ogs_msprintf("[%s:%d] No DNN", smf_ue->supi, sess->psi);
+        ogs_assert(strerror);
+
+        n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
+            OGS_5GSM_CAUSE_MISSING_OR_UNKNOWN_DNN_IN_A_SLICE);
+        ogs_assert(n1smbuf);
+
+        ogs_error("%s", strerror);
+        smf_sbi_send_sm_context_create_error(stream,
+                OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                OGS_SBI_APP_ERRNO_DNN_DENIED,
+                strerror, NULL, n1smbuf);
+        ogs_free(strerror);
+
+        return false;
+    }
+
+    if (!sess->session.ssc_mode) {
+        strerror = ogs_msprintf("[%s:%d] SSCMode is not allowed",
                 smf_ue->supi, sess->psi);
         ogs_assert(strerror);
+
+        n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
+            OGS_5GSM_CAUSE_NOT_SUPPORTED_SSC_MODE);
+        ogs_assert(n1smbuf);
+
+        ogs_error("%s", strerror);
+        smf_sbi_send_sm_context_create_error(stream,
+                OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                OGS_SBI_APP_ERRNO_SSC_DENIED,
+                strerror, NULL, n1smbuf);
+        ogs_free(strerror);
+
         return false;
     }
 
@@ -319,7 +349,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
             OGS_5GSM_CAUSE_INSUFFICIENT_RESOURCES_FOR_SPECIFIC_SLICE_AND_DNN);
         ogs_assert(n1smbuf);
 
-        ogs_warn("%s", strerror);
+        ogs_error("%s", strerror);
         smf_sbi_send_sm_context_create_error(stream,
                 OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                 OGS_SBI_APP_ERRNO_NULL, strerror, NULL, n1smbuf);
@@ -330,20 +360,131 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
 
     ogs_assert(cause_value == OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
 
+
+    r = smf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+            smf_nudm_sdm_build_subscription, sess, stream, 0,
+            (char *)OGS_SBI_RESOURCE_NAME_SM_DATA);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
+
+    return true;
+
+cleanup:
+    ogs_assert(strerror);
+
+    ogs_error("%s", strerror);
+    ogs_assert(true ==
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            recvmsg, strerror, NULL, NULL));
+    ogs_free(strerror);
+
+    return false;
+}
+
+bool smf_nudm_sdm_handle_subscription(smf_sess_t *sess, ogs_sbi_stream_t *stream,
+        ogs_sbi_message_t *recvmsg)
+{
+    int r;
+    int rv;
+    char *strerror = NULL;
+    smf_ue_t *smf_ue;
+
+    ogs_sbi_server_t *server = NULL;
+    ogs_sbi_header_t header;
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_message_t message;
+    ogs_sbi_response_t *response = NULL;
+    OpenAPI_sm_context_created_data_t SmContextCreatedData;
+
+    bool rc;
+    ogs_sbi_client_t *client = NULL;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+
+    ogs_assert(sess);
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+    ogs_assert(smf_ue->supi);
+
+
+    if (!recvmsg->http.location) {
+        strerror = ogs_msprintf("[%s] No http.location", smf_ue->supi);
+        goto cleanup;
+    }
+
+    memset(&header, 0, sizeof(header));
+    header.uri = recvmsg->http.location;
+
+    rv = ogs_sbi_parse_header(&message, &header);
+    if (rv != OGS_OK) {
+        strerror = ogs_msprintf("[%s] Cannot parse http.location [%s]",
+            smf_ue->supi, recvmsg->http.location);
+        goto cleanup;
+    }
+
+    if (!message.h.resource.component[2]) {
+        ogs_sbi_header_free(&header);
+        strerror = ogs_msprintf("[%s] No Subscription ID [%s]",
+            smf_ue->supi, recvmsg->http.location);
+        goto cleanup;
+    }
+
+    rc = ogs_sbi_getaddr_from_uri(
+            &scheme, &fqdn, &fqdn_port, &addr, &addr6, header.uri);
+    if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
+        ogs_sbi_header_free(&header);
+        strerror = ogs_msprintf("[%s] Invalid URI [%s]",
+                smf_ue->supi, header.uri);
+        goto cleanup;
+    }
+
+    client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
+    if (!client) {
+        ogs_debug("[%s] ogs_sbi_client_add()", smf_ue->supi);
+        client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
+        if (!client) {
+            strerror = ogs_msprintf("[%s] ogs_sbi_client_add() failed",
+                    smf_ue->supi);
+
+            ogs_sbi_header_free(&header);
+
+            ogs_free(fqdn);
+            ogs_freeaddrinfo(addr);
+            ogs_freeaddrinfo(addr6);
+
+            goto cleanup;
+        }
+    }
+
+    OGS_SBI_SETUP_CLIENT(&sess->data_change_subscription, client);
+
+    ogs_free(fqdn);
+    ogs_freeaddrinfo(addr);
+    ogs_freeaddrinfo(addr6);
+
+    UDM_SDM_STORE(sess, header.uri, message.h.resource.component[2]);
+
+    ogs_sbi_header_free(&header);
+
+
     /*********************************************************************
      * Send HTTP_STATUS_CREATED(/nsmf-pdusession/v1/sm-context) to the AMF
      *********************************************************************/
 
     memset(&SmContextCreatedData, 0, sizeof(SmContextCreatedData));
-
     memset(&sendmsg, 0, sizeof(sendmsg));
-
     memset(&header, 0, sizeof(header));
+
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION;
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_SM_CONTEXTS;
     header.resource.component[1] = sess->sm_context_ref;
+
+    server = ogs_sbi_server_from_stream(stream);
+    ogs_assert(server);
 
     sendmsg.http.location = ogs_sbi_server_uri(server, &header);
     ogs_assert(sendmsg.http.location);
@@ -373,7 +514,7 @@ cleanup:
     ogs_error("%s", strerror);
     ogs_assert(true ==
         ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-            recvmsg, strerror, NULL));
+            recvmsg, strerror, NULL, NULL));
     ogs_free(strerror);
 
     return false;

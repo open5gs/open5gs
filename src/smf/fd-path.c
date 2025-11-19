@@ -100,7 +100,10 @@ void smf_fd_msg_avp_add_3gpp_uli(smf_sess_t *sess, struct msg *req)
     /* GTPv2C and Diameter 3GPP-User-Location-Information encoding don't match */
     uli_len = ogs_gtp2_parse_uli(
             &uli, &sess->gtp.user_location_information);
-    ogs_assert(sess->gtp.user_location_information.len == uli_len);
+    if (sess->gtp.user_location_information.len != uli_len) {
+        ogs_error("Invalid User Location Information(ULI)");
+        return;
+    }
 
     ogs_assert(sess->gtp.user_location_information.data);
     ogs_assert(sess->gtp.user_location_information.len);

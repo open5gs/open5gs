@@ -105,7 +105,7 @@ ogs_app_local_conf_t *ogs_local_conf(void)
     return &local_conf;
 }
 
-static int global_conf_prepare(void)
+int ogs_app_global_conf_prepare(void)
 {
     global_conf.sockopt.no_delay = true;
 
@@ -134,15 +134,36 @@ static int global_conf_validation(void)
     return OGS_OK;
 }
 
+int ogs_app_count_nf_conf_sections(const char *conf_section)
+{
+    if (!strcmp(conf_section, "amf"))
+        global_conf.parameter.amf_count++;
+    else if (!strcmp(conf_section, "smf"))
+        global_conf.parameter.smf_count++;
+    else if (!strcmp(conf_section, "upf"))
+        global_conf.parameter.upf_count++;
+    else if (!strcmp(conf_section, "ausf"))
+        global_conf.parameter.ausf_count++;
+    else if (!strcmp(conf_section, "udm"))
+        global_conf.parameter.udm_count++;
+    else if (!strcmp(conf_section, "pcf"))
+        global_conf.parameter.pcf_count++;
+    else if (!strcmp(conf_section, "nssf"))
+        global_conf.parameter.nssf_count++;
+    else if (!strcmp(conf_section, "bsf"))
+        global_conf.parameter.bsf_count++;
+    else if (!strcmp(conf_section, "udr"))
+        global_conf.parameter.udr_count++;
+
+    return OGS_OK;
+}
+
 int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent)
 {
     int rv;
     ogs_yaml_iter_t global_iter;
 
     ogs_assert(parent);
-
-    rv = global_conf_prepare();
-    if (rv != OGS_OK) return rv;
 
     ogs_yaml_iter_recurse(parent, &global_iter);
     while (ogs_yaml_iter_next(&global_iter)) {
@@ -225,6 +246,12 @@ int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent)
                         ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key, "use_openair")) {
                     global_conf.parameter.use_openair =
+                        ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "use_upg_vpp")) {
+                    global_conf.parameter.use_upg_vpp =
+                        ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "fake_csfb")) {
+                    global_conf.parameter.fake_csfb =
                         ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key,
                             "no_ipv4v6_local_addr_in_packet_filter")) {
@@ -408,8 +435,8 @@ static int local_conf_prepare(void)
      *  Heartbeat Interval(e.g: 10 seconds) + No Heartbeat Margin(1 second) */
     local_conf.time.nf_instance.no_heartbeat_margin = 1;
 
-    /* 3600 seconds = 1 hour */
-    local_conf.time.nf_instance.validity_duration = 3600;
+    /* 30 seconds */
+    local_conf.time.nf_instance.validity_duration = 30;
 
     /* 86400 seconds = 1 day */
     local_conf.time.subscription.validity_duration = 86400;
@@ -459,6 +486,7 @@ int ogs_app_parse_local_conf(const char *local)
     int rv;
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
+    int idx = 0;
 
     document = ogs_app()->document;
     ogs_assert(document);
@@ -470,7 +498,8 @@ int ogs_app_parse_local_conf(const char *local)
     while (ogs_yaml_iter_next(&root_iter)) {
         const char *root_key = ogs_yaml_iter_key(&root_iter);
         ogs_assert(root_key);
-        if (!strcmp(root_key, local)) {
+        if (!strcmp(root_key, local) &&
+            (idx++ == ogs_app()->config_section_id)) {
             ogs_yaml_iter_t local_iter;
             ogs_yaml_iter_recurse(&root_iter, &local_iter);
             while (ogs_yaml_iter_next(&local_iter)) {
@@ -724,9 +753,83 @@ int ogs_app_parse_sockopt_config(
     return OGS_OK;
 }
 
+/*----------------------------------------------------------------------
+ * Function: ogs_app_parse_supi_range_conf
+ *
+ *   Parse the supi_range configuration from a YAML iterator.
+ *
+ *   The expected YAML format is:
+ *
+ *     supi_range:
+ *       - 999700000000001-999700000099999
+ *       - 310789000000005-310789000000888
+ *
+ *   Both start and end must be provided.
+ *
+ * Returns:
+ *   OGS_OK on success, OGS_ERROR on failure.
+ *----------------------------------------------------------------------*/
+int ogs_app_parse_supi_range_conf(
+        ogs_yaml_iter_t *parent, ogs_supi_range_t *supi_range)
+{
+    ogs_yaml_iter_t range_iter;
+
+    ogs_assert(parent);
+    ogs_assert(supi_range);
+
+    memset(supi_range, 0, sizeof(ogs_supi_range_t));
+
+    /* Recurse into the supi_range array node */
+    ogs_yaml_iter_recurse(parent, &range_iter);
+    ogs_assert(ogs_yaml_iter_type(&range_iter) != YAML_MAPPING_NODE);
+
+    do {
+        char *v = NULL;
+        char *start_str = NULL, *end_str = NULL;
+
+        if (ogs_yaml_iter_type(&range_iter) == YAML_SEQUENCE_NODE) {
+            if (!ogs_yaml_iter_next(&range_iter))
+                break;
+        }
+
+        v = (char *)ogs_yaml_iter_value(&range_iter);
+
+        if (v) {
+            ogs_assert(supi_range->num < OGS_MAX_NUM_OF_SUPI_RANGE);
+
+            /* Split the string on '-' */
+            start_str = strsep(&v, "-");
+            if (start_str == NULL || strlen(start_str) == 0) {
+                ogs_error("Invalid supi_range starter bound: %s", v);
+                return OGS_ERROR;
+            }
+
+            end_str = v;
+            if (end_str == NULL || strlen(end_str) == 0) {
+                ogs_error("Invalid supi_range upper bound: %s", v);
+                return OGS_ERROR;
+            }
+
+            supi_range->start[supi_range->num] =
+                ogs_uint64_from_string_decimal(start_str);
+            supi_range->end[supi_range->num] =
+                ogs_uint64_from_string_decimal(end_str);
+
+            supi_range->num++;
+        }
+
+    } while (ogs_yaml_iter_type(&range_iter) == YAML_SEQUENCE_NODE);
+
+    return OGS_OK;
+}
+
 static int parse_br_conf(ogs_yaml_iter_t *parent, ogs_bitrate_t *br)
 {
     ogs_yaml_iter_t br_iter;
+
+    ogs_assert(parent);
+    ogs_assert(br);
+
     ogs_yaml_iter_recurse(parent, &br_iter);
 
     while (ogs_yaml_iter_next(&br_iter)) {
@@ -1162,11 +1265,12 @@ int ogs_app_parse_session_conf(
     return OGS_OK;
 }
 
-ogs_app_policy_conf_t *ogs_app_policy_conf_add(ogs_plmn_id_t *plmn_id)
+ogs_app_policy_conf_t *ogs_app_policy_conf_add(
+        ogs_supi_range_t *supi_range, ogs_plmn_id_t *plmn_id)
 {
     ogs_app_policy_conf_t *policy_conf = NULL;
 
-    ogs_assert(plmn_id);
+    ogs_assert(supi_range || plmn_id);
 
     ogs_pool_alloc(&policy_conf_pool, &policy_conf);
     if (!policy_conf) {
@@ -1176,7 +1280,25 @@ ogs_app_policy_conf_t *ogs_app_policy_conf_add(ogs_plmn_id_t *plmn_id)
     }
     memset(policy_conf, 0, sizeof *policy_conf);
 
-    memcpy(&policy_conf->plmn_id, plmn_id, sizeof(ogs_plmn_id_t));
+    if (supi_range) {
+        int i;
+
+        memcpy(&policy_conf->supi_range, supi_range, sizeof(ogs_supi_range_t));
+
+        ogs_info("SUPI[%d]", policy_conf->supi_range.num);
+        for (i = 0; i < policy_conf->supi_range.num; i++)
+            ogs_info("    START[%lld]-END[%lld]",
+                    (long long)policy_conf->supi_range.start[i],
+                    (long long)policy_conf->supi_range.end[i]);
+
+    }
+    if (plmn_id) {
+        policy_conf->plmn_id_valid = true;
+        memcpy(&policy_conf->plmn_id, plmn_id, sizeof(ogs_plmn_id_t));
+        ogs_info("PLMN_ID[MCC:%03d.MNC:%03d]",
+                ogs_plmn_id_mcc(&policy_conf->plmn_id),
+                ogs_plmn_id_mnc(&policy_conf->plmn_id));
+    }
 
     ogs_list_init(&policy_conf->slice_list);
 
@@ -1187,19 +1309,60 @@ ogs_app_policy_conf_t *ogs_app_policy_conf_add(ogs_plmn_id_t *plmn_id)
     return policy_conf;
 }
 
-ogs_app_policy_conf_t *ogs_app_policy_conf_find_by_plmn_id(
-        ogs_plmn_id_t *plmn_id)
+ogs_app_policy_conf_t *ogs_app_policy_conf_find(
+        char *supi, ogs_plmn_id_t *plmn_id)
 {
-    ogs_app_policy_conf_t *policy_conf = NULL;
+    ogs_app_policy_conf_t *policy_conf;
+    int i;
 
-    ogs_assert(plmn_id);
+    char *supi_type = NULL;
+    char *supi_id = NULL;
+    uint64_t supi_decimal;
+
+    ogs_assert(supi);
+
+    supi_type = ogs_id_get_type(supi);
+    ogs_assert(supi_type);
+    supi_id = ogs_id_get_value(supi);
+    ogs_assert(supi_id);
+
+    supi_decimal = ogs_uint64_from_string_decimal(supi_id);
+
+    ogs_free(supi_type);
+    ogs_free(supi_id);
 
     ogs_list_for_each(&local_conf.policy_list, policy_conf) {
-        if (memcmp(&policy_conf->plmn_id, plmn_id, sizeof(ogs_plmn_id_t)) == 0)
-            break;
+        /* If supi_range is set, check if supi_decimal falls within
+         * any of the defined ranges.
+         */
+        if (policy_conf->supi_range.num > 0) {
+            int in_range = 0;
+            for (i = 0; i < policy_conf->supi_range.num; i++) {
+                if ((supi_decimal >= policy_conf->supi_range.start[i]) &&
+                    (supi_decimal <= policy_conf->supi_range.end[i])) {
+                    in_range = 1;
+                    break;
+                }
+            }
+            if (!in_range) {
+                continue;
+            }
+        }
+
+        /* If a plmn_id is set and it does not match the
+         * current policy's plmn_id, skip this policy.
+         */
+        if (policy_conf->plmn_id_valid &&
+            memcmp(&policy_conf->plmn_id, plmn_id,
+                   sizeof(ogs_plmn_id_t)) != 0) {
+            continue;
+        }
+
+        /* Both conditions met; return this policy configuration */
+        return policy_conf;
     }
 
-    return policy_conf;
+    return NULL;
 }
 void ogs_app_policy_conf_remove(ogs_app_policy_conf_t *policy_conf)
 {
@@ -1229,7 +1392,6 @@ ogs_app_slice_conf_t *ogs_app_slice_conf_add(
 
     ogs_assert(policy_conf);
     ogs_assert(s_nssai);
-    ogs_assert(s_nssai->sst);
 
     ogs_pool_alloc(&slice_conf_pool, &slice_conf);
     if (!slice_conf) {
@@ -1260,7 +1422,6 @@ ogs_app_slice_conf_t *ogs_app_slice_conf_find_by_s_nssai(
 
     ogs_assert(policy_conf);
     ogs_assert(s_nssai);
-    ogs_assert(s_nssai->sst);
 
     ogs_list_for_each(&policy_conf->slice_list, slice_conf) {
         if (slice_conf->data.s_nssai.sst == s_nssai->sst &&
@@ -1400,29 +1561,26 @@ void ogs_app_session_conf_remove_all(ogs_app_slice_conf_t *slice_conf)
 }
 
 int ogs_app_config_session_data(
-        ogs_plmn_id_t *plmn_id, ogs_s_nssai_t *s_nssai, char *dnn,
+        char *supi, ogs_plmn_id_t *plmn_id, ogs_s_nssai_t *s_nssai, char *dnn,
         ogs_session_data_t *session_data)
 {
     ogs_app_policy_conf_t *policy_conf = NULL;
     ogs_app_slice_conf_t *slice_conf = NULL;
     ogs_app_session_conf_t *session_conf = NULL;
 
+    ogs_assert(supi);
     ogs_assert(dnn);
     ogs_assert(session_data);
 
-    if (plmn_id) {
-        policy_conf = ogs_app_policy_conf_find_by_plmn_id(plmn_id);
-        if (!policy_conf) {
-            ogs_error("No POLICY [MCC:%03d,MNC:%03d]",
-                    ogs_plmn_id_mcc(plmn_id), ogs_plmn_id_mnc(plmn_id));
-            return OGS_ERROR;
-        }
-    } else {
-        policy_conf = ogs_list_first(&ogs_local_conf()->policy_list);
-        if (!policy_conf) {
-            ogs_error("No default POLICY for EPC");
-            return OGS_ERROR;
-        }
+    policy_conf = ogs_app_policy_conf_find(supi, plmn_id);
+    if (!policy_conf) {
+        if (plmn_id)
+            ogs_error("No POLICY [SUPI:%s] [MCC:%03d,MNC:%03d]",
+                    supi, ogs_plmn_id_mcc(plmn_id), ogs_plmn_id_mnc(plmn_id));
+        else
+            ogs_error("No POLICY [SUPI:%s]", supi);
+
+        return OGS_ERROR;
     }
 
     if (s_nssai) {

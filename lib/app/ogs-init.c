@@ -35,6 +35,7 @@ int ogs_app_initialize(
         char *log_file;
         char *log_level;
         char *domain_mask;
+        char *config_section_id;
     } optarg;
 
     ogs_core_initialize();
@@ -50,7 +51,7 @@ int ogs_app_initialize(
     memset(&optarg, 0, sizeof(optarg));
 
     ogs_getopt_init(&options, (char**)argv);
-    while ((opt = ogs_getopt(&options, "c:l:e:m:")) != -1) {
+    while ((opt = ogs_getopt(&options, "c:l:e:m:k:")) != -1) {
         switch (opt) {
         case 'c':
             optarg.config_file = options.optarg;
@@ -63,6 +64,9 @@ int ogs_app_initialize(
             break;
         case 'm':
             optarg.domain_mask = options.optarg;
+            break;
+        case 'k':
+            optarg.config_section_id = options.optarg;
             break;
         case '?':
         default:
@@ -114,6 +118,9 @@ int ogs_app_initialize(
             ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
+    ogs_log_set_timestamp(ogs_app()->logger_default.timestamp,
+                          ogs_app()->logger.timestamp);
+
     /**************************************************************************
      * Stage 5 : Setup Database Module
      */
@@ -121,7 +128,14 @@ int ogs_app_initialize(
         ogs_app()->db_uri = ogs_env_get("DB_URI");
 
     /**************************************************************************
-     * Stage 6 : Print Banner
+     * Stage 6 : Setup configuration section ID for running multiple NF from
+     * same config file
+     */
+    if (optarg.config_section_id)
+        ogs_app()->config_section_id = atoi(optarg.config_section_id);
+
+    /**************************************************************************
+     * Stage 7 : Print Banner
      */
     if (ogs_app()->version) {
         ogs_log_print(OGS_LOG_INFO,
@@ -141,7 +155,7 @@ int ogs_app_initialize(
     }
 
     /**************************************************************************
-     * Stage 7 : Queue, Timer and Poll
+     * Stage 8 : Queue, Timer and Poll
      */
     ogs_app()->queue = ogs_queue_create(ogs_app()->pool.event);
     ogs_assert(ogs_app()->queue);
@@ -197,7 +211,7 @@ static int read_config(void)
             break;
         case YAML_SCANNER_ERROR:
             if (parser.context)
-                ogs_error("Scanner error - %s at line %zu, column %zu"
+                ogs_error("Scanner error - %s at line %zu, column %zu "
                         "%s at line %zu, column %zu", parser.context,
                         parser.context_mark.line+1,
                         parser.context_mark.column+1,
@@ -210,7 +224,7 @@ static int read_config(void)
             break;
         case YAML_PARSER_ERROR:
             if (parser.context)
-                ogs_error("Parser error - %s at line %zu, column %zu"
+                ogs_error("Parser error - %s at line %zu, column %zu "
                         "%s at line %zu, column %zu", parser.context,
                         parser.context_mark.line+1,
                         parser.context_mark.column+1,
@@ -243,8 +257,13 @@ static int read_config(void)
 
 static int context_prepare(void)
 {
+    int rv;
+
 #define USRSCTP_LOCAL_UDP_PORT      9899
     ogs_app()->usrsctp.udp_port = USRSCTP_LOCAL_UDP_PORT;
+
+    rv = ogs_app_global_conf_prepare();
+    if (rv != OGS_OK) return rv;
 
     return OGS_OK;
 }
@@ -252,6 +271,57 @@ static int context_prepare(void)
 static int context_validation(void)
 {
     return OGS_OK;
+}
+
+static void parse_config_logger_file(ogs_yaml_iter_t *logger_iter,
+                                     const char *logger_key)
+{
+    ogs_yaml_iter_t iter;
+
+    /* Legacy format:
+     *   logger:
+     *     file: /var/log/open5gs/mme.log */
+    if (!strcmp(logger_key, "file") && ogs_yaml_iter_has_value(logger_iter)) {
+        ogs_app()->logger.file = ogs_yaml_iter_value(logger_iter);
+
+        ogs_warn("Please change the configuration file as below.");
+        ogs_log_print(OGS_LOG_WARN, "\n<OLD Format>\n");
+        ogs_log_print(OGS_LOG_WARN, "logger:\n");
+        ogs_log_print(OGS_LOG_WARN, "  file: %s\n", ogs_app()->logger.file);
+        ogs_log_print(OGS_LOG_WARN, "\n<NEW Format>\n");
+        ogs_log_print(OGS_LOG_WARN, "logger:\n");
+        ogs_log_print(OGS_LOG_WARN, "  file:\n");
+        ogs_log_print(OGS_LOG_WARN, "    path: %s\n", ogs_app()->logger.file);
+        ogs_log_print(OGS_LOG_WARN, "\n\n\n");
+        return;
+    }
+
+    /* Current format:
+     *   logger:
+     *     default:
+     *       timestamp: false
+     *     file:
+     *       path: /var/log/open5gs/mme.log
+     *       timestamp: true */
+    ogs_yaml_iter_recurse(logger_iter, &iter);
+    while (ogs_yaml_iter_next(&iter)) {
+        const char *key = ogs_yaml_iter_key(&iter);
+        ogs_assert(key);
+        if (!strcmp(key, "timestamp")) {
+            ogs_log_ts_e ts = ogs_yaml_iter_bool(&iter)
+                              ? OGS_LOG_TS_ENABLED
+                              : OGS_LOG_TS_DISABLED;
+            if (!strcmp(logger_key, "default")) {
+                ogs_app()->logger_default.timestamp = ts;
+            } else if (!strcmp(logger_key, "file")) {
+                ogs_app()->logger.timestamp = ts;
+            }
+        } else if (!strcmp(key, "path")) {
+            if (!strcmp(logger_key, "file")) {
+                ogs_app()->logger.file = ogs_yaml_iter_value(&iter);
+            }
+        }
+    }
 }
 
 static int parse_config(void)
@@ -278,9 +348,8 @@ static int parse_config(void)
             while (ogs_yaml_iter_next(&logger_iter)) {
                 const char *logger_key = ogs_yaml_iter_key(&logger_iter);
                 ogs_assert(logger_key);
-                if (!strcmp(logger_key, "file")) {
-                    ogs_app()->logger.file = ogs_yaml_iter_value(&logger_iter);
-                } else if (!strcmp(logger_key, "level")) {
+                parse_config_logger_file(&logger_iter, logger_key);
+                if (!strcmp(logger_key, "level")) {
                     ogs_app()->logger.level =
                         ogs_yaml_iter_value(&logger_iter);
                 } else if (!strcmp(logger_key, "domain")) {
@@ -292,6 +361,12 @@ static int parse_config(void)
             rv = ogs_app_parse_global_conf(&root_iter);
             if (rv != OGS_OK) {
                 ogs_error("ogs_global_conf_parse_config() failed");
+                return rv;
+            }
+        } else {
+            rv = ogs_app_count_nf_conf_sections(root_key);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_app_count_nf_conf_sections() failed");
                 return rv;
             }
         }

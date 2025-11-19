@@ -77,10 +77,13 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
     }
     Amf3GppAccessRegistration.pei = amf_ue->pei;
 
-    message.Amf3GppAccessRegistration = &Amf3GppAccessRegistration;
+    if (amf_ue->nas.registration.value ==
+                OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL) {
+        Amf3GppAccessRegistration.is_initial_registration_ind = true;
+        Amf3GppAccessRegistration.initial_registration_ind = 1;
+    }
 
-    message.http.custom.callback =
-        (char *)OGS_SBI_CALLBACK_NUDM_UECM_DEREGISTRATION_NOTIFICATION;
+    message.Amf3GppAccessRegistration = &Amf3GppAccessRegistration;
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
@@ -158,6 +161,10 @@ ogs_sbi_request_t *amf_nudm_sdm_build_get(amf_ue_t *amf_ue, void *data)
     message.h.resource.component[0] = amf_ue->supi;
     message.h.resource.component[1] = data;
 
+    message.param.plmn_id_presence = true;
+    memcpy(&message.param.plmn_id, &amf_ue->home_plmn_id,
+            sizeof(message.param.plmn_id));
+
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
 
@@ -172,6 +179,7 @@ ogs_sbi_request_t *amf_nudm_sdm_build_subscription(amf_ue_t *amf_ue, void *data)
     ogs_sbi_server_t *server = NULL;
 
     OpenAPI_sdm_subscription_t SDMSubscription;
+    uint64_t supported_features = 0;
 
     char *monres = NULL;
 
@@ -222,16 +230,22 @@ ogs_sbi_request_t *amf_nudm_sdm_build_subscription(amf_ue_t *amf_ue, void *data)
     SDMSubscription.is_implicit_unsubscribe = true;
     SDMSubscription.implicit_unsubscribe = 1;
 
-    message.SDMSubscription = &SDMSubscription;
+    OGS_SBI_FEATURES_SET(supported_features,
+            OGS_SBI_NUDM_SDM_LIMITED_SUBSCRIPTIONS);
+    SDMSubscription.supported_features =
+            ogs_uint64_to_string(supported_features);
 
-    message.http.custom.callback =
-        (char *)OGS_SBI_CALLBACK_NUDM_SDM_NOTIFICATION;
+    SDMSubscription.is_unique_subscription = true;
+    SDMSubscription.unique_subscription = 1;
+
+    message.SDMSubscription = &SDMSubscription;
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);
 
 end:
-
+    if (SDMSubscription.supported_features)
+        ogs_free(SDMSubscription.supported_features);
     if (monres)
         ogs_free(monres);
     OpenAPI_list_free(SDMSubscription.monitored_resource_uris);
@@ -249,16 +263,11 @@ ogs_sbi_request_t *amf_nudm_sdm_build_subscription_delete(
 
     ogs_assert(amf_ue);
     ogs_assert(amf_ue->supi);
-    ogs_assert(amf_ue->data_change_subscription_id);
+    ogs_assert(amf_ue->data_change_subscription.resource_uri);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_SDM;
-    message.h.api.version = (char *)OGS_SBI_API_V2;
-    message.h.resource.component[0] = amf_ue->supi;
-    message.h.resource.component[1] =
-            (char *)OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS;
-    message.h.resource.component[2] = amf_ue->data_change_subscription_id;
+    message.h.uri = amf_ue->data_change_subscription.resource_uri;
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);

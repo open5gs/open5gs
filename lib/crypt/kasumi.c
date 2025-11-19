@@ -292,7 +292,13 @@ void kasumi_f8(u8 *key, u32 count, u32 bearer, u32 dir, u8 *data, int length)
 	/* Construct the modified key and then "kasumi" A */
 	for( n=0; n<16; ++n )
 		ModKey[n] = (u8)(key[n] ^ 0x55);
+
+	/* Clang scan-build SA: Result of operation is garbage: The function kasumi_key_schedule() is reporting that
+	 * the array parameter "k" (ModKey) has garbage/uninitialized values. Don't see how that is possible
+	 * because the array is fully populated by the loop above. */
+#ifndef __clang_analyzer__
 	kasumi_key_schedule( ModKey );
+#endif
 
 	kasumi( A.b8 );	/* First encryption to create modifier */
 
@@ -454,7 +460,13 @@ u8 *kasumi_f9(u8 *key, u32 count, u32 fresh, u32 dir, u8 *data, int length)
 	 * key XORd with 0xAAAA.....						*/
 	for( n=0; n<16; ++n )
 		ModKey[n] = (u8)*key++ ^ 0xAA;
+
+	/* Clang scan-build SA: Result of operation is garbage: The function kasumi_key_schedule() is reporting that
+	 * the array parameter "k" (ModKey) has garbage/uninitialized values. Don't see how that is possible
+	 * because the array is fully populated by the loop above. */
+#ifndef __clang_analyzer__
 	kasumi_key_schedule( ModKey );
+#endif
 	kasumi( B.b8 );
 
 	/* We return the left-most 32-bits of the result */

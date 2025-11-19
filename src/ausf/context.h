@@ -44,6 +44,7 @@ typedef struct ausf_context_s {
 
 struct ausf_ue_s {
     ogs_sbi_object_t sbi;
+    ogs_pool_id_t id;
     ogs_fsm_t sm;
 
     char *ctx_id;
@@ -52,7 +53,25 @@ struct ausf_ue_s {
     char *serving_network_name;
 
     OpenAPI_auth_type_e auth_type;
-    char *auth_events_url;
+#define AUTH_EVENT_CLEAR(__aUSF) \
+    do { \
+        ogs_assert((__aUSF)); \
+        if ((__aUSF)->auth_event.resource_uri) \
+            ogs_free((__aUSF)->auth_event.resource_uri); \
+        (__aUSF)->auth_event.resource_uri = NULL; \
+    } while(0)
+#define AUTH_EVENT_STORE(__aUSF, __rESOURCE_URI) \
+    do { \
+        ogs_assert((__aUSF)); \
+        ogs_assert((__rESOURCE_URI)); \
+        AUTH_EVENT_CLEAR(__aUSF); \
+        (__aUSF)->auth_event.resource_uri = ogs_strdup(__rESOURCE_URI); \
+        ogs_assert((__aUSF)->auth_event.resource_uri); \
+    } while(0)
+    struct {
+        char *resource_uri;
+        ogs_sbi_client_t *client;
+    } auth_event;
     OpenAPI_auth_result_e auth_result;
 
     uint8_t rand[OGS_RAND_LEN];
@@ -75,8 +94,8 @@ ausf_ue_t *ausf_ue_find_by_suci(char *suci);
 ausf_ue_t *ausf_ue_find_by_supi(char *supi);
 ausf_ue_t *ausf_ue_find_by_suci_or_supi(char *suci_or_supi);
 ausf_ue_t *ausf_ue_find_by_ctx_id(char *ctx_id);
+ausf_ue_t *ausf_ue_find_by_id(ogs_pool_id_t id);
 
-ausf_ue_t *ausf_ue_cycle(ausf_ue_t *ausf_ue);
 int get_ue_load(void);
 
 #ifdef __cplusplus

@@ -154,16 +154,16 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     pdu_address->pdn_type = sess->session.session_type;
 
     if (pdu_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        pdu_address->addr = sess->session.paa.addr;
+        pdu_address->addr = sess->paa.addr;
         pdu_address->length = OGS_NAS_PDU_ADDRESS_IPV4_LEN;
     } else if (pdu_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV6) {
         memcpy(pdu_address->addr6,
-                sess->session.paa.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
+                sess->paa.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
         pdu_address->length = OGS_NAS_PDU_ADDRESS_IPV6_LEN;
     } else if (pdu_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        pdu_address->both.addr = sess->session.paa.both.addr;
+        pdu_address->both.addr = sess->paa.both.addr;
         memcpy(pdu_address->both.addr6,
-            sess->session.paa.both.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
+            sess->paa.both.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
         pdu_address->length = OGS_NAS_PDU_ADDRESS_IPV4V6_LEN;
     } else {
         ogs_error("Unexpected PDN Type %u", pdu_address->pdn_type);
@@ -186,7 +186,8 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     /* S-NSSAI */
     pdu_session_establishment_accept->presencemask |=
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_S_NSSAI_PRESENT;
-    ogs_nas_build_s_nssai2(nas_s_nssai, &sess->s_nssai, &sess->mapped_hplmn);
+    ogs_nas_build_s_nssai2(nas_s_nssai, &sess->s_nssai,
+        (sess->mapped_hplmn_presence) ? &sess->mapped_hplmn : NULL);
 
     /* QoS flow descriptions */
     memset(&qos_flow_description, 0, sizeof(qos_flow_description));

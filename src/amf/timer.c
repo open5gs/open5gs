@@ -49,9 +49,6 @@ static amf_timer_cfg_t g_amf_timer_cfg[MAX_NUM_OF_AMF_TIMER] = {
         { .have = true, .duration = ogs_time_from_sec(30) },
 };
 
-static void gmm_timer_event_send(
-        amf_timer_e timer_id, amf_ue_t *amf_ue);
-
 amf_timer_cfg_t *amf_timer_cfg(amf_timer_e id)
 {
     ogs_assert(id < MAX_NUM_OF_AMF_TIMER);
@@ -124,16 +121,17 @@ void amf_timer_ng_delayed_send(void *data)
 }
 
 static void gmm_timer_event_send(
-        amf_timer_e timer_id, amf_ue_t *amf_ue)
+        amf_timer_e timer_id, void *data)
 {
     int rv;
     amf_event_t *e = NULL;
-    ogs_assert(amf_ue);
+
+    ogs_assert(data);
 
     e = amf_event_new(AMF_EVENT_5GMM_TIMER);
     ogs_assert(e);
     e->h.timer_id = timer_id;
-    e->amf_ue = amf_ue;
+    e->amf_ue_id = OGS_POINTER_TO_UINT(data);
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
@@ -172,16 +170,14 @@ void amf_timer_ng_holding_timer_expire(void *data)
 {
     int rv;
     amf_event_t *e = NULL;
-    ran_ue_t *ran_ue = NULL;
 
     ogs_assert(data);
-    ran_ue = data;
 
     e = amf_event_new(AMF_EVENT_NGAP_TIMER);
     ogs_assert(e);
 
     e->h.timer_id = AMF_TIMER_NG_HOLDING;
-    e->ran_ue = ran_ue;
+    e->ran_ue_id = OGS_POINTER_TO_UINT(data);
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {

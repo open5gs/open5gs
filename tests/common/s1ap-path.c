@@ -126,6 +126,7 @@ void tests1ap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         case S1AP_ProcedureCode_id_S1Setup:
             break;
         case S1AP_ProcedureCode_id_HandoverPreparation:
+            tests1ap_handle_handover_preparation_failure(test_ue, pdu);
             break;
         default:
             ogs_error("Not implemented(choice:%d, proc:%d)",

@@ -77,6 +77,7 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
     int rv;
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
+    int idx = 0;
 
     document = ogs_app()->document;
     ogs_assert(document);
@@ -88,7 +89,8 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
     while (ogs_yaml_iter_next(&root_iter)) {
         const char *root_key = ogs_yaml_iter_key(&root_iter);
         ogs_assert(root_key);
-        if (!strcmp(root_key, local)) {
+        if ((!strcmp(root_key, local)) &&
+            (idx++ == ogs_app()->config_section_id)) {
             ogs_yaml_iter_t local_iter;
             ogs_yaml_iter_recurse(&root_iter, &local_iter);
             while (ogs_yaml_iter_next(&local_iter)) {
@@ -198,6 +200,7 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                                 server_key);
                                 }
 
+                                /* Add address information */
                                 addr = NULL;
                                 for (i = 0; i < num; i++) {
                                     rv = ogs_addaddrinfo(&addr,
@@ -205,17 +208,30 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                     ogs_assert(rv == OGS_OK);
                                 }
 
+                                /* Add each address as a separate socknode */
                                 if (addr) {
-                                    if (ogs_global_conf()->parameter.
-                                            no_ipv4 == 0)
-                                        ogs_socknode_add(
-                                            &self.gtpc_list, AF_INET, addr,
-                                            is_option ? &option : NULL);
-                                    if (ogs_global_conf()->parameter.
-                                            no_ipv6 == 0)
-                                        ogs_socknode_add(
-                                            &self.gtpc_list6, AF_INET6, addr,
-                                            is_option ? &option : NULL);
+                                    ogs_sockaddr_t *current = addr;
+                                    while (current) {
+                                        if (current->ogs_sa_family ==
+                                                AF_INET &&
+                                            ogs_global_conf()->
+                                                parameter.no_ipv4 == 0) {
+                                            ogs_socknode_add(&self.gtpc_list,
+                                                             AF_INET, current,
+                                                             is_option ?
+                                                             &option : NULL);
+                                        }
+                                        if (current->ogs_sa_family ==
+                                                AF_INET6 &&
+                                            ogs_global_conf()->
+                                                parameter.no_ipv6 == 0) {
+                                            ogs_socknode_add(&self.gtpc_list6,
+                                                             AF_INET6, current,
+                                                             is_option ?
+                                                             &option : NULL);
+                                        }
+                                        current = current->next;
+                                    }
                                     ogs_freeaddrinfo(addr);
                                 }
 
@@ -415,16 +431,28 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                 ogs_list_init(&list6);
 
                                 if (addr) {
-                                    if (ogs_global_conf()->parameter.
-                                            no_ipv4 == 0)
-                                        ogs_socknode_add(
-                                            &list, AF_INET, addr,
-                                            is_option ? &option : NULL);
-                                    if (ogs_global_conf()->parameter.
-                                            no_ipv6 == 0)
-                                        ogs_socknode_add(
-                                            &list6, AF_INET6, addr,
-                                            is_option ? &option : NULL);
+                                    ogs_sockaddr_t *current = addr;
+                                    while (current) {
+                                        if (current->ogs_sa_family ==
+                                                AF_INET &&
+                                            ogs_global_conf()->
+                                                parameter.no_ipv4 == 0) {
+                                            ogs_socknode_add(&list,
+                                                             AF_INET, current,
+                                                             is_option ?
+                                                             &option : NULL);
+                                        }
+                                        if (current->ogs_sa_family ==
+                                                AF_INET6 &&
+                                            ogs_global_conf()->
+                                                parameter.no_ipv6 == 0) {
+                                            ogs_socknode_add(&list6,
+                                                             AF_INET6, current,
+                                                             is_option ?
+                                                             &option : NULL);
+                                        }
+                                        current = current->next;
+                                    }
                                     ogs_freeaddrinfo(addr);
                                 }
 

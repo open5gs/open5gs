@@ -35,17 +35,17 @@ ogs_mongoc_mongoc_client_get_server_status (mongoc_client_t *client, /* IN */
                                  bson_t *reply,                   /* OUT */
                                  bson_error_t *error)             /* OUT */
 {
-   bson_t cmd = BSON_INITIALIZER;
-   bool ret = false;
+    bson_t cmd = BSON_INITIALIZER;
+    bool ret = false;
 
-   BSON_ASSERT (client);
+    BSON_ASSERT (client);
 
-   BSON_APPEND_INT32 (&cmd, "ping", 1);
-   ret = mongoc_client_command_simple (
-      client, "admin", &cmd, read_prefs, reply, error);
-   bson_destroy (&cmd);
+    BSON_APPEND_INT32 (&cmd, "ping", 1);
+    ret = mongoc_client_command_simple (
+        client, "admin", &cmd, read_prefs, reply, error);
+    bson_destroy (&cmd);
 
-   return ret;
+    return ret;
 }
 
 static char *masked_db_uri(const char *db_uri)
@@ -104,7 +104,7 @@ int ogs_mongoc_init(const char *db_uri)
         return OGS_ERROR;
     }
 
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 4
+#if MONGOC_CHECK_VERSION(1, 4, 0)
     mongoc_client_set_error_api(self.client, 2);
 #endif
 
@@ -182,7 +182,7 @@ void ogs_dbi_final(void)
         mongoc_collection_destroy(self.collection.subscriber);
     }
 
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
+#if MONGOC_CHECK_VERSION(1, 9, 0)
     if (self.stream) {
         mongoc_change_stream_destroy(self.stream);
     }
@@ -193,7 +193,7 @@ void ogs_dbi_final(void)
 
 int ogs_dbi_collection_watch_init(void)
 {
-#if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 9
+#if MONGOC_CHECK_VERSION(1, 9, 0)
     bson_t empty = BSON_INITIALIZER;    
     const bson_t *err_doc;
     bson_error_t error;

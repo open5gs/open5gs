@@ -29,6 +29,7 @@ asn_struct_print_f OCTET_STRING_print_utf8;
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 asn_struct_compare_f OCTET_STRING_compare;
+asn_struct_copy_f    OCTET_STRING_copy;
 
 #define OCTET_STRING_constraint asn_generic_no_constraint
 
@@ -46,6 +47,8 @@ xer_type_encoder_f OCTET_STRING_encode_xer_utf8;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+jer_type_decoder_f OCTET_STRING_decode_jer_hex;     /* Hexadecimal */
+jer_type_decoder_f OCTET_STRING_decode_jer_utf8;    /* ASCII/UTF-8 */
 jer_type_encoder_f OCTET_STRING_encode_jer;
 jer_type_encoder_f OCTET_STRING_encode_jer_utf8;
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */

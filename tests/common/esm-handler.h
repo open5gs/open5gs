@@ -24,11 +24,21 @@
 extern "C" {
 #endif
 
+void testesm_handle_esm_information_request(
+        test_ue_t *test_ue, ogs_nas_eps_message_t *message);
+void testesm_handle_pdn_connectivity_reject(
+        test_ue_t *test_ue, ogs_nas_eps_message_t *message);
 void testesm_handle_activate_default_eps_bearer_context_request(
         test_ue_t *test_ue, ogs_nas_eps_message_t *message);
 void testesm_handle_activate_dedicated_eps_bearer_context_request(
         test_ue_t *test_ue, ogs_nas_eps_message_t *message);
+void testesm_handle_modify_eps_bearer_context_request(
+        test_ue_t *test_ue, ogs_nas_eps_message_t *message);
 void testesm_handle_deactivate_eps_bearer_context_request(
+        test_ue_t *test_ue, ogs_nas_eps_message_t *message);
+void testesm_handle_bearer_resource_allocation(
+        test_ue_t *test_ue, ogs_nas_eps_message_t *message);
+void testesm_handle_bearer_resource_modification(
         test_ue_t *test_ue, ogs_nas_eps_message_t *message);
 
 #ifdef __cplusplus

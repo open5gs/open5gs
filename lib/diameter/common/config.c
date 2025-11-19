@@ -69,6 +69,9 @@ static int diam_config_apply(ogs_diam_config_t *fd_config)
     if (fd_config->cnf_flags.no_fwd)
         fd_g_config->cnf_flags.no_fwd = fd_config->cnf_flags.no_fwd;
 
+    if (fd_config->cnf_timer_tc)
+        fd_g_config->cnf_timer_tc = fd_config->cnf_timer_tc;
+
     /********************************************************************
      * Diameter Client
      */
@@ -86,6 +89,8 @@ static int diam_config_apply(ogs_diam_config_t *fd_config)
         fddpi.config.pic_flags.alg = PI_ALGPREF_SCTP;
         fddpi.config.pic_flags.sec |= PI_SEC_NONE;
 
+        fddpi.config.pic_tctimer = fd_config->conn[i].tc_timer;
+
         fddpi.config.pic_port = fd_config->conn[i].port;
         fddpi.pi_diamid = (DiamId_t)fd_config->conn[i].identity;
 
@@ -100,7 +105,7 @@ static int diam_config_apply(ogs_diam_config_t *fd_config)
                     fd_config->conn[i].addr, errno, strerror(errno));
             return OGS_ERROR;
         }
-        
+
         CHECK_FCT_DO( fd_ep_add_merge(
                 &fddpi.pi_endpoints, ai->ai_addr, ai->ai_addrlen,
                 EP_FL_CONF | (disc ?: EP_ACCEPTALL) ), return OGS_ERROR);
@@ -192,7 +197,7 @@ int ogs_diam_config_init(ogs_diam_config_t *fd_config)
 
     /* Display configuration */
     b = fd_conf_dump(&buf, &len, NULL);
-    LOG_SPLIT(FD_LOG_NOTICE, NULL, 
+    LOG_SPLIT(FD_LOG_NOTICE, NULL,
             b ?: (char*)"<Error during configuration dump...>", NULL);
     free(buf);
 

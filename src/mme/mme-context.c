@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -43,10 +43,12 @@ static OGS_POOL(mme_sgw_pool, mme_sgw_t);
 static OGS_POOL(mme_pgw_pool, mme_pgw_t);
 static OGS_POOL(mme_vlr_pool, mme_vlr_t);
 static OGS_POOL(mme_csmap_pool, mme_csmap_t);
+static OGS_POOL(mme_hssmap_pool, mme_hssmap_t);
 
 static OGS_POOL(mme_enb_pool, mme_enb_t);
 static OGS_POOL(mme_ue_pool, mme_ue_t);
 static OGS_POOL(mme_s11_teid_pool, ogs_pool_id_t);
+static OGS_POOL(mme_gn_teid_pool, ogs_pool_id_t);
 static OGS_POOL(enb_ue_pool, enb_ue_t);
 static OGS_POOL(sgw_ue_pool, sgw_ue_t);
 static OGS_POOL(mme_sess_pool, mme_sess_t);
@@ -96,6 +98,7 @@ void mme_context_init(void)
     ogs_list_init(&self.enb_list);
     ogs_list_init(&self.vlr_list);
     ogs_list_init(&self.csmap_list);
+    ogs_list_init(&self.hssmap_list);
 
     ogs_pool_init(&mme_sgsn_route_pool, ogs_app()->pool.nf);
     ogs_pool_init(&mme_sgsn_pool, ogs_app()->pool.nf);
@@ -103,6 +106,7 @@ void mme_context_init(void)
     ogs_pool_init(&mme_pgw_pool, ogs_app()->pool.nf);
     ogs_pool_init(&mme_vlr_pool, ogs_app()->pool.nf);
     ogs_pool_init(&mme_csmap_pool, ogs_app()->pool.csmap);
+    ogs_pool_init(&mme_hssmap_pool, ogs_app()->pool.nf);
 
     /* Allocate TWICE the pool to check if maximum number of eNBs is reached */
     ogs_pool_init(&mme_enb_pool, ogs_global_conf()->max.peer*2);
@@ -110,13 +114,19 @@ void mme_context_init(void)
     ogs_pool_init(&mme_ue_pool, ogs_global_conf()->max.ue);
     ogs_pool_init(&mme_s11_teid_pool, ogs_global_conf()->max.ue);
     ogs_pool_random_id_generate(&mme_s11_teid_pool);
+    ogs_pool_init(&mme_gn_teid_pool, ogs_global_conf()->max.ue);
+    ogs_pool_random_id_generate(&mme_gn_teid_pool);
 
     ogs_pool_init(&enb_ue_pool, ogs_global_conf()->max.ue);
     ogs_pool_init(&sgw_ue_pool, ogs_global_conf()->max.ue);
     ogs_pool_init(&mme_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&mme_bearer_pool, ogs_app()->pool.bearer);
+    /* Increase size of TMSI pool (#1827) */
     ogs_pool_init(&m_tmsi_pool, ogs_global_conf()->max.ue*2);
     ogs_pool_random_id_generate(&m_tmsi_pool);
+#if 0 /* For debugging : Verify whether there are duplicates of M_TMSI. */
+    ogs_pool_assert_if_has_duplicate(&m_tmsi_pool);
+#endif
 
     self.enb_addr_hash = ogs_hash_make();
     ogs_assert(self.enb_addr_hash);
@@ -128,6 +138,8 @@ void mme_context_init(void)
     ogs_assert(self.guti_ue_hash);
     self.mme_s11_teid_hash = ogs_hash_make();
     ogs_assert(self.mme_s11_teid_hash);
+    self.mme_gn_teid_hash = ogs_hash_make();
+    ogs_assert(self.mme_gn_teid_hash);
 
     ogs_list_init(&self.mme_ue_list);
 
@@ -146,6 +158,7 @@ void mme_context_final(void)
     mme_csmap_remove_all();
     mme_vlr_remove_all();
     mme_sgsn_remove_all();
+    mme_hssmap_remove_all();
 
     ogs_assert(self.enb_addr_hash);
     ogs_hash_destroy(self.enb_addr_hash);
@@ -158,12 +171,15 @@ void mme_context_final(void)
     ogs_hash_destroy(self.guti_ue_hash);
     ogs_assert(self.mme_s11_teid_hash);
     ogs_hash_destroy(self.mme_s11_teid_hash);
+    ogs_assert(self.mme_gn_teid_hash);
+    ogs_hash_destroy(self.mme_gn_teid_hash);
 
     ogs_pool_final(&m_tmsi_pool);
     ogs_pool_final(&mme_bearer_pool);
     ogs_pool_final(&mme_sess_pool);
     ogs_pool_final(&mme_ue_pool);
     ogs_pool_final(&mme_s11_teid_pool);
+    ogs_pool_final(&mme_gn_teid_pool);
     ogs_pool_final(&enb_ue_pool);
     ogs_pool_final(&sgw_ue_pool);
 
@@ -175,6 +191,7 @@ void mme_context_final(void)
     ogs_pool_final(&mme_pgw_pool);
     ogs_pool_final(&mme_csmap_pool);
     ogs_pool_final(&mme_vlr_pool);
+    ogs_pool_final(&mme_hssmap_pool);
 
     context_initialized = 0;
 }
@@ -496,6 +513,7 @@ int mme_context_parse_config(void)
                                     const char *identity = NULL;
                                     const char *addr = NULL;
                                     uint16_t port = 0;
+                                    int tc_timer = 0;
 
                                     if (ogs_yaml_iter_type(&conn_array) ==
                                         YAML_MAPPING_NODE) {
@@ -528,6 +546,10 @@ int mme_context_parse_config(void)
                                             const char *v =
                                                 ogs_yaml_iter_value(&conn_iter);
                                             if (v) port = atoi(v);
+                                        } else if (!strcmp(conn_key, "tc_timer")) {
+                                            const char *v =
+                                                ogs_yaml_iter_value(&conn_iter);
+                                            if (v) tc_timer = atoi(v);
                                         } else
                                             ogs_warn("unknown key `%s`",
                                                     conn_key);
@@ -543,10 +565,16 @@ int mme_context_parse_config(void)
                                         self.diam_config->
                                             conn[self.diam_config->num_of_conn].
                                                 port = port;
+                                        self.diam_config->
+                                            conn[self.diam_config->num_of_conn].
+                                                tc_timer = tc_timer;
                                         self.diam_config->num_of_conn++;
                                     }
                                 } while (ogs_yaml_iter_type(&conn_array) ==
                                         YAML_SEQUENCE_NODE);
+                            } else if (!strcmp(fd_key, "tc_timer")) {
+                                const char *v = ogs_yaml_iter_value(&fd_iter);
+                                if (v) self.diam_config->cnf_timer_tc = atoi(v);
                             } else
                                 ogs_warn("unknown key `%s`", fd_key);
                         }
@@ -861,7 +889,7 @@ int mme_context_parse_config(void)
                                                     if (v) {
                                                         e_cell_id[
                                                             num_of_e_cell_id] =
-                                                        ogs_uint64_from_string(
+                                                        ogs_uint64_from_string_hexadecimal(
                                                                 (char*)v);
                                                         num_of_e_cell_id++;
                                                     }
@@ -1090,7 +1118,7 @@ int mme_context_parse_config(void)
                                                     if (v) {
                                                         e_cell_id[
                                                             num_of_e_cell_id] =
-                                                        ogs_uint64_from_string(
+                                                        ogs_uint64_from_string_hexadecimal(
                                                                 (char*)v);
                                                         num_of_e_cell_id++;
                                                     }
@@ -1809,6 +1837,73 @@ int mme_context_parse_config(void)
 
                     } while (ogs_yaml_iter_type(&access_control_array) ==
                             YAML_SEQUENCE_NODE);
+                } else if (!strcmp(mme_key, "hss_map")) {
+                    ogs_yaml_iter_t hss_map_array, hss_map_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &hss_map_array);
+                    do {
+                        if (ogs_yaml_iter_type(&hss_map_array) ==
+                                YAML_MAPPING_NODE) {
+                            memcpy(&hss_map_iter, &hss_map_array,
+                                    sizeof(ogs_yaml_iter_t));
+                        } else if (ogs_yaml_iter_type(&hss_map_array) ==
+                            YAML_SEQUENCE_NODE) {
+                            if (!ogs_yaml_iter_next(&hss_map_array))
+                                break;
+                            ogs_yaml_iter_recurse(&hss_map_array,
+                                    &hss_map_iter);
+                        } else if (ogs_yaml_iter_type(&hss_map_array) ==
+                            YAML_SCALAR_NODE) {
+                            break;
+                        } else
+                            ogs_assert_if_reached();
+
+                        while (ogs_yaml_iter_next(&hss_map_iter)) {
+                            const char *mnc = NULL, *mcc = NULL, *realm = NULL, *host = NULL;
+                            const char *hss_map_key =
+                                ogs_yaml_iter_key(&hss_map_iter);
+                            ogs_assert(hss_map_key);
+                            if (!strcmp(hss_map_key, "plmn_id")) {
+                                ogs_yaml_iter_t plmn_id_iter;
+
+                                ogs_yaml_iter_recurse(&hss_map_iter,
+                                        &plmn_id_iter);
+                                while (ogs_yaml_iter_next(&plmn_id_iter)) {
+                                    const char *plmn_id_key =
+                                        ogs_yaml_iter_key(&plmn_id_iter);
+                                    ogs_assert(plmn_id_key);
+                                    if (!strcmp(plmn_id_key, "host")) {
+                                        const char *v = ogs_yaml_iter_value(
+                                                &plmn_id_iter);
+                                        if (v) host = ogs_strndup(v, OGS_MAX_FQDN_LEN);
+                                    } else if (!strcmp(plmn_id_key, "realm")) {
+                                        const char *v = ogs_yaml_iter_value(
+                                                &plmn_id_iter);
+                                        if (v) realm = ogs_strndup(v, OGS_MAX_FQDN_LEN);
+                                    } else if (!strcmp(plmn_id_key, "mcc")) {
+                                        mcc = ogs_yaml_iter_value(
+                                                &plmn_id_iter);
+                                    } else if (!strcmp(plmn_id_key, "mnc")) {
+                                        mnc = ogs_yaml_iter_value(
+                                                &plmn_id_iter);
+                                    }
+                                }
+
+                                if (mcc && mnc) {
+                                    ogs_plmn_id_t plmn_id;
+                                    mme_hssmap_t *hssmap = NULL;
+
+                                    ogs_plmn_id_build(&plmn_id,
+                                        atoi(mcc), atoi(mnc), strlen(mnc));
+
+                                    hssmap = mme_hssmap_add(&plmn_id, realm, host);
+                                    ogs_assert(hssmap);
+                                }
+                            } else
+                                ogs_warn("unknown key `%s`",
+                                        hss_map_key);
+                        }
+                    } while (ogs_yaml_iter_type(&hss_map_array) ==
+                            YAML_SEQUENCE_NODE);
                 } else if (!strcmp(mme_key, "security")) {
                     ogs_yaml_iter_t security_iter;
                     ogs_yaml_iter_recurse(&mme_iter, &security_iter);
@@ -1955,9 +2050,9 @@ int mme_context_parse_config(void)
                     while (ogs_yaml_iter_next(&sgsap_iter)) {
                         const char *sgsap_key = ogs_yaml_iter_key(&sgsap_iter);
                         ogs_assert(sgsap_key);
-                        if (!strcmp(sgsap_key, "server")) {
-                            ogs_yaml_iter_t server_iter, server_array;
-                            ogs_yaml_iter_recurse(&sgsap_iter, &server_array);
+                        if (!strcmp(sgsap_key, "client")) {
+                            ogs_yaml_iter_t client_iter, client_array;
+                            ogs_yaml_iter_recurse(&sgsap_iter, &client_array);
                             do {
                                 mme_vlr_t *vlr = NULL;
                                 ogs_plmn_id_t plmn_id;
@@ -1968,38 +2063,39 @@ int mme_context_parse_config(void)
                                     const char *tac, *lac;
                                 } map[MAX_NUM_OF_CSMAP];
                                 int map_num = 0;
-                                ogs_sockaddr_t *addr = NULL;
+                                ogs_sockaddr_t *addr = NULL, *local_addr = NULL;
                                 int family = AF_UNSPEC;
-                                int i, hostname_num = 0;
-                                const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
+                                int i, hostname_num = 0, local_hostname_num = 0;
+                                const char *hostname[OGS_MAX_NUM_OF_HOSTNAME],
+                                    *local_hostname[OGS_MAX_NUM_OF_HOSTNAME];
                                 uint16_t port = self.sgsap_port;
 
                                 ogs_sockopt_t option;
                                 bool is_option = false;
 
-                                if (ogs_yaml_iter_type(&server_array) ==
+                                if (ogs_yaml_iter_type(&client_array) ==
                                         YAML_MAPPING_NODE) {
-                                    memcpy(&server_iter, &server_array,
+                                    memcpy(&client_iter, &client_array,
                                             sizeof(ogs_yaml_iter_t));
-                                } else if (ogs_yaml_iter_type(&server_array) ==
+                                } else if (ogs_yaml_iter_type(&client_array) ==
                                     YAML_SEQUENCE_NODE) {
-                                    if (!ogs_yaml_iter_next(&server_array))
+                                    if (!ogs_yaml_iter_next(&client_array))
                                         break;
                                     ogs_yaml_iter_recurse(
-                                            &server_array, &server_iter);
-                                } else if (ogs_yaml_iter_type(&server_array) ==
+                                            &client_array, &client_iter);
+                                } else if (ogs_yaml_iter_type(&client_array) ==
                                     YAML_SCALAR_NODE) {
                                     break;
                                 } else
                                     ogs_assert_if_reached();
 
-                                while (ogs_yaml_iter_next(&server_iter)) {
-                                    const char *server_key =
-                                        ogs_yaml_iter_key(&server_iter);
-                                    ogs_assert(server_key);
-                                    if (!strcmp(server_key, "family")) {
+                                while (ogs_yaml_iter_next(&client_iter)) {
+                                    const char *client_key =
+                                        ogs_yaml_iter_key(&client_iter);
+                                    ogs_assert(client_key);
+                                    if (!strcmp(client_key, "family")) {
                                         const char *v =
-                                            ogs_yaml_iter_value(&server_iter);
+                                            ogs_yaml_iter_value(&client_iter);
                                         if (v) family = atoi(v);
                                         if (family != AF_UNSPEC &&
                                             family != AF_INET &&
@@ -2011,9 +2107,9 @@ int mme_context_parse_config(void)
                                                 AF_UNSPEC, AF_INET, AF_INET6);
                                             family = AF_UNSPEC;
                                         }
-                                    } else if (!strcmp(server_key, "address")) {
+                                    } else if (!strcmp(client_key, "address")) {
                                         ogs_yaml_iter_t hostname_iter;
-                                        ogs_yaml_iter_recurse(&server_iter,
+                                        ogs_yaml_iter_recurse(&client_iter,
                                                 &hostname_iter);
                                         ogs_assert(ogs_yaml_iter_type(
                                                     &hostname_iter) !=
@@ -2036,26 +2132,53 @@ int mme_context_parse_config(void)
                                         } while (ogs_yaml_iter_type(
                                                     &hostname_iter) ==
                                                 YAML_SEQUENCE_NODE);
-                                    } else if (!strcmp(server_key, "port")) {
+                                    } else if (!strcmp(client_key,
+                                                "local_address")) {
+                                        ogs_yaml_iter_t local_hostname_iter;
+                                        ogs_yaml_iter_recurse(&client_iter,
+                                                &local_hostname_iter);
+                                        ogs_assert(ogs_yaml_iter_type(
+                                                    &local_hostname_iter) !=
+                                                YAML_MAPPING_NODE);
+
+                                        do {
+                                            if (ogs_yaml_iter_type(
+                                                        &local_hostname_iter) ==
+                                                    YAML_SEQUENCE_NODE) {
+                                                if (!ogs_yaml_iter_next(
+                                                        &local_hostname_iter))
+                                                    break;
+                                            }
+
+                                            ogs_assert(local_hostname_num <
+                                                    OGS_MAX_NUM_OF_HOSTNAME);
+                                            local_hostname
+                                                [local_hostname_num++] =
+                                                ogs_yaml_iter_value(
+                                                        &local_hostname_iter);
+                                        } while (ogs_yaml_iter_type(
+                                                    &local_hostname_iter) ==
+                                                YAML_SEQUENCE_NODE);
+                                    } else if (!strcmp(client_key, "port")) {
                                         const char *v =
-                                            ogs_yaml_iter_value(&server_iter);
+                                            ogs_yaml_iter_value(&client_iter);
                                         if (v) {
                                             port = atoi(v);
                                             self.sgsap_port = port;
                                         }
-                                    } else if (!strcmp(server_key, "option")) {
+                                    } else if (!strcmp(client_key, "option")) {
                                         rv = ogs_app_parse_sockopt_config(
-                                                &server_iter, &option);
+                                                &client_iter, &option);
                                         if (rv != OGS_OK) {
                                             ogs_error("ogs_app_parse_sockopt_"
                                                     "config() failed");
                                             return rv;
                                         }
                                         is_option = true;
-                                    } else if (!strcmp(server_key, "map")) {
+                                    } else if (!strcmp(client_key, "map")) {
                                         ogs_yaml_iter_t map_iter;
                                         ogs_yaml_iter_recurse(
-                                                &server_iter, &map_iter);
+                                                &client_iter, &map_iter);
 
                                         map[map_num].tai_mcc = NULL;
                                         map[map_num].tai_mnc = NULL;
@@ -2225,13 +2348,13 @@ int mme_context_parse_config(void)
 
                                         map_num++;
 
-                                    } else if (!strcmp(server_key, "tai")) {
+                                    } else if (!strcmp(client_key, "tai")) {
                                         ogs_error(
                                             "tai/lai configuraton changed to "
                                             "map.tai/map.lai");
                                         ogs_log_print(OGS_LOG_ERROR,
                                             "sgsap:\n"
-                                            "  server\n"
+                                            "  client\n"
                                             "    address: 127.0.0.2\n"
                                             "    map:\n"
                                             "      tai:\n"
@@ -2245,13 +2368,13 @@ int mme_context_parse_config(void)
                                             "          mnc: 01\n"
                                             "        lac: 43691\n");
                                         return OGS_ERROR;
-                                    } else if (!strcmp(server_key, "lai")) {
+                                    } else if (!strcmp(client_key, "lai")) {
                                         ogs_error(
                                             "tai/lai configuraton changed to "
                                             "map.tai/map.lai");
                                         ogs_log_print(OGS_LOG_ERROR,
                                             "sgsap:\n"
-                                            "  server\n"
+                                            "  client\n"
                                             "    address: 127.0.0.2\n"
                                             "    map:\n"
                                             "      tai:\n"
@@ -2267,7 +2390,7 @@ int mme_context_parse_config(void)
                                         return OGS_ERROR;
                                     } else
                                         ogs_warn("unknown key `%s`",
-                                                server_key);
+                                                client_key);
 
                                 }
 
@@ -2291,7 +2414,20 @@ int mme_context_parse_config(void)
 
                                 if (addr == NULL) continue;
 
-                                vlr = mme_vlr_add(addr,
+                                local_addr = NULL;
+                                for (i = 0; i < local_hostname_num; i++) {
+                                    rv = ogs_addaddrinfo(&local_addr,
+                                            family, local_hostname[i], port, 0);
+                                    ogs_assert(rv == OGS_OK);
+                                }
+
+                                ogs_filter_ip_version(&local_addr,
+                                        ogs_global_conf()->parameter.no_ipv4,
+                                        ogs_global_conf()->parameter.no_ipv6,
+                                        ogs_global_conf()->parameter.
+                                        prefer_ipv4);
+
+                                vlr = mme_vlr_add(addr, local_addr,
                                         is_option ? &option : NULL);
                                 ogs_assert(vlr);
 
@@ -2314,7 +2450,7 @@ int mme_context_parse_config(void)
                                             &csmap->lai.nas_plmn_id, &plmn_id);
                                     csmap->lai.lac = atoi(map[i].lac);
                                 }
-                            } while (ogs_yaml_iter_type(&server_array) ==
+                            } while (ogs_yaml_iter_type(&client_array) ==
                                     YAML_SEQUENCE_NODE);
                         } else
                             ogs_warn("unknown key `%s`", sgsap_key);
@@ -2452,7 +2588,7 @@ void mme_sgsn_remove_all(void)
         mme_sgsn_remove(sgsn);
 }
 
-mme_sgsn_t *mme_sgsn_find_by_addr(ogs_sockaddr_t *addr)
+mme_sgsn_t *mme_sgsn_find_by_addr(const ogs_sockaddr_t *addr)
 {
     mme_sgsn_t *sgsn = NULL;
 
@@ -2476,6 +2612,15 @@ mme_sgsn_t *mme_sgsn_find_by_routing_address(const ogs_nas_rai_t *rai, uint16_t 
         ogs_list_for_each(&sgsn->route_list, rt) {
             if (rt->cell_id == cell_id &&
                 memcmp(&rt->rai, rai, sizeof(ogs_nas_rai_t)) == 0)
+                return sgsn;
+        }
+    }
+
+    /* If no exact match found, try using any with same RAI: */
+    ogs_list_for_each(&self.sgsn_list, sgsn) {
+        mme_sgsn_route_t *rt = NULL;
+        ogs_list_for_each(&sgsn->route_list, rt) {
+            if (memcmp(&rt->rai, rai, sizeof(ogs_nas_rai_t)) == 0)
                 return sgsn;
         }
     }
@@ -2537,7 +2682,7 @@ void mme_sgw_remove_all(void)
         mme_sgw_remove(sgw);
 }
 
-mme_sgw_t *mme_sgw_find_by_addr(ogs_sockaddr_t *addr)
+mme_sgw_t *mme_sgw_find_by_addr(const ogs_sockaddr_t *addr)
 {
     mme_sgw_t *sgw = NULL;
 
@@ -2587,7 +2732,7 @@ void mme_pgw_remove_all(void)
 }
 
 static bool compare_apn_enb_info(
-    mme_pgw_t *pgw, mme_sess_t *sess)
+    const mme_pgw_t *pgw, const mme_sess_t *sess)
 {
     mme_ue_t *mme_ue = NULL;
     int i;
@@ -2596,7 +2741,7 @@ static bool compare_apn_enb_info(
     ogs_assert(sess);
     ogs_assert(sess->session);
     ogs_assert(sess->session->name);
-    mme_ue = sess->mme_ue;
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
 
     for (i = 0; i < pgw->num_of_apn; i++)
@@ -2612,7 +2757,7 @@ static bool compare_apn_enb_info(
 }
 
 ogs_sockaddr_t *mme_pgw_addr_find_by_apn_enb(
-    ogs_list_t *list, int family, mme_sess_t *sess)
+    ogs_list_t *list, int family, const mme_sess_t *sess)
 {
     mme_pgw_t *pgw = NULL;
     ogs_assert(list);
@@ -2633,7 +2778,10 @@ ogs_sockaddr_t *mme_pgw_addr_find_by_apn_enb(
     return NULL;
 }
 
-mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *sa_list, ogs_sockopt_t *option)
+mme_vlr_t *mme_vlr_add(
+        ogs_sockaddr_t *sa_list,
+        ogs_sockaddr_t *local_sa_list,
+        ogs_sockopt_t *option)
 {
     mme_vlr_t *vlr = NULL;
 
@@ -2647,6 +2795,7 @@ mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *sa_list, ogs_sockopt_t *option)
     vlr->ostream_id = 0;
 
     vlr->sa_list = sa_list;
+    vlr->local_sa_list = local_sa_list;
     if (option) {
         vlr->max_num_of_ostreams = option->sctp.sinit_num_ostreams;
         vlr->option = ogs_memdup(option, sizeof *option);
@@ -2666,6 +2815,7 @@ void mme_vlr_remove(mme_vlr_t *vlr)
     mme_vlr_close(vlr);
 
     ogs_freeaddrinfo(vlr->sa_list);
+    ogs_freeaddrinfo(vlr->local_sa_list);
     if (vlr->option)
         ogs_free(vlr->option);
 
@@ -2690,13 +2840,13 @@ void mme_vlr_close(mme_vlr_t *vlr)
         ogs_sctp_destroy(vlr->sock);
 }
 
-mme_vlr_t *mme_vlr_find_by_addr(ogs_sockaddr_t *addr)
+mme_vlr_t *mme_vlr_find_by_sock(const ogs_sock_t *sock)
 {
     mme_vlr_t *vlr = NULL;
-    ogs_assert(addr);
+    ogs_assert(sock);
 
     ogs_list_for_each(&self.vlr_list, vlr) {
-        if (ogs_sockaddr_is_equal(vlr->addr, addr) == true)
+        if (vlr->sock == sock)
             return vlr;
     }
 
@@ -2737,7 +2887,7 @@ void mme_csmap_remove_all(void)
         mme_csmap_remove(csmap);
 }
 
-mme_csmap_t *mme_csmap_find_by_tai(ogs_eps_tai_t *tai)
+mme_csmap_t *mme_csmap_find_by_tai(const ogs_eps_tai_t *tai)
 {
     mme_csmap_t *csmap = NULL;
     ogs_assert(tai);
@@ -2753,7 +2903,7 @@ mme_csmap_t *mme_csmap_find_by_tai(ogs_eps_tai_t *tai)
     return NULL;
 }
 
-mme_csmap_t *mme_csmap_find_by_nas_lai(ogs_nas_lai_t *lai)
+mme_csmap_t *mme_csmap_find_by_nas_lai(const ogs_nas_lai_t *lai)
 {
     mme_csmap_t *csmap = NULL;
     ogs_assert(lai);
@@ -2761,6 +2911,73 @@ mme_csmap_t *mme_csmap_find_by_nas_lai(ogs_nas_lai_t *lai)
     ogs_list_for_each(&self.csmap_list, csmap) {
         if (memcmp(&csmap->lai, lai, sizeof *lai) == 0)
             return csmap;
+    }
+
+    return NULL;
+}
+
+mme_hssmap_t *mme_hssmap_add(ogs_plmn_id_t *plmn_id, const char *realm,
+                             const char *host)
+{
+    mme_hssmap_t *hssmap = NULL;
+
+    ogs_assert(plmn_id);
+
+    ogs_pool_alloc(&mme_hssmap_pool, &hssmap);
+    ogs_assert(hssmap);
+    memset(hssmap, 0, sizeof *hssmap);
+
+    hssmap->plmn_id = *plmn_id;
+    if (realm)
+        hssmap->realm = ogs_strdup(realm);
+    else
+        hssmap->realm = ogs_epc_domain_from_plmn_id(plmn_id);
+
+    if (host)
+        hssmap->host = ogs_strdup(host);
+    else
+        hssmap->host = NULL;
+
+    ogs_list_add(&self.hssmap_list, hssmap);
+
+    return hssmap;
+}
+
+void mme_hssmap_remove(mme_hssmap_t *hssmap)
+{
+    ogs_assert(hssmap);
+
+    ogs_list_remove(&self.hssmap_list, hssmap);
+
+    if (hssmap->realm != NULL)
+        ogs_free(hssmap->realm);
+
+    if (hssmap->host != NULL)
+        ogs_free(hssmap->host);
+
+    ogs_pool_free(&mme_hssmap_pool, hssmap);
+}
+
+void mme_hssmap_remove_all(void)
+{
+    mme_hssmap_t *hssmap = NULL, *next_hssmap = NULL;
+
+    ogs_list_for_each_safe(&self.hssmap_list, next_hssmap, hssmap)
+        mme_hssmap_remove(hssmap);
+}
+
+mme_hssmap_t *mme_hssmap_find_by_imsi_bcd(const char *imsi_bcd)
+{
+    mme_hssmap_t *hssmap = NULL;
+    ogs_assert(imsi_bcd);
+
+    ogs_list_for_each(&self.hssmap_list, hssmap) {
+        char plmn_id_str[OGS_PLMNIDSTRLEN] = "";
+
+        ogs_plmn_id_to_string(&hssmap->plmn_id, plmn_id_str);
+        if (strncmp(plmn_id_str, imsi_bcd, strlen(plmn_id_str)) == 0) {
+            return hssmap;
+        }
     }
 
     return NULL;
@@ -2774,9 +2991,11 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     ogs_assert(sock);
     ogs_assert(addr);
 
-    ogs_pool_alloc(&mme_enb_pool, &enb);
-    ogs_assert(enb);
-    memset(enb, 0, sizeof *enb);
+    ogs_pool_id_calloc(&mme_enb_pool, &enb);
+    if (!enb) {
+        ogs_error("ogs_pool_id_calloc() failed");
+        return NULL;
+    }
 
     enb->sctp.sock = sock;
     enb->sctp.addr = addr;
@@ -2799,7 +3018,7 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
             enb->sctp.addr, sizeof(ogs_sockaddr_t), enb);
 
     memset(&e, 0, sizeof(e));
-    e.enb = enb;
+    e.enb_id = enb->id;
     ogs_fsm_init(&enb->sm, s1ap_state_initial, s1ap_state_final, &e);
 
     ogs_list_add(&self.enb_list, enb);
@@ -2821,12 +3040,13 @@ int mme_enb_remove(mme_enb_t *enb)
     ogs_list_remove(&self.enb_list, enb);
 
     memset(&e, 0, sizeof(e));
-    e.enb = enb;
+    e.enb_id = enb->id;
     ogs_fsm_fini(&enb->sm, &e);
 
     ogs_hash_set(self.enb_addr_hash,
             enb->sctp.addr, sizeof(ogs_sockaddr_t), NULL);
-    ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
+    if (enb->enb_id_presence == true)
+        ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
 
     /*
      * CHECK:
@@ -2837,7 +3057,7 @@ int mme_enb_remove(mme_enb_t *enb)
 
     ogs_sctp_flush_and_destroy(&enb->sctp);
 
-    ogs_pool_free(&mme_enb_pool, enb);
+    ogs_pool_id_free(&mme_enb_pool, enb);
     mme_metrics_inst_global_dec(MME_METR_GLOB_GAUGE_ENB);
     ogs_info("[Removed] Number of eNBs is now %d",
             ogs_list_count(&self.enb_list));
@@ -2855,7 +3075,7 @@ int mme_enb_remove_all(void)
     return OGS_OK;
 }
 
-mme_enb_t *mme_enb_find_by_addr(ogs_sockaddr_t *addr)
+mme_enb_t *mme_enb_find_by_addr(const ogs_sockaddr_t *addr)
 {
     ogs_assert(addr);
     return (mme_enb_t *)ogs_hash_get(self.enb_addr_hash,
@@ -2873,10 +3093,13 @@ int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id)
 {
     ogs_assert(enb);
 
-    ogs_hash_set(self.enb_id_hash, &enb_id, sizeof(enb_id), NULL);
+    if (enb->enb_id_presence == true)
+        ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
 
     enb->enb_id = enb_id;
     ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), enb);
+
+    enb->enb_id_presence = true;
 
     return OGS_OK;
 }
@@ -2896,9 +3119,9 @@ int mme_enb_sock_type(ogs_sock_t *sock)
     return SOCK_STREAM;
 }
 
-mme_enb_t *mme_enb_cycle(mme_enb_t *enb)
+mme_enb_t *mme_enb_find_by_id(ogs_pool_id_t id)
 {
-    return ogs_pool_cycle(&mme_enb_pool, enb);
+    return ogs_pool_find_by_id(&mme_enb_pool, id);
 }
 
 /** enb_ue_context handling function */
@@ -2908,19 +3131,18 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
 
     ogs_assert(enb);
 
-    ogs_pool_alloc(&enb_ue_pool, &enb_ue);
+    ogs_pool_id_calloc(&enb_ue_pool, &enb_ue);
     if (enb_ue == NULL) {
         ogs_error("Could not allocate enb_ue context from pool");
         return NULL;
     }
 
-    memset(enb_ue, 0, sizeof *enb_ue);
-
     enb_ue->t_s1_holding = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_s1_holding_timer_expire, enb_ue);
+            ogs_app()->timer_mgr, mme_timer_s1_holding_timer_expire,
+            OGS_UINT_TO_POINTER(enb_ue->id));
     if (!enb_ue->t_s1_holding) {
         ogs_error("ogs_timer_add() failed");
-        ogs_pool_free(&enb_ue_pool, enb_ue);
+        ogs_pool_id_free(&enb_ue_pool, enb_ue);
         return NULL;
     }
 
@@ -2940,7 +3162,7 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
     enb_ue->enb_ostream_id =
         OGS_NEXT_ID(enb->ostream_id, 1, enb->max_num_of_ostreams-1);
 
-    enb_ue->enb = enb;
+    enb_ue->enb_id = enb->id;
 
     ogs_list_add(&enb->enb_ue_list, enb_ue);
 
@@ -2954,37 +3176,39 @@ void enb_ue_remove(enb_ue_t *enb_ue)
     mme_enb_t *enb = NULL;
 
     ogs_assert(enb_ue);
-    enb = enb_ue->enb;
-    ogs_assert(enb);
 
-    ogs_list_remove(&enb->enb_ue_list, enb_ue);
+    enb = mme_enb_find_by_id(enb_ue->enb_id);
+
+    if (enb) ogs_list_remove(&enb->enb_ue_list, enb_ue);
 
     ogs_assert(enb_ue->t_s1_holding);
     ogs_timer_delete(enb_ue->t_s1_holding);
 
-    ogs_pool_free(&enb_ue_pool, enb_ue);
+    ogs_pool_id_free(&enb_ue_pool, enb_ue);
 
     stats_remove_enb_ue();
 }
 
 void enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb)
 {
+    mme_enb_t *enb = NULL;
     ogs_assert(enb_ue);
-    ogs_assert(enb_ue->enb);
     ogs_assert(new_enb);
 
+    enb = mme_enb_find_by_id(enb_ue->enb_id);
+
     /* Remove from the old enb */
-    ogs_list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
+    ogs_list_remove(&enb->enb_ue_list, enb_ue);
 
     /* Add to the new enb */
     ogs_list_add(&new_enb->enb_ue_list, enb_ue);
 
     /* Switch to enb */
-    enb_ue->enb = new_enb;
+    enb_ue->enb_id = new_enb->id;
 }
 
 enb_ue_t *enb_ue_find_by_enb_ue_s1ap_id(
-        mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
+        const mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
 {
     enb_ue_t *enb_ue = NULL;
 
@@ -3006,9 +3230,9 @@ enb_ue_t *enb_ue_find_by_mme_ue_s1ap_id(uint32_t mme_ue_s1ap_id)
     return enb_ue_find(mme_ue_s1ap_id);
 }
 
-enb_ue_t *enb_ue_cycle(enb_ue_t *enb_ue)
+enb_ue_t *enb_ue_find_by_id(ogs_pool_id_t id)
 {
-    return ogs_pool_cycle(&enb_ue_pool, enb_ue);
+    return ogs_pool_find_by_id(&enb_ue_pool, id);
 }
 
 /** sgw_ue_context handling function */
@@ -3018,15 +3242,15 @@ sgw_ue_t *sgw_ue_add(mme_sgw_t *sgw)
 
     ogs_assert(sgw);
 
-    ogs_pool_alloc(&sgw_ue_pool, &sgw_ue);
+    ogs_pool_id_calloc(&sgw_ue_pool, &sgw_ue);
     ogs_assert(sgw_ue);
-    memset(sgw_ue, 0, sizeof *sgw_ue);
 
     sgw_ue->t_s11_holding = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_s11_holding_timer_expire, sgw_ue);
+            ogs_app()->timer_mgr, mme_timer_s11_holding_timer_expire,
+            OGS_UINT_TO_POINTER(sgw_ue->id));
     if (!sgw_ue->t_s11_holding) {
         ogs_error("ogs_timer_add() failed");
-        ogs_pool_free(&sgw_ue_pool, sgw_ue);
+        ogs_pool_id_free(&sgw_ue_pool, sgw_ue);
         return NULL;
     }
 
@@ -3050,7 +3274,7 @@ void sgw_ue_remove(sgw_ue_t *sgw_ue)
     ogs_assert(sgw_ue->t_s11_holding);
     ogs_timer_delete(sgw_ue->t_s11_holding);
 
-    ogs_pool_free(&sgw_ue_pool, sgw_ue);
+    ogs_pool_id_free(&sgw_ue_pool, sgw_ue);
 }
 
 void sgw_ue_switch_to_sgw(sgw_ue_t *sgw_ue, mme_sgw_t *new_sgw)
@@ -3069,9 +3293,9 @@ void sgw_ue_switch_to_sgw(sgw_ue_t *sgw_ue, mme_sgw_t *new_sgw)
     sgw_ue->sgw = new_sgw;
 }
 
-sgw_ue_t *sgw_ue_cycle(sgw_ue_t *sgw_ue)
+sgw_ue_t *sgw_ue_find_by_id(ogs_pool_id_t id)
 {
-    return ogs_pool_cycle(&sgw_ue_pool, sgw_ue);
+    return ogs_pool_find_by_id(&sgw_ue_pool, id);
 }
 
 sgw_relocation_e sgw_ue_check_if_relocated(mme_ue_t *mme_ue)
@@ -3081,9 +3305,9 @@ sgw_relocation_e sgw_ue_check_if_relocated(mme_ue_t *mme_ue)
     mme_sgw_t *current = NULL, *changed = NULL;
 
     ogs_assert(mme_ue);
-    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+    enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
     ogs_assert(enb_ue);
-    source_ue = sgw_ue_cycle(mme_ue->sgw_ue);
+    source_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(source_ue);
 
     current = source_ue->sgw;
@@ -3093,13 +3317,13 @@ sgw_relocation_e sgw_ue_check_if_relocated(mme_ue_t *mme_ue)
     if (!changed) return SGW_WITHOUT_RELOCATION;
 
     /* Check if Old Source UE */
-    old_source_ue = sgw_ue_cycle(source_ue->source_ue);
+    old_source_ue = sgw_ue_find_by_id(source_ue->source_ue_id);
     if (old_source_ue) {
         sgw_ue_source_deassociate_target(old_source_ue);
         sgw_ue_remove(old_source_ue);
     }
 
-    target_ue = sgw_ue_cycle(source_ue->target_ue);
+    target_ue = sgw_ue_find_by_id(source_ue->target_ue_id);
     if (target_ue) {
         ogs_error("SGW-UE source has already been associated with target");
         return SGW_HAS_ALREADY_BEEN_RELOCATED;
@@ -3126,7 +3350,7 @@ void mme_ue_new_guti(mme_ue_t *mme_ue)
     ogs_assert(served_gummei->num_of_mme_gid > 0);
     ogs_assert(served_gummei->num_of_mme_code > 0);
 
-    if (mme_ue->next.m_tmsi) {
+    if (MME_NEXT_GUTI_IS_AVAILABLE(mme_ue)) {
         ogs_warn("GUTI has already been allocated");
         return;
     }
@@ -3146,9 +3370,9 @@ void mme_ue_new_guti(mme_ue_t *mme_ue)
 
 void mme_ue_confirm_guti(mme_ue_t *mme_ue)
 {
-    ogs_assert(mme_ue->next.m_tmsi);
+    ogs_assert(MME_NEXT_GUTI_IS_AVAILABLE(mme_ue));
 
-    if (mme_ue->current.m_tmsi) {
+    if (MME_CURRENT_GUTI_IS_AVAILABLE(mme_ue)) {
         /* MME has a VALID GUTI
          * As such, we need to remove previous GUTI in hash table */
         ogs_hash_set(self.guti_ue_hash,
@@ -3156,7 +3380,7 @@ void mme_ue_confirm_guti(mme_ue_t *mme_ue)
         ogs_assert(mme_m_tmsi_free(mme_ue->current.m_tmsi) == OGS_OK);
     }
 
-    /* Copying from Current to Next Guti */
+    /* Copying from Next to Current Guti */
     mme_ue->current.m_tmsi = mme_ue->next.m_tmsi;
     memcpy(&mme_ue->current.guti,
             &mme_ue->next.guti, sizeof(ogs_nas_eps_guti_t));
@@ -3167,6 +3391,42 @@ void mme_ue_confirm_guti(mme_ue_t *mme_ue)
 
     /* Clear Next GUTI */
     mme_ue->next.m_tmsi = NULL;
+
+    ogs_debug("Confirm GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+              mme_ue->current.guti.mme_gid,
+              mme_ue->current.guti.mme_code,
+              mme_ue->current.guti.m_tmsi);
+}
+
+void mme_ue_set_p_tmsi(
+        mme_ue_t *mme_ue,
+        ogs_nas_mobile_identity_tmsi_t *nas_mobile_identity_tmsi)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(nas_mobile_identity_tmsi);
+
+    /*
+     * If the P-TMSI received from MSC/VLR is different from the current P-TMSI
+     * known by the MME, store this new P-TMSI as 'Next P-TMSI'. This value will
+     * be sent to the UE through the Attach Accept or TAU Accept message.
+     *
+     * When the UE sends an Attach Complete or TAU Complete message,
+     * the MME updates the 'Current P-TMSI' with the value in 'Next P-TMSI',
+     * thereby confirming and saving the new P-TMSI.
+     */
+    mme_ue->next.p_tmsi = be32toh(nas_mobile_identity_tmsi->tmsi);
+    if (mme_ue->next.p_tmsi != INVALID_P_TMSI) {
+        if (mme_ue->current.p_tmsi == mme_ue->next.p_tmsi)
+            mme_ue->next.p_tmsi = INVALID_P_TMSI;
+    }
+}
+void mme_ue_confirm_p_tmsi(mme_ue_t *mme_ue)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(mme_ue->next.p_tmsi);
+
+    mme_ue->current.p_tmsi = mme_ue->next.p_tmsi;
+    mme_ue->next.p_tmsi = INVALID_P_TMSI;
 }
 
 static bool compare_ue_info(mme_sgw_t *node, enb_ue_t *enb_ue)
@@ -3228,87 +3488,111 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     char buf[OGS_ADDRSTRLEN];
 
     ogs_assert(enb_ue);
-    enb = enb_ue->enb;
-    ogs_assert(enb);
 
-    ogs_pool_alloc(&mme_ue_pool, &mme_ue);
+    enb = mme_enb_find_by_id(enb_ue->enb_id);
+    if (!enb) {
+        ogs_error("[%d] eNB has already been removed", enb_ue->enb_id);
+        return NULL;
+    }
+
+    ogs_pool_id_calloc(&mme_ue_pool, &mme_ue);
     if (mme_ue == NULL) {
         ogs_error("Could not allocate mme_ue context from pool");
         return NULL;
     }
 
-    memset(mme_ue, 0, sizeof *mme_ue);
-
     /* Add All Timers */
     mme_ue->t3413.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_t3413_expire, mme_ue);
+            ogs_app()->timer_mgr, mme_timer_t3413_expire,
+            OGS_UINT_TO_POINTER(mme_ue->id));
     if (!mme_ue->t3413.timer) {
         ogs_error("ogs_timer_add() failed");
-        ogs_pool_free(&mme_ue_pool, mme_ue);
+        ogs_pool_id_free(&mme_ue_pool, mme_ue);
         return NULL;
     }
     mme_ue->t3413.pkbuf = NULL;
     mme_ue->t3422.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_t3422_expire, mme_ue);
+            ogs_app()->timer_mgr, mme_timer_t3422_expire,
+            OGS_UINT_TO_POINTER(mme_ue->id));
     if (!mme_ue->t3422.timer) {
         ogs_error("ogs_timer_add() failed");
-        ogs_pool_free(&mme_ue_pool, mme_ue);
+        ogs_pool_id_free(&mme_ue_pool, mme_ue);
         return NULL;
     }
     mme_ue->t3422.pkbuf = NULL;
     mme_ue->t3450.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_t3450_expire, mme_ue);
+            ogs_app()->timer_mgr, mme_timer_t3450_expire,
+            OGS_UINT_TO_POINTER(mme_ue->id));
     if (!mme_ue->t3450.timer) {
         ogs_error("ogs_timer_add() failed");
-        ogs_pool_free(&mme_ue_pool, mme_ue);
+        ogs_pool_id_free(&mme_ue_pool, mme_ue);
         return NULL;
     }
     mme_ue->t3450.pkbuf = NULL;
     mme_ue->t3460.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_t3460_expire, mme_ue);
+            ogs_app()->timer_mgr, mme_timer_t3460_expire,
+            OGS_UINT_TO_POINTER(mme_ue->id));
     if (!mme_ue->t3460.timer) {
         ogs_error("ogs_timer_add() failed");
-        ogs_pool_free(&mme_ue_pool, mme_ue);
+        ogs_pool_id_free(&mme_ue_pool, mme_ue);
         return NULL;
     }
     mme_ue->t3460.pkbuf = NULL;
     mme_ue->t3470.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_t3470_expire, mme_ue);
+            ogs_app()->timer_mgr, mme_timer_t3470_expire,
+            OGS_UINT_TO_POINTER(mme_ue->id));
     if (!mme_ue->t3470.timer) {
         ogs_error("ogs_timer_add() failed");
-        ogs_pool_free(&mme_ue_pool, mme_ue);
+        ogs_pool_id_free(&mme_ue_pool, mme_ue);
         return NULL;
     }
     mme_ue->t3470.pkbuf = NULL;
     mme_ue->t_mobile_reachable.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_mobile_reachable_expire, mme_ue);
+            ogs_app()->timer_mgr, mme_timer_mobile_reachable_expire,
+            OGS_UINT_TO_POINTER(mme_ue->id));
     if (!mme_ue->t_mobile_reachable.timer) {
         ogs_error("ogs_timer_add() failed");
-        ogs_pool_free(&mme_ue_pool, mme_ue);
+        ogs_pool_id_free(&mme_ue_pool, mme_ue);
         return NULL;
     }
     mme_ue->t_mobile_reachable.pkbuf = NULL;
     mme_ue->t_implicit_detach.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_implicit_detach_expire, mme_ue);
+            ogs_app()->timer_mgr, mme_timer_implicit_detach_expire,
+            OGS_UINT_TO_POINTER(mme_ue->id));
     if (!mme_ue->t_implicit_detach.timer) {
         ogs_error("ogs_timer_add() failed");
-        ogs_pool_free(&mme_ue_pool, mme_ue);
+        ogs_pool_id_free(&mme_ue_pool, mme_ue);
         return NULL;
     }
     mme_ue->t_implicit_detach.pkbuf = NULL;
+
+    mme_ue->gn.t_gn_holding = ogs_timer_add(
+            ogs_app()->timer_mgr, mme_timer_gn_holding_timer_expire,
+            OGS_UINT_TO_POINTER(mme_ue->id));
+    if (! mme_ue->gn.t_gn_holding) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_pool_id_free(&mme_ue_pool, mme_ue);
+        return NULL;
+    }
+    mme_ue->gn.gtp_xact_id = OGS_INVALID_POOL_ID;
 
     mme_ebi_pool_init(mme_ue);
 
     ogs_list_init(&mme_ue->sess_list);
 
-    /* Set MME-S11_TEID */
+    /* Set MME-S11-TEID */
     ogs_pool_alloc(&mme_s11_teid_pool, &mme_ue->mme_s11_teid_node);
     ogs_assert(mme_ue->mme_s11_teid_node);
-
     mme_ue->mme_s11_teid = *(mme_ue->mme_s11_teid_node);
-
     ogs_hash_set(self.mme_s11_teid_hash,
             &mme_ue->mme_s11_teid, sizeof(mme_ue->mme_s11_teid), mme_ue);
+
+    /* Set MME-Gn-TEID */
+    ogs_pool_alloc(&mme_gn_teid_pool, &mme_ue->gn.mme_gn_teid_node);
+    ogs_assert(mme_ue->gn.mme_gn_teid_node);
+    mme_ue->gn.mme_gn_teid = *(mme_ue->gn.mme_gn_teid_node);
+    ogs_hash_set(self.mme_gn_teid_hash,
+            &mme_ue->gn.mme_gn_teid, sizeof(mme_ue->gn.mme_gn_teid), mme_ue);
 
     /*
      * When used for the first time, if last node is set,
@@ -3333,6 +3617,9 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     mme_ue->csmap = NULL;
     mme_ue->vlr_ostream_id = 0;
 
+    /* Initialization */
+    mme_ue->nas_eps.mme.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+
     mme_ue_fsm_init(mme_ue);
 
     ogs_list_add(&self.mme_ue_list, mme_ue);
@@ -3345,6 +3632,7 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
 
 void mme_ue_remove(mme_ue_t *mme_ue)
 {
+    sgw_ue_t *sgw_ue = NULL;
     ogs_assert(mme_ue);
 
     ogs_list_remove(&self.mme_ue_list, mme_ue);
@@ -3353,22 +3641,25 @@ void mme_ue_remove(mme_ue_t *mme_ue)
 
     ogs_hash_set(self.mme_s11_teid_hash,
             &mme_ue->mme_s11_teid, sizeof(mme_ue->mme_s11_teid), NULL);
+    ogs_hash_set(self.mme_gn_teid_hash,
+            &mme_ue->gn.mme_gn_teid, sizeof(mme_ue->gn.mme_gn_teid), NULL);
 
-    ogs_assert(mme_ue->sgw_ue);
-    sgw_ue_remove(mme_ue->sgw_ue);
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
+    if (sgw_ue) sgw_ue_remove(sgw_ue);
 
     if (mme_ue->imsi_len != 0)
         ogs_hash_set(mme_self()->imsi_ue_hash,
                 mme_ue->imsi, mme_ue->imsi_len, NULL);
 
-    if (mme_ue->current.m_tmsi) {
+    if (MME_CURRENT_GUTI_IS_AVAILABLE(mme_ue)) {
         ogs_hash_set(self.guti_ue_hash,
                 &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), NULL);
         ogs_assert(mme_m_tmsi_free(mme_ue->current.m_tmsi) == OGS_OK);
     }
 
-    if (mme_ue->next.m_tmsi)
+    if (MME_NEXT_GUTI_IS_AVAILABLE(mme_ue)) {
         ogs_assert(mme_m_tmsi_free(mme_ue->next.m_tmsi) == OGS_OK);
+    }
 
     /* Clear the saved PDN Connectivity Request */
     OGS_NAS_CLEAR_DATA(&mme_ue->pdn_connectivity_request);
@@ -3391,6 +3682,7 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     ogs_timer_delete(mme_ue->t3470.timer);
     ogs_timer_delete(mme_ue->t_mobile_reachable.timer);
     ogs_timer_delete(mme_ue->t_implicit_detach.timer);
+    ogs_timer_delete(mme_ue->gn.t_gn_holding);
 
     enb_ue_unlink(mme_ue);
 
@@ -3400,7 +3692,8 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     mme_ebi_pool_final(mme_ue);
 
     ogs_pool_free(&mme_s11_teid_pool, mme_ue->mme_s11_teid_node);
-    ogs_pool_free(&mme_ue_pool, mme_ue);
+    ogs_pool_free(&mme_gn_teid_pool, mme_ue->gn.mme_gn_teid_node);
+    ogs_pool_id_free(&mme_ue_pool, mme_ue);
 
     ogs_info("[Removed] Number of MME-UEs is now %d",
             ogs_list_count(&self.mme_ue_list));
@@ -3411,7 +3704,7 @@ void mme_ue_remove_all(void)
     mme_ue_t *mme_ue = NULL, *next = NULL;;
 
     ogs_list_for_each_safe(&self.mme_ue_list, next, mme_ue) {
-        enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+        enb_ue_t *enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
 
         if (enb_ue) enb_ue_remove(enb_ue);
 
@@ -3419,9 +3712,9 @@ void mme_ue_remove_all(void)
     }
 }
 
-mme_ue_t *mme_ue_cycle(mme_ue_t *mme_ue)
+mme_ue_t *mme_ue_find_by_id(ogs_pool_id_t id)
 {
-    return ogs_pool_cycle(&mme_ue_pool, mme_ue);
+    return ogs_pool_find_by_id(&mme_ue_pool, id);
 }
 
 void mme_ue_fsm_init(mme_ue_t *mme_ue)
@@ -3431,7 +3724,7 @@ void mme_ue_fsm_init(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     memset(&e, 0, sizeof(e));
-    e.mme_ue = mme_ue;
+    e.mme_ue_id = mme_ue->id;
     ogs_fsm_init(&mme_ue->sm, emm_state_initial, emm_state_final, &e);
 }
 
@@ -3442,11 +3735,11 @@ void mme_ue_fsm_fini(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     memset(&e, 0, sizeof(e));
-    e.mme_ue = mme_ue;
+    e.mme_ue_id = mme_ue->id;
     ogs_fsm_fini(&mme_ue->sm, &e);
 }
 
-mme_ue_t *mme_ue_find_by_imsi_bcd(char *imsi_bcd)
+mme_ue_t *mme_ue_find_by_imsi_bcd(const char *imsi_bcd)
 {
     uint8_t imsi[OGS_MAX_IMSI_LEN];
     int imsi_len = 0;
@@ -3458,14 +3751,14 @@ mme_ue_t *mme_ue_find_by_imsi_bcd(char *imsi_bcd)
     return mme_ue_find_by_imsi(imsi, imsi_len);
 }
 
-mme_ue_t *mme_ue_find_by_imsi(uint8_t *imsi, int imsi_len)
+mme_ue_t *mme_ue_find_by_imsi(const uint8_t *imsi, int imsi_len)
 {
     ogs_assert(imsi && imsi_len);
 
     return (mme_ue_t *)ogs_hash_get(self.imsi_ue_hash, imsi, imsi_len);
 }
 
-mme_ue_t *mme_ue_find_by_guti(ogs_nas_eps_guti_t *guti)
+mme_ue_t *mme_ue_find_by_guti(const ogs_nas_eps_guti_t *guti)
 {
     ogs_assert(guti);
 
@@ -3473,25 +3766,30 @@ mme_ue_t *mme_ue_find_by_guti(ogs_nas_eps_guti_t *guti)
             self.guti_ue_hash, guti, sizeof(ogs_nas_eps_guti_t));
 }
 
-mme_ue_t *mme_ue_find_by_teid(uint32_t teid)
+mme_ue_t *mme_ue_find_by_s11_local_teid(uint32_t teid)
 {
     return ogs_hash_get(self.mme_s11_teid_hash, &teid, sizeof(teid));
 }
 
-mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
+mme_ue_t *mme_ue_find_by_gn_local_teid(uint32_t teid)
+{
+    return ogs_hash_get(self.mme_gn_teid_hash, &teid, sizeof(teid));
+}
+
+mme_ue_t *mme_ue_find_by_message(const ogs_nas_eps_message_t *message)
 {
     mme_ue_t *mme_ue = NULL;
-    ogs_nas_eps_attach_request_t *attach_request = NULL;
-    ogs_nas_eps_detach_request_from_ue_t *detach_request = NULL;
-    ogs_nas_eps_tracking_area_update_request_t *tau_request = NULL;
-    ogs_nas_eps_extended_service_request_t *extended_service_request = NULL;
-    ogs_nas_eps_mobile_identity_t *eps_mobile_identity = NULL;
-    ogs_nas_mobile_identity_t *mobile_identity = NULL;
+    const ogs_nas_eps_attach_request_t *attach_request = NULL;
+    const ogs_nas_eps_detach_request_from_ue_t *detach_request = NULL;
+    const ogs_nas_eps_tracking_area_update_request_t *tau_request = NULL;
+    const ogs_nas_eps_extended_service_request_t *extended_service_request = NULL;
+    const ogs_nas_eps_mobile_identity_t *eps_mobile_identity = NULL;
+    const ogs_nas_mobile_identity_t *mobile_identity = NULL;
 
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
-    ogs_nas_eps_mobile_identity_guti_t *eps_mobile_identity_guti = NULL;
-    ogs_nas_mobile_identity_tmsi_t *mobile_identity_tmsi = NULL;
-    served_gummei_t *served_gummei = NULL;
+    const ogs_nas_eps_mobile_identity_guti_t *eps_mobile_identity_guti = NULL;
+    const ogs_nas_mobile_identity_tmsi_t *mobile_identity_tmsi = NULL;
+    const served_gummei_t *served_gummei = NULL;
     ogs_nas_eps_guti_t ogs_nas_guti;
 
     switch (message->emm.h.message_type) {
@@ -3657,6 +3955,7 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
     mme_ue_t *old_mme_ue = NULL;
     mme_sess_t *old_sess = NULL;
     mme_bearer_t *old_bearer = NULL;
+    sgw_ue_t *sgw_ue = NULL, *old_sgw_ue = NULL;
     ogs_assert(mme_ue && imsi_bcd);
 
     ogs_cpystrn(mme_ue->imsi_bcd, imsi_bcd, OGS_MAX_IMSI_BCD_LEN+1);
@@ -3670,13 +3969,19 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
             ogs_pool_index(&mme_ue_pool, old_mme_ue)) {
             ogs_warn("[%s] OLD UE Context Release", mme_ue->imsi_bcd);
             if (ECM_CONNECTED(old_mme_ue)) {
+                enb_ue_t *enb_ue = enb_ue_find_by_id(old_mme_ue->enb_ue_id);
                 /* Implcit S1 release */
-                ogs_info("[%s] Implicit S1 release", mme_ue->imsi_bcd);
-                ogs_info("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-                        old_mme_ue->imsi_bcd,
-                        old_mme_ue->enb_ue->enb_ue_s1ap_id,
-                        old_mme_ue->enb_ue->mme_ue_s1ap_id);
-                enb_ue_remove(old_mme_ue->enb_ue);
+                ogs_warn("[%s] Implicit S1 release", mme_ue->imsi_bcd);
+                if (enb_ue) {
+                    ogs_warn("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                            old_mme_ue->imsi_bcd,
+                            enb_ue->enb_ue_s1ap_id,
+                            enb_ue->mme_ue_s1ap_id);
+                    enb_ue_remove(enb_ue);
+                } else {
+                    ogs_error("[%s] S1 Context has already been removed",
+                                old_mme_ue->imsi_bcd);
+                }
             }
 
     /*
@@ -3694,14 +3999,14 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
             /* Phase-1 : Change MME-UE Context in Session Context */
             ogs_list_for_each(&old_mme_ue->sess_list, old_sess) {
                 ogs_list_for_each(&old_sess->bearer_list, old_bearer) {
-                    old_bearer->mme_ue = mme_ue;
+                    old_bearer->mme_ue_id = mme_ue->id;
 
                     if (old_bearer->ebi_node)
                         ogs_pool_free(
                                 &old_mme_ue->ebi_pool, old_bearer->ebi_node);
                     old_bearer->ebi_node = NULL;
                 }
-                old_sess->mme_ue = mme_ue;
+                old_sess->mme_ue_id = mme_ue->id;
             }
 
             /* Phase-2 : Move Session Context from OLD to NEW MME-UE Context */
@@ -3712,9 +4017,11 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
             memset(&old_mme_ue->sess_list, 0, sizeof(old_mme_ue->sess_list));
 
             /* Phase-4 : Move sgw_ue->sgw_s11_teid */
-            ogs_assert(old_mme_ue->sgw_ue);
-            ogs_assert(mme_ue->sgw_ue);
-            mme_ue->sgw_ue->sgw_s11_teid = old_mme_ue->sgw_ue->sgw_s11_teid;
+            sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
+            ogs_assert(sgw_ue);
+            old_sgw_ue = sgw_ue_find_by_id(old_mme_ue->sgw_ue_id);
+            ogs_assert(old_sgw_ue);
+            sgw_ue->sgw_s11_teid = old_sgw_ue->sgw_s11_teid;
 
             mme_ue_remove(old_mme_ue);
         }
@@ -3725,6 +4032,18 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
                 mme_ue->imsi, mme_ue->imsi_len, NULL);
 
     ogs_hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
+
+    mme_ue->hssmap = mme_hssmap_find_by_imsi_bcd(mme_ue->imsi_bcd);
+    if (mme_ue->hssmap) {
+        char plmn_id_str[OGS_PLMNIDSTRLEN];
+        const char *realm = mme_ue->hssmap->realm ? mme_ue->hssmap->realm : "NULL";
+        const char *host = mme_ue->hssmap->host ? mme_ue->hssmap->host : "NULL";
+
+        ogs_plmn_id_to_string(&mme_ue->hssmap->plmn_id, plmn_id_str);
+        ogs_debug("[%s]: HSS Map HPLMN[%s] Realm[%s] Host[%s]",
+                   mme_ue->imsi_bcd, plmn_id_str, realm, host);
+
+    }
 
     return OGS_OK;
 }
@@ -3826,7 +4145,7 @@ int mme_ue_xact_count(mme_ue_t *mme_ue, uint8_t org)
     ogs_assert(org == OGS_GTP_LOCAL_ORIGINATOR ||
                 org == OGS_GTP_REMOTE_ORIGINATOR);
 
-    sgw_ue = mme_ue->sgw_ue;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     if (!sgw_ue) return 0;
 
     gnode = sgw_ue->gnode;
@@ -3842,34 +4161,30 @@ void enb_ue_associate_mme_ue(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
     ogs_assert(enb_ue);
 
-    mme_ue->enb_ue = enb_ue;
-    enb_ue->mme_ue = mme_ue;
+    mme_ue->enb_ue_id = enb_ue->id;
+    enb_ue->mme_ue_id = mme_ue->id;
 }
 
 void enb_ue_deassociate(enb_ue_t *enb_ue)
 {
     ogs_assert(enb_ue);
-    enb_ue->mme_ue = NULL;
+    enb_ue->mme_ue_id = OGS_INVALID_POOL_ID;
 }
 
 void enb_ue_unlink(mme_ue_t *mme_ue)
 {
     ogs_assert(mme_ue);
-    mme_ue->enb_ue = NULL;
+    mme_ue->enb_ue_id = OGS_INVALID_POOL_ID;
 }
 
 void enb_ue_source_associate_target(enb_ue_t *source_ue, enb_ue_t *target_ue)
 {
-    mme_ue_t *mme_ue = NULL;
-
     ogs_assert(source_ue);
     ogs_assert(target_ue);
-    mme_ue = source_ue->mme_ue;
-    ogs_assert(mme_ue);
 
-    target_ue->mme_ue = mme_ue;
-    target_ue->source_ue = source_ue;
-    source_ue->target_ue = target_ue;
+    target_ue->mme_ue_id = source_ue->mme_ue_id;
+    target_ue->source_ue_id = source_ue->id;
+    source_ue->target_ue_id = target_ue->id;
 }
 
 void enb_ue_source_deassociate_target(enb_ue_t *enb_ue)
@@ -3878,22 +4193,44 @@ void enb_ue_source_deassociate_target(enb_ue_t *enb_ue)
     enb_ue_t *target_ue = NULL;
     ogs_assert(enb_ue);
 
-    if (enb_ue->target_ue) {
+    if (enb_ue->target_ue_id >= OGS_MIN_POOL_ID &&
+        enb_ue->target_ue_id <= OGS_MAX_POOL_ID) {
         source_ue = enb_ue;
-        target_ue = enb_ue->target_ue;
+        target_ue = enb_ue_find_by_id(enb_ue->target_ue_id);
 
-        ogs_assert(source_ue->target_ue);
-        ogs_assert(target_ue->source_ue);
-        source_ue->target_ue = NULL;
-        target_ue->source_ue = NULL;
-    } else if (enb_ue->source_ue) {
+        ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
+                source_ue->target_ue_id <= OGS_MAX_POOL_ID);
+        source_ue->target_ue_id = OGS_INVALID_POOL_ID;
+
+        if (target_ue) {
+            ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
+                    target_ue->source_ue_id <= OGS_MAX_POOL_ID);
+            target_ue->source_ue_id = OGS_INVALID_POOL_ID;
+        } else
+            ogs_error("Target-UE-ID [%d] has already been removed "
+                    "(ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d])",
+                    source_ue->target_ue_id,
+                    source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
+
+
+    } else if (enb_ue->source_ue_id >= OGS_MIN_POOL_ID &&
+                enb_ue->source_ue_id <= OGS_MAX_POOL_ID) {
         target_ue = enb_ue;
-        source_ue = enb_ue->source_ue;
+        source_ue = enb_ue_find_by_id(enb_ue->source_ue_id);
 
-        ogs_assert(source_ue->target_ue);
-        ogs_assert(target_ue->source_ue);
-        source_ue->target_ue = NULL;
-        target_ue->source_ue = NULL;
+        if (source_ue) {
+            ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
+                    source_ue->target_ue_id <= OGS_MAX_POOL_ID);
+            source_ue->target_ue_id = OGS_INVALID_POOL_ID;
+        } else
+            ogs_error("Source-UE-ID [%d] has already been removed "
+                    "(ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d])",
+                    target_ue->source_ue_id,
+                    target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
+
+        ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
+                target_ue->source_ue_id <= OGS_MAX_POOL_ID);
+        target_ue->source_ue_id = OGS_INVALID_POOL_ID;
     }
 }
 
@@ -3902,58 +4239,74 @@ void sgw_ue_associate_mme_ue(sgw_ue_t *sgw_ue, mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
     ogs_assert(sgw_ue);
 
-    mme_ue->sgw_ue = sgw_ue;
-    sgw_ue->mme_ue = mme_ue;
+    mme_ue->sgw_ue_id = sgw_ue->id;
+    sgw_ue->mme_ue_id = mme_ue->id;
 }
 
 void sgw_ue_deassociate(sgw_ue_t *sgw_ue)
 {
     ogs_assert(sgw_ue);
-    sgw_ue->mme_ue = NULL;
+    sgw_ue->mme_ue_id = OGS_INVALID_POOL_ID;
 }
 
 void sgw_ue_unlink(mme_ue_t *mme_ue)
 {
     ogs_assert(mme_ue);
-    mme_ue->sgw_ue = NULL;
+    mme_ue->sgw_ue_id = OGS_INVALID_POOL_ID;
 }
 
 void sgw_ue_source_associate_target(sgw_ue_t *source_ue, sgw_ue_t *target_ue)
 {
-    mme_ue_t *mme_ue = NULL;
-
     ogs_assert(source_ue);
     ogs_assert(target_ue);
-    mme_ue = source_ue->mme_ue;
-    ogs_assert(mme_ue);
 
-    target_ue->mme_ue = mme_ue;
-    target_ue->source_ue = source_ue;
-    source_ue->target_ue = target_ue;
+    target_ue->mme_ue_id = source_ue->mme_ue_id;
+    target_ue->source_ue_id = source_ue->id;
+    source_ue->target_ue_id = target_ue->id;
 }
 
 void sgw_ue_source_deassociate_target(sgw_ue_t *sgw_ue)
 {
     sgw_ue_t *source_ue = NULL;
     sgw_ue_t *target_ue = NULL;
+
     ogs_assert(sgw_ue);
 
-    if (sgw_ue->target_ue) {
+    if (sgw_ue->target_ue_id >= OGS_MIN_POOL_ID &&
+        sgw_ue->target_ue_id <= OGS_MAX_POOL_ID) {
         source_ue = sgw_ue;
-        target_ue = sgw_ue->target_ue;
+        target_ue = sgw_ue_find_by_id(sgw_ue->target_ue_id);
 
-        ogs_assert(source_ue->target_ue);
-        ogs_assert(target_ue->source_ue);
-        source_ue->target_ue = NULL;
-        target_ue->source_ue = NULL;
-    } else if (sgw_ue->source_ue) {
+        ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
+                source_ue->target_ue_id <= OGS_MAX_POOL_ID);
+        source_ue->target_ue_id = OGS_INVALID_POOL_ID;
+
+        if (target_ue) {
+            ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
+                    target_ue->source_ue_id <= OGS_MAX_POOL_ID);
+            target_ue->source_ue_id = OGS_INVALID_POOL_ID;
+        } else
+            ogs_error("Target-UE-ID [%d] has already been removed "
+                    "(SGW-S11-TEID[%d])",
+                    source_ue->target_ue_id, source_ue->sgw_s11_teid);
+
+    } else if (sgw_ue->source_ue_id >= OGS_MIN_POOL_ID &&
+                sgw_ue->source_ue_id <= OGS_MAX_POOL_ID) {
         target_ue = sgw_ue;
-        source_ue = sgw_ue->source_ue;
+        source_ue = sgw_ue_find_by_id(sgw_ue->source_ue_id);
 
-        ogs_assert(source_ue->target_ue);
-        ogs_assert(target_ue->source_ue);
-        source_ue->target_ue = NULL;
-        target_ue->source_ue = NULL;
+        if (source_ue) {
+            ogs_assert(source_ue->target_ue_id >= OGS_MIN_POOL_ID &&
+                    source_ue->target_ue_id <= OGS_MAX_POOL_ID);
+            source_ue->target_ue_id = OGS_INVALID_POOL_ID;
+        } else
+            ogs_error("Source-UE-ID [%d] has already been removed "
+                    "(SGW-S11-TEID[%d])",
+                    target_ue->source_ue_id, target_ue->sgw_s11_teid);
+
+        ogs_assert(target_ue->source_ue_id >= OGS_MIN_POOL_ID &&
+                target_ue->source_ue_id <= OGS_MAX_POOL_ID);
+        target_ue->source_ue_id = OGS_INVALID_POOL_ID;
     }
 }
 
@@ -3965,13 +4318,12 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, uint8_t pti)
     ogs_assert(mme_ue);
     ogs_assert(pti != OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
 
-    ogs_pool_alloc(&mme_sess_pool, &sess);
+    ogs_pool_id_calloc(&mme_sess_pool, &sess);
     ogs_assert(sess);
-    memset(sess, 0, sizeof *sess);
 
     ogs_list_init(&sess->bearer_list);
 
-    sess->mme_ue = mme_ue;
+    sess->mme_ue_id = mme_ue->id;
     sess->pti = pti;
 
     bearer = mme_bearer_add(sess);
@@ -3989,7 +4341,7 @@ void mme_sess_remove(mme_sess_t *sess)
     mme_ue_t *mme_ue = NULL;
 
     ogs_assert(sess);
-    mme_ue = sess->mme_ue;
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
 
     ogs_list_remove(&mme_ue->sess_list, sess);
@@ -4001,7 +4353,7 @@ void mme_sess_remove(mme_sess_t *sess)
     OGS_TLV_CLEAR_DATA(&sess->pgw_pco);
     OGS_TLV_CLEAR_DATA(&sess->pgw_epco);
 
-    ogs_pool_free(&mme_sess_pool, sess);
+    ogs_pool_id_free(&mme_sess_pool, sess);
 
     stats_remove_mme_session();
 }
@@ -4020,7 +4372,7 @@ void mme_sess_remove_all(mme_ue_t *mme_ue)
     }
 }
 
-mme_sess_t *mme_sess_find_by_pti(mme_ue_t *mme_ue, uint8_t pti)
+mme_sess_t *mme_sess_find_by_pti(const mme_ue_t *mme_ue, uint8_t pti)
 {
     mme_sess_t *sess = NULL;
 
@@ -4035,34 +4387,40 @@ mme_sess_t *mme_sess_find_by_pti(mme_ue_t *mme_ue, uint8_t pti)
     return NULL;
 }
 
-mme_sess_t *mme_sess_find_by_ebi(mme_ue_t *mme_ue, uint8_t ebi)
+mme_sess_t *mme_sess_find_by_ebi(const mme_ue_t *mme_ue, uint8_t ebi)
 {
     mme_bearer_t *bearer = NULL;
 
     bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
     if (bearer)
-        return bearer->sess;
+        return mme_sess_find_by_id(bearer->sess_id);
 
     return NULL;
 }
 
-mme_sess_t *mme_sess_find_by_apn(mme_ue_t *mme_ue, char *apn)
+mme_sess_t *mme_sess_find_by_apn(const mme_ue_t *mme_ue, const char *apn)
 {
     mme_sess_t *sess = NULL;
 
     sess = mme_sess_first(mme_ue);
     while (sess) {
-        ogs_assert(sess->session->name);
-        if (sess->session && ogs_strcasecmp(sess->session->name, apn) == 0)
-            return sess;
-
+        if (sess->session) {
+            ogs_assert(sess->session->name);
+            if (ogs_strcasecmp(sess->session->name, apn) == 0)
+                return sess;
+        }
         sess = mme_sess_next(sess);
     }
 
     return NULL;
 }
 
-mme_sess_t *mme_sess_first(mme_ue_t *mme_ue)
+mme_sess_t *mme_sess_find_by_id(ogs_pool_id_t id)
+{
+    return ogs_pool_find_by_id(&mme_sess_pool, id);
+}
+
+mme_sess_t *mme_sess_first(const mme_ue_t *mme_ue)
 {
     return ogs_list_first(&mme_ue->sess_list);
 }
@@ -4072,7 +4430,7 @@ mme_sess_t *mme_sess_next(mme_sess_t *sess)
     return ogs_list_next(sess);
 }
 
-unsigned int mme_sess_count(mme_ue_t *mme_ue)
+unsigned int mme_sess_count(const mme_ue_t *mme_ue)
 {
     unsigned int count = 0;
     mme_sess_t *sess = NULL;
@@ -4092,12 +4450,13 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
     mme_ue_t *mme_ue = NULL;
 
     ogs_assert(sess);
-    mme_ue = sess->mme_ue;
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     ogs_assert(mme_ue);
 
-    ogs_pool_alloc(&mme_bearer_pool, &bearer);
+    ogs_pool_id_calloc(&mme_bearer_pool, &bearer);
     ogs_assert(bearer);
-    memset(bearer, 0, sizeof *bearer);
+
+    ogs_list_init(&bearer->update.xact_list);
 
     ogs_pool_alloc(&mme_ue->ebi_pool, &bearer->ebi_node);
     ogs_assert(bearer->ebi_node);
@@ -4107,17 +4466,18 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
     ogs_assert(bearer->ebi >= MIN_EPS_BEARER_ID &&
                 bearer->ebi <= MAX_EPS_BEARER_ID);
 
-    bearer->mme_ue = mme_ue;
-    bearer->sess = sess;
+    bearer->mme_ue_id = mme_ue->id;
+    bearer->sess_id = sess->id;
 
     ogs_list_add(&sess->bearer_list, bearer);
 
     bearer->t3489.timer = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_t3489_expire, bearer);
+            ogs_app()->timer_mgr, mme_timer_t3489_expire,
+            OGS_UINT_TO_POINTER(bearer->id));
     bearer->t3489.pkbuf = NULL;
 
     memset(&e, 0, sizeof(e));
-    e.bearer = bearer;
+    e.bearer_id = bearer->id;
     ogs_fsm_init(&bearer->sm, esm_state_initial, esm_state_final, &e);
 
     return bearer;
@@ -4126,26 +4486,37 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
 void mme_bearer_remove(mme_bearer_t *bearer)
 {
     mme_event_t e;
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
+    ogs_gtp_xact_t *xact = NULL, *next_xact = NULL;
 
     ogs_assert(bearer);
-    ogs_assert(bearer->mme_ue);
-    ogs_assert(bearer->sess);
+    mme_ue = mme_ue_find_by_id(bearer->mme_ue_id);
+    ogs_assert(mme_ue);
+    sess = mme_sess_find_by_id(bearer->sess_id);
+    ogs_assert(sess);
 
     memset(&e, 0, sizeof(e));
-    e.bearer = bearer;
+    e.bearer_id = bearer->id;
     ogs_fsm_fini(&bearer->sm, &e);
 
     CLEAR_BEARER_ALL_TIMERS(bearer);
     ogs_timer_delete(bearer->t3489.timer);
 
-    ogs_list_remove(&bearer->sess->bearer_list, bearer);
+    ogs_list_remove(&sess->bearer_list, bearer);
 
     OGS_TLV_CLEAR_DATA(&bearer->tft);
 
     if (bearer->ebi_node)
-        ogs_pool_free(&bearer->mme_ue->ebi_pool, bearer->ebi_node);
+        ogs_pool_free(&mme_ue->ebi_pool, bearer->ebi_node);
 
-    ogs_pool_free(&mme_bearer_pool, bearer);
+    ogs_list_for_each_entry_safe(&bearer->update.xact_list,
+            next_xact, xact, to_update_node) {
+        ogs_timer_stop(xact->tm_peer);
+        ogs_list_remove(&bearer->update.xact_list, &xact->to_update_node);
+    }
+
+    ogs_pool_id_free(&mme_bearer_pool, bearer);
 }
 
 void mme_bearer_remove_all(mme_sess_t *sess)
@@ -4164,7 +4535,7 @@ void mme_bearer_remove_all(mme_sess_t *sess)
     }
 }
 
-mme_bearer_t *mme_bearer_find_by_sess_ebi(mme_sess_t *sess, uint8_t ebi)
+mme_bearer_t *mme_bearer_find_by_sess_ebi(const mme_sess_t *sess, uint8_t ebi)
 {
     mme_bearer_t *bearer = NULL;
 
@@ -4181,7 +4552,7 @@ mme_bearer_t *mme_bearer_find_by_sess_ebi(mme_sess_t *sess, uint8_t ebi)
     return NULL;
 }
 
-mme_bearer_t *mme_bearer_find_by_ue_ebi(mme_ue_t *mme_ue, uint8_t ebi)
+mme_bearer_t *mme_bearer_find_by_ue_ebi(const mme_ue_t *mme_ue, uint8_t ebi)
 {
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
@@ -4210,9 +4581,13 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
 
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
+    mme_ue_t *sess_mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
 
     ogs_assert(mme_ue);
     ogs_assert(message);
+
+    enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
 
     pti = message->esm.h.procedure_transaction_identity;
     ebi = message->esm.h.eps_bearer_identity;
@@ -4225,7 +4600,7 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
         if (!bearer) {
             ogs_error("No Bearer : EBI[%d]", ebi);
-            r = nas_eps_send_attach_reject(mme_ue,
+            r = nas_eps_send_attach_reject(enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
                     OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
             ogs_expect(r == OGS_OK);
@@ -4237,8 +4612,9 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
     }
 
     if (pti == OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED) {
-        ogs_error("Both PTI[%d] and EBI[%d] are 0", pti, ebi);
-        r = nas_eps_send_attach_reject(mme_ue,
+        ogs_error("ESM message type: %d, Both PTI[%d] and EBI[%d] are 0",
+                message->esm.h.message_type, pti, ebi);
+        r = nas_eps_send_attach_reject(enb_ue, mme_ue,
                 OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
                 OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
         ogs_expect(r == OGS_OK);
@@ -4257,7 +4633,7 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
         if (!bearer) {
             ogs_error("No Bearer : Linked-EBI[%d]",
                     linked_eps_bearer_identity->eps_bearer_identity);
-            r = nas_eps_send_attach_reject(mme_ue,
+            r = nas_eps_send_attach_reject(enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
                     OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
             ogs_expect(r == OGS_OK);
@@ -4308,7 +4684,7 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
     }
 
     if (bearer) {
-        sess = bearer->sess;
+        sess = mme_sess_find_by_id(bearer->sess_id);
         ogs_assert(sess);
         sess->pti = pti;
 
@@ -4323,6 +4699,9 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
             sess = mme_sess_find_by_apn(mme_ue,
                     pdn_connectivity_request->access_point_name.apn);
             if (sess && create_action != OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
+
+                sess->pti = pti;
+
                 r = nas_eps_send_pdn_connectivity_reject(
                         sess,
                         OGS_NAS_ESM_CAUSE_MULTIPLE_PDN_CONNECTIONS_FOR_A_GIVEN_APN_NOT_ALLOWED,
@@ -4340,11 +4719,12 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
                 ogs_debug("[%s:%d:%d:%p]",
                     sess->session ? sess->session->name : "Unknown",
                     sess->pti, pti, sess);
+
+                sess_mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
                 ogs_debug("[%s:%p]",
-                    sess->mme_ue ? sess->mme_ue->imsi_bcd : "Unknown",
-                    sess->mme_ue);
+                    sess_mme_ue ? sess_mme_ue->imsi_bcd : "Unknown",
+                    sess_mme_ue);
             }
-            MME_UE_LIST_CHECK;
         }
 
         if (!sess) {
@@ -4355,20 +4735,22 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
             ogs_debug("[%s:%d:%d:%p]",
                 sess->session ? sess->session->name : "Unknown",
                 sess->pti, pti, sess);
+
+            sess_mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
             ogs_debug("[%s:%p]",
-                sess->mme_ue ? sess->mme_ue->imsi_bcd : "Unknown",
-                sess->mme_ue);
-            MME_UE_LIST_CHECK;
+                sess_mme_ue ? sess_mme_ue->imsi_bcd : "Unknown",
+                sess_mme_ue);
         } else {
             sess->pti = pti;
             ogs_debug("[%s:%p]", mme_ue->imsi_bcd, mme_ue);
             ogs_debug("[%s:%d:%d:%p]",
                 sess->session ? sess->session->name : "Unknown",
                 sess->pti, pti, sess);
+
+            sess_mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
             ogs_debug("[%s:%p]",
-                sess->mme_ue ? sess->mme_ue->imsi_bcd : "Unknown",
-                sess->mme_ue);
-            MME_UE_LIST_CHECK;
+                sess_mme_ue ? sess_mme_ue->imsi_bcd : "Unknown",
+                sess_mme_ue);
         }
 
     } else {
@@ -4376,7 +4758,7 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
         if (!sess) {
             ogs_error("No Session : ESM message type[%d], PTI[%d]",
                     message->esm.h.message_type, pti);
-            r = nas_eps_send_attach_reject(mme_ue,
+            r = nas_eps_send_attach_reject(enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
                     OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
             ogs_expect(r == OGS_OK);
@@ -4406,13 +4788,13 @@ mme_bearer_t *mme_linked_bearer(mme_bearer_t *bearer)
     mme_sess_t *sess = NULL;
 
     ogs_assert(bearer);
-    sess = bearer->sess;
+    sess = mme_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
 
     return mme_default_bearer_in_sess(sess);
 }
 
-mme_bearer_t *mme_bearer_first(mme_sess_t *sess)
+mme_bearer_t *mme_bearer_first(const mme_sess_t *sess)
 {
     ogs_assert(sess);
 
@@ -4425,9 +4807,9 @@ mme_bearer_t *mme_bearer_next(mme_bearer_t *bearer)
     return ogs_list_next(bearer);
 }
 
-mme_bearer_t *mme_bearer_cycle(mme_bearer_t *bearer)
+mme_bearer_t *mme_bearer_find_by_id(ogs_pool_id_t id)
 {
-    return ogs_pool_cycle(&mme_bearer_pool, bearer);
+    return ogs_pool_find_by_id(&mme_bearer_pool, id);
 }
 
 void mme_session_remove_all(mme_ue_t *mme_ue)
@@ -4445,7 +4827,7 @@ void mme_session_remove_all(mme_ue_t *mme_ue)
     mme_ue->num_of_session = 0;
 }
 
-ogs_session_t *mme_session_find_by_apn(mme_ue_t *mme_ue, char *apn)
+ogs_session_t *mme_session_find_by_apn(mme_ue_t *mme_ue, const char *apn)
 {
     ogs_session_t *session = NULL;
     int i = 0;
@@ -4607,7 +4989,8 @@ int mme_m_tmsi_free(mme_m_tmsi_t *m_tmsi)
     ogs_assert(m_tmsi);
 
     /* Restore M-TMSI by Issue #2307 */
-    *m_tmsi &= 0x003fffff;
+    *m_tmsi &= 0x3fffffff;
+    *m_tmsi = ((*m_tmsi & 0xffff) | ((*m_tmsi & 0x3f000000) >> 8));
     ogs_pool_free(&m_tmsi_pool, m_tmsi);
 
     return OGS_OK;
@@ -4675,6 +5058,83 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue)
     }
 
     return 0;
+}
+
+/*
+ * Save the sensitive (partial) context fields
+ * from the UE context into the memento
+ */
+void mme_ue_save_memento(mme_ue_t *mme_ue, mme_ue_memento_t *memento)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(memento);
+
+    memcpy(&memento->ue_network_capability,
+            &mme_ue->ue_network_capability,
+            sizeof(memento->ue_network_capability));
+    memcpy(&memento->ms_network_capability,
+            &mme_ue->ms_network_capability,
+            sizeof(memento->ms_network_capability));
+    memcpy(&memento->ue_additional_security_capability,
+            &mme_ue->ue_additional_security_capability,
+            sizeof(memento->ue_additional_security_capability));
+    memcpy(memento->xres, mme_ue->xres, OGS_MAX_RES_LEN);
+    memento->xres_len = mme_ue->xres_len;
+    memcpy(memento->kasme, mme_ue->kasme, OGS_SHA256_DIGEST_SIZE);
+    memcpy(memento->rand, mme_ue->rand, OGS_RAND_LEN);
+    memcpy(memento->autn, mme_ue->autn, OGS_AUTN_LEN);
+    memcpy(memento->knas_int, mme_ue->knas_int,
+           OGS_SHA256_DIGEST_SIZE / 2);
+    memcpy(memento->knas_enc, mme_ue->knas_enc,
+           OGS_SHA256_DIGEST_SIZE / 2);
+    memento->dl_count = mme_ue->dl_count;
+    memento->ul_count = mme_ue->ul_count.i32;
+    memcpy(memento->kenb, mme_ue->kenb, OGS_SHA256_DIGEST_SIZE);
+    memcpy(memento->hash_mme, mme_ue->hash_mme, OGS_HASH_MME_LEN);
+    memento->nonceue = mme_ue->nonceue;
+    memento->noncemme = mme_ue->noncemme;
+    memento->gprs_ciphering_key_sequence_number =
+        mme_ue->gprs_ciphering_key_sequence_number;
+    memcpy(memento->nh, mme_ue->nh, OGS_SHA256_DIGEST_SIZE);
+    memento->selected_enc_algorithm = mme_ue->selected_enc_algorithm;
+    memento->selected_int_algorithm = mme_ue->selected_int_algorithm;
+}
+
+/* Restore the sensitive context fields into the UE context */
+void mme_ue_restore_memento(mme_ue_t *mme_ue, const mme_ue_memento_t *memento)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(memento);
+
+    memcpy(&mme_ue->ue_network_capability,
+            &memento->ue_network_capability,
+            sizeof(mme_ue->ue_network_capability));
+    memcpy(&mme_ue->ms_network_capability,
+            &memento->ms_network_capability,
+            sizeof(mme_ue->ms_network_capability));
+    memcpy(&mme_ue->ue_additional_security_capability,
+            &memento->ue_additional_security_capability,
+            sizeof(mme_ue->ue_additional_security_capability));
+    memcpy(mme_ue->xres, memento->xres, OGS_MAX_RES_LEN);
+    mme_ue->xres_len = memento->xres_len;
+    memcpy(mme_ue->kasme, memento->kasme, OGS_SHA256_DIGEST_SIZE);
+    memcpy(mme_ue->rand, memento->rand, OGS_RAND_LEN);
+    memcpy(mme_ue->autn, memento->autn, OGS_AUTN_LEN);
+    memcpy(mme_ue->knas_int, memento->knas_int,
+           OGS_SHA256_DIGEST_SIZE / 2);
+    memcpy(mme_ue->knas_enc, memento->knas_enc,
+           OGS_SHA256_DIGEST_SIZE / 2);
+    mme_ue->dl_count = memento->dl_count;
+    mme_ue->ul_count.i32 = memento->ul_count;
+    memcpy(mme_ue->kenb, memento->kenb, OGS_SHA256_DIGEST_SIZE);
+    memcpy(mme_ue->hash_mme, memento->hash_mme, OGS_HASH_MME_LEN);
+    mme_ue->nonceue = memento->nonceue;
+    mme_ue->noncemme = memento->noncemme;
+    mme_ue->gprs_ciphering_key_sequence_number =
+        memento->gprs_ciphering_key_sequence_number;
+    memcpy(mme_ue->nh, memento->nh, OGS_SHA256_DIGEST_SIZE);
+    mme_ue->selected_enc_algorithm = memento->selected_enc_algorithm;
+    mme_ue->selected_int_algorithm = memento->selected_int_algorithm;
 }
 
 static void stats_add_enb_ue(void)

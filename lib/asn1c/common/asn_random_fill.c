@@ -6,6 +6,7 @@
 #include <asn_internal.h>
 #include <asn_random_fill.h>
 #include <constr_TYPE.h>
+#include <stdlib.h>
 
 int
 asn_random_fill(const struct asn_TYPE_descriptor_s *td, void **struct_ptr,

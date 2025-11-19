@@ -124,6 +124,7 @@ bool pcf_sbi_send_request(
 }
 
 static int pcf_sbi_discover_and_send(
+        ogs_pool_id_t sbi_object_id,
         ogs_sbi_object_t *sbi_object,
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
@@ -138,15 +139,22 @@ static int pcf_sbi_discover_and_send(
     ogs_assert(stream);
     ogs_assert(build);
 
+    ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
+            sbi_object_id <= OGS_MAX_POOL_ID);
+
     xact = ogs_sbi_xact_add(
-            sbi_object, service_type, discovery_option,
+            sbi_object_id, sbi_object, service_type, discovery_option,
             build, context, data);
     if (!xact) {
         ogs_error("ogs_sbi_xact_add() failed");
         return OGS_ERROR;
     }
 
-    xact->assoc_stream = stream;
+    if (stream) {
+        xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
+        ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+                xact->assoc_stream_id <= OGS_MAX_POOL_ID);
+    }
 
     r = ogs_sbi_discover_and_send(xact);
     if (r != OGS_OK) {
@@ -167,38 +175,18 @@ int pcf_ue_sbi_discover_and_send(
     int r;
 
     r = pcf_sbi_discover_and_send(
-                &pcf_ue->sbi, service_type, discovery_option,
-                (ogs_sbi_build_f)build, pcf_ue, stream, data);
+            pcf_ue->id, &pcf_ue->sbi, service_type, discovery_option,
+            (ogs_sbi_build_f)build, pcf_ue, stream, data);
     if (r != OGS_OK) {
         ogs_error("pcf_ue_sbi_discover_and_send() failed");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", pcf_ue->supi));
+                "Cannot discover", pcf_ue->supi, NULL));
         return r;
     }
 
     return OGS_OK;
-}
-
-int pcf_sess_sbi_discover_only(
-        pcf_sess_t *sess, ogs_sbi_stream_t *stream,
-        ogs_sbi_service_type_e service_type)
-{
-    ogs_sbi_xact_t *xact = NULL;
-
-    ogs_assert(sess);
-    ogs_assert(service_type);
-
-    xact = ogs_sbi_xact_add(&sess->sbi, service_type, NULL, NULL, NULL, NULL);
-    if (!xact) {
-        ogs_error("ogs_sbi_xact_add() failed");
-        return OGS_ERROR;
-    }
-
-    xact->assoc_stream = stream;
-
-    return ogs_sbi_discover_only(xact);
 }
 
 int pcf_sess_sbi_discover_and_send(
@@ -210,14 +198,14 @@ int pcf_sess_sbi_discover_and_send(
     int r;
 
     r = pcf_sbi_discover_and_send(
-                &sess->sbi, service_type, discovery_option,
-                (ogs_sbi_build_f)build, sess, stream, data);
+            sess->id, &sess->sbi, service_type, discovery_option,
+            (ogs_sbi_build_f)build, sess, stream, data);
     if (r != OGS_OK) {
         ogs_error("pcf_sess_sbi_discover_and_send() failed");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", NULL));
+                "Cannot discover", NULL, NULL));
         return r;
     }
 
@@ -292,6 +280,340 @@ bool pcf_sbi_send_am_policy_control_notify(pcf_ue_t *pcf_ue)
     ogs_sbi_request_free(request);
 
     return rc;
+}
+
+bool pcf_sbi_send_smpolicycontrol_create_response(
+        pcf_sess_t *sess, ogs_sbi_stream_t *stream)
+{
+    int i, rv, status = 0;
+    char *strerror = NULL;
+    pcf_ue_t *pcf_ue = NULL;
+    ogs_sbi_server_t *server = NULL;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_header_t header;
+    ogs_sbi_response_t *response = NULL;
+
+    ogs_session_data_t session_data;
+
+    ogs_session_t *session = NULL;
+
+    OpenAPI_sm_policy_decision_t SmPolicyDecision;
+
+    OpenAPI_lnode_t *node = NULL;
+
+    OpenAPI_list_t *SessRuleList = NULL;
+    OpenAPI_map_t *SessRuleMap = NULL;
+    OpenAPI_session_rule_t *SessionRule = NULL;
+
+    OpenAPI_ambr_t AuthSessAmbr;
+    OpenAPI_authorized_default_qos_t AuthDefQos;
+
+    OpenAPI_list_t *PccRuleList = NULL;
+    OpenAPI_map_t *PccRuleMap = NULL;
+    OpenAPI_pcc_rule_t *PccRule = NULL;
+
+    OpenAPI_list_t *QosDecisionList = NULL;
+    OpenAPI_map_t *QosDecisionMap = NULL;
+    OpenAPI_qos_data_t *QosData = NULL;
+
+    OpenAPI_list_t *PolicyCtrlReqTriggers = NULL;
+
+    ogs_assert(sess);
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
+    ogs_assert(pcf_ue);
+    ogs_assert(stream);
+    server = ogs_sbi_server_from_stream(stream);
+    ogs_assert(server);
+
+    memset(&session_data, 0, sizeof(ogs_session_data_t));
+
+    ogs_assert(pcf_ue->supi);
+    ogs_assert(sess->dnn);
+
+    rv = pcf_db_qos_data(
+            pcf_ue->supi,
+            sess->home.presence == true ? &sess->home.plmn_id : NULL,
+            &sess->s_nssai, sess->dnn, &session_data);
+    if (rv != OGS_OK) {
+        strerror = ogs_msprintf("[%s:%d] Cannot find SUPI in DB",
+                pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
+        goto cleanup;
+    }
+
+    session = &session_data.session;
+
+    if (!session->qos.index) {
+        strerror = ogs_msprintf("[%s:%d] No 5QI", pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+    if (!session->qos.arp.priority_level) {
+        strerror = ogs_msprintf("[%s:%d] No Priority Level",
+                pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
+    if (!session->ambr.uplink && !session->ambr.downlink) {
+        strerror = ogs_msprintf("[%s:%d] No Session-AMBR",
+                pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
+    memset(&SmPolicyDecision, 0, sizeof(SmPolicyDecision));
+
+    PolicyCtrlReqTriggers = OpenAPI_list_create();
+    ogs_assert(PolicyCtrlReqTriggers);
+
+    /**************************************************************
+     * Session Rule
+     *************************************************************/
+    SessRuleList = OpenAPI_list_create();
+    ogs_assert(SessRuleList);
+
+    SessionRule = ogs_calloc(1, sizeof(*SessionRule));
+    ogs_assert(SessionRule);
+
+    /* Only 1 SessionRule is used */
+    SessionRule->sess_rule_id = (char *)"1";
+
+    if (OGS_SBI_FEATURES_IS_SET(sess->smpolicycontrol_features,
+                OGS_SBI_NPCF_SMPOLICYCONTROL_DN_AUTHORIZATION)) {
+        if (sess->subscribed_sess_ambr) {
+            ogs_bitrate_t subscribed_sess_ambr;
+
+            subscribed_sess_ambr.uplink = ogs_sbi_bitrate_from_string(
+                    sess->subscribed_sess_ambr->uplink);
+            subscribed_sess_ambr.downlink = ogs_sbi_bitrate_from_string(
+                    sess->subscribed_sess_ambr->downlink);
+            if (((subscribed_sess_ambr.uplink / 1000) !=
+                 (session->ambr.uplink / 1000)) ||
+                ((subscribed_sess_ambr.downlink / 1000) !=
+                 (session->ambr.downlink / 1000))) {
+
+                OpenAPI_list_add(PolicyCtrlReqTriggers,
+                    (void *)OpenAPI_policy_control_request_trigger_SE_AMBR_CH);
+            }
+
+            memset(&AuthSessAmbr, 0, sizeof(AuthSessAmbr));
+            AuthSessAmbr.uplink = ogs_sbi_bitrate_to_string(
+                    session->ambr.uplink, OGS_SBI_BITRATE_KBPS);
+            AuthSessAmbr.downlink = ogs_sbi_bitrate_to_string(
+                    session->ambr.downlink, OGS_SBI_BITRATE_KBPS);
+            SessionRule->auth_sess_ambr = &AuthSessAmbr;
+        }
+    }
+
+    if (sess->subscribed_default_qos) {
+        bool triggered = false;
+
+        memset(&AuthDefQos, 0, sizeof(AuthDefQos));
+        AuthDefQos.arp = ogs_calloc(1, sizeof(OpenAPI_arp_t));
+        ogs_assert(AuthDefQos.arp);
+
+        AuthDefQos.is__5qi = true;
+        AuthDefQos._5qi = session->qos.index;
+        AuthDefQos.is_priority_level = true;
+        AuthDefQos.priority_level = session->qos.arp.priority_level;
+
+        if (session->qos.arp.pre_emption_capability ==
+                OGS_5GC_PRE_EMPTION_ENABLED)
+            AuthDefQos.arp->preempt_cap =
+                OpenAPI_preemption_capability_MAY_PREEMPT;
+        else if (session->qos.arp.pre_emption_capability ==
+                OGS_5GC_PRE_EMPTION_DISABLED)
+            AuthDefQos.arp->preempt_cap =
+                OpenAPI_preemption_capability_NOT_PREEMPT;
+        ogs_assert(AuthDefQos.arp->preempt_cap);
+
+        if (session->qos.arp.pre_emption_vulnerability ==
+                OGS_5GC_PRE_EMPTION_ENABLED)
+            AuthDefQos.arp->preempt_vuln =
+                OpenAPI_preemption_vulnerability_PREEMPTABLE;
+        else if (session->qos.arp.pre_emption_vulnerability ==
+                OGS_5GC_PRE_EMPTION_DISABLED)
+            AuthDefQos.arp->preempt_vuln =
+                OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
+        ogs_assert(AuthDefQos.arp->preempt_vuln);
+        AuthDefQos.arp->priority_level = session->qos.arp.priority_level;
+
+        SessionRule->auth_def_qos = &AuthDefQos;
+
+        if (sess->subscribed_default_qos->_5qi != AuthDefQos._5qi)
+            triggered = true;
+        if (sess->subscribed_default_qos->priority_level !=
+                AuthDefQos.priority_level)
+            triggered = true;
+        if (sess->subscribed_default_qos->arp) {
+            if (sess->subscribed_default_qos->arp->priority_level !=
+                    AuthDefQos.arp->priority_level)
+                triggered = true;
+            if (sess->subscribed_default_qos->arp->preempt_cap !=
+                    AuthDefQos.arp->preempt_cap)
+                triggered = true;
+            if (sess->subscribed_default_qos->arp->preempt_vuln !=
+                    AuthDefQos.arp->preempt_vuln)
+                triggered = true;
+
+        }
+
+        if (triggered)
+            OpenAPI_list_add(PolicyCtrlReqTriggers,
+                (void *)OpenAPI_policy_control_request_trigger_DEF_QOS_CH);
+
+    }
+
+    SessRuleMap = OpenAPI_map_create(
+            SessionRule->sess_rule_id, SessionRule);
+    ogs_assert(SessRuleMap);
+
+    OpenAPI_list_add(SessRuleList, SessRuleMap);
+
+    if (SessRuleList->count)
+        SmPolicyDecision.sess_rules = SessRuleList;
+
+    /**************************************************************
+     * PCC Rule & QoS Decision
+     *************************************************************/
+    PccRuleList = OpenAPI_list_create();
+    ogs_assert(PccRuleList);
+
+    QosDecisionList = OpenAPI_list_create();
+    ogs_assert(QosDecisionList);
+
+    for (i = 0; i < session_data.num_of_pcc_rule; i++) {
+        ogs_pcc_rule_t *pcc_rule = &session_data.pcc_rule[i];
+
+        ogs_assert(pcc_rule);
+        ogs_assert(pcc_rule->id);
+
+        if (!pcc_rule->num_of_flow) {
+            /* No Flow */
+            continue;
+        }
+
+        PccRule = ogs_sbi_build_pcc_rule(pcc_rule, 1);
+        ogs_assert(PccRule->pcc_rule_id);
+
+        PccRuleMap = OpenAPI_map_create(PccRule->pcc_rule_id, PccRule);
+        ogs_assert(PccRuleMap);
+
+        OpenAPI_list_add(PccRuleList, PccRuleMap);
+
+        QosData = ogs_sbi_build_qos_data(pcc_rule);
+        ogs_assert(QosData);
+        ogs_assert(QosData->qos_id);
+
+        QosDecisionMap = OpenAPI_map_create(QosData->qos_id, QosData);
+        ogs_assert(QosDecisionMap);
+
+        OpenAPI_list_add(QosDecisionList, QosDecisionMap);
+    }
+
+    if (PccRuleList->count)
+        SmPolicyDecision.pcc_rules = PccRuleList;
+
+    if (QosDecisionList->count)
+        SmPolicyDecision.qos_decs = QosDecisionList;
+
+    /* Policy Control Request Triggers */
+    if (PolicyCtrlReqTriggers->count)
+        SmPolicyDecision.policy_ctrl_req_triggers = PolicyCtrlReqTriggers;
+
+    /* Supported Features */
+    if (sess->smpolicycontrol_features) {
+        SmPolicyDecision.supp_feat =
+            ogs_uint64_to_string(sess->smpolicycontrol_features);
+        ogs_assert(SmPolicyDecision.supp_feat);
+    }
+
+    memset(&header, 0, sizeof(header));
+    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL;
+    header.api.version = (char *)OGS_SBI_API_V1;
+    header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_SM_POLICIES;
+    header.resource.component[1] = sess->sm_policy_id;
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    sendmsg.SmPolicyDecision = &SmPolicyDecision;
+    sendmsg.http.location = ogs_sbi_server_uri(server, &header);
+
+    response = ogs_sbi_build_response(
+            &sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    ogs_free(sendmsg.http.location);
+
+    OpenAPI_list_for_each(SessRuleList, node) {
+        SessRuleMap = node->data;
+        if (SessRuleMap) {
+            SessionRule = SessRuleMap->value;
+            if (SessionRule) {
+                if (SessionRule->auth_sess_ambr) {
+                    if (SessionRule->auth_sess_ambr->uplink)
+                        ogs_free(SessionRule->auth_sess_ambr->uplink);
+                    if (SessionRule->auth_sess_ambr->downlink)
+                        ogs_free(SessionRule->auth_sess_ambr->downlink);
+                }
+                if (SessionRule->auth_def_qos) {
+                    ogs_free(SessionRule->auth_def_qos->arp);
+
+                }
+                ogs_free(SessionRule);
+            }
+            ogs_free(SessRuleMap);
+        }
+    }
+    OpenAPI_list_free(SessRuleList);
+
+    OpenAPI_list_for_each(PccRuleList, node) {
+        PccRuleMap = node->data;
+        if (PccRuleMap) {
+            PccRule = PccRuleMap->value;
+            if (PccRule)
+                ogs_sbi_free_pcc_rule(PccRule);
+            ogs_free(PccRuleMap);
+        }
+    }
+    OpenAPI_list_free(PccRuleList);
+
+    OpenAPI_list_for_each(QosDecisionList, node) {
+        QosDecisionMap = node->data;
+        if (QosDecisionMap) {
+            QosData = QosDecisionMap->value;
+            if (QosData)
+                ogs_sbi_free_qos_data(QosData);
+            ogs_free(QosDecisionMap);
+        }
+    }
+    OpenAPI_list_free(QosDecisionList);
+
+    OpenAPI_list_free(PolicyCtrlReqTriggers);
+
+    if (SmPolicyDecision.supp_feat)
+        ogs_free(SmPolicyDecision.supp_feat);
+
+    pcf_metrics_inst_by_slice_add(&pcf_ue->guami.plmn_id,
+            &sess->s_nssai, PCF_METR_CTR_PA_POLICYSMASSOSUCC, 1);
+
+    OGS_SESSION_DATA_FREE(&session_data);
+
+    return true;
+
+cleanup:
+    ogs_assert(strerror);
+    ogs_assert(status);
+    ogs_error("%s", strerror);
+    ogs_assert(true == ogs_sbi_server_send_error(
+                stream, status, NULL, strerror, NULL, NULL));
+    ogs_free(strerror);
+
+    OGS_SESSION_DATA_FREE(&session_data);
+
+    return false;
 }
 
 bool pcf_sbi_send_smpolicycontrol_update_notify(

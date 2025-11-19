@@ -73,12 +73,6 @@ void ogs_timer_mgr_destroy(ogs_timer_mgr_t *manager)
     ogs_free(manager);
 }
 
-static ogs_timer_t *ogs_timer_cycle(ogs_timer_mgr_t *manager, ogs_timer_t *timer)
-{
-    ogs_assert(manager);
-    return ogs_pool_cycle(&manager->pool, timer);
-}
-
 ogs_timer_t *ogs_timer_add(
         ogs_timer_mgr_t *manager, void (*cb)(void *data), void *data)
 {
@@ -106,11 +100,6 @@ void ogs_timer_delete_debug(ogs_timer_t *timer, const char *file_line)
     ogs_assert(timer);
     manager = timer->manager;
     ogs_assert(manager);
-    timer = ogs_timer_cycle(manager, timer);
-    if (!timer) {
-        ogs_fatal("ogs_timer_delete() failed in %s", file_line);
-        ogs_assert_if_reached();
-    }
 
     ogs_timer_stop(timer);
 
@@ -126,11 +115,6 @@ void ogs_timer_start_debug(
 
     manager = timer->manager;
     ogs_assert(manager);
-    timer = ogs_timer_cycle(manager, timer);
-    if (!timer) {
-        ogs_fatal("ogs_timer_start() failed in %s", file_line);
-        ogs_assert_if_reached();
-    }
 
     if (timer->running == true)
         ogs_rbtree_delete(&manager->tree, timer);
@@ -145,12 +129,6 @@ void ogs_timer_stop_debug(ogs_timer_t *timer, const char *file_line)
     ogs_assert(timer);
     manager = timer->manager;
     ogs_assert(manager);
-    timer = ogs_timer_cycle(manager, timer);
-    ogs_assert(timer);
-    if (!timer) {
-        ogs_fatal("ogs_timer_stop() failed in %s", file_line);
-        ogs_assert_if_reached();
-    }
 
     if (timer->running == false)
         return;
@@ -200,6 +178,8 @@ void ogs_timer_mgr_expire(ogs_timer_mgr_t *manager)
         ogs_list_add(&list, &this->lnode);
     }
 
+    /* You should not perform a delete on a timer using ogs_timer_delete()
+     * in a callback function this->cb(). */
     ogs_list_for_each(&list, lnode) {
         this = ogs_rb_entry(lnode, ogs_timer_t, lnode);
         ogs_timer_stop(this);

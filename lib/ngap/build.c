@@ -20,7 +20,7 @@
 #include "ogs-ngap.h"
 
 ogs_pkbuf_t *ogs_ngap_build_error_indication(
-        uint32_t *ran_ue_ngap_id,
+        uint64_t *ran_ue_ngap_id,
         uint64_t *amf_ue_ngap_id,
         NGAP_Cause_PR group, long cause)
 {
@@ -72,7 +72,7 @@ ogs_pkbuf_t *ogs_ngap_build_error_indication(
         RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
 
         *RAN_UE_NGAP_ID = *ran_ue_ngap_id;
-        ogs_debug("    RAN_UE_NGAP_ID[%d]", (int)*ran_ue_ngap_id);
+        ogs_debug("    RAN_UE_NGAP_ID[%lld]", (long long)*ran_ue_ngap_id);
     }
 
     ie = CALLOC(1, sizeof(NGAP_ErrorIndicationIEs_t));
@@ -155,7 +155,7 @@ ogs_pkbuf_t *ogs_ngap_build_ng_reset(
 
 void ogs_ngap_build_part_of_ng_interface(
     NGAP_UE_associatedLogicalNG_connectionList_t *partOfNG_Interface,
-    uint32_t *ran_ue_ngap_id, uint64_t *amf_ue_ngap_id)
+    uint64_t *ran_ue_ngap_id, uint64_t *amf_ue_ngap_id)
 {
     NGAP_UE_associatedLogicalNG_connectionItem_t *item = NULL;
 
@@ -223,7 +223,7 @@ ogs_pkbuf_t *ogs_ngap_build_ng_reset_ack(
         for (i = 0; i < partOfNG_Interface->list.count; i++) {
             NGAP_UE_associatedLogicalNG_connectionItem_t *item = NULL;
             uint64_t amf_ue_ngap_id = 0;
-            uint32_t ran_ue_ngap_id = 0;
+            uint64_t ran_ue_ngap_id = 0;
 
             item = partOfNG_Interface->list.array[i];
             ogs_assert(item);
@@ -235,8 +235,7 @@ ogs_pkbuf_t *ogs_ngap_build_ng_reset_ack(
             }
 
             if (item->aMF_UE_NGAP_ID)
-                asn_INTEGER2ulong(item->aMF_UE_NGAP_ID,
-                            (unsigned long *)&amf_ue_ngap_id);
+                asn_INTEGER2uint64(item->aMF_UE_NGAP_ID, &amf_ue_ngap_id);
 
             if (item->rAN_UE_NGAP_ID)
                 ran_ue_ngap_id = *item->rAN_UE_NGAP_ID;
@@ -246,8 +245,8 @@ ogs_pkbuf_t *ogs_ngap_build_ng_reset_ack(
                 item->rAN_UE_NGAP_ID ? &ran_ue_ngap_id : NULL,
                 item->aMF_UE_NGAP_ID ? &amf_ue_ngap_id : NULL);
 
-            ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-                    item->rAN_UE_NGAP_ID ? ran_ue_ngap_id : -1,
+            ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+                    item->rAN_UE_NGAP_ID ? (long long)ran_ue_ngap_id : -1,
                     item->aMF_UE_NGAP_ID ? (long long)amf_ue_ngap_id : -1);
         }
     }

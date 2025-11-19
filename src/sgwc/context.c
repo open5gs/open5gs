@@ -163,7 +163,8 @@ int sgwc_context_parse_config(void)
 sgwc_ue_t *sgwc_ue_add_by_message(ogs_gtp2_message_t *message)
 {
     sgwc_ue_t *sgwc_ue = NULL;
-    ogs_gtp2_create_session_request_t *req = &message->create_session_request;
+    /* Clang scan-build SA: Dead initialization: Don't set req before message is checked for NULL. */
+    ogs_gtp2_create_session_request_t *req;
 
     ogs_assert(message);
 
@@ -212,9 +213,8 @@ sgwc_ue_t *sgwc_ue_add(uint8_t *imsi, int imsi_len)
     ogs_assert(imsi);
     ogs_assert(imsi_len);
 
-    ogs_pool_alloc(&sgwc_ue_pool, &sgwc_ue);
+    ogs_pool_id_calloc(&sgwc_ue_pool, &sgwc_ue);
     ogs_assert(sgwc_ue);
-    memset(sgwc_ue, 0, sizeof *sgwc_ue);
 
     /* Set SGW-S11-TEID */
     ogs_pool_alloc(&sgwc_s11_teid_pool, &sgwc_ue->sgw_s11_teid_node);
@@ -226,7 +226,7 @@ sgwc_ue_t *sgwc_ue_add(uint8_t *imsi, int imsi_len)
             &sgwc_ue->sgw_s11_teid, sizeof(sgwc_ue->sgw_s11_teid), sgwc_ue);
 
     /* Set IMSI */
-    sgwc_ue->imsi_len = imsi_len;
+    sgwc_ue->imsi_len = ogs_min(imsi_len, OGS_MAX_IMSI_LEN);
     memcpy(sgwc_ue->imsi, imsi, sgwc_ue->imsi_len);
     ogs_buffer_to_bcd(sgwc_ue->imsi, sgwc_ue->imsi_len, sgwc_ue->imsi_bcd);
 
@@ -255,7 +255,7 @@ int sgwc_ue_remove(sgwc_ue_t *sgwc_ue)
     sgwc_sess_remove_all(sgwc_ue);
 
     ogs_pool_free(&sgwc_s11_teid_pool, sgwc_ue->sgw_s11_teid_node);
-    ogs_pool_free(&sgwc_ue_pool, sgwc_ue);
+    ogs_pool_id_free(&sgwc_ue_pool, sgwc_ue);
 
     ogs_info("[Removed] Number of SGWC-UEs is now %d",
             ogs_list_count(&self.sgw_ue_list));
@@ -295,19 +295,23 @@ sgwc_ue_t *sgwc_ue_find_by_teid(uint32_t teid)
     return ogs_hash_get(self.sgw_s11_teid_hash, &teid, sizeof(teid));
 }
 
+sgwc_ue_t *sgwc_ue_find_by_id(ogs_pool_id_t id)
+{
+    return ogs_pool_find_by_id(&sgwc_ue_pool, id);
+}
+
 sgwc_sess_t *sgwc_sess_add(sgwc_ue_t *sgwc_ue, char *apn)
 {
     sgwc_sess_t *sess = NULL;
 
     ogs_assert(sgwc_ue);
 
-    ogs_pool_alloc(&sgwc_sess_pool, &sess);
+    ogs_pool_id_calloc(&sgwc_sess_pool, &sess);
     if (!sess) {
         ogs_error("Maximum number of session[%lld] reached",
                     (long long)ogs_app()->pool.sess);
         return NULL;
     }
-    memset(sess, 0, sizeof *sess);
 
     ogs_pfcp_pool_init(&sess->pfcp);
 
@@ -328,7 +332,7 @@ sgwc_sess_t *sgwc_sess_add(sgwc_ue_t *sgwc_ue, char *apn)
     sess->session.name = ogs_strdup(apn);
     ogs_assert(sess->session.name);
 
-    sess->sgwc_ue = sgwc_ue;
+    sess->sgwc_ue_id = sgwc_ue->id;
 
     ogs_list_add(&sgwc_ue->sess_list, sess);
 
@@ -344,7 +348,7 @@ static bool compare_ue_info(ogs_pfcp_node_t *node, sgwc_sess_t *sess)
 
     ogs_assert(node);
     ogs_assert(sess);
-    sgwc_ue = sess->sgwc_ue;
+    sgwc_ue = sgwc_ue_find_by_id(sess->sgwc_ue_id);
     ogs_assert(sgwc_ue);
 
     ogs_assert(sess->session.name);
@@ -404,8 +408,6 @@ static ogs_pfcp_node_t *selected_sgwu_node(
 
 void sgwc_sess_select_sgwu(sgwc_sess_t *sess)
 {
-    char buf[OGS_ADDRSTRLEN];
-
     ogs_assert(sess);
 
     /*
@@ -421,8 +423,9 @@ void sgwc_sess_select_sgwu(sgwc_sess_t *sess)
         selected_sgwu_node(ogs_pfcp_self()->pfcp_node, sess);
     ogs_assert(ogs_pfcp_self()->pfcp_node);
     OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->pfcp_node);
-    ogs_debug("UE using SGW-U on IP[%s]",
-            OGS_ADDR(&ogs_pfcp_self()->pfcp_node->addr, buf));
+    ogs_debug("UE using SGW-U on IP %s",
+            ogs_sockaddr_to_string_static(
+                ogs_pfcp_self()->pfcp_node->addr_list));
 }
 
 int sgwc_sess_remove(sgwc_sess_t *sess)
@@ -430,7 +433,7 @@ int sgwc_sess_remove(sgwc_sess_t *sess)
     sgwc_ue_t *sgwc_ue = NULL;
 
     ogs_assert(sess);
-    sgwc_ue = sess->sgwc_ue;
+    sgwc_ue = sgwc_ue_find_by_id(sess->sgwc_ue_id);
     ogs_assert(sgwc_ue);
 
     ogs_list_remove(&sgwc_ue->sess_list, sess);
@@ -449,7 +452,7 @@ int sgwc_sess_remove(sgwc_sess_t *sess)
     ogs_free(sess->session.name);
 
     ogs_pool_free(&sgwc_sxa_seid_pool, sess->sgwc_sxa_seid_node);
-    ogs_pool_free(&sgwc_sess_pool, sess);
+    ogs_pool_id_free(&sgwc_sess_pool, sess);
 
     stats_remove_sgwc_session();
 
@@ -497,14 +500,14 @@ sgwc_sess_t *sgwc_sess_find_by_ebi(sgwc_ue_t *sgwc_ue, uint8_t ebi)
 
     bearer = sgwc_bearer_find_by_ue_ebi(sgwc_ue, ebi);
     if (bearer)
-        return bearer->sess;
+        return sgwc_sess_find_by_id(bearer->sess_id);
 
     return NULL;
 }
 
-sgwc_sess_t *sgwc_sess_cycle(sgwc_sess_t *sess)
+sgwc_sess_t *sgwc_sess_find_by_id(ogs_pool_id_t id)
 {
-    return ogs_pool_cycle(&sgwc_sess_pool, sess);
+    return ogs_pool_find_by_id(&sgwc_sess_pool, id);
 }
 
 int sgwc_sess_pfcp_xact_count(
@@ -518,14 +521,24 @@ int sgwc_sess_pfcp_xact_count(
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
         ogs_pfcp_node_t *pfcp_node = sess->pfcp_node;
         ogs_pfcp_xact_t *pfcp_xact = NULL;
+
         ogs_assert(pfcp_node);
         ogs_list_for_each(&pfcp_node->local_list, pfcp_xact) {
-            if (sess != pfcp_xact->data)
-                continue;
+            ogs_pool_id_t sess_id = OGS_INVALID_POOL_ID;
+
             if (pfcp_type && pfcp_type != pfcp_xact->seq[0].type)
+                continue;
+            if (!(pfcp_xact->modify_flags & OGS_PFCP_MODIFY_SESSION))
                 continue;
             if (modify_flags && modify_flags != pfcp_xact->modify_flags)
                 continue;
+
+            sess_id = OGS_POINTER_TO_UINT(pfcp_xact->data);
+            ogs_assert(sess_id >= OGS_MIN_POOL_ID &&
+                    sess_id <= OGS_MAX_POOL_ID);
+            if (sess->id != sess_id)
+                continue;
+
             xact_count++;
         }
     }
@@ -540,15 +553,14 @@ sgwc_bearer_t *sgwc_bearer_add(sgwc_sess_t *sess)
     sgwc_ue_t *sgwc_ue = NULL;
 
     ogs_assert(sess);
-    sgwc_ue = sess->sgwc_ue;
+    sgwc_ue = sgwc_ue_find_by_id(sess->sgwc_ue_id);
     ogs_assert(sgwc_ue);
 
-    ogs_pool_alloc(&sgwc_bearer_pool, &bearer);
+    ogs_pool_id_calloc(&sgwc_bearer_pool, &bearer);
     ogs_assert(bearer);
-    memset(bearer, 0, sizeof *bearer);
 
-    bearer->sgwc_ue = sgwc_ue;
-    bearer->sess = sess;
+    bearer->sgwc_ue_id = sgwc_ue->id;
+    bearer->sess_id = sess->id;
 
     /* Downlink */
     tunnel = sgwc_tunnel_add(bearer, OGS_GTP2_F_TEID_S5_S8_SGW_GTP_U);
@@ -565,14 +577,17 @@ sgwc_bearer_t *sgwc_bearer_add(sgwc_sess_t *sess)
 
 int sgwc_bearer_remove(sgwc_bearer_t *bearer)
 {
-    ogs_assert(bearer);
-    ogs_assert(bearer->sess);
+    sgwc_sess_t *sess = NULL;
 
-    ogs_list_remove(&bearer->sess->bearer_list, bearer);
+    ogs_assert(bearer);
+    sess = sgwc_sess_find_by_id(bearer->sess_id);
+    ogs_assert(sess);
+
+    ogs_list_remove(&sess->bearer_list, bearer);
 
     sgwc_tunnel_remove_all(bearer);
 
-    ogs_pool_free(&sgwc_bearer_pool, bearer);
+    ogs_pool_id_free(&sgwc_bearer_pool, bearer);
 
     return OGS_OK;
 }
@@ -618,9 +633,9 @@ sgwc_bearer_t *sgwc_default_bearer_in_sess(sgwc_sess_t *sess)
     return ogs_list_first(&sess->bearer_list);
 }
 
-sgwc_bearer_t *sgwc_bearer_cycle(sgwc_bearer_t *bearer)
+sgwc_bearer_t *sgwc_bearer_find_by_id(ogs_pool_id_t id)
 {
-    return ogs_pool_cycle(&sgwc_bearer_pool, bearer);
+    return ogs_pool_find_by_id(&sgwc_bearer_pool, id);
 }
 
 sgwc_tunnel_t *sgwc_tunnel_add(
@@ -632,39 +647,51 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
 
-    uint8_t src_if, dst_if;
+    ogs_pfcp_interface_t src_if = OGS_PFCP_INTERFACE_UNKNOWN;
+    ogs_pfcp_interface_t dst_if = OGS_PFCP_INTERFACE_UNKNOWN;
+    ogs_pfcp_3gpp_interface_type_t src_if_type =
+        OGS_PFCP_3GPP_INTERFACE_TYPE_UNKNOWN;
+    ogs_pfcp_3gpp_interface_type_t dst_if_type =
+        OGS_PFCP_3GPP_INTERFACE_TYPE_UNKNOWN;
 
     ogs_assert(bearer);
-    sess = bearer->sess;
+    sess = sgwc_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
 
     switch (interface_type) {
     /* Downlink */
     case OGS_GTP2_F_TEID_S5_S8_SGW_GTP_U:
         src_if = OGS_PFCP_INTERFACE_CORE;
+        src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_S5_S8_U;
         dst_if = OGS_PFCP_INTERFACE_ACCESS;
+        dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_S1_U;
         break;
 
     /* Uplink */
     case OGS_GTP2_F_TEID_S1_U_SGW_GTP_U:
         src_if = OGS_PFCP_INTERFACE_ACCESS;
+        src_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_S1_U;
         dst_if = OGS_PFCP_INTERFACE_CORE;
+        dst_if_type = OGS_PFCP_3GPP_INTERFACE_TYPE_S5_S8_U;
         break;
 
     /* Indirect */
     case OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING:
     case OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING:
         src_if = OGS_PFCP_INTERFACE_ACCESS;
+        src_if_type =
+            OGS_PFCP_3GPP_INTERFACE_TYPE_SGW_UPF_GTP_U_FOR_UL_DATA_FORWARDING;
         dst_if = OGS_PFCP_INTERFACE_ACCESS;
+        dst_if_type =
+            OGS_PFCP_3GPP_INTERFACE_TYPE_SGW_UPF_GTP_U_FOR_DL_DATA_FORWARDING;
         break;
     default:
         ogs_fatal("Invalid interface type = %d", interface_type);
         ogs_assert_if_reached();
     }
 
-    ogs_pool_alloc(&sgwc_tunnel_pool, &tunnel);
+    ogs_pool_id_calloc(&sgwc_tunnel_pool, &tunnel);
     ogs_assert(tunnel);
-    memset(tunnel, 0, sizeof *tunnel);
 
     tunnel->interface_type = interface_type;
 
@@ -677,6 +704,9 @@ sgwc_tunnel_t *sgwc_tunnel_add(
 
     pdr->src_if = src_if;
 
+    pdr->src_if_type_presence = true;
+    pdr->src_if_type = src_if_type;
+
     far = ogs_pfcp_far_add(&sess->pfcp);
     ogs_assert(far);
 
@@ -685,6 +715,10 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     ogs_assert(far->apn);
 
     far->dst_if = dst_if;
+
+    far->dst_if_type_presence = true;
+    far->dst_if_type = dst_if_type;
+
     ogs_pfcp_pdr_associate_far(pdr, far);
 
     far->apply_action =
@@ -715,7 +749,7 @@ sgwc_tunnel_t *sgwc_tunnel_add(
         ogs_gtpu_resource_t *resource = NULL;
         resource = ogs_pfcp_find_gtpu_resource(
                 &sess->pfcp_node->gtpu_resource_list,
-                sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
+                sess->session.name, pdr->src_if);
         if (resource) {
             ogs_user_plane_ip_resource_info_to_sockaddr(&resource->info,
                 &tunnel->local_addr, &tunnel->local_addr6);
@@ -726,14 +760,15 @@ sgwc_tunnel_t *sgwc_tunnel_add(
             else
                 tunnel->local_teid = pdr->teid;
         } else {
-            if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+            ogs_assert(sess->pfcp_node->addr_list);
+            if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET)
                 ogs_assert(OGS_OK ==
                     ogs_copyaddrinfo(
-                        &tunnel->local_addr, &sess->pfcp_node->addr));
-            else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+                        &tunnel->local_addr, sess->pfcp_node->addr_list));
+            else if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET6)
                 ogs_assert(OGS_OK ==
                     ogs_copyaddrinfo(
-                        &tunnel->local_addr6, &sess->pfcp_node->addr));
+                        &tunnel->local_addr6, sess->pfcp_node->addr_list));
             else
                 ogs_assert_if_reached();
 
@@ -750,7 +785,7 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     tunnel->pdr = pdr;
     tunnel->far = far;
 
-    tunnel->bearer = bearer;
+    tunnel->bearer_id = bearer->id;
 
     ogs_list_add(&bearer->tunnel_list, tunnel);
 
@@ -759,10 +794,13 @@ sgwc_tunnel_t *sgwc_tunnel_add(
 
 int sgwc_tunnel_remove(sgwc_tunnel_t *tunnel)
 {
-    ogs_assert(tunnel);
-    ogs_assert(tunnel->bearer);
+    sgwc_bearer_t *bearer = NULL;
 
-    ogs_list_remove(&tunnel->bearer->tunnel_list, tunnel);
+    ogs_assert(tunnel);
+    bearer = sgwc_bearer_find_by_id(tunnel->bearer_id);
+    ogs_assert(bearer);
+
+    ogs_list_remove(&bearer->tunnel_list, tunnel);
 
     ogs_pfcp_pdr_remove(tunnel->pdr);
     ogs_pfcp_far_remove(tunnel->far);
@@ -772,7 +810,7 @@ int sgwc_tunnel_remove(sgwc_tunnel_t *tunnel)
     if (tunnel->local_addr6)
         ogs_freeaddrinfo(tunnel->local_addr6);
 
-    ogs_pool_free(&sgwc_tunnel_pool, tunnel);
+    ogs_pool_id_free(&sgwc_tunnel_pool, tunnel);
 
     return OGS_OK;
 }
@@ -860,6 +898,11 @@ sgwc_tunnel_t *sgwc_tunnel_find_by_far_id(
     }
 
     return NULL;
+}
+
+sgwc_tunnel_t *sgwc_tunnel_find_by_id(ogs_pool_id_t id)
+{
+    return ogs_pool_find_by_id(&sgwc_tunnel_pool, id);
 }
 
 sgwc_tunnel_t *sgwc_dl_tunnel_in_bearer(sgwc_bearer_t *bearer)

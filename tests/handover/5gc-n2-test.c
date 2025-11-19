@@ -70,10 +70,10 @@ static void failure_func(abts_case *tc, void *data)
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     /* Two gNB connects to AMF */
-    ngap1 = testngap_client(AF_INET);
+    ngap1 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap1);
 
-    ngap2 = testngap_client(AF_INET);
+    ngap2 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap2);
 
     /* Two gNB connects to UPF */
@@ -364,6 +364,39 @@ static void failure_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
 
+    /* Receive HandoverPreparationFailure */
+    recvbuf = testgnb_ngap_read(ngap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send HandoverRequired */
+    sendbuf = testngap_build_handover_required(
+            test_ue, NGAP_HandoverType_intra5gs,
+            0x4001, 28,
+            NGAP_Cause_PR_radioNetwork,
+            NGAP_CauseRadioNetwork_handover_desirable_for_radio_reason,
+            true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap1, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive HandoverRequest */
+    recvbuf = testgnb_ngap_read(ngap2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send HandoverFailure */
+    sendbuf = testngap_build_handover_failure(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_unspecified);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap2, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UEContextReleaseCommand */
+    recvbuf = testgnb_ngap_read(ngap2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
     /* Send UEContextReleaseComplete */
     sendbuf = testngap_build_ue_context_release_complete(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -437,7 +470,7 @@ static void direct_complete_func(abts_case *tc, void *data)
     test_sess_t *sess = NULL;
     test_bearer_t *qos_flow = NULL;
 
-    uint32_t ran_ue_ngap_id;
+    uint64_t ran_ue_ngap_id;
     uint64_t amf_ue_ngap_id;
 
     bson_t *doc = NULL;
@@ -468,10 +501,10 @@ static void direct_complete_func(abts_case *tc, void *data)
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     /* Two gNB connects to AMF */
-    ngap1 = testngap_client(AF_INET);
+    ngap1 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap1);
 
-    ngap2 = testngap_client(AF_INET);
+    ngap2 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap2);
 
     /* Two gNB connects to UPF */
@@ -482,7 +515,7 @@ static void direct_complete_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, gtpu2);
 
     /* NG-Setup Reqeust/Response for Source gNB */
-    sendbuf = testngap_build_ng_setup_request(0x4000, 28);
+    sendbuf = testngap_build_ng_setup_request(0, 28);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -736,7 +769,7 @@ static void direct_complete_func(abts_case *tc, void *data)
 
     /* Send UplinkRANConfigurationTransfer */
     sendbuf = testngap_build_uplink_ran_configuration_transfer(
-            0x4000, 28, 0x4001, 28);
+            0, 28, 0x4001, 28);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -748,7 +781,7 @@ static void direct_complete_func(abts_case *tc, void *data)
 
     /* Send UplinkRANConfigurationTransfer */
     sendbuf = testngap_build_uplink_ran_configuration_transfer(
-            0x4001, 28, 0x4000, 28);
+            0x4001, 28, 0, 28);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -878,7 +911,7 @@ static void direct_complete_func(abts_case *tc, void *data)
     /* Send HandoverRequired */
     sendbuf = testngap_build_handover_required(
             test_ue, NGAP_HandoverType_intra5gs,
-            0x4000, 28,
+            0, 28,
             NGAP_Cause_PR_radioNetwork,
             NGAP_CauseRadioNetwork_handover_desirable_for_radio_reason,
             true);
@@ -1082,10 +1115,10 @@ static void direct_cancel_func(abts_case *tc, void *data)
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     /* Two gNB connects to AMF */
-    ngap1 = testngap_client(AF_INET);
+    ngap1 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap1);
 
-    ngap2 = testngap_client(AF_INET);
+    ngap2 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap2);
 
     /* Two gNB connects to UPF */
@@ -1465,7 +1498,7 @@ static void indirect_complete_func(abts_case *tc, void *data)
     test_sess_t *sess = NULL;
     test_bearer_t *qos_flow = NULL;
 
-    uint32_t ran_ue_ngap_id;
+    uint64_t ran_ue_ngap_id;
     uint64_t amf_ue_ngap_id;
 
     bson_t *doc = NULL;
@@ -1496,10 +1529,10 @@ static void indirect_complete_func(abts_case *tc, void *data)
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     /* Two gNB connects to AMF */
-    ngap1 = testngap_client(AF_INET);
+    ngap1 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap1);
 
-    ngap2 = testngap_client(AF_INET);
+    ngap2 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap2);
 
     /* Two gNB connects to UPF */
@@ -2118,7 +2151,7 @@ static void indirect_cancel_func(abts_case *tc, void *data)
     test_sess_t *sess = NULL;
     test_bearer_t *qos_flow = NULL;
 
-    uint32_t ran_ue_ngap_id;
+    uint64_t ran_ue_ngap_id;
     uint64_t amf_ue_ngap_id;
 
     bson_t *doc = NULL;
@@ -2149,10 +2182,10 @@ static void indirect_cancel_func(abts_case *tc, void *data)
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     /* Two gNB connects to AMF */
-    ngap1 = testngap_client(AF_INET);
+    ngap1 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap1);
 
-    ngap2 = testngap_client(AF_INET);
+    ngap2 = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap2);
 
     /* Two gNB connects to UPF */

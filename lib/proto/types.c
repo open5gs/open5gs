@@ -23,7 +23,7 @@
 #define PLMN_ID_DIGIT2(x) (((x) / 10) % 10)
 #define PLMN_ID_DIGIT3(x) ((x) % 10)
 
-uint32_t ogs_plmn_id_hexdump(void *plmn_id)
+uint32_t ogs_plmn_id_hexdump(const void *plmn_id)
 {
     uint32_t hex;
     ogs_assert(plmn_id);
@@ -32,24 +32,24 @@ uint32_t ogs_plmn_id_hexdump(void *plmn_id)
     return hex;
 }
 
-uint16_t ogs_plmn_id_mcc(ogs_plmn_id_t *plmn_id)
+uint16_t ogs_plmn_id_mcc(const ogs_plmn_id_t *plmn_id)
 {
     ogs_assert(plmn_id);
     return plmn_id->mcc1 * 100 + plmn_id->mcc2 * 10 + plmn_id->mcc3;
 }
-uint16_t ogs_plmn_id_mnc(ogs_plmn_id_t *plmn_id)
+uint16_t ogs_plmn_id_mnc(const ogs_plmn_id_t *plmn_id)
 {
     ogs_assert(plmn_id);
     return plmn_id->mnc1 == 0xf ? plmn_id->mnc2 * 10 + plmn_id->mnc3 :
         plmn_id->mnc1 * 100 + plmn_id->mnc2 * 10 + plmn_id->mnc3;
 }
-uint16_t ogs_plmn_id_mnc_len(ogs_plmn_id_t *plmn_id)
+uint16_t ogs_plmn_id_mnc_len(const ogs_plmn_id_t *plmn_id)
 {
     ogs_assert(plmn_id);
     return plmn_id->mnc1 == 0xf ? 2 : 3;
 }
 
-void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id, 
+void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id,
         uint16_t mcc, uint16_t mnc, uint16_t mnc_len)
 {
     ogs_assert(plmn_id);
@@ -70,7 +70,7 @@ void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id,
 }
 
 void *ogs_nas_from_plmn_id(
-        ogs_nas_plmn_id_t *ogs_nas_plmn_id, ogs_plmn_id_t *plmn_id)
+        ogs_nas_plmn_id_t *ogs_nas_plmn_id, const ogs_plmn_id_t *plmn_id)
 {
     ogs_assert(ogs_nas_plmn_id);
     ogs_assert(plmn_id);
@@ -84,7 +84,7 @@ void *ogs_nas_from_plmn_id(
     return ogs_nas_plmn_id;
 }
 void *ogs_nas_to_plmn_id(
-        ogs_plmn_id_t *plmn_id, ogs_nas_plmn_id_t *ogs_nas_plmn_id)
+        ogs_plmn_id_t *plmn_id, const ogs_nas_plmn_id_t *ogs_nas_plmn_id)
 {
     ogs_assert(plmn_id);
     ogs_assert(ogs_nas_plmn_id);
@@ -98,13 +98,13 @@ void *ogs_nas_to_plmn_id(
     return plmn_id;
 }
 
-char *ogs_plmn_id_mcc_string(ogs_plmn_id_t *plmn_id)
+char *ogs_plmn_id_mcc_string(const ogs_plmn_id_t *plmn_id)
 {
     ogs_assert(plmn_id);
     return ogs_msprintf("%03d", ogs_plmn_id_mcc(plmn_id));
 }
 
-char *ogs_plmn_id_mnc_string(ogs_plmn_id_t *plmn_id)
+char *ogs_plmn_id_mnc_string(const ogs_plmn_id_t *plmn_id)
 {
     ogs_assert(plmn_id);
     if (ogs_plmn_id_mnc_len(plmn_id) == 2)
@@ -113,7 +113,7 @@ char *ogs_plmn_id_mnc_string(ogs_plmn_id_t *plmn_id)
         return ogs_msprintf("%03d", ogs_plmn_id_mnc(plmn_id));
 }
 
-char *ogs_plmn_id_to_string(ogs_plmn_id_t *plmn_id, char *buf)
+char *ogs_plmn_id_to_string(const ogs_plmn_id_t *plmn_id, char *buf)
 {
     ogs_assert(plmn_id);
     ogs_assert(buf);
@@ -132,27 +132,34 @@ char *ogs_plmn_id_to_string(ogs_plmn_id_t *plmn_id, char *buf)
 #define FQDN_5GC_MNC "5gc.mnc"
 #define FQDN_MCC ".mcc"
 
-char *ogs_serving_network_name_from_plmn_id(ogs_plmn_id_t *plmn_id)
+char *ogs_serving_network_name_from_plmn_id(const ogs_plmn_id_t *plmn_id)
 {
     ogs_assert(plmn_id);
     return ogs_msprintf("5G:mnc%03d.mcc%03d" FQDN_3GPPNETWORK_ORG,
             ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
 }
 
-char *ogs_home_network_domain_from_plmn_id(ogs_plmn_id_t *plmn_id)
+char *ogs_home_network_domain_from_plmn_id(const ogs_plmn_id_t *plmn_id)
 {
     ogs_assert(plmn_id);
     return ogs_msprintf("5gc.mnc%03d.mcc%03d" FQDN_3GPPNETWORK_ORG,
             ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
 }
 
-char *ogs_nrf_fqdn_from_plmn_id(ogs_plmn_id_t *plmn_id)
+char *ogs_epc_domain_from_plmn_id(const ogs_plmn_id_t *plmn_id)
+{
+    ogs_assert(plmn_id);
+    return ogs_msprintf("epc.mnc%03d.mcc%03d" FQDN_3GPPNETWORK_ORG,
+            ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
+}
+
+char *ogs_nrf_fqdn_from_plmn_id(const ogs_plmn_id_t *plmn_id)
 {
     return ogs_msprintf("nrf.5gc.mnc%03d.mcc%03d" FQDN_3GPPNETWORK_ORG,
             ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
 }
 
-char *ogs_nssf_fqdn_from_plmn_id(ogs_plmn_id_t *plmn_id)
+char *ogs_nssf_fqdn_from_plmn_id(const ogs_plmn_id_t *plmn_id)
 {
     return ogs_msprintf("nssf.5gc.mnc%03d.mcc%03d" FQDN_3GPPNETWORK_ORG,
             ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
@@ -232,7 +239,7 @@ uint16_t ogs_plmn_id_mnc_from_fqdn(char *fqdn)
     return atoi(mnc);
 }
 
-uint32_t ogs_amf_id_hexdump(ogs_amf_id_t *amf_id)
+uint32_t ogs_amf_id_hexdump(const ogs_amf_id_t *amf_id)
 {
     uint32_t hex;
 
@@ -262,7 +269,7 @@ ogs_amf_id_t *ogs_amf_id_from_string(ogs_amf_id_t *amf_id, const char *hex)
 }
 
 #define OGS_AMFIDSTRLEN    (sizeof(ogs_amf_id_t)*2+1)
-char *ogs_amf_id_to_string(ogs_amf_id_t *amf_id)
+char *ogs_amf_id_to_string(const ogs_amf_id_t *amf_id)
 {
     char *str = NULL;
     ogs_assert(amf_id);
@@ -278,17 +285,17 @@ char *ogs_amf_id_to_string(ogs_amf_id_t *amf_id)
     return str;
 }
 
-uint8_t ogs_amf_region_id(ogs_amf_id_t *amf_id)
+uint8_t ogs_amf_region_id(const ogs_amf_id_t *amf_id)
 {
     ogs_assert(amf_id);
     return amf_id->region;
 }
-uint16_t ogs_amf_set_id(ogs_amf_id_t *amf_id)
+uint16_t ogs_amf_set_id(const ogs_amf_id_t *amf_id)
 {
     ogs_assert(amf_id);
     return (amf_id->set1 << 2) + amf_id->set2;
 }
-uint8_t ogs_amf_pointer(ogs_amf_id_t *amf_id)
+uint8_t ogs_amf_pointer(const ogs_amf_id_t *amf_id)
 {
     ogs_assert(amf_id);
     return amf_id->pointer;
@@ -305,7 +312,7 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
     return amf_id;
 }
 
-char *ogs_id_get_type(char *str)
+char *ogs_id_get_type(const char *str)
 {
     char *token, *p, *tmp;
     char *type = NULL;
@@ -335,7 +342,7 @@ cleanup:
     return type;
 }
 
-char *ogs_id_get_value(char *str)
+char *ogs_id_get_value(const char *str)
 {
     char *token, *p, *tmp;
     char *ueid = NULL;
@@ -370,7 +377,7 @@ cleanup:
     return ueid;
 }
 
-char *ogs_s_nssai_sd_to_string(ogs_uint24_t sd)
+char *ogs_s_nssai_sd_to_string(const ogs_uint24_t sd)
 {
     char *string = NULL;
 
@@ -391,10 +398,10 @@ ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex)
     if (hex == NULL)
         return sd;
 
-    return ogs_uint24_from_string((char *)hex);
+    return ogs_uint24_from_string_hexadecimal((char *)hex);
 }
 
-int ogs_fqdn_build(char *dst, char *src, int length)
+int ogs_fqdn_build(char *dst, const char *src, int length)
 {
     int i = 0, j = 0;
 
@@ -411,24 +418,24 @@ int ogs_fqdn_build(char *dst, char *src, int length)
     return length+1;
 }
 
-int ogs_fqdn_parse(char *dst, char *src, int length)
+int ogs_fqdn_parse(char *dst, const char *src, int length)
 {
     int i = 0, j = 0;
     uint8_t len = 0;
 
-    while (i+1 < length) {
+    while (i+1 <= length) {
         len = src[i++];
         if ((j + len + 1) > length) {
-            ogs_error("Invalid FQDN encoding[len:%d] + 1 > length[%d]",
-                    len, length);
+            ogs_error("Invalid FQDN encoding[j:%d+len:%d] + 1 > length[%d]",
+                    j, len, length);
             ogs_log_hexdump(OGS_LOG_ERROR, (unsigned char *)src, length);
-            return 0;
+            return -EINVAL;
         }
         memcpy(&dst[j], &src[i], len);
 
         i += len;
         j += len;
-        
+
         if (i+1 < length)
             dst[j++] = '.';
         else
@@ -438,7 +445,7 @@ int ogs_fqdn_parse(char *dst, char *src, int length)
     return j;
 }
 
-/* 8.13 Protocol Configuration Options (PCO) 
+/* 8.13 Protocol Configuration Options (PCO)
  * 10.5.6.3 Protocol configuration options in 3GPP TS 24.008 */
 int ogs_pco_parse(ogs_pco_t *pco, unsigned char *data, int data_len)
 {
@@ -474,7 +481,7 @@ int ogs_pco_parse(ogs_pco_t *pco, unsigned char *data, int data_len)
     }
     pco->num_of_id = i;
     ogs_assert(size == data_len);
-    
+
     return size;
 }
 int ogs_pco_build(unsigned char *data, int data_len, ogs_pco_t *pco)
@@ -612,7 +619,7 @@ char *ogs_ipv4_to_string(uint32_t addr)
     return (char*)OGS_INET_NTOP(&addr, buf);
 }
 
-char *ogs_ipv6addr_to_string(uint8_t *addr6)
+char *ogs_ipv6addr_to_string(const uint8_t *addr6)
 {
     char *buf = NULL;
     ogs_assert(addr6);
@@ -626,7 +633,7 @@ char *ogs_ipv6addr_to_string(uint8_t *addr6)
     return (char *)OGS_INET6_NTOP(addr6, buf);
 }
 
-char *ogs_ipv6prefix_to_string(uint8_t *addr6, uint8_t prefixlen)
+char *ogs_ipv6prefix_to_string(const uint8_t *addr6, uint8_t prefixlen)
 {
     char *buf = NULL;
     uint8_t tmp[OGS_IPV6_LEN];
@@ -649,7 +656,7 @@ char *ogs_ipv6prefix_to_string(uint8_t *addr6, uint8_t prefixlen)
     return ogs_mstrcatf(buf, "/%d", prefixlen);
 }
 
-int ogs_ipv4_from_string(uint32_t *addr, char *string)
+int ogs_ipv4_from_string(uint32_t *addr, const char *string)
 {
     int rv;
     ogs_sockaddr_t tmp;
@@ -668,7 +675,7 @@ int ogs_ipv4_from_string(uint32_t *addr, char *string)
     return OGS_OK;
 }
 
-int ogs_ipv6addr_from_string(uint8_t *addr6, char *string)
+int ogs_ipv6addr_from_string(uint8_t *addr6, const char *string)
 {
     int rv;
     ogs_sockaddr_t tmp;
@@ -687,7 +694,7 @@ int ogs_ipv6addr_from_string(uint8_t *addr6, char *string)
     return OGS_OK;
 }
 
-int ogs_ipv6prefix_from_string(uint8_t *addr6, uint8_t *prefixlen, char *string)
+int ogs_ipv6prefix_from_string(uint8_t *addr6, uint8_t *prefixlen, const char *string)
 {
     int rv;
     ogs_sockaddr_t tmp;

@@ -67,7 +67,7 @@ mme:
   tai:
     - plmn_id:
         mcc: 901
-       mnc: 70
+        mnc: 70
       tac: 7
   security:
     integrity_order : [ EIA2, EIA1, EIA0 ]
@@ -107,8 +107,10 @@ smf:
     server:
       - address: 127.0.0.4
   session:
-    - subnet: 10.45.0.1/16
-    - subnet: 2001:db8:cafe::1/48
+    - subnet: 10.45.0.0/16
+      gateway: 10.45.0.1
+    - subnet: 2001:db8:cafe::/48
+      gateway: 2001:db8:cafe::1
   dns:
     - 8.8.8.8
     - 8.8.4.4
@@ -184,8 +186,10 @@ upf:
     server:
       - address: 127.0.0.7
   session:
-    - subnet: 10.45.0.1/16
-    - subnet: 2001:db8:cafe::1/48
+    - subnet: 10.45.0.0/16
+      gateway: 10.45.0.1
+    - subnet: 2001:db8:cafe::/48
+      gateway: 2001:db8:cafe::1
   metrics:
     server:
       - address: 127.0.0.7

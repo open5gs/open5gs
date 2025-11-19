@@ -2661,3 +2661,30 @@ ogs_pkbuf_t *test_ngap_build_amf_configuration_ack(int i)
 
     return pkbuf;
 }
+
+ogs_pkbuf_t *test_ngap_build_malformed_initial_ue_message(int i)
+{
+    ogs_pkbuf_t *pkbuf = NULL;
+    const char *payload[TEST_NGAP_MAX_MESSAGE] = {
+        "000f007300000700 5500034002000026 001d1c0602940a5f 7f5f7e105c000209"
+        "00007fff00000000 004c4c585f4e5f00 79000f405f7a8a1f 58755ff001940078"
+        "954e005a40012800 0340025fc0007040 010000ab4021205f 5f5f5f4f3d7fff10"
+        "de5f5f765f000000 0000000000000000 00000000000000",
+        "",
+        "",
+
+    };
+    uint16_t len[TEST_NGAP_MAX_MESSAGE] = {
+        119,
+        0,
+        0,
+    };
+    char hexbuf[OGS_HUGE_LEN];
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_put_data(pkbuf,
+        ogs_hex_from_string(payload[i], hexbuf, sizeof(hexbuf)), len[i]);
+
+    return pkbuf;
+}

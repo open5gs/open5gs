@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -197,10 +197,13 @@ static void update_authorized_pcc_rule_and_qos(
                     else if (FlowInformation->flow_direction ==
                         OpenAPI_flow_direction_DOWNLINK)
                         flow->direction = OGS_FLOW_DOWNLINK_ONLY;
+                    else if (FlowInformation->flow_direction ==
+                        OpenAPI_flow_direction_BIDIRECTIONAL)
+                        flow->direction = OGS_FLOW_BIDIRECTIONAL;
                     else {
-                        ogs_fatal("Unsupported direction [%d]",
+                        ogs_error("Unsupported direction [%d]",
                                 FlowInformation->flow_direction);
-                        ogs_assert_if_reached();
+                        continue;
                     }
 
                     flow->description =
@@ -293,8 +296,15 @@ bool smf_npcf_smpolicycontrol_handle_create(
     ogs_sbi_message_t message;
     ogs_sbi_header_t header;
 
+    bool rc;
+    ogs_sbi_client_t *client = NULL;
+    OpenAPI_uri_scheme_e scheme = OpenAPI_uri_scheme_NULL;
+    char *fqdn = NULL;
+    uint16_t fqdn_port = 0;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_assert(recvmsg);
@@ -328,17 +338,46 @@ bool smf_npcf_smpolicycontrol_handle_create(
         return false;
     }
 
-    if (sess->policy_association_id)
-        ogs_free(sess->policy_association_id);
-    sess->policy_association_id = ogs_strdup(message.h.resource.component[1]);
-    ogs_assert(sess->policy_association_id);
+    rc = ogs_sbi_getaddr_from_uri(
+            &scheme, &fqdn, &fqdn_port, &addr, &addr6, header.uri);
+    if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
+        ogs_error("[%s:%d] Invalid URI [%s]",
+                smf_ue->supi, sess->psi, header.uri);
+        ogs_sbi_header_free(&header);
+        return false;
+    }
+
+    client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
+    if (!client) {
+        ogs_debug("[%s:%d] ogs_sbi_client_add()", smf_ue->supi, sess->psi);
+        client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
+        if (!client) {
+            ogs_error("[%s:%d] ogs_sbi_client_add() failed",
+                    smf_ue->supi, sess->psi);
+
+            ogs_sbi_header_free(&header);
+            ogs_free(fqdn);
+            ogs_freeaddrinfo(addr);
+            ogs_freeaddrinfo(addr6);
+
+            return false;
+        }
+    }
+
+    OGS_SBI_SETUP_CLIENT(&sess->policy_association, client);
+
+    ogs_free(fqdn);
+    ogs_freeaddrinfo(addr);
+    ogs_freeaddrinfo(addr6);
+
+    PCF_SM_POLICY_STORE(sess, header.uri, message.h.resource.component[1]);
 
     ogs_sbi_header_free(&header);
 
     /* SBI Features */
     if (SmPolicyDecision->supp_feat) {
         uint64_t supported_features =
-            ogs_uint64_from_string(SmPolicyDecision->supp_feat);
+            ogs_uint64_from_string_hexadecimal(SmPolicyDecision->supp_feat);
         sess->smpolicycontrol_features &= supported_features;
     } else {
         sess->smpolicycontrol_features = 0;
@@ -478,13 +517,15 @@ bool smf_npcf_smpolicycontrol_handle_create(
 
     /* Set UE IP Address to the Default DL PDR */
     ogs_assert(OGS_OK ==
-        ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
+        ogs_pfcp_paa_to_ue_ip_addr(&sess->paa,
             &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len));
     dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
 
-    ogs_assert(OGS_OK ==
-        ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
-            &ul_pdr->ue_ip_addr, &ul_pdr->ue_ip_addr_len));
+    if (ogs_global_conf()->parameter.use_upg_vpp == true) {
+        ogs_assert(OGS_OK ==
+            ogs_pfcp_paa_to_ue_ip_addr(&sess->paa,
+                &ul_pdr->ue_ip_addr, &ul_pdr->ue_ip_addr_len));
+    }
 
     if (sess->session.ipv4_framed_routes &&
         sess->pfcp_node->up_function_features.frrt) {
@@ -542,8 +583,11 @@ bool smf_npcf_smpolicycontrol_handle_create(
         sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
     /* Set UE-to-CP Flow-Description and Outer-Header-Creation */
-    up2cp_pdr->flow_description[up2cp_pdr->num_of_flow++] =
+    up2cp_pdr->flow[up2cp_pdr->num_of_flow].fd = 1;
+    up2cp_pdr->flow[up2cp_pdr->num_of_flow].description =
         (char *)"permit out 58 from ff02::2/128 to assigned";
+    up2cp_pdr->num_of_flow++;
+
     ogs_assert(OGS_OK ==
         ogs_pfcp_ip_to_outer_header_creation(
             &ogs_gtp_self()->gtpu_ip,
@@ -590,7 +634,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
         ogs_gtpu_resource_t *resource = NULL;
         resource = ogs_pfcp_find_gtpu_resource(
                 &sess->pfcp_node->gtpu_resource_list,
-                sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
+                sess->session.name, ul_pdr->src_if);
         if (resource) {
             ogs_user_plane_ip_resource_info_to_sockaddr(&resource->info,
                 &sess->upf_n3_addr, &sess->upf_n3_addr6);
@@ -601,14 +645,15 @@ bool smf_npcf_smpolicycontrol_handle_create(
             else
                 sess->upf_n3_teid = ul_pdr->teid;
         } else {
-            if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+            ogs_assert(sess->pfcp_node->addr_list);
+            if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET)
                 ogs_assert(OGS_OK ==
                     ogs_copyaddrinfo(
-                        &sess->upf_n3_addr, &sess->pfcp_node->addr));
-            else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+                        &sess->upf_n3_addr, sess->pfcp_node->addr_list));
+            else if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET6)
                 ogs_assert(OGS_OK ==
                     ogs_copyaddrinfo(
-                        &sess->upf_n3_addr6, &sess->pfcp_node->addr));
+                        &sess->upf_n3_addr6, sess->pfcp_node->addr_list));
             else
                 ogs_assert_if_reached();
 
@@ -657,7 +702,7 @@ bool smf_npcf_smpolicycontrol_handle_update_notify(
 
     ogs_assert(sess);
     ogs_assert(stream);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_assert(recvmsg);
@@ -691,7 +736,7 @@ cleanup:
     ogs_error("%s", strerror);
     ogs_assert(true ==
         ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-            recvmsg, strerror, NULL));
+            recvmsg, strerror, NULL, NULL));
     ogs_free(strerror);
 
     return false;
@@ -706,14 +751,14 @@ bool smf_npcf_smpolicycontrol_handle_terminate_notify(
 
     ogs_assert(sess);
     ogs_assert(stream);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
     ogs_assert(recvmsg);
 
     ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 
-    if (sess->policy_association_id) {
+    if (PCF_SM_POLICY_ASSOCIATED(sess)) {
         memset(&param, 0, sizeof(param));
         r = smf_sbi_discover_and_send(
                 OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,

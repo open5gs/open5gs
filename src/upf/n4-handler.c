@@ -107,8 +107,12 @@ void upf_n4_handle_session_establishment_request(
     if (req->apn_dnn.presence) {
         char apn_dnn[OGS_MAX_DNN_LEN+1];
 
-        ogs_assert(0 < ogs_fqdn_parse(apn_dnn, req->apn_dnn.data,
-                ogs_min(req->apn_dnn.len, OGS_MAX_DNN_LEN)));
+        if (ogs_fqdn_parse(apn_dnn, req->apn_dnn.data,
+            ogs_min(req->apn_dnn.len, OGS_MAX_DNN_LEN)) <= 0) {
+            ogs_error("Invalid APN");
+            cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+            goto cleanup;
+        }
 
         if (sess->apn_dnn)
             ogs_free(sess->apn_dnn);
@@ -148,8 +152,21 @@ void upf_n4_handle_session_establishment_request(
             pdr = created_pdr[i];
             ogs_assert(pdr);
 
-            if (pdr->f_teid_len)
-                ogs_pfcp_pdr_swap_teid(pdr);
+    /*
+     * Only perform TEID restoration via swap when F-TEID.ch is false.
+     *
+     * When F-TEID.ch is false, it means the TEID has already been assigned, and
+     * the restoration process can safely perform the swap.
+     *
+     * If F-TEID.ch is true, it indicates that the UPF needs to assign
+     * a new TEID for the first time, so performing a swap is not appropriate
+     * in this case.
+     */
+            if (pdr->f_teid_len > 0 && pdr->f_teid.ch == false) {
+                cause_value = ogs_pfcp_pdr_swap_teid(pdr);
+                if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+                    goto cleanup;
+            }
         }
         restoration_indication = true;
     }

@@ -84,6 +84,10 @@
 #include "model/sec_negotiate_rsp_data.h"
 #include "model/patch_item.h"
 #include "model/ue_authentication_ctx.h"
+#include "model/ue_context_transfer_req_data.h"
+#include "model/ue_context_transfer_rsp_data.h"
+#include "model/ue_reg_status_update_req_data.h"
+#include "model/ue_reg_status_update_rsp_data.h"
 
 #include "custom/links.h"
 

@@ -27,8 +27,6 @@ static OGS_POOL(af_sess_pool, af_sess_t);
 
 static int context_initialized = 0;
 
-static void clear_pcf_app_session_id(af_sess_t *sess);
-
 void af_context_init(void)
 {
     ogs_assert(context_initialized == 0);
@@ -144,9 +142,9 @@ af_sess_t *af_sess_add_by_ue_address(ogs_ip_t *ue_address)
     ogs_assert(sess);
     memset(sess, 0, sizeof *sess);
 
-    sess->af_app_session_id = ogs_msprintf("%d",
+    sess->app_session.af.id = ogs_msprintf("%d",
             (int)ogs_pool_index(&af_sess_pool, sess));
-    ogs_assert(sess->af_app_session_id);
+    ogs_assert(sess->app_session.af.id);
 
     if (ue_address->ipv4) {
         sess->ipv4addr = ogs_ipv4_to_string(ue_address->addr);
@@ -182,10 +180,12 @@ void af_sess_remove(af_sess_t *sess)
     /* Free SBI object memory */
     ogs_sbi_object_free(&sess->sbi);
 
-    if (sess->af_app_session_id)
-        ogs_free(sess->af_app_session_id);
+    if (sess->app_session.af.id)
+        ogs_free(sess->app_session.af.id);
 
-    clear_pcf_app_session_id(sess);
+    PCF_APP_SESSION_CLEAR(sess);
+    if (sess->app_session.pcf.client)
+        ogs_sbi_client_remove(sess->app_session.pcf.client);
 
     if (sess->ipv4addr)
         ogs_free(sess->ipv4addr);
@@ -227,33 +227,6 @@ void af_sess_remove_all(void)
         af_sess_remove(sess);
 }
 
-static void clear_pcf_app_session_id(af_sess_t *sess)
-{
-    ogs_assert(sess);
-
-    if (sess->pcf_app_session_id) {
-        ogs_hash_set(self.pcf_app_session_id_hash,
-            &sess->pcf_app_session_id, sizeof(sess->pcf_app_session_id), NULL);
-        ogs_free(sess->pcf_app_session_id);
-    }
-}
-
-bool af_sess_set_pcf_app_session_id(af_sess_t *sess, char *pcf_app_session_id)
-{
-    ogs_assert(sess);
-    ogs_assert(pcf_app_session_id);
-
-    clear_pcf_app_session_id(sess);
-
-    sess->pcf_app_session_id = ogs_strdup(pcf_app_session_id);
-    ogs_assert(sess->pcf_app_session_id);
-
-    ogs_hash_set(self.pcf_app_session_id_hash,
-            &sess->pcf_app_session_id, strlen(sess->pcf_app_session_id), sess);
-
-    return true;
-}
-
 af_sess_t *af_sess_find(uint32_t index)
 {
     return ogs_pool_find(&af_sess_pool, index);
@@ -263,13 +236,6 @@ af_sess_t *af_sess_find_by_af_app_session_id(char *af_app_session_id)
 {
     ogs_assert(af_app_session_id);
     return af_sess_find(atoll(af_app_session_id));
-}
-
-af_sess_t *af_sess_find_by_pcf_app_session_id(char *pcf_app_session_id)
-{
-    ogs_assert(pcf_app_session_id);
-    return (af_sess_t *)ogs_hash_get(self.pcf_app_session_id_hash,
-                        pcf_app_session_id, strlen(pcf_app_session_id));
 }
 
 void af_sess_associate_pcf_client(af_sess_t *sess)

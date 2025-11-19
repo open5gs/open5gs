@@ -35,6 +35,8 @@ typedef struct ogs_pfcp_xact_s {
     ogs_lnode_t     lnode;          /**< A node of list */
     ogs_lnode_t     tmpnode;        /**< A node of temp-list */
 
+    ogs_pool_id_t   id;
+
     ogs_pool_id_t   index;
 
 #define OGS_PFCP_LOCAL_ORIGINATOR  0
@@ -68,13 +70,13 @@ typedef struct ogs_pfcp_xact_s {
     uint64_t        local_seid;     /**< Local SEID,
                                          expected in reply from peer */
 
-    void            *assoc_xact;    /**< Associated GTP transaction */
+    ogs_pool_id_t   assoc_xact_id;  /**< Associated GTP transaction ID */
     ogs_pkbuf_t     *gtpbuf;        /**< GTP packet buffer */
 
     uint8_t         gtp_pti;        /**< GTP Procedure transaction identity */
     uint8_t         gtp_cause;      /**< GTP Cause Value */
 
-    void            *assoc_stream;  /**< Associated SBI session */
+    ogs_pool_id_t   assoc_stream_id;  /**< Associated SBI session ID */
 
     bool            epc;            /**< EPC or 5GC */
 
@@ -98,21 +100,23 @@ typedef struct ogs_pfcp_xact_s {
 #define OGS_PFCP_MODIFY_QOS_CREATE ((uint64_t)1<<14)
 #define OGS_PFCP_MODIFY_QOS_MODIFY ((uint64_t)1<<15)
 #define OGS_PFCP_MODIFY_QOS_DELETE ((uint64_t)1<<16)
-#define OGS_PFCP_MODIFY_ACTIVATE ((uint64_t)1<<17)
-#define OGS_PFCP_MODIFY_DEACTIVATE ((uint64_t)1<<18)
-#define OGS_PFCP_MODIFY_END_MARKER ((uint64_t)1<<19)
-#define OGS_PFCP_MODIFY_ERROR_INDICATION ((uint64_t)1<<20)
-#define OGS_PFCP_MODIFY_XN_HANDOVER ((uint64_t)1<<21)
-#define OGS_PFCP_MODIFY_N2_HANDOVER ((uint64_t)1<<22)
-#define OGS_PFCP_MODIFY_HANDOVER_CANCEL ((uint64_t)1<<23)
-#define OGS_PFCP_MODIFY_URR  ((uint64_t)1<<24) /* type of trigger */
-#define OGS_PFCP_MODIFY_URR_MEAS_METHOD ((uint64_t)1<<25)
-#define OGS_PFCP_MODIFY_URR_REPORT_TRIGGER ((uint64_t)1<<26)
-#define OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME ((uint64_t)1<<27)
-#define OGS_PFCP_MODIFY_URR_VOLUME_QUOTA ((uint64_t)1<<28)
-#define OGS_PFCP_MODIFY_URR_TIME_QUOTA ((uint64_t)1<<29)
-#define OGS_PFCP_MODIFY_URR_VOLUME_THRESH ((uint64_t)1<<30)
-#define OGS_PFCP_MODIFY_URR_TIME_THRESH ((uint64_t)1<<31)
+#define OGS_PFCP_MODIFY_OUTER_HEADER_REMOVAL ((uint64_t)1<<17)
+#define OGS_PFCP_MODIFY_ACTIVATE ((uint64_t)1<<18)
+#define OGS_PFCP_MODIFY_DEACTIVATE ((uint64_t)1<<19)
+#define OGS_PFCP_MODIFY_END_MARKER ((uint64_t)1<<20)
+#define OGS_PFCP_MODIFY_ERROR_INDICATION ((uint64_t)1<<21)
+#define OGS_PFCP_MODIFY_XN_HANDOVER ((uint64_t)1<<22)
+#define OGS_PFCP_MODIFY_N2_HANDOVER ((uint64_t)1<<23)
+#define OGS_PFCP_MODIFY_HANDOVER_CANCEL ((uint64_t)1<<24)
+#define OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING ((uint64_t)1<<25)
+#define OGS_PFCP_MODIFY_URR  ((uint64_t)1<<26) /* type of trigger */
+#define OGS_PFCP_MODIFY_URR_MEAS_METHOD ((uint64_t)1<<27)
+#define OGS_PFCP_MODIFY_URR_REPORT_TRIGGER ((uint64_t)1<<28)
+#define OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME ((uint64_t)1<<29)
+#define OGS_PFCP_MODIFY_URR_VOLUME_QUOTA ((uint64_t)1<<30)
+#define OGS_PFCP_MODIFY_URR_TIME_QUOTA ((uint64_t)1<<31)
+#define OGS_PFCP_MODIFY_URR_VOLUME_THRESH ((uint64_t)1<<32)
+#define OGS_PFCP_MODIFY_URR_TIME_THRESH ((uint64_t)1<<33)
     uint64_t        modify_flags;
 
 #define OGS_PFCP_DELETE_TRIGGER_LOCAL_INITIATED 1
@@ -133,8 +137,8 @@ void ogs_pfcp_xact_final(void);
 
 ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
         void (*cb)(ogs_pfcp_xact_t *xact, void *data), void *data);
-ogs_pfcp_xact_t *ogs_pfcp_xact_cycle(ogs_pfcp_xact_t *xact);
 void ogs_pfcp_xact_delete_all(ogs_pfcp_node_t *node);
+ogs_pfcp_xact_t *ogs_pfcp_xact_find_by_id(ogs_pool_id_t id);
 
 int ogs_pfcp_xact_update_tx(ogs_pfcp_xact_t *xact,
         ogs_pfcp_header_t *hdesc, ogs_pkbuf_t *pkbuf);

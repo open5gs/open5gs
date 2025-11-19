@@ -55,9 +55,6 @@ int ngap_send_ran_configuration_update_failure(
 int ngap_send_ran_ue_context_release_command(
     ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause,
     uint8_t action, ogs_time_t duration);
-int ngap_send_amf_ue_context_release_command(
-    amf_ue_t *amf_ue, NGAP_Cause_PR group, long cause,
-    uint8_t action, ogs_time_t duration);
 
 int ngap_send_paging(amf_ue_t *amf_ue);
 
@@ -78,11 +75,11 @@ int ngap_send_downlink_ran_status_transfer(
 
 int ngap_send_error_indication(
         amf_gnb_t *gnb,
-        uint32_t *ran_ue_ngap_id,
+        uint64_t *ran_ue_ngap_id,
         uint64_t *amf_ue_ngap_id,
         NGAP_Cause_PR group, long cause);
 int ngap_send_error_indication2(
-        amf_ue_t *amf_ue, NGAP_Cause_PR group, long cause);
+        ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause);
 int ngap_send_ng_reset_ack(
         amf_gnb_t *gnb,
         NGAP_UE_associatedLogicalNG_connectionList_t *partOfNG_Interface);

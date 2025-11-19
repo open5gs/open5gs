@@ -48,7 +48,7 @@ extern "C" {
 #define OGS_SBI_HTTP_STATUS_UNAUTHORIZED            401 /* ALL */
 #define OGS_SBI_HTTP_STATUS_FORBIDDEN               403 /* ALL */
 #define OGS_SBI_HTTP_STATUS_NOT_FOUND               404 /* ALL */
-#define OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED      405 /* ALL */
+#define OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED      405 /* ALL */
 #define OGS_SBI_HTTP_STATUS_NOT_ACCEPTABLE          406 /* GET OPTIONS */
 #define OGS_SBI_HTTP_STATUS_REQUEST_TIMEOUT         408 /* ALL */
 #define OGS_SBI_HTTP_STATUS_CONFLICT                409 /* PATCH POST PUT */
@@ -93,6 +93,7 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_SM_DATA               "sm-data"
 #define OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA       "smf-select-data"
 #define OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA "ue-context-in-smf-data"
+#define OGS_SBI_RESOURCE_NAME_NSSAI                 "nssai"
 #define OGS_SBI_RESOURCE_NAME_SMF_SELECTION_SUBSCRIPTION_DATA \
                                             "smf-selection-subscription-data"
 #define OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS     "sdm-subscriptions"
@@ -124,6 +125,8 @@ extern "C" {
 
 #define OGS_SBI_RESOURCE_NAME_UE_CONTEXTS           "ue-contexts"
 #define OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES        "n1-n2-messages"
+#define OGS_SBI_RESOURCE_NAME_TRANSFER              "transfer"
+#define OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE       "transfer-update"
 
 #define OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS     "sm-context-status"
 #define OGS_SBI_RESOURCE_NAME_AM_POLICY_NOTIFY      "am-policy-notify"
@@ -148,6 +151,7 @@ extern "C" {
 
 #define OGS_SBI_PATCH_PATH_NF_STATUS                "/nfStatus"
 #define OGS_SBI_PATCH_PATH_LOAD                     "/load"
+#define OGS_SBI_PATCH_PATH_PLMN_LIST                "/plmnList"
 #define OGS_SBI_PATCH_PATH_VALIDITY_TIME            "/validityTime"
 
 
@@ -167,6 +171,13 @@ extern "C" {
 #define OGS_SBI_NPCF_AM_POLICY_CONTROL_DNN_REPLACEMENT_CONTROL 4
 #define OGS_SBI_NPCF_AM_POLICY_CONTROL_MULTIPLE_ACCESS_TYPES 5
 #define OGS_SBI_NPCF_AM_POLICY_CONTROL_WIRELINE_WIRELESS_CONVERGE 6
+
+#define OGS_SBI_NUDM_SDM_SHARED_DATA 1
+#define OGS_SBI_NUDM_SDM_IMMEDIATE_REPORT 2
+#define OGS_SBI_NUDM_SDM_PATCH_REPORT 3
+#define OGS_SBI_NUDM_SDM_NSSAA 4
+#define OGS_SBI_NUDM_SDM_CAG_FEATURE 5
+#define OGS_SBI_NUDM_SDM_LIMITED_SUBSCRIPTIONS 13
 
 #define OGS_SBI_NPCF_SMPOLICYCONTROL_TSC 1
 #define OGS_SBI_NPCF_SMPOLICYCONTROL_RES_SHARE 2
@@ -295,6 +306,8 @@ extern "C" {
     OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_REQUESTER_PLMN_LIST
 #define OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_FEATURES  \
     OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_REQUESTER_FEATURES
+#define OGS_SBI_CUSTOM_DISCOVERY_GUAMI  \
+    OGS_SBI_CUSTOM_DISCOVERY_COMMON OGS_SBI_PARAM_GUAMI
 #define OGS_SBI_CUSTOM_PRODUCER_ID       \
     OGS_SBI_CUSTOM_3GPP_COMMON "Producer-Id"
 #define OGS_SBI_CUSTOM_OCI               \
@@ -330,12 +343,19 @@ extern "C" {
 #define OGS_SBI_PARAM_PLMN_ID                       "plmn-id"
 #define OGS_SBI_PARAM_SINGLE_NSSAI                  "single-nssai"
 #define OGS_SBI_PARAM_SNSSAI                        "snssai"
+#define OGS_SBI_PARAM_GUAMI                         "guami"
 #define OGS_SBI_PARAM_SNSSAIS                       "snssais"
 #define OGS_SBI_PARAM_TAI                           "tai"
 #define OGS_SBI_PARAM_SLICE_INFO_REQUEST_FOR_PDU_SESSION \
         "slice-info-request-for-pdu-session"
+#define OGS_SBI_PARAM_FIELDS                        "fields"
 #define OGS_SBI_PARAM_IPV4ADDR                      "ipv4Addr"
 #define OGS_SBI_PARAM_IPV6PREFIX                    "ipv6Prefix"
+
+#define OGS_SBI_PARAM_FIELDS_GPSIS                       "gpsis"
+#define OGS_SBI_PARAM_FIELDS_SUBSCRIBED_UE_AMBR          "subscribedUeAmbr"
+#define OGS_SBI_PARAM_FIELDS_NSSAI                       "nssai"
+#define OGS_SBI_MAX_NUM_OF_FIELDS                         8
 
 #define OGS_SBI_CONTENT_JSON_TYPE                   \
     OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_JSON_TYPE
@@ -391,6 +411,8 @@ extern "C" {
     "N5g-ddnmf_Discovery_MonitorUpdateResult"
 #define OGS_SBI_CALLBACK_N5G_DDNMF_DISCOVERY_MATCH_INFORMATION \
     "N5g-ddnmf_Discovery_MatchInformation"
+#define OGS_SBI_CALLBACK_NAMF_COMMUNICATION_ONN1N2TRANSFERFAILURE \
+    "Namf_Communication_onN1N2TransferFailure"
 
 typedef struct ogs_sbi_header_s {
     char *method;
@@ -431,6 +453,9 @@ typedef struct ogs_sbi_discovery_option_s {
     bool tai_presence;
     ogs_5gs_tai_t tai;
 
+    bool guami_presence;
+    ogs_guami_t guami;
+
     int num_of_target_plmn_list;
     ogs_plmn_id_t target_plmn_list[OGS_MAX_NUM_OF_PLMN];
     int num_of_requester_plmn_list;
@@ -468,6 +493,8 @@ typedef struct ogs_sbi_message_s {
         OpenAPI_nf_type_e nf_type;
         int limit;
         char *dnn;
+        int num_of_fields;
+        char *fields[OGS_SBI_MAX_NUM_OF_FIELDS];
 
         /* Shared memory */
         ogs_plmn_id_t plmn_id;
@@ -503,6 +530,7 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_amf3_gpp_access_registration_t *Amf3GppAccessRegistration;
     OpenAPI_amf3_gpp_access_registration_modification_t
         *Amf3GppAccessRegistrationModification;
+    OpenAPI_nssai_t *Nssai;
     OpenAPI_access_and_mobility_subscription_data_t
         *AccessAndMobilitySubscriptionData;
     OpenAPI_smf_selection_subscription_data_t *SmfSelectionSubscriptionData;
@@ -542,6 +570,10 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_smf_registration_t *SmfRegistration;
     OpenAPI_sec_negotiate_req_data_t *SecNegotiateReqData;
     OpenAPI_sec_negotiate_rsp_data_t *SecNegotiateRspData;
+    OpenAPI_ue_context_transfer_req_data_t *UeContextTransferReqData;
+    OpenAPI_ue_context_transfer_rsp_data_t *UeContextTransferRspData;
+    OpenAPI_ue_reg_status_update_req_data_t *UeRegStatusUpdateReqData;
+    OpenAPI_ue_reg_status_update_rsp_data_t *UeRegStatusUpdateRspData;
 
     ogs_sbi_links_t *links;
 
@@ -640,6 +672,13 @@ char *ogs_sbi_discovery_option_build_snssais(
         ogs_sbi_discovery_option_t *discovery_option);
 void ogs_sbi_discovery_option_parse_snssais(
         ogs_sbi_discovery_option_t *discovery_option, char *snssais);
+
+void ogs_sbi_discovery_option_set_guami(
+        ogs_sbi_discovery_option_t *discovery_option, ogs_guami_t *guami);
+char *ogs_sbi_discovery_option_build_guami(
+        ogs_sbi_discovery_option_t *discovery_option);
+void ogs_sbi_discovery_option_parse_guami(
+        ogs_sbi_discovery_option_t *discovery_option, char *guami);
 
 void ogs_sbi_discovery_option_set_tai(
         ogs_sbi_discovery_option_t *discovery_option, ogs_5gs_tai_t *tai);

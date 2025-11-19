@@ -74,11 +74,10 @@ typedef struct amf_event_s {
         ogs_nas_5gs_message_t *message;
     } nas;
 
-    amf_gnb_t *gnb;
-    ran_ue_t *ran_ue;
-    amf_ue_t *amf_ue;
-    amf_sess_t *sess;
-    amf_bearer_t *bearer;
+    ogs_pool_id_t gnb_id;
+    ogs_pool_id_t ran_ue_id;
+    ogs_pool_id_t amf_ue_id;
+    ogs_pool_id_t sess_id;
 
     ogs_timer_t *timer;
 } amf_event_t;

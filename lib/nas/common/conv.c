@@ -131,56 +131,66 @@ int ogs_nas_gprs_timer_3_from_sec(
         gprs_timer->unit = OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_2_SS;
         gprs_timer->value = timer_value / 2;
     } else {
-        if (timer_value%60 != 0) {
-            ogs_error("Not multiples of 1 minute");
+        if (timer_value%30 != 0) {
+            ogs_error("Not multiples of 30 seconds");
             return OGS_ERROR;
         }
-        timer_value /= 60; /* multiples of 1 minute */
+        timer_value /= 30; /* multiples of 30 seconds */
         if (timer_value <= 31) {
-            gprs_timer->unit = OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_MM;
+            gprs_timer->unit = OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_30_SS;
             gprs_timer->value = timer_value;
         } else {
-            if (timer_value%10 != 0) {
-                ogs_error("Not multiples of decihours(= 10 minutes)");
+            if (timer_value%2 != 0) {
+                ogs_error("Not multiples of 1 minute");
                 return OGS_ERROR;
             }
-            timer_value /= 10; /* multiples of decihours = 10 mintues */
+            timer_value /= 2; /* multiples of 1 minute */
             if (timer_value <= 31) {
-                gprs_timer->unit = OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_MM;
+                gprs_timer->unit = OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_MM;
                 gprs_timer->value = timer_value;
             } else {
-                if (timer_value%6 != 0) {
-                    ogs_error("Not multiples of 1 hour");
+                if (timer_value%10 != 0) {
+                    ogs_error("Not multiples of decihours(= 10 minutes)");
                     return OGS_ERROR;
                 }
-                timer_value /= 6; /* multiples of 1 hour */
+                timer_value /= 10; /* multiples of decihours = 10 mintues */
                 if (timer_value <= 31) {
-                    gprs_timer->unit =
-                        OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_HH;
+                    gprs_timer->unit = OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_MM;
                     gprs_timer->value = timer_value;
                 } else {
-                    if (timer_value%10 != 0) {
-                        ogs_error("Not multiples of 10 hours");
+                    if (timer_value%6 != 0) {
+                        ogs_error("Not multiples of 1 hour");
                         return OGS_ERROR;
                     }
-                    timer_value /= 10; /* multiples of 10 hours */
+                    timer_value /= 6; /* multiples of 1 hour */
                     if (timer_value <= 31) {
                         gprs_timer->unit =
-                            OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_HH;
+                            OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_HH;
                         gprs_timer->value = timer_value;
                     } else {
-                        if (timer_value%32 != 0) {
+                        if (timer_value%10 != 0) {
                             ogs_error("Not multiples of 10 hours");
                             return OGS_ERROR;
                         }
-                        timer_value /= 32; /* multiples of 320 hours */
+                        timer_value /= 10; /* multiples of 10 hours */
                         if (timer_value <= 31) {
                             gprs_timer->unit =
-                                OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_320_HH;
+                                OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_10_HH;
                             gprs_timer->value = timer_value;
                         } else {
-                            ogs_error("Overflow!");
-                            return OGS_ERROR;
+                            if (timer_value%32 != 0) {
+                                ogs_error("Not multiples of 10 hours");
+                                return OGS_ERROR;
+                            }
+                            timer_value /= 32; /* multiples of 320 hours */
+                            if (timer_value <= 31) {
+                                gprs_timer->unit =
+                                    OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_320_HH;
+                                gprs_timer->value = timer_value;
+                            } else {
+                                ogs_error("Overflow!");
+                                return OGS_ERROR;
+                            }
                         }
                     }
                 }

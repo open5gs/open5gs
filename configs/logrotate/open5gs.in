@@ -8,7 +8,9 @@
 
     postrotate
         for i in nrfd scpd seppd pcrfd hssd ausfd udmd udrd upfd sgwcd sgwud smfd mmed amfd; do
-            systemctl reload open5gs-$i
+            if systemctl --quiet is-active open5gs-$i; then
+                 systemctl reload open5gs-$i
+            fi
         done
     endscript
 }

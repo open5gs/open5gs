@@ -103,7 +103,7 @@ int app_initialize(const char *const argv[])
      */
     ogs_msleep(5000);
 
-    return OGS_OK;;
+    return OGS_OK;
 }
 
 void app_terminate(void)

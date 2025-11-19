@@ -17,7 +17,7 @@
 #// Modified by Fatemeh Shafiei Ardestani on 2025-04-06
 #// Changes: See GitHub for full diff
 project('open5gs', 'c', 'cpp',
-    version : '2.7.0',
+    version : '2.7.5',
     license : 'AGPL-3.0-or-later',
     meson_version : '>= 0.43.0',
     default_options : [
@@ -27,7 +27,7 @@ project('open5gs', 'c', 'cpp',
     ],
 )
 
-libogslib_version = '2.7.0'
+libogslib_version = '2.7.5'
 
 prefix = get_option('prefix')
 bindir = join_paths(prefix, get_option('bindir'))
@@ -59,7 +59,7 @@ if clangtidy.found() != true
 endif
 
 meson.add_install_script(python3_exe, '-c',
-        mkdir_p.format(join_paths(localstatedir, 'log', 'open5gs')))
+        mkdir_p.format(join_paths(localstatedir, 'log', 'open5gs', 'tls')))
 
 # Compiler flags
 if cc.get_id() == 'gcc' or cc.get_id() == 'clang'

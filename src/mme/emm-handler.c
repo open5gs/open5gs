@@ -34,7 +34,7 @@
 
 static uint8_t emm_cause_from_access_control(mme_ue_t *mme_ue);
 
-int emm_handle_attach_request(mme_ue_t *mme_ue,
+int emm_handle_attach_request(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
         ogs_nas_eps_attach_request_t *attach_request, ogs_pkbuf_t *pkbuf)
 {
     int r;
@@ -44,7 +44,6 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
     ogs_nas_eps_mobile_identity_guti_t *eps_mobile_identity_guti = NULL;
     ogs_nas_eps_guti_t nas_guti;
 
-    enb_ue_t *enb_ue = NULL;
     ogs_nas_eps_attach_type_t *eps_attach_type =
                     &attach_request->eps_attach_type;
     ogs_nas_eps_mobile_identity_t *eps_mobile_identity =
@@ -54,16 +53,13 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
 
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
-    MME_UE_LIST_CHECK;
-
     ogs_assert(mme_ue);
-    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
     ogs_assert(esm_message_container);
     if (!esm_message_container->length) {
         ogs_error("No ESM Message Container");
-        r = nas_eps_send_attach_reject(mme_ue,
+        r = nas_eps_send_attach_reject(enb_ue, mme_ue,
                 OGS_NAS_EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
                 OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
         ogs_expect(r == OGS_OK);
@@ -82,13 +78,26 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
     memcpy(&mme_ue->nas_eps.attach, eps_attach_type,
             sizeof(ogs_nas_eps_attach_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
-    mme_ue->nas_eps.ksi = eps_attach_type->nas_key_set_identifier;
-    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
-            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
-    ogs_debug("    ATTACH TSC[%d] KSI[%d] VALUE[%d]",
+
+    ogs_debug("    ATTACH TYPE[%d] TSC[%d] KSI[%d] VALUE[%d]",
+            mme_ue->nas_eps.type,
             mme_ue->nas_eps.attach.tsc,
             mme_ue->nas_eps.attach.nas_key_set_identifier,
             mme_ue->nas_eps.attach.value);
+
+    mme_ue->nas_eps.ue.tsc = eps_attach_type->tsc;
+    mme_ue->nas_eps.ue.ksi = eps_attach_type->nas_key_set_identifier;
+    ogs_debug("    OLD TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
+    if (mme_ue->nas_eps.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
+        mme_ue->nas_eps.mme.tsc = mme_ue->nas_eps.ue.tsc;
+        mme_ue->nas_eps.mme.ksi = mme_ue->nas_eps.ue.ksi;
+    }
+    ogs_debug("    NEW TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
+
     switch(mme_ue->nas_eps.attach.value){
         case OGS_NAS_ATTACH_TYPE_EPS_ATTACH:
             ogs_debug("    Requested EPS_ATTACH_TYPE[1, EPS_ATTACH]");
@@ -103,6 +112,7 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
             ogs_error("    Invalid Requested EPS_ATTACH_TYPE[%d]",
                 mme_ue->nas_eps.attach.value);
     }
+
     /*
      * ATTACH_REQUEST
      * TAU_REQUEST
@@ -143,7 +153,7 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
         /* Send Attach Reject */
         ogs_warn("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);
-        r = nas_eps_send_attach_reject(mme_ue,
+        r = nas_eps_send_attach_reject(enb_ue, mme_ue,
                 OGS_NAS_EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED,
                 OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
         ogs_expect(r == OGS_OK);
@@ -155,7 +165,7 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
     /* Store UE specific information */
     if (attach_request->presencemask &
         OGS_NAS_EPS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT) {
-        ogs_nas_eps_tai_t *last_visited_registered_tai = 
+        ogs_nas_eps_tai_t *last_visited_registered_tai =
             &attach_request->last_visited_registered_tai;
 
         ogs_nas_to_plmn_id(&mme_ue->last_visited_plmn_id,
@@ -164,13 +174,13 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
                 ogs_plmn_id_hexdump(&mme_ue->last_visited_plmn_id));
     }
 
-    memcpy(&mme_ue->ue_network_capability, 
+    memcpy(&mme_ue->ue_network_capability,
             &attach_request->ue_network_capability,
             sizeof(attach_request->ue_network_capability));
 
     if (attach_request->presencemask &
             OGS_NAS_EPS_ATTACH_REQUEST_MS_NETWORK_CAPABILITY_PRESENT) {
-        memcpy(&mme_ue->ms_network_capability, 
+        memcpy(&mme_ue->ms_network_capability,
                 &attach_request->ms_network_capability,
                 sizeof(attach_request->ms_network_capability));
     }
@@ -185,9 +195,9 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
             OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
         ogs_warn("Encrypt[0x%x] can be skipped with EEA0, "
             "but Integrity[0x%x] cannot be bypassed with EIA0",
-            mme_selected_enc_algorithm(mme_ue), 
+            mme_selected_enc_algorithm(mme_ue),
             mme_selected_int_algorithm(mme_ue));
-        r = nas_eps_send_attach_reject(mme_ue,
+        r = nas_eps_send_attach_reject(enb_ue, mme_ue,
                 OGS_NAS_EMM_CAUSE_UE_SECURITY_CAPABILITIES_MISMATCH,
                 OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
         ogs_expect(r == OGS_OK);
@@ -204,13 +214,13 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
                     eps_mobile_identity->length);
             return OGS_ERROR;
         }
-        memcpy(&mme_ue->nas_mobile_identity_imsi, 
+        memcpy(&mme_ue->nas_mobile_identity_imsi,
             &eps_mobile_identity->imsi, eps_mobile_identity->length);
 
         emm_cause = emm_cause_from_access_control(mme_ue);
         if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
             ogs_error("Rejected by PLMN-ID access control");
-            r = nas_eps_send_attach_reject(mme_ue,
+            r = nas_eps_send_attach_reject(enb_ue, mme_ue,
                     emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -237,7 +247,7 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
                 nas_guti.mme_gid,
                 nas_guti.mme_code,
                 nas_guti.m_tmsi,
-                MME_UE_HAVE_IMSI(mme_ue) 
+                MME_UE_HAVE_IMSI(mme_ue)
                     ? mme_ue->imsi_bcd : "Unknown IMSI");
         break;
     default:
@@ -252,7 +262,8 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
 }
 
 int emm_handle_attach_complete(
-    mme_ue_t *mme_ue, ogs_nas_eps_attach_complete_t *attach_complete)
+    enb_ue_t *enb_ue, mme_ue_t *mme_ue,
+    ogs_nas_eps_attach_complete_t *attach_complete)
 {
     int r, rv;
     ogs_pkbuf_t *emmbuf = NULL;
@@ -263,16 +274,16 @@ int emm_handle_attach_complete(
     ogs_nas_time_zone_t *local_time_zone = &emm_information->local_time_zone;
     ogs_nas_time_zone_and_time_t *universal_time_and_local_time_zone =
         &emm_information->universal_time_and_local_time_zone;
-    ogs_nas_daylight_saving_time_t *network_daylight_saving_time = 
+    ogs_nas_daylight_saving_time_t *network_daylight_saving_time =
         &emm_information->network_daylight_saving_time;
 
     struct timeval tv;
     struct tm gmt, local;
 
     ogs_assert(mme_ue);
+    ogs_assert(enb_ue);
 
     ogs_info("    IMSI[%s]", mme_ue->imsi_bcd);
-    MME_UE_LIST_CHECK;
 
     ogs_gettimeofday(&tv);
     ogs_gmtime(tv.tv_sec, &gmt);
@@ -295,7 +306,7 @@ int emm_handle_attach_complete(
     }
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
@@ -347,6 +358,9 @@ int emm_handle_attach_complete(
         emm_information->presencemask |=
             OGS_NAS_EPS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
         network_daylight_saving_time->length = 1;
+        if (local.tm_isdst > 0) {
+            network_daylight_saving_time->value = 1;
+        }
     }
 
     emmbuf = nas_eps_security_encode(mme_ue, &message);
@@ -355,7 +369,7 @@ int emm_handle_attach_complete(
         return OGS_ERROR;
     }
 
-    r = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    r = nas_eps_send_to_downlink_nas_transport(enb_ue, emmbuf);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
 
@@ -365,18 +379,61 @@ int emm_handle_attach_complete(
     return r;
 }
 
+int emm_handle_authentication_response(
+        enb_ue_t *enb_ue, mme_ue_t *mme_ue,
+        ogs_nas_eps_authentication_response_t *authentication_response)
+{
+    ogs_nas_authentication_response_parameter_t
+        *authentication_response_parameter =
+            &authentication_response->authentication_response_parameter;
+
+    ogs_assert(authentication_response);
+
+    ogs_assert(mme_ue);
+    ogs_assert(enb_ue);
+
+    ogs_debug("Authentication response");
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+
+    CLEAR_MME_UE_TIMER(mme_ue->t3460);
+
+    if (authentication_response_parameter->length == 0 ||
+        memcmp(authentication_response_parameter->res, mme_ue->xres,
+        authentication_response_parameter->length) != 0) {
+        ogs_log_hexdump(OGS_LOG_WARN,
+                authentication_response_parameter->res,
+                authentication_response_parameter->length);
+        ogs_log_hexdump(OGS_LOG_WARN,
+                mme_ue->xres, OGS_MAX_RES_LEN);
+        return OGS_ERROR;
+    } else {
+        mme_ue->selected_int_algorithm = mme_selected_int_algorithm(mme_ue);
+        mme_ue->selected_enc_algorithm = mme_selected_enc_algorithm(mme_ue);
+
+        if (mme_ue->selected_int_algorithm ==
+                OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
+            ogs_error("Encrypt[0x%x] can be skipped with EEA0, "
+                "but Integrity[0x%x] cannot be bypassed with EIA0",
+                mme_ue->selected_enc_algorithm,
+                mme_ue->selected_int_algorithm);
+            return OGS_ERROR;
+        }
+    }
+
+    return OGS_OK;
+}
+
 int emm_handle_identity_response(
-        mme_ue_t *mme_ue, ogs_nas_eps_identity_response_t *identity_response)
+        enb_ue_t *enb_ue, mme_ue_t *mme_ue,
+        ogs_nas_eps_identity_response_t *identity_response)
 {
     int r;
     uint8_t emm_cause;
     ogs_nas_mobile_identity_t *mobile_identity = NULL;
-    enb_ue_t *enb_ue = NULL;
 
     ogs_assert(identity_response);
 
     ogs_assert(mme_ue);
-    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
     mobile_identity = &identity_response->mobile_identity;
@@ -388,20 +445,20 @@ int emm_handle_identity_response(
             ogs_error("mobile_identity length (%d != %d)",
                     (int)sizeof(ogs_nas_mobile_identity_imsi_t),
                     mobile_identity->length);
-            r = nas_eps_send_attach_reject(mme_ue,
+            r = nas_eps_send_attach_reject(enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
                     OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
             return OGS_ERROR;
         }
-        memcpy(&mme_ue->nas_mobile_identity_imsi, 
+        memcpy(&mme_ue->nas_mobile_identity_imsi,
             &mobile_identity->imsi, mobile_identity->length);
 
         emm_cause = emm_cause_from_access_control(mme_ue);
         if (emm_cause != OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
             ogs_error("Rejected by PLMN-ID access control");
-            r = nas_eps_send_attach_reject(mme_ue,
+            r = nas_eps_send_attach_reject(enb_ue, mme_ue,
                     emm_cause, OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
@@ -414,7 +471,7 @@ int emm_handle_identity_response(
 
         if (mme_ue->imsi_len != OGS_MAX_IMSI_LEN) {
             ogs_error("Invalid IMSI LEN[%d]", mme_ue->imsi_len);
-            r = nas_eps_send_attach_reject(mme_ue,
+            r = nas_eps_send_attach_reject(enb_ue, mme_ue,
                     OGS_NAS_EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
                     OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
             ogs_expect(r == OGS_OK);
@@ -431,12 +488,14 @@ int emm_handle_identity_response(
 }
 
 int emm_handle_detach_request(
-        mme_ue_t *mme_ue, ogs_nas_eps_detach_request_from_ue_t *detach_request)
+        enb_ue_t *enb_ue, mme_ue_t *mme_ue,
+        ogs_nas_eps_detach_request_from_ue_t *detach_request)
 {
     ogs_nas_detach_type_t *detach_type = NULL;
 
     ogs_assert(detach_request);
     ogs_assert(mme_ue);
+    ogs_assert(enb_ue);
 
     detach_type = &detach_request->detach_type;
 
@@ -456,22 +515,33 @@ int emm_handle_detach_request(
     mme_ue->nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_FROM_UE;
     mme_ue->detach_type = MME_DETACH_TYPE_REQUEST_FROM_UE;
 
-    mme_ue->nas_eps.ksi = detach_type->nas_key_set_identifier;
-    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
-            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
-    ogs_debug("    DETACH TSC[%d] KSI[%d] SWITCH_OFF[%d] VALUE[%d]",
-            mme_ue->nas_eps.attach.tsc,
+    ogs_debug("    DETACH TYPE[%d] TSC[%d] KSI[%d] SWITCH_OFF[%d] VALUE[%d]",
+            mme_ue->nas_eps.type,
+            mme_ue->nas_eps.detach.tsc,
             mme_ue->nas_eps.detach.nas_key_set_identifier,
             mme_ue->nas_eps.detach.switch_off,
             mme_ue->nas_eps.attach.value);
 
+    mme_ue->nas_eps.ue.tsc = detach_type->tsc;
+    mme_ue->nas_eps.ue.ksi = detach_type->nas_key_set_identifier;
+    ogs_debug("    OLD TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
+    if (mme_ue->nas_eps.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
+        mme_ue->nas_eps.mme.tsc = mme_ue->nas_eps.ue.tsc;
+        mme_ue->nas_eps.mme.ksi = mme_ue->nas_eps.ue.ksi;
+    }
+    ogs_debug("    NEW TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
+
     switch (detach_request->detach_type.value) {
     /* 0 0 1 : EPS detach */
-    case OGS_NAS_DETACH_TYPE_FROM_UE_EPS_DETACH: 
+    case OGS_NAS_DETACH_TYPE_FROM_UE_EPS_DETACH:
         ogs_debug("    EPS Detach");
         break;
     /* 0 1 0 : IMSI detach */
-    case OGS_NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH: 
+    case OGS_NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH:
         ogs_debug("    IMSI Detach");
         break;
     case 6: /* 1 1 0 : reserved */
@@ -480,7 +550,7 @@ int emm_handle_detach_request(
             detach_request->detach_type.value);
         break;
     /* 0 1 1 : combined EPS/IMSI detach */
-    case OGS_NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH: 
+    case OGS_NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH:
         ogs_debug("    Combined EPS/IMSI Detach");
     default: /* all other values */
         break;
@@ -505,22 +575,34 @@ int emm_handle_detach_request(
 }
 
 int emm_handle_service_request(
-        mme_ue_t *mme_ue, ogs_nas_eps_service_request_t *service_request)
+        enb_ue_t *enb_ue, mme_ue_t *mme_ue,
+        ogs_nas_eps_service_request_t *service_request)
 {
     ogs_nas_ksi_and_sequence_number_t *ksi_and_sequence_number =
                     &service_request->ksi_and_sequence_number;
 
     ogs_assert(mme_ue);
+    ogs_assert(enb_ue);
 
     /* Set EPS Service */
     mme_ue->nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST;
-    mme_ue->nas_eps.ksi = ksi_and_sequence_number->ksi;
-    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
-            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
-    ogs_debug("    SERVICE TSC[%d] KSI[%d] VALUE[%d]",
+    ogs_debug("    SERVICE TYPE[%d] TSC[%d] KSI[%d] VALUE[%d]",
+            mme_ue->nas_eps.type,
             mme_ue->nas_eps.service.tsc,
             mme_ue->nas_eps.service.nas_key_set_identifier,
             mme_ue->nas_eps.service.value);
+
+    mme_ue->nas_eps.ue.ksi = ksi_and_sequence_number->ksi;
+    ogs_debug("    OLD TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
+    if (mme_ue->nas_eps.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
+        mme_ue->nas_eps.mme.tsc = mme_ue->nas_eps.ue.tsc;
+        mme_ue->nas_eps.mme.ksi = mme_ue->nas_eps.ue.ksi;
+    }
+    ogs_debug("    NEW TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
 
     /*
      * ATTACH_REQUEST
@@ -546,8 +628,40 @@ int emm_handle_service_request(
     return OGS_OK;
 }
 
-int emm_handle_tau_request(mme_ue_t *mme_ue,
-    ogs_nas_eps_tracking_area_update_request_t *tau_request, ogs_pkbuf_t *pkbuf)
+bool emm_tau_request_ue_comes_from_gb_or_iu(const ogs_nas_eps_tracking_area_update_request_t *tau_request)
+{
+    /* "When the tracking area updating procedure is initiated in EMM-IDLE mode
+     * to perform an inter-system change from A/Gb mode or Iu mode to S1 mode
+     * and the TIN is set to "P-TMSI", the UE shall include the GPRS ciphering
+     * key sequence number applicable for A/Gb mode or Iu mode and a nonce UE in
+     * the TRACKING AREA UPDATE REQUEST message."
+     */
+    if (!(tau_request->presencemask &
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_NONCEUE_PRESENT))
+            return false;
+
+    if (tau_request->presencemask &
+        OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_OLD_GUTI_TYPE_PRESENT) {
+            /* 0 = Native, 1 = Mapped */
+            return tau_request->old_guti_type.guti_type;
+    } else {
+        /* TS 23.003 2.8.2.2.2:
+            * "The most significant bit of the <LAC> shall be set to zero;
+            * and the most significant bit of <MME group id> shall be set to
+            * one. Based on this definition, the most significant bit of the
+            * <MME group id> can be used to distinguish the node type, i.e.
+            * whether it is an MME or SGSN */
+        const ogs_nas_eps_mobile_identity_t *eps_mobile_identity = &tau_request->old_guti;
+        if (eps_mobile_identity->imsi.type != OGS_NAS_EPS_MOBILE_IDENTITY_GUTI)
+            return false;
+        return !(eps_mobile_identity->guti.mme_gid & 0x8000);
+    }
+}
+
+int emm_handle_tau_request(
+        enb_ue_t *enb_ue, mme_ue_t *mme_ue,
+        ogs_nas_eps_tracking_area_update_request_t *tau_request,
+        ogs_pkbuf_t *pkbuf)
 {
     int r;
     int served_tai_index = 0;
@@ -559,10 +673,8 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
                     &tau_request->eps_update_type;
     ogs_nas_eps_mobile_identity_t *eps_mobile_identity =
                     &tau_request->old_guti;
-    enb_ue_t *enb_ue = NULL;
 
     ogs_assert(mme_ue);
-    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
     ogs_assert(pkbuf);
@@ -576,14 +688,25 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
     memcpy(&mme_ue->nas_eps.update, eps_update_type,
             sizeof(ogs_nas_eps_update_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_TAU_REQUEST;
-    mme_ue->nas_eps.ksi = eps_update_type->nas_key_set_identifier;
-    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
-            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
-    ogs_debug("    UPDATE TSC[%d] KSI[%d] Active-flag[%d] VALUE[%d]",
+    ogs_debug("    UPDATE TYPE[%d] TSC[%d] KSI[%d] Active-flag[%d] VALUE[%d]",
+            mme_ue->nas_eps.type,
             mme_ue->nas_eps.update.tsc,
             mme_ue->nas_eps.update.nas_key_set_identifier,
             mme_ue->nas_eps.update.active_flag,
             mme_ue->nas_eps.update.value);
+
+    mme_ue->nas_eps.ue.tsc = eps_update_type->tsc;
+    mme_ue->nas_eps.ue.ksi = eps_update_type->nas_key_set_identifier;
+    ogs_debug("    OLD TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
+    if (mme_ue->nas_eps.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
+        mme_ue->nas_eps.mme.tsc = mme_ue->nas_eps.ue.tsc;
+        mme_ue->nas_eps.mme.ksi = mme_ue->nas_eps.ue.ksi;
+    }
+    ogs_debug("    NEW TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
 
     /*
      * ATTACH_REQUEST
@@ -623,8 +746,8 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
         /* Send TAU reject */
         ogs_warn("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);
-        r = nas_eps_send_tau_reject(
-                mme_ue, OGS_NAS_EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED);
+        r = nas_eps_send_tau_reject(enb_ue, mme_ue,
+                OGS_NAS_EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
@@ -634,30 +757,43 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
     /* Store UE specific information */
     if (tau_request->presencemask &
         OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT) {
-        ogs_nas_eps_tai_t *last_visited_registered_tai = 
+        ogs_nas_eps_tai_t *last_visited_registered_tai =
             &tau_request->last_visited_registered_tai;
 
         ogs_nas_to_plmn_id(&mme_ue->last_visited_plmn_id,
                 &last_visited_registered_tai->nas_plmn_id);
         ogs_debug("    Visited_PLMN_ID:%06x",
                 ogs_plmn_id_hexdump(&mme_ue->last_visited_plmn_id));
-    } 
+    }
 
     if (tau_request->presencemask &
             OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_NETWORK_CAPABILITY_PRESENT) {
-        memcpy(&mme_ue->ue_network_capability, 
+        memcpy(&mme_ue->ue_network_capability,
                 &tau_request->ue_network_capability,
                 sizeof(tau_request->ue_network_capability));
     }
 
     if (tau_request->presencemask &
             OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_CAPABILITY_PRESENT) {
-        memcpy(&mme_ue->ms_network_capability, 
+        memcpy(&mme_ue->ms_network_capability,
                 &tau_request->ms_network_capability,
                 sizeof(tau_request->ms_network_capability));
     }
 
-    /* TODO: 
+    if (tau_request->presencemask &
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_NONCEUE_PRESENT) {
+        mme_ue->gprs_ciphering_key_sequence_number = tau_request->gprs_ciphering_key_sequence_number.key_sequence;
+    } else {
+        /* Mark as unavailable, Table 10.5.2/3GPP TS 24.008 */
+        mme_ue->gprs_ciphering_key_sequence_number = OGS_NAS_CIPHERING_KEY_SEQUENCE_NUMBER_NO_KEY_FROM_MS;
+    }
+
+    if (tau_request->presencemask &
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_NONCEUE_PRESENT) {
+        mme_ue->nonceue = tau_request->nonceue;
+    }
+
+    /* TODO:
      *   1) Consider if MME is changed or not.
      *   2) Consider if SGW is changed or not.
      */
@@ -674,19 +810,24 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
                 nas_guti.mme_gid,
                 nas_guti.mme_code,
                 nas_guti.m_tmsi,
-                MME_UE_HAVE_IMSI(mme_ue) 
+                MME_UE_HAVE_IMSI(mme_ue)
                     ? mme_ue->imsi_bcd : "Unknown");
+
+        memcpy(&mme_ue->next.guti,
+           &nas_guti, sizeof(ogs_nas_eps_guti_t));
+
         break;
     default:
         ogs_error("Not implemented[%d]", eps_mobile_identity->imsi.type);
-        
+
         return OGS_OK;
     }
 
     return OGS_OK;
 }
 
-int emm_handle_extended_service_request(mme_ue_t *mme_ue,
+int emm_handle_extended_service_request(
+        enb_ue_t *enb_ue, mme_ue_t *mme_ue,
         ogs_nas_eps_extended_service_request_t *extended_service_request)
 {
     int r;
@@ -697,20 +838,33 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
     ogs_nas_mobile_identity_t *mobile_identity =
         &extended_service_request->m_tmsi;
     ogs_nas_mobile_identity_tmsi_t *mobile_identity_tmsi = NULL;
-    enb_ue_t *enb_ue = NULL;
 
     ogs_assert(mme_ue);
-    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
     /* Set Service Type */
     memcpy(&mme_ue->nas_eps.service, service_type,
             sizeof(ogs_nas_service_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST;
-    mme_ue->nas_eps.ksi = service_type->nas_key_set_identifier;
-    ogs_debug("    OGS_NAS_EPS TYPE[%d] KSI[%d]",
-            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
-    
+    ogs_debug("    Extended SERVICE TYPE[%d] TSC[%d] KSI[%d] VALUE[%d]",
+            mme_ue->nas_eps.type,
+            mme_ue->nas_eps.service.tsc,
+            mme_ue->nas_eps.service.nas_key_set_identifier,
+            mme_ue->nas_eps.service.value);
+
+    mme_ue->nas_eps.ue.tsc = service_type->tsc;
+    mme_ue->nas_eps.ue.ksi = service_type->nas_key_set_identifier;
+    ogs_debug("    OLD TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
+    if (mme_ue->nas_eps.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
+        mme_ue->nas_eps.mme.tsc = mme_ue->nas_eps.ue.tsc;
+        mme_ue->nas_eps.mme.ksi = mme_ue->nas_eps.ue.ksi;
+    }
+    ogs_debug("    NEW TSC[UE:%d,MME:%d] KSI[UE:%d,MME:%d]",
+            mme_ue->nas_eps.ue.tsc, mme_ue->nas_eps.mme.tsc,
+            mme_ue->nas_eps.ue.ksi, mme_ue->nas_eps.mme.ksi);
+
     /*
      * ATTACH_REQUEST
      * TAU_REQUEST
@@ -743,8 +897,8 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
         /* Send TAU reject */
         ogs_warn("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);
-        r = nas_eps_send_tau_reject(
-                mme_ue, OGS_NAS_EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED);
+        r = nas_eps_send_tau_reject(enb_ue, mme_ue,
+                OGS_NAS_EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
@@ -767,13 +921,14 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
     return OGS_OK;
 }
 
-int emm_handle_security_mode_complete(mme_ue_t *mme_ue,
-    ogs_nas_eps_security_mode_complete_t *security_mode_complete)
+int emm_handle_security_mode_complete(
+        enb_ue_t *enb_ue, mme_ue_t *mme_ue,
+        ogs_nas_eps_security_mode_complete_t *security_mode_complete)
 {
     ogs_nas_mobile_identity_t *imeisv = &security_mode_complete->imeisv;
 
     ogs_assert(mme_ue);
-    MME_UE_LIST_CHECK;
+    ogs_assert(enb_ue);
 
     if (security_mode_complete->presencemask &
         OGS_NAS_EPS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_PRESENT) {

@@ -35,6 +35,7 @@ extern asn_TYPE_operation_t asn_OP_ObjectDescriptor;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+#define ObjectDescriptor_decode_jer OCTET_STRING_decode_jer_utf8
 #define ObjectDescriptor_encode_jer OCTET_STRING_encode_jer_utf8
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 

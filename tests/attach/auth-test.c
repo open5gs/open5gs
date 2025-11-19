@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -97,7 +97,8 @@ static void test1_func(abts_case *tc, void *data)
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess, false);
+    esmbuf = testesm_build_pdn_connectivity_request(
+            sess, false, OGS_NAS_EPS_PDN_TYPE_IPV4V6);
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     memset(&test_ue->attach_request_param,
@@ -196,11 +197,14 @@ static void test1_func(abts_case *tc, void *data)
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send Attach Request */
+    sess->pti = 1;
+
     sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess, false);
+    esmbuf = testesm_build_pdn_connectivity_request(
+            sess, false, OGS_NAS_EPS_PDN_TYPE_IPV4V6);
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     memset(&test_ue->attach_request_param,
@@ -269,11 +273,14 @@ static void test1_func(abts_case *tc, void *data)
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send Attach Request - No Integrity */
+    sess->pti = 1;
+
     sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess, false);
+    esmbuf = testesm_build_pdn_connectivity_request(
+            sess, false, OGS_NAS_EPS_PDN_TYPE_IPV4V6);
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     memset(&test_ue->attach_request_param,
@@ -288,6 +295,7 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+#if SEND_UE_CONTEXT_RELEASE_COMMAND_IN_INTEGRITY_UNPROTECTED
     /* Receive OLD UE Context Release Command */
     enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
 
@@ -302,6 +310,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
+#endif
 
     /* Receive Authentication request */
     recvbuf = testenb_s1ap_read(s1ap);
@@ -336,17 +345,13 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
 
-    /* Receive UE Context Release Command */
-    recvbuf = testenb_s1ap_read(s1ap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    tests1ap_recv(test_ue, recvbuf);
-
     /* Send Attach Request - No Integrity */
     sess->pdn_connectivity_param.eit = 1;
     sess->pdn_connectivity_param.pco = 1;
     sess->pdn_connectivity_param.request_type =
         OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
-    esmbuf = testesm_build_pdn_connectivity_request(sess, false);
+    esmbuf = testesm_build_pdn_connectivity_request(
+            sess, false, OGS_NAS_EPS_PDN_TYPE_IPV4V6);
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     memset(&test_ue->attach_request_param,
@@ -361,6 +366,7 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+#if SEND_UE_CONTEXT_RELEASE_COMMAND_IN_INTEGRITY_UNPROTECTED
     /* Receive OLD UE Context Release Command */
     enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
 
@@ -375,6 +381,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
+#endif
 
     /* Receive Authentication request */
     recvbuf = testenb_s1ap_read(s1ap);
@@ -394,6 +401,101 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+
+    /*
+     * --- Immediately Re-attach Test ---
+     *
+     * Problems with Purge-UE-Request/Answer can occur
+     * in the following situations
+     *
+     * 1. Attach Request
+     * 2. Authentication request
+     * 3. Authentication reject
+     * 4. UEContextReleaseCommand
+     * 5. UEContextReleaseComplete
+     * 6. Purge-UE-Request
+     * 7. Attach Request
+     * 8. Purge-UE-Answer
+     * 9. (UE Context Remove)
+     *
+     * To resolve this issue, we have changed to delete the UE-Context
+     * via mme_ue_remove() immediately upon receiving UEContextReleaseComplete()
+     * without calling mme_s6a_send_pur().
+     *
+     * The test below was created to indicate that mme_s6a_send_pur()
+     * should be added in the future to take this into account.
+     */
+
+    /* Send Attach Request */
+    memset(&sess->pdn_connectivity_param,
+            0, sizeof(sess->pdn_connectivity_param));
+    sess->pdn_connectivity_param.eit = 1;
+    sess->pdn_connectivity_param.pco = 1;
+    sess->pdn_connectivity_param.request_type =
+        OGS_NAS_EPS_REQUEST_TYPE_INITIAL;
+    esmbuf = testesm_build_pdn_connectivity_request(
+            sess, false, OGS_NAS_EPS_PDN_TYPE_IPV4V6);
+    ABTS_PTR_NOTNULL(tc, esmbuf);
+
+    memset(&test_ue->attach_request_param,
+            0, sizeof(test_ue->attach_request_param));
+    test_ue->attach_request_param.drx_parameter = 1;
+    test_ue->attach_request_param.tmsi_status = 1;
+    test_ue->attach_request_param.mobile_station_classmark_2 = 1;
+    test_ue->attach_request_param.additional_update_type = 1;
+    test_ue->attach_request_param.ue_usage_setting = 1;
+    emmbuf = testemm_build_attach_request(test_ue, esmbuf, false, false);
+    ABTS_PTR_NOTNULL(tc, emmbuf);
+
+    memset(&test_ue->initial_ue_param, 0, sizeof(test_ue->initial_ue_param));
+    sendbuf = test_s1ap_build_initial_ue_message(
+            test_ue, emmbuf, S1AP_RRC_Establishment_Cause_mo_Signalling, false);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Authentication Request */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send Authentication failure - MAC failure */
+    emmbuf = testemm_build_authentication_failure(
+            test_ue, OGS_NAS_EMM_CAUSE_MAC_FAILURE, 0);
+    ABTS_PTR_NOTNULL(tc, emmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Authentication reject */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send Detach Request */
+    emmbuf = testemm_build_detach_request(test_ue, 1, true, false);
+    ABTS_PTR_NOTNULL(tc, emmbuf);
+    sendbuf = test_s1ap_build_initial_ue_message(
+            test_ue, emmbuf, S1AP_RRC_Establishment_Cause_mo_Signalling, true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive OLD UE Context Release Command */
+    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
+
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send OLD UE Context Release Complete */
+    sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
 
     /* Receive UE Context Release Command */
     recvbuf = testenb_s1ap_read(s1ap);

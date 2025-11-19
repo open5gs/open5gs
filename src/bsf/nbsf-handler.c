@@ -195,7 +195,8 @@ bool bsf_nbsf_management_handle_pcf_binding(
 
             if (RecvPcfBinding->supp_feat) {
                 uint64_t supported_features =
-                    ogs_uint64_from_string(RecvPcfBinding->supp_feat);
+                    ogs_uint64_from_string_hexadecimal(
+                            RecvPcfBinding->supp_feat);
                 sess->management_features &= supported_features;
 
                 if (sess->management_features != supported_features) {
@@ -303,7 +304,8 @@ cleanup:
     ogs_assert(status);
     ogs_error("%s", strerror);
     ogs_assert(true ==
-        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL,
+                NULL));
     ogs_free(strerror);
 
     return false;

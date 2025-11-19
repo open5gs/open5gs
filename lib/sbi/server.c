@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -62,9 +62,8 @@ ogs_sbi_server_t *ogs_sbi_server_add(
     ogs_assert(addr);
     ogs_assert(scheme);
 
-    ogs_pool_alloc(&server_pool, &server);
+    ogs_pool_id_calloc(&server_pool, &server);
     ogs_assert(server);
-    memset(server, 0, sizeof(ogs_sbi_server_t));
 
     if (interface)
         server->interface = ogs_strdup(interface);
@@ -76,6 +75,8 @@ ogs_sbi_server_t *ogs_sbi_server_add(
             ogs_strdup(ogs_sbi_self()->tls.server.private_key);
     if (ogs_sbi_self()->tls.server.cert)
         server->cert = ogs_strdup(ogs_sbi_self()->tls.server.cert);
+    if (ogs_sbi_self()->tls.server.sslkeylog)
+        server->sslkeylog = ogs_strdup(ogs_sbi_self()->tls.server.sslkeylog);
 
     server->verify_client = ogs_sbi_self()->tls.server.verify_client;
     if (ogs_sbi_self()->tls.server.verify_client_cacert)
@@ -113,8 +114,10 @@ void ogs_sbi_server_remove(ogs_sbi_server_t *server)
         ogs_free(server->private_key);
     if (server->cert)
         ogs_free(server->cert);
+    if (server->sslkeylog)
+        ogs_free(server->sslkeylog);
 
-    ogs_pool_free(&server_pool, server);
+    ogs_pool_id_free(&server_pool, server);
 }
 
 void ogs_sbi_server_remove_all(void)
@@ -151,6 +154,14 @@ int ogs_sbi_server_start_all(
             return OGS_ERROR;
 
     return OGS_OK;
+}
+
+void ogs_sbi_server_graceful_shutdown_all(void)
+{
+    ogs_sbi_server_t *server = NULL, *next_server = NULL;
+
+    ogs_list_for_each_safe(&ogs_sbi_self()->server_list, next_server, server)
+        ogs_sbi_server_actions.graceful_shutdown(server);
 }
 
 void ogs_sbi_server_stop_all(void)
@@ -197,7 +208,7 @@ bool ogs_sbi_server_send_problem(
 
 bool ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
         int status, ogs_sbi_message_t *message,
-        const char *title, const char *detail)
+        const char *title, const char *detail, const char *cause)
 {
     OpenAPI_problem_details_t problem;
 
@@ -224,6 +235,7 @@ bool ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
     }
     problem.title = (char*)title;
     problem.detail = (char*)detail;
+    problem.cause = (char*)cause;
 
     ogs_sbi_server_send_problem(stream, &problem);
 
@@ -237,12 +249,17 @@ bool ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
 
 ogs_sbi_server_t *ogs_sbi_server_from_stream(ogs_sbi_stream_t *stream)
 {
-    return ogs_sbi_server_actions.from_stream(stream);
+    return ogs_sbi_server_actions.server_from_stream(stream);
 }
 
-char *ogs_sbi_server_id_context(ogs_sbi_server_t *server)
+ogs_pool_id_t ogs_sbi_id_from_stream(ogs_sbi_stream_t *stream)
 {
-    return ogs_msprintf("%d", (int)ogs_pool_index(&server_pool, server));
+    return ogs_sbi_server_actions.id_from_stream(stream);
+}
+
+void *ogs_sbi_stream_find_by_id(ogs_pool_id_t id)
+{
+    return ogs_sbi_server_actions.stream_find_by_id(id);
 }
 
 static ogs_sbi_server_t *ogs_sbi_server_find_by_interface(

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -32,6 +32,7 @@ static void server_final(void);
 
 static int server_start(ogs_sbi_server_t *server,
         int (*cb)(ogs_sbi_request_t *request, void *data));
+static void server_graceful_shutdown(ogs_sbi_server_t *server);
 static void server_stop(ogs_sbi_server_t *server);
 
 static bool server_send_rspmem_persistent(
@@ -41,17 +42,23 @@ static bool server_send_response(
 
 static ogs_sbi_server_t *server_from_stream(ogs_sbi_stream_t *stream);
 
+static ogs_pool_id_t id_from_stream(ogs_sbi_stream_t *stream);
+static void *stream_find_by_id(ogs_pool_id_t id);
+
 const ogs_sbi_server_actions_t ogs_mhd_server_actions = {
     server_init,
     server_final,
 
     server_start,
+    server_graceful_shutdown,
     server_stop,
 
     server_send_rspmem_persistent,
     server_send_response,
 
     server_from_stream,
+    id_from_stream,
+    stream_find_by_id,
 };
 
 static void run(short when, ogs_socket_t fd, void *data);
@@ -78,6 +85,8 @@ static void session_timer_expired(void *data);
 
 typedef struct ogs_sbi_session_s {
     ogs_lnode_t             lnode;
+
+    ogs_pool_id_t           id;
 
     struct MHD_Connection   *connection;
 
@@ -125,9 +134,8 @@ static ogs_sbi_session_t *session_add(ogs_sbi_server_t *server,
     ogs_assert(request);
     ogs_assert(connection);
 
-    ogs_pool_alloc(&session_pool, &sbi_sess);
+    ogs_pool_id_calloc(&session_pool, &sbi_sess);
     ogs_assert(sbi_sess);
-    memset(sbi_sess, 0, sizeof(ogs_sbi_session_t));
 
     sbi_sess->server = server;
     sbi_sess->request = request;
@@ -137,7 +145,7 @@ static ogs_sbi_session_t *session_add(ogs_sbi_server_t *server,
             ogs_app()->timer_mgr, session_timer_expired, sbi_sess);
     if (!sbi_sess->timer) {
         ogs_error("ogs_timer_add() failed");
-        ogs_pool_free(&session_pool, sbi_sess);
+        ogs_pool_id_free(&session_pool, sbi_sess);
         return NULL;
     }
 
@@ -170,7 +178,7 @@ static void session_remove(ogs_sbi_session_t *sbi_sess)
 
     MHD_resume_connection(connection);
 
-    ogs_pool_free(&session_pool, sbi_sess);
+    ogs_pool_id_free(&session_pool, sbi_sess);
 }
 
 static void session_timer_expired(void *data)
@@ -281,6 +289,13 @@ static int server_start(ogs_sbi_server_t *server,
     return OGS_OK;
 }
 
+static void server_graceful_shutdown(ogs_sbi_server_t *server)
+{
+    ogs_assert(server);
+
+    /* No need to shutdown gracefully */
+}
+
 static void server_stop(ogs_sbi_server_t *server)
 {
     ogs_assert(server);
@@ -320,12 +335,8 @@ static bool server_send_rspmem_persistent(
     ogs_sbi_session_t *sbi_sess = NULL;
 
     ogs_assert(response);
-
-    sbi_sess = ogs_pool_cycle(&session_pool, (ogs_sbi_session_t *)stream);
-    if (!sbi_sess) {
-        ogs_error("session has already been removed");
-        return true;
-    }
+    sbi_sess = (ogs_sbi_session_t *)stream;
+    ogs_assert(sbi_sess);
 
     connection = sbi_sess->connection;
     ogs_assert(connection);
@@ -571,12 +582,12 @@ suspend:
     ogs_assert(sbi_sess);
 
     ogs_assert(server->cb);
-    if (server->cb(request, sbi_sess) != OGS_OK) {
+    if (server->cb(request, OGS_UINT_TO_POINTER(sbi_sess->id)) != OGS_OK) {
         ogs_warn("server callback error");
         ogs_assert(true ==
                 ogs_sbi_server_send_error((ogs_sbi_stream_t *)sbi_sess,
                     OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                    "server callback error", NULL));
+                    "server callback error", NULL, NULL));
 
         return MHD_YES;
     }
@@ -607,4 +618,17 @@ static ogs_sbi_server_t *server_from_stream(ogs_sbi_stream_t *stream)
     ogs_assert(sbi_sess->server);
 
     return sbi_sess->server;
+}
+
+static ogs_pool_id_t id_from_stream(ogs_sbi_stream_t *stream)
+{
+    ogs_sbi_session_t *sbi_sess = (ogs_sbi_session_t *)stream;
+
+    ogs_assert(sbi_sess);
+    return sbi_sess->id;
+}
+
+static void *stream_find_by_id(ogs_pool_id_t id)
+{
+    return ogs_pool_find_by_id(&session_pool, id);
 }

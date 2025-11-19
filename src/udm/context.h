@@ -37,13 +37,16 @@ extern int __udm_log_domain;
 
 typedef struct udm_context_s {
     ogs_list_t      udm_ue_list;
+    ogs_list_t      sdm_subscription_list;
     ogs_hash_t      *suci_hash;
     ogs_hash_t      *supi_hash;
+    ogs_hash_t      *sdm_subscription_id_hash;
 
 } udm_context_t;
 
 struct udm_ue_s {
     ogs_sbi_object_t sbi;
+    ogs_pool_id_t id;
     ogs_fsm_t sm;
 
     OpenAPI_auth_event_t *auth_event;
@@ -58,7 +61,6 @@ struct udm_ue_s {
     char *amf_instance_id;
 
     char *dereg_callback_uri;
-    char *data_change_callback_uri;
 
     uint8_t k[OGS_KEY_LEN];
     uint8_t opc[OGS_KEY_LEN];
@@ -72,10 +74,12 @@ struct udm_ue_s {
     OpenAPI_rat_type_e rat_type;
 
     ogs_list_t sess_list;
+    ogs_list_t sdm_subscription_list;
 };
 
 struct udm_sess_s {
     ogs_sbi_object_t sbi;
+    ogs_pool_id_t id;
     ogs_fsm_t sm;
 
     uint8_t psi; /* PDU Session Identity */
@@ -85,8 +89,17 @@ struct udm_sess_s {
     char *smf_instance_id;
 
     /* Related Context */
-    udm_ue_t *udm_ue;
+    ogs_pool_id_t udm_ue_id;
 };
+
+typedef struct udm_sdm_subscription_s {
+    ogs_lnode_t lnode;
+
+    char *id;
+    char *data_change_callback_uri;
+
+    udm_ue_t *udm_ue;
+} udm_sdm_subscription_t;
 
 void udm_context_init(void);
 void udm_context_final(void);
@@ -107,8 +120,13 @@ void udm_sess_remove(udm_sess_t *sess);
 void udm_sess_remove_all(udm_ue_t *udm_ue);
 udm_sess_t *udm_sess_find_by_psi(udm_ue_t *udm_ue, uint8_t psi);
 
-udm_ue_t *udm_ue_cycle(udm_ue_t *udm_ue);
-udm_sess_t *udm_sess_cycle(udm_sess_t *sess);
+udm_ue_t *udm_ue_find_by_id(ogs_pool_id_t id);
+udm_sess_t *udm_sess_find_by_id(ogs_pool_id_t id);
+
+udm_sdm_subscription_t *udm_sdm_subscription_add(udm_ue_t *udm_ue);
+void udm_sdm_subscription_remove(udm_sdm_subscription_t *subscription);
+void udm_sdm_subscription_remove_all(udm_ue_t *udm_ue);
+udm_sdm_subscription_t *udm_sdm_subscription_find_by_id(char *id);
 
 int get_ue_load(void);
 

@@ -51,12 +51,7 @@ int ngap_send_to_gnb(amf_gnb_t *gnb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
     char buf[OGS_ADDRSTRLEN];
 
     ogs_assert(pkbuf);
-
-    if (!amf_gnb_cycle(gnb)) {
-        ogs_error("gNB has already been removed");
-        ogs_pkbuf_free(pkbuf);
-        return OGS_NOTFOUND;
-    }
+    ogs_assert(gnb);
 
     ogs_assert(gnb->sctp.sock);
     if (gnb->sctp.sock->fd == INVALID_SOCKET) {
@@ -83,15 +78,24 @@ int ngap_send_to_gnb(amf_gnb_t *gnb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 int ngap_send_to_ran_ue(ran_ue_t *ran_ue, ogs_pkbuf_t *pkbuf)
 {
     int rv;
+    amf_gnb_t *gnb = NULL;
+
     ogs_assert(pkbuf);
 
-    if (!ran_ue_cycle(ran_ue)) {
+    if (!ran_ue) {
         ogs_error("NG context has already been removed");
         ogs_pkbuf_free(pkbuf);
         return OGS_NOTFOUND;
     }
 
-    rv = ngap_send_to_gnb(ran_ue->gnb, pkbuf, ran_ue->gnb_ostream_id);
+    gnb = amf_gnb_find_by_id(ran_ue->gnb_id);
+    if (!gnb) {
+        ogs_error("[%d] gNB has already been removed", ran_ue->gnb_id);
+        ogs_pkbuf_free(pkbuf);
+        return OGS_NOTFOUND;
+    }
+
+    rv = ngap_send_to_gnb(gnb, pkbuf, ran_ue->gnb_ostream_id);
     ogs_expect(rv == OGS_OK);
 
     return rv;
@@ -112,8 +116,7 @@ int ngap_delayed_send_to_ran_ue(
                 ogs_app()->timer_mgr, amf_timer_ng_delayed_send, e);
         ogs_assert(e->timer);
         e->pkbuf = pkbuf;
-        e->ran_ue = ran_ue;
-        e->gnb = ran_ue->gnb;
+        e->ran_ue_id = ran_ue->id;
 
         ogs_timer_start(e->timer, duration);
 
@@ -136,7 +139,7 @@ int ngap_send_to_5gsm(amf_ue_t *amf_ue, ogs_pkbuf_t *esmbuf)
 
     e = amf_event_new(AMF_EVENT_5GSM_MESSAGE);
     ogs_assert(e);
-    e->amf_ue = amf_ue;
+    e->amf_ue_id = amf_ue->id;
     e->pkbuf = esmbuf;
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
@@ -153,6 +156,8 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
 {
     int rv;
 
+    amf_ue_t *amf_ue = NULL;
+
     ogs_nas_5gs_security_header_t *sh = NULL;
     ogs_nas_security_header_type_t security_header_type;
 
@@ -162,6 +167,14 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
 
     ogs_assert(ran_ue);
     ogs_assert(nasPdu);
+
+    if (nasPdu->size == 0) {
+        ogs_error("Empty NAS PDU");
+        ran_ue_remove(ran_ue);
+        return OGS_ERROR;
+    }
+
+    amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
@@ -200,19 +213,47 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
     default:
         ogs_error("Not implemented(security header type:0x%x)",
                 sh->security_header_type);
+        ran_ue_remove(ran_ue);
         return OGS_ERROR;
     }
 
-    if (ran_ue->amf_ue) {
-        if (nas_5gs_security_decode(ran_ue->amf_ue,
+    if (amf_ue) {
+        if (nas_5gs_security_decode(amf_ue,
                 security_header_type, nasbuf) != OGS_OK) {
             ogs_error("nas_eps_security_decode failed()");
+            ran_ue_remove(ran_ue);
             return OGS_ERROR;
         }
     }
 
     h = (ogs_nas_5gmm_header_t *)nasbuf->data;
     ogs_assert(h);
+    if (procedureCode == NGAP_ProcedureCode_id_InitialUEMessage) {
+        if (h->extended_protocol_discriminator !=
+                OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM) {
+
+            ogs_error("Invalid extended_protocol_discriminator [%d]",
+                    h->extended_protocol_discriminator);
+
+            ogs_pkbuf_free(nasbuf);
+            ran_ue_remove(ran_ue);
+
+            return OGS_ERROR;
+        }
+
+        if (h->message_type != OGS_NAS_5GS_REGISTRATION_REQUEST &&
+            h->message_type != OGS_NAS_5GS_SERVICE_REQUEST &&
+            h->message_type != OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE) {
+
+            ogs_error("Invalid 5GMM message type [%d]", h->message_type);
+
+            ogs_pkbuf_free(nasbuf);
+            ran_ue_remove(ran_ue);
+
+            return OGS_ERROR;
+        }
+    }
+
     if (h->extended_protocol_discriminator ==
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM) {
         e = amf_event_new(AMF_EVENT_5GMM_MESSAGE);
@@ -221,7 +262,7 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
             ogs_pkbuf_free(nasbuf);
             return OGS_ERROR;
         }
-        e->ran_ue = ran_ue;
+        e->ran_ue_id = ran_ue->id;
         e->ngap.code = procedureCode;
         e->nas.type = security_header_type.type;
         e->pkbuf = nasbuf;
@@ -234,7 +275,6 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
         return rv;
     } else if (h->extended_protocol_discriminator ==
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM) {
-        amf_ue_t *amf_ue = ran_ue->amf_ue;
         if (!amf_ue) {
             ogs_error("No UE Context");
             ogs_pkbuf_free(nasbuf);
@@ -247,7 +287,10 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
     } else {
         ogs_error("Unknown NAS Protocol discriminator 0x%02x",
                   h->extended_protocol_discriminator);
+
         ogs_pkbuf_free(nasbuf);
+        ran_ue_remove(ran_ue);
+
         return OGS_ERROR;
     }
 }
@@ -257,12 +300,9 @@ int ngap_send_ng_setup_response(amf_gnb_t *gnb)
     int rv;
     ogs_pkbuf_t *ngap_buffer;
 
-    ogs_debug("NG-Setup response");
+    ogs_assert(gnb);
 
-    if (!amf_gnb_cycle(gnb)) {
-        ogs_error("gNB has already been removed");
-        return OGS_NOTFOUND;
-    }
+    ogs_debug("NG-Setup response");
 
     ngap_buffer = ngap_build_ng_setup_response();
     if (!ngap_buffer) {
@@ -282,12 +322,9 @@ int ngap_send_ng_setup_failure(
     int rv;
     ogs_pkbuf_t *ngap_buffer;
 
-    ogs_debug("NG-Setup failure");
+    ogs_assert(gnb);
 
-    if (!amf_gnb_cycle(gnb)) {
-        ogs_error("gNB has already been removed");
-        return OGS_NOTFOUND;
-    }
+    ogs_debug("NG-Setup failure");
 
     ngap_buffer = ngap_build_ng_setup_failure(
             group, cause, NGAP_TimeToWait_v10s);
@@ -307,12 +344,9 @@ int ngap_send_ran_configuration_update_ack(amf_gnb_t *gnb)
     int rv;
     ogs_pkbuf_t *ngap_buffer;
 
-    ogs_debug("RANConfigurationUpdateAcknowledge");
+    ogs_assert(gnb);
 
-    if (!amf_gnb_cycle(gnb)) {
-        ogs_error("gNB has already been removed");
-        return OGS_NOTFOUND;
-    }
+    ogs_debug("RANConfigurationUpdateAcknowledge");
 
     ngap_buffer = ngap_build_ran_configuration_update_ack();
     if (!ngap_buffer) {
@@ -332,12 +366,9 @@ int ngap_send_ran_configuration_update_failure(
     int rv;
     ogs_pkbuf_t *ngap_buffer;
 
-    ogs_debug("RANConfigurationUpdateFailure");
+    ogs_assert(gnb);
 
-    if (!amf_gnb_cycle(gnb)) {
-        ogs_error("gNB has already been removed");
-        return OGS_NOTFOUND;
-    }
+    ogs_debug("RANConfigurationUpdateFailure");
 
     ngap_buffer = ngap_build_ran_configuration_update_failure(
             group, cause, NGAP_TimeToWait_v10s);
@@ -359,14 +390,15 @@ int ngap_send_ran_ue_context_release_command(
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
 
-    if (!ran_ue_cycle(ran_ue)) {
+    if (!ran_ue) {
         ogs_error("NG context has already been removed");
         return OGS_NOTFOUND;
     }
 
     ogs_debug("UEContextReleaseCommand");
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)ran_ue->ran_ue_ngap_id,
+            (long long)ran_ue->amf_ue_ngap_id);
 
     ogs_assert(action != NGAP_UE_CTX_REL_INVALID_ACTION);
     ran_ue->ue_ctx_rel_action = action;
@@ -389,25 +421,6 @@ int ngap_send_ran_ue_context_release_command(
     return rv;
 }
 
-int ngap_send_amf_ue_context_release_command(
-    amf_ue_t *amf_ue, NGAP_Cause_PR group, long cause,
-    uint8_t action, ogs_time_t duration)
-{
-    int rv;
-
-    if (!amf_ue_cycle(amf_ue)) {
-        ogs_error("UE(amf-ue) context has already been removed");
-        return OGS_NOTFOUND;
-    }
-
-    rv = ngap_send_ran_ue_context_release_command(
-            amf_ue->ran_ue, group, cause, action, duration);
-    ogs_expect(rv == OGS_OK);
-    ogs_debug("    SUPI[%s]", amf_ue->supi);
-
-    return rv;
-}
-
 int ngap_send_paging(amf_ue_t *amf_ue)
 {
     ogs_pkbuf_t *ngapbuf = NULL;
@@ -417,7 +430,7 @@ int ngap_send_paging(amf_ue_t *amf_ue)
 
     ogs_debug("NG-Paging");
 
-    if (!amf_ue_cycle(amf_ue)) {
+    if (!amf_ue) {
         ogs_error("UE(amf-ue) context has already been removed");
         return OGS_NOTFOUND;
     }
@@ -471,10 +484,7 @@ int ngap_send_downlink_ran_configuration_transfer(
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
 
-    if (!amf_gnb_cycle(target_gnb)) {
-        ogs_error("gNB has already been removed");
-        return OGS_NOTFOUND;
-    }
+    ogs_assert(target_gnb);
     ogs_assert(transfer);
 
     ngapbuf = ngap_build_downlink_ran_configuration_transfer(transfer);
@@ -494,18 +504,23 @@ int ngap_send_path_switch_ack(amf_sess_t *sess)
     int rv;
 
     amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
 
-    ogs_assert(sess);
+    if (!sess) {
+        ogs_error("Session has already been removed");
+        return OGS_NOTFOUND;
+    }
 
-    amf_ue = sess->amf_ue;
-    if (!amf_ue_cycle(amf_ue)) {
+    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
+    if (!amf_ue) {
         ogs_error("UE(amf-ue) context has already been removed");
         return OGS_NOTFOUND;
     }
 
-    if (!ran_ue_cycle(amf_ue->ran_ue)) {
-        ogs_error("NG context has already been removed");
+    ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+    if (!ran_ue) {
+        ogs_error("[%s] NG context has already been removed", amf_ue->supi);
         return OGS_NOTFOUND;
     }
 
@@ -528,18 +543,18 @@ int ngap_send_handover_request(amf_ue_t *amf_ue)
     ran_ue_t *source_ue = NULL, *target_ue = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
 
-    if (!amf_ue_cycle(amf_ue)) {
+    if (!amf_ue) {
         ogs_error("UE(amf-ue) context has already been removed");
         return OGS_NOTFOUND;
     }
 
-    source_ue = ran_ue_cycle(amf_ue->ran_ue);
+    source_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
     if (!source_ue) {
         ogs_error("NG context has already been removed");
         return OGS_NOTFOUND;
     }
 
-    target_ue = ran_ue_cycle(source_ue->target_ue);
+    target_ue = ran_ue_find_by_id(source_ue->target_ue_id);
     if (!target_ue) {
         ogs_error("NG context has already been removed");
         return OGS_NOTFOUND;
@@ -563,7 +578,7 @@ int ngap_send_handover_preparation_failure(
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
 
-    if (!ran_ue_cycle(source_ue)) {
+    if (!source_ue) {
         ogs_error("NG context has already been removed");
         return OGS_NOTFOUND;
     }
@@ -589,12 +604,12 @@ int ngap_send_handover_command(amf_ue_t *amf_ue)
     ran_ue_t *source_ue = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
 
-    if (!amf_ue_cycle(amf_ue)) {
+    if (!amf_ue) {
         ogs_error("UE(amf-ue) context has already been removed");
         return OGS_NOTFOUND;
     }
 
-    source_ue = ran_ue_cycle(amf_ue->ran_ue);
+    source_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
     if (!source_ue) {
         ogs_error("NG context has already been removed");
         return OGS_NOTFOUND;
@@ -617,7 +632,7 @@ int ngap_send_handover_cancel_ack(ran_ue_t *source_ue)
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
 
-    if (!ran_ue_cycle(source_ue)) {
+    if (!source_ue) {
         ogs_error("NG context has already been removed");
         return OGS_NOTFOUND;
     }
@@ -641,7 +656,7 @@ int ngap_send_downlink_ran_status_transfer(
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
 
-    if (!ran_ue_cycle(target_ue)) {
+    if (!target_ue) {
         ogs_error("NG context has already been removed");
         return OGS_NOTFOUND;
     }
@@ -661,17 +676,14 @@ int ngap_send_downlink_ran_status_transfer(
 
 int ngap_send_error_indication(
         amf_gnb_t *gnb,
-        uint32_t *ran_ue_ngap_id,
+        uint64_t *ran_ue_ngap_id,
         uint64_t *amf_ue_ngap_id,
         NGAP_Cause_PR group, long cause)
 {
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
 
-    if (!amf_gnb_cycle(gnb)) {
-        ogs_error("gNB has already been removed");
-        return OGS_NOTFOUND;
-    }
+    ogs_assert(gnb);
 
     ngapbuf = ogs_ngap_build_error_indication(
             ran_ue_ngap_id, amf_ue_ngap_id, group, cause);
@@ -687,24 +699,24 @@ int ngap_send_error_indication(
 }
 
 int ngap_send_error_indication2(
-        amf_ue_t *amf_ue, NGAP_Cause_PR group, long cause)
+        ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause)
 {
     int rv;
-    ran_ue_t *ran_ue;
+    amf_gnb_t *gnb = NULL;
 
-    if (!amf_ue_cycle(amf_ue)) {
-        ogs_error("UE(amf-ue) context has already been removed");
-        return OGS_NOTFOUND;
-    }
-
-    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     if (!ran_ue) {
         ogs_error("NG context has already been removed");
         return OGS_NOTFOUND;
     }
 
+    gnb = amf_gnb_find_by_id(ran_ue->gnb_id);
+    if (!gnb) {
+        ogs_error("[%d] gNB has already been removed", ran_ue->gnb_id);
+        return OGS_NOTFOUND;
+    }
+
     rv = ngap_send_error_indication(
-        ran_ue->gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+        gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
         group, cause);
     ogs_expect(rv == OGS_OK);
 
@@ -718,10 +730,7 @@ int ngap_send_ng_reset_ack(
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
 
-    if (!amf_gnb_cycle(gnb)) {
-        ogs_error("gNB has already been removed");
-        return OGS_NOTFOUND;
-    }
+    ogs_assert(gnb);
 
     ngapbuf = ogs_ngap_build_ng_reset_ack(partOfNG_Interface);
     if (!ngapbuf) {

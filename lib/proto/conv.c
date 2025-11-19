@@ -40,3 +40,49 @@ void ogs_extract_digit_from_string(char *digit, char *string)
 
     *digit = 0;
 }
+
+int ogs_paa_to_ip(const ogs_paa_t *paa, ogs_ip_t *ip)
+{
+    ogs_assert(paa);
+    ogs_assert(ip);
+
+    memset(ip, 0, sizeof *ip);
+
+    if (paa->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+        ip->ipv4 = 1;
+        ip->addr = paa->both.addr;
+        ip->ipv6 = 1;
+        memcpy(ip->addr6, paa->both.addr6, OGS_IPV6_LEN);
+    } else if (paa->session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+        ip->ipv4 = 1;
+        ip->ipv6 = 0;
+        ip->addr = paa->addr;
+    } else if (paa->session_type == OGS_PDU_SESSION_TYPE_IPV6) {
+        ip->ipv4 = 0;
+        ip->ipv6 = 1;
+        memcpy(ip->addr6, paa->addr6, OGS_IPV6_LEN);
+    } else {
+        ogs_error("No IPv4 or IPv6");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
+int ogs_ip_to_paa(const ogs_ip_t *ip, ogs_paa_t *paa)
+{
+    if (ip->ipv4 && ip->ipv6) {
+        paa->session_type = OGS_PDU_SESSION_TYPE_IPV4V6;
+        paa->both.addr = ip->addr;
+        memcpy(paa->both.addr6, ip->addr6, OGS_IPV6_LEN);
+    } else if (ip->ipv6) {
+        paa->session_type = OGS_PDU_SESSION_TYPE_IPV6;
+        memcpy(paa->addr6, ip->addr6, OGS_IPV6_LEN);
+    } else if (ip->ipv4) {
+        paa->session_type = OGS_PDU_SESSION_TYPE_IPV4;
+        paa->addr = ip->addr;
+    } else {
+        return OGS_ERROR;
+    }
+    return OGS_OK;
+}

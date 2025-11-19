@@ -32,6 +32,23 @@ static void build_qos_profile_from_session(ogs_gtp1_qos_profile_decoded_t *qos_p
 
     qos_pdec->qos_profile.arp = sess->session.qos.arp.priority_level;
 
+    /* 3GPP TS 23.107 "Delivery order should be set to 'no' for PDP Type =
+     * 'IPv4' or 'IPv6'. The SGSN shall ensure that the appropriate value is set."
+     * 3GPP TS 23.401 D.3.5 2b NOTE4: The GTP and PDCP sequence numbers are not
+     * relevant as the network does not configure usage of "delivery order
+     * required" [...] as described in clause "compatibility issues" (4.8.1) */
+    qos_pdec->qos_profile.data.delivery_order = OGS_GTP1_DELIVERY_ORDER_NO;
+
+    qos_pdec->qos_profile.data.delivery_erroneous_sdu = OGS_GTP1_DELIVERY_ERR_SDU_NO;
+
+    /* Maximum SDU Size: If value is set to a valid value, reuse it: */
+    if (sess->gtp.v1.qos_pdec.qos_profile.data.max_sdu_size >= 0x01 &&
+        sess->gtp.v1.qos_pdec.qos_profile.data.max_sdu_size <= 0x99) {
+        qos_pdec->qos_profile.data.max_sdu_size = sess->gtp.v1.qos_pdec.qos_profile.data.max_sdu_size;
+    } else { /* Encode it as 1500, the maximum for IP 3GPP TS 23.107 Table 4, Note 4) */
+        qos_pdec->qos_profile.data.max_sdu_size = 0x96;
+    }
+
      /* 3GPP TS 23.401 Annex E table Table E.3 */
     /* Also take into account table 7 in 3GPP TS 23.107 9.1.2.2 */
     switch (sess->session.qos.index) { /* QCI */
@@ -174,9 +191,20 @@ ogs_pkbuf_t *smf_gn_build_create_pdp_context_response(
     rsp->charging_id.u32 = sess->charging.id;
 
     /* End User Address */
-    rv = ogs_gtp2_paa_to_ip(&sess->session.paa, &ip_eua);
+    rv = ogs_paa_to_ip(&sess->paa, &ip_eua);
+    /* Clang scan-build SA: Value stored is not used: add check for rv error. */
+    if (rv != OGS_OK) {
+        ogs_error("ogs_paa_to_ip() failed");
+        return NULL;
+    }
     rv = ogs_gtp1_ip_to_eua(sess->session.session_type, &ip_eua, &eua,
             &eua_len);
+    /* Clang scan-build SA: Value stored is not used: add check for rv error. */
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp1_ip_to_eua() failed");
+        return NULL;
+    }
+
     rsp->end_user_address.presence = 1;
     rsp->end_user_address.data = &eua;
     rsp->end_user_address.len = eua_len;

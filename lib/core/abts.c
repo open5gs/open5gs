@@ -152,10 +152,17 @@ abts_suite *abts_add_suite(abts_suite *suite, const char *suite_name_full)
         suite = malloc(sizeof(*suite));
         suite->head = subsuite;
         suite->tail = subsuite;
-    }
-    else {
-        suite->tail->next = subsuite;
-        suite->tail = subsuite;
+    } else {
+        /* Clang scan-build SA: NULL pointer dereference: add check for suite->tail=NULL */
+        if (suite->tail) {
+            suite->tail->next = subsuite;
+            suite->tail = subsuite;
+        } else {
+            fprintf(stderr, "suite->tail=NULL\n");
+            fflush(stderr);
+            free(subsuite);
+            return(NULL);
+        }
     }
 
     if (!should_test_run(subsuite->name)) {
@@ -201,6 +208,13 @@ static int report(abts_suite *suite)
 
     if (suite && suite->tail &&!suite->tail->not_run) {
         end_suite(suite);
+    }
+
+    /* Clang scan-build SA: NULL pointer dereference: suite=NULL */
+    if (!suite) {
+        fprintf(stderr, "suite=NULL\n");
+        fflush(stderr);
+        return(1);
     }
 
     for (dptr = suite->head; dptr; dptr = dptr->next) {
@@ -499,6 +513,7 @@ static void show_help(const char *name)
        "   -q             : turn off status in test\n"
        "   -x             : exclute test-unit (e.g. -x sctp-test)\n"
        "   -l             : list test-unit\n"
+       "   -k             : use <id> config section\n"
        "\n", name);
 }
 
@@ -509,6 +524,7 @@ int abts_main(int argc, const char *const argv[], const char **argv_out)
     ogs_getopt_t options;
     struct {
         char *config_file;
+        char *config_section;
         char *log_level;
         char *domain_mask;
 
@@ -519,7 +535,7 @@ int abts_main(int argc, const char *const argv[], const char **argv_out)
     memset(&optarg, 0, sizeof(optarg));
 
     ogs_getopt_init(&options, (char**)argv);
-    while ((opt = ogs_getopt(&options, "hvxlqc:e:m:dt")) != -1) {
+    while ((opt = ogs_getopt(&options, "hvxlqc:e:m:dtk:")) != -1) {
         switch (opt) {
         case 'h':
             show_help(argv[0]);
@@ -550,6 +566,9 @@ int abts_main(int argc, const char *const argv[], const char **argv_out)
             break;
         case 't':
             optarg.enable_trace = true;
+            break;
+        case 'k':
+            optarg.config_section = options.optarg;
             break;
         case '?':
             fprintf(stderr, "%s: %s\n", argv[0], options.errmsg);
@@ -587,6 +606,10 @@ int abts_main(int argc, const char *const argv[], const char **argv_out)
     if (optarg.domain_mask) {
         argv_out[i++] = "-m";
         argv_out[i++] = optarg.domain_mask;
+    }
+    if (optarg.config_section) {
+        argv_out[i++] = "-k";
+        argv_out[i++] = optarg.config_section;
     }
 
     argv_out[i] = NULL;

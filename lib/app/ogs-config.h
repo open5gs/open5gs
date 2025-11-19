@@ -52,6 +52,16 @@ typedef struct ogs_global_conf_s {
         int no_scp;
         int no_nrf;
 
+        int amf_count;
+        int smf_count;
+        int upf_count;
+        int ausf_count;
+        int udm_count;
+        int pcf_count;
+        int nssf_count;
+        int bsf_count;
+        int udr_count;
+
         /* Network */
         int no_ipv4;
         int no_ipv6;
@@ -59,6 +69,8 @@ typedef struct ogs_global_conf_s {
         int multicast;
 
         int use_openair;
+        int fake_csfb;
+        int use_upg_vpp;
         int no_ipv4v6_local_addr_in_packet_filter;
 
         int no_pfcp_rr_select;
@@ -132,9 +144,24 @@ typedef struct ogs_local_conf_s {
 
 } ogs_app_local_conf_t;
 
+/* Structure for SUPI-range */
+typedef struct {
+    int num;
+#define OGS_MAX_NUM_OF_SUPI_RANGE 16
+    uint64_t start[OGS_MAX_NUM_OF_SUPI_RANGE];
+    uint64_t end[OGS_MAX_NUM_OF_SUPI_RANGE];
+} ogs_supi_range_t;
+
+
+/* Policy configuration structure.  In a real system, additional fields
+ * (e.g., for plmn_id, slice list, etc.) would be added.
+ */
 typedef struct ogs_app_policy_conf_s {
     ogs_lnode_t lnode;
 
+    ogs_supi_range_t supi_range;
+
+    bool plmn_id_valid;
     ogs_plmn_id_t plmn_id;
 
     ogs_list_t slice_list;
@@ -163,19 +190,25 @@ void ogs_app_config_final(void);
 ogs_app_global_conf_t *ogs_global_conf(void);
 ogs_app_local_conf_t *ogs_local_conf(void);
 
+int ogs_app_count_nf_conf_sections(const char *conf_section);
+int ogs_app_global_conf_prepare(void);
 int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent);
 int ogs_app_parse_local_conf(const char *local);
 
 int ogs_app_parse_sockopt_config(
         ogs_yaml_iter_t *parent, ogs_sockopt_t *option);
 
+int ogs_app_parse_supi_range_conf(
+        ogs_yaml_iter_t *parent, ogs_supi_range_t *supi_range);
+
 int ogs_app_check_policy_conf(void);
 int ogs_app_parse_session_conf(
         ogs_yaml_iter_t *parent, ogs_app_slice_conf_t *slice_conf);
 
-ogs_app_policy_conf_t *ogs_app_policy_conf_add(ogs_plmn_id_t *plmn_id);
-ogs_app_policy_conf_t *ogs_app_policy_conf_find_by_plmn_id(
-        ogs_plmn_id_t *plmn_id);
+ogs_app_policy_conf_t *ogs_app_policy_conf_add(
+        ogs_supi_range_t *supi_range, ogs_plmn_id_t *plmn_id);
+ogs_app_policy_conf_t *ogs_app_policy_conf_find(
+        char *supi, ogs_plmn_id_t *plmn_id);
 void ogs_app_policy_conf_remove(ogs_app_policy_conf_t *policy_conf);
 void ogs_app_policy_conf_remove_all(void);
 
@@ -195,7 +228,7 @@ void ogs_app_session_conf_remove_all(
         ogs_app_slice_conf_t *slice_conf);
 
 int ogs_app_config_session_data(
-        ogs_plmn_id_t *plmn_id, ogs_s_nssai_t *s_nssai, char *dnn,
+        char *supi, ogs_plmn_id_t *plmn_id, ogs_s_nssai_t *s_nssai, char *dnn,
         ogs_session_data_t *session_data);
 
 #ifdef __cplusplus

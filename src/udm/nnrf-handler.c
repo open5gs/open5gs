@@ -25,6 +25,7 @@ void udm_nnrf_handle_nf_discover(
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_object_t *sbi_object = NULL;
+    ogs_pool_id_t sbi_object_id = OGS_INVALID_POOL_ID;
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
 
@@ -46,6 +47,10 @@ void udm_nnrf_handle_nf_discover(
     requester_nf_type = xact->requester_nf_type;
     ogs_assert(requester_nf_type);
 
+    sbi_object_id = xact->sbi_object_id;
+    ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
+            sbi_object_id <= OGS_MAX_POOL_ID);
+
     discovery_option = xact->discovery_option;
 
     SearchResult = recvmsg->SearchResult;
@@ -55,12 +60,12 @@ void udm_nnrf_handle_nf_discover(
     }
 
     if (sbi_object->type == OGS_SBI_OBJ_UE_TYPE) {
-        udm_ue = (udm_ue_t *)sbi_object;
+        udm_ue = udm_ue_find_by_id(sbi_object_id);
         ogs_assert(udm_ue);
     } else if (sbi_object->type == OGS_SBI_OBJ_SESS_TYPE) {
-        sess = (udm_sess_t *)sbi_object;
+        sess = udm_sess_find_by_id(sbi_object_id);
         ogs_assert(sess);
-        udm_ue = sess->udm_ue;
+        udm_ue = udm_ue_find_by_id(sess->udm_ue_id);
         ogs_assert(udm_ue);
     } else {
         ogs_fatal("(NF discover) Not implemented [%s:%d]",

@@ -26,7 +26,6 @@ static int context_initialized = 0;
 
 static OGS_POOL(ogs_pfcp_node_pool, ogs_pfcp_node_t);
 
-static OGS_POOL(ogs_pfcp_sess_pool, ogs_pfcp_sess_t);
 static OGS_POOL(ogs_pfcp_far_pool, ogs_pfcp_far_t);
 static OGS_POOL(ogs_pfcp_urr_pool, ogs_pfcp_urr_t);
 static OGS_POOL(ogs_pfcp_qer_pool, ogs_pfcp_qer_t);
@@ -54,8 +53,6 @@ void ogs_pfcp_context_init(void)
     ogs_log_install_domain(&__ogs_pfcp_domain, "pfcp", ogs_core()->log.level);
 
     ogs_pool_init(&ogs_pfcp_node_pool, ogs_app()->pool.nf);
-
-    ogs_pool_init(&ogs_pfcp_sess_pool, ogs_app()->pool.sess);
 
     ogs_pool_init(&ogs_pfcp_far_pool,
             ogs_app()->pool.sess * OGS_MAX_NUM_OF_FAR);
@@ -116,7 +113,6 @@ void ogs_pfcp_context_final(void)
     ogs_pool_final(&ogs_pfcp_pdr_teid_pool);
     ogs_free(pdr_random_to_index);
 
-    ogs_pool_final(&ogs_pfcp_sess_pool);
     ogs_pool_final(&ogs_pfcp_far_pool);
     ogs_pool_final(&ogs_pfcp_urr_pool);
     ogs_pool_final(&ogs_pfcp_qer_pool);
@@ -154,7 +150,9 @@ static int ogs_pfcp_check_subnet_overlapping(void)
     ogs_list_for_each(&self.subnet_list, subnet){
         for (next_subnet = ogs_list_next(subnet); (next_subnet);
                 next_subnet = ogs_list_next(next_subnet)) {
-            if (strcmp(subnet->dnn, next_subnet->dnn) == 0 &&
+            if ((strlen(subnet->dnn) == 0 ||
+                 strlen(next_subnet->dnn) == 0 ||
+                (strcmp(subnet->dnn, next_subnet->dnn)) == 0) &&
                 subnet->gw.family == next_subnet->gw.family) {
                 uint32_t *addr1 = subnet->sub.sub;
                 uint32_t *addr2 = next_subnet->sub.sub;
@@ -217,6 +215,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
     int rv;
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
+    int idx = 0;
 
     document = ogs_app()->document;
     ogs_assert(document);
@@ -228,7 +227,8 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
     while (ogs_yaml_iter_next(&root_iter)) {
         const char *root_key = ogs_yaml_iter_key(&root_iter);
         ogs_assert(root_key);
-        if (!strcmp(root_key, local)) {
+        if ((!strcmp(root_key, local)) &&
+            idx++ == ogs_app()->config_section_id) {
             ogs_yaml_iter_t local_iter;
             ogs_yaml_iter_recurse(&root_iter, &local_iter);
             while (ogs_yaml_iter_next(&local_iter)) {
@@ -367,6 +367,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                                 server_key);
                                 }
 
+                                /* Add address information */
                                 addr = NULL;
                                 for (i = 0; i < num; i++) {
                                     rv = ogs_addaddrinfo(&addr,
@@ -374,20 +375,34 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                     ogs_assert(rv == OGS_OK);
                                 }
 
+                                /* Add each address as a separate socknode */
                                 if (addr) {
-                                    if (ogs_global_conf()->
-                                            parameter.no_ipv4 == 0)
-                                        ogs_socknode_add(
-                                            &self.pfcp_list, AF_INET, addr,
-                                            is_option ? &option : NULL);
-                                    if (ogs_global_conf()->
-                                            parameter.no_ipv6 == 0)
-                                        ogs_socknode_add(
-                                            &self.pfcp_list6, AF_INET6, addr,
-                                            is_option ? &option : NULL);
+                                    ogs_sockaddr_t *current = addr;
+                                    while (current) {
+                                        if (current->ogs_sa_family ==
+                                                AF_INET &&
+                                            ogs_global_conf()->
+                                                parameter.no_ipv4 == 0) {
+                                            ogs_socknode_add(&self.pfcp_list,
+                                                             AF_INET, current,
+                                                             is_option ?
+                                                             &option : NULL);
+                                        }
+                                        if (current->ogs_sa_family ==
+                                                AF_INET6 &&
+                                            ogs_global_conf()->
+                                                parameter.no_ipv6 == 0) {
+                                            ogs_socknode_add(&self.pfcp_list6,
+                                                             AF_INET6, current,
+                                                             is_option ?
+                                                             &option : NULL);
+                                        }
+                                        current = current->next;
+                                    }
                                     ogs_freeaddrinfo(addr);
                                 }
 
+                                /* Process advertise addresses if needed */
                                 addr = NULL;
                                 for (i = 0; i < num_of_advertise; i++) {
                                     rv = ogs_addaddrinfo(&addr,
@@ -416,6 +431,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                     ogs_freeaddrinfo(addr);
                                 }
 
+                                /* Bind to device if specified */
                                 if (dev) {
                                     rv = ogs_socknode_probe(
                                             ogs_global_conf()->
@@ -634,7 +650,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                                     if (v) {
                                                         e_cell_id[
                                                             num_of_e_cell_id] =
-                                                        ogs_uint64_from_string(
+                                                        ogs_uint64_from_string_hexadecimal(
                                                                 (char*)v);
                                                         num_of_e_cell_id++;
                                                     }
@@ -670,7 +686,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                                     if (v) {
                                                         nr_cell_id[
                                                             num_of_nr_cell_id] =
-                                                        ogs_uint64_from_string(
+                                                        ogs_uint64_from_string_hexadecimal(
                                                                 (char*)v);
                                                         num_of_nr_cell_id++;
                                                     }
@@ -741,12 +757,16 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                     do {
                         ogs_pfcp_subnet_t *subnet = NULL;
                         const char *ipstr = NULL;
+                        const char *gateway = NULL;
                         const char *mask_or_numbits = NULL;
                         const char *dnn = NULL;
                         const char *dev = self.tun_ifname;
                         const char *low[OGS_MAX_NUM_OF_SUBNET_RANGE];
                         const char *high[OGS_MAX_NUM_OF_SUBNET_RANGE];
                         int i, num = 0;
+
+                        memset(low, 0, sizeof(low));
+                        memset(high, 0, sizeof(high));
 
                         if (ogs_yaml_iter_type(&subnet_array) ==
                                 YAML_MAPPING_NODE) {
@@ -776,6 +796,8 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                         mask_or_numbits = (const char *)v;
                                     }
                                 }
+                            } else if (!strcmp(subnet_key, "gateway")) {
+                                gateway = ogs_yaml_iter_value(&subnet_iter);
                             } else if (!strcmp(subnet_key, "apn") ||
                                         !strcmp(subnet_key, "dnn")) {
                                 dnn = ogs_yaml_iter_value(&subnet_iter);
@@ -820,7 +842,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         }
 
                         subnet = ogs_pfcp_subnet_add(
-                                ipstr, mask_or_numbits, dnn, dev);
+                                ipstr, mask_or_numbits, gateway, dnn, dev);
                         ogs_assert(subnet);
 
                         subnet->num_of_range = num;
@@ -842,20 +864,43 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
     return OGS_OK;
 }
 
-ogs_pfcp_node_t *ogs_pfcp_node_new(ogs_sockaddr_t *sa_list)
+/******************************************************************************
+ * ogs_pfcp_node_new()
+ *  - Initialize node_id.type to OGS_PFCP_NODE_ID_UNKNOWN
+ *  - So the node can later be updated with a real Node ID via
+ *    ogs_pfcp_node_merge() once we learn it from PFCP messages.
+ ******************************************************************************/
+ogs_pfcp_node_t *ogs_pfcp_node_new(ogs_sockaddr_t *config_addr)
 {
+    int rv;
     ogs_pfcp_node_t *node = NULL;
-
-    ogs_assert(sa_list);
 
     ogs_pool_alloc(&ogs_pfcp_node_pool, &node);
     if (!node) {
-        ogs_error("No memory: ogs_pool_alloc() failed");
+        ogs_error("No memory: ogs_pool_alloc() failed [%s]",
+                ogs_sockaddr_to_string_static(config_addr));
         return NULL;
     }
     memset(node, 0, sizeof(ogs_pfcp_node_t));
 
-    node->sa_list = sa_list;
+    /* Store config_addr, if any */
+    node->config_addr = config_addr;
+
+    /* If config_addr is given, copy it immediately into addr_list */
+    if (config_addr) {
+        rv = ogs_copyaddrinfo(&node->addr_list, config_addr);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_copyaddrinfo() failed");
+            ogs_pool_free(&ogs_pfcp_node_pool, node);
+            return NULL;
+        }
+    }
+
+    /*
+     * Initialize node->node_id to UNKNOWN, meaning "no Node ID assigned yet".
+     */
+    memset(&node->node_id, 0, sizeof(node->node_id));
+    node->node_id.type = OGS_PFCP_NODE_ID_UNKNOWN;
 
     ogs_list_init(&node->local_list);
     ogs_list_init(&node->remote_list);
@@ -873,49 +918,200 @@ void ogs_pfcp_node_free(ogs_pfcp_node_t *node)
 
     ogs_pfcp_xact_delete_all(node);
 
-    ogs_freeaddrinfo(node->sa_list);
+    ogs_freeaddrinfo(node->config_addr);
+    ogs_freeaddrinfo(node->addr_list);
+
     ogs_pool_free(&ogs_pfcp_node_pool, node);
 }
 
-ogs_pfcp_node_t *ogs_pfcp_node_add(
-        ogs_list_t *list, ogs_sockaddr_t *addr)
+/******************************************************************************
+ * ogs_pfcp_node_add()
+ *  - Create a new PFCP node, then call ogs_pfcp_node_merge() to handle
+ *    IPv4/IPv6 or FQDN logic.
+ ******************************************************************************/
+ogs_pfcp_node_t *ogs_pfcp_node_add(ogs_list_t *list,
+    ogs_pfcp_node_id_t *node_id, ogs_sockaddr_t *from)
 {
     ogs_pfcp_node_t *node = NULL;
-    ogs_sockaddr_t *new = NULL;
 
     ogs_assert(list);
-    ogs_assert(addr);
+    ogs_assert(node_id && from);
 
-    ogs_assert(OGS_OK == ogs_copyaddrinfo(&new, addr));
-    node = ogs_pfcp_node_new(new);
-    if (!node) {
-        ogs_error("No memory : ogs_pfcp_node_new() failed");
-        ogs_freeaddrinfo(new);
+    /*
+     * We only handle IPv4, IPv6, and FQDN types here. If the incoming
+     * node_id has any other type, we treat it as invalid. This ensures
+     * we do not merge a node with an unsupported PFCP Node ID.
+     */
+    if (node_id->type != OGS_PFCP_NODE_ID_IPV4 &&
+        node_id->type != OGS_PFCP_NODE_ID_IPV6 &&
+        node_id->type != OGS_PFCP_NODE_ID_FQDN) {
+        ogs_error("Invalid PFCP Node Type = %d", node_id->type);
         return NULL;
     }
 
-    ogs_assert(node);
-    memcpy(&node->addr, new, sizeof node->addr);
+    /* Create node with no config_addr initially */
+    node = ogs_pfcp_node_new(NULL);
+    if (!node) {
+        ogs_error("No memory: ogs_pfcp_node_add() failed node_id:%s from:%s",
+                ogs_pfcp_node_id_to_string_static(node_id),
+                ogs_sockaddr_to_string_static(from));
+        return NULL;
+    }
+
+    /* Set node->node_id, reset last_dns_refresh. */
+    memcpy(&node->node_id, node_id, sizeof(node->node_id));
+    node->last_dns_refresh = 0;
+
+    /* Merge addresses => fill node->addr_list if conditions are met */
+    if (ogs_pfcp_node_merge(node, node_id, from) != OGS_OK) {
+        ogs_error("ogs_pfcp_node_merge() failed node_id [%s] from [%s]",
+                ogs_pfcp_node_id_to_string_static(node_id),
+                ogs_sockaddr_to_string_static(from));
+        ogs_pool_free(&ogs_pfcp_node_pool, node);
+        return NULL;
+    }
 
     ogs_list_add(list, node);
 
     return node;
 }
 
-ogs_pfcp_node_t *ogs_pfcp_node_find(
-        ogs_list_t *list, ogs_sockaddr_t *addr)
+/******************************************************************************
+ * ogs_pfcp_node_find()
+ *  - No DNS logic here. Merely finds a node by node_id (if provided) and
+ *    checks if 'from' address is in node->addr_list.
+ ******************************************************************************/
+ogs_pfcp_node_t *ogs_pfcp_node_find(ogs_list_t *list,
+    ogs_pfcp_node_id_t *node_id, ogs_sockaddr_t *from)
 {
-    ogs_pfcp_node_t *node = NULL;
+    ogs_pfcp_node_t *cur;
 
     ogs_assert(list);
-    ogs_assert(addr);
+    ogs_assert(node_id || from);
 
-    ogs_list_for_each(list, node) {
-        if (ogs_sockaddr_is_equal(&node->addr, addr) == true)
-            break;
+    ogs_list_for_each(list, cur) {
+        /*
+         * If the node currently has a known Node ID (not UNKNOWN)
+         * and the caller provided a node_id to match, then compare them.
+         * If they do not match, skip this node. This allows config-based nodes
+         * (with an UNKNOWN node_id) to be found by IP address alone,
+         * while nodes with a definite ID must match the incoming node_id.
+         */
+        if (cur->node_id.type != OGS_PFCP_NODE_ID_UNKNOWN && node_id) {
+            if (!ogs_pfcp_node_id_compare(&cur->node_id, node_id))
+                continue;
+        }
+        if (!from)
+            return cur;
+
+        /* Check if 'from' is in cur->addr_list. */
+        if (ogs_sockaddr_check_any_match(cur->addr_list, NULL,
+                                         from, /* compare_port= */ true)) {
+            return cur;
+        }
     }
 
-    return node;
+    /* No match found. */
+    return NULL;
+}
+
+/******************************************************************************
+ * ogs_pfcp_node_merge():
+ *  - If node_id changes to FQDN, we check last_dns_refresh.
+ *    => If 0, do an immediate DNS resolution (first time).
+ *    => If >= 300 seconds passed, do a periodic refresh.
+ *    => Otherwise, skip.
+ *  - If node_id changes to IPv4/IPv6, convert IP addresses immediately.
+ *  - Merge the 'from' address into addr_list if provided.
+ ******************************************************************************/
+int ogs_pfcp_node_merge(ogs_pfcp_node_t *node,
+    ogs_pfcp_node_id_t *node_id, ogs_sockaddr_t *from)
+{
+    ogs_sockaddr_t single;
+    ogs_sockaddr_t *tmp_list = NULL;
+
+    ogs_assert(node);
+    ogs_assert(node_id || from);
+
+    if (node_id) {
+        /*
+         * We only handle IPv4, IPv6, and FQDN types here. If the incoming
+         * node_id has any other type, we treat it as invalid. This ensures
+         * we do not merge a node with an unsupported PFCP Node ID.
+         */
+        if (node_id->type != OGS_PFCP_NODE_ID_IPV4 &&
+            node_id->type != OGS_PFCP_NODE_ID_IPV6 &&
+            node_id->type != OGS_PFCP_NODE_ID_FQDN) {
+            ogs_error("Invalid PFCP Node Type = %d", node_id->type);
+            return OGS_ERROR;
+        }
+
+        /* Check if node_id is different from node->node_id. */
+        if (!ogs_pfcp_node_id_compare(&node->node_id, node_id)) {
+            /* Update the node's ID and reset the refresh timestamp. */
+            memcpy(&node->node_id, node_id, sizeof(node->node_id));
+            node->last_dns_refresh = 0;
+        }
+
+        /* If FQDN, do a DNS lookup (immediate or periodic). */
+        if (node->node_id.type == OGS_PFCP_NODE_ID_FQDN) {
+/*
+ * We perform a DNS resolution if 'last_dns_refresh' is zero, which means
+ * this FQDN node has never been resolved yet (first-time resolution), or if
+ * at least 300 seconds have passed since the last refresh. Without checking
+ * '== 0', a newly created FQDN node might skip resolution if 'now' is less
+ * than the 300-second threshold.
+ */
+            ogs_time_t now = ogs_time_now();
+
+/* For 300-second refresh interval in microseconds. */
+#define OGS_PFCP_NODE_DNS_REFRESH_INTERVAL \
+    ((ogs_time_t)(300) * OGS_USEC_PER_SEC)
+            if (node->last_dns_refresh == 0 ||
+                (now - node->last_dns_refresh) >=
+                  OGS_PFCP_NODE_DNS_REFRESH_INTERVAL) {
+
+                tmp_list = ogs_pfcp_node_id_to_addrinfo(&node->node_id);
+                if (!tmp_list) {
+                    ogs_error("DNS resolution failed for FQDN [%s]",
+                              node->node_id.fqdn);
+                    return OGS_ERROR;
+                }
+
+                ogs_freeaddrinfo(node->addr_list);
+                node->addr_list = tmp_list;
+                node->last_dns_refresh = now;
+                node->current_addr = NULL;
+                tmp_list = NULL;
+            }
+        }
+        /* If IPv4/IPv6, convert immediately. */
+        else if (node->node_id.type == OGS_PFCP_NODE_ID_IPV4 ||
+                 node->node_id.type == OGS_PFCP_NODE_ID_IPV6) {
+            tmp_list = ogs_pfcp_node_id_to_addrinfo(&node->node_id);
+            if (!tmp_list) {
+                ogs_error("Failed to convert node ID to address info");
+                return OGS_ERROR;
+            }
+            ogs_merge_addrinfo(&node->addr_list, tmp_list);
+            ogs_freeaddrinfo(tmp_list);
+            tmp_list = NULL;
+        }
+        else {
+            /* Not IPv4, IPv6, or FQDN => invalid node type. */
+            ogs_error("Invalid Node ID type [%d]", node->node_id.type);
+            return OGS_ERROR;
+        }
+    }
+
+    /* Merge 'from' into addr_list if provided. */
+    if (from) {
+        memcpy(&single, from, sizeof(single));
+        single.next = NULL;
+        ogs_merge_addrinfo(&node->addr_list, &single);
+    }
+
+    return OGS_OK;
 }
 
 void ogs_pfcp_node_remove(ogs_list_t *list, ogs_pfcp_node_t *node)
@@ -935,6 +1131,37 @@ void ogs_pfcp_node_remove_all(ogs_list_t *list)
 
     ogs_list_for_each_safe(list, next_node, node)
         ogs_pfcp_node_remove(list, node);
+}
+
+/******************************************************************************
+ * Compare two node IDs for equality. Returns true if they match, else false.
+ ******************************************************************************/
+bool ogs_pfcp_node_id_compare(
+        const ogs_pfcp_node_id_t *id1, const ogs_pfcp_node_id_t *id2)
+{
+    if (id1->type != id2->type)
+        return false; /* Types do not match */
+
+    switch (id1->type) {
+        case OGS_PFCP_NODE_ID_IPV4:
+            if (id1->addr != id2->addr) return false;
+            return true;
+
+        case OGS_PFCP_NODE_ID_IPV6:
+            if (memcmp(id1->addr6, id2->addr6, OGS_IPV6_LEN) != 0)
+                return false;
+            return true;
+
+        case OGS_PFCP_NODE_ID_FQDN:
+            if (strcmp(id1->fqdn, id2->fqdn) != 0)
+                return false;
+            return true;
+
+        default:
+            ogs_error("Unexpected Node Type [%d]", id1->type);
+            ogs_abort();
+            return false; /* Unknown types do not match */
+    }
 }
 
 ogs_gtpu_resource_t *ogs_pfcp_find_gtpu_resource(ogs_list_t *list,
@@ -1129,13 +1356,30 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
     return pdr;
 }
 
-void ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
+int ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
 {
     int i = 0;
 
     ogs_assert(pdr);
-    ogs_assert(pdr->f_teid.teid > 0 &&
-            pdr->f_teid.teid <= ogs_pfcp_pdr_teid_pool.size);
+    ogs_assert(pdr->f_teid_len > 0);
+    ogs_assert(!pdr->f_teid.ch);
+
+    /*
+     * Issues #3747, #3574
+     *
+     * This code validates the F-TEID (Fully encapsulated TEID) information
+     * element within a PDR structure before further processing the PFCP
+     * message. The validation ensures that the F-TEID is present and
+     * within acceptable limits defined by the system.
+     */
+    if (pdr->f_teid.teid > 0 &&
+        pdr->f_teid.teid <= ogs_pfcp_pdr_teid_pool.size) {
+        /* PASS OK */
+    } else {
+        ogs_error("PDR-ID[%d] F-TEID LEN[%d] TEID[0x%x]",
+                pdr->id, pdr->f_teid_len, pdr->f_teid.teid);
+        return OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+    }
 
     /* Find out the Array Index for the restored TEID. */
     i = pdr_random_to_index[pdr->f_teid.teid];
@@ -1151,6 +1395,8 @@ void ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
         ogs_pfcp_pdr_teid_pool.array[i] = *(pdr->teid_node);
         *(pdr->teid_node) = pdr->f_teid.teid;
     }
+
+    return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
 
 void ogs_pfcp_object_teid_hash_set(
@@ -1181,7 +1427,7 @@ void ogs_pfcp_object_teid_hash_set(
             ogs_gtpu_resource_t *resource = NULL;
             resource = ogs_pfcp_find_gtpu_resource(
                     &ogs_gtp_self()->gtpu_resource_list,
-                    pdr->dnn, OGS_PFCP_INTERFACE_ACCESS);
+                    pdr->dnn, pdr->src_if);
             if (resource) {
                 ogs_assert(
                     (resource->info.v4 && pdr->f_teid.ipv4) ||
@@ -1861,10 +2107,10 @@ void ogs_pfcp_bar_delete(ogs_pfcp_bar_t *bar)
     if (bar->id_node)
         ogs_pool_free(&bar->sess->bar_id_pool, bar->id_node);
 
-    ogs_pool_free(&ogs_pfcp_bar_pool, bar);
-
     bar->sess = NULL;
     sess->bar = NULL;
+
+    ogs_pool_free(&ogs_pfcp_bar_pool, bar);
 }
 
 ogs_pfcp_rule_t *ogs_pfcp_rule_add(ogs_pfcp_pdr_t *pdr)
@@ -2101,7 +2347,7 @@ ogs_pfcp_dev_t *ogs_pfcp_dev_add(const char *ifname)
     ogs_assert(dev);
     memset(dev, 0, sizeof *dev);
 
-    strcpy(dev->ifname, ifname);
+    ogs_cpystrn(dev->ifname, ifname, OGS_MAX_IFNAME_LEN-1);
 
     ogs_list_add(&self.dev_list, dev);
 
@@ -2140,7 +2386,7 @@ ogs_pfcp_dev_t *ogs_pfcp_dev_find_by_ifname(const char *ifname)
 
 ogs_pfcp_subnet_t *ogs_pfcp_subnet_add(
         const char *ipstr, const char *mask_or_numbits,
-        const char *dnn, const char *ifname)
+        const char *gateway, const char *dnn, const char *ifname)
 {
     int rv;
     ogs_pfcp_dev_t *dev = NULL;
@@ -2169,10 +2415,45 @@ ogs_pfcp_subnet_t *ogs_pfcp_subnet_add(
 
         subnet->family = subnet->gw.family;
         subnet->prefixlen = atoi(mask_or_numbits);
+
+        if (memcmp(subnet->gw.sub, subnet->sub.sub,
+                    sizeof(subnet->gw.sub)) != 0) {
+            char *subnet_string = NULL;
+
+            if (subnet->family == AF_INET) {
+                subnet_string = ogs_ipv4_to_string(subnet->sub.sub[0]);
+                ogs_assert(subnet_string);
+            } else if (subnet->family == AF_INET6) {
+                subnet_string = ogs_ipv6addr_to_string(
+                        (uint8_t*)&subnet->sub.sub[0]);
+                ogs_assert(subnet_string);
+            }
+
+            ogs_warn("Please change the configuration files of "
+                    "smf.yaml and upf.yaml as below.");
+            ogs_log_print(OGS_LOG_WARN, "\n<OLD Format>\n");
+            ogs_log_print(OGS_LOG_WARN, "smf:\n");
+            ogs_log_print(OGS_LOG_WARN, "  session:\n");
+            ogs_log_print(OGS_LOG_WARN, "    - subnet: %s/%s\n",
+                    ipstr, mask_or_numbits);
+            ogs_log_print(OGS_LOG_WARN, "\n<NEW Format>\n");
+            ogs_log_print(OGS_LOG_WARN, "smf:\n");
+            ogs_log_print(OGS_LOG_WARN, "  session:\n");
+            ogs_log_print(OGS_LOG_WARN, "    - subnet: %s/%s\n",
+                    subnet_string ? subnet_string : "Unknown", mask_or_numbits);
+            ogs_log_print(OGS_LOG_WARN, "      gateway: %s\n\n\n", ipstr);
+
+            ogs_free(subnet_string);
+        }
+    }
+
+    if (gateway) {
+        rv = ogs_ipsubnet(&subnet->gw, gateway, NULL);
+        ogs_assert(rv == OGS_OK);
     }
 
     if (dnn)
-        strcpy(subnet->dnn, dnn);
+        ogs_cpystrn(subnet->dnn, dnn, OGS_MAX_DNN_LEN);
 
     ogs_pool_init(&subnet->pool, ogs_app()->pool.sess);
 

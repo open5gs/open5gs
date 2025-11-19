@@ -209,6 +209,7 @@ static _MHD_Result mhd_server_access_handler(void *cls, struct MHD_Connection *c
     if (strcmp(url, "/metrics") == 0) {
         buf = prom_collector_registry_bridge(PROM_COLLECTOR_REGISTRY_DEFAULT);
         rsp = MHD_create_response_from_buffer(strlen(buf), (void *)buf, MHD_RESPMEM_MUST_FREE);
+        MHD_add_response_header(rsp, "Content-Type", "text/plain; version=0.0.4; charset=utf-8");
         ret = MHD_queue_response(connection, MHD_HTTP_OK, rsp);
         MHD_destroy_response(rsp);
         return ret;

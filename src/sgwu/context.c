@@ -141,9 +141,8 @@ sgwu_sess_t *sgwu_sess_add(ogs_pfcp_f_seid_t *cp_f_seid)
 
     ogs_assert(cp_f_seid);
 
-    ogs_pool_alloc(&sgwu_sess_pool, &sess);
+    ogs_pool_id_calloc(&sgwu_sess_pool, &sess);
     ogs_assert(sess);
-    memset(sess, 0, sizeof *sess);
 
     ogs_pfcp_pool_init(&sess->pfcp);
 
@@ -197,7 +196,7 @@ int sgwu_sess_remove(sgwu_sess_t *sess)
     ogs_pfcp_pool_final(&sess->pfcp);
 
     ogs_pool_free(&sgwu_sxa_seid_pool, sess->sgwu_sxa_seid_node);
-    ogs_pool_free(&sgwu_sess_pool, sess);
+    ogs_pool_id_free(&sgwu_sess_pool, sess);
 
     ogs_info("[Removed] Number of SGWU-sessions is now %d",
             ogs_list_count(&self.sess_list));
@@ -238,6 +237,11 @@ sgwu_sess_t *sgwu_sess_find_by_sgwu_sxa_seid(uint64_t seid)
     return ogs_hash_get(self.sgwu_sxa_seid_hash, &seid, sizeof(seid));
 }
 
+sgwu_sess_t *sgwu_sess_find_by_id(ogs_pool_id_t id)
+{
+    return ogs_pool_find_by_id(&sgwu_sess_pool, id);
+}
+
 sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message)
 {
     sgwu_sess_t *sess = NULL;
@@ -250,6 +254,10 @@ sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message)
     f_seid = req->cp_f_seid.data;
     if (req->cp_f_seid.presence == 0 || f_seid == NULL) {
         ogs_error("No CP F-SEID");
+        return NULL;
+    }
+    if (f_seid->ipv4 == 0 && f_seid->ipv6 == 0) {
+        ogs_error("No IPv4 or IPv6");
         return NULL;
     }
     f_seid->seid = be64toh(f_seid->seid);

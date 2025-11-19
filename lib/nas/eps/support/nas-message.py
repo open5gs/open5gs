@@ -461,7 +461,12 @@ for (k, v) in sorted_type_list:
         f.write("int ogs_nas_eps_decode_%s(ogs_nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         f.write("    int size = 0;\n")
-        f.write("    ogs_nas_%s_t *source = (ogs_nas_%s_t *)pkbuf->data;\n\n" % (v_lower(k), v_lower(k)))
+        f.write("    ogs_nas_%s_t *source = NULL;\n\n" % v_lower(k))
+        f.write("    if (pkbuf->len < 2) {\n")
+        f.write("       ogs_error(\"Not enough pkbuf [len:%d]\", pkbuf->len);\n")
+        f.write("       return -1;\n")
+        f.write("    }\n\n")
+        f.write("    source = (ogs_nas_%s_t *)pkbuf->data;\n\n" % v_lower(k))
         f.write("    %s->length = be16toh(source->length);\n" % v_lower(k))
         f.write("    size = %s->length + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
         f.write("    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {\n")
@@ -494,7 +499,12 @@ for (k, v) in sorted_type_list:
         f.write("int ogs_nas_eps_decode_%s(ogs_nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         f.write("    int size = 0;\n")
-        f.write("    ogs_nas_%s_t *source = (ogs_nas_%s_t *)pkbuf->data;\n\n" % (v_lower(k), v_lower(k)))
+        f.write("    ogs_nas_%s_t *source = NULL;\n\n" % v_lower(k))
+        f.write("    if (pkbuf->len < 1) {\n")
+        f.write("       ogs_error(\"Not enough pkbuf [len:%d]\", pkbuf->len);\n")
+        f.write("       return -1;\n")
+        f.write("    }\n\n")
+        f.write("    source = (ogs_nas_%s_t *)pkbuf->data;\n\n" % v_lower(k))
         f.write("    %s->length = source->length;\n" % v_lower(k))
         f.write("    size = %s->length + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
         f.write("    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {\n")
@@ -747,15 +757,14 @@ f.write("""int ogs_nas_emm_decode(ogs_nas_eps_message_t *message, ogs_pkbuf_t *p
 
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->data);
-    ogs_assert(pkbuf->len);
-
-    memset(message, 0, sizeof(ogs_nas_eps_message_t));
 
     size = sizeof(ogs_nas_emm_header_t);
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
        ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
        return OGS_ERROR;
     }
+
+    memset(message, 0, sizeof(ogs_nas_eps_message_t));
     memcpy(&message->emm.h, pkbuf->data - size, size);
     decoded += size;
 
@@ -806,15 +815,14 @@ f.write("""int ogs_nas_esm_decode(ogs_nas_eps_message_t *message, ogs_pkbuf_t *p
 
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->data);
-    ogs_assert(pkbuf->len);
-
-    memset(message, 0, sizeof(ogs_nas_eps_message_t));
 
     size = sizeof(ogs_nas_esm_header_t);
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
        ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
        return OGS_ERROR;
     }
+
+    memset(message, 0, sizeof(ogs_nas_eps_message_t));
     memcpy(&message->esm.h, pkbuf->data - size, size);
     decoded += size;
 

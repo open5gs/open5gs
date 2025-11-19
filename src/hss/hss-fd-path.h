@@ -24,6 +24,60 @@
 extern "C" {
 #endif
 
+typedef struct hss_diam_stats_cx_s {
+    unsigned long long rx_unknown;
+    unsigned long long rx_mar;
+    unsigned long long rx_mar_error;
+    unsigned long long rx_sar;
+    unsigned long long rx_sar_error;
+    unsigned long long rx_uar;
+    unsigned long long rx_uar_error;
+    unsigned long long rx_lir;
+    unsigned long long rx_lir_error;
+    unsigned long long tx_maa;
+    unsigned long long tx_saa;
+    unsigned long long tx_uaa;
+    unsigned long long tx_lia;
+} hss_diam_stats_cx_t;
+
+typedef struct hss_diam_stats_s6a_s {
+    unsigned long long rx_unknown;
+    unsigned long long rx_air;
+    unsigned long long rx_air_error;
+    unsigned long long rx_cla;
+    unsigned long long rx_cla_error;
+    unsigned long long rx_ida;
+    unsigned long long rx_ida_error;
+    unsigned long long rx_pur;
+    unsigned long long rx_pur_error;
+    unsigned long long rx_ulr;
+    unsigned long long rx_ulr_error;
+    unsigned long long tx_aia;
+    unsigned long long tx_clr;
+    unsigned long long tx_idr;
+    unsigned long long tx_pua;
+    unsigned long long tx_ula;
+} hss_diam_stats_s6a_t;
+
+typedef struct hss_diam_stats_swx_s {
+    unsigned long long rx_unknown;
+    unsigned long long rx_mar;
+    unsigned long long rx_mar_error;
+    unsigned long long rx_sar;
+    unsigned long long rx_sar_error;
+    unsigned long long tx_maa;
+    unsigned long long tx_saa;
+} hss_diam_stats_swx_t;
+
+typedef struct hss_diam_stats_s {
+    hss_diam_stats_cx_t cx;
+    hss_diam_stats_s6a_t s6a;
+    hss_diam_stats_swx_t swx;
+} hss_diam_stats_t;
+
+#define HSS_DIAM_PRIV_STATS_ADD(field, val) ((hss_diam_stats_t *)ogs_diam_stats_self()->priv_stats)->field += val
+#define HSS_DIAM_PRIV_STATS_INC(field) HSS_DIAM_PRIV_STATS_ADD(field, 1)
+
 int hss_fd_init(void);
 void hss_fd_final(void);
 

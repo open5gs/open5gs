@@ -46,7 +46,7 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
 
     ogs_debug("Session Establishment Request");
     ogs_assert(sess);
-    smf_ue = sess->smf_ue;
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
     ogs_assert(xact);
 
@@ -328,12 +328,15 @@ ogs_pkbuf_t *smf_n4_build_qos_flow_to_modify_list(
     int num_of_remove_pdr = 0;
     int num_of_remove_far = 0;
     int num_of_remove_qer = 0;
+    int num_of_remove_urr = 0;
     int num_of_create_pdr = 0;
     int num_of_create_far = 0;
     int num_of_create_qer = 0;
+    int num_of_create_urr = 0;
     int num_of_update_pdr = 0;
     int num_of_update_far = 0;
     int num_of_update_qer = 0;
+    int num_of_update_urr = 0;
 
     uint64_t modify_flags = 0;
 
@@ -415,6 +418,17 @@ ogs_pkbuf_t *smf_n4_build_qos_flow_to_modify_list(
                 num_of_remove_qer++;
             }
 
+            /* Remove URR */
+            if (qos_flow->urr) {
+                ogs_pfcp_tlv_remove_urr_t *message =
+                    &req->remove_urr[num_of_remove_urr];
+
+                message->presence = 1;
+                message->urr_id.presence = 1;
+                message->urr_id.u32 = qos_flow->urr->id;
+                num_of_remove_urr++;
+            }
+
         } else {
             if (modify_flags & OGS_PFCP_MODIFY_CREATE) {
 
@@ -459,6 +473,14 @@ ogs_pkbuf_t *smf_n4_build_qos_flow_to_modify_list(
                             num_of_create_qer, qos_flow->qer);
                     num_of_create_qer++;
                 }
+
+                /* Create URR */
+                if (qos_flow->urr) {
+                    ogs_pfcp_build_create_urr(
+                            &req->create_urr[num_of_create_urr],
+                            num_of_create_urr, qos_flow->urr);
+                    num_of_create_urr++;
+                }
             }
             if (modify_flags &
                     (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
@@ -469,14 +491,20 @@ ogs_pkbuf_t *smf_n4_build_qos_flow_to_modify_list(
                 if (qos_flow->dl_pdr) {
                     ogs_pfcp_build_update_pdr(
                             &req->update_pdr[num_of_update_pdr],
-                            num_of_update_pdr, qos_flow->dl_pdr);
+                            num_of_update_pdr, qos_flow->dl_pdr, modify_flags);
                     num_of_update_pdr++;
                 }
                 if (qos_flow->ul_pdr) {
                     ogs_pfcp_build_update_pdr(
                             &req->update_pdr[num_of_update_pdr],
-                            num_of_update_pdr, qos_flow->ul_pdr);
+                            num_of_update_pdr, qos_flow->ul_pdr, modify_flags);
                     num_of_update_pdr++;
+                }
+                if (qos_flow->urr) {
+                    ogs_pfcp_build_update_urr(
+                            &req->update_urr[num_of_update_urr],
+                            num_of_update_urr, qos_flow->urr, modify_flags);
+                    num_of_update_urr++;
                 }
             }
             if (modify_flags & OGS_PFCP_MODIFY_ACTIVATE) {

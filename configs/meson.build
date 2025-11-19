@@ -32,6 +32,7 @@ conf_data.set('build_subprojects_freeDiameter_extensions_dir',
 
 example_conf = '''
     sample.yaml
+    attach.yaml
     310014.yaml
     csfb.yaml
     volte.yaml
@@ -39,6 +40,7 @@ example_conf = '''
     slice.yaml
     srsenb.yaml
     non3gpp.yaml
+    transfer.yaml
 '''.split()
 
 foreach file : example_conf

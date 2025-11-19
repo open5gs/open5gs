@@ -88,19 +88,24 @@ int ausf_sbi_discover_and_send(
     ogs_assert(stream);
     ogs_assert(build);
 
+    ogs_assert(ausf_ue->id >= OGS_MIN_POOL_ID &&
+            ausf_ue->id <= OGS_MAX_POOL_ID);
+
     xact = ogs_sbi_xact_add(
-            &ausf_ue->sbi, service_type, discovery_option,
+            ausf_ue->id, &ausf_ue->sbi, service_type, discovery_option,
             (ogs_sbi_build_f)build, ausf_ue, data);
     if (!xact) {
         ogs_error("ausf_sbi_discover_and_send() failed");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", ausf_ue->suci));
+                "Cannot discover", ausf_ue->suci, NULL));
         return OGS_ERROR;
     }
 
-    xact->assoc_stream = stream;
+    xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
+    ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
+            xact->assoc_stream_id <= OGS_MAX_POOL_ID);
 
     r = ogs_sbi_discover_and_send(xact);
     if (r != OGS_OK) {
@@ -109,7 +114,7 @@ int ausf_sbi_discover_and_send(
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", ausf_ue->suci));
+                "Cannot discover", ausf_ue->suci, NULL));
         return r;
     }
     

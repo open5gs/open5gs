@@ -25,6 +25,7 @@ static int client_notify_cb(
 int nrf_sbi_open(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
+    ogs_sbi_nf_service_t *service = NULL;
 
     /* Initialize SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
@@ -32,6 +33,22 @@ int nrf_sbi_open(void)
 
     /* Build NF instance information. */
     ogs_sbi_nf_instance_build_default(nf_instance);
+
+    if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NNRF_NFM)) {
+        service = ogs_sbi_nf_service_build_default(
+                nf_instance, OGS_SBI_SERVICE_NAME_NNRF_NFM);
+        ogs_assert(service);
+        ogs_sbi_nf_service_add_version(
+                service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
+    }
+
+    if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NNRF_DISC)) {
+        service = ogs_sbi_nf_service_build_default(
+                nf_instance, OGS_SBI_SERVICE_NAME_NNRF_DISC);
+        ogs_assert(service);
+        ogs_sbi_nf_service_add_version(
+                service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
+    }
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
@@ -109,6 +126,9 @@ bool nrf_nnrf_nfm_send_nf_status_notify_all(
             if (subscription_data->req_nf_type &&
                 ogs_sbi_nf_service_is_allowed_nf_type(
                     nf_service, subscription_data->req_nf_type) == false)
+                continue;
+        } else if (subscription_data->subscr_cond.nf_instance_id) {
+            if (strcmp(subscription_data->subscr_cond.nf_instance_id, nf_instance->id) != 0)
                 continue;
         }
 

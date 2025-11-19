@@ -19,18 +19,55 @@
 
 #include "test-app.h"
 
+/* If want to increase this number, check and modify run_threads() function
+ * for static integer to string conversion */
+#define OGS_MAX_NF_INSTANCES        4
+
 static ogs_thread_t *nrf_thread = NULL;
 static ogs_thread_t *scp_thread = NULL;
 static ogs_thread_t *sepp_thread = NULL;
-static ogs_thread_t *upf_thread = NULL;
-static ogs_thread_t *smf_thread = NULL;
-static ogs_thread_t *amf_thread = NULL;
-static ogs_thread_t *ausf_thread = NULL;
-static ogs_thread_t *udm_thread = NULL;
-static ogs_thread_t *pcf_thread = NULL;
-static ogs_thread_t *nssf_thread = NULL;
-static ogs_thread_t *bsf_thread = NULL;
-static ogs_thread_t *udr_thread = NULL;
+static ogs_thread_t *upf_threads[OGS_MAX_NF_INSTANCES] = { NULL };
+static ogs_thread_t *smf_threads[OGS_MAX_NF_INSTANCES] = { NULL };
+static ogs_thread_t *amf_threads[OGS_MAX_NF_INSTANCES] = { NULL };
+static ogs_thread_t *ausf_threads[OGS_MAX_NF_INSTANCES] = { NULL };
+static ogs_thread_t *udm_threads[OGS_MAX_NF_INSTANCES] = { NULL };
+static ogs_thread_t *pcf_threads[OGS_MAX_NF_INSTANCES] = { NULL };
+static ogs_thread_t *nssf_threads[OGS_MAX_NF_INSTANCES] = { NULL };
+static ogs_thread_t *bsf_threads[OGS_MAX_NF_INSTANCES] = { NULL };
+static ogs_thread_t *udr_threads[OGS_MAX_NF_INSTANCES] = { NULL };
+
+
+static void run_threads(const char *nf_name, int count,
+        const char *argv_out[], int argv_out_idx, ogs_thread_t *threads[])
+{
+    int i;
+
+    threads[0] = test_child_create(nf_name, argv_out);
+
+    for (i = 1; i < count; i++) {
+        const char *idx_string = NULL;;
+
+        switch (i) {
+            case 1: idx_string = "1"; break;
+            case 2: idx_string = "2"; break;
+            case 3: idx_string = "3"; break;
+            default:
+                idx_string = ogs_msprintf("%d", i);
+                ogs_warn("Missing static conversion of integer to string");
+                break;
+        }
+        ogs_assert(idx_string);
+
+        argv_out[argv_out_idx + 0] = "-k";
+        argv_out[argv_out_idx + 1] = idx_string;
+        argv_out[argv_out_idx + 2] = NULL;
+
+        threads[i] = test_child_create(nf_name, argv_out);
+    }
+
+    // reset argv_out and remove the added "-k" parameter
+    argv_out[argv_out_idx] = NULL;
+}
 
 int app_initialize(const char *const argv[])
 {
@@ -60,49 +97,67 @@ int app_initialize(const char *const argv[])
         sepp_thread = test_child_create("sepp", argv_out);
 
     if (ogs_global_conf()->parameter.no_upf == 0)
-        upf_thread = test_child_create("upf", argv_out);
+        run_threads("upf", ogs_global_conf()->parameter.upf_count,
+                argv_out, i, upf_threads);
     if (ogs_global_conf()->parameter.no_smf == 0)
-        smf_thread = test_child_create("smf", argv_out);
-
+        run_threads("smf", ogs_global_conf()->parameter.smf_count,
+                argv_out, i, smf_threads);
     if (ogs_global_conf()->parameter.no_amf == 0)
-        amf_thread = test_child_create("amf", argv_out);
-
+        run_threads("amf", ogs_global_conf()->parameter.amf_count,
+                argv_out, i, amf_threads);
     if (ogs_global_conf()->parameter.no_ausf == 0)
-        ausf_thread = test_child_create("ausf", argv_out);
+        run_threads("ausf", ogs_global_conf()->parameter.ausf_count,
+                argv_out, i, ausf_threads);
     if (ogs_global_conf()->parameter.no_udm == 0)
-        udm_thread = test_child_create("udm", argv_out);
+        run_threads("udm", ogs_global_conf()->parameter.udm_count,
+                argv_out, i, udm_threads);
     if (ogs_global_conf()->parameter.no_pcf == 0)
-        pcf_thread = test_child_create("pcf", argv_out);
+        run_threads("pcf", ogs_global_conf()->parameter.pcf_count,
+                argv_out, i, pcf_threads);
     if (ogs_global_conf()->parameter.no_nssf == 0)
-        nssf_thread = test_child_create("nssf", argv_out);
+        run_threads("nssf", ogs_global_conf()->parameter.nssf_count,
+                argv_out, i, nssf_threads);
     if (ogs_global_conf()->parameter.no_bsf == 0)
-        bsf_thread = test_child_create("bsf", argv_out);
+        run_threads("bsf", ogs_global_conf()->parameter.bsf_count,
+                argv_out, i, bsf_threads);
     if (ogs_global_conf()->parameter.no_udr == 0)
-        udr_thread = test_child_create("udr", argv_out);
+        run_threads("udr", ogs_global_conf()->parameter.udr_count,
+                argv_out, i, udr_threads);
 
     /*
      * Wait for all sockets listening
      * 
      * If freeDiameter is not used, it uses a delay of less than 4 seconds.
      */
-    ogs_msleep(500);
+    ogs_msleep(3000);
 
-    return OGS_OK;;
+    return OGS_OK;
 }
 
 void app_terminate(void)
 {
-    if (amf_thread) ogs_thread_destroy(amf_thread);
+    int i;
 
-    if (smf_thread) ogs_thread_destroy(smf_thread);
-    if (upf_thread) ogs_thread_destroy(upf_thread);
-
-    if (udr_thread) ogs_thread_destroy(udr_thread);
-    if (nssf_thread) ogs_thread_destroy(nssf_thread);
-    if (bsf_thread) ogs_thread_destroy(bsf_thread);
-    if (pcf_thread) ogs_thread_destroy(pcf_thread);
-    if (udm_thread) ogs_thread_destroy(udm_thread);
-    if (ausf_thread) ogs_thread_destroy(ausf_thread);
+    for (i = 0; i < OGS_MAX_NF_INSTANCES; i++) {
+        if (amf_threads[i])
+            ogs_thread_destroy(amf_threads[i]);
+        if (smf_threads[i])
+            ogs_thread_destroy(smf_threads[i]);
+        if (upf_threads[i])
+            ogs_thread_destroy(upf_threads[i]);
+        if (udr_threads[i])
+            ogs_thread_destroy(udr_threads[i]);
+        if (nssf_threads[i])
+            ogs_thread_destroy(nssf_threads[i]);
+        if (bsf_threads[i])
+            ogs_thread_destroy(bsf_threads[i]);
+        if (pcf_threads[i])
+            ogs_thread_destroy(pcf_threads[i]);
+        if (udm_threads[i])
+            ogs_thread_destroy(udm_threads[i]);
+        if (ausf_threads[i])
+            ogs_thread_destroy(ausf_threads[i]);
+    }
 
     if (sepp_thread) ogs_thread_destroy(sepp_thread);
     if (scp_thread) ogs_thread_destroy(scp_thread);

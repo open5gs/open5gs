@@ -77,7 +77,7 @@ void test_app_run(int argc, const char *const argv[],
     ogs_assert(rv == OGS_OK);
 }
 
-#define MAX_CHILD_PROCESS               16
+#define MAX_CHILD_PROCESS               32
 #define OGS_ARG_MAX                     256
 
 static ogs_proc_t process[MAX_CHILD_PROCESS];
@@ -92,6 +92,12 @@ static void child_main(void *data)
     int ret = 0, out_return_code = 0;
 
     current = &process[process_num++];
+
+    if (process_num > MAX_CHILD_PROCESS) {
+        ogs_fatal("Process limit reached");
+        ogs_assert_if_reached();
+    }
+
     ret = ogs_proc_create(commandLine,
             ogs_proc_option_combined_stdout_stderr|
             ogs_proc_option_inherit_environment,
@@ -132,6 +138,7 @@ ogs_thread_t *test_child_create(const char *name, const char *const argv[])
     commandLine[0] = command;
 
     child = ogs_thread_create(child_main, commandLine);
+
     ogs_msleep(50);
 
     return child;

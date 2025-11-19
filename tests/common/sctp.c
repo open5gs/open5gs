@@ -54,7 +54,7 @@ ogs_socknode_t *testsctp_client(const char *ipstr, int port)
     node = ogs_socknode_new(addr);
     ogs_assert(node);
 
-    sock = ogs_sctp_client(SOCK_STREAM, node->addr, NULL);
+    sock = ogs_sctp_client(SOCK_STREAM, node->addr, NULL, NULL);
     ogs_assert(sock);
 
     node->sock = sock;
@@ -82,7 +82,7 @@ ogs_socknode_t *tests1ap_client(int family)
     node = ogs_socknode_new(addr);
     ogs_assert(node);
 
-    sock = ogs_sctp_client(SOCK_STREAM, node->addr, NULL);
+    sock = ogs_sctp_client(SOCK_STREAM, node->addr, NULL, NULL);
     ogs_assert(sock);
 
     node->sock = sock;
@@ -91,26 +91,37 @@ ogs_socknode_t *tests1ap_client(int family)
     return node;
 }
 
-ogs_socknode_t *testngap_client(int family)
+ogs_socknode_t *testngap_client(int index, int family)
 {
     int rv;
     ogs_sockaddr_t *addr = NULL;
     ogs_socknode_t *node = NULL;
     ogs_sock_t *sock = NULL;
 
-    if (family == AF_INET6)
-        ogs_assert(OGS_OK ==
-            ogs_copyaddrinfo(&addr, test_self()->ngap_addr6));
-    else
-        ogs_assert(OGS_OK ==
-            ogs_copyaddrinfo(&addr, test_self()->ngap_addr));
+    if (index == 1) {
+        if (family == AF_INET6)
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(&addr, test_self()->ngap_addr6));
+        else
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(&addr, test_self()->ngap_addr));
+
+    } else if (index == 2) {
+        if (family == AF_INET6)
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(&addr, test_self()->ngap2_addr6));
+        else
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(&addr, test_self()->ngap2_addr));
+    } else
+        ogs_assert_if_reached();
 
     ogs_assert(addr);
 
     node = ogs_socknode_new(addr);
     ogs_assert(node);
 
-    sock = ogs_sctp_client(SOCK_STREAM, node->addr, NULL);
+    sock = ogs_sctp_client(SOCK_STREAM, node->addr, NULL, NULL);
     ogs_assert(sock);
 
     node->sock = sock;
@@ -136,7 +147,7 @@ ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node, int type)
     size = ogs_sctp_recvdata(node->sock, recvbuf->data, OGS_MAX_SDU_LEN,
             type == 1 ? &last_addr : NULL, NULL);
     if (size <= 0) {
-        ogs_error("sgsap_recv() failed");
+        ogs_error("ogs_sctp_recvdata() failed");
         return NULL;
     }
 

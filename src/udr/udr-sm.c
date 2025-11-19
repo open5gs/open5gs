@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -41,6 +41,7 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
     int rv;
 
     ogs_sbi_stream_t *stream = NULL;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *request = NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -62,8 +63,16 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
     case OGS_EVENT_SBI_SERVER:
         request = e->h.sbi.request;
         ogs_assert(request);
-        stream = e->h.sbi.data;
-        ogs_assert(stream);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
 
         rv = ogs_sbi_parse_request(&message, request);
         if (rv != OGS_OK) {
@@ -72,7 +81,7 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
             ogs_assert(true ==
                 ogs_sbi_server_send_error(
                     stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    NULL, "cannot parse HTTP message", NULL));
+                    NULL, "cannot parse HTTP message", NULL, NULL));
             break;
         }
 
@@ -81,7 +90,7 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
             ogs_assert(true ==
                 ogs_sbi_server_send_error(
                     stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    &message, "Not supported version", NULL));
+                    &message, "Not supported version", NULL, NULL));
             ogs_sbi_message_free(&message);
             break;
         }
@@ -102,7 +111,8 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
                     ogs_assert(true ==
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_FORBIDDEN,
-                            &message, "Invalid HTTP method", message.h.method));
+                            &message, "Invalid HTTP method", message.h.method,
+                            NULL));
                 END
                 break;
 
@@ -113,7 +123,7 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
                         "Unknown resource name",
-                        message.h.resource.component[0]));
+                        message.h.resource.component[0], NULL));
             END
             break;
 
@@ -145,7 +155,7 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
                                 ogs_sbi_server_send_error(stream,
                                     OGS_SBI_HTTP_STATUS_FORBIDDEN,
                                     &message, "Invalid HTTP method",
-                                    message.h.method));
+                                    message.h.method, NULL));
                         END
                         break;
                     DEFAULT
@@ -155,7 +165,7 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
                             ogs_sbi_server_send_error(stream,
                                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                                 &message, "Unknown resource name",
-                                message.h.resource.component[2]));
+                                message.h.resource.component[2], NULL));
                     END
                 END
                 break;
@@ -171,7 +181,7 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                         &message, "Unknown resource name",
-                        message.h.resource.component[0]));
+                        message.h.resource.component[0], NULL));
             END
             break;
 
@@ -180,7 +190,8 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
-                    "Invalid API name", message.h.resource.component[0]));
+                    "Invalid API name", message.h.resource.component[0],
+                    NULL));
         END
 
         /* In lib/sbi/server.c, notify_completed() releases 'request' buffer. */

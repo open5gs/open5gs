@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -68,7 +68,7 @@ char *ogs_ipfw_encode_flow_description(ogs_ipfw_rule_t *ipfw_rule);
  * Refer to lib/ipfw/ogs-ipfw.h
  * Issue #338
  *
- * <DOWNLINK>
+ * <DOWNLINK/BI-DIRECTIONAL>>
  * RX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
  * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
  * PFCP : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>

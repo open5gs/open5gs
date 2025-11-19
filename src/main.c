@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -42,6 +42,7 @@ static void show_help(const char *name)
        "   -D             : start as a daemon\n"
        "   -v             : show version number and exit\n"
        "   -h             : show this message and exit\n"
+       "   -k             : use <id> config section\n"
        "\n", name);
 }
 
@@ -58,10 +59,6 @@ static int check_signal(int signum)
         ogs_info("SIGHUP received");
         ogs_log_cycle();
 
-        break;
-    case SIGWINCH:
-        ogs_info("Signal-NUM[%d] received (%s)",
-                signum, ogs_signal_description_get(signum));
         break;
     case SIGUSR1:
         fprintf(stderr,
@@ -104,6 +101,7 @@ int main(int argc, const char *const argv[])
     ogs_getopt_t options;
     struct {
         char *config_file;
+        char *config_section;
         char *log_file;
         char *log_level;
         char *domain_mask;
@@ -116,7 +114,7 @@ int main(int argc, const char *const argv[])
     memset(&optarg, 0, sizeof(optarg));
 
     ogs_getopt_init(&options, (char**)argv);
-    while ((opt = ogs_getopt(&options, "vhDc:l:e:m:dt")) != -1) {
+    while ((opt = ogs_getopt(&options, "vhDc:l:e:m:dtk:")) != -1) {
         switch (opt) {
         case 'v':
             show_version();
@@ -164,6 +162,9 @@ int main(int argc, const char *const argv[])
         case 't':
             optarg.enable_trace = true;
             break;
+        case 'k':
+            optarg.config_section = options.optarg;
+            break;
         case '?':
             fprintf(stderr, "%s: %s\n", argv[0], options.errmsg);
             show_help(argv[0]);
@@ -195,6 +196,10 @@ int main(int argc, const char *const argv[])
     if (optarg.domain_mask) {
         argv_out[i++] = "-m";
         argv_out[i++] = optarg.domain_mask;
+    }
+    if (optarg.config_section) {
+        argv_out[i++] = "-k";
+        argv_out[i++] = optarg.config_section;
     }
 
     argv_out[i] = NULL;
