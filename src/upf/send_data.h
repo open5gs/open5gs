@@ -1,23 +1,3 @@
-/*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
- *
- * This file is part of Open5GS.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-// Created by Fatemeh Shafiei Ardestani on 2024-07-13.
-
 #ifndef REST_API_C_SEND_DATA_H
 #define REST_API_C_SEND_DATA_H
 
@@ -39,6 +19,12 @@
 #include <curl/curl.h>
 #include "string.h"
 #include <jansson.h>
+#include "delta_queue.h"
+
+void ensure_reporting_map_exists(void);
+usage_report_per_flow_t *create_report_from_delta(flow_delta_entry *delta);
+void apply_delta_to_report(usage_report_per_flow_t *rep, flow_delta_entry *delta);
+void apply_pending_deltas_locked(void);
 void get_current_time_send(char *buffer, size_t buffer_size);
 //static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
 void parse_time(const char* date_time, struct  tm* tm);
@@ -59,6 +45,7 @@ void free_application_related_information(ApplicationRelatedInformation *appInfo
 void free_user_data_usage_measurements(UserDataUsageMeasurements *usageMeasurement);
 void free_notification_item(NotificationItem *item);
 void free_notification_memory(cvector_vector_type(NotificationItem *) *vec);
+void free_ue_volume_time(void *p);
 void create_send_report(char*sub_id,UpfEventSubscription upfSub,EventType type);
 void send_report(char *json_data,UpfEventSubscription upfSub,EventType type);
 void* EventReport_UDUM(void*);

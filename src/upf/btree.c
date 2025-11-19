@@ -1,24 +1,5 @@
-/*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
- *
- * This file is part of Open5GS.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 //
-// Modified by Fatemeh Shafiei Ardestani on 2024-12-07.
+// Created by Fatemeh Shafiei Ardestani on 2024-12-07.
 //
 #include "btree.h"
 int str_compare(const void *a, const void *b) {
@@ -196,3 +177,37 @@ void btreemap_foreach_helper(MapNode root, void (*func)(void *key, void *value))
 void btreemap_foreach(BTreeMap map, void (*func)(void *key, void *value)) {
   btreemap_foreach_helper(map->root, func);
 }
+void btreemap_free_helper(MapNode root, bool free_keys, bool free_values, void (*free_value_fn)(void *)){
+  if (root == NULL) return;
+  btreemap_free_helper(root->left, free_keys, free_values, free_value_fn);
+  btreemap_free_helper(root->right, free_keys, free_values, free_value_fn);
+  if (free_keys && root->key != NULL) {
+    free(root->key);
+  }
+  if (free_values && root->value != NULL) {
+    if (free_value_fn) {
+      free_value_fn(root->value);
+    } else {
+      free(root->value);
+    }
+  }
+  free(root);
+}
+void btreemap_free(BTreeMap map, bool free_keys, bool free_values, void (*free_value_fn)(void *)) {
+  if (map == NULL) return;
+  btreemap_free_helper(map->root, free_keys, free_values, free_value_fn);
+  free(map);
+
+}
+// TODO
+//btreemap_copy_helper(MapNode src_root, MapNode dest_root){
+//  if (src_root == NULL) return;
+//  dest_root->key = src_root->key;
+//  dest_root->value = src_root->value;
+// }
+//
+//void btreemap_copy(BTreeMap srcmap,BTreeMap destmap){
+//  if (srcmap == NULL) return;
+//  btreemap_copy_helper(srcmap->root, destmap->root);
+//  return;
+//}

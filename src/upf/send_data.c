@@ -1,21 +1,3 @@
-/*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
- *
- * This file is part of Open5GS.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
 //
 // Created by Fatemeh Shafiei Ardestani on 2024-07-13.
 //
@@ -23,8 +5,99 @@
 // Created by Fatemeh Shafiei Ardestani on 2024-07-13.
 //
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "send_data.h"
+#include "delta_queue.h"
+
+static pthread_mutex_t reporting_lock = PTHREAD_MUTEX_INITIALIZER;
+static BTreeMap reporting_map = NULL;
+
+static char *dup_string_local(const char *src) {
+  if (!src) return NULL;
+  size_t len = strlen(src) + 1;
+  char *dst = malloc(len);
+  if (!dst) return NULL;
+  memcpy(dst, src, len);
+  return dst;
+}
+
+static char *own_or_dup(char **src) {
+  if (src && *src) {
+    char *tmp = *src;
+    *src = NULL;
+    return tmp;
+  }
+  return dup_string_local("");
+}
+
+void ensure_reporting_map_exists(void) {
+  if (!reporting_map) {
+    reporting_map = new_str_btree();
+  }
+}
+
+usage_report_per_flow_t *create_report_from_delta(flow_delta_entry *delta) {
+  if (!delta->str_key || !delta->usubid || !delta->ue_ip || !delta->dst_ip) {
+    return NULL;
+  }
+  usage_report_per_flow_t *rep = calloc(1, sizeof(*rep));
+  if (!rep) return NULL;
+  rep->key = calloc(1, sizeof(flow_key));
+  if (!rep->key) {
+    free(rep);
+    return NULL;
+  }
+  rep->str_key = delta->str_key;
+  delta->str_key = NULL;
+  rep->key->usubid = own_or_dup(&delta->usubid);
+  rep->key->ue_ip = own_or_dup(&delta->ue_ip);
+  rep->key->dst_ip = own_or_dup(&delta->dst_ip);
+  rep->key->seid = delta->seid;
+  rep->key->src_port = delta->src_port;
+  rep->key->dst_port = delta->dst_port;
+  rep->key->proto = delta->proto;
+  rep->start_time = delta->start_time ? delta->start_time : time(NULL);
+  rep->timestamp = delta->timestamp ? delta->timestamp : rep->start_time;
+  rep->pending_flush = false;
+  rep->announced = true;
+  return rep;
+}
+
+void apply_delta_to_report(usage_report_per_flow_t *rep, flow_delta_entry *delta) {
+  rep->ul_bytes += delta->ul_bytes_delta;
+  rep->ul_pkts += delta->ul_pkts_delta;
+  rep->dl_bytes += delta->dl_bytes_delta;
+  rep->dl_pkts += delta->dl_pkts_delta;
+  rep->ul_bytes_rate += delta->ul_bytes_delta;
+  rep->ul_pkts_rate += delta->ul_pkts_delta;
+  rep->dl_bytes_rate += delta->dl_bytes_delta;
+  rep->dl_pkts_rate += delta->dl_pkts_delta;
+}
+
+void apply_pending_deltas_locked(void) {
+  ensure_reporting_map_exists();
+  flow_delta_entry *delta;
+  while ((delta = flow_delta_try_dequeue()) != NULL) {
+    if (!delta->str_key) {
+      fatemeh_log("[delta_queue] drop delta without key");
+      flow_delta_entry_free(delta);
+      continue;
+    }
+    usage_report_per_flow_t *rep = btreemap_get(reporting_map, delta->str_key);
+    if (!rep) {
+      rep = create_report_from_delta(delta);
+      if (!rep) {
+        fatemeh_log("[delta_queue] drop delta for %s (missing payload)", delta->str_key);
+        flow_delta_entry_free(delta);
+        continue;
+      }
+      btreemap_insert_str(reporting_map, rep->str_key, rep);
+    }
+    apply_delta_to_report(rep, delta);
+    flow_delta_entry_free(delta);
+  }
+}
 
 void get_current_time_send(char *buffer, size_t buffer_size) {
 
@@ -36,10 +109,6 @@ void get_current_time_send(char *buffer, size_t buffer_size) {
     snprintf(buffer, buffer_size, "%04d-%02d-%02d %02d:%02d:%02d.%03d",
              local_tm.tm_year + 1900, local_tm.tm_mon + 1, local_tm.tm_mday,
              local_tm.tm_hour, local_tm.tm_min, local_tm.tm_sec, millisec);
-//  time_t now = time(NULL);
-//  struct tm local_tm;
-//  localtime_r(&now, &local_tm);
-//  strftime(buffer, buffer_size, "%Y-%m-%d %H:%M:%S", &local_tm);
 
 }
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
@@ -75,7 +144,9 @@ char* key_to_string(flow_key* key){
   json_object_set_new(obj,"DstIp", json_string(key->dst_ip));
   json_object_set_new(obj,"SrcPort", json_integer(key->src_port));
   json_object_set_new(obj,"DstPort", json_integer(key->dst_port));
-  return json_dumps(obj, JSON_INDENT(2));
+  char *s = json_dumps(obj, JSON_INDENT(2));
+  json_decref(obj);
+  return s;
 }
 char* sumStrings(char* str1, char* str2) {
   if (str1 == NULL || str2 == NULL) {
@@ -135,7 +206,6 @@ void fillNotificationOperation(char * sub_id,BTreeMap ue_to_notif,MapNode root, 
   usage->flowInfo->fDir = BIDIRECTIONAL;
   usage->flowInfo->spi = NULL;
   usage->flowInfo->tosTrafficClass = NULL;
-  usage->appID = "\0";
   usage->appID = NULL;
   usage->throughputStatisticsMeasurement = NULL;
   usage->applicationRelatedInformation = NULL;
@@ -166,6 +236,9 @@ void fillNotificationOperation(char * sub_id,BTreeMap ue_to_notif,MapNode root, 
     time(&now);
     time_t diff = now - usage_report_per_flow->timestamp;
     if(diff == 0){
+      free_flow_information(usage->flowInfo);
+      usage->flowInfo = NULL;
+      free(usage);
       return;
     }
     fatemeh_log("[EventReport_UDUT] time diff calculated");
@@ -198,10 +271,16 @@ void fillNotificationOperation(char * sub_id,BTreeMap ue_to_notif,MapNode root, 
     time(&now);
     time_t diff = now - usage_report_per_flow->timestamp;
     if(diff == 0){
+      free_flow_information(usage->flowInfo);
+      usage->flowInfo = NULL;
+      free(usage);
       return;
     }
     time_t from_start = now - usage_report_per_flow->start_time;
     if (from_start == 0){
+      free_flow_information(usage->flowInfo);
+      usage->flowInfo = NULL;
+      free(usage);
       return;
     }
     u_int64_t  ulThroughput = (usage_report_per_flow->ul_bytes_rate * 8) / diff;
@@ -258,7 +337,6 @@ void fillNotificationOperation(char * sub_id,BTreeMap ue_to_notif,MapNode root, 
     item->ueIpv4Addr = usage_report_per_flow->key->ue_ip;
     fatemeh_log("item->ueIpv4Addr %s", item->ueIpv4Addr);
     item->type = type;
-    struct tm *tm = malloc(sizeof(struct tm));
     time_t current_time;
     time(&current_time);
     item->timeStamp = current_time;
@@ -290,17 +368,19 @@ void fillNotificationItemPerFlowHelper(char * sub_id,BTreeMap ue_to_notif, MapNo
 
 void  fillNotificationItemPerFlow(char * sub_id,UpfEventSubscription upfSub,cvector_vector_type(NotificationItem **) Notifvec,EventType type, MeasurementType measurementType){
   if(type==USER_DATA_USAGE_MEASURES || type== USER_DATA_USAGE_TRENDS){
-    pthread_mutex_lock(&ee_lock);
-    if (mymap == NULL){
+    pthread_mutex_lock(&reporting_lock);
+    apply_pending_deltas_locked();
+    if (reporting_map == NULL || reporting_map->root == NULL){
       fatemeh_log("[EventReport_UDUT] There is no data to report");
-      pthread_mutex_unlock(&ee_lock);
+      pthread_mutex_unlock(&reporting_lock);
       return;
     }
     BTreeMap ue_to_notif = new_str_btree();
-    fillNotificationItemPerFlowHelper(sub_id,ue_to_notif,mymap->root,upfSub,type, measurementType);
+    fillNotificationItemPerFlowHelper(sub_id,ue_to_notif,reporting_map->root,upfSub,type, measurementType);
     fatemeh_log("size of ue_to_notif hash is %zu", ue_to_notif->size);
     fillNotifVec(ue_to_notif->root,Notifvec);
-    pthread_mutex_unlock(&ee_lock);
+    btreemap_free(ue_to_notif, true, false, NULL);
+    pthread_mutex_unlock(&reporting_lock);
 
   }
 }
@@ -321,12 +401,12 @@ void fillNotificationOperationPerSess(char * sub_id,BTreeMap ue_to_notif,MapNode
   usage->flowInfo->packetFilterUsage = false;
   usage->flowInfo->spi = NULL;
   usage->flowInfo->tosTrafficClass = NULL;
-  usage->appID = "\0";
+  usage->appID = NULL;
   usage->throughputMeasurement = NULL;
   usage->appID = NULL;
   usage->throughputStatisticsMeasurement = NULL;
   usage->applicationRelatedInformation = NULL;
-  usage->flowInfo->packFiltId = "\0"; //key_to_string(usage_report_per_flow->key);
+  usage->flowInfo->packFiltId = NULL; //key_to_string(usage_report_per_flow->key);
   fatemeh_log("in fillNotificationOperation the packetfilterID is %s", usage->flowInfo->packFiltId);
   if(measurementType == VOLUME_MEASUREMENT){
     usage->volumeMeasurement = malloc(sizeof (VolumeMeasurement));
@@ -354,6 +434,9 @@ void fillNotificationOperationPerSess(char * sub_id,BTreeMap ue_to_notif,MapNode
     time(&now);
     time_t diff = now - usage_report_per_flow->timestamp;
     if(diff == 0){
+      free_flow_information(usage->flowInfo);
+      usage->flowInfo = NULL;
+      free(usage);
       return;
     }
     UeVolumeTime * ueVT = btreemap_get(ue_to_throughput,usage_report_per_flow->key->ue_ip);
@@ -410,6 +493,9 @@ void fillNotificationOperationPerSess(char * sub_id,BTreeMap ue_to_notif,MapNode
     time(&now);
     time_t diff = now - usage_report_per_flow->timestamp;
     if(diff == 0){
+      free_flow_information(usage->flowInfo);
+      usage->flowInfo = NULL;
+      free(usage);
       return;
     }
     time_t from_start = now - usage_report_per_flow->start_time;
@@ -490,7 +576,6 @@ void fillNotificationOperationPerSess(char * sub_id,BTreeMap ue_to_notif,MapNode
     item->ueIpv4Addr = usage_report_per_flow->key->ue_ip;
     fatemeh_log("item->ueIpv4Addr %s", item->ueIpv4Addr);
     item->type = type;
-    struct tm *tm = malloc(sizeof(struct tm));
     time_t current_time;
     time(&current_time);
     item->timeStamp = current_time;
@@ -511,24 +596,61 @@ void fillNotificationOperationPerSess(char * sub_id,BTreeMap ue_to_notif,MapNode
     if(measurementType == VOLUME_MEASUREMENT){
       item->userDataUsageMeasurements[0]->volumeMeasurement->dlNbOfPackets += usage->volumeMeasurement->dlNbOfPackets;
       item->userDataUsageMeasurements[0]->volumeMeasurement->ulNbOfPackets += usage->volumeMeasurement->ulNbOfPackets;
-      item->userDataUsageMeasurements[0]->volumeMeasurement->dlVolume = sumStrings(item->userDataUsageMeasurements[0]->volumeMeasurement->dlVolume,usage->volumeMeasurement->dlVolume);
-      item->userDataUsageMeasurements[0]->volumeMeasurement->ulVolume = sumStrings(item->userDataUsageMeasurements[0]->volumeMeasurement->ulVolume ,usage->volumeMeasurement->ulVolume);
-      item->userDataUsageMeasurements[0]->volumeMeasurement->totalVolume = sumStrings(item->userDataUsageMeasurements[0]->volumeMeasurement->totalVolume, usage->volumeMeasurement->totalVolume);
       item->userDataUsageMeasurements[0]->volumeMeasurement->totalNbOfPackets += usage->volumeMeasurement->totalNbOfPackets;
-      free(usage->flowInfo);
-      free(usage->volumeMeasurement);
+      char *temp;
+      char *old_dl = item->userDataUsageMeasurements[0]->volumeMeasurement->dlVolume;
+      temp = sumStrings(old_dl,usage->volumeMeasurement->dlVolume);
+      if (temp) {
+        free(old_dl);
+        item->userDataUsageMeasurements[0]->volumeMeasurement->dlVolume = temp;
+      }
+      char *old_ul = item->userDataUsageMeasurements[0]->volumeMeasurement->ulVolume;
+      temp = sumStrings( old_ul,usage->volumeMeasurement->ulVolume);
+      if (temp) {
+        free(old_ul);
+        item->userDataUsageMeasurements[0]->volumeMeasurement->ulVolume = temp;
+      }
+      char *old_total = item->userDataUsageMeasurements[0]->volumeMeasurement->totalVolume;
+      temp = sumStrings(old_total, usage->volumeMeasurement->totalVolume);
+      if (temp){
+        free(old_total);
+        item->userDataUsageMeasurements[0]->volumeMeasurement->totalVolume = temp;
+      }
+
+      free_flow_information(usage->flowInfo);
+      usage->flowInfo = NULL;
+      free_volume_measurement(usage->volumeMeasurement);
       free(usage);
+      usage = NULL;
     }
     else if(measurementType == THROUGHPUT_MEASUREMENT && type == USER_DATA_USAGE_MEASURES){
       // TODO: works for now but should be changed
+      if (item->userDataUsageMeasurements[0]->throughputMeasurement) {
+        free_throughput_measurement(item->userDataUsageMeasurements[0]->throughputMeasurement);
+      }
       item->userDataUsageMeasurements[0]->throughputMeasurement = usage->throughputMeasurement;
+      usage->throughputMeasurement = NULL;
+      free_flow_information(usage->flowInfo);
+      usage->flowInfo = NULL;
+      if (usage->volumeMeasurement) { free_volume_measurement(usage->volumeMeasurement); usage->volumeMeasurement = NULL; }
+      if (usage->throughputStatisticsMeasurement) { free_throughput_statistics_measurement(usage->throughputStatisticsMeasurement); usage->throughputStatisticsMeasurement = NULL; }
+      free(usage);
+      usage = NULL;
     }
     else if(measurementType == THROUGHPUT_MEASUREMENT && type == USER_DATA_USAGE_TRENDS ){
       // TODO: works for now but should be changed
+      if (item->userDataUsageMeasurements[0]->throughputStatisticsMeasurement) {
+        free_throughput_statistics_measurement(item->userDataUsageMeasurements[0]->throughputStatisticsMeasurement);
+      }
       item->userDataUsageMeasurements[0]->throughputStatisticsMeasurement = usage->throughputStatisticsMeasurement;
+      usage->throughputStatisticsMeasurement = NULL;
+      free_flow_information(usage->flowInfo);
+      usage->flowInfo = NULL;
+      if (usage->volumeMeasurement) { free_volume_measurement(usage->volumeMeasurement); usage->volumeMeasurement = NULL; }
+      if (usage->throughputMeasurement) { free_throughput_measurement(usage->throughputMeasurement); usage->throughputMeasurement = NULL; }
+      free(usage);
+      usage = NULL;
     }
-
-
   }
 }
 void fillNotificationItemPerSessHelper(char * sub_id,BTreeMap ue_to_notif, MapNode root, UpfEventSubscription upfSub,EventType type, MeasurementType measurementType, BTreeMap ue_to_throughput){
@@ -543,18 +665,21 @@ void fillNotificationItemPerSessHelper(char * sub_id,BTreeMap ue_to_notif, MapNo
 
 void fillNotificationItemPerSess(char * sub_id,UpfEventSubscription upfSub,cvector_vector_type(NotificationItem **) Notifvec,EventType type, MeasurementType measurementType){
   if(type==USER_DATA_USAGE_MEASURES || type== USER_DATA_USAGE_TRENDS){
-    pthread_mutex_lock(&ee_lock);
-    if (mymap == NULL){
+    pthread_mutex_lock(&reporting_lock);
+    apply_pending_deltas_locked();
+    if (reporting_map == NULL || reporting_map->root == NULL){
       fatemeh_log("[EventReport_UDUT] There is no data to report");
-      pthread_mutex_unlock(&ee_lock);
+      pthread_mutex_unlock(&reporting_lock);
       return;
     }
     BTreeMap ue_to_notif = new_str_btree();
     BTreeMap ue_to_throughput = new_str_btree();
-    fillNotificationItemPerSessHelper(sub_id,ue_to_notif,mymap->root,upfSub,type, measurementType, ue_to_throughput);
+    fillNotificationItemPerSessHelper(sub_id,ue_to_notif,reporting_map->root,upfSub,type, measurementType, ue_to_throughput);
     fatemeh_log("size of ue_to_notif hash is %zu", ue_to_notif->size);
     fillNotifVec(ue_to_notif->root,Notifvec);
-    pthread_mutex_unlock(&ee_lock);
+    btreemap_free(ue_to_notif, true, false, NULL);
+    btreemap_free(ue_to_throughput, true, true, free_ue_volume_time);
+    pthread_mutex_unlock(&reporting_lock);
 
   }
 }
@@ -698,7 +823,11 @@ void free_notification_memory(cvector_vector_type(NotificationItem *) *vec) {
   fatemeh_log("free the notification vector");
   *vec = NULL; // Optional: avoid dangling pointer
 }
-
+void free_ue_volume_time(void *p) {
+  if (!p) return;
+  UeVolumeTime *u = (UeVolumeTime *)p;
+  free(u);
+}
 
 void create_send_report(char * sub_id,UpfEventSubscription upfSub,EventType type){
   if(type == USER_DATA_USAGE_MEASURES){
@@ -729,10 +858,8 @@ void create_send_report(char * sub_id,UpfEventSubscription upfSub,EventType type
       }
     }
     if(Notifvec == NULL){
-      fatemeh_log("[create_send_report] There is no data to report");
       return;
     }
-    fatemeh_log("[create_send_report] fillNotificationItem, the Noitve_size %lu\n", cvector_size(Notifvec));
     for(size_t i = 0; i < cvector_size(Notifvec); i++){
 
       json_t* callBack_Report = serialize_callBack(Notifvec[i], upfSub.notifyCorrelationId, 0);
@@ -741,6 +868,8 @@ void create_send_report(char * sub_id,UpfEventSubscription upfSub,EventType type
       }
       char *json_str = json_dumps(callBack_Report, JSON_INDENT(2));
       send_report (json_str, upfSub, type);
+      free(json_str);
+      json_decref(callBack_Report);
     }
     free_notification_memory(&Notifvec);
 
@@ -778,9 +907,11 @@ void create_send_report(char * sub_id,UpfEventSubscription upfSub,EventType type
       }
       char *json_str = json_dumps(callBack_Report, JSON_INDENT(2));
       send_report (json_str, upfSub, type);
+      free(json_str);
+      json_decref(callBack_Report);
     }
 
-    // to do: free the memory
+    free_notification_memory(&Notifvec);
 
   }
 }
@@ -824,7 +955,9 @@ void send_report(char *json_data,UpfEventSubscription upfSub,EventType type){
 
     curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
-    fatemeh_log("[EventReport_UDUT] in send_report 184");
+    curl_global_cleanup();
+//    let's see if it makse any problem.
+
 
   }
 }
@@ -870,4 +1003,3 @@ void* EventReport_UDUM(void*) {
 
   return NULL;
 }
-

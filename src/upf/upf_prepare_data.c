@@ -1,47 +1,150 @@
-/*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
- *
- * This file is part of Open5GS.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
 //
-// Created by Fatemeh Shafiei Ardestani on 20/11/24.
+// Created by f2shafie on 20/11/24.
 //
 
-//#include "upf-ee/types/types.h"
-//#define DEFINE_UPF_SHARED
-//#include "upf-ee/storage/shared_variables.h"
-//#undef DEFINE_UPF_SHARED
-//
 #define DEFINE_UPF_STORAGE
 #include "ee_event.h"
 #undef DEFINE_UPF_STORAGE
-//
 #define STB_DS_IMPLEMENTATION
 #include "stb_ds.h"
 #undef STB_DS_IMPLEMENTATION
-//#include "upf/upf-ee/EE-init.h"
 #include "upf_prepare_data.h"
 #define DEFINE_UPF_SHARED
 #include "shared_variables.h"
 #include "btree.h"
+#include "delta_queue.h"
 #undef DEFINE_UPF_SHARED
-//#include "xxhash.h"
 
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
+#include <endian.h>
+#include <netinet/ip.h>
+#include <netinet/ip6.h>
+#include <netinet/tcp.h>
+#include <netinet/udp.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 #define TCP_PROTOCOL 6
 #define UDP_PROTOCOL 17
+#define DELTA_FLUSH_INTERVAL_NS 900000000ULL
+
+static cvector_vector_type(usage_report_per_flow_t *) dirty_reports = NULL;
+static pthread_once_t delta_flush_once = PTHREAD_ONCE_INIT;
+
+static char *dup_string(const char *src) {
+  if (!src) return NULL;
+  size_t len = strlen(src) + 1;
+  char *dst = malloc(len);
+  if (!dst) return NULL;
+  memcpy(dst, src, len);
+  return dst;
+}
+
+static bool publish_flow_delta(usage_report_per_flow_t *rep) {
+  if (!rep) return true;
+  if (rep->ul_bytes_rate == 0 && rep->dl_bytes_rate == 0 &&
+      rep->ul_pkts_rate == 0 && rep->dl_pkts_rate == 0) {
+    rep->pending_flush = false;
+    return true;
+  }
+
+  flow_delta_entry *delta = calloc(1, sizeof(*delta));
+  if (!delta) return false;
+
+  delta->str_key = dup_string(rep->str_key);
+  if (!delta->str_key) {
+    flow_delta_entry_free(delta);
+    return false;
+  }
+
+  delta->ul_bytes_delta += rep->ul_bytes_rate;
+  delta->ul_pkts_delta += rep->ul_pkts_rate;
+  delta->dl_bytes_delta += rep->dl_bytes_rate;
+  delta->dl_pkts_delta += rep->dl_pkts_rate;
+
+  if (!rep->announced) {
+    delta->is_new = true;
+    delta->usubid = dup_string(rep->key->usubid);
+    delta->ue_ip = dup_string(rep->key->ue_ip);
+    delta->dst_ip = dup_string(rep->key->dst_ip);
+    if (!delta->usubid || !delta->ue_ip || !delta->dst_ip) {
+      flow_delta_entry_free(delta);
+      return false;
+    }
+    delta->seid = rep->key->seid;
+    delta->src_port = rep->key->src_port;
+    delta->dst_port = rep->key->dst_port;
+    delta->proto = rep->key->proto;
+    delta->start_time = rep->start_time;
+    delta->timestamp = rep->timestamp;
+  }
+
+  if (!flow_delta_enqueue(delta)) {
+    flow_delta_entry_free(delta);
+    return false;
+  }
+
+  rep->pending_flush = false;
+  rep->announced = true;
+  rep->ul_bytes_rate = 0;
+  rep->ul_pkts_rate = 0;
+  rep->dl_bytes_rate = 0;
+  rep->dl_pkts_rate = 0;
+  return true;
+}
+
+static void flush_dirty_reports_locked(void) {
+  size_t count = cvector_size(dirty_reports);
+  if (count == 0) return;
+  size_t keep = 0;
+  for (size_t i = 0; i < count; ++i) {
+    usage_report_per_flow_t *rep = dirty_reports[i];
+    if (!publish_flow_delta(rep)) {
+      dirty_reports[keep++] = rep;
+    }
+  }
+  cvector_set_size(dirty_reports, keep);
+}
+
+static void *delta_flush_worker(void *arg) {
+  (void)arg;
+  const struct timespec interval = {
+      .tv_sec = DELTA_FLUSH_INTERVAL_NS / 1000000000ULL,
+      .tv_nsec = DELTA_FLUSH_INTERVAL_NS % 1000000000ULL,
+  };
+  while (true) {
+    nanosleep(&interval, NULL);
+    pthread_mutex_lock(&subID_lock);
+    flush_dirty_reports_locked();
+    pthread_mutex_unlock(&subID_lock);
+  }
+  return NULL;
+}
+
+static void start_delta_flush_worker(void) {
+  pthread_t tid;
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+  if (pthread_create(&tid, &attr, delta_flush_worker, NULL) != 0) {
+    ogs_error("delta_flush_worker: failed to start");
+  }
+  pthread_attr_destroy(&attr);
+}
+
+static void ensure_delta_flush_worker(void) {
+  pthread_once(&delta_flush_once, start_delta_flush_worker);
+}
+
+static void schedule_report_for_flush(usage_report_per_flow_t *rep) {
+  if (!rep || rep->pending_flush) return;
+  cvector_push_back(dirty_reports, rep);
+  rep->pending_flush = true;
+}
 static int decode_ipv6_header(
         struct ip6_hdr *ip6_h, uint8_t *proto, uint16_t *hlen)
 {
@@ -58,7 +161,7 @@ static int decode_ipv6_header(
   endp = p + be16toh(ip6_h->ip6_plen);
 
   jp = p + sizeof(struct ip6_hbh);
-  while (p == endp) { /* Jumbo Frame */
+  if (p == endp) { /* Jumbo Frame */
     uint32_t jp_len = 0;
     struct ip6_opt_jumbo *jumbo = NULL;
 
@@ -115,30 +218,13 @@ static int decode_ipv6_header(
 
   return OGS_OK;
 }
-void make_str_key(flow_key * key, char * str_key){
-  fatemeh_log("in the make_str_key function.");
-  memset(str_key, 0, 230);
-  int str_key_zie = 0;
-  char * seid = malloc(10);
-  sprintf(seid, "%llu", key->seid);
-  char * src_port = malloc(10);
-  sprintf(src_port, "%hu", key->src_port);
-  char * dst_port = malloc(10);
-  sprintf(dst_port, "%hu", key->dst_port);
-  char * proto = malloc(10);
-  sprintf(proto, "%hu", key->proto);
-  fatemeh_log("[DEBUG] key->sub_id is %s ", key->usubid);
-  fatemeh_log("[DEBUG] seid is %s ", seid);
-  fatemeh_log("[DEBUG] key->ue_ip is %s ", key->ue_ip);
-  fatemeh_log("[DEBUG] key->dst_ip is %s ", key->dst_ip);
-  fatemeh_log("[DEBUG] src_port is %s ", src_port);
-  fatemeh_log("[DEBUG] dst_port is %s ", dst_port);
-  fatemeh_log("[DEBUG] proto is %s ", proto);  
 
-  sprintf(str_key,"%s%s%s%s%s%s%s", key->usubid, seid, key->ue_ip, key->dst_ip, src_port, dst_port, proto);
-  fatemeh_log("the created hash key is %s", str_key);
-  return;
-
+void make_str_key(flow_key *key, char *str_key) {
+  snprintf(str_key, 230, "%s|%llu|%s|%s|%hu|%hu|%u",
+           key->usubid,
+           (unsigned long long)key->seid,
+           key->ue_ip, key->dst_ip,
+           key->src_port, key->dst_port, key->proto);
 }
 
 void convert_ipv4_uint32_to_string(uint32_t src_addr, char *key_src) {
@@ -151,29 +237,18 @@ void convert_ipv4_uint32_to_string(uint32_t src_addr, char *key_src) {
   snprintf(key_src, INET_ADDRSTRLEN, "%u.%u.%u.%u", byte4, byte3, byte2, byte1);
 
 }
-void convert_ipv6_to_string(uint8_t src_addr[16], char *key_src) {
-  fatemeh_log("trying to convert 1p v6 to int ");
-  struct in6_addr ip6_addr;
-  memcpy(ip6_addr.s6_addr, src_addr, 16);
-
-  if (inet_ntop(AF_INET6, &ip6_addr, key_src, INET6_ADDRSTRLEN) != NULL) {
-  } else {
-    fatemeh_log("inet_ntop");
-  }
-}
 void prepare_data_ee(bool Uplink, uint64_t seid, ogs_pkbuf_t *pkbuf){
-
+  pthread_mutex_lock(&subID_lock);
+  ensure_delta_flush_worker();
   if (mymap == NULL) {
     mymap = new_str_btree();
   }
-  pthread_mutex_lock(&subID_lock);
+
   int len_sub = cvector_size(subIDList);
   for(int i=0;i<len_sub;i++){
     flow_key * key = malloc(sizeof (flow_key));
     struct ip *ip_h = NULL;
     struct ip6_hdr *ip6_h = NULL;
-    uint32_t *src_addr = NULL;
-    uint32_t *dst_addr = NULL;
     uint64_t p_len = 0;
     uint8_t proto = 0;
     uint16_t ip_hlen = 0;
@@ -181,49 +256,46 @@ void prepare_data_ee(bool Uplink, uint64_t seid, ogs_pkbuf_t *pkbuf){
     ogs_assert(pkbuf->len);
     ogs_assert(pkbuf->data);
     ip_h = (struct ip *)pkbuf->data;
-    key->usubid = malloc(8);
+    key->usubid = malloc(strlen(subIDList[i]) + 1);
     strcpy(key->usubid , subIDList[i]);
     if (ip_h->ip_v == 4) {
       ip_h = (struct ip *)pkbuf->data;
       ip6_h = NULL;
       proto = ip_h->ip_p;
       ip_hlen = (ip_h->ip_hl)*4;
-      src_addr = (void *)&ip_h->ip_src.s_addr;
-      dst_addr = (void *)&ip_h->ip_dst.s_addr;
-      key->dst_ip = malloc(16 * sizeof(char));
-      key->ue_ip = malloc(16 * sizeof(char));
+      key->dst_ip = malloc(INET_ADDRSTRLEN);
+      key->ue_ip = malloc(INET_ADDRSTRLEN);
       if(Uplink){
-        convert_ipv4_uint32_to_string(*src_addr,key->ue_ip);
-        convert_ipv4_uint32_to_string(*dst_addr,key->dst_ip);
+        inet_ntop(AF_INET, &ip_h->ip_src, key->ue_ip, INET_ADDRSTRLEN);
+        inet_ntop(AF_INET, &ip_h->ip_dst, key->dst_ip, INET_ADDRSTRLEN);
       }
       else{
-        convert_ipv4_uint32_to_string(*src_addr,key->dst_ip);
-        convert_ipv4_uint32_to_string(*dst_addr,key->ue_ip);
+          inet_ntop(AF_INET, &ip_h->ip_src, key->dst_ip, INET_ADDRSTRLEN);
+          inet_ntop(AF_INET, &ip_h->ip_dst, key->ue_ip, INET_ADDRSTRLEN);
 
       }
-      p_len = ip_h->ip_len;
+      p_len = ntohs(ip_h->ip_len);
     }else if (ip_h->ip_v == 6) {
       ip_h = NULL;
       ip6_h = (struct ip6_hdr *)pkbuf->data;
       decode_ipv6_header(ip6_h, &proto, &ip_hlen);
-      src_addr = (void *)ip6_h->ip6_src.s6_addr;
-      dst_addr = (void *)ip6_h->ip6_dst.s6_addr;
-      key->dst_ip = malloc( 40 * sizeof(char));
-      key->ue_ip = malloc(40 * sizeof(char));
+      key->dst_ip = malloc( INET6_ADDRSTRLEN);
+      key->ue_ip = malloc(INET6_ADDRSTRLEN);
       if(Uplink){
-        convert_ipv6_to_string((uint8_t *)src_addr,  key->ue_ip);
-        convert_ipv6_to_string((uint8_t *)dst_addr,  key->dst_ip);
+        inet_ntop(AF_INET6, &ip6_h->ip6_src, key->ue_ip,  INET6_ADDRSTRLEN);
+        inet_ntop(AF_INET6, &ip6_h->ip6_dst, key->dst_ip, INET6_ADDRSTRLEN);
       }
       else{
-        convert_ipv6_to_string((uint8_t *)src_addr,  key->dst_ip);
-        convert_ipv6_to_string((uint8_t *)dst_addr,  key->ue_ip);
+        inet_ntop(AF_INET6, &ip6_h->ip6_src, key->dst_ip, INET6_ADDRSTRLEN);
+        inet_ntop(AF_INET6, &ip6_h->ip6_dst, key->ue_ip,  INET6_ADDRSTRLEN);
       }
-      p_len = ip6_h->ip6_ctlun.ip6_un1.ip6_un1_plen + 40;
+      p_len = ntohs(ip6_h->ip6_ctlun.ip6_un1.ip6_un1_plen) + 40;
 
     } else {
       ogs_error("[upf_prepare_data]Invalid packet [IP version:%d, Packet Length:%d]",
                 ip_h->ip_v, pkbuf->len);
       ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+      pthread_mutex_unlock(&subID_lock);
       return;
     }
 
@@ -241,7 +313,7 @@ void prepare_data_ee(bool Uplink, uint64_t seid, ogs_pkbuf_t *pkbuf){
 
     }
     else if (key->proto == IPPROTO_UDP) {
-      struct udphdr *udph = (struct udphdr *)((char *)pkbuf->data + ip_h->ip_hl * 4);
+      struct udphdr *udph = (struct udphdr *)((char *)pkbuf->data + ip_hlen);
       if(Uplink){
         key->src_port = ntohs(udph->uh_sport);
         key->dst_port = ntohs(udph->uh_dport);
@@ -303,8 +375,16 @@ void prepare_data_ee(bool Uplink, uint64_t seid, ogs_pkbuf_t *pkbuf){
         rep->timestamp = current_time;
       }
       btreemap_insert_str(mymap,str_key, rep);
+      rep->pending_flush = false;
+      rep->announced = false;
+      schedule_report_for_flush(rep);
     }
     else{
+      free(str_key);
+      free(key->usubid);
+      free(key->ue_ip);
+      free(key->dst_ip);
+      free(key);
       if(Uplink){
         rep->ul_bytes += p_len;
         rep->ul_pkts += 1;
@@ -317,150 +397,10 @@ void prepare_data_ee(bool Uplink, uint64_t seid, ogs_pkbuf_t *pkbuf){
         rep->dl_bytes_rate += p_len;
         rep->dl_pkts_rate += 1;
       }
+      schedule_report_for_flush(rep);
     }
 
   }
   pthread_mutex_unlock(&subID_lock);
 
 }
-//void prepare_data_ee_opt(bool Uplink, uint64_t seid, ogs_pkbuf_t *pkbuf){
-//  if (mymap == NULL) {
-//    mymap = new_u64_btree();
-//  }
-//  flow_id  key;
-//  struct ip *ip_h = NULL;
-//  struct ip6_hdr *ip6_h = NULL;
-//  uint32_t *src_addr = NULL;
-//  uint32_t *dst_addr = NULL;
-//  uint64_t p_len = 0;
-//  uint8_t proto = 0;
-//  uint16_t ip_hlen = 0;
-//  ogs_assert(pkbuf);
-//  ogs_assert(pkbuf->len);
-//  ogs_assert(pkbuf->data);
-//  ip_h = (struct ip *)pkbuf->data;
-//  if (ip_h->ip_v == 4) {
-//    ip_h = (struct ip *)pkbuf->data;
-//    ip6_h = NULL;
-//    proto = ip_h->ip_p;
-//    ip_hlen = (ip_h->ip_hl)*4;
-//    src_addr = (void *)&ip_h->ip_src.s_addr;
-//    dst_addr = (void *)&ip_h->ip_dst.s_addr;
-//    if(Uplink){
-//      key.ue_ip = *src_addr;
-//      key.dst_ip = *dst_addr;
-//    }
-//    else{
-//      key.dst_ip = *src_addr;
-//      key.ue_ip = *dst_addr;
-//    }
-//    p_len = ip_h->ip_len;
-//  }else if (ip_h->ip_v == 6) {
-//    return;
-//    ip_h = NULL;
-//    ip6_h = (struct ip6_hdr *)pkbuf->data;
-//    decode_ipv6_header(ip6_h, &proto, &ip_hlen);
-//    src_addr = (void *)ip6_h->ip6_src.s6_addr;
-//    dst_addr = (void *)ip6_h->ip6_dst.s6_addr;
-//    if(Uplink){
-//      key.ue_ip = *src_addr;
-//      key.dst_ip = *dst_addr;
-//    }
-//    else{
-//      key.dst_ip = *src_addr;
-//      key.ue_ip = *dst_addr;
-//    }
-//    p_len = ip6_h->ip6_ctlun.ip6_un1.ip6_un1_plen + 40;
-//
-//  } else {
-//    ogs_error("[upf_prepare_data]Invalid packet [IP version:%d, Packet Length:%d]",
-//              ip_h->ip_v, pkbuf->len);
-//    ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-//    return;
-//  }
-//  key.proto = proto;
-//  if(key.proto == TCP_PROTOCOL){
-//    struct tcphdr *tcph = (struct tcphdr *)((char *)pkbuf->data + ip_hlen);
-//    if(Uplink){
-//      key.src_port = be16toh(tcph->th_sport);
-//      key.dst_port = be16toh(tcph->th_dport);
-//    }else{
-//      key.dst_port = be16toh(tcph->th_sport);
-//      key.src_port = be16toh(tcph->th_dport);
-//    }
-//  }
-//  else if (key.proto == IPPROTO_UDP) {
-//    struct udphdr *udph = (struct udphdr *)((char *)pkbuf->data + ip_h->ip_hl * 4);
-//    if(Uplink){
-//      key.src_port = ntohs(udph->uh_sport);
-//      key.dst_port = ntohs(udph->uh_dport);
-//    }else{
-//      key.dst_port = ntohs(udph->uh_sport);
-//      key.src_port = ntohs(udph->uh_dport);
-//    }
-//  }
-//  else{
-//    key.src_port = 0;
-//    key.dst_port = 0;
-//  }
-//  key.seid = seid;
-//
-//  uint64_t hash = XXH64(&key, sizeof(flow_id), 0);
-//  flow_report * rep =  btreemap_get(mymap,&hash);
-//
-//  if(rep == NULL){
-//    rep = malloc(sizeof (flow_report));
-//    rep->key = key;
-//    if(Uplink){
-//      rep->ul_bytes = p_len;
-//      rep->ul_pkts = 1;
-//      rep->ul_bytes_rate = p_len;
-//      rep->ul_pkts_rate = 1;
-//      rep->dl_bytes = 0;
-//      rep->dl_pkts = 0;
-//      rep->dl_bytes_rate = 0;
-//      rep->dl_pkts_rate = 0;
-//      rep->peak_dl_bytes = 0;
-//      rep->peak_dl_pkts = 0;
-//      rep->peak_ul_bytes = 0;
-//      rep->peak_ul_pkts = 0;
-//      time_t current_time;
-//      time(&current_time);
-//      rep->start_time = current_time;
-//      rep->timestamp = current_time;
-//
-//    } else{
-//      rep->dl_bytes = p_len;
-//      rep->dl_pkts = 1;
-//      rep->dl_bytes_rate = p_len;
-//      rep->dl_pkts_rate = 1;
-//      rep->ul_bytes = 0;
-//      rep->ul_pkts = 0;
-//      rep->ul_bytes_rate = 0;
-//      rep->ul_pkts_rate = 0;
-//      rep->peak_dl_bytes = 0;
-//      rep->peak_dl_pkts = 0;
-//      rep->peak_ul_bytes = 0;
-//      rep->peak_ul_pkts = 0;
-//      time_t current_time;
-//      time(&current_time);
-//      rep->start_time = current_time;
-//      rep->timestamp = current_time;
-//    }
-//    btreemap_insert_u64(mymap,&hash, rep);
-//  }
-//  else{
-//    if(Uplink){
-//      rep->ul_bytes += p_len;
-//      rep->ul_pkts += 1;
-//      rep->ul_bytes_rate += p_len;
-//      rep->ul_pkts_rate += 1;
-//
-//    } else{
-//      rep->dl_bytes += p_len;
-//      rep->dl_pkts += 1;
-//      rep->dl_bytes_rate += p_len;
-//      rep->dl_pkts_rate += 1;
-//    }
-//  }
-//}

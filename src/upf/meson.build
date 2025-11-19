@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#// Modified by Fatemeh Shafiei Ardestani on 2025-04-06
 
 mhd_dep = dependency('libmicrohttpd', required: true)  # Added line
 jn_dep = dependency('jansson', required: true)         # Added line
@@ -72,6 +71,7 @@ libupf_sources = files('''
     n4-handler.h
     btree.h
     shared_variables.h
+    delta_queue.h
     types.h
     decoder.h
     upf_prepare_data.h
@@ -110,6 +110,7 @@ libupf_sources = files('''
     handler.c
     response_builder.c
     send_data.c
+    delta_queue.c
 
 '''.split())
 
