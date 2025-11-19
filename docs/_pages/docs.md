@@ -86,6 +86,9 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [Open5GS and srsenb](https://gradiant.github.io/5g-charts/open5gs-srsenb.html)
   - [Open5GS with SCP(Service Communication Proxy](https://gradiant.github.io/5g-charts/open5gs-scp.html)
 
+- @gradiant operator
+  - [Open5GS Operator](https://github.com/Gradiant/open5gs-operator)
+
 - @loxilb
   - [Exploring 5G SCP with Open5GS and LoxiLB](https://dev.to/nikhilmalik/5g-service-communication-proxy-with-loxilb-4242)
   - [NGAP Load Balancing with Open5GS and LoxiLB](https://www.loxilb.io/post/ngap-load-balancing-with-loxilb)
