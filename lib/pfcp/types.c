@@ -454,7 +454,11 @@ int16_t ogs_pfcp_parse_bitrate(
 
     ogs_assert(bitrate);
     ogs_assert(octet);
-    ogs_assert(octet->len == OGS_PFCP_BITRATE_LEN);
+    if (octet->len != OGS_PFCP_BITRATE_LEN) {
+        ogs_error("Mismatch IE Length[%d] != Decoded[%d]",
+                OGS_PFCP_BITRATE_LEN, octet->len);
+        return 0;
+    }
 
     memset(bitrate, 0, sizeof(ogs_pfcp_bitrate_t));
 

@@ -1300,6 +1300,7 @@ ogs_pfcp_qer_t *ogs_pfcp_handle_create_qer(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_create_qer_t *message,
         uint8_t *cause_value, uint8_t *offending_ie_value)
 {
+    int rv;
     ogs_pfcp_qer_t *qer = NULL;
 
     ogs_assert(message);
@@ -1335,10 +1336,25 @@ ogs_pfcp_qer_t *ogs_pfcp_handle_create_qer(ogs_pfcp_sess_t *sess,
     memset(&qer->mbr, 0, sizeof(qer->mbr));
     memset(&qer->gbr, 0, sizeof(qer->gbr));
 
-    if (message->maximum_bitrate.presence)
-        ogs_pfcp_parse_bitrate(&qer->mbr, &message->maximum_bitrate);
-    if (message->guaranteed_bitrate.presence)
-        ogs_pfcp_parse_bitrate(&qer->gbr, &message->guaranteed_bitrate);
+    if (message->maximum_bitrate.presence) {
+        rv = ogs_pfcp_parse_bitrate(&qer->mbr, &message->maximum_bitrate);
+        if (rv != OGS_PFCP_BITRATE_LEN) {
+            ogs_error("MBR: ogs_pfcp_parse_bitrate() failed");
+            *cause_value = OGS_PFCP_CAUSE_INVALID_LENGTH;
+            *offending_ie_value = OGS_PFCP_MBR_TYPE;
+            return NULL;
+        }
+    }
+
+    if (message->guaranteed_bitrate.presence) {
+        rv = ogs_pfcp_parse_bitrate(&qer->gbr, &message->guaranteed_bitrate);
+        if (rv != OGS_PFCP_BITRATE_LEN) {
+            ogs_error("GBR: ogs_pfcp_parse_bitrate() failed");
+            *cause_value = OGS_PFCP_CAUSE_INVALID_LENGTH;
+            *offending_ie_value = OGS_PFCP_GBR_TYPE;
+            return NULL;
+        }
+    }
 
     qer->qfi = 0;
 
@@ -1352,6 +1368,7 @@ ogs_pfcp_qer_t *ogs_pfcp_handle_update_qer(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_update_qer_t *message,
         uint8_t *cause_value, uint8_t *offending_ie_value)
 {
+    int rv;
     ogs_pfcp_qer_t *qer = NULL;
 
     ogs_assert(message);
@@ -1375,10 +1392,24 @@ ogs_pfcp_qer_t *ogs_pfcp_handle_update_qer(ogs_pfcp_sess_t *sess,
         return NULL;
     }
 
-    if (message->maximum_bitrate.presence)
-        ogs_pfcp_parse_bitrate(&qer->mbr, &message->maximum_bitrate);
-    if (message->guaranteed_bitrate.presence)
-        ogs_pfcp_parse_bitrate(&qer->gbr, &message->guaranteed_bitrate);
+    if (message->maximum_bitrate.presence) {
+        rv = ogs_pfcp_parse_bitrate(&qer->mbr, &message->maximum_bitrate);
+        if (rv != OGS_PFCP_BITRATE_LEN) {
+            ogs_error("MBR: ogs_pfcp_parse_bitrate() failed");
+            *cause_value = OGS_PFCP_CAUSE_INVALID_LENGTH;
+            *offending_ie_value = OGS_PFCP_MBR_TYPE;
+            return NULL;
+        }
+    }
+    if (message->guaranteed_bitrate.presence) {
+        rv = ogs_pfcp_parse_bitrate(&qer->gbr, &message->guaranteed_bitrate);
+        if (rv != OGS_PFCP_BITRATE_LEN) {
+            ogs_error("GBR: ogs_pfcp_parse_bitrate() failed");
+            *cause_value = OGS_PFCP_CAUSE_INVALID_LENGTH;
+            *offending_ie_value = OGS_PFCP_GBR_TYPE;
+            return NULL;
+        }
+    }
 
     return qer;
 }
