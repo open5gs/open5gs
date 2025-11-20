@@ -577,7 +577,14 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
                     sdf_filter.flow_description_len+1);
 
             rv = ogs_ipfw_compile_rule(&rule->ipfw, flow_description);
-            ogs_assert(rv == OGS_OK);
+
+            if (rv != OGS_OK) {
+                ogs_error("ogs_ipfw_compile_rule() failed [%s]",
+                        flow_description);
+                ogs_free(flow_description);
+                ogs_pfcp_rule_remove(rule);
+                continue;
+            }
 
             ogs_free(flow_description);
 /*
@@ -630,7 +637,11 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
             pdr->dnn = ogs_strdup(dnn);
             ogs_assert(pdr->dnn);
         } else {
-            ogs_error("Invalid pdi.network_instance");
+            ogs_error("Invalid pdi.network_instance [%d]",
+                    message->pdi.network_instance.len);
+            ogs_log_hexdump(OGS_LOG_ERROR,
+                    message->pdi.network_instance.data,
+                    message->pdi.network_instance.len);
         }
     }
 
@@ -928,7 +939,13 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
                         sdf_filter.flow_description_len+1);
 
                 rv = ogs_ipfw_compile_rule(&rule->ipfw, flow_description);
-                ogs_assert(rv == OGS_OK);
+                if (rv != OGS_OK) {
+                    ogs_error("ogs_ipfw_compile_rule() failed [%s]",
+                            flow_description);
+                    ogs_free(flow_description);
+                    ogs_pfcp_rule_remove(rule);
+                    continue;
+                }
 
                 ogs_free(flow_description);
     /*
@@ -979,7 +996,11 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
                 pdr->dnn = ogs_strdup(dnn);
                 ogs_assert(pdr->dnn);
             } else {
-                ogs_error("Invalid pdi.network_instance");
+                ogs_error("Invalid pdi.network_instance [%d]",
+                        message->pdi.network_instance.len);
+                ogs_log_hexdump(OGS_LOG_ERROR,
+                        message->pdi.network_instance.data,
+                        message->pdi.network_instance.len);
             }
         }
 
