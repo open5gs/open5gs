@@ -30,6 +30,12 @@ static void ngap_build_plmn_support_list(NGAP_PLMNSupportList_t *PLMNSupportList
         NGAP_PLMNIdentity_t *pLMNIdentity = NULL;
         NGAP_SliceSupportList_t *sliceSupportList = NULL;
 
+        /* Skip PLMNs with no S-NSSAIs (invalid NGAP configuration) */
+        if (amf_self()->plmn_support[i].num_of_s_nssai == 0) {
+            ogs_warn("Skipping PLMN at index %d with no S-NSSAIs", i);
+            continue;
+        }
+
         NGAP_PLMNSupportItem = (NGAP_PLMNSupportItem_t *)
                 CALLOC(1, sizeof(NGAP_PLMNSupportItem_t));
         pLMNIdentity = &NGAP_PLMNSupportItem->pLMNIdentity;
@@ -224,6 +230,7 @@ ogs_pkbuf_t *ngap_build_ng_setup_failure(
 
 ogs_pkbuf_t *ngap_build_amf_configuration_update(void)
 {
+    int i, num_plmn = 0;
     NGAP_NGAP_PDU_t pdu;
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_AMFConfigurationUpdate_t *AMFConfigurationUpdate = NULL;
@@ -233,33 +240,46 @@ ogs_pkbuf_t *ngap_build_amf_configuration_update(void)
 
     ogs_debug("AMFConfigurationUpdate");
 
+    /* Count valid PLMNs (those with at least one S-NSSAI) */
+    for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
+        if (amf_self()->plmn_support[i].num_of_s_nssai > 0) {
+            num_plmn++;
+        }
+    }
+
+    /* 
+     * Build message even without PLMNs to notify gNBs
+     * If no PLMNs, the PLMNSupportList IE is omitted
+     */
+    if (num_plmn == 0) {
+        ogs_warn("Building AMF Configuration Update with no PLMNs (gNBs will be notified)");
+    }
+
     memset(&pdu, 0, sizeof(NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
     pdu.choice.initiatingMessage =
         CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
-    initiatingMessage->procedureCode = 
-        NGAP_ProcedureCode_id_AMFConfigurationUpdate;
+    initiatingMessage->procedureCode = NGAP_ProcedureCode_id_AMFConfigurationUpdate;
     initiatingMessage->criticality = NGAP_Criticality_reject;
-    initiatingMessage->value.present =
-        NGAP_InitiatingMessage__value_PR_AMFConfigurationUpdate;
+    initiatingMessage->value.present = NGAP_InitiatingMessage__value_PR_AMFConfigurationUpdate;
 
-    AMFConfigurationUpdate = 
-        &initiatingMessage->value.choice.AMFConfigurationUpdate;
+    AMFConfigurationUpdate = &initiatingMessage->value.choice.AMFConfigurationUpdate;
 
-    /* IE: PLMNSupportList (optional but this is what we want to update) */
-    ie = CALLOC(1, sizeof(NGAP_AMFConfigurationUpdateIEs_t));
-    ASN_SEQUENCE_ADD(&AMFConfigurationUpdate->protocolIEs, ie);
+    /* Only add PLMNSupportList IE if there are PLMNs */
+    if (num_plmn > 0) {
+        ie = CALLOC(1, sizeof(NGAP_AMFConfigurationUpdateIEs_t));
+        ASN_SEQUENCE_ADD(&AMFConfigurationUpdate->protocolIEs, ie);
 
-    ie->id = NGAP_ProtocolIE_ID_id_PLMNSupportList;
-    ie->criticality = NGAP_Criticality_reject;
-    ie->value.present = 
-        NGAP_AMFConfigurationUpdateIEs__value_PR_PLMNSupportList;
+        ie->id = NGAP_ProtocolIE_ID_id_PLMNSupportList;
+        ie->criticality = NGAP_Criticality_reject;
+        ie->value.present = 
+            NGAP_AMFConfigurationUpdateIEs__value_PR_PLMNSupportList;
 
-    PLMNSupportList = &ie->value.choice.PLMNSupportList;
-
-    ngap_build_plmn_support_list(PLMNSupportList);
+        PLMNSupportList = &ie->value.choice.PLMNSupportList;
+        ngap_build_plmn_support_list(PLMNSupportList);
+    }
 
     return ogs_ngap_encode(&pdu);
 }

@@ -22,6 +22,142 @@
 #include "ngap-path.h"
 
 /*
+ * Returns true if duplicate found, false otherwise 
+ * Note: Multiple PLMNs can exist, but PLMN + SST + SD combinations must be unique
+ */
+static bool is_duplicate_slice(const ogs_plmn_id_t *plmn_id, const ogs_s_nssai_t *s_nssai)
+{
+    int i, k;
+    
+    ogs_assert(plmn_id);
+    ogs_assert(s_nssai);
+    
+    for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
+        /* Check if PLMN matches */
+        if (memcmp(&amf_self()->plmn_support[i].plmn_id, 
+                   plmn_id, 
+                   sizeof(ogs_plmn_id_t)) != 0)
+            continue;
+        
+        /* Same PLMN found, check all its S-NSSAIs */
+        for (k = 0; k < amf_self()->plmn_support[i].num_of_s_nssai; k++) {
+            ogs_s_nssai_t *existing = &amf_self()->plmn_support[i].s_nssai[k];
+            
+            /* Check if SST and SD match */
+            if (existing->sst == s_nssai->sst && existing->sd.v == s_nssai->sd.v) {
+                return true;  /* Duplicate found */
+            }
+        }
+    }
+    
+    return false;  /* No duplicate */
+}
+
+/*
+ * Returns the number of unique PLMN IDs (same PLMN with different slices counts as one)
+ */
+static int count_unique_plmns(void)
+{
+    int i, j;
+    int unique_count = 0;
+    bool already_counted[OGS_MAX_NUM_OF_PLMN];
+    
+    memset(already_counted, 0, sizeof(already_counted));
+    
+    for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
+        if (already_counted[i])
+            continue;
+            
+        unique_count++;
+        already_counted[i] = true;
+        
+        /* Mark all other entries with same PLMN ID as counted */
+        for (j = i + 1; j < amf_self()->num_of_plmn_support; j++) {
+            if (memcmp(&amf_self()->plmn_support[i].plmn_id,
+                       &amf_self()->plmn_support[j].plmn_id,
+                       sizeof(ogs_plmn_id_t)) == 0) {
+                already_counted[j] = true;
+            }
+        }
+    }
+    
+    return unique_count;
+}
+
+
+/*
+ * Disconnect gNBs that have the specified PLMN being deleted
+ * Returns the number of gNBs disconnected
+ */
+/* static int disconnect_gnbs(const ogs_plmn_id_t *deleted_plmn_id)
+{
+    amf_gnb_t *gnb = NULL, *next_gnb = NULL;
+    int disconnected = 0;
+    char buf[OGS_ADDRSTRLEN];
+    char deleted_plmn_str[OGS_PLMNIDSTRLEN];
+    ogs_plmn_id_to_string(deleted_plmn_id, deleted_plmn_str);
+    ogs_list_for_each_safe(&amf_self()->gnb_list, next_gnb, gnb) {
+        bool has_deleted_plmn = false;
+        int ta_idx, bplmn_idx;
+        for (ta_idx = 0; ta_idx < gnb->num_of_supported_ta_list && !has_deleted_plmn; ta_idx++) {
+            for (bplmn_idx = 0; bplmn_idx < gnb->supported_ta_list[ta_idx].num_of_bplmn_list; bplmn_idx++) {
+                ogs_plmn_id_t *gnb_plmn = &gnb->supported_ta_list[ta_idx].bplmn_list[bplmn_idx].plmn_id;
+                if (memcmp(gnb_plmn, deleted_plmn_id, sizeof(ogs_plmn_id_t)) == 0) {
+                    has_deleted_plmn = true;
+                    break;
+                }
+            }
+        }
+        if (has_deleted_plmn) {
+            char gnb_plmn_str[OGS_PLMNIDSTRLEN];
+            ogs_plmn_id_to_string(&gnb->plmn_id, gnb_plmn_str);
+            ogs_warn("[OAM] Disconnecting gNB [%s, PLMN=%s] - using deleted PLMN %s",
+                gnb->sctp.addr ? OGS_ADDR(&gnb->sctp.addr->sa, buf) : "unknown",
+                gnb_plmn_str, deleted_plmn_str);
+            amf_gnb_remove(gnb);
+            disconnected++;
+        }
+    }
+    if (disconnected > 0) {
+        ogs_info("[OAM] Disconnected %d gNB(s) using deleted PLMN %s", disconnected, deleted_plmn_str);
+    }
+    return disconnected;
+} */
+
+/*
+ * Release all UEs associated with the deleted PLMN
+ * Returns the number of UEs released
+ */
+static int release_ues_of_plmn(const ogs_plmn_id_t *deleted_plmn_id)
+{
+    amf_ue_t *amf_ue = NULL, *next_ue = NULL;
+    int released = 0;
+    char deleted_plmn_str[OGS_PLMNIDSTRLEN];
+    ogs_plmn_id_to_string(deleted_plmn_id, deleted_plmn_str);
+    ogs_list_for_each_safe(&amf_self()->amf_ue_list, next_ue, amf_ue) {
+        if (!AMF_UE_HAVE_SUCI(amf_ue))
+            continue;
+        if (memcmp(&amf_ue->nr_tai.plmn_id, deleted_plmn_id, sizeof(ogs_plmn_id_t)) == 0) {
+            ran_ue_t *ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+            if (ran_ue) {
+                ogs_warn("[OAM] Releasing UE [SUPI=%s] - attached to deleted PLMN %s", amf_ue->supi, deleted_plmn_str);
+                int rv;
+                rv = ngap_send_ran_ue_context_release_command(ran_ue,
+                        NGAP_Cause_PR_nas, NGAP_CauseNas_deregister,
+                        NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
+                ogs_expect(rv == OGS_OK);
+                amf_ue_remove(amf_ue);
+                released++;
+            }
+        }
+    }
+    if (released > 0) {
+        ogs_info("[OAM] Released %d UE(s) attached to deleted PLMN %s", released, deleted_plmn_str);
+    }
+    return released;
+}
+
+/*
  * Main router for Namf_OAM API
  */
 bool amf_namf_oam_handler(
@@ -101,7 +237,7 @@ bool amf_namf_oam_handler(
 /*
  * GET /namf-oam/v1/plmns
  * 
- * Returns list of configured PLMNs with simple statistics
+ * Returns list of configured PLMNs with their slices and general statistics
  */
 bool namf_oam_handle_plmns_get(ogs_sbi_stream_t *stream,  ogs_sbi_message_t *message)
 {
@@ -111,70 +247,90 @@ bool namf_oam_handle_plmns_get(ogs_sbi_stream_t *stream,  ogs_sbi_message_t *mes
     ogs_sbi_message_t response_message;
     ogs_sbi_response_t *response = NULL;
     
-    int i;
+    int i, j, k;
     int status = OGS_SBI_HTTP_STATUS_OK;
     amf_gnb_t *gnb = NULL;
     amf_ue_t *amf_ue = NULL;
-
+    int total_gnbs = 0;
+    int total_ues = 0;
+    bool already_added[OGS_MAX_NUM_OF_PLMN];
 
     /* Create JSON response */
     root = cJSON_CreateObject();
-    ogs_assert(root);
-
     plmns_array = cJSON_CreateArray();
-    ogs_assert(plmns_array);
     cJSON_AddItemToObject(root, "plmns", plmns_array);
 
-    /* Iterate through configured PLMNs */
+    /* Initialize tracking array */
+    memset(already_added, 0, sizeof(already_added));
+
+    /* Iterate through configured PLMNs and group by PLMN ID */
     for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
-        cJSON *plmn_obj = cJSON_CreateObject();
-        cJSON *s_nssai_array = cJSON_CreateArray();
         ogs_plmn_id_t *plmn_id = &amf_self()->plmn_support[i].plmn_id;
         char plmn_id_str[OGS_PLMNIDSTRLEN];
-        int k;
+        cJSON *plmn_obj = NULL;
+        cJSON *nssai_array = NULL;
+        
+        /* Skip if already processed in a previous iteration */
+        if (already_added[i])
+            continue;
         
         ogs_plmn_id_to_string(plmn_id, plmn_id_str);
+        
+        /* Create PLMN object */
+        plmn_obj = cJSON_CreateObject();
+        nssai_array = cJSON_CreateArray();
         
         cJSON_AddStringToObject(plmn_obj, "plmn_id", plmn_id_str);
         cJSON_AddNumberToObject(plmn_obj, "mcc", ogs_plmn_id_mcc(plmn_id));
         cJSON_AddNumberToObject(plmn_obj, "mnc", ogs_plmn_id_mnc(plmn_id));
-        cJSON_AddNumberToObject(plmn_obj, "mnc_len", ogs_plmn_id_mnc_len(plmn_id));
         
-        /* Add S-NSSAI list */
-        for (k = 0; k < amf_self()->plmn_support[i].num_of_s_nssai; k++) {
-            cJSON *slice_obj = cJSON_CreateObject();
-            ogs_s_nssai_t *s_nssai = &amf_self()->plmn_support[i].s_nssai[k];
+        /* Collect all S-NSSAIs for this PLMN ID */
+        for (j = i; j < amf_self()->num_of_plmn_support; j++) {
+            ogs_plmn_id_t *other_plmn = &amf_self()->plmn_support[j].plmn_id;
+            char other_plmn_str[OGS_PLMNIDSTRLEN];
             
-            cJSON_AddNumberToObject(slice_obj, "sst", s_nssai->sst);
-            if (s_nssai->sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
-                char *sd_str = ogs_s_nssai_sd_to_string(s_nssai->sd);
-                cJSON_AddStringToObject(slice_obj, "sd", sd_str);
-                ogs_free(sd_str);
+            ogs_plmn_id_to_string(other_plmn, other_plmn_str);
+            
+            /* If same PLMN ID, add its S-NSSAIs */
+            if (strcmp(plmn_id_str, other_plmn_str) == 0) {
+                already_added[j] = true;
+                
+                for (k = 0; k < amf_self()->plmn_support[j].num_of_s_nssai; k++) {
+                    cJSON *nssai_obj = cJSON_CreateObject();
+                    ogs_s_nssai_t *s_nssai = &amf_self()->plmn_support[j].s_nssai[k];
+                    
+                    cJSON_AddNumberToObject(nssai_obj, "sst", s_nssai->sst);
+                    if (s_nssai->sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
+                        char *sd_str = ogs_s_nssai_sd_to_string(s_nssai->sd);
+                        cJSON_AddStringToObject(nssai_obj, "sd", sd_str);
+                        ogs_free(sd_str);
+                    }
+                    
+                    cJSON_AddItemToArray(nssai_array, nssai_obj);
+                }
             }
-            cJSON_AddItemToArray(s_nssai_array, slice_obj);
         }
-        cJSON_AddItemToObject(plmn_obj, "s_nssai_list", s_nssai_array);
-
-        /* Count connected gNBs */
-        int gnb_count = 0;
-        ogs_list_for_each(&amf_self()->gnb_list, gnb) {
-            if (gnb->state.ng_setup_success)
-                gnb_count++;
-        }
-        cJSON_AddNumberToObject(plmn_obj, "connected_gnbs", gnb_count);
-
-        /* Count registered UEs */
-        int ue_count = 0;
-        ogs_list_for_each(&amf_self()->amf_ue_list, amf_ue) {
-            if (AMF_UE_HAVE_SUCI(amf_ue))
-                ue_count++;
-        }
-        cJSON_AddNumberToObject(plmn_obj, "registered_ues", ue_count);
-
+        
+        cJSON_AddItemToObject(plmn_obj, "s_nssai", nssai_array);
         cJSON_AddItemToArray(plmns_array, plmn_obj);
     }
 
-    cJSON_AddNumberToObject(root, "total_entries", amf_self()->num_of_plmn_support);
+    /* Count total connected gNBs */
+    ogs_list_for_each(&amf_self()->gnb_list, gnb) {
+        if (gnb->state.ng_setup_success)
+            total_gnbs++;
+    }
+
+    /* Count total registered UEs */
+    ogs_list_for_each(&amf_self()->amf_ue_list, amf_ue) {
+        if (AMF_UE_HAVE_SUCI(amf_ue))
+            total_ues++;
+    }
+
+    /* Add statistics to response */
+    cJSON_AddNumberToObject(root, "total_plmns", count_unique_plmns());
+    cJSON_AddNumberToObject(root, "connected_gnbs", total_gnbs);
+    cJSON_AddNumberToObject(root, "registered_ues", total_ues);
 
     /* Convert to string */
     response_body = cJSON_Print(root);
@@ -215,9 +371,21 @@ bool namf_oam_handle_plmns_get_by_id(ogs_sbi_stream_t *stream, ogs_sbi_message_t
     bool found = false;
     int status = OGS_SBI_HTTP_STATUS_OK;
 
-    plmn_id_str = message->h.resource.component[2];
+    plmn_id_str = message->h.resource.component[1];
+    
+    if (!plmn_id_str) {
+        ogs_error("[OAM] Missing PLMN ID in path");
+        ogs_assert(true == ogs_sbi_server_send_error(
+            stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            message, "Missing PLMN ID", NULL, NULL));
+        return false;
+    }
 
-    /* Search for the PLMN */
+    /* Create response object */
+    root = cJSON_CreateObject();
+    s_nssai_array = cJSON_CreateArray();
+
+    /* Search for ALL entries with this PLMN ID and collect all S-NSSAIs */
     for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
         ogs_plmn_id_t *plmn_id = &amf_self()->plmn_support[i].plmn_id;
         char current_plmn_str[OGS_PLMNIDSTRLEN];
@@ -225,59 +393,42 @@ bool namf_oam_handle_plmns_get_by_id(ogs_sbi_stream_t *stream, ogs_sbi_message_t
         ogs_plmn_id_to_string(plmn_id, current_plmn_str);
         
         if (strcmp(current_plmn_str, plmn_id_str) == 0) {
-            found = true;
+            /* First match: add PLMN info */
+            if (!found) {
+                cJSON_AddStringToObject(root, "plmn_id", current_plmn_str);
+                cJSON_AddNumberToObject(root, "mcc", ogs_plmn_id_mcc(plmn_id));
+                cJSON_AddNumberToObject(root, "mnc", ogs_plmn_id_mnc(plmn_id));
+                found = true;
+            }
             
-            root = cJSON_CreateObject();
-            cJSON_AddStringToObject(root, "plmn_id", current_plmn_str);
-            cJSON_AddNumberToObject(root, "mcc", ogs_plmn_id_mcc(plmn_id));
-            cJSON_AddNumberToObject(root, "mnc", ogs_plmn_id_mnc(plmn_id));
-            cJSON_AddNumberToObject(root, "mnc_len", ogs_plmn_id_mnc_len(plmn_id));
-            
-            /* Add S-NSSAI list */
-            s_nssai_array = cJSON_CreateArray();
+            /* Add all S-NSSAIs from this entry */
             for (k = 0; k < amf_self()->plmn_support[i].num_of_s_nssai; k++) {
-                cJSON *slice_obj = cJSON_CreateObject();
+                cJSON *nssai_obj = cJSON_CreateObject();
                 ogs_s_nssai_t *s_nssai = &amf_self()->plmn_support[i].s_nssai[k];
                 
-                cJSON_AddNumberToObject(slice_obj, "sst", s_nssai->sst);
+                cJSON_AddNumberToObject(nssai_obj, "sst", s_nssai->sst);
                 if (s_nssai->sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
                     char *sd_str = ogs_s_nssai_sd_to_string(s_nssai->sd);
-                    cJSON_AddStringToObject(slice_obj, "sd", sd_str);
+                    cJSON_AddStringToObject(nssai_obj, "sd", sd_str);
                     ogs_free(sd_str);
                 }
-                cJSON_AddItemToArray(s_nssai_array, slice_obj);
+                cJSON_AddItemToArray(s_nssai_array, nssai_obj);
             }
-            cJSON_AddItemToObject(root, "s_nssai_list", s_nssai_array);
-
-            /* Count connected gNBs for this PLMN */
-            amf_gnb_t *gnb = NULL;
-            int gnb_count = 0;
-            ogs_list_for_each(&amf_self()->gnb_list, gnb) {
-                if (gnb->state.ng_setup_success)
-                    gnb_count++;
-            }
-            cJSON_AddNumberToObject(root, "connected_gnbs", gnb_count);
-
-            /* Count registered UEs for this PLMN */
-            amf_ue_t *amf_ue = NULL;
-            int ue_count = 0;
-            ogs_list_for_each(&amf_self()->amf_ue_list, amf_ue) {
-                if (AMF_UE_HAVE_SUCI(amf_ue))
-                    ue_count++;
-            }
-            cJSON_AddNumberToObject(root, "registered_ues", ue_count);
-
-            break;
         }
     }
 
     if (!found) {
+        cJSON_Delete(root);
+        cJSON_Delete(s_nssai_array);
         ogs_error("[OAM] PLMN not found: %s", plmn_id_str);
         ogs_assert(true == ogs_sbi_server_send_error(
             stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
             message, "PLMN not found", plmn_id_str, NULL));
         return false;
     }
+
+    /* Add collected S-NSSAI array to response */
+    cJSON_AddItemToObject(root, "s_nssai", s_nssai_array);
 
     response_body = cJSON_Print(root);
     cJSON_Delete(root);
@@ -302,7 +453,7 @@ bool namf_oam_handle_plmns_get_by_id(ogs_sbi_stream_t *stream, ogs_sbi_message_t
 /*
  * DELETE /namf-oam/v1/plmns/{plmn_id}
  * 
- * Remove a PLMN from the configuration
+ * Remove ALL entries with this PLMN ID from the configuration
  */
 bool namf_oam_handle_plmns_delete(ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
@@ -312,23 +463,54 @@ bool namf_oam_handle_plmns_delete(ogs_sbi_stream_t *stream, ogs_sbi_message_t *m
     ogs_sbi_response_t *response = NULL;
     const char *plmn_id_str = NULL;
     int status = OGS_SBI_HTTP_STATUS_OK;
-    int i, j;
+    int i;
     bool found = false;
-    int deleted_index = -1;
+    int deleted_count = 0;
+    ogs_plmn_id_t deleted_plmn_id;
     
     plmn_id_str = message->h.resource.component[1];
+    
+    if (!plmn_id_str) {
+        ogs_error("[OAM] Missing PLMN ID in path");
+        ogs_assert(true == ogs_sbi_server_send_error(
+            stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            message, "Missing PLMN ID", NULL, NULL));
+        return false;
+    }
 
-    /* Search for the PLMN to delete */
-    for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
+    /* Delete ALL entries with this PLMN ID */
+    i = 0;
+    while (i < amf_self()->num_of_plmn_support) {
         ogs_plmn_id_t *plmn_id = &amf_self()->plmn_support[i].plmn_id;
         char current_plmn_str[OGS_PLMNIDSTRLEN];
         
         ogs_plmn_id_to_string(plmn_id, current_plmn_str);
         
         if (strcmp(current_plmn_str, plmn_id_str) == 0) {
+            int j;
+            
+            /* Save the PLMN ID before deleting (for gNB disconnection) */
+            if (!found) {
+                memcpy(&deleted_plmn_id, plmn_id, sizeof(ogs_plmn_id_t));
+            }
+            
             found = true;
-            deleted_index = i;
-            break;
+            deleted_count++;
+            
+            /* Shift remaining entries to fill the gap */
+            for (j = i; j < amf_self()->num_of_plmn_support - 1; j++) {
+                memcpy(&amf_self()->plmn_support[j], 
+                       &amf_self()->plmn_support[j + 1],
+                       sizeof(amf_self()->plmn_support[0]));
+            }
+            
+            /* Clear the last entry */
+            memset(&amf_self()->plmn_support[amf_self()->num_of_plmn_support - 1],
+                   0, sizeof(amf_self()->plmn_support[0]));
+            amf_self()->num_of_plmn_support--;
+            
+        } else {
+            i++;
         }
     }
 
@@ -340,29 +522,28 @@ bool namf_oam_handle_plmns_delete(ogs_sbi_stream_t *stream, ogs_sbi_message_t *m
         return false;
     }
 
-    /* Shift remaining PLMNs to fill the gap */
-    for (j = deleted_index; j < amf_self()->num_of_plmn_support - 1; j++) {
-        memcpy(&amf_self()->plmn_support[j], 
-               &amf_self()->plmn_support[j + 1],
-               sizeof(amf_self()->plmn_support[0]));
-    }
-
-    /* Clear the last entry */
-    memset(&amf_self()->plmn_support[amf_self()->num_of_plmn_support - 1],
-           0, sizeof(amf_self()->plmn_support[0]));
-
-    /* Decrement counter */
-    amf_self()->num_of_plmn_support--;
 
     /* Send AMFConfigurationUpdate to all connected gNBs */
     ngap_send_amf_configuration_update_all();
 
+    /* Release UEs that are using the deleted PLMN */
+    release_ues_of_plmn(&deleted_plmn_id);
+
     /* Build success response */
     response_json = cJSON_CreateObject();
     cJSON_AddStringToObject(response_json, "status", "success");
-    cJSON_AddStringToObject(response_json, "message", "PLMN deleted successfully");
+    
+    if (deleted_count == 1) {
+        cJSON_AddStringToObject(response_json, "message", "PLMN deleted successfully");
+    } else {
+        char *msg = ogs_msprintf("PLMN deleted successfully (%d entries removed)", deleted_count);
+        cJSON_AddStringToObject(response_json, "message", msg);
+        ogs_free(msg);
+    }
+    
     cJSON_AddStringToObject(response_json, "deleted_plmn_id", plmn_id_str);
-    cJSON_AddNumberToObject(response_json, "total_plmns", amf_self()->num_of_plmn_support);
+    cJSON_AddNumberToObject(response_json, "deleted_entries", deleted_count);
+    cJSON_AddNumberToObject(response_json, "remaining_plmns", count_unique_plmns());
 
     response_body = cJSON_Print(response_json);
     cJSON_Delete(response_json);
@@ -379,8 +560,8 @@ bool namf_oam_handle_plmns_delete(ogs_sbi_stream_t *stream, ogs_sbi_message_t *m
     
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
-    ogs_info("[OAM] PLMN deleted: %s, remaining: %d",
-        plmn_id_str, amf_self()->num_of_plmn_support);
+    ogs_info("[OAM] PLMN deleted: %s (%d entries), remaining: %d",
+        plmn_id_str, deleted_count, amf_self()->num_of_plmn_support);
 
     return true;
 }
@@ -514,20 +695,14 @@ bool namf_oam_handle_plmns_post(
         return false;
     }
 
-    /* Add new PLMN entry */
-    int plmn_idx = amf_self()->num_of_plmn_support;
-    
-    memcpy(&amf_self()->plmn_support[plmn_idx].plmn_id, 
-           &plmn_id, sizeof(ogs_plmn_id_t));
-    
-    /* Parse and add S-NSSAIs */
-    amf_self()->plmn_support[plmn_idx].num_of_s_nssai = 0;
-    
+    /* Check for duplicate PLMN + S-NSSAI combinations before adding */
     for (i = 0; i < num_slices; i++) {
         cJSON *slice_obj = cJSON_GetArrayItem(s_nssai_array, i);
         cJSON *sst_obj = cJSON_GetObjectItem(slice_obj, "sst");
         cJSON *sd_obj = cJSON_GetObjectItem(slice_obj, "sd");
-
+        ogs_s_nssai_t temp_nssai;
+        char plmn_id_str[OGS_PLMNIDSTRLEN];
+        
         if (!sst_obj || !cJSON_IsNumber(sst_obj)) {
             ogs_error("[OAM] Slice %d: missing or invalid 'sst'", i);
             cJSON_Delete(root);
@@ -536,6 +711,61 @@ bool namf_oam_handle_plmns_post(
                 message, "Each slice must have 'sst' (number)", NULL, NULL));
             return false;
         }
+        
+        temp_nssai.sst = (uint8_t)sst_obj->valueint;
+        
+        if (sd_obj && cJSON_IsString(sd_obj)) {
+            temp_nssai.sd.v = strtoul(sd_obj->valuestring, NULL, 16);
+        } else {
+            temp_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+        }
+        
+        /* Check if this PLMN + S-NSSAI combination already exists */
+        if (is_duplicate_slice(&plmn_id, &temp_nssai)) {
+            char *sd_str = NULL;
+            char *error_msg = NULL;
+            
+            ogs_plmn_id_to_string(&plmn_id, plmn_id_str);
+            
+            if (temp_nssai.sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
+                sd_str = ogs_s_nssai_sd_to_string(temp_nssai.sd);
+                ogs_error("[OAM] Duplicate slice: PLMN=%s, SST=%d, SD=%s", 
+                    plmn_id_str, temp_nssai.sst, sd_str);
+                
+                error_msg = ogs_msprintf("Slice already exists: PLMN=%s, SST=%d, SD=%s",
+                    plmn_id_str, temp_nssai.sst, sd_str);
+                ogs_free(sd_str);
+            } else {
+                ogs_error("[OAM] Duplicate slice: PLMN=%s, SST=%d (no SD)", 
+                    plmn_id_str, temp_nssai.sst);
+                
+                error_msg = ogs_msprintf("Slice already exists: PLMN=%s, SST=%d",
+                    plmn_id_str, temp_nssai.sst);
+            }
+            
+            cJSON_Delete(root);
+            ogs_assert(error_msg);
+            ogs_assert(true == ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_CONFLICT,
+                message, error_msg, NULL, NULL));
+            ogs_free(error_msg);
+            
+            return false;
+        }
+    }
+
+    /* Add new PLMN entry */
+    int plmn_idx = amf_self()->num_of_plmn_support;
+    
+    memcpy(&amf_self()->plmn_support[plmn_idx].plmn_id, 
+           &plmn_id, sizeof(ogs_plmn_id_t));
+    
+    amf_self()->plmn_support[plmn_idx].num_of_s_nssai = 0;
+    
+    for (i = 0; i < num_slices; i++) {
+        cJSON *slice_obj = cJSON_GetArrayItem(s_nssai_array, i);
+        cJSON *sst_obj = cJSON_GetObjectItem(slice_obj, "sst");
+        cJSON *sd_obj = cJSON_GetObjectItem(slice_obj, "sd");
 
         uint8_t sst = (uint8_t)sst_obj->valueint;
         amf_self()->plmn_support[plmn_idx].s_nssai[i].sst = sst;
@@ -546,8 +776,7 @@ bool namf_oam_handle_plmns_post(
             sd.v = strtoul(sd_obj->valuestring, NULL, 16);
             amf_self()->plmn_support[plmn_idx].s_nssai[i].sd = sd;
         } else {
-            amf_self()->plmn_support[plmn_idx].s_nssai[i].sd.v = 
-                OGS_S_NSSAI_NO_SD_VALUE;
+            amf_self()->plmn_support[plmn_idx].s_nssai[i].sd.v = OGS_S_NSSAI_NO_SD_VALUE;
         }
 
         amf_self()->plmn_support[plmn_idx].num_of_s_nssai++;

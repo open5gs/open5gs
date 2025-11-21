@@ -326,10 +326,7 @@ int ngap_send_amf_configuration_update(amf_gnb_t *gnb)
     ogs_debug("AMF-Configuration update");
 
     ngap_buffer = ngap_build_amf_configuration_update();
-    if (!ngap_buffer) {
-        ogs_error("ngap_build_amf_configuration_update() failed");
-        return OGS_ERROR;
-    }
+    ogs_assert(ngap_buffer);
 
     rv = ngap_send_to_gnb(gnb, ngap_buffer, NGAP_NON_UE_SIGNALLING);
     ogs_expect(rv == OGS_OK);
