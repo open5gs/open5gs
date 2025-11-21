@@ -1844,6 +1844,12 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 sess->nsmf_param.request_indication =
                     OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
 
+                if (!sess->pdu_session_resource_uri) {
+                    ogs_error("No pdu_session_resource_uri");
+                    OGS_FSM_TRAN(s, smf_gsm_state_5gc_n1_n2_reject);
+                    break;
+                }
+
                 r = smf_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                         smf_nsmf_pdusession_build_hsmf_update_data,

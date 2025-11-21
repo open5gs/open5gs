@@ -312,7 +312,7 @@ void smf_namf_comm_send_n1_n2_pdu_establishment_reject(
     int cause = sess->h_smf_gsm_cause ? sess->h_smf_gsm_cause : OGS_5GSM_CAUSE_NETWORK_FAILURE;
     memset(&param, 0, sizeof(param));
     param.state = SMF_UE_OR_NETWORK_REQUESTED_PDU_SESSION_RELEASE;
-    param.n1smbuf = gsm_build_pdu_session_establishment_reject(sess, cause, NULL);
+    param.n1smbuf = gsm_build_pdu_session_establishment_reject(sess, cause);
     ogs_assert(param.n1smbuf);
 
     smf_namf_comm_send_n1_n2_message_transfer(sess, stream, &param);
