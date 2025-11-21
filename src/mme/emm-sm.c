@@ -1061,7 +1061,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
 
 void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
 {
-    int r, rv;
+    int r, rv, xact_count;
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
     ogs_nas_eps_message_t *message = NULL;
@@ -1097,6 +1097,8 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             ogs_log_hexdump(OGS_LOG_ERROR, e->pkbuf->data, e->pkbuf->len);
             break;
         }
+
+        xact_count = mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR);
 
         switch (message->emm.h.message_type) {
         case OGS_NAS_EPS_AUTHENTICATION_RESPONSE:
@@ -1162,7 +1164,15 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            mme_s6a_send_air(enb_ue, mme_ue, NULL);
+            mme_gtp_send_delete_all_sessions(enb_ue, mme_ue,
+                OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
+
+            if (!MME_SESSION_RELEASE_PENDING(mme_ue) &&
+                mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR) ==
+                    xact_count) {
+                mme_s6a_send_air(enb_ue, mme_ue, NULL);
+            }
+
             OGS_FSM_TRAN(s, &emm_state_authentication);
             break;
         case OGS_NAS_EPS_EMM_STATUS:
@@ -1250,7 +1260,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
 
 void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
 {
-    int r, rv;
+    int r, rv, xact_count;
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
     ogs_nas_eps_message_t *message = NULL;
@@ -1289,6 +1299,8 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             ogs_log_hexdump(OGS_LOG_ERROR, e->pkbuf->data, e->pkbuf->len);
             break;
         }
+
+        xact_count = mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR);
 
         if (message->emm.h.security_header_type
                 == OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE) {
@@ -1405,7 +1417,15 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            mme_s6a_send_air(enb_ue, mme_ue, NULL);
+            mme_gtp_send_delete_all_sessions(enb_ue, mme_ue,
+                OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
+
+            if (!MME_SESSION_RELEASE_PENDING(mme_ue) &&
+                mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR) ==
+                    xact_count) {
+                mme_s6a_send_air(enb_ue, mme_ue, NULL);
+            }
+
             OGS_FSM_TRAN(s, &emm_state_authentication);
             break;
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST:
