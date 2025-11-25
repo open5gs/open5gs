@@ -909,8 +909,29 @@ typedef struct amf_sess_s {
     /* amf_bearer_first(sess) : Default Bearer Context */
     ogs_list_t      bearer_list;
 
-    /* Related Context */
+    /* AMF-UE identifier associated with this session. */
     ogs_pool_id_t   amf_ue_id;
+
+    /*
+     * RAN-UE identifier associated with this session.
+     *
+     * IMPORTANT:
+     * - During SBI Client operations (e.g., AMF sending requests to SMF/PCF),
+     *   the RAN-UE may change before the asynchronous SBI response arrives
+     *   (e.g., NG Context release/re-establishment). Because of this, the
+     *   SBI transaction (ogs_sbi_xact_t) stores its own snapshot of the
+     *   RAN-UE ID inside xact->assoc_id[].
+     *
+     *   When processing SBI Client responses, the AMF must use the snapshot
+     *   stored in xact->assoc_id[AMF_ASSOC_RAN_UE_ID] instead of
+     *   this session field.
+     *
+     * - For SBI Server operations (e.g., Namf callbacks where the AMF
+     *   receives requests from SMF), there is no transaction-specific
+     *   snapshot. In such cases, the current session value (sess->ran_ue_id)
+     *   is used.
+     */
+#define AMF_ASSOC_RAN_UE_ID 1
     ogs_pool_id_t   ran_ue_id;
 
     ogs_s_nssai_t s_nssai;

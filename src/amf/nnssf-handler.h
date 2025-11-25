@@ -27,7 +27,8 @@ extern "C" {
 #include "context.h"
 
 int amf_nnssf_nsselection_handle_get(
-        amf_sess_t *sess, int state, ogs_sbi_message_t *recvmsg);
+        amf_ue_t *amf_ue, ran_ue_t *ran_ue, amf_sess_t *sess,
+        int state, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }

@@ -36,6 +36,7 @@ void amf_nnrf_handle_nf_discover(
     ogs_sbi_discovery_option_t *discovery_option = NULL;
 
     amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
 
     OpenAPI_search_result_t *SearchResult = NULL;
@@ -72,6 +73,11 @@ void amf_nnrf_handle_nf_discover(
         ogs_assert(sess);
         amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
         ogs_assert(amf_ue);
+
+        ogs_assert(xact->assoc_id[AMF_ASSOC_RAN_UE_ID] >= OGS_MIN_POOL_ID &&
+                xact->assoc_id[AMF_ASSOC_RAN_UE_ID] <= OGS_MAX_POOL_ID);
+        ran_ue = ran_ue_find_by_id(xact->assoc_id[AMF_ASSOC_RAN_UE_ID]);
+        ogs_assert(ran_ue);
     } else {
         ogs_fatal("(NF discover) Not implemented [%s:%d]",
             ogs_sbi_service_type_to_name(service_type), sbi_object->type);
@@ -127,14 +133,14 @@ void amf_nnrf_handle_nf_discover(
                         ogs_sbi_service_type_to_name(service_type));
             if (sess->payload_container_type) {
                 r = nas_5gs_send_back_gsm_message(
-                        ran_ue_find_by_id(sess->ran_ue_id), sess,
+                        ran_ue, sess,
                         OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                         AMF_NAS_BACKOFF_TIME);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             } else {
                 r = ngap_send_error_indication2(
-                        ran_ue_find_by_id(sess->ran_ue_id),
+                        ran_ue,
                         NGAP_Cause_PR_transport,
                         NGAP_CauseTransport_transport_resource_unavailable);
                 ogs_expect(r == OGS_OK);
