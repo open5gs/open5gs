@@ -595,6 +595,7 @@ int amf_namf_callback_handle_sm_context_status(
         sess->n2_released == true &&
         sess->resource_status == OpenAPI_resource_status_RELEASED) {
         amf_nsmf_pdusession_handle_release_sm_context(
+                amf_ue, ran_ue_find_by_id(sess->ran_ue_id),
                 sess, AMF_RELEASE_SM_CONTEXT_NO_STATE);
     }
 

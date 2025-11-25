@@ -22,7 +22,8 @@
 #include "sbi-path.h"
 
 int amf_nnssf_nsselection_handle_get(
-        amf_sess_t *sess, int state, ogs_sbi_message_t *recvmsg)
+        amf_ue_t *amf_ue, ran_ue_t *ran_ue, amf_sess_t *sess,
+        int state, ogs_sbi_message_t *recvmsg)
 {
     bool rc;
     int r, i;
@@ -36,9 +37,6 @@ int amf_nnssf_nsselection_handle_get(
     OpenAPI_authorized_network_slice_info_t *AuthorizedNetworkSliceInfo = NULL;
     OpenAPI_nsi_information_t *NsiInformation = NULL;
 
-    amf_ue_t *amf_ue = NULL;
-    ran_ue_t *ran_ue = NULL;
-
     ogs_assert(state);
     ogs_assert(recvmsg);
     ogs_assert(!SESSION_CONTEXT_IN_SMF(sess));
@@ -48,13 +46,11 @@ int amf_nnssf_nsselection_handle_get(
         return OGS_ERROR;
     }
 
-    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
     if (!amf_ue) {
         ogs_error("UE(amf_ue) Context has already been removed");
         return OGS_ERROR;
     }
 
-    ran_ue = ran_ue_find_by_id(sess->ran_ue_id);
     if (!ran_ue) {
         ogs_error("[%s] RAN-NG Context has already been removed", amf_ue->supi);
         return OGS_ERROR;

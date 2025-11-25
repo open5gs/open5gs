@@ -188,6 +188,9 @@ int amf_sess_sbi_discover_and_send(
 
     xact->state = state;
 
+    if (ran_ue)
+        xact->assoc_id[AMF_ASSOC_RAN_UE_ID] = ran_ue->id;
+
     rv = ogs_sbi_discover_and_send(xact);
     if (rv != OGS_OK) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
@@ -235,6 +238,10 @@ static int client_discover_cb(
         return OGS_ERROR;
     }
 
+    if (xact->assoc_id[AMF_ASSOC_RAN_UE_ID] >= OGS_MIN_POOL_ID &&
+        xact->assoc_id[AMF_ASSOC_RAN_UE_ID] <= OGS_MAX_POOL_ID)
+        ran_ue = ran_ue_find_by_id(xact->assoc_id[AMF_ASSOC_RAN_UE_ID]);
+
     service_type = xact->service_type;
     ogs_assert(service_type);
     target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
@@ -264,7 +271,6 @@ static int client_discover_cb(
             ogs_sbi_response_free(response);
         return OGS_ERROR;
     }
-    ran_ue = ran_ue_find_by_id(sess->ran_ue_id);
     if (!ran_ue) {
         ogs_error("[%s] NG context has already been removed", amf_ue->supi);
         ogs_sbi_xact_remove(xact);
@@ -500,6 +506,9 @@ int amf_sess_sbi_discover_by_nsi(
     }
 
     xact->state = state;
+
+    if (ran_ue)
+        xact->assoc_id[AMF_ASSOC_RAN_UE_ID] = ran_ue->id;
 
     return ogs_sbi_client_send_request(
             client, client_discover_cb, xact->request,
