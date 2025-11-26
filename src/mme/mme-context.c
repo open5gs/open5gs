@@ -5001,8 +5001,10 @@ int mme_find_served_tai(ogs_eps_tai_t *tai)
             ogs_assert(list1->tai[j].type == OGS_TAI1_TYPE);
             ogs_assert(list1->tai[j].num <= OGS_MAX_NUM_OF_TAI);
 
-            if (list1->tai[j].tac <= tai->tac &&
-                tai->tac < (list1->tai[j].tac+list1->tai[j].num))
+            if (memcmp(&list0->tai[j].plmn_id,
+                        &tai->plmn_id, OGS_PLMN_ID_LEN) == 0 &&
+                    list1->tai[j].tac <= tai->tac &&
+                    tai->tac < (list1->tai[j].tac+list1->tai[j].num))
                 return i;
         }
 
