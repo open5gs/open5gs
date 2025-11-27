@@ -131,9 +131,12 @@ void sgwu_sxa_handle_session_establishment_request(
         ogs_assert(pdr);
 
         /* Setup TEID Hash */
-        if (pdr->f_teid_len)
-            ogs_pfcp_object_teid_hash_set(
+        if (pdr->f_teid_len) {
+            cause_value = ogs_pfcp_object_teid_hash_set(
                     OGS_PFCP_OBJ_PDR_TYPE, pdr, restoration_indication);
+            if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+                goto cleanup;
+        }
     }
 
     /* Send Buffered Packet to gNB */
@@ -308,8 +311,12 @@ void sgwu_sxa_handle_session_modification_request(
         ogs_assert(pdr);
 
         /* Setup TEID Hash */
-        if (pdr->f_teid_len)
-            ogs_pfcp_object_teid_hash_set(OGS_PFCP_OBJ_PDR_TYPE, pdr, false);
+        if (pdr->f_teid_len) {
+            cause_value = ogs_pfcp_object_teid_hash_set(
+                    OGS_PFCP_OBJ_PDR_TYPE, pdr, false);
+            if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+                goto cleanup;
+        }
     }
 
     /* Send Buffered Packet to gNB */
