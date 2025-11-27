@@ -131,19 +131,6 @@ static inline uint32_t u24_to_u32(ogs_uint24_t v)
     return (x & 0xFFFFFFu);
 }
 
-static inline void bytes3_to_hex_lower(const void *p, char out[7])
-{
-    const uint8_t *b = (const uint8_t *)p;
-    static const char *hx = "0123456789abcdef";
-    out[0] = hx[(b[0] >> 4) & 0xF];
-    out[1] = hx[b[0] & 0xF];
-    out[2] = hx[(b[1] >> 4) & 0xF];
-    out[3] = hx[b[1] & 0xF];
-    out[4] = hx[(b[2] >> 4) & 0xF];
-    out[5] = hx[b[2] & 0xF];
-    out[6] = '\0';
-}
-
 /* AM policy feature labels */
 static const char *am_policy_feature_names[64] = {
     /*0*/ "AM Policy Association",
@@ -165,10 +152,13 @@ static const char *am_policy_feature_names[64] = {
 };
 
 /* -------- JSON builders: 0=OK, -1=OOM. Children are attached only when complete. -------- */
-static int add_snssai_sd_string(cJSON *obj, const char *key, const void *sd_ptr)
+static int add_snssai_sd_string(cJSON *obj, const char *key, const ogs_uint24_t *sd_ptr)
 {
-    char sd_hex[7] = "ffffff";
-    if (sd_ptr) bytes3_to_hex_lower(sd_ptr, sd_hex);
+    char sd_hex[7];
+    uint32_t sd = 0;
+    if (sd_ptr)
+        sd = u24_to_u32(*sd_ptr);
+    (void)snprintf(sd_hex, sizeof sd_hex, "%06x", (unsigned)sd);
     cJSON *s = cJSON_CreateString(sd_hex);
     if (!s) return -1;
     cJSON_AddItemToObjectCS(obj, key, s);
