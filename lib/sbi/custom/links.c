@@ -75,7 +75,11 @@ ogs_sbi_links_t *ogs_sbi_links_parseFromJSON(cJSON *json)
 
     _items = cJSON_GetObjectItemCaseSensitive(_links, "item");
     if (!_items) {
-        ogs_error("No item");
+        _items = cJSON_GetObjectItemCaseSensitive(_links, "items");
+    }
+    
+    if (!_items) {
+        ogs_error("No item or items in _links");
         return NULL;
     }
 

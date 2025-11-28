@@ -40,6 +40,7 @@ static struct service_desc_s service_desc[] = {
     { OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NAMF_EVTS },
     { OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NAMF_MT },
     { OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NAMF_LOC },
+    { OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NAMF_OAM },
     { OpenAPI_nf_type_SMF, OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION },
     { OpenAPI_nf_type_SMF, OGS_SBI_SERVICE_NAME_NSMF_EVENT_EXPOSURE },
     { OpenAPI_nf_type_SMF, OGS_SBI_SERVICE_NAME_NSMF_NIDD },
