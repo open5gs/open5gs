@@ -1,28 +1,25 @@
-# Tutorial for add and delete PLMNs dynamically in the AMF
+# Tutorial: Dynamically Adding and Removing PLMNs in the AMF
 
-Este tutorial muestra las diferentes llamadas de la API de gestión OAM (Operations, Administration and Maintenance) para el AMF (Access and Mobility Management Function) en Open5GS, con el objetivo de eliminar y crear PLMNs de forma dinámica sin tener que reiniciar el AMF. Se ha implementando extendiendo el SBI por lo que se usa HTTP/2.0.
+This tutorial describes the different OAM (Operations, Administration and Maintenance) management API calls for the AMF (Access and Mobility Management Function) in Open5GS. The goal is to dynamically add and remove PLMNs without restarting the AMF.  
+The feature is implemented by extending the SBI, so the API uses HTTP/2.0.
 
-## Objetivo
+## Objective
 
-Implementar una API RESTful que permita:
-1. Consultar la configuración de PLMNs y slices (S-NSSAI)
-2. Añadir dinámicamente nuevos PLMNs sin reiniciar el AMF
-3. Eliminar dinámicamente PLMNs sin reiniciar el AMF y deregistrar los UEs asociados
-4. Notificar automáticamente a los gNBs sobre cambios en la configuración
+Implement a RESTful API that allows you to:
 
-## Llamadas API
+1. Query the configuration of PLMNs and slices (S-NSSAI)
+2. Dynamically add new PLMNs without restarting the AMF
+3. Dynamically delete PLMNs without restarting the AMF and deregister the associated UEs
+4. Automatically notify gNBs about configuration changes
 
- - GET 
-     - http://<AMFIP>:7777/namf-oam/v1/plmns 
-         - Muestra todos los PLMNs del contexto actual
-     - http://<AMFIP>:7777/namf-oam/v1/plmns/{plmnid}
-         - Muestra la información del PLMN id, PLMNid está formado por el mcc y mnc
- - POST
-      - http://<AMFIP>:7777/namf-oam/v1/plmns 
-        - Añade un nuevo PLMN a la lista o un nuevo sst y sd, si ya existiese. Notifica a los gnBs
- - DELETE
-      - http://<AMFIP>:7777/namf-oam/v1/plmns/{plmnid}
-        - Elimina el PLMN y desregistra a los UEs asociados y notifica a los gnBs
+## API Calls
+
+| Method | URL                                                      | Description                                                                                          |
+|--------|-----------------------------------------------------------|------------------------------------------------------------------------------------------------------|
+| GET    | `http://<AMFIP>:7777/namf-oam/v1/plmns`                  | Returns all PLMNs in the current AMF context.                                                       |
+| GET    | `http://<AMFIP>:7777/namf-oam/v1/plmns/{plmnid}`         | Returns detailed information for the PLMN identified by `{plmnid}` (composed of MCC and MNC).      |
+| POST   | `http://<AMFIP>:7777/namf-oam/v1/plmns`                  | Adds a new PLMN to the list or a new `sst`/`sd` combination if the PLMN already exists; notifies gNBs. |
+| DELETE | `http://<AMFIP>:7777/namf-oam/v1/plmns/{plmnid}`         | Deletes the specified PLMN, deregisters the associated UEs, and notifies the gNBs.                  |
 
 ## How to use
 
