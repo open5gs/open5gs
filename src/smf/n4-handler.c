@@ -1535,6 +1535,7 @@ uint8_t smf_epc_n4_handle_session_deletion_response(
         ogs_pfcp_tlv_usage_report_session_deletion_response_t *use_rep =
             &rsp->usage_report[i];
         uint32_t urr_id;
+        int16_t decoded;
         ogs_pfcp_volume_measurement_t volume;
         ogs_pfcp_usage_report_trigger_t rep_trig;
         if (use_rep->presence == 0)
@@ -1544,8 +1545,12 @@ uint8_t smf_epc_n4_handle_session_deletion_response(
         urr_id = use_rep->urr_id.u32;
         if (!bearer || !bearer->urr || bearer->urr->id != urr_id)
             continue;
-        ogs_pfcp_parse_volume_measurement(
+        decoded = ogs_pfcp_parse_volume_measurement(
                 &volume, &use_rep->volume_measurement);
+        if (use_rep->volume_measurement.len != decoded) {
+            ogs_error("Invalid Volume Measurement");
+            continue;
+        }
         if (volume.ulvol)
             sess->gy.ul_octets += volume.uplink_volume;
         if (volume.dlvol)
@@ -1726,6 +1731,7 @@ uint8_t smf_n4_handle_session_report_request(
             ogs_pfcp_tlv_usage_report_session_report_request_t *use_rep =
                 &pfcp_req->usage_report[i];
             uint32_t urr_id;
+            int16_t decoded;
             ogs_pfcp_volume_measurement_t volume;
             ogs_pfcp_usage_report_trigger_t rep_trig;
             if (use_rep->presence == 0)
@@ -1735,8 +1741,12 @@ uint8_t smf_n4_handle_session_report_request(
             urr_id = use_rep->urr_id.u32;
             if (!bearer || !bearer->urr || bearer->urr->id != urr_id)
                 continue;
-            ogs_pfcp_parse_volume_measurement(
+            decoded = ogs_pfcp_parse_volume_measurement(
                     &volume, &use_rep->volume_measurement);
+            if (use_rep->volume_measurement.len != decoded) {
+                ogs_error("Invalid Volume Measurement");
+                continue;
+            }
             if (volume.ulvol)
                 sess->gy.ul_octets += volume.uplink_volume;
             if (volume.dlvol)

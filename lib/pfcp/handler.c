@@ -1600,9 +1600,15 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_create_urr(ogs_pfcp_sess_t *sess,
     }
 
     if (message->dropped_dl_traffic_threshold.presence) {
-        ogs_pfcp_parse_dropped_dl_traffic_threshold(
+        decoded = ogs_pfcp_parse_dropped_dl_traffic_threshold(
                 &urr->dropped_dl_traffic_threshold,
                 &message->dropped_dl_traffic_threshold);
+        if (message->dropped_dl_traffic_threshold.len != decoded) {
+            ogs_error("Invalid Dropped DL Traffic Threshold");
+            *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+            *offending_ie_value = OGS_PFCP_DROPPED_DL_TRAFFIC_THRESHOLD_TYPE;
+            return NULL;
+        }
     }
 
     if (message->quota_validity_time.presence) {
@@ -1707,9 +1713,15 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_update_urr(ogs_pfcp_sess_t *sess,
     }
 
     if (message->dropped_dl_traffic_threshold.presence) {
-        ogs_pfcp_parse_dropped_dl_traffic_threshold(
+        decoded = ogs_pfcp_parse_dropped_dl_traffic_threshold(
                 &urr->dropped_dl_traffic_threshold,
                 &message->dropped_dl_traffic_threshold);
+        if (message->dropped_dl_traffic_threshold.len != decoded) {
+            ogs_error("Invalid Dropped DL Traffic Threshold");
+            *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+            *offending_ie_value = OGS_PFCP_DROPPED_DL_TRAFFIC_THRESHOLD_TYPE;
+            return NULL;
+        }
     }
 
     if (message->quota_validity_time.presence) {
