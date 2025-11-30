@@ -108,28 +108,22 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         }
 
         /*
-         * Special handling for NAMF_OAM custom API:
-         * Parse only the header to detect OAM endpoints, then handle them
-         * with direct access to raw request body (sbi_request->http.content)
-         * instead of using OpenAPI auto-parsing.
+         * Special handling for NAMF_OAM custom API
          */
-        memset(&sbi_message, 0, sizeof(sbi_message));
-        rv = ogs_sbi_parse_header(&sbi_message, &sbi_request->h);
-        if (rv != OGS_OK) {
-            ogs_error("cannot parse HTTP header");
-            ogs_assert(true ==
-                ogs_sbi_server_send_error(
-                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    NULL, "cannot parse HTTP header", NULL, NULL));
-            break;
-        }
-
-        if (sbi_message.h.service.name &&
-            !strcmp(sbi_message.h.service.name, OGS_SBI_SERVICE_NAME_NAMF_OAM)) {
-            /* OAM API: handle with raw request for custom JSON parsing */
-            amf_namf_oam_handler(stream, &sbi_message, sbi_request);
-            ogs_sbi_message_free(&sbi_message);
-            break;
+        if (sbi_request->h.uri &&
+            strstr(sbi_request->h.uri, OGS_SBI_SERVICE_NAME_NAMF_OAM) != NULL) {
+            rv = ogs_sbi_parse_header(&sbi_message, &sbi_request->h);
+            if (rv != OGS_OK) {
+                ogs_error("cannot parse HTTP header");
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(
+                        stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        NULL, "cannot parse HTTP header", NULL, NULL));
+                break;
+            } else {
+                amf_namf_oam_handler(stream, &sbi_message, sbi_request);
+                break;
+            }
         }
 
         /*

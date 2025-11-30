@@ -346,10 +346,12 @@ bool namf_oam_handle_plmns_get(ogs_sbi_stream_t *stream,  ogs_sbi_message_t *mes
     
     response->http.content = response_body;
     response->http.content_length = strlen(response_body);
+
+    ogs_info("[OAM] Listed %d PLMNs", amf_self()->num_of_plmn_support);
     
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
-    ogs_info("[OAM] Listed %d PLMNs", amf_self()->num_of_plmn_support);
+
 
     return true;
 }
@@ -431,6 +433,10 @@ bool namf_oam_handle_plmns_get_by_id(ogs_sbi_stream_t *stream, ogs_sbi_message_t
     cJSON_AddItemToObject(root, "s_nssai", s_nssai_array);
 
     response_body = cJSON_Print(root);
+    
+    char plmn_id_str_copy[OGS_PLMNIDSTRLEN] = {0};
+    if (plmn_id_str)
+        strncpy(plmn_id_str_copy, plmn_id_str, sizeof(plmn_id_str_copy) - 1);
     cJSON_Delete(root);
 
     /* Build SBI response */
@@ -442,10 +448,10 @@ bool namf_oam_handle_plmns_get_by_id(ogs_sbi_stream_t *stream, ogs_sbi_message_t
     
     response->http.content = response_body;
     response->http.content_length = strlen(response_body);
+
+    ogs_info("[OAM] Retrieved PLMN: %s", plmn_id_str_copy);
     
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
-
-    ogs_info("[OAM] Retrieved PLMN: %s", plmn_id_str);
 
     return true;
 }
@@ -557,11 +563,13 @@ bool namf_oam_handle_plmns_delete(ogs_sbi_stream_t *stream, ogs_sbi_message_t *m
     
     response->http.content = response_body;
     response->http.content_length = strlen(response_body);
-    
-    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     ogs_info("[OAM] PLMN deleted: %s (%d entries), remaining: %d",
         plmn_id_str, deleted_count, amf_self()->num_of_plmn_support);
+    
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+
 
     return true;
 }
@@ -809,11 +817,13 @@ bool namf_oam_handle_plmns_post(
     
     response->http.content = response_body;
     response->http.content_length = strlen(response_body);
-    
-    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     ogs_info("[OAM] PLMN added: MCC=%d MNC=%d (%d slices), notified to gNBs",
         mcc, mnc, num_slices);
+    
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+
 
     return true;
 }
