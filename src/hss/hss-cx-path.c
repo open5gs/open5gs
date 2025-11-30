@@ -670,7 +670,7 @@ static int hss_ogs_diam_cx_mar_cb(struct msg **msg, struct avp *avp,
     ogs_log_print(OGS_LOG_DEBUG, "ik - ");
     ogs_log_hexdump(OGS_LOG_DEBUG, ik, OGS_KEY_LEN);
     ogs_log_print(OGS_LOG_DEBUG, "ak - ");
-    ogs_log_hexdump(OGS_LOG_DEBUG, ak, OGS_KEY_LEN);
+    ogs_log_hexdump(OGS_LOG_DEBUG, ak, OGS_AK_LEN);
     ogs_log_print(OGS_LOG_DEBUG, "xles - ");
     ogs_log_hexdump(OGS_LOG_DEBUG, xres, xres_len);
 
