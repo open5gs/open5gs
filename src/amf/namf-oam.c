@@ -20,6 +20,7 @@
 #include "namf-oam.h"
 #include "sbi-path.h"
 #include "ngap-path.h"
+#include "nsmf-handler.h"
 
 /*
  * Returns true if duplicate found, false otherwise 
@@ -127,33 +128,62 @@ static int count_unique_plmns(void)
 /*
  * Release all UEs associated with the deleted PLMN
  * Returns the number of UEs released
+ * 
+ * This function releases PDU sessions via SMF and sends RAN context release.
+ * The actual UE removal is handled asynchronously by the framework after all
+ * sessions are released and RAN context is freed.
  */
 static int release_ues_of_plmn(const ogs_plmn_id_t *deleted_plmn_id)
 {
     amf_ue_t *amf_ue = NULL, *next_ue = NULL;
     int released = 0;
     char deleted_plmn_str[OGS_PLMNIDSTRLEN];
+    
     ogs_plmn_id_to_string(deleted_plmn_id, deleted_plmn_str);
+    
     ogs_list_for_each_safe(&amf_self()->amf_ue_list, next_ue, amf_ue) {
-        if (!AMF_UE_HAVE_SUCI(amf_ue))
+        
+        if (!(AMF_UE_HAVE_SUCI(amf_ue) || AMF_UE_HAVE_SUPI(amf_ue)))
             continue;
+        
         if (memcmp(&amf_ue->nr_tai.plmn_id, deleted_plmn_id, sizeof(ogs_plmn_id_t)) == 0) {
-            ran_ue_t *ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+            ran_ue_t *ran_ue = NULL;
+            amf_nsmf_pdusession_sm_context_param_t param;
+            int state = AMF_RELEASE_SM_CONTEXT_NO_STATE;
+            
+            ogs_warn("[OAM] Releasing UE [SUPI=%s] - attached to deleted PLMN %s", 
+                     amf_ue->supi, deleted_plmn_str);
+            
+            ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+            
+            /* Prepare release parameters */
+            memset(&param, 0, sizeof(param));
+            param.cause = OpenAPI_cause_REL_DUE_TO_UNSPECIFIED_REASON;
+            param.ngApCause.group = NGAP_Cause_PR_nas;
+            param.ngApCause.value = NGAP_CauseNas_deregister;
+            param.ue_location = true;
+            param.ue_timezone = true;
+            
+            /* Release all PDU sessions via SBI (this will properly notify SMF/UPF) */
+            amf_sbi_send_release_all_sessions(ran_ue, amf_ue, state, &param);
+            
+            /* Release RAN context */
             if (ran_ue) {
-                ogs_warn("[OAM] Releasing UE [SUPI=%s] - attached to deleted PLMN %s", amf_ue->supi, deleted_plmn_str);
-                int rv;
-                rv = ngap_send_ran_ue_context_release_command(ran_ue,
+                int rv = ngap_send_ran_ue_context_release_command(ran_ue,
                         NGAP_Cause_PR_nas, NGAP_CauseNas_deregister,
                         NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
                 ogs_expect(rv == OGS_OK);
-                amf_ue_remove(amf_ue);
-                released++;
             }
+            
+            released++;
         }
     }
+    
     if (released > 0) {
-        ogs_info("[OAM] Released %d UE(s) attached to deleted PLMN %s", released, deleted_plmn_str);
+        ogs_info("[OAM] Initiated release for %d UE(s) and their PDU sessions for deleted PLMN %s", 
+                 released, deleted_plmn_str);
     }
+    
     return released;
 }
 
@@ -346,12 +376,9 @@ bool namf_oam_handle_plmns_get(ogs_sbi_stream_t *stream,  ogs_sbi_message_t *mes
     
     response->http.content = response_body;
     response->http.content_length = strlen(response_body);
-
-    ogs_info("[OAM] Listed %d PLMNs", amf_self()->num_of_plmn_support);
-    
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
-
+    ogs_info("[OAM] Listed %d PLMNs", amf_self()->num_of_plmn_support);
 
     return true;
 }
@@ -448,10 +475,9 @@ bool namf_oam_handle_plmns_get_by_id(ogs_sbi_stream_t *stream, ogs_sbi_message_t
     
     response->http.content = response_body;
     response->http.content_length = strlen(response_body);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     ogs_info("[OAM] Retrieved PLMN: %s", plmn_id_str_copy);
-    
-    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     return true;
 }
@@ -563,14 +589,11 @@ bool namf_oam_handle_plmns_delete(ogs_sbi_stream_t *stream, ogs_sbi_message_t *m
     
     response->http.content = response_body;
     response->http.content_length = strlen(response_body);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     ogs_info("[OAM] PLMN deleted: %s (%d entries), remaining: %d",
         plmn_id_str, deleted_count, amf_self()->num_of_plmn_support);
     
-    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
-
-
-
     return true;
 }
 
@@ -817,13 +840,10 @@ bool namf_oam_handle_plmns_post(
     
     response->http.content = response_body;
     response->http.content_length = strlen(response_body);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     ogs_info("[OAM] PLMN added: MCC=%d MNC=%d (%d slices), notified to gNBs",
         mcc, mnc, num_slices);
-    
-    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
-
-
 
     return true;
 }
