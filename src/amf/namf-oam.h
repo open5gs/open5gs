@@ -28,7 +28,7 @@ extern "C" {
 
 /*
  * Namf_OAM API Handler
- * 
+ *
  * OAM = Operations, Administration and Maintenance
  * Custom API for dynamic configuration management (not part of 3GPP standard)
  */

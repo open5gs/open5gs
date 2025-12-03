@@ -23,34 +23,34 @@
 #include "nsmf-handler.h"
 
 /*
- * Returns true if duplicate found, false otherwise 
+ * Returns true if duplicate found, false otherwise
  * Note: Multiple PLMNs can exist, but PLMN + SST + SD combinations must be unique
  */
 static bool is_duplicate_slice(const ogs_plmn_id_t *plmn_id, const ogs_s_nssai_t *s_nssai)
 {
     int i, k;
-    
+
     ogs_assert(plmn_id);
     ogs_assert(s_nssai);
-    
+
     for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
         /* Check if PLMN matches */
-        if (memcmp(&amf_self()->plmn_support[i].plmn_id, 
-                   plmn_id, 
+        if (memcmp(&amf_self()->plmn_support[i].plmn_id,
+                   plmn_id,
                    sizeof(ogs_plmn_id_t)) != 0)
             continue;
-        
+
         /* Same PLMN found, check all its S-NSSAIs */
         for (k = 0; k < amf_self()->plmn_support[i].num_of_s_nssai; k++) {
             ogs_s_nssai_t *existing = &amf_self()->plmn_support[i].s_nssai[k];
-            
+
             /* Check if SST and SD match */
             if (existing->sst == s_nssai->sst && existing->sd.v == s_nssai->sd.v) {
                 return true;  /* Duplicate found */
             }
         }
     }
-    
+
     return false;  /* No duplicate */
 }
 
@@ -62,16 +62,16 @@ static int count_unique_plmns(void)
     int i, j;
     int unique_count = 0;
     bool already_counted[OGS_MAX_NUM_OF_PLMN];
-    
+
     memset(already_counted, 0, sizeof(already_counted));
-    
+
     for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
         if (already_counted[i])
             continue;
-            
+
         unique_count++;
         already_counted[i] = true;
-        
+
         /* Mark all other entries with same PLMN ID as counted */
         for (j = i + 1; j < amf_self()->num_of_plmn_support; j++) {
             if (memcmp(&amf_self()->plmn_support[i].plmn_id,
@@ -81,7 +81,7 @@ static int count_unique_plmns(void)
             }
         }
     }
-    
+
     return unique_count;
 }
 
@@ -128,7 +128,7 @@ static int count_unique_plmns(void)
 /*
  * Release all UEs associated with the deleted PLMN
  * Returns the number of UEs released
- * 
+ *
  * This function releases PDU sessions via SMF and sends RAN context release.
  * The actual UE removal is handled asynchronously by the framework after all
  * sessions are released and RAN context is freed.
@@ -138,24 +138,24 @@ static int release_ues_of_plmn(const ogs_plmn_id_t *deleted_plmn_id)
     amf_ue_t *amf_ue = NULL, *next_ue = NULL;
     int released = 0;
     char deleted_plmn_str[OGS_PLMNIDSTRLEN];
-    
+
     ogs_plmn_id_to_string(deleted_plmn_id, deleted_plmn_str);
-    
+
     ogs_list_for_each_safe(&amf_self()->amf_ue_list, next_ue, amf_ue) {
-        
+
         if (!(AMF_UE_HAVE_SUCI(amf_ue) || AMF_UE_HAVE_SUPI(amf_ue)))
             continue;
-        
+
         if (memcmp(&amf_ue->nr_tai.plmn_id, deleted_plmn_id, sizeof(ogs_plmn_id_t)) == 0) {
             ran_ue_t *ran_ue = NULL;
             amf_nsmf_pdusession_sm_context_param_t param;
             int state = AMF_RELEASE_SM_CONTEXT_NO_STATE;
-            
-            ogs_warn("[OAM] Releasing UE [SUPI=%s] - attached to deleted PLMN %s", 
+
+            ogs_warn("[OAM] Releasing UE [SUPI=%s] - attached to deleted PLMN %s",
                      amf_ue->supi, deleted_plmn_str);
-            
+
             ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
-            
+
             /* Prepare release parameters */
             memset(&param, 0, sizeof(param));
             param.cause = OpenAPI_cause_REL_DUE_TO_UNSPECIFIED_REASON;
@@ -163,10 +163,10 @@ static int release_ues_of_plmn(const ogs_plmn_id_t *deleted_plmn_id)
             param.ngApCause.value = NGAP_CauseNas_deregister;
             param.ue_location = true;
             param.ue_timezone = true;
-            
+
             /* Release all PDU sessions via SBI (this will properly notify SMF/UPF) */
             amf_sbi_send_release_all_sessions(ran_ue, amf_ue, state, &param);
-            
+
             /* Release RAN context */
             if (ran_ue) {
                 int rv = ngap_send_ran_ue_context_release_command(ran_ue,
@@ -174,16 +174,16 @@ static int release_ues_of_plmn(const ogs_plmn_id_t *deleted_plmn_id)
                         NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
                 ogs_expect(rv == OGS_OK);
             }
-            
+
             released++;
         }
     }
-    
+
     if (released > 0) {
-        ogs_info("[OAM] Initiated release for %d UE(s) and their PDU sessions for deleted PLMN %s", 
+        ogs_info("[OAM] Initiated release for %d UE(s) and their PDU sessions for deleted PLMN %s",
                  released, deleted_plmn_str);
     }
-    
+
     return released;
 }
 
@@ -206,7 +206,7 @@ bool amf_namf_oam_handler(
     if (!resource) {
         ogs_error("No resource specified");
         ogs_assert(true == ogs_sbi_server_send_error(
-            stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, 
+            stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
             message, "No resource specified", NULL, NULL));
         return false;
     }
@@ -219,7 +219,7 @@ bool amf_namf_oam_handler(
      */
     if (!strcmp(resource, "plmns")) {
         const char *plmn_id_param = message->h.resource.component[1];
-        
+
         if (plmn_id_param) {
             /* /plmns/{plmn_id} */
             if (!strcmp(message->h.method, OGS_SBI_HTTP_METHOD_GET)) {
@@ -232,7 +232,7 @@ bool amf_namf_oam_handler(
                 ogs_error("Invalid HTTP method [%s] for /plmns/{id}",
                         message->h.method);
                 ogs_assert(true == ogs_sbi_server_send_error(
-                    stream, OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED, 
+                    stream, OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED,
                     message, "Method not allowed", message->h.method, NULL));
                 return false;
             }
@@ -248,7 +248,7 @@ bool amf_namf_oam_handler(
                 ogs_error("Invalid HTTP method [%s] for /plmns",
                         message->h.method);
                 ogs_assert(true == ogs_sbi_server_send_error(
-                    stream, OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED, 
+                    stream, OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED,
                     message, "Method not allowed", message->h.method, NULL));
                 return false;
             }
@@ -258,15 +258,15 @@ bool amf_namf_oam_handler(
     /* Resource not found */
     ogs_error("Invalid OAM resource [%s]", resource);
     ogs_assert(true == ogs_sbi_server_send_error(
-        stream, OGS_SBI_HTTP_STATUS_NOT_FOUND, 
+        stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
         message, "Resource not found", resource, NULL));
-    
+
     return false;
 }
 
 /*
  * GET /namf-oam/v1/plmns
- * 
+ *
  * Returns list of configured PLMNs with their slices and general statistics
  */
 bool namf_oam_handle_plmns_get(ogs_sbi_stream_t *stream,  ogs_sbi_message_t *message)
@@ -276,7 +276,7 @@ bool namf_oam_handle_plmns_get(ogs_sbi_stream_t *stream,  ogs_sbi_message_t *mes
     char *response_body = NULL;
     ogs_sbi_message_t response_message;
     ogs_sbi_response_t *response = NULL;
-    
+
     int i, j, k;
     int status = OGS_SBI_HTTP_STATUS_OK;
     amf_gnb_t *gnb = NULL;
@@ -299,48 +299,48 @@ bool namf_oam_handle_plmns_get(ogs_sbi_stream_t *stream,  ogs_sbi_message_t *mes
         char plmn_id_str[OGS_PLMNIDSTRLEN];
         cJSON *plmn_obj = NULL;
         cJSON *nssai_array = NULL;
-        
+
         /* Skip if already processed in a previous iteration */
         if (already_added[i])
             continue;
-        
+
         ogs_plmn_id_to_string(plmn_id, plmn_id_str);
-        
+
         /* Create PLMN object */
         plmn_obj = cJSON_CreateObject();
         nssai_array = cJSON_CreateArray();
-        
+
         cJSON_AddStringToObject(plmn_obj, "plmn_id", plmn_id_str);
         cJSON_AddNumberToObject(plmn_obj, "mcc", ogs_plmn_id_mcc(plmn_id));
         cJSON_AddNumberToObject(plmn_obj, "mnc", ogs_plmn_id_mnc(plmn_id));
-        
+
         /* Collect all S-NSSAIs for this PLMN ID */
         for (j = i; j < amf_self()->num_of_plmn_support; j++) {
             ogs_plmn_id_t *other_plmn = &amf_self()->plmn_support[j].plmn_id;
             char other_plmn_str[OGS_PLMNIDSTRLEN];
-            
+
             ogs_plmn_id_to_string(other_plmn, other_plmn_str);
-            
+
             /* If same PLMN ID, add its S-NSSAIs */
             if (strcmp(plmn_id_str, other_plmn_str) == 0) {
                 already_added[j] = true;
-                
+
                 for (k = 0; k < amf_self()->plmn_support[j].num_of_s_nssai; k++) {
                     cJSON *nssai_obj = cJSON_CreateObject();
                     ogs_s_nssai_t *s_nssai = &amf_self()->plmn_support[j].s_nssai[k];
-                    
+
                     cJSON_AddNumberToObject(nssai_obj, "sst", s_nssai->sst);
                     if (s_nssai->sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
                         char *sd_str = ogs_s_nssai_sd_to_string(s_nssai->sd);
                         cJSON_AddStringToObject(nssai_obj, "sd", sd_str);
                         ogs_free(sd_str);
                     }
-                    
+
                     cJSON_AddItemToArray(nssai_array, nssai_obj);
                 }
             }
         }
-        
+
         cJSON_AddItemToObject(plmn_obj, "s_nssai", nssai_array);
         cJSON_AddItemToArray(plmns_array, plmn_obj);
     }
@@ -370,10 +370,10 @@ bool namf_oam_handle_plmns_get(ogs_sbi_stream_t *stream,  ogs_sbi_message_t *mes
     /* Build SBI response */
     memset(&response_message, 0, sizeof(response_message));
     response_message.res_status = OGS_SBI_HTTP_STATUS_OK;
-    
+
     response = ogs_sbi_build_response(&response_message, status);
     ogs_assert(response);
-    
+
     response->http.content = response_body;
     response->http.content_length = strlen(response_body);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
@@ -385,7 +385,7 @@ bool namf_oam_handle_plmns_get(ogs_sbi_stream_t *stream,  ogs_sbi_message_t *mes
 
 /*
  * GET /namf-oam/v1/plmns/{plmn_id}
- * 
+ *
  * Get details of a specific PLMN by ID (format: "99970" or "999-70")
  */
 bool namf_oam_handle_plmns_get_by_id(ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
@@ -401,7 +401,7 @@ bool namf_oam_handle_plmns_get_by_id(ogs_sbi_stream_t *stream, ogs_sbi_message_t
     int status = OGS_SBI_HTTP_STATUS_OK;
 
     plmn_id_str = message->h.resource.component[1];
-    
+
     if (!plmn_id_str) {
         ogs_error("[OAM] Missing PLMN ID in path");
         ogs_assert(true == ogs_sbi_server_send_error(
@@ -418,9 +418,9 @@ bool namf_oam_handle_plmns_get_by_id(ogs_sbi_stream_t *stream, ogs_sbi_message_t
     for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
         ogs_plmn_id_t *plmn_id = &amf_self()->plmn_support[i].plmn_id;
         char current_plmn_str[OGS_PLMNIDSTRLEN];
-        
+
         ogs_plmn_id_to_string(plmn_id, current_plmn_str);
-        
+
         if (strcmp(current_plmn_str, plmn_id_str) == 0) {
             /* First match: add PLMN info */
             if (!found) {
@@ -429,12 +429,12 @@ bool namf_oam_handle_plmns_get_by_id(ogs_sbi_stream_t *stream, ogs_sbi_message_t
                 cJSON_AddNumberToObject(root, "mnc", ogs_plmn_id_mnc(plmn_id));
                 found = true;
             }
-            
+
             /* Add all S-NSSAIs from this entry */
             for (k = 0; k < amf_self()->plmn_support[i].num_of_s_nssai; k++) {
                 cJSON *nssai_obj = cJSON_CreateObject();
                 ogs_s_nssai_t *s_nssai = &amf_self()->plmn_support[i].s_nssai[k];
-                
+
                 cJSON_AddNumberToObject(nssai_obj, "sst", s_nssai->sst);
                 if (s_nssai->sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
                     char *sd_str = ogs_s_nssai_sd_to_string(s_nssai->sd);
@@ -460,7 +460,7 @@ bool namf_oam_handle_plmns_get_by_id(ogs_sbi_stream_t *stream, ogs_sbi_message_t
     cJSON_AddItemToObject(root, "s_nssai", s_nssai_array);
 
     response_body = cJSON_Print(root);
-    
+
     char plmn_id_str_copy[OGS_PLMNIDSTRLEN] = {0};
     if (plmn_id_str)
         strncpy(plmn_id_str_copy, plmn_id_str, sizeof(plmn_id_str_copy) - 1);
@@ -469,10 +469,10 @@ bool namf_oam_handle_plmns_get_by_id(ogs_sbi_stream_t *stream, ogs_sbi_message_t
     /* Build SBI response */
     memset(&response_message, 0, sizeof(response_message));
     response_message.res_status = OGS_SBI_HTTP_STATUS_OK;
-    
+
     response = ogs_sbi_build_response(&response_message, status);
     ogs_assert(response);
-    
+
     response->http.content = response_body;
     response->http.content_length = strlen(response_body);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
@@ -484,7 +484,7 @@ bool namf_oam_handle_plmns_get_by_id(ogs_sbi_stream_t *stream, ogs_sbi_message_t
 
 /*
  * DELETE /namf-oam/v1/plmns/{plmn_id}
- * 
+ *
  * Remove ALL entries with this PLMN ID from the configuration
  */
 bool namf_oam_handle_plmns_delete(ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
@@ -499,9 +499,9 @@ bool namf_oam_handle_plmns_delete(ogs_sbi_stream_t *stream, ogs_sbi_message_t *m
     bool found = false;
     int deleted_count = 0;
     ogs_plmn_id_t deleted_plmn_id;
-    
+
     plmn_id_str = message->h.resource.component[1];
-    
+
     if (!plmn_id_str) {
         ogs_error("[OAM] Missing PLMN ID in path");
         ogs_assert(true == ogs_sbi_server_send_error(
@@ -515,32 +515,32 @@ bool namf_oam_handle_plmns_delete(ogs_sbi_stream_t *stream, ogs_sbi_message_t *m
     while (i < amf_self()->num_of_plmn_support) {
         ogs_plmn_id_t *plmn_id = &amf_self()->plmn_support[i].plmn_id;
         char current_plmn_str[OGS_PLMNIDSTRLEN];
-        
+
         ogs_plmn_id_to_string(plmn_id, current_plmn_str);
-        
+
         if (strcmp(current_plmn_str, plmn_id_str) == 0) {
             int j;
-            
+
             /* Save the PLMN ID before deleting (for gNB disconnection) */
             if (!found) {
                 memcpy(&deleted_plmn_id, plmn_id, sizeof(ogs_plmn_id_t));
             }
-            
+
             found = true;
             deleted_count++;
-            
+
             /* Shift remaining entries to fill the gap */
             for (j = i; j < amf_self()->num_of_plmn_support - 1; j++) {
-                memcpy(&amf_self()->plmn_support[j], 
+                memcpy(&amf_self()->plmn_support[j],
                        &amf_self()->plmn_support[j + 1],
                        sizeof(amf_self()->plmn_support[0]));
             }
-            
+
             /* Clear the last entry */
             memset(&amf_self()->plmn_support[amf_self()->num_of_plmn_support - 1],
                    0, sizeof(amf_self()->plmn_support[0]));
             amf_self()->num_of_plmn_support--;
-            
+
         } else {
             i++;
         }
@@ -564,7 +564,7 @@ bool namf_oam_handle_plmns_delete(ogs_sbi_stream_t *stream, ogs_sbi_message_t *m
     /* Build success response */
     response_json = cJSON_CreateObject();
     cJSON_AddStringToObject(response_json, "status", "success");
-    
+
     if (deleted_count == 1) {
         cJSON_AddStringToObject(response_json, "message", "PLMN deleted successfully");
     } else {
@@ -572,7 +572,7 @@ bool namf_oam_handle_plmns_delete(ogs_sbi_stream_t *stream, ogs_sbi_message_t *m
         cJSON_AddStringToObject(response_json, "message", msg);
         ogs_free(msg);
     }
-    
+
     cJSON_AddStringToObject(response_json, "deleted_plmn_id", plmn_id_str);
     cJSON_AddNumberToObject(response_json, "deleted_entries", deleted_count);
     cJSON_AddNumberToObject(response_json, "remaining_plmns", count_unique_plmns());
@@ -583,25 +583,25 @@ bool namf_oam_handle_plmns_delete(ogs_sbi_stream_t *stream, ogs_sbi_message_t *m
     /* Build SBI response */
     memset(&response_message, 0, sizeof(response_message));
     response_message.res_status = OGS_SBI_HTTP_STATUS_OK;
-    
+
     response = ogs_sbi_build_response(&response_message, status);
     ogs_assert(response);
-    
+
     response->http.content = response_body;
     response->http.content_length = strlen(response_body);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     ogs_info("[OAM] PLMN deleted: %s (%d entries), remaining: %d",
         plmn_id_str, deleted_count, amf_self()->num_of_plmn_support);
-    
+
     return true;
 }
 
 /*
  * POST /namf-oam/v1/plmns
- * 
+ *
  * Add a new PLMN to the AMF configuration
- * 
+ *
  * Request body example:
  * {
  *   "plmn_id": {
@@ -692,7 +692,7 @@ bool namf_oam_handle_plmns_post(
     mnc_len = strlen(mnc_obj->valuestring);
 
     if (mcc > 999 || mnc > 999 || mnc_len < 2 || mnc_len > 3) {
-        ogs_error("[OAM] Invalid MCC (%d) or MNC (%d, len=%d)", 
+        ogs_error("[OAM] Invalid MCC (%d) or MNC (%d, len=%d)",
             mcc, mnc, mnc_len);
         cJSON_Delete(root);
         ogs_assert(true == ogs_sbi_server_send_error(
@@ -733,7 +733,7 @@ bool namf_oam_handle_plmns_post(
         cJSON *sd_obj = cJSON_GetObjectItem(slice_obj, "sd");
         ogs_s_nssai_t temp_nssai;
         char plmn_id_str[OGS_PLMNIDSTRLEN];
-        
+
         if (!sst_obj || !cJSON_IsNumber(sst_obj)) {
             ogs_error("[OAM] Slice %d: missing or invalid 'sst'", i);
             cJSON_Delete(root);
@@ -742,57 +742,57 @@ bool namf_oam_handle_plmns_post(
                 message, "Each slice must have 'sst' (number)", NULL, NULL));
             return false;
         }
-        
+
         temp_nssai.sst = (uint8_t)sst_obj->valueint;
-        
+
         if (sd_obj && cJSON_IsString(sd_obj)) {
             temp_nssai.sd.v = strtoul(sd_obj->valuestring, NULL, 16);
         } else {
             temp_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
         }
-        
+
         /* Check if this PLMN + S-NSSAI combination already exists */
         if (is_duplicate_slice(&plmn_id, &temp_nssai)) {
             char *sd_str = NULL;
             char *error_msg = NULL;
-            
+
             ogs_plmn_id_to_string(&plmn_id, plmn_id_str);
-            
+
             if (temp_nssai.sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
                 sd_str = ogs_s_nssai_sd_to_string(temp_nssai.sd);
-                ogs_error("[OAM] Duplicate slice: PLMN=%s, SST=%d, SD=%s", 
+                ogs_error("[OAM] Duplicate slice: PLMN=%s, SST=%d, SD=%s",
                     plmn_id_str, temp_nssai.sst, sd_str);
-                
+
                 error_msg = ogs_msprintf("Slice already exists: PLMN=%s, SST=%d, SD=%s",
                     plmn_id_str, temp_nssai.sst, sd_str);
                 ogs_free(sd_str);
             } else {
-                ogs_error("[OAM] Duplicate slice: PLMN=%s, SST=%d (no SD)", 
+                ogs_error("[OAM] Duplicate slice: PLMN=%s, SST=%d (no SD)",
                     plmn_id_str, temp_nssai.sst);
-                
+
                 error_msg = ogs_msprintf("Slice already exists: PLMN=%s, SST=%d",
                     plmn_id_str, temp_nssai.sst);
             }
-            
+
             cJSON_Delete(root);
             ogs_assert(error_msg);
             ogs_assert(true == ogs_sbi_server_send_error(
                 stream, OGS_SBI_HTTP_STATUS_CONFLICT,
                 message, error_msg, NULL, NULL));
             ogs_free(error_msg);
-            
+
             return false;
         }
     }
 
     /* Add new PLMN entry */
     int plmn_idx = amf_self()->num_of_plmn_support;
-    
-    memcpy(&amf_self()->plmn_support[plmn_idx].plmn_id, 
+
+    memcpy(&amf_self()->plmn_support[plmn_idx].plmn_id,
            &plmn_id, sizeof(ogs_plmn_id_t));
-    
+
     amf_self()->plmn_support[plmn_idx].num_of_s_nssai = 0;
-    
+
     for (i = 0; i < num_slices; i++) {
         cJSON *slice_obj = cJSON_GetArrayItem(s_nssai_array, i);
         cJSON *sst_obj = cJSON_GetObjectItem(slice_obj, "sst");
@@ -834,10 +834,10 @@ bool namf_oam_handle_plmns_post(
     /* Build SBI response */
     memset(&response_message, 0, sizeof(response_message));
     response_message.res_status = OGS_SBI_HTTP_STATUS_CREATED;
-    
+
     response = ogs_sbi_build_response(&response_message, OGS_SBI_HTTP_STATUS_CREATED);
     ogs_assert(response);
-    
+
     response->http.content = response_body;
     response->http.content_length = strlen(response_body);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));

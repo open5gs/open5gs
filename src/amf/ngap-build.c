@@ -247,7 +247,7 @@ ogs_pkbuf_t *ngap_build_amf_configuration_update(void)
         }
     }
 
-    /* 
+    /*
      * Build message even without PLMNs to notify gNBs
      * If no PLMNs, the PLMNSupportList IE is omitted
      */
@@ -274,7 +274,7 @@ ogs_pkbuf_t *ngap_build_amf_configuration_update(void)
 
         ie->id = NGAP_ProtocolIE_ID_id_PLMNSupportList;
         ie->criticality = NGAP_Criticality_reject;
-        ie->value.present = 
+        ie->value.present =
             NGAP_AMFConfigurationUpdateIEs__value_PR_PLMNSupportList;
 
         PLMNSupportList = &ie->value.choice.PLMNSupportList;
