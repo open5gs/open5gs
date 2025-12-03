@@ -2760,7 +2760,7 @@ void amf_clear_subscribed_info(amf_ue_t *amf_ue)
 
     ogs_assert(amf_ue->num_of_slice <= OGS_MAX_NUM_OF_SLICE);
     for (i = 0; i < amf_ue->num_of_slice; i++) {
-        ogs_assert(amf_ue->slice[i].num_of_session <= OGS_MAX_NUM_OF_SESS);
+        ogs_assert(amf_ue->slice[i].num_of_session <= OGS_MAX_NUM_OF_DNN);
         for (j = 0; j < amf_ue->slice[i].num_of_session; j++) {
             ogs_assert(amf_ue->slice[i].session[j].name);
             ogs_free(amf_ue->slice[i].session[j].name);
