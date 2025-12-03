@@ -23,6 +23,7 @@
 #include "ngap-handler.h"
 #include "nnrf-handler.h"
 #include "namf-handler.h"
+#include "namf-oam.h"
 #include "nsmf-handler.h"
 #include "nnssf-handler.h"
 #include "nas-security.h"
@@ -107,6 +108,28 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             break;
         }
 
+        /*
+         * Special handling for NAMF_OAM custom API
+         */
+        if (sbi_request->h.uri &&
+            strstr(sbi_request->h.uri, OGS_SBI_SERVICE_NAME_NAMF_OAM) != NULL) {
+            rv = ogs_sbi_parse_header(&sbi_message, &sbi_request->h);
+            if (rv != OGS_OK) {
+                ogs_error("cannot parse HTTP header");
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(
+                        stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        NULL, "cannot parse HTTP header", NULL, NULL));
+                break;
+            } else {
+                amf_namf_oam_handler(stream, &sbi_message, sbi_request);
+                break;
+            }
+        }
+
+        /*
+         * For standard APIs: parse the complete request (header + body)
+         */
         rv = ogs_sbi_parse_request(&sbi_message, sbi_request);
         if (rv != OGS_OK) {
             /* 'sbi_message' buffer is released in ogs_sbi_parse_request() */
