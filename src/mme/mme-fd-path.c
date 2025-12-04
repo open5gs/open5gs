@@ -1368,6 +1368,7 @@ void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     ret = fd_msg_avp_new(ogs_diam_s6a_ulr_flags, 0, &avp);
     ogs_assert(ret == 0);
     val.u32 = OGS_DIAM_S6A_ULR_S6A_S6D_INDICATOR;
+    val.u32 |= OGS_DIAM_S6A_ULR_INITIAL_ATTACH_IND;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
