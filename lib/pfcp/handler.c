@@ -461,14 +461,6 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         return NULL;
     }
 
-    pdr = ogs_pfcp_pdr_find_or_add(sess, message->pdr_id.u16);
-    ogs_assert(pdr);
-
-    if (message->precedence.presence) {
-        ogs_pfcp_pdr_reorder_by_precedence(pdr, message->precedence.u32);
-        pdr->precedence = message->precedence.u32;
-    }
-
     if (message->pdi.presence == 0) {
         ogs_error("No PDI in PDR");
         *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
@@ -507,6 +499,28 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
                 }
             }
         }
+    }
+
+    for (i = 0; i < OGS_ARRAY_SIZE(message->urr_id); i++) {
+        if (message->urr_id[i].presence) {
+            if (!(message->urr_id[i].u32 > 0 &&
+                    message->urr_id[i].u32 <= OGS_MAX_NUM_OF_URR)) {
+                ogs_error("Invalid URR-ID %u (valid range: 1..%d) "
+                        "in PFCP message",
+                        message->urr_id[i].u32, OGS_MAX_NUM_OF_URR);
+                *cause_value = OGS_PFCP_CAUSE_SYSTEM_FAILURE;
+                *offending_ie_value = OGS_PFCP_URR_ID_TYPE;
+                return NULL;
+            }
+        }
+    }
+
+    pdr = ogs_pfcp_pdr_find_or_add(sess, message->pdr_id.u16);
+    ogs_assert(pdr);
+
+    if (message->precedence.presence) {
+        ogs_pfcp_pdr_reorder_by_precedence(pdr, message->precedence.u32);
+        pdr->precedence = message->precedence.u32;
     }
 
     pdr->src_if = message->pdi.source_interface.u8;
