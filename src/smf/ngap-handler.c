@@ -102,6 +102,15 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
                 "No transportLayerAddress", smf_ue->supi);
         goto cleanup;
     }
+    if (!remote_dl_ip.ipv4 && !remote_dl_ip.ipv6) {
+        ogs_error("[%s:%d] Invalid GTP Tunnel IP (IPv4/IPv6 all zero)",
+                smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error_log(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "Invalid GTP Tunnel IP (IPv4/IPv6 all zero)", smf_ue->supi);
+        goto cleanup;
+    }
+
     ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &remote_dl_teid);
 
     /* Need to Update? */
@@ -564,6 +573,14 @@ int ngap_handle_path_switch_request_transfer(
                 "No transportLayerAddress", smf_ue->supi);
         goto cleanup;
     }
+    if (!remote_dl_ip.ipv4 && !remote_dl_ip.ipv6) {
+        ogs_error("[%s:%d] Invalid GTP Tunnel IP (IPv4/IPv6 all zero)",
+                smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error_log(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "Invalid GTP Tunnel IP (IPv4/IPv6 all zero)", smf_ue->supi);
+        goto cleanup;
+    }
     ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &remote_dl_teid);
 
     /* Need to Update? */
@@ -731,6 +748,7 @@ int ngap_handle_handover_request_ack(
     smf_ue_t *smf_ue = NULL;
     smf_bearer_t *qos_flow = NULL;
     int rv, i;
+    ogs_ip_t remote_dl_ip;
 
     NGAP_HandoverRequestAcknowledgeTransfer_t message;
 
@@ -784,7 +802,7 @@ int ngap_handle_handover_request_ack(
     }
 
     rv = ogs_asn_BIT_STRING_to_ip(&gTPTunnel->transportLayerAddress,
-            &sess->handover.remote_dl_ip);
+            &remote_dl_ip);
     if (rv != OGS_OK) {
         ogs_error("[%s:%d] No transportLayerAddress", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error_log(
@@ -792,6 +810,16 @@ int ngap_handle_handover_request_ack(
                 "No transportLayerAddress", smf_ue->supi);
         goto cleanup;
     }
+    if (!remote_dl_ip.ipv4 && !remote_dl_ip.ipv6) {
+        ogs_error("[%s:%d] Invalid GTP Tunnel IP (IPv4/IPv6 all zero)",
+                smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error_log(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "Invalid GTP Tunnel IP (IPv4/IPv6 all zero)", smf_ue->supi);
+        goto cleanup;
+    }
+    memcpy(&sess->handover.remote_dl_ip, &remote_dl_ip,
+            sizeof(sess->handover.remote_dl_ip));
     ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID,
             &sess->handover.remote_dl_teid);
 
@@ -845,7 +873,7 @@ int ngap_handle_handover_request_ack(
         }
 
         rv = ogs_asn_BIT_STRING_to_ip(&gTPTunnel->transportLayerAddress,
-                &sess->handover.remote_dl_ip);
+                &remote_dl_ip);
         if (rv != OGS_OK) {
             ogs_error("[%s:%d] No transportLayerAddress",
                     smf_ue->supi, sess->psi);
@@ -854,6 +882,16 @@ int ngap_handle_handover_request_ack(
                     "No transportLayerAddress", smf_ue->supi);
             goto cleanup;
         }
+        if (!remote_dl_ip.ipv4 && !remote_dl_ip.ipv6) {
+            ogs_error("[%s:%d] Invalid GTP Tunnel IP (IPv4/IPv6 all zero)",
+                    smf_ue->supi, sess->psi);
+            smf_sbi_send_sm_context_update_error_log(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    "Invalid GTP Tunnel IP (IPv4/IPv6 all zero)", smf_ue->supi);
+            goto cleanup;
+        }
+        memcpy(&sess->handover.remote_dl_ip, &remote_dl_ip,
+                sizeof(sess->handover.remote_dl_ip));
         ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID,
                 &sess->handover.remote_dl_teid);
 
