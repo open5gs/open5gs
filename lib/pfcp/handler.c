@@ -678,10 +678,23 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
     pdr->f_teid_len = 0;
 
     if (message->pdi.local_f_teid.presence) {
+        if (!message->pdi.local_f_teid.len) {
+            ogs_error("No F-TEID LEN");
+            *cause_value = OGS_PFCP_CAUSE_INVALID_LENGTH;
+            *offending_ie_value = OGS_PFCP_F_TEID_TYPE;
+            return NULL;
+        }
         pdr->f_teid_len =
             ogs_min(message->pdi.local_f_teid.len, sizeof(pdr->f_teid));
         memcpy(&pdr->f_teid, message->pdi.local_f_teid.data, pdr->f_teid_len);
-        ogs_assert(pdr->f_teid.ipv4 || pdr->f_teid.ipv6);
+
+        if (!pdr->f_teid.ipv4 && !pdr->f_teid.ipv6) {
+            ogs_error("Invalid F-TEID ");
+            *cause_value = OGS_PFCP_CAUSE_INVALID_F_TEID_ALLOCATION_OPTION;
+            *offending_ie_value = OGS_PFCP_F_TEID_TYPE;
+            return NULL;
+        }
+
         pdr->f_teid.teid = be32toh(pdr->f_teid.teid);
     }
 
