@@ -461,6 +461,13 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         return NULL;
     }
 
+    if (message->far_id.presence == 0) {
+        ogs_error("No FAR-ID");
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+        *offending_ie_value = OGS_PFCP_FAR_ID_TYPE;
+        return NULL;
+    }
+
     if (message->pdi.presence == 0) {
         ogs_error("No PDI in PDR");
         *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
