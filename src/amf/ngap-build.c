@@ -895,10 +895,14 @@ ogs_pkbuf_t *ngap_build_ue_context_modification_request(amf_ue_t *amf_ue)
 
     asn_uint642INTEGER(
             &UEAggregateMaximumBitRate->uEAggregateMaximumBitRateUL,
-            amf_ue->ue_ambr.uplink == 0 ? MAX_BIT_RATE : amf_ue->ue_ambr.uplink);
+            (amf_ue->ue_ambr.uplink == 0 ||
+             amf_ue->ue_ambr.uplink > OGS_MAX_BITRATE_NGAP) ?
+                OGS_MAX_BITRATE_NGAP : amf_ue->ue_ambr.uplink);
     asn_uint642INTEGER(
             &UEAggregateMaximumBitRate->uEAggregateMaximumBitRateDL,
-            amf_ue->ue_ambr.downlink == 0 ? MAX_BIT_RATE : amf_ue->ue_ambr.downlink);
+            (amf_ue->ue_ambr.downlink == 0 ||
+             amf_ue->ue_ambr.downlink > OGS_MAX_BITRATE_NGAP) ?
+                OGS_MAX_BITRATE_NGAP : amf_ue->ue_ambr.downlink);
 
     ran_ue->ue_ambr_sent = true;
 

@@ -61,6 +61,11 @@ static void fill_qos_level_parameters(
             params->gBR_QosInformation = CALLOC(1, sizeof(*gBR_QosInformation));
         ogs_assert(gBR_QosInformation);
 
+        ogs_assert(qos->mbr.downlink <= OGS_MAX_BITRATE_NGAP);
+        ogs_assert(qos->mbr.uplink <= OGS_MAX_BITRATE_NGAP);
+        ogs_assert(qos->gbr.downlink <= OGS_MAX_BITRATE_NGAP);
+        ogs_assert(qos->gbr.uplink <= OGS_MAX_BITRATE_NGAP);
+
         asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateDL,
                 qos->mbr.downlink);
         asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateUL,

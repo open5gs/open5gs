@@ -257,14 +257,18 @@ static void update_authorized_pcc_rule_and_qos(
 
             if (pcc_rule->qos.mbr.downlink || pcc_rule->qos.mbr.uplink ||
                 pcc_rule->qos.gbr.downlink || pcc_rule->qos.gbr.uplink) {
-                if (pcc_rule->qos.mbr.downlink == 0)
-                    pcc_rule->qos.mbr.downlink = MAX_BIT_RATE;
-                if (pcc_rule->qos.mbr.uplink == 0)
-                    pcc_rule->qos.mbr.uplink = MAX_BIT_RATE;
-                if (pcc_rule->qos.gbr.downlink == 0)
-                    pcc_rule->qos.gbr.downlink = MAX_BIT_RATE;
-                if (pcc_rule->qos.gbr.uplink == 0)
-                    pcc_rule->qos.gbr.uplink = MAX_BIT_RATE;
+                if (pcc_rule->qos.mbr.downlink == 0 ||
+                    pcc_rule->qos.mbr.downlink > OGS_MAX_BITRATE_NGAP)
+                    pcc_rule->qos.mbr.downlink = OGS_MAX_BITRATE_NGAP;
+                if (pcc_rule->qos.mbr.uplink == 0 ||
+                    pcc_rule->qos.mbr.uplink > OGS_MAX_BITRATE_NGAP)
+                    pcc_rule->qos.mbr.uplink = OGS_MAX_BITRATE_NGAP;
+                if (pcc_rule->qos.gbr.downlink == 0 ||
+                    pcc_rule->qos.gbr.downlink > OGS_MAX_BITRATE_NGAP)
+                    pcc_rule->qos.gbr.downlink = OGS_MAX_BITRATE_NGAP;
+                if (pcc_rule->qos.gbr.uplink == 0 ||
+                    pcc_rule->qos.gbr.uplink > OGS_MAX_BITRATE_NGAP)
+                    pcc_rule->qos.gbr.uplink = OGS_MAX_BITRATE_NGAP;
             }
 
             sess->policy.num_of_pcc_rule++;

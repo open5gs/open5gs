@@ -382,6 +382,11 @@ static void fill_e_rab_to_be_setup(
                 (long long)bearer->qos.gbr.downlink,
                 (long long)bearer->qos.gbr.uplink);
 
+            ogs_assert(bearer->qos.mbr.downlink <= OGS_MAX_BITRATE_S1AP);
+            ogs_assert(bearer->qos.mbr.uplink <= OGS_MAX_BITRATE_S1AP);
+            ogs_assert(bearer->qos.gbr.downlink <= OGS_MAX_BITRATE_S1AP);
+            ogs_assert(bearer->qos.gbr.uplink <= OGS_MAX_BITRATE_S1AP);
+
             gbrQosInformation =
                     CALLOC(1, sizeof(struct S1AP_GBR_QosInformation));
             asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL,
@@ -1159,6 +1164,11 @@ ogs_pkbuf_t *s1ap_build_e_rab_setup_request(
         if (bearer->qos.mbr.downlink && bearer->qos.mbr.uplink &&
             bearer->qos.gbr.downlink && bearer->qos.gbr.uplink) {
 
+            ogs_assert(bearer->qos.mbr.downlink <= OGS_MAX_BITRATE_S1AP);
+            ogs_assert(bearer->qos.mbr.uplink <= OGS_MAX_BITRATE_S1AP);
+            ogs_assert(bearer->qos.gbr.downlink <= OGS_MAX_BITRATE_S1AP);
+            ogs_assert(bearer->qos.gbr.uplink <= OGS_MAX_BITRATE_S1AP);
+
             gbrQosInformation = CALLOC(1, sizeof(S1AP_GBR_QosInformation_t));
             asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL,
                     bearer->qos.mbr.downlink);
@@ -1303,6 +1313,10 @@ ogs_pkbuf_t *s1ap_build_e_rab_modify_request(
         ogs_assert(bearer->qos.mbr.uplink);
         ogs_assert(bearer->qos.gbr.downlink);
         ogs_assert(bearer->qos.gbr.uplink);
+        ogs_assert(bearer->qos.mbr.downlink <= OGS_MAX_BITRATE_S1AP);
+        ogs_assert(bearer->qos.mbr.uplink <= OGS_MAX_BITRATE_S1AP);
+        ogs_assert(bearer->qos.gbr.downlink <= OGS_MAX_BITRATE_S1AP);
+        ogs_assert(bearer->qos.gbr.uplink <= OGS_MAX_BITRATE_S1AP);
 
         gbrQosInformation =
                 CALLOC(1, sizeof(S1AP_GBR_QosInformation_t));
@@ -2392,6 +2406,10 @@ ogs_pkbuf_t *s1ap_build_handover_request(
                 ogs_assert(bearer->qos.mbr.uplink);
                 ogs_assert(bearer->qos.gbr.downlink);
                 ogs_assert(bearer->qos.gbr.uplink);
+                ogs_assert(bearer->qos.mbr.downlink <= OGS_MAX_BITRATE_S1AP);
+                ogs_assert(bearer->qos.mbr.uplink <= OGS_MAX_BITRATE_S1AP);
+                ogs_assert(bearer->qos.gbr.downlink <= OGS_MAX_BITRATE_S1AP);
+                ogs_assert(bearer->qos.gbr.uplink <= OGS_MAX_BITRATE_S1AP);
 
                 gbrQosInformation =
                         CALLOC(1, sizeof(struct S1AP_GBR_QosInformation));

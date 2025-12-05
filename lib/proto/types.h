@@ -432,7 +432,21 @@ ED2(uint8_t spare:5;,
     };
 } __attribute__ ((packed)) ogs_paa_t;
 
-#define MAX_BIT_RATE 10000000000UL
+/*
+ *  Bitrate Upper Bound According to 3GPP Standards
+ *
+ *  EPC (S1AP): 3GPP TS 36.413 §9.2.1.19 Bit Rate
+ *      - Maximum allowed bitrate value specified for EPC
+ *
+ *  5GC (NGAP): 3GPP TS 38.414 §9.3.1.4 Bit Rate
+ *      - Defines larger bitrate ceiling due to 5GC performance model
+ *
+ *  NOTE: These values represent the upper boundary (ceiling) of the encode
+ *        bitrate field in each control-plane protocol.
+ */
+#define OGS_MAX_BITRATE_S1AP    10000000000UL        /* S1AP / EPC */
+#define OGS_MAX_BITRATE_NGAP    4000000000000UL      /* NGAP / 5GC */
+
 
 typedef struct ogs_bitrate_s {
     uint64_t downlink;        /* bits per seconds */
