@@ -128,7 +128,17 @@ void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact)
         size_t sidlen = strlen(sess->s6b_sid);
         ret = fd_sess_fromsid_msg((os0_t)sess->s6b_sid, sidlen, &session, &new);
         ogs_assert(ret == 0);
-        ogs_assert(new == 0);
+        if (new) {
+            ogs_error("S6b Session [%s] missing in Diameter stack. "
+                    "Releasing PDU Session to recover.", sess->s6b_sid);
+            ret = fd_msg_free(req);
+            ogs_assert(ret == 0);
+
+            ogs_free(sess->s6b_sid);
+            sess->s6b_sid = NULL;
+
+            return;
+        }
 
         ogs_debug("    Found S6b Session-Id: [%s]", sess->s6b_sid);
 
@@ -594,7 +604,17 @@ void smf_s6b_send_str(smf_sess_t *sess, ogs_gtp_xact_t *xact, uint32_t cause)
     sidlen = strlen(sess->s6b_sid);
     ret = fd_sess_fromsid_msg((os0_t)sess->s6b_sid, sidlen, &session, &new);
     ogs_assert(ret == 0);
-    ogs_assert(new == 0);
+    if (new) {
+        ogs_error("S6b Session [%s] missing in Diameter stack. "
+                "Releasing PDU Session to recover.", sess->s6b_sid);
+        ret = fd_msg_free(req);
+        ogs_assert(ret == 0);
+
+        ogs_free(sess->s6b_sid);
+        sess->s6b_sid = NULL;
+
+        return;
+    }
 
     ogs_debug("    Found S6b Session-Id: [%s]", sess->s6b_sid);
 

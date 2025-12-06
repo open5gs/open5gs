@@ -673,7 +673,17 @@ void smf_gy_send_ccr(smf_sess_t *sess, ogs_pool_id_t xact_id,
         size_t sidlen = strlen(sess->gy_sid);
         ret = fd_sess_fromsid_msg((os0_t)sess->gy_sid, sidlen, &session, &new);
         ogs_assert(ret == 0);
-        ogs_assert(new == 0);
+        if (new) {
+            ogs_error("Gy Session [%s] missing in Diameter stack. "
+                    "Releasing PDU Session to recover.", sess->gy_sid);
+            ret = fd_msg_free(req);
+            ogs_assert(ret == 0);
+
+            ogs_free(sess->gy_sid);
+            sess->gy_sid = NULL;
+
+            return;
+        }
 
         ogs_debug("    Found Gy Session-Id: [%s]", sess->gy_sid);
         /* Add Session-Id to the message */
