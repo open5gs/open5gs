@@ -95,15 +95,13 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
      * is absent, the serving core network operator shall be assumed.
      */
     if (ogs_sbi_plmn_id_in_vplmn(&amf_ue->home_plmn_id) == true) {
-        char *home_network_domain =
-            ogs_home_network_domain_from_plmn_id(&amf_ue->home_plmn_id);
-        ogs_assert(home_network_domain);
+        char *dnn_oi = ogs_dnn_oi_from_plmn_id(&amf_ue->home_plmn_id);
+        ogs_assert(dnn_oi);
 
-        SmContextCreateData.dnn =
-            ogs_msprintf("%s.%s", sess->dnn, home_network_domain);
+        SmContextCreateData.dnn = ogs_msprintf("%s.%s", sess->dnn, dnn_oi);
         ogs_assert(SmContextCreateData.dnn);
 
-        ogs_free(home_network_domain);
+        ogs_free(dnn_oi);
 
     } else {
 

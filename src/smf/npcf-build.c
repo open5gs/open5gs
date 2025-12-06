@@ -115,17 +115,16 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
      * and Operator Identifier, or a DNN with the Network Identifier only
      */
     if (ogs_sbi_supi_in_vplmn(smf_ue->supi) == true) {
-        char *home_network_domain = NULL;
+        char *dnn_oi = NULL;
 
-        home_network_domain =
-            ogs_home_network_domain_from_plmn_id(&sess->home_plmn_id);
-        ogs_assert(home_network_domain);
+        dnn_oi = ogs_dnn_oi_from_plmn_id(&sess->home_plmn_id);
+        ogs_assert(dnn_oi);
 
         SmPolicyContextData.dnn =
-            ogs_msprintf("%s.%s", sess->session.name, home_network_domain);
+            ogs_msprintf("%s.%s", sess->session.name, dnn_oi);
         ogs_assert(SmPolicyContextData.dnn);
 
-        ogs_free(home_network_domain);
+        ogs_free(dnn_oi);
 
     } else {
         SmPolicyContextData.dnn = ogs_strdup(sess->session.name);

@@ -234,7 +234,7 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
     uint16_t fqdn_port = 0;
     ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
-    char *home_network_domain = NULL;
+    char *dnn_oi = NULL;
 
     ogs_assert(sess);
     pcf_ue_sm = pcf_ue_sm_find_by_id(sess->pcf_ue_sm_id);
@@ -369,22 +369,20 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
      * The DNN of the PDU session, a full DNN with both the Network Identifier
      * and Operator Identifier, or a DNN with the Network Identifier only
      */
-    home_network_domain = ogs_home_network_domain_from_fqdn(
-            SmPolicyContextData->dnn);
+    dnn_oi = ogs_dnn_oi_from_fqdn(SmPolicyContextData->dnn);
 
-    if (home_network_domain) {
-        char dnn_network_identifer[OGS_MAX_DNN_LEN+1];
+    if (dnn_oi) {
+        char dnn_ni[OGS_MAX_DNN_LEN+1];
         uint16_t mcc = 0, mnc = 0;
 
-        ogs_assert(home_network_domain > SmPolicyContextData->dnn);
+        ogs_assert(dnn_oi > SmPolicyContextData->dnn);
 
-        ogs_cpystrn(dnn_network_identifer, SmPolicyContextData->dnn,
-            ogs_min(OGS_MAX_DNN_LEN,
-                home_network_domain - SmPolicyContextData->dnn));
+        ogs_cpystrn(dnn_ni, SmPolicyContextData->dnn,
+            ogs_min(OGS_MAX_DNN_LEN, dnn_oi - SmPolicyContextData->dnn));
 
         if (sess->dnn)
             ogs_free(sess->dnn);
-        sess->dnn = ogs_strdup(dnn_network_identifer);
+        sess->dnn = ogs_strdup(dnn_ni);
         ogs_assert(sess->dnn);
 
         if (sess->full_dnn)

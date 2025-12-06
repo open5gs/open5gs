@@ -246,7 +246,8 @@ char *ogs_home_network_domain_from_plmn_id(const ogs_plmn_id_t *plmn_id);
 char *ogs_epc_domain_from_plmn_id(const ogs_plmn_id_t *plmn_id);
 char *ogs_nrf_fqdn_from_plmn_id(const ogs_plmn_id_t *plmn_id);
 char *ogs_nssf_fqdn_from_plmn_id(const ogs_plmn_id_t *plmn_id);
-char *ogs_home_network_domain_from_fqdn(char *fqdn);
+char *ogs_dnn_oi_from_plmn_id(const ogs_plmn_id_t *plmn_id);
+char *ogs_dnn_oi_from_fqdn(char *fqdn);
 uint16_t ogs_plmn_id_mnc_from_fqdn(char *fqdn);
 uint16_t ogs_plmn_id_mcc_from_fqdn(char *fqdn);
 

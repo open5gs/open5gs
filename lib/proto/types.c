@@ -129,8 +129,9 @@ char *ogs_plmn_id_to_string(const ogs_plmn_id_t *plmn_id, char *buf)
 }
 
 #define FQDN_3GPPNETWORK_ORG ".3gppnetwork.org"
-#define FQDN_5GC_MNC "5gc.mnc"
+#define FQDN_GPRS ".gprs"
 #define FQDN_MCC ".mcc"
+#define FQDN_MNC ".mnc"
 
 char *ogs_serving_network_name_from_plmn_id(const ogs_plmn_id_t *plmn_id)
 {
@@ -165,78 +166,65 @@ char *ogs_nssf_fqdn_from_plmn_id(const ogs_plmn_id_t *plmn_id)
             ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
 }
 
-char *ogs_home_network_domain_from_fqdn(char *fqdn)
+char *ogs_dnn_oi_from_plmn_id(const ogs_plmn_id_t *plmn_id)
 {
-    char *p = NULL;
+    return ogs_msprintf("mnc%03d.mcc%03d" FQDN_GPRS,
+            ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
+}
+
+char *ogs_dnn_oi_from_fqdn(char *fqdn)
+{
+    char *mnc_pos = NULL;
 
     ogs_assert(fqdn);
 
-    if (strlen(fqdn) <
-        strlen(FQDN_5GC_MNC "XXX" FQDN_MCC "XXX" FQDN_3GPPNETWORK_ORG)) {
+    /* Find ".mnc" from right side */
+    mnc_pos = ogs_strrstr(fqdn, FQDN_MNC);
+    if (!mnc_pos)
         return NULL;
-    }
 
-    p = fqdn + strlen(fqdn);
-    if (strncmp(p - strlen(FQDN_3GPPNETWORK_ORG),
-                FQDN_3GPPNETWORK_ORG, strlen(FQDN_3GPPNETWORK_ORG)) != 0) {
+    /* Ensure minimum required length for parsing */
+    if ((mnc_pos + strlen(FQDN_MNC) + 3 + strlen(FQDN_MCC) + 3) >
+        fqdn + strlen(fqdn))
         return NULL;
-    }
 
-    p -= (strlen(FQDN_3GPPNETWORK_ORG) + 3);
-    if (strncmp(p - strlen(FQDN_MCC),
-                FQDN_MCC, strlen(FQDN_MCC)) != 0) {
+    /* Validate that ".mnc" is followed by 3 digits */
+    if (!isdigit(mnc_pos[4]) ||
+        !isdigit(mnc_pos[5]) ||
+        !isdigit(mnc_pos[6]))
         return NULL;
-    }
 
-    p -= (strlen(FQDN_MCC) + 3);
-    if (strncmp(p - strlen(FQDN_5GC_MNC),
-                FQDN_5GC_MNC, strlen(FQDN_5GC_MNC)) != 0) {
+    /* Check format ".mcc" after MNC */
+    if (strncmp(mnc_pos + 7, FQDN_MCC, strlen(FQDN_MCC)) != 0)
         return NULL;
-    }
 
-    return p - strlen(FQDN_5GC_MNC);
+    /* Validate MCC digits */
+    if (!isdigit(mnc_pos[11]) ||
+        !isdigit(mnc_pos[12]) ||
+        !isdigit(mnc_pos[13]))
+        return NULL;
+
+    return mnc_pos+1;   /* caller will parse MNC, MCC from here */
 }
 
 uint16_t ogs_plmn_id_mcc_from_fqdn(char *fqdn)
 {
-    char mcc[4];
-    char *p = NULL;
-
-    ogs_assert(fqdn);
-
-    p = ogs_home_network_domain_from_fqdn(fqdn);
-    if (p == NULL) {
+    char *p = ogs_dnn_oi_from_fqdn(fqdn);
+    if (!p) {
         ogs_error("Invalid FQDN [%d:%s]", (int)strlen(fqdn), fqdn);
         return 0;
     }
-
-    p += strlen(FQDN_5GC_MNC) + 3 + strlen(FQDN_MCC);
-
-    memcpy(mcc, p, 3);
-    mcc[3] = 0;
-
-    return atoi(mcc);
+    return (uint16_t)atoi(p + 10); /* after ".mcc" */
 }
 
 uint16_t ogs_plmn_id_mnc_from_fqdn(char *fqdn)
 {
-    char mnc[4];
-    char *p = NULL;
-
-    ogs_assert(fqdn);
-
-    p = ogs_home_network_domain_from_fqdn(fqdn);
-    if (p == NULL) {
+    char *p = ogs_dnn_oi_from_fqdn(fqdn);
+    if (!p) {
         ogs_error("Invalid FQDN [%d:%s]", (int)strlen(fqdn), fqdn);
         return 0;
     }
-
-    p += strlen(FQDN_5GC_MNC);
-
-    memcpy(mnc, p, 3);
-    mnc[3] = 0;
-
-    return atoi(mnc);
+    return (uint16_t)atoi(p + 3); /* after "mnc" */
 }
 
 uint32_t ogs_amf_id_hexdump(const ogs_amf_id_t *amf_id)

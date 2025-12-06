@@ -49,29 +49,29 @@ static void proto_message_test1(abts_case *tc, void *data)
 
 static void proto_message_test2(abts_case *tc, void *data)
 {
-    char *home_network_domain = NULL;
+    char *dnn_oi = NULL;
     char *full_dnn = NULL;
     char dnn_ni[OGS_MAX_DNN_LEN+1];
     ogs_plmn_id_t plmn_id1, plmn_id2;
 
     ogs_plmn_id_build(&plmn_id1, 456, 123, 3);
-    home_network_domain = ogs_home_network_domain_from_plmn_id(&plmn_id1);
+    dnn_oi = ogs_dnn_oi_from_plmn_id(&plmn_id1);
     ABTS_STR_EQUAL(tc,
-            "5gc.mnc123.mcc456.3gppnetwork.org", home_network_domain);
-    full_dnn = ogs_msprintf("internet.realm.%s", home_network_domain);
+            "mnc123.mcc456.gprs", dnn_oi);
+    full_dnn = ogs_msprintf("internet.realm.%s", dnn_oi);
     ABTS_STR_EQUAL(tc,
-            "internet.realm.5gc.mnc123.mcc456.3gppnetwork.org", full_dnn);
+            "internet.realm.mnc123.mcc456.gprs", full_dnn);
     ABTS_STR_EQUAL(tc,
-            home_network_domain, ogs_home_network_domain_from_fqdn(full_dnn));
+            dnn_oi, ogs_dnn_oi_from_fqdn(full_dnn));
 
     ogs_cpystrn(dnn_ni, full_dnn,
             ogs_min(OGS_MAX_DNN_LEN,
-                ogs_home_network_domain_from_fqdn(full_dnn) - full_dnn));
+                ogs_dnn_oi_from_fqdn(full_dnn) - full_dnn));
     ABTS_STR_EQUAL(tc, "internet.realm", dnn_ni);
 
     ABTS_INT_EQUAL(tc, 456, ogs_plmn_id_mcc_from_fqdn(full_dnn));
     ABTS_INT_EQUAL(tc, 123, ogs_plmn_id_mnc_from_fqdn(full_dnn));
-    ogs_free(home_network_domain);
+    ogs_free(dnn_oi);
     ogs_free(full_dnn);
 }
 
