@@ -149,6 +149,8 @@ char *ogs_left_trimcharacter(char *str, char to_remove);
 char *ogs_right_trimcharacter(char *str, char to_remove);
 char *ogs_trimcharacter(char *str, char to_remove);
 
+char *ogs_strrstr(const char *haystack, const char *needle);
+
 #ifdef __cplusplus
 }
 #endif

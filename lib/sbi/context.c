@@ -2907,7 +2907,7 @@ bool ogs_sbi_fqdn_in_vplmn(char *fqdn)
         return false;
     }
 
-    if (ogs_home_network_domain_from_fqdn(fqdn) == NULL) {
+    if (ogs_dnn_oi_from_fqdn(fqdn) == NULL) {
         return false;
     }
 
