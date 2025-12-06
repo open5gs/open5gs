@@ -2158,7 +2158,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
 
         if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
-            ogs_debug("Mobile Reachable timer started for IMSI[%s]",
+            ogs_info("Mobile Reachable timer started for IMSI[%s]",
                 mme_ue->imsi_bcd);
         /*
          * TS 24.301

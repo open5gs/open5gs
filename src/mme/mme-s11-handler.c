@@ -729,11 +729,6 @@ void mme_s11_handle_delete_session_response(
         return;
     }
 
-    if (!enb_ue) {
-        ogs_error("ENB-S1 Context has already been removed");
-        return;
-    }
-
     if (!mme_ue) {
         ogs_error("MME-UE Context has already been removed");
         return;
@@ -883,6 +878,11 @@ void mme_s11_handle_delete_session_response(
     } else if (action == OGS_GTP_DELETE_SEND_TAU_ACCEPT) {
 
         MME_SESS_CLEAR(sess);
+
+        if (!enb_ue) {
+            ogs_error("ENB-S1 Context has already been removed");
+            return;
+        }
 
         GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION_BY_TAU,
 

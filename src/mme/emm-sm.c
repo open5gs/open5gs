@@ -262,8 +262,6 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
          * detach timer such that the sum of the timer values is greater than
          * timer T3346.
          */
-            ogs_debug("[%s] Starting Implicit Detach timer",
-                mme_ue->imsi_bcd);
             ogs_timer_start(mme_ue->t_implicit_detach.timer,
                 ogs_time_from_sec(mme_self()->time.t3412.value + 240));
             break;
@@ -280,11 +278,8 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
             if (MME_CURRENT_P_TMSI_IS_AVAILABLE(mme_ue)) {
                 ogs_assert(OGS_OK == sgsap_send_detach_indication(mme_ue));
             } else {
-                enb_ue_t *enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
-                if (enb_ue)
-                    mme_send_delete_session_or_detach(enb_ue, mme_ue);
-                else
-                    ogs_error("ENB-S1 Context has already been removed");
+                mme_send_delete_session_or_detach(
+                        enb_ue_find_by_id(mme_ue->enb_ue_id), mme_ue);
             }
 
             OGS_FSM_TRAN(s, &emm_state_de_registered);
