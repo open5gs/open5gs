@@ -138,7 +138,17 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_pool_id_t xact_id,
         size_t sidlen = strlen(sess->gx_sid);
         ret = fd_sess_fromsid_msg((os0_t)sess->gx_sid, sidlen, &session, &new);
         ogs_assert(ret == 0);
-        ogs_assert(new == 0);
+        if (new) {
+            ogs_error("Gx Session [%s] missing in Diameter stack. "
+                    "Releasing PDU Session to recover.", sess->gx_sid);
+            ret = fd_msg_free(req);
+            ogs_assert(ret == 0);
+
+            ogs_free(sess->gx_sid);
+            sess->gx_sid = NULL;
+
+            return;
+        }
 
         ogs_debug("    Found Gx Session-Id: [%s]", sess->gx_sid);
 
