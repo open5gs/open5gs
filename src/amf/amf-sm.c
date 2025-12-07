@@ -229,6 +229,23 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     END
                     break;
 
+                CASE(OGS_SBI_RESOURCE_NAME_NRPPA_MEASUREMENT_REQUEST)
+                    SWITCH(sbi_message.h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_POST)
+                        amf_namf_comm_handle_nrppa_measurement_request(
+                                stream, &sbi_message);
+                        break;
+                    DEFAULT
+                        ogs_error("Invalid HTTP method [%s]",
+                                sbi_message.h.method);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_FORBIDDEN, &sbi_message,
+                                "Invalid HTTP method", sbi_message.h.method,
+                                NULL));
+                    END
+                    break;
+
                 DEFAULT
                     ogs_error("Invalid resource name [%s]",
                             sbi_message.h.resource.component[2]);
@@ -818,6 +835,10 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
                 r = nas_5gs_send_gmm_reject_from_sbi(amf_ue,
                         OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+                if (r == OGS_NOTFOUND) {
+                    /* NG context already removed, nothing to do */
+                    break;
+                }
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 break;

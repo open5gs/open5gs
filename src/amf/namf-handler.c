@@ -23,6 +23,7 @@
 #include "nas-path.h"
 #include "ngap-path.h"
 #include "sbi-path.h"
+#include <string.h>
 
 int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
@@ -63,6 +64,13 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
     if (!N1N2MessageTransferReqData) {
         ogs_error("No N1N2MessageTransferReqData");
         return OGS_ERROR;
+    }
+
+    n2InfoContainer = N1N2MessageTransferReqData->n2_info_container;
+    if (n2InfoContainer &&
+            n2InfoContainer->n2_information_class ==
+                OpenAPI_n2_information_class_NRPPa) {
+        return amf_namf_comm_handle_nrppa_measurement_request(stream, recvmsg);
     }
 
     if (N1N2MessageTransferReqData->is_pdu_session_id == false) {
@@ -113,7 +121,6 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_assert(n1buf);
     }
 
-    n2InfoContainer = N1N2MessageTransferReqData->n2_info_container;
     if (n2InfoContainer) {
         smInfo = n2InfoContainer->sm_info;
         if (!smInfo) {
@@ -497,6 +504,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
     response = ogs_sbi_build_response(&sendmsg, status);
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+    /* ogs_sbi_server_send_response() already frees the response */
 
     if (sendmsg.http.location)
         ogs_free(sendmsg.http.location);
@@ -604,6 +612,7 @@ cleanup:
     response = ogs_sbi_build_response(&sendmsg, status);
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+    /* ogs_sbi_server_send_response() already frees the response */
 
     return OGS_OK;
 }
@@ -726,6 +735,7 @@ cleanup:
     response = ogs_sbi_build_response(&sendmsg, status);
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+    /* ogs_sbi_server_send_response() already frees the response */
 
     return OGS_OK;
 }
@@ -1085,6 +1095,7 @@ cleanup:
     response = ogs_sbi_build_response(&sendmsg, status);
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+    /* ogs_sbi_server_send_response() already frees the response */
 
     return OGS_OK;
 }
@@ -1237,6 +1248,7 @@ int amf_namf_comm_handle_ue_context_transfer_request(
     response = ogs_sbi_build_response(&sendmsg, status);
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+    /* ogs_sbi_server_send_response() already frees the response */
 
     amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_TRANSFER_OLD_AMF_STATE;
 
@@ -1944,6 +1956,7 @@ int amf_namf_comm_handle_registration_status_update_request(
     response = ogs_sbi_build_response(&sendmsg, status);
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+    /* ogs_sbi_server_send_response() already frees the response */
 
     amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_INITIAL_STATE;
 
@@ -1965,6 +1978,168 @@ int amf_namf_comm_handle_registration_status_update_response(
         ogs_sbi_message_t *recvmsg, amf_ue_t *amf_ue) {
 
     /* Nothing to do */
+
+    return OGS_OK;
+}
+
+int amf_namf_comm_handle_nrppa_measurement_request(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    int rv;
+    amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
+    ogs_pkbuf_t *nrppa_pdu = NULL;
+    int i;
+    char *supi = NULL;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
+
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    /* Extract SUPI from resource component[1] */
+    if (!recvmsg->h.resource.component[1]) {
+        ogs_error("No SUPI in NRPPa measurement request");
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No SUPI", NULL, NULL));
+        return OGS_ERROR;
+    }
+
+    supi = recvmsg->h.resource.component[1];
+    ogs_info("NRPPa measurement request for SUPI: %s", supi);
+
+    /* Find UE by SUPI */
+    amf_ue = amf_ue_find_by_supi(supi);
+    if (!amf_ue) {
+        ogs_error("[%s] UE not found for NRPPa measurement request", supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                recvmsg, "UE not found", NULL, NULL));
+        return OGS_ERROR;
+    }
+
+    /* Find RAN UE context */
+    ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+    if (!ran_ue) {
+        ogs_error("[%s] RAN UE context not found", supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                recvmsg, "RAN UE context not found", NULL, NULL));
+        return OGS_ERROR;
+    }
+
+    ogs_info("[%s] Found UE: ran_ue_id=%d, amf_ue_id=%d",
+            supi, amf_ue->ran_ue_id, amf_ue->id);
+
+    /* Extract NRPPa PDU and LMF instance ID from multipart message */
+    nrppa_pdu = NULL;
+    const char *lmf_instance_id = NULL;
+    if (recvmsg->N1N2MessageTransferReqData) {
+        OpenAPI_n2_info_container_t *container =
+            recvmsg->N1N2MessageTransferReqData->n2_info_container;
+        if (container && container->nrppa_info) {
+            /* Extract LMF instance ID (nf_id) from nrppaInformation */
+            if (container->nrppa_info->nf_id) {
+                lmf_instance_id = container->nrppa_info->nf_id;
+                ogs_info("[%s] LMF instance ID: %s", supi, lmf_instance_id);
+            }
+            
+            /* Extract NRPPa PDU from binary part */
+            if (container->nrppa_info->nrppa_pdu &&
+                    container->nrppa_info->nrppa_pdu->ngap_data &&
+                    container->nrppa_info->nrppa_pdu->ngap_data->content_id) {
+                ogs_pkbuf_t *part = ogs_sbi_find_part_by_content_id(
+                        recvmsg,
+                        container->nrppa_info->nrppa_pdu->ngap_data->content_id);
+                if (part)
+                    nrppa_pdu = ogs_pkbuf_copy(part);
+            }
+        }
+    }
+
+    if (!nrppa_pdu && recvmsg->num_of_part > 0) {
+        for (i = 0; i < recvmsg->num_of_part; i++) {
+            if (recvmsg->part[i].pkbuf &&
+                recvmsg->part[i].content_type &&
+                strstr(recvmsg->part[i].content_type, "vnd.3gpp.nrppa")) {
+                nrppa_pdu = ogs_pkbuf_copy(recvmsg->part[i].pkbuf);
+                if (nrppa_pdu)
+                    break;
+            }
+        }
+    }
+
+    if (nrppa_pdu) {
+        ogs_info("[%s] Extracted NRPPa PDU: %d bytes", supi, nrppa_pdu->len);
+    }
+
+    if (!nrppa_pdu) {
+        ogs_error("[%s] No NRPPa PDU found in multipart message", supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No NRPPa PDU in request", NULL, NULL));
+        return OGS_ERROR;
+    }
+    
+    if (!lmf_instance_id) {
+        ogs_warn("[%s] No LMF instance ID in request, RoutingID will be minimal", supi);
+    }
+
+    /* Send NRPPa PDU to gNB via NGAP DownlinkRANConfigurationTransfer */
+    /* TODO: Implement proper DownlinkUEAssociatedNRPPaTransport */
+    /* For now, we'll use DownlinkRANConfigurationTransfer with SONConfigurationTransfer */
+    /* This will be implemented in step 10 */
+    
+    ogs_info("[%s] NRPPa measurement request received, PDU will be forwarded to gNB",
+            supi);
+
+    if (ran_ue->nrppa.pending) {
+        ogs_error("[%s] NRPPa measurement already pending", supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_CONFLICT,
+                recvmsg, "NRPPa request already in progress", NULL, NULL));
+        ogs_pkbuf_free(nrppa_pdu);
+        return OGS_ERROR;
+    }
+
+    stream_id = ogs_sbi_id_from_stream(stream);
+    ran_ue->nrppa.pending = true;
+    ran_ue->nrppa.stream_id = stream_id;
+
+    /* Forward NRPPa PDU to gNB via DownlinkUEAssociatedNRPPaTransport */
+    /* Pass LMF instance ID so it can be used as RoutingID */
+    rv = ngap_send_downlink_ue_associated_nrppa_transport(ran_ue, nrppa_pdu, lmf_instance_id);
+    if (rv != OGS_OK) {
+        ogs_error("[%s] ngap_send_downlink_ue_associated_nrppa_transport() failed",
+                supi);
+        ogs_pkbuf_free(nrppa_pdu);
+        ran_ue->nrppa.pending = false;
+        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Failed to forward NRPPa PDU to gNB", NULL, NULL));
+        return rv;
+    }
+
+    ogs_info("[%s] NRPPa PDU forwarded to gNB via DownlinkUEAssociatedNRPPaTransport",
+            supi);
+
+    /* Note: nrppa_pdu is copied in ngap_build_downlink_ue_associated_nrppa_transport,
+     * so we can free it here */
+    ogs_pkbuf_free(nrppa_pdu);
+
+    /* Don't send response yet - wait for gNB response */
+    /* The response will be sent in ngap_handle_uplink_ue_associated_nrppa_transport
+     * when we receive the NRPPa response from the gNB */
+    /* Note: The stream will remain open until the response is sent or timeout occurs */
+    ogs_info("[%s] NRPPa measurement request accepted, waiting for gNB response",
+            supi);
 
     return OGS_OK;
 }

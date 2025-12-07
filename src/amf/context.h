@@ -206,6 +206,11 @@ struct ran_ue_s {
         ogs_nr_cgi_t    nr_cgi;
     } saved;
 
+    struct {
+        bool pending;
+        ogs_pool_id_t stream_id;
+    } nrppa;
+
     /* NG Holding timer for removing this context */
     ogs_timer_t     *t_ng_holding;
 

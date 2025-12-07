@@ -19,6 +19,7 @@
 
 #include "ogs-sbi.h"
 #include "yuarel.h"
+#include "openapi/external/cJSON.h"
 
 #include "contrib/multipart_parser.h"
 
@@ -41,8 +42,28 @@ static int parse_multipart(
 
 static void http_message_free(ogs_sbi_http_message_t *http);
 
+static void *cjson_malloc_wrapper(size_t size)
+{
+    return ogs_malloc(size);
+}
+
+static void cjson_free_wrapper(void *ptr)
+{
+    ogs_free(ptr);
+}
+
+static bool cjson_hooks_installed;
+
 void ogs_sbi_message_init(int num_of_request_pool, int num_of_response_pool)
 {
+    if (!cjson_hooks_installed) {
+        cJSON_Hooks hooks = {0};
+        hooks.malloc_fn = cjson_malloc_wrapper;
+        hooks.free_fn = cjson_free_wrapper;
+        cJSON_InitHooks(&hooks);
+        cjson_hooks_installed = true;
+    }
+
     ogs_pool_init(&request_pool, num_of_request_pool);
     ogs_pool_init(&response_pool, num_of_response_pool);
 }
@@ -58,6 +79,9 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
     int i;
 
     ogs_assert(message);
+
+    if (message->http.body)
+        ogs_free(message->http.body);
 
     /* Discovery Option */
     if (message->param.discovery_option)
@@ -219,6 +243,10 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_sdm_subscription_free(message->SDMSubscription);
     if (message->ModificationNotification)
         OpenAPI_modification_notification_free(message->ModificationNotification);
+    if (message->InputData)
+        OpenAPI_input_data_free(message->InputData);
+    if (message->LocationData)
+        OpenAPI_location_data_free(message->LocationData);
     if (message->SecNegotiateReqData)
         OpenAPI_sec_negotiate_req_data_free(message->SecNegotiateReqData);
     if (message->SecNegotiateRspData)
@@ -1410,7 +1438,7 @@ void ogs_sbi_header_free(ogs_sbi_header_t *h)
     if (h->api.version) ogs_free(h->api.version);
 
     for (i = 0; i < OGS_SBI_MAX_NUM_OF_RESOURCE_COMPONENT &&
-                        h->resource.component[i]; i++)
+                            h->resource.component[i]; i++)
         ogs_free(h->resource.component[i]);
 }
 
@@ -1436,6 +1464,9 @@ static char *build_json(ogs_sbi_message_t *message)
     cJSON *item = NULL;
 
     ogs_assert(message);
+
+    if (message->http.body)
+        return ogs_strdup(message->http.body);
 
     if (message->ProblemDetails) {
         item = OpenAPI_problem_details_convertToJSON(message->ProblemDetails);
@@ -1727,9 +1758,11 @@ static char *build_json(ogs_sbi_message_t *message)
         ogs_assert(content);
         ogs_log_print(OGS_LOG_TRACE, "%s", content);
         cJSON_Delete(item);
+        return content;
     }
 
-    return content;
+    /* NRPPa multipart requests may not carry a JSON body. */
+    return ogs_strdup("{}");
 }
 
 static int parse_json(ogs_sbi_message_t *message,
@@ -2689,6 +2722,10 @@ static int parse_json(ogs_sbi_message_t *message,
                     }
                     break;
 
+                CASE(OGS_SBI_RESOURCE_NAME_NRPPA_MEASUREMENT_REQUEST)
+                    /* NRPPa payload is delivered via multipart parts without JSON */
+                    break;
+
                 DEFAULT
                     rv = OGS_ERROR;
                     ogs_error("Unknown resource name [%s]",
@@ -2926,6 +2963,39 @@ static int parse_json(ogs_sbi_message_t *message,
                         message->SecNegotiateRspData =
                             OpenAPI_sec_negotiate_rsp_data_parseFromJSON(item);
                         if (!message->SecNegotiateRspData) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    }
+                    break;
+                DEFAULT
+                    rv = OGS_ERROR;
+                    ogs_error("Unknown method [%s]", message->h.method);
+                END
+                break;
+            DEFAULT
+                rv = OGS_ERROR;
+                ogs_error("Unknown resource name [%s]",
+                        message->h.resource.component[0]);
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NLMF_LOC)
+            SWITCH(message->h.resource.component[0])
+            CASE("determine-location")
+                SWITCH(message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    if (message->res_status == 0) {
+                        message->InputData =
+                            OpenAPI_input_data_parseFromJSON(item);
+                        if (!message->InputData) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                        message->LocationData =
+                            OpenAPI_location_data_parseFromJSON(item);
+                        if (!message->LocationData) {
                             rv = OGS_ERROR;
                             ogs_error("JSON parse error");
                         }
@@ -3192,6 +3262,7 @@ static int on_part_data(
         CASE(OGS_SBI_CONTENT_JSON_TYPE)
         CASE(OGS_SBI_CONTENT_5GNAS_TYPE)
         CASE(OGS_SBI_CONTENT_NGAP_TYPE)
+        CASE(OGS_SBI_CONTENT_NRPPa_TYPE)
             size_t offset = 0;
 
             if (data->part[data->num_of_part].content == NULL) {
@@ -3321,6 +3392,7 @@ static int parse_multipart(
 
         CASE(OGS_SBI_CONTENT_5GNAS_TYPE)
         CASE(OGS_SBI_CONTENT_NGAP_TYPE)
+        CASE(OGS_SBI_CONTENT_NRPPa_TYPE)
             http->part[http->num_of_part].content_id =
                 data.part[i].content_id;
             http->part[http->num_of_part].content_type =
@@ -3433,8 +3505,10 @@ static bool build_multipart(
         return false;
     }
 
-    p = ogs_slprintf(p, last, "%s\r\n\r\n%s",
-            OGS_SBI_CONTENT_TYPE ": " OGS_SBI_CONTENT_JSON_TYPE, json);
+    p = ogs_slprintf(p, last, "%s: %s\r\n", OGS_SBI_CONTENT_TYPE,
+            OGS_SBI_CONTENT_JSON_TYPE);
+    p = ogs_slprintf(p, last, "%s: <json>\r\n\r\n", OGS_SBI_CONTENT_ID);
+    p = ogs_slprintf(p, last, "%s", json);
 
     ogs_free(json);
 
@@ -3454,8 +3528,9 @@ static bool build_multipart(
 
     http->content_length = p - http->content;
 
-    content_type = ogs_msprintf("%s; boundary=\"%s\"",
-            OGS_SBI_CONTENT_MULTIPART_TYPE, boundary);
+    content_type = ogs_msprintf("%s; type=\"%s\"; boundary=\"%s\"",
+            OGS_SBI_CONTENT_MULTIPART_TYPE, OGS_SBI_CONTENT_JSON_TYPE,
+            boundary);
     if (!content_type) {
         ogs_error("ogs_msprintf() failed");
         return false;
@@ -3508,8 +3583,12 @@ void ogs_sbi_discovery_option_free(
 
     ogs_assert(discovery_option);
 
-    if (discovery_option->target_nf_instance_id)
+    if (discovery_option->target_nf_instance_id) {
+        ogs_debug("ogs_sbi_discovery_option_free: freeing target_nf_instance_id=%p ('%s')",
+                discovery_option->target_nf_instance_id,
+                discovery_option->target_nf_instance_id);
         ogs_free(discovery_option->target_nf_instance_id);
+    }
     if (discovery_option->requester_nf_instance_id)
         ogs_free(discovery_option->requester_nf_instance_id);
     if (discovery_option->dnn)
@@ -3521,6 +3600,8 @@ void ogs_sbi_discovery_option_free(
     if (discovery_option->hnrf_uri)
         ogs_free(discovery_option->hnrf_uri);
 
+    ogs_debug("ogs_sbi_discovery_option_free: freeing discovery_option=%p",
+            discovery_option);
     ogs_free(discovery_option);
 }
 

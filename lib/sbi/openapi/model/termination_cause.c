@@ -4,27 +4,84 @@
 #include <stdio.h>
 #include "termination_cause.h"
 
-char* OpenAPI_termination_cause_ToString(OpenAPI_termination_cause_e termination_cause)
+OpenAPI_termination_cause_t *OpenAPI_termination_cause_create(
+)
 {
-    const char *termination_causeArray[] =  { "NULL", "ALL_SDF_DEACTIVATION", "PDU_SESSION_TERMINATION", "PS_TO_CS_HO", "INSUFFICIENT_SERVER_RESOURCES", "INSUFFICIENT_QOS_FLOW_RESOURCES", "SPONSORED_DATA_CONNECTIVITY_DISALLOWED" };
-    size_t sizeofArray = sizeof(termination_causeArray) / sizeof(termination_causeArray[0]);
-    if (termination_cause < sizeofArray)
-        return (char *)termination_causeArray[termination_cause];
-    else
-        return (char *)"Unknown";
+    OpenAPI_termination_cause_t *termination_cause_local_var = ogs_malloc(sizeof(OpenAPI_termination_cause_t));
+    ogs_assert(termination_cause_local_var);
+
+
+    return termination_cause_local_var;
 }
 
-OpenAPI_termination_cause_e OpenAPI_termination_cause_FromString(char* termination_cause)
+void OpenAPI_termination_cause_free(OpenAPI_termination_cause_t *termination_cause)
 {
-    int stringToReturn = 0;
-    const char *termination_causeArray[] =  { "NULL", "ALL_SDF_DEACTIVATION", "PDU_SESSION_TERMINATION", "PS_TO_CS_HO", "INSUFFICIENT_SERVER_RESOURCES", "INSUFFICIENT_QOS_FLOW_RESOURCES", "SPONSORED_DATA_CONNECTIVITY_DISALLOWED" };
-    size_t sizeofArray = sizeof(termination_causeArray) / sizeof(termination_causeArray[0]);
-    while (stringToReturn < sizeofArray) {
-        if (strcmp(termination_cause, termination_causeArray[stringToReturn]) == 0) {
-            return stringToReturn;
-        }
-        stringToReturn++;
+    OpenAPI_lnode_t *node = NULL;
+
+    if (NULL == termination_cause) {
+        return;
     }
-    return 0;
+    ogs_free(termination_cause);
+}
+
+cJSON *OpenAPI_termination_cause_convertToJSON(OpenAPI_termination_cause_t *termination_cause)
+{
+    cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
+
+    if (termination_cause == NULL) {
+        ogs_error("OpenAPI_termination_cause_convertToJSON() failed [TerminationCause]");
+        return NULL;
+    }
+
+    item = cJSON_CreateObject();
+end:
+    return item;
+}
+
+OpenAPI_termination_cause_t *OpenAPI_termination_cause_parseFromJSON(cJSON *termination_causeJSON)
+{
+    OpenAPI_termination_cause_t *termination_cause_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
+    termination_cause_local_var = OpenAPI_termination_cause_create (
+    );
+
+    return termination_cause_local_var;
+end:
+    return NULL;
+}
+
+OpenAPI_termination_cause_t *OpenAPI_termination_cause_copy(OpenAPI_termination_cause_t *dst, OpenAPI_termination_cause_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_termination_cause_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_termination_cause_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_termination_cause_free(dst);
+    dst = OpenAPI_termination_cause_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

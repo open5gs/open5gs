@@ -102,6 +102,9 @@ int ogs_talloc_free(void *ptr, const char *location)
 {
     int ret;
 
+    if (!ptr)
+        return OGS_ERROR;
+
     ogs_thread_mutex_lock(&mutex);
 
     ret = _talloc_free(ptr, location);
@@ -114,6 +117,33 @@ int ogs_talloc_free(void *ptr, const char *location)
 /*****************************************
  * Memory Pool - Use pkbuf library
  *****************************************/
+
+#if OGS_USE_TALLOC == 1
+
+void *ogs_malloc_debug(size_t size, const char *file_line)
+{
+    return ogs_talloc_size(__ogs_talloc_core, size, file_line);
+}
+
+int ogs_free_debug(void *ptr)
+{
+    if (!ptr)
+        return OGS_ERROR;
+
+    return ogs_talloc_free(ptr, __location__);
+}
+
+void *ogs_calloc_debug(size_t nmemb, size_t size, const char *file_line)
+{
+    return ogs_talloc_zero_size(__ogs_talloc_core, nmemb * size, file_line);
+}
+
+void *ogs_realloc_debug(void *ptr, size_t size, const char *file_line)
+{
+    return ogs_talloc_realloc_size(__ogs_talloc_core, ptr, size, file_line);
+}
+
+#else
 
 void *ogs_malloc_debug(size_t size, const char *file_line)
 {
@@ -218,3 +248,5 @@ void *ogs_realloc_debug(void *ptr, size_t size, const char *file_line)
         return ptr;
     }
 }
+
+#endif

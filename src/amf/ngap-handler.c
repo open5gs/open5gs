@@ -1475,6 +1475,49 @@ void ngap_handle_ue_context_modification_failure(
         ogs_warn("    Cause[Group:%d Cause:%d]",
                 Cause->present, (int)Cause->choice.radioNetwork);
     }
+
+    /* Check if there's a pending NRPPa request for this UE */
+    if (ran_ue && ran_ue->nrppa.pending && 
+        ran_ue->nrppa.stream_id != OGS_INVALID_POOL_ID) {
+        ogs_sbi_stream_t *stream = NULL;
+        int status = OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE;
+        char *error_detail = NULL;
+
+        ogs_warn("ErrorIndication received while NRPPa request is pending (UE index=%u)",
+                ran_ue->index);
+
+        /* Create error detail message */
+        if (Cause) {
+            error_detail = ogs_msprintf("gNB rejected NRPPa request: Cause Group=%d Cause=%d",
+                    Cause->present, (int)Cause->choice.radioNetwork);
+        } else {
+            error_detail = ogs_strdup("gNB rejected NRPPa request: Unknown cause");
+        }
+
+        stream = ogs_sbi_stream_find_by_id(ran_ue->nrppa.stream_id);
+        if (!stream) {
+            ogs_warn("Failed to find pending NRPPa SBI stream [%d]",
+                    ran_ue->nrppa.stream_id);
+            if (error_detail)
+                ogs_free(error_detail);
+            ran_ue->nrppa.pending = false;
+            ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+            return;
+        }
+
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, status, NULL,
+                "NRPPa request rejected by gNB", error_detail, NULL));
+
+        if (error_detail)
+            ogs_free(error_detail);
+
+        ran_ue->nrppa.pending = false;
+        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+
+        ogs_info("Sent error response to LMF for NRPPa request (UE index=%u)",
+                ran_ue->index);
+    }
 }
 
 
@@ -2711,6 +2754,147 @@ void ngap_handle_uplink_ran_configuration_transfer(
         /* ogs_asn_copy_ie() could be failed from received packet.
          * So we should not use ogs_assert(r != OGS_ERROR).*/
     }
+}
+
+void ngap_handle_uplink_ue_associated_nrppa_transport(
+        amf_gnb_t *gnb, ogs_ngap_message_t *message)
+{
+    int rv;
+    uint64_t amf_ue_ngap_id = 0;
+
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_UplinkUEAssociatedNRPPaTransport_t
+        *UplinkUEAssociatedNRPPaTransport = NULL;
+
+    NGAP_UplinkUEAssociatedNRPPaTransportIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_NRPPa_PDU_t *NRPPa_PDU = NULL;
+
+    ran_ue_t *ran_ue = NULL;
+    ogs_pkbuf_t *nrppa_pkbuf = NULL;
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+    ogs_sbi_stream_t *stream = NULL;
+
+    ogs_assert(gnb);
+    ogs_assert(message);
+
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+
+    UplinkUEAssociatedNRPPaTransport =
+        &initiatingMessage->value.choice.UplinkUEAssociatedNRPPaTransport;
+    ogs_assert(UplinkUEAssociatedNRPPaTransport);
+
+    ogs_debug("UplinkUEAssociatedNRPPaTransport");
+    for (ie = NULL, rv = 0;
+            rv < UplinkUEAssociatedNRPPaTransport->protocolIEs.list.count; rv++) {
+        ie = UplinkUEAssociatedNRPPaTransport->protocolIEs.list.array[rv];
+        switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
+            AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+            break;
+        case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID:
+            RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+            break;
+        case NGAP_ProtocolIE_ID_id_NRPPa_PDU:
+            NRPPa_PDU = &ie->value.choice.NRPPa_PDU;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (!NRPPa_PDU || !NRPPa_PDU->buf || NRPPa_PDU->size <= 0) {
+        ogs_error("NRPPa_PDU missing in UplinkUEAssociatedNRPPaTransport");
+        ngap_send_error_indication(gnb, NULL, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    if (AMF_UE_NGAP_ID &&
+            asn_INTEGER2ulong(AMF_UE_NGAP_ID, &amf_ue_ngap_id) == 0)
+        ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+
+    if (!ran_ue && RAN_UE_NGAP_ID)
+        ran_ue = ran_ue_find_by_ran_ue_ngap_id(gnb, *RAN_UE_NGAP_ID);
+
+    if (!ran_ue) {
+        ogs_error("NRPPa response for unknown UE");
+        ngap_send_error_indication(gnb, NULL, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    if (!ran_ue->nrppa.pending) {
+        ogs_warn("NRPPa response received with no pending request (UE index=%u)",
+                ran_ue->index);
+        return;
+    }
+
+    if (ran_ue->nrppa.stream_id == OGS_INVALID_POOL_ID) {
+        ogs_warn("NRPPa response missing stored stream (UE index=%u)",
+                ran_ue->index);
+        ran_ue->nrppa.pending = false;
+        return;
+    }
+
+    nrppa_pkbuf = ogs_pkbuf_alloc(NULL, NRPPa_PDU->size);
+    if (!nrppa_pkbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        ran_ue->nrppa.pending = false;
+        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+        return;
+    }
+    ogs_pkbuf_put_data(nrppa_pkbuf, NRPPa_PDU->buf, NRPPa_PDU->size);
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    sendmsg.part[sendmsg.num_of_part].pkbuf = nrppa_pkbuf;
+    sendmsg.part[sendmsg.num_of_part].content_id =
+        ogs_strdup(OGS_SBI_CONTENT_NRPPa_SM_ID);
+    sendmsg.part[sendmsg.num_of_part].content_type =
+        ogs_strdup(OGS_SBI_CONTENT_NRPPa_TYPE);
+    ogs_assert(sendmsg.part[sendmsg.num_of_part].content_id);
+    ogs_assert(sendmsg.part[sendmsg.num_of_part].content_type);
+    sendmsg.num_of_part++;
+
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
+    if (!response) {
+        ogs_error("ogs_sbi_build_response() failed");
+        ogs_sbi_message_free(&sendmsg);
+        ran_ue->nrppa.pending = false;
+        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+        return;
+    }
+
+    stream = ogs_sbi_stream_find_by_id(ran_ue->nrppa.stream_id);
+    if (!stream) {
+        ogs_warn("Failed to find pending NRPPa SBI stream [%d]",
+                ran_ue->nrppa.stream_id);
+        ogs_sbi_response_free(response);
+        ogs_sbi_message_free(&sendmsg);
+        ran_ue->nrppa.pending = false;
+        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+        return;
+    }
+
+    rv = ogs_sbi_server_send_response(stream, response);
+    if (!rv) {
+        ogs_error("ogs_sbi_server_send_response() failed for NRPPa result");
+        ogs_sbi_response_free(response);
+        ogs_sbi_message_free(&sendmsg);
+        ran_ue->nrppa.pending = false;
+        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+        return;
+    }
+
+    ogs_sbi_message_free(&sendmsg);
+
+    ran_ue->nrppa.pending = false;
+    ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+
+    ogs_info("Sent NRPPa response to LMF (UE index=%u)", ran_ue->index);
 }
 
 void ngap_handle_path_switch_request(
@@ -4898,5 +5082,48 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     if (Cause) {
         ogs_warn("    Cause[Group:%d Cause:%d]",
                 Cause->present, (int)Cause->choice.radioNetwork);
+    }
+
+    /* Check if there's a pending NRPPa request for this UE */
+    if (ran_ue && ran_ue->nrppa.pending && 
+        ran_ue->nrppa.stream_id != OGS_INVALID_POOL_ID) {
+        ogs_sbi_stream_t *stream = NULL;
+        int status = OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE;
+        char *error_detail = NULL;
+
+        ogs_warn("ErrorIndication received while NRPPa request is pending (UE index=%u)",
+                ran_ue->index);
+
+        /* Create error detail message */
+        if (Cause) {
+            error_detail = ogs_msprintf("gNB rejected NRPPa request: Cause Group=%d Cause=%d",
+                    Cause->present, (int)Cause->choice.radioNetwork);
+        } else {
+            error_detail = ogs_strdup("gNB rejected NRPPa request: Unknown cause");
+        }
+
+        stream = ogs_sbi_stream_find_by_id(ran_ue->nrppa.stream_id);
+        if (!stream) {
+            ogs_warn("Failed to find pending NRPPa SBI stream [%d]",
+                    ran_ue->nrppa.stream_id);
+            if (error_detail)
+                ogs_free(error_detail);
+            ran_ue->nrppa.pending = false;
+            ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+            return;
+        }
+
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, status, NULL,
+                "NRPPa request rejected by gNB", error_detail, NULL));
+
+        if (error_detail)
+            ogs_free(error_detail);
+
+        ran_ue->nrppa.pending = false;
+        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+
+        ogs_info("Sent error response to LMF for NRPPa request (UE index=%u)",
+                ran_ue->index);
     }
 }

@@ -1910,6 +1910,139 @@ ogs_pkbuf_t *ngap_build_downlink_ran_configuration_transfer(
     return ogs_ngap_encode(&pdu);
 }
 
+ogs_pkbuf_t *ngap_build_downlink_ue_associated_nrppa_transport(
+        ran_ue_t *ran_ue, ogs_pkbuf_t *nrppa_pdu, const char *lmf_instance_id)
+{
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_DownlinkUEAssociatedNRPPaTransport_t
+        *DownlinkUEAssociatedNRPPaTransport = NULL;
+
+    NGAP_DownlinkUEAssociatedNRPPaTransportIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_NRPPa_PDU_t *NRPPa_PDU = NULL;
+
+    ogs_assert(ran_ue);
+    ogs_assert(nrppa_pdu);
+    ogs_assert(nrppa_pdu->data);
+    ogs_assert(nrppa_pdu->len > 0);
+
+    ogs_debug("DownlinkUEAssociatedNRPPaTransport");
+
+    memset(&pdu, 0, sizeof(NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
+    ogs_assert(pdu.choice.initiatingMessage);
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        NGAP_ProcedureCode_id_DownlinkUEAssociatedNRPPaTransport;
+    initiatingMessage->criticality = NGAP_Criticality_ignore;
+    initiatingMessage->value.present =
+        NGAP_InitiatingMessage__value_PR_DownlinkUEAssociatedNRPPaTransport;
+
+    DownlinkUEAssociatedNRPPaTransport =
+        &initiatingMessage->value.choice.DownlinkUEAssociatedNRPPaTransport;
+
+    /* AMF_UE_NGAP_ID (required) */
+    ie = CALLOC(1, sizeof(NGAP_DownlinkUEAssociatedNRPPaTransportIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&DownlinkUEAssociatedNRPPaTransport->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_DownlinkUEAssociatedNRPPaTransportIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
+
+    /* RAN_UE_NGAP_ID (required) */
+    ie = CALLOC(1, sizeof(NGAP_DownlinkUEAssociatedNRPPaTransportIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&DownlinkUEAssociatedNRPPaTransport->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_DownlinkUEAssociatedNRPPaTransportIEs__value_PR_RAN_UE_NGAP_ID;
+
+    RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+    *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
+
+    /* RoutingID (required) - Used to route NRPPa PDU to the correct LMF instance */
+    /* The RoutingID should be the LMF instance ID (UUID) as a hex-encoded string */
+    /* This allows the gNB to route the uplink response back to the correct LMF */
+    ie = CALLOC(1, sizeof(NGAP_DownlinkUEAssociatedNRPPaTransportIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&DownlinkUEAssociatedNRPPaTransport->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RoutingID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_DownlinkUEAssociatedNRPPaTransportIEs__value_PR_RoutingID;
+
+    {
+        NGAP_RoutingID_t *RoutingID = &ie->value.choice.RoutingID;
+        uint8_t *routing_id_buf = NULL;
+        size_t routing_id_size = 0;
+        
+        if (lmf_instance_id && strlen(lmf_instance_id) > 0) {
+            /* Convert UUID string to hex bytes (ASCII encoding) */
+            /* Example: "10560fe0-c632-41f0-854b-a5d98c4ac4b2" -> hex bytes */
+            routing_id_size = strlen(lmf_instance_id);
+            routing_id_buf = CALLOC(routing_id_size, sizeof(uint8_t));
+            ogs_assert(routing_id_buf);
+            memcpy(routing_id_buf, lmf_instance_id, routing_id_size);
+            ogs_debug("    RoutingID: %s (%zu bytes)", lmf_instance_id, routing_id_size);
+        } else {
+            /* Fallback: use minimal routing ID if LMF instance ID not provided */
+            ogs_warn("No LMF instance ID provided, using minimal RoutingID");
+            routing_id_size = 1;
+            routing_id_buf = CALLOC(routing_id_size, sizeof(uint8_t));
+            ogs_assert(routing_id_buf);
+            routing_id_buf[0] = 0x00;
+        }
+        
+        RoutingID->size = routing_id_size;
+        RoutingID->buf = routing_id_buf;
+    }
+
+    /* NRPPa_PDU (required) */
+    ie = CALLOC(1, sizeof(NGAP_DownlinkUEAssociatedNRPPaTransportIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&DownlinkUEAssociatedNRPPaTransport->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_NRPPa_PDU;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present =
+        NGAP_DownlinkUEAssociatedNRPPaTransportIEs__value_PR_NRPPa_PDU;
+
+    NRPPa_PDU = &ie->value.choice.NRPPa_PDU;
+    NRPPa_PDU->size = nrppa_pdu->len;
+    NRPPa_PDU->buf = CALLOC(NRPPa_PDU->size, sizeof(uint8_t));
+    ogs_assert(NRPPa_PDU->buf);
+    memcpy(NRPPa_PDU->buf, nrppa_pdu->data, NRPPa_PDU->size);
+
+    ogs_info("    Building DownlinkUEAssociatedNRPPaTransport: "
+            "RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld] NRPPa_PDU[%zu bytes] "
+            "RoutingID[%s]",
+            (long long)ran_ue->ran_ue_ngap_id,
+            (long long)ran_ue->amf_ue_ngap_id,
+            NRPPa_PDU->size,
+            lmf_instance_id ? lmf_instance_id : "(none)");
+
+    ogs_pkbuf_t *ngapbuf = ogs_ngap_encode(&pdu);
+    if (!ngapbuf) {
+        ogs_error("ogs_ngap_encode() failed for DownlinkUEAssociatedNRPPaTransport");
+        return NULL;
+    }
+    
+    ogs_info("    Encoded NGAP message: %u bytes", ngapbuf->len);
+    return ngapbuf;
+}
+
 ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
 {
     int i;

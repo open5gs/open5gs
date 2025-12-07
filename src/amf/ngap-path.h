@@ -61,6 +61,9 @@ int ngap_send_paging(amf_ue_t *amf_ue);
 int ngap_send_downlink_ran_configuration_transfer(
         amf_gnb_t *target_gnb, NGAP_SONConfigurationTransfer_t *transfer);
 
+int ngap_send_downlink_ue_associated_nrppa_transport(
+        ran_ue_t *ran_ue, ogs_pkbuf_t *nrppa_pdu, const char *lmf_instance_id);
+
 int ngap_send_path_switch_ack(amf_sess_t *sess);
 
 int ngap_send_handover_request(amf_ue_t *amf_ue);

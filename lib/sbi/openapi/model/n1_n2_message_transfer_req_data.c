@@ -341,11 +341,15 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
     }
     }
 
-    n2_info_container = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "n2InfoContainer");
+    n2_info_container = cJSON_GetObjectItemCaseSensitive(
+            n1_n2_message_transfer_req_dataJSON, "n2InfoContainer");
+    if (!n2_info_container)
+        n2_info_container = cJSON_GetObjectItemCaseSensitive(
+                n1_n2_message_transfer_req_dataJSON, "n2Information");
     if (n2_info_container) {
     n2_info_container_local_nonprim = OpenAPI_n2_info_container_parseFromJSON(n2_info_container);
     if (!n2_info_container_local_nonprim) {
-        ogs_error("OpenAPI_n2_info_container_parseFromJSON failed [n2_info_container]");
+        ogs_error("OpenAPI_n2_info_container_parseFromJSON failed [n2_information]");
         goto end;
     }
     }
