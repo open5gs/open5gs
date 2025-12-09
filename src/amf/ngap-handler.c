@@ -4313,7 +4313,7 @@ void ngap_handle_handover_notification(
      * send partial-handover error
      */
     if (xact_count == amf_sess_xact_count(amf_ue)) {
-        ogs_error("No SMF session were processed [%d]", sess->psi);
+        ogs_error("No SMF sessions were processed");
         r = ngap_send_error_indication2(source_ue,
                 NGAP_Cause_PR_radioNetwork,
                 NGAP_CauseRadioNetwork_partial_handover);
