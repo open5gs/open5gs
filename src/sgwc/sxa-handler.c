@@ -127,6 +127,7 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
     switch (type) {
     case OGS_GTP2_CREATE_BEARER_REQUEST_TYPE:
         ogs_error("[%s] No Create Bearer Response", sgwc_ue->imsi_bcd);
+        ogs_info("    bearer[EBI=%d]", bearer->ebi);
         ogs_assert(OGS_OK ==
             sgwc_pfcp_send_bearer_modification_request(
                 bearer, OGS_INVALID_POOL_ID, NULL,
@@ -169,7 +170,7 @@ void sgwc_sxa_handle_session_establishment_response(
 
     ogs_gtp2_indication_t *indication = NULL;
 
-    ogs_debug("Session Establishment Response");
+    ogs_info("Session Establishment Response");
 
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_rsp);
@@ -267,7 +268,7 @@ void sgwc_sxa_handle_session_establishment_response(
 
     ogs_assert(sess);
 
-    ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
+    ogs_info("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     /* Data Plane(DL) : SGW-S5U */
@@ -278,7 +279,7 @@ void sgwc_sxa_handle_session_establishment_response(
         dl_tunnel = sgwc_dl_tunnel_in_bearer(bearer);
         ogs_assert(dl_tunnel);
 
-        ogs_debug("    SGW_S5U_TEID[%d] PGW_S5U_TEID[%d]",
+        ogs_info("    SGW_S5U_TEID[%d] PGW_S5U_TEID[%d]",
             dl_tunnel->local_teid, dl_tunnel->remote_teid);
 
         if (dl_tunnel->local_addr == NULL && dl_tunnel->local_addr6 == NULL) {
@@ -479,7 +480,7 @@ void sgwc_sxa_handle_session_modification_response(
 
     ogs_gtp2_cause_t cause;
 
-    ogs_debug("Session Modification Response");
+    ogs_info("Session Modification Response");
 
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_rsp);
@@ -1325,7 +1326,7 @@ void sgwc_sxa_handle_session_deletion_response(
     ogs_gtp_xact_t *gtp_xact = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
-    ogs_debug("Session Deletion Response");
+    ogs_info("Session Deletion Response");
 
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_rsp);
@@ -1450,7 +1451,7 @@ void sgwc_sxa_handle_session_report_request(
     uint8_t cause_value = 0;
     uint16_t pdr_id = 0;
 
-    ogs_debug("Session Report Request");
+    ogs_info("Session Report Request");
 
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_req);
@@ -1536,6 +1537,7 @@ void sgwc_sxa_handle_session_report_request(
                 ogs_warn("[%s] Error Indication from eNB", sgwc_ue->imsi_bcd);
                 ogs_list_for_each(&sgwc_ue->sess_list, sess) {
                     ogs_assert(ogs_list_count(&sess->bearer_list));
+                    ogs_info("    sess_id=%d", sess->id);
                     ogs_assert(OGS_OK ==
                         sgwc_pfcp_send_session_modification_request(sess,
                     /* We only use the `assoc_xact` parameter temporarily here
@@ -1555,6 +1557,7 @@ void sgwc_sxa_handle_session_report_request(
                 } else {
                     ogs_error("[%s] Error Indication(Dedicated Bearer) "
                             "from SMF", sgwc_ue->imsi_bcd);
+                    ogs_info("    bearer[EBI=%d]", bearer->ebi);
                     ogs_assert(OGS_OK ==
                         sgwc_pfcp_send_bearer_modification_request(
                             bearer, OGS_INVALID_POOL_ID, NULL,

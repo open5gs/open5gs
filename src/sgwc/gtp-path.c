@@ -235,8 +235,8 @@ int sgwc_gtp_send_downlink_data_notification(
     ogs_assert(sgwc_ue);
     ogs_assert(sgwc_ue->gnode);
 
-    ogs_debug("Downlink Data Notification [%d]", bearer->id);
-    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+    ogs_info("Downlink Data Notification [%d]", bearer->id);
+    ogs_info("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
 
     memset(&h, 0, sizeof(ogs_gtp2_header_t));
