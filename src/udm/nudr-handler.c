@@ -586,6 +586,10 @@ bool udm_nudr_dr_handle_subscription_context(
         ogs_free(sendmsg.http.location);
         OpenAPI_amf3_gpp_access_registration_free(
                 sendmsg.Amf3GppAccessRegistration);
+
+        ogs_sbi_server_t *server = ogs_sbi_server_from_stream(stream);
+        ogs_assert(server);
+        ogs_sbi_server_graceful_shutdown(server);
         break;
 
     DEFAULT
