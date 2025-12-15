@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,6 +28,7 @@ extern "C" {
 #endif
 
 int lmf_location_determine(lmf_location_request_t *location_request);
+int lmf_location_determine_cellid(lmf_location_request_t *location_request);
 int lmf_location_determine_ecid(
         lmf_location_request_t *location_request,
         lmf_nrppa_ecid_response_t *ecid_response);

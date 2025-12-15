@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -61,6 +61,12 @@ typedef struct lmf_location_request_s {
     uint32_t measurement_id;             /* NRPPa measurement ID */
     ogs_pkbuf_t *nrppa_pdu;              /* NRPPa PDU data */
     
+    /* Location info context (for CELLID positioning without NCGI) */
+    OpenAPI_ncgi_t *ncgi_from_amf;       /* NCGI retrieved from AMF location-info API */
+    
+    /* Fallback configuration */
+    bool ecid_fallback_to_cellid;        /* If true, fallback to CELLID when ECID fails */
+    
     /* Location result */
     ogs_sbi_message_t *output_message;   /* Location response message */
     
@@ -84,6 +90,7 @@ void lmf_location_request_remove_all(void);
 lmf_location_request_t *lmf_location_request_find_by_id(ogs_pool_id_t id);
 lmf_location_request_t *lmf_location_request_try_find_by_id(ogs_pool_id_t id);
 lmf_location_request_t *lmf_location_request_find_by_supi(const char *supi);
+lmf_location_request_t *lmf_location_request_find_by_measurement_id(uint32_t measurement_id);
 
 #ifdef __cplusplus
 }

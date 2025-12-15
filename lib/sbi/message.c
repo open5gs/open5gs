@@ -80,6 +80,12 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
 
     ogs_assert(message);
 
+    /* Header fields (method, service.name, api.version, resource.component[])
+     * MUST NOT be freed here because they are always SHARED with the original
+     * request/response header structure when parsed, or owned by the caller
+     * when manually built. Freeing them here would cause double-free crashes.
+     */
+
     if (message->http.body)
         ogs_free(message->http.body);
 
@@ -268,6 +274,11 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
     }
 
     /* HTTP Part */
+    /* Note: content_id and content_type are SHARED with the request/response
+     * http->part[] structure (see parse_multipart at line 3430-3433).
+     * They will be freed when the request/response is freed via http_message_free().
+     * Only free pkbuf which is owned by the message.
+     */
     for (i = 0; i < message->num_of_part; i++) {
         if (message->part[i].pkbuf)
             ogs_pkbuf_free(message->part[i].pkbuf);
@@ -970,7 +981,9 @@ int ogs_sbi_parse_request(
 
     rv = ogs_sbi_parse_header(message, &request->h);
     if (rv != OGS_OK) {
-        ogs_error("ogs_sbi_parse_header() failed");
+        ogs_error("ogs_sbi_parse_header() failed [method:%s, uri:%s]",
+                request->h.method ? request->h.method : "NULL",
+                request->h.uri ? request->h.uri : "NULL");
         return OGS_ERROR;
     }
 
@@ -1309,6 +1322,8 @@ int ogs_sbi_parse_request(
 
     if (parse_content(message, &request->http) != OGS_OK) {
         ogs_error("parse_content() failed");
+        /* Don't free message->h here - it's shared with request->h
+         * which will be freed by the caller via ogs_sbi_request_free() */
         ogs_sbi_message_free(message);
         return OGS_ERROR;
     }
@@ -1327,7 +1342,9 @@ int ogs_sbi_parse_response(
 
     rv = ogs_sbi_parse_header(message, &response->h);
     if (rv != OGS_OK) {
-        ogs_error("ogs_sbi_parse_header() failed");
+        ogs_error("ogs_sbi_parse_header() failed [status:%d, uri:%s]",
+                response->status,
+                response->h.uri ? response->h.uri : "NULL");
         return OGS_ERROR;
     }
 
@@ -1344,6 +1361,9 @@ int ogs_sbi_parse_response(
 
     if (parse_content(message, &response->http) != OGS_OK) {
         ogs_error("parse_content() failed");
+        /* Don't free message->h here - it's shared with response->h
+         * which will be freed by the caller via ogs_sbi_response_free() */
+        ogs_sbi_message_free(message);
         return OGS_ERROR;
     }
 
@@ -1402,7 +1422,15 @@ int ogs_sbi_parse_header(ogs_sbi_message_t *message, ogs_sbi_header_t *header)
 
     header->service.name = ogs_sbi_parse_uri(p, "/", &saveptr);
     if (!header->service.name) {
-        ogs_error("ogs_sbi_parse_uri() failed");
+        /* Health check requests (GET /) are expected and benign - log at debug level */
+        if (p && strcmp(p, "/") == 0) {
+            ogs_debug("ogs_sbi_parse_uri() failed for health check [uri:%s]",
+                    header->uri ? header->uri : "NULL");
+        } else {
+            ogs_warn("ogs_sbi_parse_uri() failed [uri:%s, path:%s]",
+                    header->uri ? header->uri : "NULL",
+                    p ? p : "NULL");
+        }
         ogs_free(uri);
         return OGS_ERROR;
     }
@@ -3005,6 +3033,10 @@ static int parse_json(ogs_sbi_message_t *message,
                     rv = OGS_ERROR;
                     ogs_error("Unknown method [%s]", message->h.method);
                 END
+                break;
+            CASE("nrppa-measurement-notification")
+                /* Callback notification endpoint - no JSON parsing needed, uses multipart */
+                /* This is a POST endpoint that receives multipart NRPPa messages */
                 break;
             DEFAULT
                 rv = OGS_ERROR;

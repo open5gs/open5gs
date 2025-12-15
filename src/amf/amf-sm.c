@@ -229,10 +229,44 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     END
                     break;
 
+                CASE(OGS_SBI_RESOURCE_NAME_LOCATION_INFO)
+                    SWITCH(sbi_message.h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_GET)
+                        amf_namf_comm_handle_ue_location_info_request(
+                                stream, &sbi_message);
+                        break;
+                    DEFAULT
+                        ogs_error("Invalid HTTP method [%s]",
+                                sbi_message.h.method);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_FORBIDDEN, &sbi_message,
+                                "Invalid HTTP method", sbi_message.h.method,
+                                NULL));
+                    END
+                    break;
+
                 CASE(OGS_SBI_RESOURCE_NAME_NRPPA_MEASUREMENT_REQUEST)
                     SWITCH(sbi_message.h.method)
                     CASE(OGS_SBI_HTTP_METHOD_POST)
                         amf_namf_comm_handle_nrppa_measurement_request(
+                                stream, &sbi_message);
+                        break;
+                    DEFAULT
+                        ogs_error("Invalid HTTP method [%s]",
+                                sbi_message.h.method);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_FORBIDDEN, &sbi_message,
+                                "Invalid HTTP method", sbi_message.h.method,
+                                NULL));
+                    END
+                    break;
+
+                CASE(OGS_SBI_RESOURCE_NAME_NRPPA_MEASUREMENT_STATUS)
+                    SWITCH(sbi_message.h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_GET)
+                        amf_namf_comm_handle_nrppa_measurement_status(
                                 stream, &sbi_message);
                         break;
                     DEFAULT
@@ -320,6 +354,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         rv = ogs_sbi_parse_response(&sbi_message, sbi_response);
         if (rv != OGS_OK) {
             ogs_error("cannot parse HTTP response");
+            /* Don't free sbi_message.h here - it's shared with sbi_response->h
+             * which will be freed by ogs_sbi_response_free() */
             ogs_sbi_message_free(&sbi_message);
             ogs_sbi_response_free(sbi_response);
             break;
@@ -337,6 +373,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(api_version);
         if (strcmp(sbi_message.h.api.version, api_version) != 0) {
             ogs_error("Not supported version [%s]", sbi_message.h.api.version);
+            /* Don't free sbi_message.h here - it's shared with sbi_response->h
+             * which will be freed by ogs_sbi_response_free() */
             ogs_sbi_message_free(&sbi_message);
             ogs_sbi_response_free(sbi_response);
             break;
@@ -683,6 +721,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_assert_if_reached();
         END
 
+        /* Don't free sbi_message.h here - it's shared with sbi_response->h
+         * which will be freed by ogs_sbi_response_free() */
         ogs_sbi_message_free(&sbi_message);
         ogs_sbi_response_free(sbi_response);
         break;
@@ -1037,6 +1077,79 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
             ogs_timer_delete(e->timer);
+            break;
+        case AMF_TIMER_NRPPA_DELAYED_FORWARD: {
+            ogs_info("NRPPa delayed forward timer fired (ran_ue_id=%u)", e->ran_ue_id);
+            if (ran_ue) {
+                ogs_info("ran_ue found: pending=%d, stored_pdu=%p", 
+                        ran_ue->nrppa.pending, ran_ue->nrppa.stored_nrppa_pdu);
+            } else {
+                ogs_error("ran_ue NOT found for ran_ue_id=%u", e->ran_ue_id);
+            }
+            if (ran_ue && ran_ue->nrppa.pending && ran_ue->nrppa.stored_nrppa_pdu) {
+                ogs_pkbuf_t *stored_pdu = ran_ue->nrppa.stored_nrppa_pdu;
+                char *stored_lmf_id = ran_ue->nrppa.stored_lmf_instance_id;
+                amf_ue_t *amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
+                amf_gnb_t *gnb = amf_gnb_find_by_id(ran_ue->gnb_id);
+                
+                ogs_info("[%s] Forwarding stored NRPPa request after delay (2000ms)",
+                        amf_ue && amf_ue->supi ? amf_ue->supi : "Unknown");
+                
+                /* Verify ran_ue and gnb are still valid */
+                if (!gnb) {
+                    ogs_error("[%s] gNB[%d] not found when forwarding NRPPa after delay",
+                            amf_ue && amf_ue->supi ? amf_ue->supi : "Unknown", 
+                            ran_ue ? ran_ue->gnb_id : -1);
+                    ogs_pkbuf_free(stored_pdu);
+                    if (ran_ue) {
+                        ran_ue->nrppa.stored_nrppa_pdu = NULL;
+                        if (stored_lmf_id) {
+                            ogs_free(stored_lmf_id);
+                            ran_ue->nrppa.stored_lmf_instance_id = NULL;
+                        }
+                        ran_ue->nrppa.pending = false;
+                        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+                    } else if (stored_lmf_id) {
+                        ogs_free(stored_lmf_id);
+                    }
+                    ogs_timer_delete(e->timer);
+                    break;
+                }
+                
+                ogs_info("[%s] ran_ue_id=%d, gnb_id=%d, gnb_ostream_id=%d",
+                        amf_ue && amf_ue->supi ? amf_ue->supi : "Unknown",
+                        ran_ue->id, ran_ue->gnb_id, ran_ue->gnb_ostream_id);
+                
+                r = ngap_send_downlink_ue_associated_nrppa_transport(
+                        ran_ue, stored_pdu, stored_lmf_id);
+                
+                /* Clean up stored data immediately after forwarding */
+                ogs_pkbuf_free(stored_pdu);
+                ran_ue->nrppa.stored_nrppa_pdu = NULL;
+                if (stored_lmf_id) {
+                    ogs_free(stored_lmf_id);
+                    ran_ue->nrppa.stored_lmf_instance_id = NULL;
+                }
+                
+                if (r != OGS_OK) {
+                    ogs_error("[%s] Failed to forward stored NRPPa request to gNB after delay",
+                            amf_ue && amf_ue->supi ? amf_ue->supi : "Unknown");
+                    if (ran_ue) {
+                        ran_ue->nrppa.pending = false;
+                        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+                    }
+                } else {
+                    ogs_info("[%s] Stored NRPPa request forwarded to gNB successfully after delay",
+                            amf_ue && amf_ue->supi ? amf_ue->supi : "Unknown");
+                    /* Note: pending flag remains set - wait for gNB response */
+                }
+            } else {
+                ogs_warn("NRPPa delayed forward timer fired but no pending NRPPa request found (ran_ue_id=%u)",
+                        e->ran_ue_id);
+            }
+            /* Clean up timer (event will be freed by main event loop) */
+            ogs_timer_delete(e->timer);
+            }
             break;
         case AMF_TIMER_NG_HOLDING:
             ogs_warn("Implicit NG release");

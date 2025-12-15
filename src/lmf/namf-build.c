@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -33,7 +33,6 @@ ogs_sbi_request_t *lmf_namf_build_nrppa_measurement_request(
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
     ogs_pkbuf_t *nrppa_pdu = NULL;
-    uint64_t ue_ngap_id = 0;  /* TODO: Get from UE context via AMF */
     char *content_id_plain = NULL;
     char *content_id_header = NULL;
 
@@ -60,7 +59,6 @@ ogs_sbi_request_t *lmf_namf_build_nrppa_measurement_request(
         message.h.resource.component[1] = ogs_strdup(location_request->supi);
         ogs_assert(message.h.resource.component[1]);
     } else {
-        /* TODO: Extract from input_message */
         ogs_error("No SUPI in location request");
         ogs_sbi_message_free(&message);
         return NULL;
@@ -93,9 +91,11 @@ ogs_sbi_request_t *lmf_namf_build_nrppa_measurement_request(
         NRPPA_ECID_MEASUREMENT_TYPE_TA |
         NRPPA_ECID_MEASUREMENT_TYPE_AOA;  /* AoA requires TA */
 
+    /* Note: ue_ngap_id is not included in the NRPPa PDU itself;
+     * it's used by AMF/NGAP when forwarding the PDU to the gNB */
     nrppa_pdu = lmf_nrppa_build_ecid_measurement_request(
             location_request->measurement_id,
-            ue_ngap_id,  /* Will be set by AMF based on UE context */
+            0,  /* UE NGAP ID is not part of NRPPa PDU, set by AMF/NGAP */
             requested_measurements);
     if (!nrppa_pdu) {
         ogs_error("[%s] lmf_nrppa_build_ecid_measurement_request() failed",
@@ -110,6 +110,40 @@ ogs_sbi_request_t *lmf_namf_build_nrppa_measurement_request(
     message.N1N2MessageTransferReqData = &N1N2MessageTransferReqData;
     N1N2MessageTransferReqData.supported_features = (char *)"1";
     N1N2MessageTransferReqData.n2_info_container = &n2InfoContainer;
+    
+    /* Build callback URI for NRPPa measurement result notification */
+    {
+        ogs_sbi_server_t *server = NULL;
+        ogs_sbi_header_t header;
+        char measurement_id_str[32];
+        
+        /* Use any server from the list to build callback URI */
+        ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
+            memset(&header, 0, sizeof(header));
+            header.service.name = (char *)OGS_SBI_SERVICE_NAME_NLMF_LOC;
+            header.api.version = (char *)OGS_SBI_API_V1;
+            header.resource.component[0] = (char *)"nrppa-measurement-notification";
+            ogs_snprintf(measurement_id_str, sizeof(measurement_id_str), "%u", location_request->measurement_id);
+            header.resource.component[1] = measurement_id_str;
+            
+            N1N2MessageTransferReqData.n1n2_failure_txf_notif_uri = ogs_sbi_server_uri(server, &header);
+            if (N1N2MessageTransferReqData.n1n2_failure_txf_notif_uri) {
+                ogs_info("[%s] Built callback URI for NRPPa notification: %s",
+                        location_request->supi, N1N2MessageTransferReqData.n1n2_failure_txf_notif_uri);
+                /* Store callback URI in location request for reference */
+                if (location_request->callback_reference) {
+                    ogs_free(location_request->callback_reference);
+                }
+                location_request->callback_reference = ogs_strdup(N1N2MessageTransferReqData.n1n2_failure_txf_notif_uri);
+                break;
+            }
+        }
+        
+        if (!N1N2MessageTransferReqData.n1n2_failure_txf_notif_uri) {
+            ogs_warn("[%s] Failed to build callback URI for NRPPa notification. Callback may not work.",
+                    location_request->supi);
+        }
+    }
 
     memset(&n2InfoContainer, 0, sizeof(n2InfoContainer));
     n2InfoContainer.n2_information_class = OpenAPI_n2_information_class_NRPPa;
@@ -161,6 +195,13 @@ ogs_sbi_request_t *lmf_namf_build_nrppa_measurement_request(
 
     message.N1N2MessageTransferReqData = NULL;
 
+    /* Free n1n2_failure_txf_notif_uri allocated by ogs_sbi_server_uri().
+     * ogs_sbi_build_request() has copied it into the request, so we can free it now. */
+    if (N1N2MessageTransferReqData.n1n2_failure_txf_notif_uri) {
+        ogs_free(N1N2MessageTransferReqData.n1n2_failure_txf_notif_uri);
+        N1N2MessageTransferReqData.n1n2_failure_txf_notif_uri = NULL;
+    }
+
     if (content_id_header) {
         ogs_free(content_id_header);
         message.part[0].content_id = NULL;
@@ -190,6 +231,13 @@ ogs_sbi_request_t *lmf_namf_build_nrppa_measurement_request(
 
 build_error:
     message.N1N2MessageTransferReqData = NULL;
+    
+    /* Free n1n2_failure_txf_notif_uri allocated by ogs_sbi_server_uri() on error path */
+    if (N1N2MessageTransferReqData.n1n2_failure_txf_notif_uri) {
+        ogs_free(N1N2MessageTransferReqData.n1n2_failure_txf_notif_uri);
+        N1N2MessageTransferReqData.n1n2_failure_txf_notif_uri = NULL;
+    }
+    
     if (content_id_header) {
         ogs_free(content_id_header);
         content_id_header = NULL;

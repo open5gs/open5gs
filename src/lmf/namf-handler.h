@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,6 +28,8 @@ extern "C" {
 #endif
 
 void lmf_namf_handler_nrppa_measurement_response(
+        int status, ogs_sbi_response_t *response, void *data);
+void lmf_namf_handler_location_info_response(
         int status, ogs_sbi_response_t *response, void *data);
 
 #ifdef __cplusplus

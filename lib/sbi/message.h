@@ -133,6 +133,7 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES        "n1-n2-messages"
 #define OGS_SBI_RESOURCE_NAME_TRANSFER              "transfer"
 #define OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE       "transfer-update"
+#define OGS_SBI_RESOURCE_NAME_LOCATION_INFO         "location-info"
 
 #define OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS     "sm-context-status"
 #define OGS_SBI_RESOURCE_NAME_AM_POLICY_NOTIFY      "am-policy-notify"
@@ -141,6 +142,8 @@ extern "C" {
                                             "sdmsubscription-notify"
 #define OGS_SBI_RESOURCE_NAME_NRPPA_MEASUREMENT_REQUEST \
                                             "nrppa-measurement-request"
+#define OGS_SBI_RESOURCE_NAME_NRPPA_MEASUREMENT_STATUS \
+                                            "nrppa-measurement-status"
 
 #define OGS_SBI_RESOURCE_NAME_POLICIES              "policies"
 #define OGS_SBI_RESOURCE_NAME_SM_POLICIES           "sm-policies"

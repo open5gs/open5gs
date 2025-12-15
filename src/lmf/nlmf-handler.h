@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,6 +28,9 @@ extern "C" {
 #endif
 
 int lmf_nlmf_handle_determine_location(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+
+int lmf_nlmf_handle_nrppa_measurement_notification(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus

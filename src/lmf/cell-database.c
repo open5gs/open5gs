@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -106,7 +106,8 @@ int lmf_cell_database_parse_config(void)
                                     if (!strcmp(item_key, "ncgi")) {
                                         const char *ncgi_str = ogs_yaml_iter_value(&cell_item_iter);
                                         if (ncgi_str) {
-                                            ncgi_value = strtoull(ncgi_str, NULL, 0);
+                                            /* Parse hex without 0x prefix (Open5GS style) */
+                                            ncgi_value = strtoull(ncgi_str, NULL, 16);
                                         }
                                     } else if (!strcmp(item_key, "plmn_id")) {
                                         ogs_yaml_iter_t plmn_iter;
@@ -184,8 +185,8 @@ int lmf_cell_database_parse_config(void)
                                         cell_info->antenna_beamwidth = antenna_beamwidth;
                                         cell_info->antenna_tilt = antenna_tilt;
 
-                                        ogs_info("Cell database: Added cell NCGI=0x%llx "
-                                                "[PLMN:%06x,CELL:0x%llx] "
+                                        ogs_info("Cell database: Added cell NCGI=%llx "
+                                                "[PLMN:%06x,CELL:%llx] "
                                                 "lat=%.6f,lon=%.6f,alt=%.1f,radius=%um",
                                                 (unsigned long long)ncgi_value,
                                                 ogs_plmn_id_hexdump(&ncgi.plmn_id),
@@ -215,7 +216,7 @@ lmf_cell_info_t *lmf_cell_database_add(ogs_nr_cgi_t *ncgi)
     /* Check if cell already exists */
     cell_info = lmf_cell_database_find_by_ncgi(ncgi);
     if (cell_info) {
-        ogs_warn("Cell database: Cell already exists [PLMN:%06x,CELL:0x%llx]",
+        ogs_warn("Cell database: Cell already exists [PLMN:%06x,CELL:%llx]",
                 ogs_plmn_id_hexdump(&ncgi->plmn_id),
                 (unsigned long long)ncgi->cell_id);
         return cell_info;

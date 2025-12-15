@@ -44,6 +44,18 @@ int amf_namf_comm_handle_registration_status_update_response(
         ogs_sbi_message_t *recvmsg, amf_ue_t *amf_ue);
 int amf_namf_comm_handle_nrppa_measurement_request(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+int amf_namf_comm_handle_ue_location_info_request(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+
+int amf_namf_comm_handle_nrppa_measurement_status(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+
+ogs_sbi_request_t *amf_namf_build_nrppa_measurement_notify(
+        ogs_pkbuf_t *nrppa_pdu, uint32_t measurement_id, char *location_uri);
+
+bool amf_sbi_send_nrppa_measurement_notify(
+        ogs_sbi_client_t *client, char *callback_uri,
+        ogs_pkbuf_t *nrppa_pdu, uint32_t measurement_id, char *location_uri);
 
 #ifdef __cplusplus
 }

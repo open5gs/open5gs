@@ -32,6 +32,7 @@ typedef enum {
 
     AMF_TIMER_NG_DELAYED_SEND,
     AMF_TIMER_NG_HOLDING,
+    AMF_TIMER_NRPPA_DELAYED_FORWARD,
 
     AMF_TIMER_T3513,
     AMF_TIMER_T3522,
@@ -57,6 +58,7 @@ amf_timer_cfg_t *amf_timer_cfg(amf_timer_e id);
 const char *amf_timer_get_name(int timer_id);
 
 void amf_timer_ng_delayed_send(void *data);
+void amf_timer_nrppa_delayed_forward(void *data);
 
 void amf_timer_t3513_expire(void *data);
 void amf_timer_t3522_expire(void *data);

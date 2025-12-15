@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -80,7 +80,16 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 
         rv = ogs_sbi_parse_request(&message, request);
         if (rv != OGS_OK) {
-            ogs_error("cannot parse HTTP message");
+            /* Health check requests (GET /) are expected and benign - log at debug level */
+            if (request->h.uri && strcmp(request->h.uri, "/") == 0) {
+                ogs_debug("cannot parse HTTP message (health check) [method:%s, uri:%s]",
+                        request->h.method ? request->h.method : "NULL",
+                        request->h.uri ? request->h.uri : "NULL");
+            } else {
+                ogs_warn("cannot parse HTTP message [method:%s, uri:%s]",
+                        request->h.method ? request->h.method : "NULL",
+                        request->h.uri ? request->h.uri : "NULL");
+            }
             ogs_assert(true ==
                 ogs_sbi_server_send_error(
                     stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
@@ -114,6 +123,26 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
 
                 DEFAULT
                     ogs_error("Invalid HTTP method [%s]", message.h.method);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
+                            "Invalid HTTP method", message.h.method, NULL));
+                    ogs_sbi_message_free(&message);
+                END
+                break;
+
+            CASE("nrppa-measurement-notification")
+                SWITCH(message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    rv = lmf_nlmf_handle_nrppa_measurement_notification(stream, &message);
+                    if (rv != OGS_OK) {
+                        ogs_error("lmf_nlmf_handle_nrppa_measurement_notification() failed");
+                    }
+                    /* Handler will free the message */
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s] for callback notification", message.h.method);
                     ogs_assert(true ==
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
@@ -172,19 +201,42 @@ void lmf_state_operational(ogs_fsm_t *s, lmf_event_t *e)
                         break;
                     }
 
+                    /* Determine handler based on original request URI */
+                    /* Check if this was a location-info request by examining the request URI */
+                    bool is_location_info_request = false;
+                    if (sbi_xact->request && sbi_xact->request->h.uri) {
+                        /* Check if URI contains location-info resource */
+                        if (strstr(sbi_xact->request->h.uri, OGS_SBI_RESOURCE_NAME_LOCATION_INFO) != NULL) {
+                            is_location_info_request = true;
+                        }
+                    }
+
                     /* Remove transaction for all responses */
                     ogs_sbi_xact_remove(sbi_xact);
 
-                    if (e->h.sbi.response->status >= 200 && e->h.sbi.response->status < 300) {
-                        /* HTTP 200 OK - contains the actual NRPPa response */
-                        lmf_namf_handler_nrppa_measurement_response(
-                                OGS_OK, e->h.sbi.response, location_request);
+                    if (is_location_info_request) {
+                        /* Location info response - handle directly without parsing response URI */
+                        if (e->h.sbi.response->status >= 200 && e->h.sbi.response->status < 300) {
+                            lmf_namf_handler_location_info_response(
+                                    OGS_OK, e->h.sbi.response, location_request);
+                        } else {
+                            lmf_namf_handler_location_info_response(
+                                    OGS_ERROR, e->h.sbi.response, location_request);
+                        }
                     } else {
-                        ogs_error("[%s] AMF NRPPa request failed with HTTP status %d",
-                                location_request->supi ? location_request->supi : "Unknown",
-                                e->h.sbi.response->status);
-                        lmf_namf_handler_nrppa_measurement_response(
-                                OGS_ERROR, e->h.sbi.response, location_request);
+                        /* NRPPa measurement response */
+                        /* Handler will parse the response */
+                        if (e->h.sbi.response->status >= 200 && e->h.sbi.response->status < 300) {
+                            /* HTTP 200 OK - contains the actual NRPPa response */
+                            lmf_namf_handler_nrppa_measurement_response(
+                                    OGS_OK, e->h.sbi.response, location_request);
+                        } else {
+                            ogs_error("[%s] AMF NRPPa request failed with HTTP status %d",
+                                    location_request->supi ? location_request->supi : "Unknown",
+                                    e->h.sbi.response->status);
+                            lmf_namf_handler_nrppa_measurement_response(
+                                    OGS_ERROR, e->h.sbi.response, location_request);
+                        }
                     }
                     /* Handler function will free response */
                     break;

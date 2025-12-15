@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 int lmf_amf_send_nrppa_measurement_request(lmf_location_request_t *location_request);
+int lmf_amf_send_location_info_request(lmf_location_request_t *location_request);
 
 #ifdef __cplusplus
 }

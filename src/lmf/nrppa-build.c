@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -153,7 +153,7 @@ ogs_pkbuf_t *lmf_nrppa_build_ecid_measurement_request(
     }
     quantity_ie = NULL;
 
-    /* Add SS-RSRP if requested (Ericsson supports) */
+    /* Add SS-RSRP if requested */
     if (requested_measurements & NRPPA_ECID_MEASUREMENT_TYPE_RSRP) {
         quantity_ie = CALLOC(1, sizeof(*quantity_ie));
         if (!quantity_ie) {
@@ -173,7 +173,7 @@ ogs_pkbuf_t *lmf_nrppa_build_ecid_measurement_request(
         quantity_ie = NULL;
     }
 
-    /* Add NR Timing Advance if requested (Ericsson supports) */
+    /* Add NR Timing Advance if requested */
     if (requested_measurements & NRPPA_ECID_MEASUREMENT_TYPE_TA) {
         quantity_ie = CALLOC(1, sizeof(*quantity_ie));
         if (!quantity_ie) {

@@ -662,6 +662,8 @@ static int client_notify_cb(
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
         ogs_error("cannot parse HTTP response");
+        /* Don't free message.h here - it's shared with response->h
+         * which will be freed by ogs_sbi_response_free() */
         ogs_sbi_message_free(&message);
         ogs_sbi_response_free(response);
         return OGS_ERROR;
@@ -671,6 +673,8 @@ static int client_notify_cb(
         ogs_error("N1-N2-Message Transfer Failure Notification failed [%d]",
                 message.res_status);
 
+    /* Don't free message.h here - it's shared with response->h
+     * which will be freed by ogs_sbi_response_free() */
     ogs_sbi_message_free(&message);
     ogs_sbi_response_free(response);
     return OGS_OK;

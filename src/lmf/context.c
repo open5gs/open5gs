@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -162,6 +162,18 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
     }
     if (location_request->nrppa_pdu)
         ogs_pkbuf_free(location_request->nrppa_pdu);
+    if (location_request->ncgi_from_amf) {
+        if (location_request->ncgi_from_amf->plmn_id) {
+            if (location_request->ncgi_from_amf->plmn_id->mcc)
+                ogs_free(location_request->ncgi_from_amf->plmn_id->mcc);
+            if (location_request->ncgi_from_amf->plmn_id->mnc)
+                ogs_free(location_request->ncgi_from_amf->plmn_id->mnc);
+            ogs_free(location_request->ncgi_from_amf->plmn_id);
+        }
+        if (location_request->ncgi_from_amf->nr_cell_id)
+            ogs_free(location_request->ncgi_from_amf->nr_cell_id);
+        ogs_free(location_request->ncgi_from_amf);
+    }
 
     /* ogs_sbi_xact_remove_all will remove and free all xacts (including the one we stored in xact) */
     ogs_sbi_xact_remove_all(&location_request->sbi);
@@ -216,6 +228,18 @@ lmf_location_request_t *lmf_location_request_find_by_supi(const char *supi)
     ogs_list_for_each(&self.location_request_list, location_request) {
         if (location_request->supi && 
             strcmp(location_request->supi, supi) == 0)
+            return location_request;
+    }
+
+    return NULL;
+}
+
+lmf_location_request_t *lmf_location_request_find_by_measurement_id(uint32_t measurement_id)
+{
+    lmf_location_request_t *location_request = NULL;
+
+    ogs_list_for_each(&self.location_request_list, location_request) {
+        if (location_request->measurement_id == measurement_id)
             return location_request;
     }
 
