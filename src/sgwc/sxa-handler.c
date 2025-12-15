@@ -668,11 +668,16 @@ void sgwc_sxa_handle_session_modification_response(
             }
         } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
             s11_xact = ogs_gtp_xact_find_by_id(pfcp_xact->assoc_xact_id);
-            ogs_assert(s11_xact);
 
-            ogs_gtp_send_error_message(
-                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                    OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE, cause_value);
+            if (s11_xact) {
+                ogs_gtp_send_error_message(
+                        s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                        OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE, cause_value);
+            } else {
+                   ogs_error("No s11_xact: IMSI[%s] flags[0x%llx] assoc_xact_id[%u]",
+                           sgwc_ue ? sgwc_ue->imsi_bcd : "unknown", (long long)flags,
+                           pfcp_xact->assoc_xact_id);
+            }
         }
 
         ogs_pfcp_xact_commit(pfcp_xact);
