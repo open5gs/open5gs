@@ -1789,8 +1789,8 @@ static char *build_json(ogs_sbi_message_t *message)
         return content;
     }
 
-    /* NRPPa multipart requests may not carry a JSON body. */
-    return ogs_strdup("{}");
+    /* Return NULL if no content - caller will handle empty body appropriately */
+    return NULL;
 }
 
 static int parse_json(ogs_sbi_message_t *message,
@@ -3533,8 +3533,12 @@ static bool build_multipart(
     /* Encapsulated multipart part (application/json) */
     json = build_json(message);
     if (!json) {
-        ogs_error("build_json() failed");
-        return false;
+        /* NRPPa multipart requests may not carry a JSON body - use empty JSON */
+        json = ogs_strdup("{}");
+        if (!json) {
+            ogs_error("ogs_strdup() failed");
+            return false;
+        }
     }
 
     p = ogs_slprintf(p, last, "%s: %s\r\n", OGS_SBI_CONTENT_TYPE,

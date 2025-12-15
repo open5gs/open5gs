@@ -166,6 +166,11 @@ int lmf_nlmf_handle_determine_location(
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                     location_request->input_message, "Location determination failed", NULL, NULL));
+            /* Free InputData explicitly before freeing message */
+            if (location_request->input_message->InputData) {
+                OpenAPI_input_data_free(location_request->input_message->InputData);
+                location_request->input_message->InputData = NULL;
+            }
             ogs_sbi_message_free(location_request->input_message);
             ogs_free(location_request->input_message);
             location_request->input_message = NULL;

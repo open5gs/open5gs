@@ -511,7 +511,12 @@ int lmf_location_determine_ecid(
     response->http.content_length = strlen(json_str);
     ogs_sbi_header_set(response->http.headers, "Content-Type", "application/json");
 
-    /* Free message (which frees LocationData) - response has copied the data */
+    /* Free LocationData explicitly before freeing message */
+    if (message.LocationData) {
+        OpenAPI_location_data_free(message.LocationData);
+        message.LocationData = NULL;
+    }
+    /* Free message - response has copied the data */
     ogs_sbi_message_free(&message);
 
     /* Find stream for async response */
@@ -582,8 +587,11 @@ int lmf_location_determine_cellid(lmf_location_request_t *location_request)
                     OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                     NULL, "Internal server error",
                     "InputData not available", NULL);
-            /* Don't clean up here - let the handler do it to avoid use-after-free */
-            /* Just mark input_message as NULL so handler knows error was sent */
+            /* Free InputData explicitly before freeing message */
+            if (location_request->input_message->InputData) {
+                OpenAPI_input_data_free(location_request->input_message->InputData);
+                location_request->input_message->InputData = NULL;
+            }
             ogs_sbi_message_free(location_request->input_message);
             ogs_free(location_request->input_message);
             location_request->input_message = NULL;
@@ -925,7 +933,12 @@ int lmf_location_determine_cellid(lmf_location_request_t *location_request)
     response->http.content_length = strlen(json_str);
     ogs_sbi_header_set(response->http.headers, "Content-Type", "application/json");
 
-    /* Free message (which frees LocationData) - response has copied the data */
+    /* Free LocationData explicitly before freeing message */
+    if (message.LocationData) {
+        OpenAPI_location_data_free(message.LocationData);
+        message.LocationData = NULL;
+    }
+    /* Free message - response has copied the data */
     ogs_sbi_message_free(&message);
 
     /* Find stream for async response */

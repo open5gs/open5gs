@@ -153,6 +153,11 @@ void lmf_location_request_remove(lmf_location_request_t *location_request)
         ogs_free(location_request->callback_reference);
     
     if (location_request->input_message) {
+        /* Free InputData explicitly before freeing message */
+        if (location_request->input_message->InputData) {
+            OpenAPI_input_data_free(location_request->input_message->InputData);
+            location_request->input_message->InputData = NULL;
+        }
         ogs_sbi_message_free(location_request->input_message);
         ogs_free(location_request->input_message);
     }
