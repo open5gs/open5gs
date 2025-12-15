@@ -59,7 +59,7 @@ uint32_t smf_pfcp_urr_usage_report_trigger2diam_gy_reporting_reason(ogs_pfcp_usa
     return OGS_DIAM_GY_REPORTING_REASON_UNUSED_QUOTA_TIMER;
 }
 
-static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_associate)
+static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_assoicate)
 {
     smf_event_t e;
 
@@ -68,7 +68,7 @@ static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_associate)
     memset(&e, 0, sizeof(e));
     e.pfcp_node = node;
 
-    if (try_to_associate == true) {
+    if (try_to_assoicate == true) {
         node->t_association = ogs_timer_add(ogs_app()->timer_mgr,
                 smf_timer_pfcp_association, node);
         ogs_assert(node->t_association);
@@ -372,58 +372,6 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
     }
 }
 
-static void qos_flow_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
-{
-    ogs_pool_id_t qos_flow_id = OGS_INVALID_POOL_ID;
-    smf_ue_t *smf_ue = NULL;
-    smf_sess_t *sess = NULL;
-    smf_bearer_t *qos_flow = NULL;
-    ogs_sbi_stream_t *stream = NULL;
-    char *strerror = NULL;
-    uint8_t type;
-
-    ogs_assert(xact);
-    ogs_assert(data);
-
-    if (xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
-            xact->assoc_stream_id <= OGS_MAX_POOL_ID)
-        stream = ogs_sbi_stream_find_by_id(xact->assoc_stream_id);
-
-    type = xact->seq[0].type;
-
-    qos_flow_id = OGS_POINTER_TO_UINT(data);
-    ogs_assert(qos_flow_id >= OGS_MIN_POOL_ID &&
-            qos_flow_id <= OGS_MAX_POOL_ID);
-
-    qos_flow = smf_qos_flow_find_by_id(qos_flow_id);
-    if (!qos_flow) {
-        ogs_error("QoS Flow has already been removed [%d]", type);
-        return;
-    }
-    sess = smf_sess_find_by_id(qos_flow->sess_id);
-    ogs_assert(sess);
-    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
-    ogs_assert(smf_ue);
-
-    switch (type) {
-    case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
-        strerror = ogs_msprintf("[%s:%d] No PFCP session modification response",
-                smf_ue->supi, sess->psi);
-        ogs_assert(strerror);
-
-        ogs_error("%s", strerror);
-        if (stream) {
-            smf_sbi_send_sm_context_update_error_log(
-                stream, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, strerror, NULL);
-        }
-        ogs_free(strerror);
-        break;
-    default:
-        ogs_error("Not implemented [type:%d]", type);
-        break;
-    }
-}
-
 static void sess_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
 {
     smf_sess_t *sess = NULL;
@@ -532,7 +480,7 @@ int smf_pfcp_send_modify_list(
 }
 
 int smf_5gc_pfcp_send_session_establishment_request(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream, uint64_t flags)
+        smf_sess_t *sess, uint64_t flags)
 {
     int rv;
     ogs_pkbuf_t *n4buf = NULL;
@@ -546,12 +494,6 @@ int smf_5gc_pfcp_send_session_establishment_request(
     if (!xact) {
         ogs_error("ogs_pfcp_xact_local_create() failed");
         return OGS_ERROR;
-    }
-
-    if (stream) {
-        xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
-        ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
-                xact->assoc_stream_id <= OGS_MAX_POOL_ID);
     }
 
     xact->local_seid = sess->smf_n4_seid;
@@ -611,7 +553,7 @@ int smf_5gc_pfcp_send_session_establishment_request(
 
 int smf_5gc_pfcp_send_all_pdr_modification_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
-        uint64_t flags, int trigger, ogs_time_t duration)
+        uint64_t flags, ogs_time_t duration)
 {
     int rv;
     ogs_pfcp_xact_t *xact = NULL;
@@ -636,7 +578,6 @@ int smf_5gc_pfcp_send_all_pdr_modification_request(
 
     xact->local_seid = sess->smf_n4_seid;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
-    xact->delete_trigger = trigger;
 
     ogs_list_init(&sess->pdr_to_modify_list);
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr)
@@ -673,45 +614,6 @@ int smf_5gc_pfcp_send_qos_flow_list_modification_request(
 
     xact->local_seid = sess->smf_n4_seid;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
-
-    rv = smf_pfcp_send_modify_list(
-            sess, smf_n4_build_qos_flow_to_modify_list, xact, duration);
-    ogs_expect(rv == OGS_OK);
-
-    return rv;
-}
-
-int smf_5gc_pfcp_send_one_qos_flow_modification_request(
-        smf_bearer_t *qos_flow, ogs_sbi_stream_t *stream,
-        uint64_t flags, ogs_time_t duration)
-{
-    int rv;
-    ogs_pfcp_xact_t *xact = NULL;
-    smf_sess_t *sess = NULL;
-
-    ogs_assert(qos_flow);
-    sess = smf_sess_find_by_id(qos_flow->id);
-    ogs_assert(sess);
-
-    xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, qos_flow_5gc_timeout,
-            OGS_UINT_TO_POINTER(qos_flow->id));
-    if (!xact) {
-        ogs_error("ogs_pfcp_xact_local_create() failed");
-        return OGS_ERROR;
-    }
-
-    if (stream) {
-        xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
-        ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
-                xact->assoc_stream_id <= OGS_MAX_POOL_ID);
-    }
-
-    xact->local_seid = sess->smf_n4_seid;
-    xact->modify_flags = flags;
-
-    ogs_list_init(&sess->qos_flow_to_modify_list);
-    ogs_list_add(&sess->qos_flow_to_modify_list, &qos_flow->to_modify_node);
 
     rv = smf_pfcp_send_modify_list(
             sess, smf_n4_build_qos_flow_to_modify_list, xact, duration);

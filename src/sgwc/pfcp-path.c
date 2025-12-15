@@ -19,7 +19,7 @@
 
 #include "pfcp-path.h"
 
-static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_associate)
+static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_assoicate)
 {
     sgwc_event_t e;
 
@@ -28,7 +28,7 @@ static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_associate)
     memset(&e, 0, sizeof(e));
     e.pfcp_node = node;
 
-    if (try_to_associate == true) {
+    if (try_to_assoicate == true) {
         node->t_association = ogs_timer_add(ogs_app()->timer_mgr,
                 sgwc_timer_pfcp_association, node);
         ogs_assert(node->t_association);
@@ -294,10 +294,6 @@ int sgwc_pfcp_send_bearer_to_modify_list(
     ogs_assert(xact);
 
     xact->local_seid = sess->sgwc_sxa_seid;
-    ogs_info("PFCP Session Modification xact: "
-            "sess_id=%d xact=%p local_seid=0x%llx bearer_to_modify_count=%d",
-            sess->id, xact, (unsigned long long)xact->local_seid,
-            ogs_list_count(&xact->bearer_to_modify_list));
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
@@ -410,10 +406,6 @@ int sgwc_pfcp_send_session_modification_request(
     sgwc_bearer_t *bearer = NULL;
 
     ogs_assert(sess);
-    ogs_assert(ogs_list_count(&sess->bearer_list));
-    ogs_info("PFCP Session Modification from session: "
-            "sess_id=%d gtp_xact_id=%d flags=0x%llx",
-            sess->id, gtp_xact_id, (unsigned long long)flags);
 
     xact = ogs_pfcp_xact_local_create(
             sess->pfcp_node, sess_timeout, OGS_UINT_TO_POINTER(sess->id));
@@ -452,9 +444,6 @@ int sgwc_pfcp_send_bearer_modification_request(
     ogs_assert(bearer);
     sess = sgwc_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
-    ogs_info("PFCP Session Modification from bearer: "
-            "bearer_id=%d sess_id=%d gtp_xact_id=%d flags=0x%llx",
-            bearer->id, sess->id, gtp_xact_id, (unsigned long long)flags);
 
     xact = ogs_pfcp_xact_local_create(
             sess->pfcp_node, bearer_timeout, OGS_UINT_TO_POINTER(bearer->id));

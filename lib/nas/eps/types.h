@@ -291,19 +291,17 @@ ED2(uint8_t spare:5;,
 } __attribute__ ((packed)) ogs_nas_eps_attach_result_t;
 
 /* 9.9.3.11 EPS attach type
- * M V 1/2  */
-#define OGS_NAS_ATTACH_TYPE_EPS_ATTACH 1
-#define OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH 2
-#define OGS_NAS_ATTACH_TYPE_EPS_RLOS_ATTACH 3
-#define OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH 6
-#define OGS_NAS_ATTACH_TYPE_RESERVED 7
-
- /* 9.9.3.21 NAS key set identifier
+ * M V 1/2
+ * 9.9.3.21 NAS key set identifier
  * M V 1/2 */
 #define OGS_NAS_KEY_SET_IDENTIFIER_NATIVE 0
 #define OGS_NAS_KEY_SET_IDENTIFIER_MAPPED 1
 #define OGS_NAS_KEY_SET_IDENTIFIER_NOT_AVAILABLE 0x111
 
+#define OGS_NAS_ATTACH_TYPE_EPS_ATTACH 1
+#define OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH 2
+#define OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH 3
+#define OGS_NAS_ATTACH_TYPE_RESERVED 4
 typedef struct ogs_nas_eps_attach_type_s {
 ED4(uint8_t tsc:1;,
     uint8_t nas_key_set_identifier:3;,
@@ -605,22 +603,6 @@ ED3(uint8_t type:4;,
     uint8_t spare:3;,
     uint8_t update_needed:1;)
 } __attribute__ ((packed)) ogs_nas_ue_radio_capability_information_update_needed_t;
-
-/* 9.9.3.37 Emergency Number List
- * See subclause 10.5.3.13 and 10.5.4.33 in 3GPP TS 24.008 [13]. */
-#define OGS_NAS_SERVICE_CATEGORY_POLICE                 0x01
-#define OGS_NAS_SERVICE_CATEGORY_AMBULANCE              0x02
-#define OGS_NAS_SERVICE_CATEGORY_FIRE_BRIGADE           0x04
-#define OGS_NAS_SERVICE_CATEGORY_MARINE_GUARD           0x08
-#define OGS_NAS_SERVICE_CATEGORY_MOUNTAIN_RESCUE        0x10
-#define OGS_NAS_SERVICE_CATEGORY_MANUAL_ECALL           0x20
-#define OGS_NAS_SERVICE_CATEGORY_AUTOMATICALLY_ECALL    0x40
-typedef struct ogs_nas_emergency_number_item_s {
-    uint8_t length;
-ED2(uint8_t spare:3;,
-    uint8_t service_category:5;)
-    uint8_t digits[0];
-} __attribute__ ((packed)) ogs_nas_emergency_number_item_t;
 
 /* 9.9.3.38 CLI
  * O TLV 3-14

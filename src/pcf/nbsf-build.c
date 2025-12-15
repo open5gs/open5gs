@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -22,7 +22,7 @@
 ogs_sbi_request_t *pcf_nbsf_management_build_register(
         pcf_sess_t *sess, void *data)
 {
-    pcf_ue_sm_t *pcf_ue_sm = NULL;
+    pcf_ue_t *pcf_ue = NULL;
 
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
@@ -40,8 +40,8 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     int i;
 
     ogs_assert(sess);
-    pcf_ue_sm = pcf_ue_sm_find_by_id(sess->pcf_ue_sm_id);
-    ogs_assert(pcf_ue_sm);
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
+    ogs_assert(pcf_ue);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
@@ -53,8 +53,8 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     memset(&PcfBinding, 0, sizeof(PcfBinding));
     memset(&sNssai, 0, sizeof(sNssai));
 
-    PcfBinding.supi = pcf_ue_sm->supi;
-    PcfBinding.gpsi = pcf_ue_sm->gpsi;
+    PcfBinding.supi = pcf_ue->supi;
+    PcfBinding.gpsi = pcf_ue->gpsi;
 
     PcfBinding.ipv4_addr = sess->ipv4addr_string;
     PcfBinding.ipv6_prefix = sess->ipv6prefix_string;
@@ -183,14 +183,14 @@ end:
 ogs_sbi_request_t *pcf_nbsf_management_build_de_register(
         pcf_sess_t *sess, void *data)
 {
-    pcf_ue_sm_t *pcf_ue_sm = NULL;
+    pcf_ue_t *pcf_ue = NULL;
 
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
     ogs_assert(sess);
-    pcf_ue_sm = pcf_ue_sm_find_by_id(sess->pcf_ue_sm_id);
-    ogs_assert(pcf_ue_sm);
+    pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
+    ogs_assert(pcf_ue);
     ogs_assert(sess->binding.resource_uri);
 
     memset(&message, 0, sizeof(message));

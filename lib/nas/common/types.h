@@ -30,7 +30,7 @@
 extern "C" {
 #endif
 
-/* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM.
+/* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
  * When calculating AES_CMAC, we need to use the headroom of the packet. */
 #define OGS_NAS_HEADROOM 16
 
@@ -90,27 +90,22 @@ typedef struct ogs_nas_additional_information_s {
  * O TLV 4 */
 typedef struct ogs_nas_eps_bearer_context_status_s {
     uint8_t length;
-    union {
-        struct {
-        ED8(uint8_t ebi7:1;,
-            uint8_t ebi6:1;,
-            uint8_t ebi5:1;,
-            uint8_t ebi4:1;,
-            uint8_t ebi3:1;,
-            uint8_t ebi2:1;,
-            uint8_t ebi1:1;,
-            uint8_t ebi0:1;)
-        ED8(uint8_t ebi15:1;,
-            uint8_t ebi14:1;,
-            uint8_t ebi13:1;,
-            uint8_t ebi12:1;,
-            uint8_t ebi11:1;,
-            uint8_t ebi10:1;,
-            uint8_t ebi9:1;,
-            uint8_t ebi8:1;)
-        };
-        uint16_t value;
-    };
+ED8(uint8_t ebi7:1;,
+    uint8_t ebi6:1;,
+    uint8_t ebi5:1;,
+    uint8_t ebi4:1;,
+    uint8_t ebi3:1;,
+    uint8_t ebi2:1;,
+    uint8_t ebi1:1;,
+    uint8_t ebi0:1;)
+ED8(uint8_t ebi15:1;,
+    uint8_t ebi14:1;,
+    uint8_t ebi13:1;,
+    uint8_t ebi12:1;,
+    uint8_t ebi11:1;,
+    uint8_t ebi10:1;,
+    uint8_t ebi9:1;,
+    uint8_t ebi8:1;)
 } __attribute__ ((packed)) ogs_nas_eps_bearer_context_status_t;
 
 typedef struct ogs_nas_mobile_identity_imeisv_s {
@@ -708,7 +703,7 @@ ED3(uint8_t type:4;,
  * O TLV 5-50 */
 #define OGS_NAS_MAX_EMERGENCY_NUMBER_LIST_LEN 48
 typedef struct ogs_nas_emergency_number_list_s {
-    uint8_t length;
+    uint16_t length;
     uint8_t buffer[OGS_NAS_MAX_EMERGENCY_NUMBER_LIST_LEN];
 } __attribute__ ((packed)) ogs_nas_emergency_number_list_t;
 

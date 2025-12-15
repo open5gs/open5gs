@@ -729,6 +729,11 @@ void mme_s11_handle_delete_session_response(
         return;
     }
 
+    if (!enb_ue) {
+        ogs_error("ENB-S1 Context has already been removed");
+        return;
+    }
+
     if (!mme_ue) {
         ogs_error("MME-UE Context has already been removed");
         return;
@@ -823,7 +828,7 @@ void mme_s11_handle_delete_session_response(
     } else if (action == OGS_GTP_DELETE_SEND_RELEASE_WITH_UE_CONTEXT_REMOVE) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
             if (ECM_IDLE(mme_ue)) {
-                MME_UE_REMOVE_WITH_PAGING_FAIL(mme_ue);
+                mme_ue_remove(mme_ue);
 
                 /* mme_sess_remove() should not be called here
                  * since mme_ue_remove() has already been executed. */
@@ -870,25 +875,6 @@ void mme_s11_handle_delete_session_response(
 
             sgw_ue_source_deassociate_target(source_ue);
             sgw_ue_remove(source_ue);
-
-        );
-
-        return;
-
-    } else if (action == OGS_GTP_DELETE_SEND_TAU_ACCEPT) {
-
-        MME_SESS_CLEAR(sess);
-
-        if (!enb_ue) {
-            ogs_error("ENB-S1 Context has already been removed");
-            return;
-        }
-
-        GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION_BY_TAU,
-
-            ogs_info("[%s] Send TAU accept(BCS match, active_flag=%d)",
-                     mme_ue->imsi_bcd, mme_ue->nas_eps.update.active_flag);
-            mme_send_tau_accept_and_check_release(enb_ue, mme_ue);
 
         );
 
@@ -1055,18 +1041,14 @@ void mme_s11_handle_create_bearer_request(
 
     if (bearer->qos.mbr.downlink || bearer->qos.mbr.uplink ||
         bearer->qos.gbr.downlink || bearer->qos.gbr.uplink) {
-        if (bearer->qos.mbr.downlink == 0 ||
-            bearer->qos.mbr.downlink > OGS_MAX_BITRATE_S1AP)
-            bearer->qos.mbr.downlink = OGS_MAX_BITRATE_S1AP;
-        if (bearer->qos.mbr.uplink == 0 ||
-            bearer->qos.mbr.uplink > OGS_MAX_BITRATE_S1AP)
-            bearer->qos.mbr.uplink = OGS_MAX_BITRATE_S1AP;
-        if (bearer->qos.gbr.downlink == 0 ||
-            bearer->qos.gbr.downlink > OGS_MAX_BITRATE_S1AP)
-            bearer->qos.gbr.downlink = OGS_MAX_BITRATE_S1AP;
-        if (bearer->qos.gbr.uplink == 0 ||
-            bearer->qos.gbr.uplink > OGS_MAX_BITRATE_S1AP)
-            bearer->qos.gbr.uplink = OGS_MAX_BITRATE_S1AP;
+        if (bearer->qos.mbr.downlink == 0)
+            bearer->qos.mbr.downlink = MAX_BIT_RATE;
+        if (bearer->qos.mbr.uplink == 0)
+            bearer->qos.mbr.uplink = MAX_BIT_RATE;
+        if (bearer->qos.gbr.downlink == 0)
+            bearer->qos.gbr.downlink = MAX_BIT_RATE;
+        if (bearer->qos.gbr.uplink == 0)
+            bearer->qos.gbr.uplink = MAX_BIT_RATE;
     }
 
     /* Save Bearer TFT */
@@ -1510,12 +1492,13 @@ void mme_s11_handle_release_access_bearers_response(
      * for new UE-associated logical S1-connections over the S1 interface,
      * the MME shall respond with the RESET ACKNOWLEDGE message.
      */
+        enb_ue_unlink(mme_ue);
+
         if (enb_ue) {
             mme_enb_t *enb = NULL;
 
             enb = mme_enb_find_by_id(enb_ue->enb_id);
 
-            enb_ue_deassociate_mme_ue(enb_ue, mme_ue);
             enb_ue_remove(enb_ue);
 
             if (enb && ogs_list_count(&enb->enb_ue_list) == 0) {
@@ -1530,12 +1513,13 @@ void mme_s11_handle_release_access_bearers_response(
     } else if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_RESET_PARTIAL) {
         enb_ue_t *iter = NULL;
 
+        enb_ue_unlink(mme_ue);
+
         if (enb_ue) {
             mme_enb_t *enb = NULL;
 
             enb = mme_enb_find_by_id(enb_ue->enb_id);
 
-            enb_ue_deassociate_mme_ue(enb_ue, mme_ue);
             enb_ue_remove(enb_ue);
 
             if (enb) {

@@ -188,7 +188,7 @@ void sgwc_s11_handle_create_session_request(
     req = &message->create_session_request;
     ogs_assert(req);
 
-    ogs_info("Create Session Request");
+    ogs_debug("Create Session Request");
 
     /************************
      * Check SGWC-UE Context
@@ -278,10 +278,10 @@ void sgwc_s11_handle_create_session_request(
             ogs_nas_to_plmn_id(&sgwc_ue->e_cgi.plmn_id, &uli.e_cgi.nas_plmn_id);
             sgwc_ue->e_cgi.cell_id = uli.e_cgi.cell_id;
 
-            ogs_info("    TAI[PLMN_ID:%06x,TAC:%d]",
+            ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
                     ogs_plmn_id_hexdump(&sgwc_ue->e_tai.plmn_id),
                     sgwc_ue->e_tai.tac);
-            ogs_info("    E_CGI[PLMN_ID:%06x,CELL_ID:0x%x]",
+            ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:0x%x]",
                     ogs_plmn_id_hexdump(&sgwc_ue->e_cgi.plmn_id),
                     sgwc_ue->e_cgi.cell_id);
         } else
@@ -290,16 +290,6 @@ void sgwc_s11_handle_create_session_request(
 
     /* Select SGW-U based on UE Location Information */
     sgwc_sess_select_sgwu(sess);
-
-    if (!sess->pfcp_node) {
-        ogs_error("[%s:%s] No SGWU available for session",
-                  sgwc_ue->imsi_bcd, sess->session.name);
-        ogs_gtp_send_error_message(
-                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
-                OGS_GTP2_CAUSE_SYSTEM_FAILURE);
-        return;
-    }
 
     /* Check if selected SGW-U is associated with SGW-C */
     ogs_assert(sess->pfcp_node);
@@ -416,7 +406,7 @@ void sgwc_s11_handle_create_session_request(
     ogs_assert(pgw_s5c_teid);
     sess->pgw_s5c_teid = be32toh(pgw_s5c_teid->teid);
 
-    ogs_info("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
 
     ogs_assert(OGS_OK ==
@@ -453,7 +443,7 @@ void sgwc_s11_handle_modify_bearer_request(
     req = &message->modify_bearer_request;
     ogs_assert(req);
 
-    ogs_info("Modify Bearer Request");
+    ogs_debug("Modify Bearer Request");
 
     /************************
      * Check SGWC-UE Context
@@ -570,8 +560,19 @@ void sgwc_s11_handle_modify_bearer_request(
         ogs_assert(pdr);
 
         pdr->outer_header_removal_len = 1;
-        pdr->outer_header_removal.description =
-            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+        if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+            pdr->outer_header_removal.description =
+                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
+        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
+            pdr->outer_header_removal.description =
+                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
+        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+            pdr->outer_header_removal.description =
+                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+        } else {
+            ogs_error("Invalid session_type [%d]", sess->session.session_type);
+            ogs_assert_if_reached();
+        }
 
         far = dl_tunnel->far;
         ogs_assert(far);
@@ -582,10 +583,6 @@ void sgwc_s11_handle_modify_bearer_request(
             ogs_pfcp_ip_to_outer_header_creation(&dl_tunnel->remote_ip,
                 &far->outer_header_creation, &far->outer_header_creation_len));
         far->outer_header_creation.teid = dl_tunnel->remote_teid;
-
-        ogs_info("    sess_id=%d current_xact=%p flags=0x%llx, bearer[EBI=%d]",
-                sess->id, current_xact,
-                (unsigned long long)current_xact->modify_flags, bearer->ebi);
 
         ogs_list_add(&current_xact->bearer_to_modify_list,
                         &bearer->to_modify_node);
@@ -609,19 +606,19 @@ void sgwc_s11_handle_modify_bearer_request(
             ogs_nas_to_plmn_id(&sgwc_ue->e_cgi.plmn_id, &uli.e_cgi.nas_plmn_id);
             sgwc_ue->e_cgi.cell_id = uli.e_cgi.cell_id;
 
-            ogs_info("    TAI[PLMN_ID:%06x,TAC:%d]",
+            ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
                     ogs_plmn_id_hexdump(&sgwc_ue->e_tai.plmn_id),
                     sgwc_ue->e_tai.tac);
-            ogs_info("    E_CGI[PLMN_ID:%06x,CELL_ID:0x%x]",
+            ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:0x%x]",
                     ogs_plmn_id_hexdump(&sgwc_ue->e_cgi.plmn_id),
                     sgwc_ue->e_cgi.cell_id);
         } else
             ogs_error("Invalid User Location Info(ULI)");
     }
 
-    ogs_info("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
-    ogs_info("    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]",
+    ogs_debug("    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]",
         dl_tunnel->remote_teid, dl_tunnel->local_teid);
 
     ogs_list_for_each_entry(&pfcp_xact_list, pfcp_xact, tmpnode) {
@@ -635,9 +632,6 @@ void sgwc_s11_handle_modify_bearer_request(
             sess = sgwc_sess_find_by_id(sess_id);
             ogs_assert(sess);
 
-            ogs_info("    sess_id=%d xact=%p flags=0x%llx",
-                    sess->id, pfcp_xact,
-                    (unsigned long long)pfcp_xact->modify_flags);
             sgwc_pfcp_send_bearer_to_modify_list(sess, pfcp_xact);
         }
     }
@@ -660,7 +654,7 @@ void sgwc_s11_handle_delete_session_request(
     req = &message->delete_session_request;
     ogs_assert(req);
 
-    ogs_info("Delete Session Request");
+    ogs_debug("Delete Session Request");
 
     /************************
      * Check SGWC-UE Context
@@ -720,9 +714,9 @@ void sgwc_s11_handle_delete_session_request(
     ogs_assert(sgwc_ue);
     ogs_assert(sess);
     ogs_assert(sess->gnode);
-    ogs_info("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
-    ogs_info("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
+    ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     if (indication &&
@@ -786,7 +780,7 @@ void sgwc_s11_handle_create_bearer_response(
     rsp = &message->create_bearer_response;
     ogs_assert(rsp);
 
-    ogs_info("Create Bearer Response");
+    ogs_debug("Create Bearer Response");
 
     /********************
      * Check Transaction
@@ -867,7 +861,6 @@ void sgwc_s11_handle_create_bearer_response(
 
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         if (bearer) {
-            ogs_info("    bearer[EBI=%d]", bearer->ebi);
             ogs_assert(OGS_OK ==
                 sgwc_pfcp_send_bearer_modification_request(
                     bearer, OGS_INVALID_POOL_ID, NULL,
@@ -888,7 +881,6 @@ void sgwc_s11_handle_create_bearer_response(
     cause_value = cause->value;
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         ogs_error("GTP Cause [Value:%d]", cause_value);
-        ogs_info("    bearer[EBI=%d]", bearer->ebi);
         ogs_assert(OGS_OK ==
             sgwc_pfcp_send_bearer_modification_request(
                 bearer, OGS_INVALID_POOL_ID, NULL,
@@ -936,7 +928,7 @@ void sgwc_s11_handle_create_bearer_response(
     enb_s1u_teid = rsp->bearer_contexts.s1_u_enodeb_f_teid.data;
     dl_tunnel->remote_teid = be32toh(enb_s1u_teid->teid);
 
-    ogs_info("    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]",
+    ogs_debug("    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]",
         dl_tunnel->remote_teid, dl_tunnel->local_teid);
 
     ogs_assert(OGS_OK ==
@@ -946,8 +938,20 @@ void sgwc_s11_handle_create_bearer_response(
     ogs_assert(pdr);
 
     pdr->outer_header_removal_len = 1;
-    pdr->outer_header_removal.description =
-        OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+        pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
+    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
+        pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
+    } else if (sess->session.session_type ==
+            OGS_PDU_SESSION_TYPE_IPV4V6) {
+        pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+    } else {
+        ogs_error("Invalid session_type [%d]", sess->session.session_type);
+        ogs_assert_if_reached();
+    }
 
     far = dl_tunnel->far;
     ogs_assert(far);
@@ -969,17 +973,16 @@ void sgwc_s11_handle_create_bearer_response(
             ogs_nas_to_plmn_id(&sgwc_ue->e_cgi.plmn_id, &uli.e_cgi.nas_plmn_id);
             sgwc_ue->e_cgi.cell_id = uli.e_cgi.cell_id;
 
-            ogs_info("    TAI[PLMN_ID:%06x,TAC:%d]",
+            ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
                     ogs_plmn_id_hexdump(&sgwc_ue->e_tai.plmn_id),
                     sgwc_ue->e_tai.tac);
-            ogs_info("    E_CGI[PLMN_ID:%06x,CELL_ID:0x%x]",
+            ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:0x%x]",
                     ogs_plmn_id_hexdump(&sgwc_ue->e_cgi.plmn_id),
                     sgwc_ue->e_cgi.cell_id);
         } else
             ogs_error("Invalid User Location Info(ULI)");
     }
 
-    ogs_info("    bearer[EBI=%d] xact=%p", bearer->ebi, s5c_xact);
     ogs_assert(OGS_OK ==
         sgwc_pfcp_send_bearer_modification_request(
             bearer, s5c_xact->id, gtpbuf,
@@ -1005,7 +1008,7 @@ void sgwc_s11_handle_update_bearer_response(
     rsp = &message->update_bearer_response;
     ogs_assert(rsp);
 
-    ogs_info("Update Bearer Response");
+    ogs_debug("Update Bearer Response");
 
     /********************
      * Check Transaction
@@ -1099,9 +1102,9 @@ void sgwc_s11_handle_update_bearer_response(
     ogs_assert(sgwc_ue);
     ogs_assert(sess);
 
-    ogs_info("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
-    ogs_info("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
+    ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     message->h.type = OGS_GTP2_UPDATE_BEARER_RESPONSE_TYPE;
@@ -1141,7 +1144,7 @@ void sgwc_s11_handle_delete_bearer_response(
     rsp = &message->delete_bearer_response;
     ogs_assert(rsp);
 
-    ogs_info("Delete Bearer Response");
+    ogs_debug("Delete Bearer Response");
 
     /********************
      * Check Transaction
@@ -1157,32 +1160,23 @@ void sgwc_s11_handle_delete_bearer_response(
         ogs_assert(bearer_id >= OGS_MIN_POOL_ID &&
                 bearer_id <= OGS_MAX_POOL_ID);
 
-        rv = ogs_gtp_xact_commit(s11_xact);
-        ogs_expect(rv == OGS_OK);
-
         bearer = sgwc_bearer_find_by_id(bearer_id);
-        if (!bearer) {
-            ogs_error("No Bearer Context [%d]", bearer_id);
-            return;
-        }
+        ogs_assert(bearer);
     } else {
         ogs_assert(s11_xact->data);
         bearer_id = OGS_POINTER_TO_UINT(s11_xact->data);
         ogs_assert(bearer_id >= OGS_MIN_POOL_ID &&
                 bearer_id <= OGS_MAX_POOL_ID);
 
-        rv = ogs_gtp_xact_commit(s11_xact);
-        ogs_expect(rv == OGS_OK);
-
         bearer = sgwc_bearer_find_by_id(bearer_id);
-        if (!bearer) {
-            ogs_error("No Bearer Context [ID:%d]", bearer_id);
-            return;
-        }
+        ogs_assert(bearer);
     }
 
     sess = sgwc_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
+
+    rv = ogs_gtp_xact_commit(s11_xact);
+    ogs_expect(rv == OGS_OK);
 
     /************************
      * Check SGWC-UE Context
@@ -1261,12 +1255,11 @@ void sgwc_s11_handle_delete_bearer_response(
             ogs_error("No Cause");
         }
 
-        ogs_info("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+        ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
-        ogs_info("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
+        ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
-        ogs_info("    bearer[EBI=%d] xact=%p", bearer->ebi, s5c_xact);
         ogs_assert(OGS_OK ==
             sgwc_pfcp_send_bearer_modification_request(
                 bearer, s5c_xact->id, gtpbuf, OGS_PFCP_MODIFY_REMOVE));
@@ -1287,7 +1280,7 @@ void sgwc_s11_handle_release_access_bearers_request(
     req = &message->release_access_bearers_request;
     ogs_assert(req);
 
-    ogs_info("Release Access Bearers Request");
+    ogs_debug("Release Access Bearers Request");
 
     /************************
      * Check SGWC-UE Context
@@ -1311,13 +1304,11 @@ void sgwc_s11_handle_release_access_bearers_request(
      ********************/
     ogs_assert(sgwc_ue);
 
-    ogs_info("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
 
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
 
-        ogs_assert(ogs_list_count(&sess->bearer_list));
-        ogs_info("    sess_id=%d xact=%p", sess->id, s11_xact);
         ogs_assert(OGS_OK ==
             sgwc_pfcp_send_session_modification_request(
                 sess, s11_xact->id, gtpbuf,
@@ -1375,9 +1366,9 @@ void sgwc_s11_handle_downlink_data_notification_ack(
         ogs_error("No Cause");
     }
 
-    ogs_info("Downlink Data Notification Acknowledge [%d]", bearer->id);
+    ogs_debug("Downlink Data Notification Acknowledge [%d]", bearer->id);
     if (sgwc_ue) {
-        ogs_info("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+        ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
     }
 }
@@ -1403,7 +1394,7 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
     req = &message->create_indirect_data_forwarding_tunnel_request;
     ogs_assert(req);
 
-    ogs_info("Create Indirect Data Forwarding Tunnel Request");
+    ogs_debug("Create Indirect Data Forwarding Tunnel Request");
 
     /************************
      * Check SGWC-UE Context
@@ -1428,7 +1419,7 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
      ********************/
     ogs_assert(sgwc_ue);
 
-    ogs_info("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
 
     for (i = 0; req->bearer_contexts[i].presence; i++) {
@@ -1443,16 +1434,7 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
 
         bearer = sgwc_bearer_find_by_ue_ebi(sgwc_ue,
                     req->bearer_contexts[i].eps_bearer_id.u8);
-        if (!bearer) {
-            ogs_error("No Bearer Context [%d]",
-                    req->bearer_contexts[i].eps_bearer_id.u8);
-            ogs_gtp_send_error_message(
-                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE,
-                OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
-            return;
-        }
-
+        ogs_assert(bearer);
         sess = sgwc_sess_find_by_id(bearer->sess_id);
         ogs_assert(sess);
 
@@ -1462,14 +1444,7 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
 
             tunnel = sgwc_tunnel_add(bearer,
                     OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING);
-            if (!tunnel) {
-                ogs_error("sgwc_tunnel_add() failed");
-                ogs_gtp_send_error_message(
-                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                    OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE,
-                    OGS_GTP2_CAUSE_SYSTEM_FAILURE);
-                return;
-            }
+            ogs_assert(tunnel);
 
             tunnel->remote_teid = be32toh(req_teid->teid);
 
@@ -1486,8 +1461,21 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
             ogs_assert(pdr);
 
             pdr->outer_header_removal_len = 1;
-            pdr->outer_header_removal.description =
-                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+            if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+                pdr->outer_header_removal.description =
+                    OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
+            } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
+                pdr->outer_header_removal.description =
+                    OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
+            } else if (sess->session.session_type ==
+                    OGS_PDU_SESSION_TYPE_IPV4V6) {
+                pdr->outer_header_removal.description =
+                    OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+            } else {
+                ogs_error("Invalid session_type [%d]",
+                        sess->session.session_type);
+                ogs_assert_if_reached();
+            }
 
             far = tunnel->far;
             ogs_assert(far);
@@ -1501,7 +1489,7 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
                     &far->outer_header_creation_len));
             far->outer_header_creation.teid = tunnel->remote_teid;
 
-            ogs_info("    SGW_DL_TEID[%d] ENB_DL_TEID[%d]",
+            ogs_debug("    SGW_DL_TEID[%d] ENB_DL_TEID[%d]",
                     tunnel->local_teid, tunnel->remote_teid);
         }
 
@@ -1511,14 +1499,7 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
 
             tunnel = sgwc_tunnel_add(bearer,
                     OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING);
-            if (!tunnel) {
-                ogs_error("sgwc_tunnel_add() failed");
-                ogs_gtp_send_error_message(
-                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                    OGS_GTP2_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE,
-                    OGS_GTP2_CAUSE_SYSTEM_FAILURE);
-                return;
-            }
+            ogs_assert(tunnel);
 
             tunnel->remote_teid = be32toh(req_teid->teid);
 
@@ -1535,8 +1516,21 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
             ogs_assert(pdr);
 
             pdr->outer_header_removal_len = 1;
-            pdr->outer_header_removal.description =
-                OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+            if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+                pdr->outer_header_removal.description =
+                    OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
+            } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
+                pdr->outer_header_removal.description =
+                    OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
+            } else if (sess->session.session_type ==
+                    OGS_PDU_SESSION_TYPE_IPV4V6) {
+                pdr->outer_header_removal.description =
+                    OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+            } else {
+                ogs_error("Invalid session_type [%d]",
+                        sess->session.session_type);
+                ogs_assert_if_reached();
+            }
 
             far = tunnel->far;
             ogs_assert(far);
@@ -1550,15 +1544,13 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
                     &far->outer_header_creation_len));
             far->outer_header_creation.teid = tunnel->remote_teid;
 
-            ogs_info("    SGW_UL_TEID[%d] ENB_UL_TEID[%d]",
+            ogs_debug("    SGW_UL_TEID[%d] ENB_UL_TEID[%d]",
                     tunnel->local_teid, tunnel->remote_teid);
         }
     }
 
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
 
-        ogs_assert(ogs_list_count(&sess->bearer_list));
-        ogs_info("    sess_id=%d xact=%p", sess->id, s11_xact);
         ogs_assert(OGS_OK ==
             sgwc_pfcp_send_session_modification_request(
                 sess, s11_xact->id, gtpbuf,
@@ -1571,13 +1563,11 @@ void sgwc_s11_handle_delete_indirect_data_forwarding_tunnel_request(
         ogs_pkbuf_t *gtpbuf, ogs_gtp2_message_t *recv_message)
 {
     sgwc_sess_t *sess = NULL;
-    sgwc_bearer_t *bearer = NULL;
-    sgwc_tunnel_t *tunnel = NULL;
     uint8_t cause_value = 0;
 
     ogs_assert(s11_xact);
 
-    ogs_info("Delete Indirect Data Forwarding Tunnel Request");
+    ogs_debug("Delete Indirect Data Forwarding Tunnel Request");
 
     /************************
      * Check SGWC-UE Context
@@ -1602,44 +1592,15 @@ void sgwc_s11_handle_delete_indirect_data_forwarding_tunnel_request(
      ********************/
     ogs_assert(sgwc_ue);
 
-    ogs_info("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
 
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
-        bool has_indirect = false;
-        ogs_list_for_each(&sess->bearer_list, bearer) {
-            ogs_list_for_each(&bearer->tunnel_list, tunnel) {
-                if (tunnel->interface_type ==
-                        OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING ||
-                    tunnel->interface_type ==
-                        OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING) {
-                    has_indirect = true;
-                    break;
-                }
-            }
-            if (has_indirect) break;
-        }
 
-        if (has_indirect) {
-            ogs_info("    sess_id=%d xact=%p", sess->id, s11_xact);
-            ogs_assert(OGS_OK ==
-                sgwc_pfcp_send_session_modification_request(
-                    sess, s11_xact->id, gtpbuf,
-                    OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_REMOVE));
-        } else {
-            ogs_error("No Indirect Tunnel");
-            ogs_error("    UE IMSI[%s] APN[%s]",
-                    sgwc_ue->imsi_bcd, sess->session.name);
-            ogs_error("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-                    sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
-            ogs_list_for_each(&sess->bearer_list, bearer) {
-                ogs_error("    EBI[%d]", bearer->ebi);
-                ogs_list_for_each(&bearer->tunnel_list, tunnel) {
-                    ogs_error("TUNNEL[%d] INF[%d]",
-                            tunnel->id, tunnel->interface_type);
-                }
-            }
-        }
+        ogs_assert(OGS_OK ==
+            sgwc_pfcp_send_session_modification_request(
+                sess, s11_xact->id, gtpbuf,
+                OGS_PFCP_MODIFY_INDIRECT| OGS_PFCP_MODIFY_REMOVE));
     }
 }
 
@@ -1662,7 +1623,7 @@ void sgwc_s11_handle_bearer_resource_command(
     cmd = &message->bearer_resource_command;
     ogs_assert(cmd);
 
-    ogs_info("Bearer Resource Command");
+    ogs_debug("Bearer Resource Command");
 
     /************************
      * Check SGWC-UE Context
@@ -1730,9 +1691,9 @@ void sgwc_s11_handle_bearer_resource_command(
     ogs_assert(sess->gnode);
     ogs_assert(sgwc_ue);
 
-    ogs_info("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
-    ogs_info("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
+    ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     message->h.type = OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE;

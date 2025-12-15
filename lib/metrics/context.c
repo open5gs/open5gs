@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  * Copyright (C) 2023 by Sukchan Lee <acetcom@gmail.com>
- * Copyright (C) 2025 by Juraj Elias <juraj.elias@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,8 +19,6 @@
  */
 
 #include "ogs-metrics.h"
-#include "ogs-core.h"
-#include "metrics/ogs-metrics.h"
 
 #define DEFAULT_PROMETHEUS_HTTP_PORT       9090
 
@@ -41,8 +38,6 @@ void ogs_metrics_context_init(void)
     ogs_metrics_spec_init(ogs_metrics_self());
     ogs_metrics_server_init(ogs_metrics_self());
 
-    ogs_list_init(&self.custom_eps);
-
     context_initialized = 1;
 }
 
@@ -52,15 +47,7 @@ void ogs_metrics_context_open(ogs_metrics_context_t *ctx)
 }
 void ogs_metrics_context_close(ogs_metrics_context_t *ctx)
 {
-    ogs_metrics_custom_ep_t *node = NULL, *node_next = NULL;
-
     ogs_metrics_server_close(ctx);
-
-    ogs_list_for_each_safe(&self.custom_eps, node_next, node) {
-        if (node->endpoint) ogs_free(node->endpoint);
-        ogs_list_remove(&self.custom_eps, node);
-        ogs_free(node);
-    }
 }
 
 void ogs_metrics_context_final(void)
@@ -275,19 +262,4 @@ int ogs_metrics_context_parse_config(const char *local)
     }
 
     return OGS_OK;
-}
-
-
-void ogs_metrics_register_custom_ep(ogs_metrics_custom_ep_hdlr_t handler,
-        const char *endpoint)
-{
-    ogs_metrics_custom_ep_t *ep;
-
-    ep = ogs_calloc(1, sizeof(*ep));
-    ogs_assert(ep);
-
-    ep->endpoint = ogs_strdup(endpoint);
-    ep->handler = handler;
-
-    ogs_list_add(&self.custom_eps, ep);
 }

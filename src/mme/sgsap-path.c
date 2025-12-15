@@ -150,26 +150,6 @@ int sgsap_send_tmsi_reallocation_complete(mme_ue_t *mme_ue)
     return rv;
 }
 
-int sgsap_send_ue_activity_indication(mme_ue_t *mme_ue)
-{
-    int rv;
-    ogs_pkbuf_t *pkbuf = NULL;
-    ogs_assert(mme_ue);
-
-    ogs_debug("[SGSAP] Tx UE-ACTIVITY-IND");
-    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
-
-    pkbuf = sgsap_build_ue_activity_indication(mme_ue);
-    if (!pkbuf) {
-        ogs_error("sgsap_build_tmsi_reallocation_complete() failed");
-        return OGS_ERROR;
-    }
-    rv = sgsap_send_to_vlr(mme_ue, pkbuf);
-    ogs_expect(rv == OGS_OK);
-
-    return rv;
-}
-
 int sgsap_send_detach_indication(mme_ue_t *mme_ue)
 {
     int rv;

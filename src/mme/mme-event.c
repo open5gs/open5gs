@@ -88,6 +88,18 @@ const char *mme_event_get_name(mme_event_t *e)
     case MME_EVENT_S6A_TIMER:
         return "MME_EVENT_S6A_TIMER";
 
+    
+    case MME_EVENT_SBCAP_MESSAGE:
+        return "MME_EVENT_SBCAP_MESSAGE";
+    case MME_EVENT_SBCAP_TIMER:
+        return "MME_EVENT_SBCAP_TIMER";
+    case MME_EVENT_SBCAP_LO_ACCEPT:
+        return "MME_EVENT_SBCAP_LO_ACCEPT";
+    case MME_EVENT_SBCAP_LO_SCTP_COMM_UP:
+        return "MME_EVENT_SBCAP_LO_SCTP_COMM_UP";
+    case MME_EVENT_SBCAP_LO_CONNREFUSED:
+        return "MME_EVENT_SBCAP_LO_CONNREFUSED";
+
     case MME_EVENT_SGSAP_MESSAGE:
         return "MME_EVENT_SGSAP_MESSAGE";
     case MME_EVENT_SGSAP_TIMER:

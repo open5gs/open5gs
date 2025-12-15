@@ -90,9 +90,8 @@ sgwc:
 smf:
   sbi:
     server:
-#      - address: 127.0.1.4
-#        port: 7777
-      - address: smf.5gc.mnc070.mcc999.3gppnetwork.org
+      - address: 127.0.1.4
+        port: 7777
     client:
       scp:
         - uri: http://127.0.1.200:7777
@@ -432,9 +431,8 @@ pcf:
 nssf:
   sbi:
     server:
-#      - address: 127.0.1.14
-#        port: 7777
-      - address: nssf.5gc.mnc070.mcc999.3gppnetwork.org
+      - address: 127.0.1.14
+        port: 7777
     client:
       scp:
         - uri: http://127.0.1.200:7777

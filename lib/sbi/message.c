@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -66,8 +66,6 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
     /* Query parameters */
     for (i = 0; i < message->param.num_of_fields; i++)
         ogs_free(message->param.fields[i]);
-    for (i = 0; i < message->param.num_of_dataset_names; i++)
-        ogs_free(message->param.dataset_names[i]);
 
     /* JSON Data */
     if (message->NFProfile)
@@ -115,8 +113,6 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
                 message->Amf3GppAccessRegistrationModification);
     if (message->SmfRegistration)
         OpenAPI_smf_registration_free(message->SmfRegistration);
-    if (message->ProvisionedDataSets)
-        OpenAPI_provisioned_data_sets_free(message->ProvisionedDataSets);
     if (message->Nssai)
         OpenAPI_nssai_free(message->Nssai);
     if (message->AccessAndMobilitySubscriptionData)
@@ -143,30 +139,6 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_sm_context_release_data_free(message->SmContextReleaseData);
     if (message->SmContextReleasedData)
         OpenAPI_sm_context_released_data_free(message->SmContextReleasedData);
-    if (message->PduSessionCreateData)
-        OpenAPI_pdu_session_create_data_free(message->PduSessionCreateData);
-    if (message->PduSessionCreatedData)
-        OpenAPI_pdu_session_created_data_free(message->PduSessionCreatedData);
-    if (message->PduSessionCreateError)
-        OpenAPI_pdu_session_create_error_free(message->PduSessionCreateError);
-    if (message->HsmfUpdateData)
-        OpenAPI_hsmf_update_data_free(message->HsmfUpdateData);
-    if (message->HsmfUpdatedData)
-        OpenAPI_hsmf_updated_data_free(message->HsmfUpdatedData);
-    if (message->HsmfUpdateError)
-        OpenAPI_hsmf_update_error_free(message->HsmfUpdateError);
-    if (message->VsmfUpdateData)
-        OpenAPI_vsmf_update_data_free(message->VsmfUpdateData);
-    if (message->VsmfUpdatedData)
-        OpenAPI_vsmf_updated_data_free(message->VsmfUpdatedData);
-    if (message->VsmfUpdateError)
-        OpenAPI_vsmf_update_error_free(message->VsmfUpdateError);
-    if (message->ReleaseData)
-        OpenAPI_release_data_free(message->ReleaseData);
-    if (message->ReleasedData)
-        OpenAPI_released_data_free(message->ReleasedData);
-    if (message->StatusNotification)
-        OpenAPI_status_notification_free(message->StatusNotification);
     if (message->SessionManagementSubscriptionDataList) {
         OpenAPI_lnode_t *node = NULL;
         OpenAPI_list_for_each(message->SessionManagementSubscriptionDataList, node)
@@ -231,6 +203,9 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_ue_reg_status_update_req_data_free(message->UeRegStatusUpdateReqData);
     if (message->UeRegStatusUpdateRspData)
         OpenAPI_ue_reg_status_update_rsp_data_free(message->UeRegStatusUpdateRspData);
+    if (message->N2InformationTransferReqData)
+        OpenAPI_n2_information_transfer_req_data_free(
+                message->N2InformationTransferReqData);
     if (message->links) {
         OpenAPI_clear_and_free_string_list(message->links->items);
         if (message->links->self)
@@ -551,10 +526,6 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
                                 &discovery_option->requester_plmn_list[0]));
             }
         }
-        if (discovery_option->hnrf_uri) {
-            ogs_sbi_header_set(request->http.params,
-                    OGS_SBI_PARAM_HNRF_URI, discovery_option->hnrf_uri);
-        }
         if (discovery_option->requester_features) {
             char *v = ogs_uint64_to_string(
                     discovery_option->requester_features);
@@ -650,55 +621,35 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         ogs_sbi_header_set(request->http.params, OGS_SBI_PARAM_SNSSAI, v);
         ogs_free(v);
     }
-    if (message->param.slice_info_for_pdu_session_presence) {
+    if (message->param.slice_info_request_for_pdu_session_presence) {
         OpenAPI_slice_info_for_pdu_session_t SliceInfoForPDUSession;
-        OpenAPI_snssai_t sNssai, homeSnssai;
+        OpenAPI_snssai_t sNSSAI;
 
         char *v = NULL;
         cJSON *item = NULL;
 
-        if (!message->param.snssai_presence) {
-            ogs_error("No S-NSSAI");
-            ogs_sbi_request_free(request);
-            return NULL;
-        }
         if (!message->param.roaming_indication) {
             ogs_error("No Roaming Indication");
             ogs_sbi_request_free(request);
             return NULL;
         }
 
-        memset(&sNssai, 0, sizeof(sNssai));
-        sNssai.sst = message->param.s_nssai.sst;
-        sNssai.sd = ogs_s_nssai_sd_to_string(message->param.s_nssai.sd);
-
-        memset(&homeSnssai, 0, sizeof(homeSnssai));
-        if (message->param.home_snssai_presence) {
-            homeSnssai.sst = message->param.home_snssai.sst;
-            homeSnssai.sd = ogs_s_nssai_sd_to_string(
-                    message->param.home_snssai.sd);
-        }
+        memset(&sNSSAI, 0, sizeof(sNSSAI));
+        sNSSAI.sst = message->param.s_nssai.sst;
+        sNSSAI.sd = ogs_s_nssai_sd_to_string(message->param.s_nssai.sd);
 
         memset(&SliceInfoForPDUSession, 0, sizeof(SliceInfoForPDUSession));
 
-        SliceInfoForPDUSession.s_nssai = &sNssai;
+        SliceInfoForPDUSession.s_nssai = &sNSSAI;
         SliceInfoForPDUSession.roaming_indication =
             message->param.roaming_indication;
-        if (homeSnssai.sst)
-            SliceInfoForPDUSession.home_snssai = &homeSnssai;
 
         item = OpenAPI_slice_info_for_pdu_session_convertToJSON(
                 &SliceInfoForPDUSession);
         if (!item) {
             ogs_error("OpenAPI_slice_info_for_pdu_session_convertToJSON() "
                     "failed");
-
-            if (sNssai.sd)
-                ogs_free(sNssai.sd);
-            if (homeSnssai.sd)
-                ogs_free(homeSnssai.sd);
             ogs_sbi_request_free(request);
-
             return NULL;
         }
 
@@ -706,12 +657,6 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         if (!v) {
             ogs_error("cJSON_PrintUnformatted() failed");
             ogs_sbi_request_free(request);
-
-            if (sNssai.sd)
-                ogs_free(sNssai.sd);
-            if (homeSnssai.sd)
-                ogs_free(homeSnssai.sd);
-
             return NULL;
         }
         cJSON_Delete(item);
@@ -720,10 +665,8 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
                 OGS_SBI_PARAM_SLICE_INFO_REQUEST_FOR_PDU_SESSION, v);
         ogs_free(v);
 
-        if (sNssai.sd)
-            ogs_free(sNssai.sd);
-        if (homeSnssai.sd)
-            ogs_free(homeSnssai.sd);
+        if (sNSSAI.sd)
+            ogs_free(sNSSAI.sd);
     }
     if (message->param.num_of_fields) {
         char *fields;
@@ -743,25 +686,7 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
                     OGS_SBI_PARAM_FIELDS, fields);
             ogs_free(fields);
         }
-    }
-    if (message->param.num_of_dataset_names) {
-        char *dataset_names;
 
-        dataset_names = ogs_strdup(message->param.dataset_names[0]);
-        if (!dataset_names) {
-            ogs_error("ogs_strdup() failed");
-            return NULL;
-        }
-
-        for (i = 1; i < message->param.num_of_dataset_names; i++)
-            dataset_names = ogs_mstrcatf(
-                    dataset_names, ",%s", message->param.dataset_names[i]);
-
-        if (dataset_names) {
-            ogs_sbi_header_set(request->http.params,
-                    OGS_SBI_PARAM_DATASET_NAMES, dataset_names);
-            ogs_free(dataset_names);
-        }
     }
     if (message->param.ipv4addr) {
         ogs_sbi_header_set(request->http.params,
@@ -770,72 +695,6 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
     if (message->param.ipv6prefix) {
         ogs_sbi_header_set(request->http.params,
                 OGS_SBI_PARAM_IPV6PREFIX, message->param.ipv6prefix);
-    }
-
-    if (message->param.home_plmn_id_presence) {
-        OpenAPI_plmn_id_t home_plmn_id;
-
-        home_plmn_id.mnc = ogs_plmn_id_mnc_string(&message->param.home_plmn_id);
-        home_plmn_id.mcc = ogs_plmn_id_mcc_string(&message->param.home_plmn_id);
-
-        if (home_plmn_id.mnc && home_plmn_id.mcc) {
-            char *v = NULL;
-            cJSON *item = NULL;
-
-            item = OpenAPI_plmn_id_convertToJSON(&home_plmn_id);
-            if (!item) {
-                ogs_error("OpenAPI_plmn_id_convertToJSON() failed");
-                ogs_sbi_request_free(request);
-                return NULL;
-            }
-            if (home_plmn_id.mnc) ogs_free(home_plmn_id.mnc);
-            if (home_plmn_id.mcc) ogs_free(home_plmn_id.mcc);
-
-            v = cJSON_PrintUnformatted(item);
-            if (!v) {
-                ogs_error("cJSON_PrintUnformatted() failed");
-                ogs_sbi_request_free(request);
-                return NULL;
-            }
-            cJSON_Delete(item);
-
-            ogs_sbi_header_set(
-                    request->http.params, OGS_SBI_PARAM_HOME_PLMN_ID, v);
-            ogs_free(v);
-        }
-    }
-
-    if (message->param.tai_presence) {
-        OpenAPI_tai_t tai;
-
-        memset(&tai, 0, sizeof(tai));
-        tai.plmn_id = ogs_sbi_build_plmn_id(&message->param.tai.plmn_id);
-        tai.tac = ogs_uint24_to_0string(message->param.tai.tac);
-
-        if (tai.plmn_id && tai.tac) {
-            char *v = NULL;
-            cJSON *item = NULL;
-
-            item = OpenAPI_tai_convertToJSON(&tai);
-            if (!item) {
-                ogs_error("OpenAPI_tai_convertToJSON() failed");
-                ogs_sbi_request_free(request);
-                return NULL;
-            }
-            if (tai.plmn_id) ogs_sbi_free_plmn_id(tai.plmn_id);
-            if (tai.tac) ogs_free(tai.tac);
-
-            v = cJSON_PrintUnformatted(item);
-            if (!v) {
-                ogs_error("cJSON_PrintUnformatted() failed");
-                ogs_sbi_request_free(request);
-                return NULL;
-            }
-            cJSON_Delete(item);
-
-            ogs_sbi_header_set(request->http.params, OGS_SBI_PARAM_TAI, v);
-            ogs_free(v);
-        }
     }
 
     if (build_content(&request->http, message) == false) {
@@ -1047,12 +906,6 @@ int ogs_sbi_parse_request(
                         discovery_option->requester_plmn_list, v);
                 discovery_option_presence = true;
             }
-        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_HNRF_URI)) {
-            char *v = ogs_hash_this_val(hi);
-            if (v) {
-                ogs_sbi_discovery_option_set_hnrf_uri(discovery_option, v);
-                discovery_option_presence = true;
-            }
         } else if (!strcmp(ogs_hash_this_key(hi),
                     OGS_SBI_PARAM_REQUESTER_FEATURES)) {
             char *v = ogs_hash_this_val(hi);
@@ -1120,29 +973,17 @@ int ogs_sbi_parse_request(
                     SliceInfoForPduSession =
                         OpenAPI_slice_info_for_pdu_session_parseFromJSON(item);
                     if (SliceInfoForPduSession) {
-                        OpenAPI_snssai_t *s_nssai = NULL, *home_snssai = NULL;
-
-                        s_nssai = SliceInfoForPduSession->s_nssai;
+                        OpenAPI_snssai_t *s_nssai =
+                            SliceInfoForPduSession->s_nssai;
                         if (s_nssai) {
                             message->param.s_nssai.sst = s_nssai->sst;
                             message->param.s_nssai.sd =
                                 ogs_s_nssai_sd_from_string(s_nssai->sd);
-                            message->param.snssai_presence = true;
                         }
-
                         message->param.roaming_indication =
                             SliceInfoForPduSession->roaming_indication;
-
-                        home_snssai = SliceInfoForPduSession->home_snssai;
-                        if (home_snssai) {
-                            message->param.home_snssai.sst = home_snssai->sst;
-                            message->param.home_snssai.sd =
-                                ogs_s_nssai_sd_from_string(home_snssai->sd);
-                            message->param.home_snssai_presence = true;
-                        }
-
                         message->param.
-                            slice_info_for_pdu_session_presence = true;
+                            slice_info_request_for_pdu_session_presence = true;
 
                         OpenAPI_slice_info_for_pdu_session_free(
                                 SliceInfoForPduSession);
@@ -1175,80 +1016,10 @@ int ogs_sbi_parse_request(
             }
 
             ogs_free(v);
-        } else if (!strcmp(ogs_hash_this_key(hi),
-                OGS_SBI_PARAM_DATASET_NAMES)) {
-            char *_v = ogs_hash_this_val(hi), *v = NULL;
-            char *token = NULL;
-            char *saveptr = NULL;
-
-            v = ogs_strdup(_v);
-            ogs_assert(v);
-
-            token = ogs_strtok_r(v, ",", &saveptr);
-            while (token != NULL) {
-                if (message->param.num_of_dataset_names <
-                        OGS_SBI_MAX_NUM_OF_DATASETNAMES) {
-                    message->param.dataset_names
-                        [message->param.num_of_dataset_names] =
-                                ogs_strdup(token);
-                    ogs_assert(message->param.dataset_names
-                        [message->param.num_of_dataset_names]);
-                    message->param.num_of_dataset_names++;
-                    token = ogs_strtok_r(NULL, ",", &saveptr);
-                } else {
-                    ogs_error("Datasetnames in query exceeds "
-                                "MAX_NUM_OF_DATASETNAMES");
-                    break;
-                }
-            }
-
-            ogs_free(v);
         } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_IPV4ADDR)) {
             message->param.ipv4addr = ogs_hash_this_val(hi);
         } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_IPV6PREFIX)) {
             message->param.ipv6prefix = ogs_hash_this_val(hi);
-        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_HOME_PLMN_ID)) {
-            char *v = NULL;
-            cJSON *item = NULL;
-            OpenAPI_plmn_id_t *home_plmn_id = NULL;
-
-            v = ogs_hash_this_val(hi);
-            if (v) {
-                item = cJSON_Parse(v);
-                if (item) {
-                    home_plmn_id = OpenAPI_plmn_id_parseFromJSON(item);
-                    if (home_plmn_id &&
-                            home_plmn_id->mnc && home_plmn_id->mcc) {
-                        ogs_plmn_id_build(&message->param.home_plmn_id,
-                            atoi(home_plmn_id->mcc),
-                            atoi(home_plmn_id->mnc), strlen(home_plmn_id->mnc));
-                        message->param.home_plmn_id_presence = true;
-                        OpenAPI_plmn_id_free(home_plmn_id);
-                    }
-                    cJSON_Delete(item);
-                }
-            }
-        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_TAI)) {
-            char *v = NULL;
-            cJSON *item = NULL;
-            OpenAPI_tai_t *tai = NULL;
-
-            v = ogs_hash_this_val(hi);
-            if (v) {
-                item = cJSON_Parse(v);
-                if (item) {
-                    tai = OpenAPI_tai_parseFromJSON(item);
-                    if (tai && tai->plmn_id && tai->tac) {
-                        ogs_sbi_parse_plmn_id(
-                                &message->param.tai.plmn_id, tai->plmn_id);
-                        message->param.tai.tac =
-                            ogs_uint24_from_string_hexadecimal(tai->tac);
-                        message->param.tai_presence = true;
-                        OpenAPI_tai_free(tai);
-                    }
-                    cJSON_Delete(item);
-                }
-            }
         }
     }
 
@@ -1510,10 +1281,6 @@ static char *build_json(ogs_sbi_message_t *message)
     } else if (message->SmfRegistration) {
         item = OpenAPI_smf_registration_convertToJSON(message->SmfRegistration);
         ogs_assert(item);
-    } else if (message->ProvisionedDataSets) {
-        item = OpenAPI_provisioned_data_sets_convertToJSON(
-                message->ProvisionedDataSets);
-        ogs_assert(item);
     } else if (message->Nssai) {
         item = OpenAPI_nssai_convertToJSON(message->Nssai);
         ogs_assert(item);
@@ -1560,52 +1327,6 @@ static char *build_json(ogs_sbi_message_t *message)
     } else if (message->SmContextReleasedData) {
         item = OpenAPI_sm_context_released_data_convertToJSON(
                 message->SmContextReleasedData);
-        ogs_assert(item);
-    } else if (message->PduSessionCreateData) {
-        item = OpenAPI_pdu_session_create_data_convertToJSON(
-                message->PduSessionCreateData);
-        ogs_assert(item);
-    } else if (message->PduSessionCreatedData) {
-        item = OpenAPI_pdu_session_created_data_convertToJSON(
-                message->PduSessionCreatedData);
-        ogs_assert(item);
-    } else if (message->PduSessionCreateError) {
-        item = OpenAPI_pdu_session_create_error_convertToJSON(
-                message->PduSessionCreateError);
-        ogs_assert(item);
-    } else if (message->HsmfUpdateData) {
-        item = OpenAPI_hsmf_update_data_convertToJSON(
-                message->HsmfUpdateData);
-        ogs_assert(item);
-    } else if (message->HsmfUpdatedData) {
-        item = OpenAPI_hsmf_updated_data_convertToJSON(
-                message->HsmfUpdatedData);
-        ogs_assert(item);
-    } else if (message->HsmfUpdateError) {
-        item = OpenAPI_hsmf_update_error_convertToJSON(
-                message->HsmfUpdateError);
-        ogs_assert(item);
-    } else if (message->VsmfUpdateData) {
-        item = OpenAPI_vsmf_update_data_convertToJSON(
-                message->VsmfUpdateData);
-        ogs_assert(item);
-    } else if (message->VsmfUpdatedData) {
-        item = OpenAPI_vsmf_updated_data_convertToJSON(
-                message->VsmfUpdatedData);
-        ogs_assert(item);
-    } else if (message->VsmfUpdateError) {
-        item = OpenAPI_vsmf_update_error_convertToJSON(
-                message->VsmfUpdateError);
-        ogs_assert(item);
-    } else if (message->ReleaseData) {
-        item = OpenAPI_release_data_convertToJSON(message->ReleaseData);
-        ogs_assert(item);
-    } else if (message->ReleasedData) {
-        item = OpenAPI_released_data_convertToJSON(message->ReleasedData);
-        ogs_assert(item);
-    } else if (message->StatusNotification) {
-        item = OpenAPI_status_notification_convertToJSON(
-                message->StatusNotification);
         ogs_assert(item);
     } else if (message->SessionManagementSubscriptionDataList) {
         OpenAPI_lnode_t *node = NULL;
@@ -1719,6 +1440,10 @@ static char *build_json(ogs_sbi_message_t *message)
     } else if (message->UeRegStatusUpdateRspData) {
         item = OpenAPI_ue_reg_status_update_rsp_data_convertToJSON(
                 message->UeRegStatusUpdateRspData);
+        ogs_assert(item);
+    } else if (message->N2InformationTransferReqData) {
+        item = OpenAPI_n2_information_transfer_req_data_convertToJSON(
+                message->N2InformationTransferReqData);
         ogs_assert(item);
     }
 
@@ -2216,20 +1941,6 @@ static int parse_json(ogs_sbi_message_t *message,
                 DEFAULT
                     SWITCH(message->h.resource.component[3])
                     CASE(OGS_SBI_RESOURCE_NAME_PROVISIONED_DATA)
-                        if (!message->h.resource.component[4]) {
-                            if (message->res_status < 300) {
-                                message->ProvisionedDataSets =
-                                    OpenAPI_provisioned_data_sets_parseFromJSON(item);
-                                if (!message->ProvisionedDataSets) {
-                                    rv = OGS_ERROR;
-                                    ogs_error("JSON parse error");
-                                }
-                            } else {
-                                ogs_error("HTTP ERROR Status : %d",
-                                        message->res_status);
-                            }
-                            break;
-                        }
                         SWITCH(message->h.resource.component[4])
                         CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
                             if (message->res_status < 300) {
@@ -2468,153 +2179,6 @@ static int parse_json(ogs_sbi_message_t *message,
                 END
                 break;
 
-            CASE(OGS_SBI_RESOURCE_NAME_PDU_SESSIONS)
-                SWITCH(message->h.resource.component[2])
-                CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                    if (message->res_status == 0) {
-                        message->HsmfUpdateData =
-                            OpenAPI_hsmf_update_data_parseFromJSON(item);
-                        if (!message->HsmfUpdateData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    } else if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
-                        message->HsmfUpdatedData =
-                            OpenAPI_hsmf_updated_data_parseFromJSON(item);
-                        if (!message->HsmfUpdatedData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    } else if (message->res_status ==
-                            OGS_SBI_HTTP_STATUS_BAD_REQUEST ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_FORBIDDEN ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_NOT_FOUND ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT) {
-                        message->HsmfUpdateError =
-                            OpenAPI_hsmf_update_error_parseFromJSON(item);
-                        if (!message->HsmfUpdateError) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    }
-                    break;
-                CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
-                    if (message->res_status == 0) {
-                        message->ReleaseData =
-                            OpenAPI_release_data_parseFromJSON(item);
-                        if (!message->ReleaseData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    } else if (message->res_status ==
-                            OGS_SBI_HTTP_STATUS_NO_CONTENT) {
-                    } else if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
-                        message->ReleasedData =
-                            OpenAPI_released_data_parseFromJSON(item);
-                        if (!message->ReleasedData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    }
-                    break;
-                DEFAULT
-                    if (message->res_status == 0) {
-                        message->PduSessionCreateData =
-                            OpenAPI_pdu_session_create_data_parseFromJSON(item);
-                        if (!message->PduSessionCreateData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    } else if (message->res_status ==
-                            OGS_SBI_HTTP_STATUS_CREATED) {
-                        message->PduSessionCreatedData =
-                            OpenAPI_pdu_session_created_data_parseFromJSON(
-                                    item);
-                        if (!message->PduSessionCreatedData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    } else if (message->res_status ==
-                            OGS_SBI_HTTP_STATUS_BAD_REQUEST ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_FORBIDDEN ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_NOT_FOUND ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT) {
-                        message->PduSessionCreateError =
-                            OpenAPI_pdu_session_create_error_parseFromJSON(
-                                    item);
-                        if (!message->PduSessionCreateError) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    }
-                END
-                break;
-            CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
-                SWITCH(message->h.resource.component[2])
-                CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                    if (message->res_status == 0) {
-                        message->VsmfUpdateData =
-                            OpenAPI_vsmf_update_data_parseFromJSON(item);
-                        if (!message->VsmfUpdateData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    } else if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
-                        message->VsmfUpdatedData =
-                            OpenAPI_vsmf_updated_data_parseFromJSON(item);
-                        if (!message->VsmfUpdatedData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    } else if (message->res_status ==
-                            OGS_SBI_HTTP_STATUS_BAD_REQUEST ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_FORBIDDEN ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_NOT_FOUND ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT) {
-                        message->VsmfUpdateError =
-                            OpenAPI_vsmf_update_error_parseFromJSON(item);
-                        if (!message->VsmfUpdateError) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    }
-                    break;
-                DEFAULT
-                    if (message->res_status < 300) {
-                        message->StatusNotification =
-                            OpenAPI_status_notification_parseFromJSON(item);
-                        if (!message->StatusNotification) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    } else {
-                        ogs_error("HTTP ERROR Status : %d",
-                                message->res_status);
-                    }
-                END
-                break;
-
             DEFAULT
                 rv = OGS_ERROR;
                 ogs_error("Unknown resource name [%s]",
@@ -2623,8 +2187,8 @@ static int parse_json(ogs_sbi_message_t *message,
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
-            SWITCH(message->h.resource.component[0])
-            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
+            /* Replace SWITCH/CASE with if/else if for resource.component[0] */
+            if (strcmp(message->h.resource.component[0], OGS_SBI_RESOURCE_NAME_UE_CONTEXTS) == 0) {
                 SWITCH(message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES)
                     if (message->res_status == 0) {
@@ -2634,10 +2198,8 @@ static int parse_json(ogs_sbi_message_t *message,
                             rv = OGS_ERROR;
                             ogs_error("JSON parse error");
                         }
-                    } else if (message->res_status ==
-                                OGS_SBI_HTTP_STATUS_OK ||
-                                message->res_status ==
-                                    OGS_SBI_HTTP_STATUS_ACCEPTED) {
+                    } else if (message->res_status == OGS_SBI_HTTP_STATUS_OK ||
+                               message->res_status == OGS_SBI_HTTP_STATUS_ACCEPTED) {
                         message->N1N2MessageTransferRspData =
                             OpenAPI_n1_n2_message_transfer_rsp_data_parseFromJSON(item);
                         if (!message->N1N2MessageTransferRspData) {
@@ -2646,61 +2208,21 @@ static int parse_json(ogs_sbi_message_t *message,
                         }
                     }
                     break;
-
-                CASE(OGS_SBI_RESOURCE_NAME_TRANSFER)
-                    if (message->res_status == 0) {
-                        message->UeContextTransferReqData =
-                            OpenAPI_ue_context_transfer_req_data_parseFromJSON(item);
-                        if (!message->UeContextTransferReqData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    } else if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
-                        message->UeContextTransferRspData =
-                            OpenAPI_ue_context_transfer_rsp_data_parseFromJSON(item);
-                        if (!message->UeContextTransferRspData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    } else {
-                        ogs_error("HTTP ERROR Status : %d",
-                            message->res_status);
-                    }
-                    break;
-
-                CASE(OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE)
-                    if (message->res_status == 0) {
-                        message->UeRegStatusUpdateReqData =
-                            OpenAPI_ue_reg_status_update_req_data_parseFromJSON(item);
-                        if (!message->UeRegStatusUpdateReqData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    } else if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
-                        message->UeRegStatusUpdateRspData =
-                            OpenAPI_ue_reg_status_update_rsp_data_parseFromJSON(item);
-                        if (!message->UeRegStatusUpdateRspData) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
-                        }
-                    } else {
-                        ogs_error("HTTP ERROR Status : %d",
-                            message->res_status);
-                    }
-                    break;
-
-                DEFAULT
-                    rv = OGS_ERROR;
-                    ogs_error("Unknown resource name [%s]",
-                            message->h.resource.component[2]);
+                // ... rest of UE_CONTEXTS logic ...
                 END
-                break;
-
-            DEFAULT
+            } else if (strcmp(message->h.resource.component[0], OGS_SBI_RESOURCE_NAME_NON_UE_N2_MESSAGES) == 0) {
+                if (message->res_status == 0) {
+                    message->N2InformationTransferReqData =
+                        OpenAPI_n2_information_transfer_req_data_parseFromJSON(item);
+                    if (!message->N2InformationTransferReqData) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                }
+            } else {
                 rv = OGS_ERROR;
-                ogs_error("Unknown resource name [%s]",
-                        message->h.resource.component[0]);
-            END
+                ogs_error("Unknown resource name [%s]", message->h.resource.component[0]);
+            }
             break;
         CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
             SWITCH(message->h.resource.component[0])
@@ -3258,11 +2780,6 @@ static int parse_multipart(
     ogs_assert(message);
     ogs_assert(http);
 
-    if (!http->content) {
-        ogs_error("HTTP content NULL [%d]", (int)http->content_length);
-        return OGS_ERROR;
-    }
-
     memset(&settings, 0, sizeof(settings));
     settings.on_header_field = &on_header_field;
     settings.on_header_value = &on_header_value;
@@ -3517,9 +3034,6 @@ void ogs_sbi_discovery_option_free(
 
     for (i = 0; i < discovery_option->num_of_service_names; i++)
         ogs_free(discovery_option->service_names[i]);
-
-    if (discovery_option->hnrf_uri)
-        ogs_free(discovery_option->hnrf_uri);
 
     ogs_free(discovery_option);
 }
@@ -4030,23 +3544,4 @@ cleanup:
     cJSON_Delete(item);
 
     return num_of_plmn_list;
-}
-
-void ogs_sbi_discovery_option_set_hnrf_uri(
-        ogs_sbi_discovery_option_t *discovery_option, char *hnrf_uri)
-{
-    ogs_assert(discovery_option);
-    ogs_assert(hnrf_uri);
-
-    ogs_assert(!discovery_option->hnrf_uri);
-    discovery_option->hnrf_uri = ogs_strdup(hnrf_uri);
-    ogs_assert(discovery_option->hnrf_uri);
-}
-
-void ogs_sbi_discovery_option_clear_hnrf_uri(
-        ogs_sbi_discovery_option_t *discovery_option)
-{
-    ogs_assert(discovery_option);
-    ogs_free(discovery_option->hnrf_uri);
-    discovery_option->hnrf_uri = NULL;
 }

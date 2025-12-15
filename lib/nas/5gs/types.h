@@ -917,9 +917,6 @@ ED5(uint8_t type:4;,
 
 /* 9.11.4.7 Integrity protection maximum data rate
  * M V 2 */
-#define OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_64KBPS 0
-#define OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_NULL 1
-#define OGS_NAS_INTEGRITY_PROTECTION_MAXIMUM_DATA_RATE_FULL 0xff
 typedef struct ogs_nas_integrity_protection_maximum_data_rate_s {
     uint8_t ul;
     uint8_t dl;

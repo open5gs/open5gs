@@ -418,20 +418,14 @@ void sgwc_sess_select_sgwu(sgwc_sess_t *sess)
         ogs_pfcp_self()->pfcp_node =
             ogs_list_last(&ogs_pfcp_self()->pfcp_peer_list);
 
-    if (ogs_pfcp_self()->pfcp_node) {
-
-        /* setup GTP session with selected SGW-U */
-        ogs_pfcp_self()->pfcp_node =
-            selected_sgwu_node(ogs_pfcp_self()->pfcp_node, sess);
-        ogs_assert(ogs_pfcp_self()->pfcp_node);
-        OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->pfcp_node);
-        ogs_debug("UE using SGW-U on IP %s",
-                ogs_sockaddr_to_string_static(
-                    ogs_pfcp_self()->pfcp_node->addr_list));
-    } else {
-        ogs_error("No suitable SGWU found for session");
-        ogs_assert(sess->pfcp_node == NULL);
-    }
+    /* setup GTP session with selected SGW-U */
+    ogs_pfcp_self()->pfcp_node =
+        selected_sgwu_node(ogs_pfcp_self()->pfcp_node, sess);
+    ogs_assert(ogs_pfcp_self()->pfcp_node);
+    OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->pfcp_node);
+    ogs_debug("UE using SGW-U on IP %s",
+            ogs_sockaddr_to_string_static(
+                ogs_pfcp_self()->pfcp_node->addr_list));
 }
 
 int sgwc_sess_remove(sgwc_sess_t *sess)
@@ -563,31 +557,20 @@ sgwc_bearer_t *sgwc_bearer_add(sgwc_sess_t *sess)
     ogs_assert(sgwc_ue);
 
     ogs_pool_id_calloc(&sgwc_bearer_pool, &bearer);
-    if (!bearer) {
-        ogs_error("ogs_pool_id_calloc() failed");
-        return NULL;
-    }
-
-    ogs_list_add(&sess->bearer_list, bearer);
+    ogs_assert(bearer);
 
     bearer->sgwc_ue_id = sgwc_ue->id;
     bearer->sess_id = sess->id;
 
     /* Downlink */
     tunnel = sgwc_tunnel_add(bearer, OGS_GTP2_F_TEID_S5_S8_SGW_GTP_U);
-    if (!tunnel) {
-        ogs_error("sgwc_tunnel_add() failed");
-        sgwc_bearer_remove(bearer);
-        return NULL;
-    }
+    ogs_assert(tunnel);
 
     /* Uplink */
     tunnel = sgwc_tunnel_add(bearer, OGS_GTP2_F_TEID_S1_U_SGW_GTP_U);
-    if (!tunnel) {
-        ogs_error("sgwc_tunnel_add() failed");
-        sgwc_bearer_remove(bearer);
-        return NULL;
-    }
+    ogs_assert(tunnel);
+
+    ogs_list_add(&sess->bearer_list, bearer);
 
     return bearer;
 }
@@ -708,23 +691,12 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     }
 
     ogs_pool_id_calloc(&sgwc_tunnel_pool, &tunnel);
-    if (!tunnel) {
-        ogs_error("ogs_pool_id_calloc() failed");
-        return NULL;
-    }
-
-    ogs_list_add(&bearer->tunnel_list, tunnel);
+    ogs_assert(tunnel);
 
     tunnel->interface_type = interface_type;
-    tunnel->bearer_id = bearer->id;
 
     pdr = ogs_pfcp_pdr_add(&sess->pfcp);
-    if (!pdr) {
-        ogs_error("ogs_pfcp_pdr_add() failed");
-        sgwc_tunnel_remove(tunnel);
-        return NULL;
-    }
-    tunnel->pdr = pdr;
+    ogs_assert(pdr);
 
     ogs_assert(sess->session.name);
     pdr->apn = ogs_strdup(sess->session.name);
@@ -736,12 +708,7 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     pdr->src_if_type = src_if_type;
 
     far = ogs_pfcp_far_add(&sess->pfcp);
-    if (!far) {
-        ogs_error("ogs_pfcp_far_add() failed");
-        sgwc_tunnel_remove(tunnel);
-        return NULL;
-    }
-    tunnel->far = far;
+    ogs_assert(far);
 
     ogs_assert(sess->session.name);
     far->apn = ogs_strdup(sess->session.name);
@@ -815,6 +782,13 @@ sgwc_tunnel_t *sgwc_tunnel_add(
         pdr->f_teid.teid = tunnel->local_teid;
     }
 
+    tunnel->pdr = pdr;
+    tunnel->far = far;
+
+    tunnel->bearer_id = bearer->id;
+
+    ogs_list_add(&bearer->tunnel_list, tunnel);
+
     return tunnel;
 }
 
@@ -828,10 +802,8 @@ int sgwc_tunnel_remove(sgwc_tunnel_t *tunnel)
 
     ogs_list_remove(&bearer->tunnel_list, tunnel);
 
-    if (tunnel->pdr)
-        ogs_pfcp_pdr_remove(tunnel->pdr);
-    if (tunnel->far)
-        ogs_pfcp_far_remove(tunnel->far);
+    ogs_pfcp_pdr_remove(tunnel->pdr);
+    ogs_pfcp_far_remove(tunnel->far);
 
     if (tunnel->local_addr)
         ogs_freeaddrinfo(tunnel->local_addr);

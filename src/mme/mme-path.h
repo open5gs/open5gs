@@ -33,9 +33,6 @@ void mme_send_release_access_bearer_or_ue_context_release(enb_ue_t *enb_ue);
 
 void mme_send_after_paging(mme_ue_t *mme_ue, bool failed);
 
-void mme_send_delete_session_or_tau_accept(enb_ue_t *enb_ue, mme_ue_t *mme_ue);
-void mme_send_tau_accept_and_check_release(enb_ue_t *enb_ue, mme_ue_t *mme_ue);
-
 #ifdef __cplusplus
 }
 #endif

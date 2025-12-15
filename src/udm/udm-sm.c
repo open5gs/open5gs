@@ -38,7 +38,6 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
 {
     int rv;
     const char *api_version = NULL;
-    char *supi = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
@@ -154,34 +153,28 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 break;
             }
 
-            if (!message.param.num_of_dataset_names) {
-                if (!message.h.resource.component[1]) {
-                    ogs_error("Invalid resource name [%s]", message.h.method);
-                    ogs_assert(true ==
-                        ogs_sbi_server_send_error(stream,
-                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                            &message, "Invalid resource name", message.h.method,
-                            NULL));
-                    break;
-                }
-
-                SWITCH(message.h.resource.component[1])
-                CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
-                    if (message.h.resource.component[2]) {
-                        udm_ue = udm_ue_find_by_ctx_id(
-                                message.h.resource.component[2]);
-                    }
-                DEFAULT
-                END
+            if (!message.h.resource.component[1]) {
+                ogs_error("Invalid resource name [%s]", message.h.method);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        &message, "Invalid resource name", message.h.method,
+                        NULL));
+                break;
             }
 
-            if (!udm_ue) {
-                supi = ogs_supi_from_supi_or_suci(
-                    message.h.resource.component[0]);
-                if (supi) {
-                    udm_ue = udm_ue_find_by_supi(supi);
+            SWITCH(message.h.resource.component[1])
+            CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
+                if (message.h.resource.component[2]) {
+                    udm_ue = udm_ue_find_by_ctx_id(
+                            message.h.resource.component[2]);
                 }
-                ogs_free(supi);
+            DEFAULT
+            END
+
+            if (!udm_ue) {
+                udm_ue = udm_ue_find_by_suci_or_supi(
+                        message.h.resource.component[0]);
                 if (!udm_ue) {
                     SWITCH(message.h.method)
                     CASE(OGS_SBI_HTTP_METHOD_POST)
@@ -295,33 +288,10 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
                 nf_instance = e->h.sbi.data;
                 ogs_assert(nf_instance);
+                ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
 
-    /*
-     * Guard against dispatching to an FSM that may have been finalized
-     * by an asynchronous shutdown triggered by SIGTERM.
-     *
-     * In init.c’s event_termination(), which can be invoked asynchronously
-     * when the process receives SIGTERM, we iterate over all NF instances:
-     *     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance)
-     *         ogs_sbi_nf_fsm_fini(nf_instance);
-     * and call ogs_fsm_fini() on each instance’s FSM. That finalizes the FSM
-     * and its state is reset to zero.
-     *
-     * After event_termination(), any incoming SBI response—such as an NRF
-     * client callback arriving after deregistration—would otherwise be
-     * dispatched into a dead FSM and trigger an assertion failure.
-     *
-     * To avoid this, we check OGS_FSM_STATE(&nf_instance->sm):
-     *   - If non-zero, the FSM is still active and can safely handle the event.
-     *   - If zero, the FSM has already been finalized by event_termination(),
-     *     so we log and drop the event to allow graceful shutdown.
-     */
-                if (OGS_FSM_STATE(&nf_instance->sm)) {
-                    e->h.sbi.message = &message;
-                    ogs_fsm_dispatch(&nf_instance->sm, e);
-                } else
-                    ogs_error("NF instance FSM has been finalized");
-
+                e->h.sbi.message = &message;
+                ogs_fsm_dispatch(&nf_instance->sm, e);
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
@@ -509,7 +479,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
                     ogs_fsm_dispatch(&udm_ue->sm, e);
                     if (OGS_FSM_CHECK(&udm_ue->sm, udm_ue_state_exception)) {
-                        ogs_warn("[%s] State machine exception", udm_ue->suci);
+                        ogs_error("[%s] State machine exception", udm_ue->suci);
                         udm_ue_remove(udm_ue);
                     }
                 END
@@ -627,7 +597,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
             ogs_error("Cannot receive SBI message");
 
             if (!stream) {
-                ogs_error("STREAM has already been removed [%d]",
+                ogs_error("STREAM has alreadt been removed [%d]",
                         sbi_xact->assoc_stream_id);
                 break;
             }

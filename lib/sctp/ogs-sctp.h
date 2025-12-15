@@ -42,10 +42,12 @@ extern int __ogs_sctp_domain;
 #define OGS_S1AP_SCTP_PORT              36412
 #define OGS_SGSAP_SCTP_PORT             29118
 #define OGS_NGAP_SCTP_PORT              38412
+#define OGS_SBCAP_SCTP_PORT             29168 //sai
 
 #define OGS_SCTP_S1AP_PPID              18
 #define OGS_SCTP_X2AP_PPID              27
 #define OGS_SCTP_SGSAP_PPID             0
+#define OGS_SCTP_SBCAP_PPID             24 //sai
 #define OGS_SCTP_NGAP_PPID              60
 
 #define ogs_sctp_ppid_in_pkbuf(__pkBUF)         (__pkBUF)->param[0]

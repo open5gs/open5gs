@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -58,20 +58,11 @@
 #include "model/sm_context_update_error.h"
 #include "model/sm_context_release_data.h"
 #include "model/sm_context_released_data.h"
-#include "model/pdu_session_create_data.h"
-#include "model/pdu_session_create_error.h"
-#include "model/pdu_session_created_data.h"
-#include "model/hsmf_update_data.h"
-#include "model/hsmf_updated_data.h"
-#include "model/hsmf_update_error.h"
-#include "model/vsmf_update_data.h"
-#include "model/vsmf_updated_data.h"
-#include "model/vsmf_update_error.h"
-#include "model/release_data.h"
-#include "model/released_data.h"
 #include "model/session_management_subscription_data.h"
 #include "model/n1_n2_message_transfer_req_data.h"
 #include "model/n1_n2_message_transfer_rsp_data.h"
+#include "model/n2_information_transfer_req_data.h"
+#include "model/n2_information_transfer_rsp_data.h"
 #include "model/n1_n2_msg_txfr_failure_notification.h"
 #include "model/sm_context_status_notification.h"
 #include "model/policy_association.h"
@@ -99,8 +90,6 @@
 #include "model/ue_context_transfer_rsp_data.h"
 #include "model/ue_reg_status_update_req_data.h"
 #include "model/ue_reg_status_update_rsp_data.h"
-#include "model/status_notification.h"
-#include "model/provisioned_data_sets.h"
 
 #include "custom/links.h"
 

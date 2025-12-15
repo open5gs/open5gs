@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -75,9 +75,6 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
      */
     SmPolicyContextData.chargingcharacteristics = (char *)"00000800";
 
-    /* GPSI */
-    SmPolicyContextData.gpsi = smf_ue->gpsi;
-
     /*
      * Use ogs_sbi_supi_in_vplmn() instead of ogs_sbi_plmn_id_in_vplmn().
      * This is because some vendors might not use the full DNN in LBO and
@@ -115,16 +112,17 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
      * and Operator Identifier, or a DNN with the Network Identifier only
      */
     if (ogs_sbi_supi_in_vplmn(smf_ue->supi) == true) {
-        char *dnn_oi = NULL;
+        char *home_network_domain = NULL;
 
-        dnn_oi = ogs_dnn_oi_from_plmn_id(&sess->home_plmn_id);
-        ogs_assert(dnn_oi);
+        home_network_domain =
+            ogs_home_network_domain_from_plmn_id(&sess->home_plmn_id);
+        ogs_assert(home_network_domain);
 
         SmPolicyContextData.dnn =
-            ogs_msprintf("%s.%s", sess->session.name, dnn_oi);
+            ogs_msprintf("%s.%s", sess->session.name, home_network_domain);
         ogs_assert(SmPolicyContextData.dnn);
 
-        ogs_free(dnn_oi);
+        ogs_free(home_network_domain);
 
     } else {
         SmPolicyContextData.dnn = ogs_strdup(sess->session.name);
@@ -164,9 +162,12 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         ogs_error("ueLocation.nr_location");
         goto end;
     }
-    if (sess->ue_location_timestamp)
-        ueLocation.nr_location->ue_location_timestamp =
-            ogs_sbi_gmtime_string(sess->ue_location_timestamp);
+    ueLocation.nr_location->ue_location_timestamp =
+        ogs_sbi_gmtime_string(sess->ue_location_timestamp);
+    if (!ueLocation.nr_location->ue_location_timestamp) {
+        ogs_error("ueLocation.nr_location->ue_location_timestamp");
+        goto end;
+    }
 
     SmPolicyContextData.user_location_info = &ueLocation;
 
@@ -286,6 +287,8 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
 end:
     if (SmPolicyContextData.notification_uri)
         ogs_free(SmPolicyContextData.notification_uri);
+    if (SmPolicyContextData.gpsi)
+        ogs_free(SmPolicyContextData.gpsi);
 
     if (SmPolicyContextData.dnn)
         ogs_free(SmPolicyContextData.dnn);
@@ -323,6 +326,8 @@ end:
 ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
         smf_sess_t *sess, void *data)
 {
+    smf_npcf_smpolicycontrol_param_t *param = data;
+
     smf_ue_t *smf_ue = NULL;
 
     ogs_sbi_message_t message;
@@ -350,69 +355,70 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
 
     memset(&ueLocation, 0, sizeof(ueLocation));
 
-    if (sess->nsmf_param.gmm_cause ||
-        sess->nsmf_param.gsm_cause ||
-        sess->nsmf_param.ngap_cause.group) {
+    if (param) {
+        if (param->ran_nas_release.gmm_cause ||
+            param->ran_nas_release.gsm_cause ||
+            param->ran_nas_release.ngap_cause.group) {
 
-        ranNasRelCauseList = OpenAPI_list_create();
-        if (!ranNasRelCauseList) {
-            ogs_error("No ranNasRelCauseList");
-            goto end;
-        }
-
-        ranNasRelCause = ogs_calloc(1, sizeof(*ranNasRelCause));
-        if (!ranNasRelCause) {
-            ogs_error("No ranNasRelCause");
-            goto end;
-        }
-
-        if (sess->nsmf_param.ngap_cause.group) {
-            OpenAPI_ng_ap_cause_t *ngApCause = NULL;
-
-            ranNasRelCause->ng_ap_cause = ngApCause =
-                ogs_calloc(1, sizeof(*ngApCause));
-            if (!ranNasRelCause->ng_ap_cause) {
-                ogs_error("No ranNasRelCause->ng_ap_cause");
-                if (ranNasRelCause)
-                    ogs_free(ranNasRelCause);
+            ranNasRelCauseList = OpenAPI_list_create();
+            if (!ranNasRelCauseList) {
+                ogs_error("No ranNasRelCauseList");
                 goto end;
             }
 
-            ngApCause->group = sess->nsmf_param.ngap_cause.group;
-            ngApCause->value = sess->nsmf_param.ngap_cause.value;
-        }
+            ranNasRelCause = ogs_calloc(1, sizeof(*ranNasRelCause));
+            if (!ranNasRelCause) {
+                ogs_error("No ranNasRelCause");
+                goto end;
+            }
 
-        if (sess->nsmf_param.gmm_cause) {
+            if (param->ran_nas_release.ngap_cause.group) {
+                OpenAPI_ng_ap_cause_t *ngApCause = NULL;
+
+                ranNasRelCause->ng_ap_cause = ngApCause =
+                    ogs_calloc(1, sizeof(*ngApCause));
+                if (!ranNasRelCause->ng_ap_cause) {
+                    ogs_error("No ranNasRelCause->ng_ap_cause");
+                    if (ranNasRelCause)
+                        ogs_free(ranNasRelCause);
+                    goto end;
+                }
+
+                ngApCause->group = param->ran_nas_release.ngap_cause.group;
+                ngApCause->value = param->ran_nas_release.ngap_cause.value;
+            }
+
             ranNasRelCause->is__5g_mm_cause = true;
-            ranNasRelCause->_5g_mm_cause = sess->nsmf_param.gmm_cause;
-        }
-        if (sess->nsmf_param.gsm_cause) {
+            ranNasRelCause->_5g_mm_cause = param->ran_nas_release.gmm_cause;
             ranNasRelCause->is__5g_sm_cause = true;
-            ranNasRelCause->_5g_sm_cause = sess->nsmf_param.gsm_cause;
+            ranNasRelCause->_5g_sm_cause = param->ran_nas_release.gsm_cause;
+
+            OpenAPI_list_add(ranNasRelCauseList, ranNasRelCause);
         }
 
-        OpenAPI_list_add(ranNasRelCauseList, ranNasRelCause);
-    }
-
-    if (sess->nsmf_param.ue_location) {
-        ueLocation.nr_location = ogs_sbi_build_nr_location(
-                &sess->nr_tai, &sess->nr_cgi);
-        if (!ueLocation.nr_location) {
-            ogs_error("ueLocation.nr_location");
-            goto end;
-        }
-        if (sess->ue_location_timestamp)
+        if (param->ue_location) {
+            ueLocation.nr_location = ogs_sbi_build_nr_location(
+                    &sess->nr_tai, &sess->nr_cgi);
+            if (!ueLocation.nr_location) {
+                ogs_error("ueLocation.nr_location");
+                goto end;
+            }
             ueLocation.nr_location->ue_location_timestamp =
                 ogs_sbi_gmtime_string(sess->ue_location_timestamp);
+            if (!ueLocation.nr_location->ue_location_timestamp) {
+                ogs_error("ueLocation.nr_location->ue_location_timestamp");
+                goto end;
+            }
 
-        SmPolicyDeleteData.user_location_info = &ueLocation;
-    }
-    if (sess->nsmf_param.ue_timezone) {
-        SmPolicyDeleteData.ue_time_zone =
-            ogs_sbi_timezone_string(ogs_timezone());
-        if (!SmPolicyDeleteData.ue_time_zone) {
-            ogs_error("SmPolicyDeleteData.ue_time_zone");
-            goto end;
+            SmPolicyDeleteData.user_location_info = &ueLocation;
+        }
+        if (param->ue_timezone) {
+            SmPolicyDeleteData.ue_time_zone =
+                ogs_sbi_timezone_string(ogs_timezone());
+            if (!SmPolicyDeleteData.ue_time_zone) {
+                ogs_error("SmPolicyDeleteData.ue_time_zone");
+                goto end;
+            }
         }
     }
 

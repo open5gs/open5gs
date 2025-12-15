@@ -131,18 +131,15 @@ void sgwu_sxa_handle_session_establishment_request(
         ogs_assert(pdr);
 
         /* Setup TEID Hash */
-        if (pdr->f_teid_len) {
-            cause_value = ogs_pfcp_object_teid_hash_set(
+        if (pdr->f_teid_len)
+            ogs_pfcp_object_teid_hash_set(
                     OGS_PFCP_OBJ_PDR_TYPE, pdr, restoration_indication);
-            if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
-                goto cleanup;
-        }
     }
 
     /* Send Buffered Packet to gNB */
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
         if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) { /* Downlink */
-            ogs_pfcp_send_buffered_gtpu(pdr);
+            ogs_pfcp_send_buffered_packet(pdr);
         }
     }
 
@@ -198,14 +195,6 @@ void sgwu_sxa_handle_session_modification_request(
             break;
     }
     num_of_created_pdr = i;
-    if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
-        goto cleanup;
-
-    for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
-        if (ogs_pfcp_handle_update_pdr(&sess->pfcp, &req->update_pdr[i],
-                    &cause_value, &offending_ie_value) == NULL)
-            break;
-    }
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
@@ -311,18 +300,14 @@ void sgwu_sxa_handle_session_modification_request(
         ogs_assert(pdr);
 
         /* Setup TEID Hash */
-        if (pdr->f_teid_len) {
-            cause_value = ogs_pfcp_object_teid_hash_set(
-                    OGS_PFCP_OBJ_PDR_TYPE, pdr, false);
-            if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
-                goto cleanup;
-        }
+        if (pdr->f_teid_len)
+            ogs_pfcp_object_teid_hash_set(OGS_PFCP_OBJ_PDR_TYPE, pdr, false);
     }
 
     /* Send Buffered Packet to gNB */
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
         if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) { /* Downlink */
-            ogs_pfcp_send_buffered_gtpu(pdr);
+            ogs_pfcp_send_buffered_packet(pdr);
         }
     }
 
@@ -378,7 +363,7 @@ void sgwu_sxa_handle_session_report_response(
 
     ogs_pfcp_xact_commit(xact);
 
-    ogs_debug("Session report response");
+    ogs_debug("Session report resopnse");
 
     cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 

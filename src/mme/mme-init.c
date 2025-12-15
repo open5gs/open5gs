@@ -30,9 +30,7 @@
 #include "sgsap-path.h"
 #include "mme-gtp-path.h"
 #include "metrics.h"
-#include "metrics/prometheus/json_pager.h"
-#include "enb-info.h"
-#include "ue-info.h"
+#include "sbcap-path.h"
 
 static ogs_thread_t *thread;
 static void mme_main(void *data);
@@ -70,10 +68,6 @@ int mme_initialize(void)
 
     ogs_metrics_context_open(ogs_metrics_self());
 
-    /* dumpers /enb-info /ue-info */
-    ogs_metrics_register_custom_ep(mme_dump_enb_info, "/enb-info");
-    ogs_metrics_register_custom_ep(mme_dump_ue_info, "/ue-info");
-
     rv = mme_fd_init();
     if (rv != OGS_OK) return OGS_ERROR;
 
@@ -81,6 +75,9 @@ int mme_initialize(void)
     if (rv != OGS_OK) return OGS_ERROR;
 
     rv = sgsap_open();
+    if (rv != OGS_OK) return OGS_ERROR;
+
+    rv = sbcap_open();
     if (rv != OGS_OK) return OGS_ERROR;
 
     rv = s1ap_open();
@@ -105,7 +102,8 @@ void mme_terminate(void)
     mme_gtp_close();
     sgsap_close();
     s1ap_close();
-
+    sbcap_close();
+    
     ogs_metrics_context_close(ogs_metrics_self());
 
     mme_fd_final();
@@ -133,7 +131,7 @@ static void mme_main(void *data)
         /*
          * After ogs_pollset_poll(), ogs_timer_mgr_expire() must be called.
          *
-         * The reason is why ogs_timer_mgr_next() can get the current value
+         * The reason is why ogs_timer_mgr_next() can get the corrent value
          * when ogs_timer_stop() is called internally in ogs_timer_mgr_expire().
          *
          * You should not use event-queue before ogs_timer_mgr_expire().

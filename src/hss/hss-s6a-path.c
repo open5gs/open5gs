@@ -71,15 +71,15 @@ static int hss_ogs_diam_s6a_fb_cb(struct msg **msg, struct avp *avp,
 }
 
 /* Callback for incoming Authentication-Information-Request messages */
-static int hss_ogs_diam_s6a_air_cb(struct msg **msg, struct avp *avp,
+static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
     int ret;
-    struct msg *ans = NULL, *qry = NULL;
-    struct avp *avpch = NULL;
-    struct avp *avp_e_utran_vector = NULL, *avp_xres = NULL,
-               *avp_kasme = NULL, *avp_rand = NULL, *avp_autn = NULL;
-    struct avp_hdr *hdr = NULL;
+
+    struct msg *ans, *qry;
+    struct avp *avpch;
+    struct avp *avp_e_utran_vector, *avp_xres, *avp_kasme, *avp_rand, *avp_autn;
+    struct avp_hdr *hdr;
     union avp_value val;
 
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
@@ -92,169 +92,105 @@ static int hss_ogs_diam_s6a_air_cb(struct msg **msg, struct avp *avp,
     uint8_t xres[OGS_MAX_RES_LEN];
     uint8_t kasme[OGS_SHA256_DIGEST_SIZE];
     size_t xres_len = 8;
+
     uint8_t mac_s[OGS_MAC_S_LEN];
 
     ogs_dbi_auth_info_t auth_info;
     uint8_t zero[OGS_RAND_LEN];
     int rv;
     uint32_t result_code = 0;
+
     ogs_plmn_id_t visited_plmn_id;
-    int error_occurred = 0;
+
+    ogs_assert(msg);
 
     ogs_debug("Rx Authentication-Information-Request");
-
-    /* Validate input parameters */
-    if (!msg || !*msg) {
-        ogs_error("Invalid message pointer");
-        return EINVAL;
-    }
-
-    /* Initialize variables */
-    memset(imsi_bcd, 0, sizeof(imsi_bcd));
-    memset(&auth_info, 0, sizeof(auth_info));
-    memset(&visited_plmn_id, 0, sizeof(visited_plmn_id));
 
     /* Create answer header */
     qry = *msg;
     ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
-    if (ret != 0) {
-        ogs_error("Failed to create answer message");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
     ans = *msg;
 
-    /* Get User-Name AVP */
     ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
-    if (ret != 0) {
-        ogs_error("Failed to search User-Name AVP");
-        result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
-        goto out;
-    }
-
-    if (!avp) {
-        ogs_error("No User-Name AVP found");
-        result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
-        goto out;
-    }
-
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
-    if (ret != 0 || !hdr) {
-        ogs_error("Failed to get User-Name AVP header");
-        result_code = OGS_DIAM_INVALID_AVP_VALUE;
-        error_occurred = 1;
-        goto out;
-    }
-
+    ogs_assert(ret == 0);
     ogs_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data,
         ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN)+1);
 
-    /* Get authentication info from database */
     rv = hss_db_auth_info(imsi_bcd, &auth_info);
     if (rv != OGS_OK) {
-        ogs_warn("Failed to get auth info for IMSI: %s", imsi_bcd);
         result_code = OGS_DIAM_S6A_ERROR_USER_UNKNOWN;
-        error_occurred = 1;
         goto out;
     }
 
-    /* Generate RAND if not set */
     memset(zero, 0, sizeof(zero));
     if (memcmp(auth_info.rand, zero, OGS_RAND_LEN) == 0) {
         ogs_random(auth_info.rand, OGS_RAND_LEN);
     }
 
-    /* Calculate OPC */
     if (auth_info.use_opc)
         memcpy(opc, auth_info.opc, sizeof(opc));
     else
         milenage_opc(auth_info.k, auth_info.op, opc);
 
-    /* Check for re-synchronization */
     ret = fd_msg_search_avp(qry, ogs_diam_s6a_req_eutran_auth_info, &avp);
-    if (ret == 0 && avp) {
-        ret = fd_avp_search_avp(avp, ogs_diam_s6a_re_synchronization_info,
-                                &avpch);
-        if (ret == 0 && avpch) {
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_avp_search_avp(
+                avp, ogs_diam_s6a_re_synchronization_info, &avpch);
+        ogs_assert(ret == 0);
+        if (avpch) {
             ret = fd_msg_avp_hdr(avpch, &hdr);
-            if (ret == 0 && hdr) {
-                ogs_auc_sqn(opc, auth_info.k,
-                        hdr->avp_value->os.data,
-                        hdr->avp_value->os.data + OGS_RAND_LEN,
-                        sqn, mac_s);
-                if (memcmp(mac_s, hdr->avp_value->os.data +
-                            OGS_RAND_LEN + OGS_SQN_LEN, OGS_MAC_S_LEN) == 0) {
-                    ogs_random(auth_info.rand, OGS_RAND_LEN);
-                    auth_info.sqn = ogs_buffer_to_uint64(sqn, OGS_SQN_LEN);
-                    /* 33.102 C.3.4 Guide : IND + 1 */
-                    auth_info.sqn = (auth_info.sqn + 32 + 1) & OGS_MAX_SQN;
-                } else {
-                    ogs_error("Re-synch MAC failed for IMSI: %s", imsi_bcd);
-
-                    ogs_log_print(OGS_LOG_ERROR, "MAC_S: ");
-                    ogs_log_hexdump(OGS_LOG_ERROR, mac_s, OGS_MAC_S_LEN);
-                    ogs_log_hexdump(OGS_LOG_ERROR,
-                            (void*)(hdr->avp_value->os.data +
-                                OGS_RAND_LEN + OGS_SQN_LEN),
-                            OGS_MAC_S_LEN);
-                    ogs_log_print(OGS_LOG_ERROR, "SQN: ");
-                    ogs_log_hexdump(OGS_LOG_ERROR, sqn, OGS_SQN_LEN);
-
-                    result_code = OGS_DIAM_S6A_AUTHENTICATION_DATA_UNAVAILABLE;
-                    error_occurred = 1;
-                    goto out;
-                }
+            ogs_assert(ret == 0);
+            ogs_auc_sqn(opc, auth_info.k,
+                    hdr->avp_value->os.data,
+                    hdr->avp_value->os.data + OGS_RAND_LEN,
+                    sqn, mac_s);
+            if (memcmp(mac_s, hdr->avp_value->os.data +
+                        OGS_RAND_LEN + OGS_SQN_LEN, OGS_MAC_S_LEN) == 0) {
+                ogs_random(auth_info.rand, OGS_RAND_LEN);
+                auth_info.sqn = ogs_buffer_to_uint64(sqn, OGS_SQN_LEN);
+                /* 33.102 C.3.4 Guide : IND + 1 */
+                auth_info.sqn = (auth_info.sqn + 32 + 1) & OGS_MAX_SQN;
+            } else {
+                ogs_error("Re-synch MAC failed for IMSI:`%s`", imsi_bcd);
+                ogs_log_print(OGS_LOG_ERROR, "MAC_S: ");
+                ogs_log_hexdump(OGS_LOG_ERROR, mac_s, OGS_MAC_S_LEN);
+                ogs_log_hexdump(OGS_LOG_ERROR,
+                    (void*)(hdr->avp_value->os.data +
+                        OGS_RAND_LEN + OGS_SQN_LEN),
+                    OGS_MAC_S_LEN);
+                ogs_log_print(OGS_LOG_ERROR, "SQN: ");
+                ogs_log_hexdump(OGS_LOG_ERROR, sqn, OGS_SQN_LEN);
+                result_code = OGS_DIAM_S6A_AUTHENTICATION_DATA_UNAVAILABLE;
+                goto out;
             }
         }
     }
 
-    /* Update SQN in database */
     rv = hss_db_update_sqn(imsi_bcd, auth_info.rand, auth_info.sqn);
     if (rv != OGS_OK) {
-        ogs_error("Cannot update rand and sqn for IMSI: %s", imsi_bcd);
+        ogs_error("Cannot update rand and sqn for IMSI:'%s'", imsi_bcd);
         result_code = OGS_DIAM_S6A_AUTHENTICATION_DATA_UNAVAILABLE;
-        error_occurred = 1;
         goto out;
     }
 
     rv = hss_db_increment_sqn(imsi_bcd);
     if (rv != OGS_OK) {
-        ogs_error("Cannot increment sqn for IMSI: %s", imsi_bcd);
+        ogs_error("Cannot increment sqn for IMSI:'%s'", imsi_bcd);
         result_code = OGS_DIAM_S6A_AUTHENTICATION_DATA_UNAVAILABLE;
-        error_occurred = 1;
         goto out;
     }
 
-    /* Get Visited-PLMN-Id */
     ret = fd_msg_search_avp(qry, ogs_diam_visited_plmn_id, &avp);
-    if (ret != 0) {
-        ogs_error("Failed to search Visited-PLMN-Id AVP");
-        result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
-        goto out;
-    }
-
-    if (!avp) {
-        ogs_error("No Visited-PLMN-Id AVP found");
-        result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
-        goto out;
-    }
-
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
-    if (ret != 0 || !hdr) {
-        ogs_error("Failed to get Visited-PLMN-Id AVP header");
-        result_code = OGS_DIAM_INVALID_AVP_VALUE;
-        error_occurred = 1;
-        goto out;
-    }
-
+    ogs_assert(ret == 0);
     memcpy(&visited_plmn_id, hdr->avp_value->os.data,
             ogs_min(hdr->avp_value->os.len, sizeof(visited_plmn_id)));
 
-    /* Generate authentication vectors */
     milenage_generate(opc, auth_info.amf, auth_info.k,
         ogs_uint64_to_buffer(auth_info.sqn, OGS_SQN_LEN, sqn), auth_info.rand,
         autn, ik, ck, ak, xres, &xres_len);
@@ -262,213 +198,105 @@ static int hss_ogs_diam_s6a_air_cb(struct msg **msg, struct avp *avp,
 
     /* Set the Authentication-Info */
     ret = fd_msg_avp_new(ogs_diam_s6a_authentication_info, 0, &avp);
-    if (ret != 0) {
-        ogs_error("Failed to create Authentication-Info AVP");
-        error_occurred = 1;
-        goto out;
-    }
-
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_new(ogs_diam_s6a_e_utran_vector, 0, &avp_e_utran_vector);
-    if (ret != 0) {
-        ogs_error("Failed to create E-UTRAN-Vector AVP");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
 
-    /* Add RAND */
     ret = fd_msg_avp_new(ogs_diam_s6a_rand, 0, &avp_rand);
-    if (ret != 0) {
-        ogs_error("Failed to create RAND AVP");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
     val.os.data = auth_info.rand;
     val.os.len = OGS_KEY_LEN;
     ret = fd_msg_avp_setvalue(avp_rand, &val);
-    if (ret != 0) {
-        ogs_error("Failed to set RAND value");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_add(avp_e_utran_vector, MSG_BRW_LAST_CHILD, avp_rand);
-    if (ret != 0) {
-        ogs_error("Failed to add RAND AVP");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
 
-    /* Add XRES */
     ret = fd_msg_avp_new(ogs_diam_s6a_xres, 0, &avp_xres);
-    if (ret != 0) {
-        ogs_error("Failed to create XRES AVP");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
     val.os.data = xres;
     val.os.len = xres_len;
     ret = fd_msg_avp_setvalue(avp_xres, &val);
-    if (ret != 0) {
-        ogs_error("Failed to set XRES value");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_add(avp_e_utran_vector, MSG_BRW_LAST_CHILD, avp_xres);
-    if (ret != 0) {
-        ogs_error("Failed to add XRES AVP");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
 
-    /* Add AUTN */
     ret = fd_msg_avp_new(ogs_diam_s6a_autn, 0, &avp_autn);
-    if (ret != 0) {
-        ogs_error("Failed to create AUTN AVP");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
     val.os.data = autn;
     val.os.len = OGS_AUTN_LEN;
     ret = fd_msg_avp_setvalue(avp_autn, &val);
-    if (ret != 0) {
-        ogs_error("Failed to set AUTN value");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_add(avp_e_utran_vector, MSG_BRW_LAST_CHILD, avp_autn);
-    if (ret != 0) {
-        ogs_error("Failed to add AUTN AVP");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
 
-    /* Add KASME */
     ret = fd_msg_avp_new(ogs_diam_s6a_kasme, 0, &avp_kasme);
-    if (ret != 0) {
-        ogs_error("Failed to create KASME AVP");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
     val.os.data = kasme;
     val.os.len = OGS_SHA256_DIGEST_SIZE;
     ret = fd_msg_avp_setvalue(avp_kasme, &val);
-    if (ret != 0) {
-        ogs_error("Failed to set KASME value");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_add(avp_e_utran_vector, MSG_BRW_LAST_CHILD, avp_kasme);
-    if (ret != 0) {
-        ogs_error("Failed to add KASME AVP");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
 
-    /* Add E-UTRAN-Vector to Authentication-Info */
     ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_e_utran_vector);
-    if (ret != 0) {
-        ogs_error("Failed to add E-UTRAN-Vector AVP");
-        error_occurred = 1;
-        goto out;
-    }
-
-    /* Add Authentication-Info to answer */
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    if (ret != 0) {
-        ogs_error("Failed to add Authentication-Info AVP");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
 
-    if (!error_occurred) {
-        /* Set success result code */
-        ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
-        if (ret != 0) {
-            ogs_error("Failed to set success result code");
-            error_occurred = 1;
-            goto out;
-        }
+    /* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
+    ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
+    ogs_assert(ret == 0);
 
-        /* Set the Auth-Session-State AVP */
-        ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
-        if (ret != 0) {
-            ogs_error("Failed to create Auth-Session-State AVP");
-            error_occurred = 1;
-            goto out;
-        }
-        val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
-        ret = fd_msg_avp_setvalue(avp, &val);
-        if (ret != 0) {
-            ogs_error("Failed to set Auth-Session-State value");
-            error_occurred = 1;
-            goto out;
-        }
-        ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-        if (ret != 0) {
-            ogs_error("Failed to add Auth-Session-State AVP");
-            error_occurred = 1;
-            goto out;
-        }
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
 
-        /* Set Vendor-Specific-Application-Id AVP */
-        ret = ogs_diam_message_vendor_specific_appid_set(
-                ans, OGS_DIAM_S6A_APPLICATION_ID);
-        if (ret != 0) {
-            ogs_error("Failed to set Vendor-Specific-Application-Id");
-            error_occurred = 1;
-            goto out;
-        }
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
 
-        /* Send the answer */
-        ret = fd_msg_send(msg, NULL, NULL);
-        if (ret != 0) {
-            ogs_error("Failed to send message");
-            error_occurred = 1;
-            goto out;
-        }
+    /* Send the answer */
+    ret = fd_msg_send(msg, NULL, NULL);
+    ogs_assert(ret == 0);
 
-        ogs_debug("Tx Authentication-Information-Answer");
+    ogs_debug("Tx Authentication-Information-Answer");
 
-        /* Add to stats */
-        OGS_DIAM_STATS_MTX(
-            OGS_DIAM_STATS_INC(nb_echoed);
-            HSS_DIAM_PRIV_STATS_INC(s6a.rx_air);
-            HSS_DIAM_PRIV_STATS_INC(s6a.tx_aia);
-        )
+    /* Add this value to the stats */
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_echoed);
+        HSS_DIAM_PRIV_STATS_INC(s6a.rx_air);
+        HSS_DIAM_PRIV_STATS_INC(s6a.tx_aia);
+    )
 
-        return 0;
-    }
+    return 0;
 
 out:
-    /* Error handling */
-    if (ans) {
-        if (result_code != 0) {
-            ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
-            if (ret != 0) {
-                ogs_error("Failed to set experimental result code");
-            }
-        }
+    ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
+    ogs_assert(ret == 0);
 
-        /* Set the Auth-Session-State AVP */
-        ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
-        if (ret == 0) {
-            val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
-            ret = fd_msg_avp_setvalue(avp, &val);
-            if (ret == 0) {
-                ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-            }
-        }
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
 
-        /* Set Vendor-Specific-Application-Id AVP */
-        ret = ogs_diam_message_vendor_specific_appid_set(
-                ans, OGS_DIAM_S6A_APPLICATION_ID);
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
 
-        ret = fd_msg_send(msg, NULL, NULL);
-        if (ret != 0) {
-            ogs_error("Failed to send error response");
-        }
-    }
+    ret = fd_msg_send(msg, NULL, NULL);
+    ogs_assert(ret == 0);
 
-    /* Update error stats */
     OGS_DIAM_STATS_MTX(
         HSS_DIAM_PRIV_STATS_INC(s6a.rx_air);
         HSS_DIAM_PRIV_STATS_INC(s6a.rx_air_error);
@@ -929,161 +757,104 @@ static int hss_s6a_avp_add_subscription_data(
 }
 
 /* Callback for incoming Update-Location-Request messages */
-static int hss_ogs_diam_s6a_ulr_cb(struct msg **msg, struct avp *avp,
+static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
     int ret;
-    struct msg *ans = NULL, *qry = NULL;
-    struct avp_hdr *hdr = NULL;
-    struct avp *avpch1 = NULL;
+    struct msg *ans, *qry;
+
+    struct avp_hdr *hdr;
+    struct avp *avpch1;
     union avp_value val;
 
     char *imsi_bcd = NULL;
     char imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
+
     char *mme_host = NULL;
     char *mme_realm = NULL;
 
     int rv;
     uint32_t result_code = 0;
     ogs_subscription_data_t subscription_data;
+
     ogs_plmn_id_t visited_plmn_id;
-    int error_occurred = 0;
+
+    ogs_assert(msg);
 
     ogs_debug("Rx Update-Location-Request");
 
-    /* Validate input parameters */
-    if (!msg || !*msg) {
-        ogs_error("Invalid message pointer");
-        return EINVAL;
-    }
-
-    /* Initialize variables */
     memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
-    memset(imeisv_bcd, 0, sizeof(imeisv_bcd));
-    memset(&visited_plmn_id, 0, sizeof(visited_plmn_id));
 
     /* Create answer header */
     qry = *msg;
     ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
-    if (ret != 0) {
-        ogs_error("Failed to create answer message");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
     ans = *msg;
 
     /* Get User-Name AVP */
     ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
-    if (ret != 0) {
-        ogs_error("Failed to search User-Name AVP");
-        result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
-        goto out;
-    }
-
+    ogs_assert(ret == 0);
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        if (ret != 0 || !hdr) {
-            ogs_error("Failed to get User-Name AVP header");
-            result_code = OGS_DIAM_INVALID_AVP_VALUE;
-            error_occurred = 1;
-            goto out;
-        }
+        ogs_assert(ret == 0);
 
         imsi_bcd = ogs_strndup(
             (char*)hdr->avp_value->os.data,
             ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN) + 1);
-        if (!imsi_bcd) {
-            ogs_error("Failed to duplicate IMSI");
-            result_code = OGS_DIAM_INVALID_AVP_VALUE;
-            error_occurred = 1;
-            goto out;
-        }
+        ogs_assert(imsi_bcd);
     } else {
-        ogs_error("No User-Name AVP found");
+        ogs_error("no_User-Name");
         result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
         goto out;
     }
 
-    /* Get subscription data from database */
     rv = hss_db_subscription_data(imsi_bcd, &subscription_data);
     if (rv != OGS_OK) {
-        ogs_error("Cannot get Subscription-Data for IMSI: %s", imsi_bcd);
+        ogs_error("Cannot get Subscription-Data for IMSI:'%s'", imsi_bcd);
         result_code = OGS_DIAM_S6A_ERROR_USER_UNKNOWN;
-        error_occurred = 1;
         goto out;
     }
 
     /* Get Origin-Host */
     ret = fd_msg_search_avp(qry, ogs_diam_origin_host, &avp);
-    if (ret != 0) {
-        ogs_error("Failed to search Origin-Host AVP");
-        result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
-        goto out;
-    }
-
+    ogs_assert(ret == 0);
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        if (ret != 0 || !hdr) {
-            ogs_error("Failed to get Origin-Host AVP header");
-            result_code = OGS_DIAM_INVALID_AVP_VALUE;
-            error_occurred = 1;
-            goto out;
-        }
+        ogs_assert(ret == 0);
 
         mme_host = ogs_strndup(
             (char*)hdr->avp_value->os.data,
             ogs_min(hdr->avp_value->os.len, OGS_MAX_FQDN_LEN) + 1);
-        if (!mme_host) {
-            ogs_error("Failed to duplicate MME host");
-            result_code = OGS_DIAM_INVALID_AVP_VALUE;
-            error_occurred = 1;
-            goto out;
-        }
+        ogs_assert(mme_host);
     } else {
-        ogs_error("No Origin-Host AVP found");
+        ogs_error("no_Origin-Host");
         result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
         goto out;
     }
 
     /* Get Origin-Realm */
     ret = fd_msg_search_avp(qry, ogs_diam_origin_realm, &avp);
-    if (ret != 0) {
-        ogs_error("Failed to search Origin-Realm AVP");
-        result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
-        goto out;
-    }
-
+    ogs_assert(ret == 0);
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        if (ret != 0 || !hdr) {
-            ogs_error("Failed to get Origin-Realm AVP header");
-            result_code = OGS_DIAM_INVALID_AVP_VALUE;
-            error_occurred = 1;
-            goto out;
-        }
+        ogs_assert(ret == 0);
 
         mme_realm = ogs_strndup(
             (char*)hdr->avp_value->os.data,
             ogs_min(hdr->avp_value->os.len, OGS_MAX_FQDN_LEN) + 1);
-        if (!mme_realm) {
-            ogs_error("Failed to duplicate MME realm");
-            result_code = OGS_DIAM_INVALID_AVP_VALUE;
-            error_occurred = 1;
-            goto out;
-        }
+        ogs_assert(mme_realm);
     } else {
-        ogs_error("No Origin-Realm AVP found");
+        ogs_error("no_Origin-Realm");
         result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
         goto out;
     }
 
-    /* Check if CLR needs to be sent to previous MME */
+    ogs_assert(mme_host);
+    ogs_assert(mme_realm);
+
+    /* If UE is not purged at MME, determine if the MME sending the ULR
+     * is different from the one that was last used.  if so, send CLR.
+     */
     if (subscription_data.mme_host != NULL &&
             subscription_data.mme_realm != NULL) {
         if (!subscription_data.purge_flag) {
@@ -1099,412 +870,250 @@ static int hss_ogs_diam_s6a_ulr_cb(struct msg **msg, struct avp *avp,
     }
 
     /* Update database with current MME and timestamp */
-    rv = hss_db_update_mme(imsi_bcd, mme_host, mme_realm, false);
-    if (rv != OGS_OK) {
-        ogs_error("Failed to update MME info for IMSI: %s", imsi_bcd);
-        result_code = OGS_DIAM_UNABLE_TO_DELIVER;
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(OGS_OK == hss_db_update_mme(imsi_bcd, mme_host, mme_realm,
+        false));
 
-    /* Process Terminal-Information if present */
     ret = fd_msg_search_avp(qry, ogs_diam_s6a_terminal_information, &avp);
-    if (ret == 0 && avp) {
+    ogs_assert(ret == 0);
+    if (avp) {
         char *p, *last;
 
         p = imeisv_bcd;
         last = imeisv_bcd + OGS_MAX_IMEISV_BCD_LEN + 1;
 
         ret = fd_avp_search_avp(avp, ogs_diam_s6a_imei, &avpch1);
-        if (ret == 0 && avpch1) {
+        ogs_assert(ret == 0);
+        if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
-            if (ret == 0 && hdr && hdr->avp_value->os.len) {
-                char *s = ogs_strndup(
+            ogs_assert(ret == 0);
+            if (hdr->avp_value->os.len) {
+                char *s = NULL;
+
+                ogs_assert(hdr->avp_value->os.data);
+                s = ogs_strndup(
                         (const char *)hdr->avp_value->os.data,
                         hdr->avp_value->os.len);
-                if (s) {
-                    p = ogs_slprintf(p, last, "%s", s);
-                    ogs_free(s);
-                }
+                ogs_assert(s);
+                p = ogs_slprintf(p, last, "%s", s);
+
+                ogs_free(s);
             }
         }
 
         ret = fd_avp_search_avp(avp, ogs_diam_s6a_software_version, &avpch1);
-        if (ret == 0 && avpch1) {
+        ogs_assert(ret == 0);
+        if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
-            if (ret == 0 && hdr && hdr->avp_value->os.len) {
-                char *s = ogs_strndup(
+            ogs_assert(ret == 0);
+            if (hdr->avp_value->os.len) {
+                char *s = NULL;
+
+                ogs_assert(hdr->avp_value->os.data);
+                s = ogs_strndup(
                         (const char *)hdr->avp_value->os.data,
                         hdr->avp_value->os.len);
-                if (s) {
-                    p = ogs_slprintf(p, last, "%s", s);
-                    ogs_free(s);
-                }
+                ogs_assert(s);
+                p = ogs_slprintf(p, last, "%s", s);
+
+                ogs_free(s);
             }
         }
 
-        if (strlen(imeisv_bcd) > 0) {
-            rv = hss_db_update_imeisv(imsi_bcd, imeisv_bcd);
-            if (rv != OGS_OK) {
-                ogs_warn("Failed to update IMEISV for IMSI: %s", imsi_bcd);
-            }
-        }
+        ogs_assert(OGS_OK == hss_db_update_imeisv(imsi_bcd, imeisv_bcd));
     }
 
-    /* Get Visited-PLMN-Id */
     ret = fd_msg_search_avp(qry, ogs_diam_visited_plmn_id, &avp);
-    if (ret != 0) {
-        ogs_error("Failed to search Visited-PLMN-Id AVP");
-        result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+    memcpy(&visited_plmn_id, hdr->avp_value->os.data,
+            ogs_min(hdr->avp_value->os.len, sizeof(visited_plmn_id)));
 
-    if (avp) {
-        ret = fd_msg_avp_hdr(avp, &hdr);
-        if (ret != 0 || !hdr) {
-            ogs_error("Failed to get Visited-PLMN-Id AVP header");
-            result_code = OGS_DIAM_INVALID_AVP_VALUE;
-            error_occurred = 1;
-            goto out;
-        }
-        memcpy(&visited_plmn_id, hdr->avp_value->os.data,
-                ogs_min(hdr->avp_value->os.len, sizeof(visited_plmn_id)));
-    }
-
-    /* Check ULR-Flags */
     ret = fd_msg_search_avp(qry, ogs_diam_s6a_ulr_flags, &avp);
-    if (ret != 0) {
-        ogs_error("Failed to search ULR-Flags AVP");
-        result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
-        goto out;
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+    if (!(hdr->avp_value->u32 & OGS_DIAM_S6A_ULR_SKIP_SUBSCRIBER_DATA)) {
+        /* Set the Subscription Data */
+        ret = fd_msg_avp_new(ogs_diam_s6a_subscription_data, 0, &avp);
+        ogs_assert(ret == 0);
+        rv = hss_s6a_avp_add_subscription_data(&subscription_data,
+            avp, OGS_DIAM_S6A_SUBDATA_ALL);
+        if (rv != OGS_OK) {
+            result_code = OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION;
+            goto out;
+        }
+        ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);
     }
 
-    if (avp) {
-        ret = fd_msg_avp_hdr(avp, &hdr);
-        if (ret != 0 || !hdr) {
-            ogs_error("Failed to get ULR-Flags AVP header");
-            result_code = OGS_DIAM_INVALID_AVP_VALUE;
-            error_occurred = 1;
-            goto out;
-        }
+    /* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
+    ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
+    ogs_assert(ret == 0);
 
-        if (!(hdr->avp_value->u32 & OGS_DIAM_S6A_ULR_SKIP_SUBSCRIBER_DATA)) {
-            /* Set the Subscription Data */
-            ret = fd_msg_avp_new(ogs_diam_s6a_subscription_data, 0, &avp);
-            if (ret != 0) {
-                ogs_error("Failed to create Subscription-Data AVP");
-                error_occurred = 1;
-                goto out;
-            }
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
 
-            rv = hss_s6a_avp_add_subscription_data(&subscription_data,
-                avp, OGS_DIAM_S6A_SUBDATA_ALL);
-            if (rv != OGS_OK) {
-                ogs_error("Failed to add subscription data");
-                result_code = OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION;
-                error_occurred = 1;
-                goto out;
-            }
+    /* Set the ULA Flags */
+    ret = fd_msg_avp_new(ogs_diam_s6a_ula_flags, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_S6A_ULA_FLAGS_MME_REGISTERED_FOR_SMS;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
 
-            ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-            if (ret != 0) {
-                ogs_error("Failed to add Subscription-Data AVP");
-                error_occurred = 1;
-                goto out;
-            }
-        }
-    }
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
 
-    if (!error_occurred) {
-        /* Set success result code */
-        ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
-        if (ret != 0) {
-            ogs_error("Failed to set success result code");
-            error_occurred = 1;
-            goto out;
-        }
+    /*
+     * AVP 628 Supported-Features
+     *     AVP 629 Feature-List-ID: 1
+     *         AVP 630 Feature-List: (misc subscriber restrictions)
+     */
+    ret = fd_msg_avp_new(ogs_diam_s6a_supported_features, 0, &avp);
+    ogs_assert(ret == 0);
 
-        /* Set the Auth-Session-State AVP */
-        ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
-        if (ret != 0) {
-            ogs_error("Failed to create Auth-Session-State AVP");
-            error_occurred = 1;
-            goto out;
-        }
-        val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
-        ret = fd_msg_avp_setvalue(avp, &val);
-        if (ret != 0) {
-            ogs_error("Failed to set Auth-Session-State value");
-            error_occurred = 1;
-            goto out;
-        }
-        ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-        if (ret != 0) {
-            ogs_error("Failed to add Auth-Session-State AVP");
-            error_occurred = 1;
-            goto out;
-        }
+    ret = fd_msg_avp_new(ogs_diam_vendor_id, 0, &avpch1);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_3GPP_VENDOR_ID;
+    ret = fd_msg_avp_setvalue (avpch1, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    ogs_assert(ret == 0);
 
-        /* Set the ULA Flags */
-        ret = fd_msg_avp_new(ogs_diam_s6a_ula_flags, 0, &avp);
-        if (ret != 0) {
-            ogs_error("Failed to create ULA-Flags AVP");
-            error_occurred = 1;
-            goto out;
-        }
-        val.i32 = OGS_DIAM_S6A_ULA_FLAGS_MME_REGISTERED_FOR_SMS;
-        ret = fd_msg_avp_setvalue(avp, &val);
-        if (ret != 0) {
-            ogs_error("Failed to set ULA-Flags value");
-            error_occurred = 1;
-            goto out;
-        }
-        ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-        if (ret != 0) {
-            ogs_error("Failed to add ULA-Flags AVP");
-            error_occurred = 1;
-            goto out;
-        }
+    ret = fd_msg_avp_new(ogs_diam_s6a_feature_list_id, 0, &avpch1);
+    ogs_assert(ret == 0);
+    val.i32 = 1;
+    ret = fd_msg_avp_setvalue (avpch1, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    ogs_assert(ret == 0);
 
-        /* Set Vendor-Specific-Application-Id AVP */
-        ret = ogs_diam_message_vendor_specific_appid_set(
-                ans, OGS_DIAM_S6A_APPLICATION_ID);
-        if (ret != 0) {
-            ogs_error("Failed to set Vendor-Specific-Application-Id");
-            error_occurred = 1;
-            goto out;
-        }
+    ret = fd_msg_avp_new(ogs_diam_s6a_feature_list, 0, &avpch1);
+    ogs_assert(ret == 0);
+    val.u32 = 0x0000000b;
+    ret = fd_msg_avp_setvalue (avpch1, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    ogs_assert(ret == 0);
 
-        /* Set Supported-Features (Feature-List-ID: 1) */
-        ret = fd_msg_avp_new(ogs_diam_s6a_supported_features, 0, &avp);
-        if (ret != 0) {
-            ogs_error("Failed to create Supported-Features AVP");
-            error_occurred = 1;
-            goto out;
-        }
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
 
-        ret = fd_msg_avp_new(ogs_diam_vendor_id, 0, &avpch1);
-        if (ret != 0) {
-            ogs_error("Failed to create Vendor-Id AVP");
-            error_occurred = 1;
-            goto out;
-        }
-        val.i32 = OGS_3GPP_VENDOR_ID;
-        ret = fd_msg_avp_setvalue(avpch1, &val);
-        if (ret != 0) {
-            ogs_error("Failed to set Vendor-Id value");
-            error_occurred = 1;
-            goto out;
-        }
-        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
-        if (ret != 0) {
-            ogs_error("Failed to add Vendor-Id AVP");
-            error_occurred = 1;
-            goto out;
-        }
+    /*
+     * AVP 628 Supported-Features
+     *     AVP 629 Feature-List-ID: 2
+     *         AVP 630 Feature-List: (“NR as Secondary RAT: Supported”)
+     */
+    ret = fd_msg_avp_new(ogs_diam_s6a_supported_features, 0, &avp);
+    ogs_assert(ret == 0);
 
-        ret = fd_msg_avp_new(ogs_diam_s6a_feature_list_id, 0, &avpch1);
-        if (ret != 0) {
-            ogs_error("Failed to create Feature-List-ID AVP");
-            error_occurred = 1;
-            goto out;
-        }
-        val.i32 = 1;
-        ret = fd_msg_avp_setvalue(avpch1, &val);
-        if (ret != 0) {
-            ogs_error("Failed to set Feature-List-ID value");
-            error_occurred = 1;
-            goto out;
-        }
-        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
-        if (ret != 0) {
-            ogs_error("Failed to add Feature-List-ID AVP");
-            error_occurred = 1;
-            goto out;
-        }
+    ret = fd_msg_avp_new(ogs_diam_vendor_id, 0, &avpch1);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_3GPP_VENDOR_ID;
+    ret = fd_msg_avp_setvalue (avpch1, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    ogs_assert(ret == 0);
 
-        ret = fd_msg_avp_new(ogs_diam_s6a_feature_list, 0, &avpch1);
-        if (ret != 0) {
-            ogs_error("Failed to create Feature-List AVP");
-            error_occurred = 1;
-            goto out;
-        }
-        val.u32 = 0x0000000b;
-        ret = fd_msg_avp_setvalue(avpch1, &val);
-        if (ret != 0) {
-            ogs_error("Failed to set Feature-List value");
-            error_occurred = 1;
-            goto out;
-        }
-        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
-        if (ret != 0) {
-            ogs_error("Failed to add Feature-List AVP");
-            error_occurred = 1;
-            goto out;
-        }
+    ret = fd_msg_avp_new(ogs_diam_s6a_feature_list_id, 0, &avpch1);
+    ogs_assert(ret == 0);
+    val.i32 = 2;
+    ret = fd_msg_avp_setvalue (avpch1, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    ogs_assert(ret == 0);
 
-        ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-        if (ret != 0) {
-            ogs_error("Failed to add Supported-Features AVP");
-            error_occurred = 1;
-            goto out;
-        }
+    ret = fd_msg_avp_new(ogs_diam_s6a_feature_list, 0, &avpch1);
+    ogs_assert(ret == 0);
+    val.u32 = 0x08000001;
+    ret = fd_msg_avp_setvalue (avpch1, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    ogs_assert(ret == 0);
 
-        /* Set Supported-Features (Feature-List-ID: 2) */
-        ret = fd_msg_avp_new(ogs_diam_s6a_supported_features, 0, &avp);
-        if (ret != 0) {
-            ogs_error("Failed to create second Supported-Features AVP");
-            error_occurred = 1;
-            goto out;
-        }
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
 
-        ret = fd_msg_avp_new(ogs_diam_vendor_id, 0, &avpch1);
-        if (ret != 0) {
-            ogs_error("Failed to create second Vendor-Id AVP");
-            error_occurred = 1;
-            goto out;
-        }
-        val.i32 = OGS_3GPP_VENDOR_ID;
-        ret = fd_msg_avp_setvalue(avpch1, &val);
-        if (ret != 0) {
-            ogs_error("Failed to set second Vendor-Id value");
-            error_occurred = 1;
-            goto out;
-        }
-        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
-        if (ret != 0) {
-            ogs_error("Failed to add second Vendor-Id AVP");
-            error_occurred = 1;
-            goto out;
-        }
+    /* Send the answer */
+    ret = fd_msg_send(msg, NULL, NULL);
+    ogs_assert(ret == 0);
 
-        ret = fd_msg_avp_new(ogs_diam_s6a_feature_list_id, 0, &avpch1);
-        if (ret != 0) {
-            ogs_error("Failed to create second Feature-List-ID AVP");
-            error_occurred = 1;
-            goto out;
-        }
-        val.i32 = 2;
-        ret = fd_msg_avp_setvalue(avpch1, &val);
-        if (ret != 0) {
-            ogs_error("Failed to set second Feature-List-ID value");
-            error_occurred = 1;
-            goto out;
-        }
-        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
-        if (ret != 0) {
-            ogs_error("Failed to add second Feature-List-ID AVP");
-            error_occurred = 1;
-            goto out;
-        }
+    ogs_debug("Tx Update-Location-Answer");
 
-        ret = fd_msg_avp_new(ogs_diam_s6a_feature_list, 0, &avpch1);
-        if (ret != 0) {
-            ogs_error("Failed to create second Feature-List AVP");
-            error_occurred = 1;
-            goto out;
-        }
-        val.u32 = 0x08000001;
-        ret = fd_msg_avp_setvalue(avpch1, &val);
-        if (ret != 0) {
-            ogs_error("Failed to set second Feature-List value");
-            error_occurred = 1;
-            goto out;
-        }
-        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
-        if (ret != 0) {
-            ogs_error("Failed to add second Feature-List AVP");
-            error_occurred = 1;
-            goto out;
-        }
+    /* Add this value to the stats */
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_echoed);
+        HSS_DIAM_PRIV_STATS_INC(s6a.rx_ulr);
+        HSS_DIAM_PRIV_STATS_INC(s6a.tx_ula);
+    )
 
-        ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-        if (ret != 0) {
-            ogs_error("Failed to add second Supported-Features AVP");
-            error_occurred = 1;
-            goto out;
-        }
+    ogs_subscription_data_free(&subscription_data);
 
-        /* Send the answer */
-        ret = fd_msg_send(msg, NULL, NULL);
-        if (ret != 0) {
-            ogs_error("Failed to send message");
-            error_occurred = 1;
-            goto out;
-        }
+    if (imsi_bcd)
+        ogs_free(imsi_bcd);
+    if (mme_host)
+        ogs_free(mme_host);
+    if (mme_realm)
+        ogs_free(mme_realm);
 
-        ogs_debug("Tx Update-Location-Answer");
-
-        /* Add to stats */
-        OGS_DIAM_STATS_MTX(
-            OGS_DIAM_STATS_INC(nb_echoed);
-            HSS_DIAM_PRIV_STATS_INC(s6a.rx_ulr);
-            HSS_DIAM_PRIV_STATS_INC(s6a.tx_ula);
-        )
-
-        /* Cleanup resources */
-        ogs_subscription_data_free(&subscription_data);
-        if (imsi_bcd) ogs_free(imsi_bcd);
-        if (mme_host) ogs_free(mme_host);
-        if (mme_realm) ogs_free(mme_realm);
-
-        return 0;
-    }
+    return 0;
 
 out:
-    /* Error handling */
-    if (ans) {
-        if (result_code != 0) {
-            ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
-            if (ret != 0) {
-                ogs_error("Failed to set experimental result code");
-            }
-        }
+    ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
+    ogs_assert(ret == 0);
 
-        /* Set the Auth-Session-State AVP */
-        ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
-        if (ret == 0) {
-            val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
-            ret = fd_msg_avp_setvalue(avp, &val);
-            if (ret == 0) {
-                ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-            }
-        }
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
 
-        /* Set Vendor-Specific-Application-Id AVP */
-        ret = ogs_diam_message_vendor_specific_appid_set(
-                ans, OGS_DIAM_S6A_APPLICATION_ID);
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
 
-        ret = fd_msg_send(msg, NULL, NULL);
-        if (ret != 0) {
-            ogs_error("Failed to send error response");
-        }
-    }
+    ret = fd_msg_send(msg, NULL, NULL);
+    ogs_assert(ret == 0);
 
-    /* Update error stats */
     OGS_DIAM_STATS_MTX(
         HSS_DIAM_PRIV_STATS_INC(s6a.rx_ulr);
         HSS_DIAM_PRIV_STATS_INC(s6a.rx_ulr_error);
     )
 
-    /* Cleanup resources */
     ogs_subscription_data_free(&subscription_data);
-    if (imsi_bcd) ogs_free(imsi_bcd);
-    if (mme_host) ogs_free(mme_host);
-    if (mme_realm) ogs_free(mme_realm);
+
+    if (imsi_bcd)
+        ogs_free(imsi_bcd);
+    if (mme_host)
+        ogs_free(mme_host);
+    if (mme_realm)
+        ogs_free(mme_realm);
 
     return 0;
 }
 
 /* Callback for incoming Purge-UE-Request messages */
-static int hss_ogs_diam_s6a_pur_cb(struct msg **msg, struct avp *avp,
+static int hss_ogs_diam_s6a_pur_cb( struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
     int ret, rv;
-    struct msg *ans = NULL, *qry = NULL;
-    struct avp_hdr *hdr = NULL;
+
+    struct msg *ans, *qry;
+    struct avp_hdr *hdr;
     union avp_value val;
 
     ogs_subscription_data_t subscription_data;
@@ -1514,267 +1123,129 @@ static int hss_ogs_diam_s6a_pur_cb(struct msg **msg, struct avp *avp,
     char mme_realm[OGS_MAX_FQDN_LEN+1];
 
     uint32_t result_code = 0;
-    int error_occurred = 0;
-    int use_experimental_code = 1;
+
+    ogs_assert(msg);
 
     ogs_debug("Rx Purge-UE-Request");
 
-    /* Validate input parameters */
-    if (!msg || !*msg) {
-        ogs_error("Invalid message pointer");
-        return EINVAL;
-    }
-
-    /* Initialize variables */
     memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
-    memset(imsi_bcd, 0, sizeof(imsi_bcd));
-    memset(mme_host, 0, sizeof(mme_host));
-    memset(mme_realm, 0, sizeof(mme_realm));
 
     /* Create answer header */
     qry = *msg;
     ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
-    if (ret != 0) {
-        ogs_error("Failed to create answer message");
-        error_occurred = 1;
-        goto out;
-    }
+    ogs_assert(ret == 0);
     ans = *msg;
 
-    /* Get User-Name AVP */
     ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
-    if (ret != 0) {
-        ogs_error("Failed to search User-Name AVP");
-        result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
-        goto out;
-    }
-
-    if (!avp) {
-        ogs_error("No User-Name AVP found");
-        result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
-        goto out;
-    }
-
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
-    if (ret != 0 || !hdr) {
-        ogs_error("Failed to get User-Name AVP header");
-        result_code = OGS_DIAM_INVALID_AVP_VALUE;
-        error_occurred = 1;
-        goto out;
-    }
-
+    ogs_assert(ret == 0);
     ogs_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data,
         ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN)+1);
 
-    /* Get subscription data from database */
     rv = hss_db_subscription_data(imsi_bcd, &subscription_data);
     if (rv != OGS_OK) {
-        ogs_error("Cannot get Subscription-Data for IMSI: %s", imsi_bcd);
+        ogs_error("Cannot get Subscription-Data for IMSI:'%s'", imsi_bcd);
         result_code = OGS_DIAM_S6A_ERROR_USER_UNKNOWN;
-        error_occurred = 1;
         goto out;
     }
 
-    /* Get Origin-Host */
     ret = fd_msg_search_avp(qry, ogs_diam_origin_host, &avp);
-    if (ret != 0) {
-        ogs_error("Failed to search Origin-Host AVP");
-        result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
-        goto out;
-    }
-
-    if (!avp) {
-        ogs_error("No Origin-Host AVP found");
-        result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
-        goto out;
-    }
-
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
-    if (ret != 0 || !hdr) {
-        ogs_error("Failed to get Origin-Host AVP header");
-        result_code = OGS_DIAM_INVALID_AVP_VALUE;
-        error_occurred = 1;
-        goto out;
-    }
-
+    ogs_assert(ret == 0);
     ogs_cpystrn(mme_host, (char*)hdr->avp_value->os.data,
         ogs_min(hdr->avp_value->os.len, OGS_MAX_FQDN_LEN)+1);
 
-    /* Get Origin-Realm */
     ret = fd_msg_search_avp(qry, ogs_diam_origin_realm, &avp);
-    if (ret != 0) {
-        ogs_error("Failed to search Origin-Realm AVP");
-        result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
-        goto out;
-    }
-
-    if (!avp) {
-        ogs_error("No Origin-Realm AVP found");
-        result_code = OGS_DIAM_MISSING_AVP;
-        error_occurred = 1;
-        goto out;
-    }
-
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
-    if (ret != 0 || !hdr) {
-        ogs_error("Failed to get Origin-Realm AVP header");
-        result_code = OGS_DIAM_INVALID_AVP_VALUE;
-        error_occurred = 1;
-        goto out;
-    }
-
+    ogs_assert(ret == 0);
     ogs_cpystrn(mme_realm, (char*)hdr->avp_value->os.data,
         ogs_min(hdr->avp_value->os.len, OGS_MAX_FQDN_LEN)+1);
 
-    /* Check if the MME matches the one in subscription data */
-    if (subscription_data.mme_host && subscription_data.mme_realm &&
-        !strcmp(subscription_data.mme_host, mme_host) &&
-        !strcmp(subscription_data.mme_realm, mme_realm)) {
-
+    if (!strcmp(subscription_data.mme_host, mme_host) &&
+            !strcmp(subscription_data.mme_realm, mme_realm)) {
         rv = hss_db_update_mme(imsi_bcd, mme_host, mme_realm, true);
         if (rv != OGS_OK) {
-            ogs_error("Cannot update UE Purged at MME flag: %s", imsi_bcd);
+            ogs_error("Cannot update UE Purged at MME flag:'%s'", imsi_bcd);
             ret = fd_msg_rescode_set(ans,
                     (char*)"DIAMETER_UNABLE_TO_COMPLY", NULL, NULL, 1);
-            if (ret != 0) {
-                ogs_error("Failed to set DIAMETER_UNABLE_TO_COMPLY");
-            }
-            use_experimental_code = 0;
-            error_occurred = 1;
+            ogs_assert(ret == 0);
             goto outnoexp;
         }
     }
 
-    if (!error_occurred) {
-        /* Set the PUA Flags */
-        ret = fd_msg_avp_new(ogs_diam_s6a_pua_flags, 0, &avp);
-        if (ret != 0) {
-            ogs_error("Failed to create PUA-Flags AVP");
-            error_occurred = 1;
-            goto out;
-        }
-
-        if (subscription_data.mme_host && subscription_data.mme_realm &&
-            !strcmp(subscription_data.mme_host, mme_host) &&
+    /* Set the PUA Flags */
+    ret = fd_msg_avp_new(ogs_diam_s6a_pua_flags, 0, &avp);
+    ogs_assert(ret == 0);
+    if (!strcmp(subscription_data.mme_host, mme_host) &&
             !strcmp(subscription_data.mme_realm, mme_realm)) {
-            val.i32 = OGS_DIAM_S6A_PUA_FLAGS_FREEZE_MTMSI;
-        } else {
-            val.i32 = 0;
-        }
-
-        ret = fd_msg_avp_setvalue(avp, &val);
-        if (ret != 0) {
-            ogs_error("Failed to set PUA-Flags value");
-            error_occurred = 1;
-            goto out;
-        }
-
-        ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-        if (ret != 0) {
-            ogs_error("Failed to add PUA-Flags AVP");
-            error_occurred = 1;
-            goto out;
-        }
-
-        /* Set success result code */
-        ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
-        if (ret != 0) {
-            ogs_error("Failed to set success result code");
-            error_occurred = 1;
-            goto out;
-        }
-
-        /* Set the Auth-Session-State AVP */
-        ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
-        if (ret != 0) {
-            ogs_error("Failed to create Auth-Session-State AVP");
-            error_occurred = 1;
-            goto out;
-        }
-        val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
-        ret = fd_msg_avp_setvalue(avp, &val);
-        if (ret != 0) {
-            ogs_error("Failed to set Auth-Session-State value");
-            error_occurred = 1;
-            goto out;
-        }
-        ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-        if (ret != 0) {
-            ogs_error("Failed to add Auth-Session-State AVP");
-            error_occurred = 1;
-            goto out;
-        }
-
-        /* Set Vendor-Specific-Application-Id AVP */
-        ret = ogs_diam_message_vendor_specific_appid_set(
-                ans, OGS_DIAM_S6A_APPLICATION_ID);
-        if (ret != 0) {
-            ogs_error("Failed to set Vendor-Specific-Application-Id");
-            error_occurred = 1;
-            goto out;
-        }
-
-        /* Send the answer */
-        ret = fd_msg_send(msg, NULL, NULL);
-        if (ret != 0) {
-            ogs_error("Failed to send message");
-            error_occurred = 1;
-            goto out;
-        }
-
-        ogs_debug("Tx Purge-UE-Answer");
-
-        /* Add to stats */
-        OGS_DIAM_STATS_MTX(
-            OGS_DIAM_STATS_INC(nb_echoed);
-            HSS_DIAM_PRIV_STATS_INC(s6a.rx_pur);
-            HSS_DIAM_PRIV_STATS_INC(s6a.tx_pua);
-        )
-
-        ogs_subscription_data_free(&subscription_data);
-        return 0;
+        val.i32 = OGS_DIAM_S6A_PUA_FLAGS_FREEZE_MTMSI;
+    } else {
+        val.i32 = 0;
     }
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
+    ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
+    ogs_assert(ret == 0);
+
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
+
+    /* Send the answer */
+    ret = fd_msg_send(msg, NULL, NULL);
+    ogs_assert(ret == 0);
+
+    ogs_debug("Tx Purge-UE-Answer");
+
+    /* Add this value to the stats */
+    OGS_DIAM_STATS_MTX(
+        OGS_DIAM_STATS_INC(nb_echoed);
+        HSS_DIAM_PRIV_STATS_INC(s6a.rx_pur);
+        HSS_DIAM_PRIV_STATS_INC(s6a.tx_pua);
+    )
+
+    ogs_subscription_data_free(&subscription_data);
+
+    return 0;
 
 out:
-    /* Error handling with experimental result code */
-    if (ans && use_experimental_code) {
-        if (result_code != 0) {
-            ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
-            if (ret != 0) {
-                ogs_error("Failed to set experimental result code");
-            }
-        }
-    }
-
+    ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
+    ogs_assert(ret == 0);
 outnoexp:
-    /* Common error handling */
-    if (ans) {
-        /* Set the Auth-Session-State AVP */
-        ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
-        if (ret == 0) {
-            val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
-            ret = fd_msg_avp_setvalue(avp, &val);
-            if (ret == 0) {
-                ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-            }
-        }
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
 
-        /* Set Vendor-Specific-Application-Id AVP */
-        ret = ogs_diam_message_vendor_specific_appid_set(
-                ans, OGS_DIAM_S6A_APPLICATION_ID);
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ogs_assert(ret == 0);
 
-        ret = fd_msg_send(msg, NULL, NULL);
-        if (ret != 0) {
-            ogs_error("Failed to send error response");
-        }
-    }
+    ret = fd_msg_send(msg, NULL, NULL);
+    ogs_assert(ret == 0);
 
-    /* Update error stats */
     OGS_DIAM_STATS_MTX(
         OGS_DIAM_STATS_INC(nb_echoed);
         HSS_DIAM_PRIV_STATS_INC(s6a.rx_pur);
@@ -1782,6 +1253,7 @@ outnoexp:
     )
 
     ogs_subscription_data_free(&subscription_data);
+
     return 0;
 }
 
@@ -1868,7 +1340,7 @@ void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm,
     /* Set the CLR-Flags */
     ret = fd_msg_avp_new(ogs_diam_s6a_clr_flags, 0, &avp);
     ogs_assert(ret == 0);
-    if (cancellation_type == OGS_DIAM_S6A_CT_SUBSCRIPTION_WITHDRAWAL) {
+    if (cancellation_type == OGS_DIAM_S6A_CT_SUBSCRIPTION_WITHDRAWL) {
         val.u32 = (OGS_DIAM_S6A_CLR_FLAGS_REATTACH_REQUIRED |
             OGS_DIAM_S6A_CLR_FLAGS_S6A_S6D_INDICATOR);
     } else {
@@ -1918,87 +1390,54 @@ void hss_s6a_send_clr(char *imsi_bcd, char *mme_host, char *mme_realm,
 static void hss_s6a_cla_cb(void *data, struct msg **msg)
 {
     int ret;
+
     struct sess_state *sess_data = NULL;
-    struct session *session = NULL;
-    int new = 0;
-    int error_occurred = 0;
+    struct session *session;
+    int new;
 
     ogs_debug("[HSS] Rx Cancel-Location-Answer");
-
-    /* Validate input parameters */
-    if (!msg || !*msg) {
-        ogs_error("Invalid message pointer");
-        error_occurred = 1;
-        goto cleanup;
-    }
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
     if (ret != 0) {
-        ogs_error("fd_msg_sess_get() failed with error: %d", ret);
-        error_occurred = 1;
-        goto cleanup;
+        ogs_error("fd_msg_sess_get() failed");
+        goto out;
     }
-
     if (new != 0) {
-        ogs_error("Session should already exist, but new session flag is set");
-        error_occurred = 1;
-        goto cleanup;
+        ogs_error("fd_msg_sess_get() failed");
+        goto out;
     }
 
-    if (!session) {
-        ogs_error("Session is NULL");
-        error_occurred = 1;
-        goto cleanup;
-    }
-
-    /* Retrieve session state */
     ret = fd_sess_state_retrieve(hss_s6a_reg, session, &sess_data);
     if (ret != 0) {
-        ogs_error("fd_sess_state_retrieve() failed with error: %d", ret);
-        error_occurred = 1;
-        goto cleanup;
+        ogs_error("fd_sess_state_retrieve() failed");
+        goto out;
     }
-
     if (!sess_data) {
-        ogs_error("Session state is NULL");
-        error_occurred = 1;
-        goto cleanup;
+        ogs_error("fd_sess_state_retrieve() failed");
+        goto out;
     }
-
-    /* Validate data pointer consistency */
     if ((void *)sess_data != data) {
-        ogs_error("Session data pointer mismatch - expected: %p, got: %p",
-                  data, sess_data);
-        error_occurred = 1;
-        goto cleanup;
+        ogs_error("fd_sess_state_retrieve() failed");
+        goto out;
     }
 
-cleanup:
-    /* Always try to free the message if it exists */
-    if (msg && *msg) {
-        ret = fd_msg_free(*msg);
-        if (ret != 0) {
-            ogs_error("Failed to free message: %d", ret);
-            error_occurred = 1;
-        }
-        *msg = NULL;
-    }
+    ret = fd_msg_free(*msg);
+    ogs_assert(ret == 0);
+    *msg = NULL;
 
-    /* Clean up session state if it exists */
-    if (sess_data) {
-        state_cleanup(sess_data, NULL, NULL);
-        sess_data = NULL;
-    }
+    state_cleanup(sess_data, NULL, NULL);
 
-    /* Update statistics */
     OGS_DIAM_STATS_MTX(
         HSS_DIAM_PRIV_STATS_INC(s6a.rx_cla);
-        if (error_occurred)
-            HSS_DIAM_PRIV_STATS_INC(s6a.rx_cla_error);
     )
-
     return;
+
+out:
+    OGS_DIAM_STATS_MTX(
+        HSS_DIAM_PRIV_STATS_INC(s6a.rx_cla);
+        HSS_DIAM_PRIV_STATS_INC(s6a.rx_cla_error);
+    )
 }
 
 /* HSS Sends Insert Subscriber Data Request to MME */
@@ -2166,86 +1605,54 @@ int hss_s6a_send_idr(char *imsi_bcd, uint32_t idr_flags, uint32_t subdata_mask)
 static void hss_s6a_ida_cb(void *data, struct msg **msg)
 {
     int ret;
+
     struct sess_state *sess_data = NULL;
-    struct session *session = NULL;
-    int new = 0;
-    int error_occurred = 0;
+    struct session *session;
+    int new;
 
     ogs_debug("[HSS] Rx Insert-Subscriber-Data-Answer");
-
-    /* Validate input parameters */
-    if (!msg || !*msg) {
-        ogs_error("Invalid message pointer");
-        error_occurred = 1;
-        goto cleanup;
-    }
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
     if (ret != 0) {
-        ogs_error("fd_msg_sess_get() failed with error: %d", ret);
-        error_occurred = 1;
-        goto cleanup;
+        ogs_error("fd_msg_sess_get() failed");
+        goto out;
     }
-
     if (new != 0) {
-        ogs_error("Session should already exist, but new session flag is set");
-        error_occurred = 1;
-        goto cleanup;
+        ogs_error("fd_msg_sess_get() failed");
+        goto out;
     }
 
-    if (!session) {
-        ogs_error("Session is NULL");
-        error_occurred = 1;
-        goto cleanup;
-    }
-
-    /* Retrieve session state */
     ret = fd_sess_state_retrieve(hss_s6a_reg, session, &sess_data);
     if (ret != 0) {
-        ogs_error("fd_sess_state_retrieve() failed with error: %d", ret);
-        error_occurred = 1;
-        goto cleanup;
+        ogs_error("fd_sess_state_retrieve() failed");
+        goto out;
     }
-
     if (!sess_data) {
-        ogs_error("Session state is NULL");
-        error_occurred = 1;
-        goto cleanup;
+        ogs_error("fd_sess_state_retrieve() failed");
+        goto out;
     }
-
-    /* Validate data pointer consistency */
     if ((void *)sess_data != data) {
-        ogs_error("Session data pointer mismatch - expected: %p, got: %p",
-                  data, sess_data);
-        error_occurred = 1;
-        goto cleanup;
+        ogs_error("fd_sess_state_retrieve() failed");
+        goto out;
     }
 
-cleanup:
-    /* Always try to free the message if it exists */
-    if (msg && *msg) {
-        ret = fd_msg_free(*msg);
-        if (ret != 0) {
-            ogs_error("Failed to free message: %d", ret);
-            error_occurred = 1;
-        }
-        *msg = NULL;
-    }
+    ret = fd_msg_free(*msg);
+    ogs_assert(ret == 0);
+    *msg = NULL;
 
-    /* Clean up session state if it exists */
-    if (sess_data) {
-        state_cleanup(sess_data, NULL, NULL);
-        sess_data = NULL;
-    }
+    state_cleanup(sess_data, NULL, NULL);
 
-    /* Update statistics */
     OGS_DIAM_STATS_MTX(
         HSS_DIAM_PRIV_STATS_INC(s6a.rx_ida);
-        if (error_occurred)
-            HSS_DIAM_PRIV_STATS_INC(s6a.rx_ida_error);
     )
+    return;
 
+out:
+    OGS_DIAM_STATS_MTX(
+        HSS_DIAM_PRIV_STATS_INC(s6a.rx_ida);
+        HSS_DIAM_PRIV_STATS_INC(s6a.rx_ida_error);
+    )
     return;
 }
 

@@ -35,8 +35,6 @@ int ogs_sbi_discover_only(ogs_sbi_xact_t *xact);
 
 bool ogs_sbi_send_request_to_nf_instance(
         ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
-bool ogs_sbi_send_request_with_sepp_discovery(
-        ogs_sbi_client_t *client, ogs_sbi_xact_t *xact);
 bool ogs_sbi_send_request_to_client(
         ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
         ogs_sbi_request_t *request, void *data);

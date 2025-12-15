@@ -57,10 +57,9 @@ extern "C" {
         \
         ogs_assert(ogs_gtp_self()->gtpu_addr || ogs_gtp_self()->gtpu_addr6); \
         \
-        if (!ogs_gtp_self()->gtpu_ip.ipv4 && !ogs_gtp_self()->gtpu_ip.ipv6) \
-            ogs_sockaddr_to_ip( \
-                    ogs_gtp_self()->gtpu_addr, ogs_gtp_self()->gtpu_addr6, \
-                    &ogs_gtp_self()->gtpu_ip); \
+        ogs_sockaddr_to_ip( \
+                ogs_gtp_self()->gtpu_addr, ogs_gtp_self()->gtpu_addr6, \
+                &ogs_gtp_self()->gtpu_ip); \
     } while(0)
 
 ogs_sock_t *ogs_gtp_server(ogs_socknode_t *node);
@@ -68,11 +67,6 @@ int ogs_gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, ogs_gtp_node_t *gnode);
 
 int ogs_gtp_send(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf);
 int ogs_gtp_sendto(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf);
-
-int ogs_gtp_send_with_teid(
-        ogs_sock_t *sock,
-        ogs_pkbuf_t *pkbuf, uint32_t teid,
-        ogs_sockaddr_t *to);
 
 void ogs_gtp_send_error_message(
         ogs_gtp_xact_t *xact, uint32_t teid, uint8_t type, uint8_t cause_value);

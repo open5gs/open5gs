@@ -273,7 +273,7 @@ void ogs_nas_build_nssai(ogs_nas_nssai_t *nas_nssai,
             ogs_nas_build_s_nssai(&nas_s_nssai, nas_s_nssai_ie + i);
             memcpy(nas_nssai->buffer + nas_nssai->length, &nas_s_nssai,
                     sizeof(nas_s_nssai.length) + nas_s_nssai.length);
-            nas_nssai->length +=
+            nas_nssai->length += 
                     (sizeof(nas_s_nssai.length) + nas_s_nssai.length);
         }
     }
@@ -805,216 +805,14 @@ int ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
     return OGS_OK;
 }
 
-/* Parse "Packet filter list", 3GPP TS 24.501 Figure 9.11.4.13.3 and Figure 9.11.4.13. */
-static int parse_qos_rules_packet_filter_list(ogs_nas_qos_rule_t *rule, const uint8_t *buffer, uint16_t length) {
-    uint16_t size = 0;
-    int i, j, len = 0;
-
-    for (i = 0; i < rule->num_of_packet_filter && i < OGS_MAX_NUM_OF_FLOW_IN_GTP; i++) {
-        if (size+sizeof(rule->pf[i].flags) > length) {
-            ogs_error("PF[%d] Overflow: size[%d] length[%d]", i, size, length);
-            goto cleanup;
-        }
-        memcpy(&rule->pf[i].flags, buffer+size, sizeof(rule->pf[i].flags));
-        size += sizeof(rule->pf[i].flags);
-
-        if (rule->code ==
-            OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS)
-            continue;
-
-        if (size+sizeof(rule->pf[i].content.length) > length) {
-            ogs_error("PF[%d] Overflow: size[%d] length[%d]", i, size, length);
-            goto cleanup;
-        }
-        memcpy(&rule->pf[i].content.length, buffer+size,
-                sizeof(rule->pf[i].content.length));
-        size += sizeof(rule->pf[i].content.length);
-
-        j = 0; len = 0;
-        while(len < rule->pf[i].content.length) {
-            if (size+len+
-                sizeof(rule->pf[i].content.component[j].type) > length) {
-                ogs_error("PF[%d] Overflow: size[%d] len[%d] length[%d]",
-                          i, size, len, length);
-                goto cleanup;
-            }
-            memcpy(&rule->pf[i].content.component[j].type,
-                    buffer+size+len,
-                    sizeof(rule->pf[i].content.component[j].type));
-            len += sizeof(rule->pf[i].content.component[j].type);
-            switch(rule->pf[i].content.component[j].type) {
-            case OGS_PACKET_FILTER_MATCH_ALL:
-                break;
-            case OGS_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE:
-                if (size+len+
-                    sizeof(rule->pf[i].content.component[j].proto) >
-                    length) {
-                    ogs_error("PF[%d] Overflow: size[%d] len[%d] length[%d]",
-                              i, size, len, length);
-                    goto cleanup;
-                }
-                memcpy(&rule->pf[i].content.component[j].proto,
-                    buffer+size+len,
-                    sizeof(rule->pf[i].content.component[j].proto));
-                len += sizeof(rule->pf[i].content.component[j].proto);
-                break;
-            case OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE:
-            case OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE:
-                if (size+len+
-                    sizeof(rule->pf[i].content.component[j].ipv4.addr) >
-                    length) {
-                    ogs_error("PF[%d] Overflow: size[%d] len[%d] length[%d]",
-                              i, size, len, length);
-                    goto cleanup;
-                }
-                memcpy(&rule->pf[i].content.component[j].ipv4.addr,
-                    buffer+size+len,
-                    sizeof(rule->pf[i].content.component[j].ipv4.addr));
-                len += sizeof(rule->pf[i].content.component[j].ipv4.addr);
-
-                if (size+len+
-                    sizeof(rule->pf[i].content.component[j].ipv4.mask) >
-                    length) {
-                    ogs_error("PF[%d] Overflow: size[%d] len[%d] length[%d]",
-                              i, size, len, length);
-                    goto cleanup;
-                }
-                memcpy(&rule->pf[i].content.component[j].ipv4.mask,
-                    buffer+size+len,
-                    sizeof(rule->pf[i].content.component[j].ipv4.mask));
-                len += sizeof(rule->pf[i].content.component[j].ipv4.mask);
-                break;
-            case OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE:
-            case OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE:
-                if (size+len+
-                    sizeof(rule->pf[i].content.component[j].ipv6.addr) >
-                    length) {
-                    ogs_error("PF[%d] Overflow: size[%d] len[%d] length[%d]",
-                              i, size, len, length);
-                    goto cleanup;
-                }
-                memcpy(&rule->pf[i].content.component[j].ipv6.addr,
-                    buffer+size+len,
-                    sizeof(rule->pf[i].content.component[j].ipv6.addr));
-                len += sizeof(rule->pf[i].content.component[j].ipv6.addr);
-
-                if (size+len+
-                    sizeof(
-                        rule->pf[i].content.component[j].ipv6.prefixlen) >
-                    length) {
-                    ogs_error("PF[%d] Overflow: size[%d] len[%d] length[%d]",
-                              i, size, len, length);
-                    goto cleanup;
-                }
-                memcpy(&rule->pf[i].content.component[j].ipv6.prefixlen,
-                    buffer+size+len,
-                    sizeof(
-                        rule->pf[i].content.component[j].ipv6.prefixlen));
-                len += sizeof(
-                        rule->pf[i].content.component[j].ipv6.prefixlen);
-                break;
-            case OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE:
-            case OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE:
-                if (size+len+
-                    sizeof(
-                        rule->pf[i].content.component[j].ipv6_mask.addr) >
-                        length) {
-                    ogs_error("PF[%d] Overflow: size[%d] len[%d] length[%d]",
-                              i, size, len, length);
-                    goto cleanup;
-                }
-                memcpy(&rule->pf[i].content.component[j].ipv6_mask.addr,
-                    buffer+size+len,
-                    sizeof(
-                        rule->pf[i].content.component[j].ipv6_mask.addr));
-                len += sizeof(
-                        rule->pf[i].content.component[j].ipv6_mask.addr);
-
-                if (size+len+
-                    sizeof(
-                        rule->pf[i].content.component[j].ipv6_mask.mask) >
-                        length) {
-                    ogs_error("PF[%d] Overflow: size[%d] len[%d] length[%d]",
-                              i, size, len, length);
-                    goto cleanup;
-                }
-                memcpy(&rule->pf[i].content.component[j].ipv6_mask.mask,
-                    buffer+size+len,
-                    sizeof(
-                        rule->pf[i].content.component[j].ipv6_mask.mask));
-                len += sizeof(
-                        rule->pf[i].content.component[j].ipv6_mask.mask);
-                break;
-            case OGS_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE:
-            case OGS_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE:
-                if (size+len+
-                    sizeof(rule->pf[i].content.component[j].port.low) >
-                        length) {
-                    ogs_error("PF[%d] Overflow: size[%d] len[%d] length[%d]",
-                              i, size, len, length);
-                    goto cleanup;
-                }
-                memcpy(&rule->pf[i].content.component[j].port.low,
-                    buffer+size+len,
-                    sizeof(rule->pf[i].content.component[j].port.low));
-                rule->pf[i].content.component[j].port.low =
-                    be16toh(rule->pf[i].content.component[j].port.low);
-                len += sizeof(rule->pf[i].content.component[j].port.low);
-                break;
-            case OGS_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE:
-            case OGS_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE:
-                if (size+len+
-                    sizeof(rule->pf[i].content.component[j].port.low) >
-                        length) {
-                    ogs_error("PF[%d] Overflow: size[%d] len[%d] length[%d]",
-                              i, size, len, length);
-                    goto cleanup;
-                }
-                memcpy(&rule->pf[i].content.component[j].port.low,
-                    buffer+size+len,
-                    sizeof(rule->pf[i].content.component[j].port.low));
-                rule->pf[i].content.component[j].port.low =
-                    be16toh(rule->pf[i].content.component[j].port.low);
-                len += sizeof(rule->pf[i].content.component[j].port.low);
-
-                if (size+len+
-                    sizeof(rule->pf[i].content.component[j].port.high) >
-                        length) {
-                    ogs_error("PF[%d] Overflow: size[%d] len[%d] length[%d]",
-                              i, size, len, length);
-                    goto cleanup;
-                }
-                memcpy(&rule->pf[i].content.component[j].port.high,
-                    buffer+size+len,
-                    sizeof(rule->pf[i].content.component[j].port.high));
-                rule->pf[i].content.component[j].port.high =
-                    be16toh(rule->pf[i].content.component[j].port.high);
-                len += sizeof(rule->pf[i].content.component[j].port.high);
-                break;
-            default:
-                ogs_error("PF[%d] Unknown Packet Filter Type(%d)",
-                          i, rule->pf[i].content.component[j].type);
-                goto cleanup;
-            }
-            j++;
-        }
-        rule->pf[i].content.num_of_component = j;
-        size += len;
-    }
-    return size;
-cleanup:
-    return -1;
-}
-
-/* Parse "QoS rules", 3GPP TS 24.501 Figure 9.11.4.13.1. */
 int ogs_nas_parse_qos_rules(
         ogs_nas_qos_rule_t *rule, ogs_nas_qos_rules_t *rules)
 {
     ogs_nas_qos_rule_t *first = rule;
 
-    uint8_t *buffer;
-    uint16_t length, size;
-    int rc;
+    char *buffer;
+    uint16_t length, size = 0;
+    int i, j, len = 0;
 
     ogs_assert(rule);
     ogs_assert(rules);
@@ -1030,10 +828,9 @@ int ogs_nas_parse_qos_rules(
 
     length = rules->length;
     buffer = rules->buffer;
-    size = 0;
 
+    size = 0;
     while (size < length) {
-        bool have_octet_m1, have_octet_m2;
         memset(rule, 0, sizeof(*rule));
 
         if (size+sizeof(rule->identifier) > length) {
@@ -1044,106 +841,244 @@ int ogs_nas_parse_qos_rules(
         size += sizeof(rule->identifier);
 
         if (size+sizeof(rule->length) > length) {
-            ogs_error("RuleId[%u] Overflow: size[%d] length[%d]", rule->identifier, size, length);
+            ogs_error("Overflow : size[%d] length[%d]", size, length);
             goto cleanup;
         }
         memcpy(&rule->length, buffer+size, sizeof(rule->length));
         rule->length = be16toh(rule->length);
         size += sizeof(rule->length);
 
-        if (rule->length == 0) {
-            ogs_error("RuleId[%u] Wrong 'Length of QoS rule' (0)", rule->identifier);
-            goto cleanup;
-        }
-
         if (size+sizeof(rule->flags) > length) {
-            ogs_error("RuleId[%u] Overflow: size[%d] length[%d]", rule->identifier, size, length);
+            ogs_error("Overflow : size[%d] length[%d]", size, length);
             goto cleanup;
         }
         memcpy(&rule->flags, buffer+size, sizeof(rule->flags));
         size += sizeof(rule->flags);
 
         if (rule->code == 0 || rule->code == 7) { /* Reserved */
-            ogs_error("RuleId[%u] Reserved Rule Code [%d]", rule->identifier, rule->code);
+            ogs_error("Reserved Rule Code [%d]", rule->code);
             goto cleanup;
         }
 
         if (rule->code == OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE ||
             rule->code == OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS) {
             if (rule->num_of_packet_filter != 0) {
-                ogs_error("RuleId[%u] Invalid QoS rule code[%d] and number of packet filter[%d]",
-                          rule->identifier, rule->code, rule->num_of_packet_filter);
+                ogs_error("Invalue QoS rule code[%d] "
+                        "and number of packet filter[%d]",
+                        rule->code, rule->num_of_packet_filter);
                 rule->num_of_packet_filter = 0;
                 goto cleanup;
             }
         }
 
-        rc = parse_qos_rules_packet_filter_list(rule, buffer + size, rule->length - 1);
-        if (rc < 0)
-            goto cleanup;
-        size += rc;
-
-        if (rule->length == (sizeof(rule->flags) + rc)) {
-            have_octet_m1 = false;
-            have_octet_m2 = false;
-        } else if (rule->length == (sizeof(rule->flags) + rc + sizeof(rule->precedence))) {
-            have_octet_m1 = true;
-            have_octet_m2 = false;
-        } else if (rule->length == (sizeof(rule->flags) + rc + sizeof(rule->precedence) + sizeof(rule->flow.flags))) {
-            have_octet_m1 = true;
-            have_octet_m2 = true;
-        } else {
-                ogs_error("RuleId[%u] 'Length of QoS rule' (%d) doesn't match parsed length (%zu..%zu)",
-                          rule->identifier, rule->length,
-                          sizeof(rule->flags) + rc,
-                          sizeof(rule->flags) + rc + sizeof(rule->precedence) + sizeof(rule->flow.flags));
+        for (i = 0; i < rule->num_of_packet_filter &&
+                    i < OGS_MAX_NUM_OF_FLOW_IN_GTP; i++) {
+            if (size+sizeof(rule->pf[i].flags) > length) {
+                ogs_error("Overflow : size[%d] length[%d]", size, length);
                 goto cleanup;
+            }
+            memcpy(&rule->pf[i].flags, buffer+size, sizeof(rule->pf[i].flags));
+            size += sizeof(rule->pf[i].flags);
+
+            if (rule->code ==
+                OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS)
+                continue;
+
+            if (size+sizeof(rule->pf[i].content.length) > length) {
+                ogs_error("Overflow : size[%d] length[%d]", size, length);
+                goto cleanup;
+            }
+            memcpy(&rule->pf[i].content.length, buffer+size,
+                    sizeof(rule->pf[i].content.length));
+            size += sizeof(rule->pf[i].content.length);
+
+            j = 0; len = 0;
+            while(len < rule->pf[i].content.length) {
+                if (size+len+
+                    sizeof(rule->pf[i].content.component[j].type) > length) {
+                    ogs_error("Overflow : size[%d] len[%d] length[%d]",
+                            size, len, length);
+                    goto cleanup;
+                }
+                memcpy(&rule->pf[i].content.component[j].type,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].type));
+                len += sizeof(rule->pf[i].content.component[j].type);
+                switch(rule->pf[i].content.component[j].type) {
+                case OGS_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE:
+                    if (size+len+
+                        sizeof(rule->pf[i].content.component[j].proto) >
+                        length) {
+                        ogs_error("Overflow : size[%d] len[%d] length[%d]",
+                                size, len, length);
+                        goto cleanup;
+                    }
+                    memcpy(&rule->pf[i].content.component[j].proto,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].proto));
+                    len += sizeof(rule->pf[i].content.component[j].proto);
+                    break;
+                case OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE:
+                case OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE:
+                    if (size+len+
+                        sizeof(rule->pf[i].content.component[j].ipv4.addr) >
+                        length) {
+                        ogs_error("Overflow : size[%d] len[%d] length[%d]",
+                                size, len, length);
+                        goto cleanup;
+                    }
+                    memcpy(&rule->pf[i].content.component[j].ipv4.addr,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].ipv4.addr));
+                    len += sizeof(rule->pf[i].content.component[j].ipv4.addr);
+
+                    if (size+len+
+                        sizeof(rule->pf[i].content.component[j].ipv4.mask) >
+                        length) {
+                        ogs_error("Overflow : size[%d] len[%d] length[%d]",
+                                size, len, length);
+                        goto cleanup;
+                    }
+                    memcpy(&rule->pf[i].content.component[j].ipv4.mask,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].ipv4.mask));
+                    len += sizeof(rule->pf[i].content.component[j].ipv4.mask);
+                    break;
+                case OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE:
+                case OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE:
+                    if (size+len+
+                        sizeof(rule->pf[i].content.component[j].ipv6.addr) >
+                        length) {
+                        ogs_error("Overflow : size[%d] len[%d] length[%d]",
+                                size, len, length);
+                        goto cleanup;
+                    }
+                    memcpy(&rule->pf[i].content.component[j].ipv6.addr,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].ipv6.addr));
+                    len += sizeof(rule->pf[i].content.component[j].ipv6.addr);
+
+                    if (size+len+
+                        sizeof(
+                            rule->pf[i].content.component[j].ipv6.prefixlen) >
+                        length) {
+                        ogs_error("Overflow : size[%d] len[%d] length[%d]",
+                                size, len, length);
+                        goto cleanup;
+                    }
+                    memcpy(&rule->pf[i].content.component[j].ipv6.prefixlen,
+                        buffer+size+len,
+                        sizeof(
+                            rule->pf[i].content.component[j].ipv6.prefixlen));
+                    len += sizeof(
+                            rule->pf[i].content.component[j].ipv6.prefixlen);
+                    break;
+                case OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE:
+                case OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE:
+                    if (size+len+
+                        sizeof(
+                            rule->pf[i].content.component[j].ipv6_mask.addr) >
+                            length) {
+                        ogs_error("Overflow : size[%d] len[%d] length[%d]",
+                                size, len, length);
+                        goto cleanup;
+                    }
+                    memcpy(&rule->pf[i].content.component[j].ipv6_mask.addr,
+                        buffer+size+len,
+                        sizeof(
+                            rule->pf[i].content.component[j].ipv6_mask.addr));
+                    len += sizeof(
+                            rule->pf[i].content.component[j].ipv6_mask.addr);
+
+                    if (size+len+
+                        sizeof(
+                            rule->pf[i].content.component[j].ipv6_mask.mask) >
+                            length) {
+                        ogs_error("Overflow : size[%d] len[%d] length[%d]",
+                                size, len, length);
+                        goto cleanup;
+                    }
+                    memcpy(&rule->pf[i].content.component[j].ipv6_mask.mask,
+                        buffer+size+len,
+                        sizeof(
+                            rule->pf[i].content.component[j].ipv6_mask.mask));
+                    len += sizeof(
+                            rule->pf[i].content.component[j].ipv6_mask.mask);
+                    break;
+                case OGS_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE:
+                case OGS_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE:
+                    if (size+len+
+                        sizeof(rule->pf[i].content.component[j].port.low) >
+                            length) {
+                        ogs_error("Overflow : size[%d] len[%d] length[%d]",
+                                size, len, length);
+                        goto cleanup;
+                    }
+                    memcpy(&rule->pf[i].content.component[j].port.low,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].port.low));
+                    rule->pf[i].content.component[j].port.low =
+                        be16toh(rule->pf[i].content.component[j].port.low);
+                    len += sizeof(rule->pf[i].content.component[j].port.low);
+                    break;
+                case OGS_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE:
+                case OGS_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE:
+                    if (size+len+
+                        sizeof(rule->pf[i].content.component[j].port.low) >
+                            length) {
+                        ogs_error("Overflow : size[%d] len[%d] length[%d]",
+                                size, len, length);
+                        goto cleanup;
+                    }
+                    memcpy(&rule->pf[i].content.component[j].port.low,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].port.low));
+                    rule->pf[i].content.component[j].port.low =
+                        be16toh(rule->pf[i].content.component[j].port.low);
+                    len += sizeof(rule->pf[i].content.component[j].port.low);
+
+                    if (size+len+
+                        sizeof(rule->pf[i].content.component[j].port.high) >
+                            length) {
+                        ogs_error("Overflow : size[%d] len[%d] length[%d]",
+                                size, len, length);
+                        goto cleanup;
+                    }
+                    memcpy(&rule->pf[i].content.component[j].port.high,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].port.high));
+                    rule->pf[i].content.component[j].port.high =
+                        be16toh(rule->pf[i].content.component[j].port.high);
+                    len += sizeof(rule->pf[i].content.component[j].port.high);
+                    break;
+                default:
+                    ogs_error("Unknown Packet Filter Type(%d)",
+                            rule->pf[i].content.component[j].type);
+                    goto cleanup;
+                }
+                j++;
+            }
+            rule->pf[i].content.num_of_component = j;
+            size += len;
         }
 
-        if (have_octet_m1) {
-            if ((size + sizeof(rule->precedence)) > length) {
-                ogs_error("RuleId[%u] Overflow m+1: size[%d] length[%d]", rule->identifier, size, length);
+        if (rule->code != OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE &&
+            rule->code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS &&
+            rule->code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS) {
+
+            if (size+sizeof(rule->precedence) > length) {
+                ogs_error("Overflow : size[%d] length[%d]", size, length);
                 goto cleanup;
             }
             memcpy(&rule->precedence, buffer+size, sizeof(rule->precedence));
             size += sizeof(rule->precedence);
-            /* 'For the "delete existing QoS rule" operation, the QoS rule precedence value field shall not
-             * be included.'
-             * This implicitly means also m+2 shall neither be present, following Table 9.11.4.13. "NOTE 1". */
-            if (rule->code == OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE) {
-                ogs_error("RuleId[%u] Invalid QoS rule code[%d] and presence of Precedence octet [%u]",
-                          rule->identifier, rule->code, rule->precedence);
-                goto cleanup;
-            }
 
-            if (have_octet_m2) {
-                if ((size + sizeof(rule->flow.flags)) > length) {
-                    ogs_error("RuleId[%u] Overflow m+2: size[%d] length[%d]", rule->identifier, size, length);
-                    goto cleanup;
-                }
-                memcpy(&rule->flow.flags, buffer+size, sizeof(rule->flow.flags));
-                size += sizeof(rule->flow.flags);
-                /* 'For the "delete existing QoS rule" operation, the QoS rule precedence value field shall not
-                * be included.'
-                * This implicitly means also m+2 shall neither be present, following Table 9.11.4.13. "NOTE 1". */
-                if (rule->code == OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE) {
-                    ogs_error("RuleId[%u] Invalid QoS rule code[%d] and presence of QFI octet [%u]",
-                            rule->identifier, rule->code, rule->flow.flags);
-                    goto cleanup;
-                }
-            } else if (rule->code == OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE) {
-                /* 'For the "create new QoS rule" operation, the QoS flow identifier value field shall
-                 * be included.' */
-                ogs_error("RuleId[%u] Invalid QoS rule code[%d] without QFI octet",
-                          rule->identifier, rule->code);
+            if (size+sizeof(rule->flow.flags) > length) {
+                ogs_error("Overflow : size[%d] length[%d]", size, length);
                 goto cleanup;
             }
-        } else if (rule->code == OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE) {
-                /* 'For the "create new QoS rule" operation, the QoS rule precedence value field shall
-                 * be included.' */
-                ogs_error("RuleId[%u] Invalid QoS rule code[%d] without Precedence octet",
-                          rule->identifier, rule->code);
-                goto cleanup;
+            memcpy(&rule->flow.flags, buffer+size, sizeof(rule->flow.flags));
+            size += sizeof(rule->flow.flags);
         }
 
         rule++;

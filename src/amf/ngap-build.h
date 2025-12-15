@@ -22,6 +22,8 @@
 
 #include "context.h"
 
+#include "sbc-message.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,15 +32,12 @@ ogs_pkbuf_t *ngap_build_ng_setup_response(void);
 ogs_pkbuf_t *ngap_build_ng_setup_failure(
     NGAP_Cause_PR group, long cause, long time_to_wait);
 
-ogs_pkbuf_t *ngap_build_amf_configuration_update(void);
-
 ogs_pkbuf_t *ngap_build_ran_configuration_update_ack(void);
 ogs_pkbuf_t *ngap_build_ran_configuration_update_failure(
         NGAP_Cause_PR group, long cause, long time_to_wait);
 
 ogs_pkbuf_t *ngap_build_downlink_nas_transport(
-    ran_ue_t *ran_ue, amf_ue_t *amf_ue,
-    ogs_pkbuf_t *gmmbuf, bool ue_ambr, bool allowed_nssai);
+    ran_ue_t *ran_ue, ogs_pkbuf_t *gmmbuf, bool ue_ambr, bool allowed_nssai);
 
 ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
     amf_ue_t *amf_ue, ogs_pkbuf_t *gmmbuf);
@@ -76,6 +75,13 @@ ogs_pkbuf_t *ngap_build_handover_cancel_ack(ran_ue_t *source_ue);
 ogs_pkbuf_t *ngap_build_downlink_ran_status_transfer(
     ran_ue_t *target_ue,
     NGAP_RANStatusTransfer_TransparentContainer_t *transfer);
+
+ogs_pkbuf_t *ngap_build_write_replace_warning_request(
+    sbc_pws_data_t *sbc_pws);
+
+ogs_pkbuf_t *ngap_build_pws_cancel_request(
+    sbc_pws_data_t *sbc_pws);
+
 
 #ifdef __cplusplus
 }

@@ -283,8 +283,6 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                 discovery_option->num_of_target_plmn_list =
                     ogs_sbi_discovery_option_parse_plmn_list(
                         discovery_option->target_plmn_list, val);
-        } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_HNRF_URI)) {
-            ogs_sbi_discovery_option_set_hnrf_uri(discovery_option, val);
         } else if (!strcasecmp(key,
                     OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_PLMN_LIST)) {
             if (val)

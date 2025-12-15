@@ -781,20 +781,20 @@ void ogs_pfcp_build_create_urr(
 }
 
 void ogs_pfcp_build_update_urr(
-    ogs_pfcp_tlv_update_urr_t *message, int i,
-    ogs_pfcp_urr_t *urr, uint64_t modify_flags)
+    ogs_pfcp_tlv_update_urr_t *message, int i, ogs_pfcp_urr_t *urr, uint64_t modify_flags)
 {
     ogs_assert(message);
     ogs_assert(urr);
 
-    ogs_assert(modify_flags &
-            (OGS_PFCP_MODIFY_URR_MEAS_METHOD|
-             OGS_PFCP_MODIFY_URR_REPORT_TRIGGER|
-             OGS_PFCP_MODIFY_URR_VOLUME_THRESH|
-             OGS_PFCP_MODIFY_URR_VOLUME_QUOTA|
-             OGS_PFCP_MODIFY_URR_TIME_THRESH|
-             OGS_PFCP_MODIFY_URR_TIME_QUOTA|
-             OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME));
+    /* No change requested, skip. */
+    if (!(modify_flags & (OGS_PFCP_MODIFY_URR_MEAS_METHOD|
+                          OGS_PFCP_MODIFY_URR_REPORT_TRIGGER|
+                          OGS_PFCP_MODIFY_URR_VOLUME_THRESH|
+                          OGS_PFCP_MODIFY_URR_VOLUME_QUOTA|
+                          OGS_PFCP_MODIFY_URR_TIME_THRESH|
+                          OGS_PFCP_MODIFY_URR_TIME_QUOTA|
+                          OGS_PFCP_MODIFY_URR_QUOTA_VALIDITY_TIME)))
+        return;
 
     /* Change request: Send only changed IEs */
     message->presence = 1;
@@ -891,35 +891,26 @@ void ogs_pfcp_build_create_qer(
 }
 
 void ogs_pfcp_build_update_qer(
-    ogs_pfcp_tlv_update_qer_t *message, int i,
-    ogs_pfcp_qer_t *qer, uint64_t modify_flags)
+    ogs_pfcp_tlv_update_qer_t *message, int i, ogs_pfcp_qer_t *qer)
 {
     ogs_assert(message);
     ogs_assert(qer);
-
-    ogs_assert(modify_flags &
-            (OGS_PFCP_MODIFY_QOS_MODIFY|
-             OGS_PFCP_MODIFY_EPC_QOS_UPDATE));
 
     message->presence = 1;
     message->qer_id.presence = 1;
     message->qer_id.u32 = qer->id;
 
-    if (modify_flags &
-            (OGS_PFCP_MODIFY_QOS_MODIFY|
-             OGS_PFCP_MODIFY_EPC_QOS_UPDATE)) {
-        if (qer->mbr.uplink || qer->mbr.downlink) {
-            message->maximum_bitrate.presence = 1;
-            ogs_pfcp_build_bitrate(
-                    &message->maximum_bitrate,
-                    &qer->mbr, update_qer_buf[i].mbr, OGS_PFCP_BITRATE_LEN);
-        }
-        if (qer->gbr.uplink || qer->gbr.downlink) {
-            message->guaranteed_bitrate.presence = 1;
-            ogs_pfcp_build_bitrate(
-                    &message->guaranteed_bitrate,
-                    &qer->gbr, update_qer_buf[i].gbr, OGS_PFCP_BITRATE_LEN);
-        }
+    if (qer->mbr.uplink || qer->mbr.downlink) {
+        message->maximum_bitrate.presence = 1;
+        ogs_pfcp_build_bitrate(
+                &message->maximum_bitrate,
+                &qer->mbr, update_qer_buf[i].mbr, OGS_PFCP_BITRATE_LEN);
+    }
+    if (qer->gbr.uplink || qer->gbr.downlink) {
+        message->guaranteed_bitrate.presence = 1;
+        ogs_pfcp_build_bitrate(
+                &message->guaranteed_bitrate,
+                &qer->gbr, update_qer_buf[i].gbr, OGS_PFCP_BITRATE_LEN);
     }
 }
 

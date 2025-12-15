@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -524,11 +524,6 @@ int ogs_dbi_subscription_data(char *supi,
                                     BSON_ITER_HOLDS_INT32(&child4_iter)) {
                                     session->session_type =
                                         bson_iter_int32(&child4_iter);
-                                } else if (!strcmp(child4_key,
-                                            OGS_LBO_ROAMING_ALLOWED_STRING) &&
-                                    BSON_ITER_HOLDS_BOOL(&child4_iter)) {
-                                    session->lbo_roaming_allowed =
-                                        bson_iter_bool(&child4_iter);
                                 } else if (!strcmp(child4_key,
                                             OGS_QOS_STRING) &&
                                     BSON_ITER_HOLDS_DOCUMENT(&child4_iter)) {

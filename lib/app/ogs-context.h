@@ -56,7 +56,7 @@ typedef struct ogs_app_context_s {
     } usrsctp;
 
     struct {
-        uint64_t gtpu;
+        uint64_t packet;
 
         uint64_t sess;
         uint64_t bearer;
@@ -76,7 +76,6 @@ typedef struct ogs_app_context_s {
         uint64_t gtp_node;
 
         uint64_t csmap;
-        uint64_t emerg;
 
         uint64_t impi;
         uint64_t impu;

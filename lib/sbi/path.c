@@ -497,13 +497,6 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
                 ogs_free(v);
             }
 
-            if (discovery_option && discovery_option->hnrf_uri) {
-                ogs_debug("hnrf_uri [%s]", discovery_option->hnrf_uri);
-                ogs_sbi_header_set(request->http.headers,
-                        OGS_SBI_CUSTOM_DISCOVERY_HNRF_URI,
-                        discovery_option->hnrf_uri);
-            }
-
             rc = ogs_sbi_client_send_via_scp_or_sepp(
                     scp_client, client_discover_cb, request,
                     OGS_UINT_TO_POINTER(xact->id));
@@ -517,7 +510,9 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
          ***********************/
 
         /* If `client` instance is available, use direct communication */
-        rc = ogs_sbi_send_request_with_sepp_discovery(client, xact);
+        rc = ogs_sbi_send_request_to_client(
+                client, ogs_sbi_client_handler, request,
+                OGS_UINT_TO_POINTER(xact->id));
         ogs_expect(rc == true);
         return (rc == true) ? OGS_OK : OGS_ERROR;
 
@@ -595,10 +590,15 @@ int ogs_sbi_discover_only(ogs_sbi_xact_t *xact)
 bool ogs_sbi_send_request_to_nf_instance(
         ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
 {
+    bool rc;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
 
+    ogs_sbi_object_t *sbi_object = NULL;
+
     ogs_assert(xact);
+    sbi_object = xact->sbi_object;
+    ogs_assert(sbi_object);
     request = xact->request;
     ogs_assert(request);
 
@@ -659,21 +659,6 @@ bool ogs_sbi_send_request_to_nf_instance(
         ogs_freeaddrinfo(addr6);
 #endif
     }
-
-    return ogs_sbi_send_request_with_sepp_discovery(client, xact);
-}
-
-bool ogs_sbi_send_request_with_sepp_discovery(
-        ogs_sbi_client_t *client, ogs_sbi_xact_t *xact)
-{
-    bool rc;
-    ogs_sbi_request_t *request = NULL;
-
-    ogs_assert(xact);
-    request = xact->request;
-    ogs_assert(request);
-
-    ogs_assert(client);
 
     if (client->fqdn && ogs_sbi_fqdn_in_vplmn(client->fqdn) == true) {
         ogs_sbi_client_t *sepp_client = NULL, *nrf_client = NULL;

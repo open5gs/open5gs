@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -112,8 +112,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     if (header_desc.type == OGS_GTPU_MSGTYPE_END_MARKER) {
         ogs_pfcp_object_t *pfcp_object = NULL;
         ogs_pfcp_pdr_t *pdr = NULL;
-
         ogs_gtp2_header_desc_t sendhdr;
+        ogs_pkbuf_t *sendbuf = NULL;
 
         pfcp_object = ogs_pfcp_object_find_by_teid(header_desc.teid);
         if (!pfcp_object) {
@@ -154,19 +154,14 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
         ogs_assert(pdr);
 
-        /* Forward End-Marker Packet */
-        memset(&sendhdr, 0, sizeof(header_desc));
-        sendhdr.type = OGS_GTPU_MSGTYPE_END_MARKER;
+        sendbuf = ogs_pkbuf_copy(pkbuf);
+        ogs_assert(sendbuf);
 
-        ogs_gtp2_encapsulate_header(&sendhdr, pkbuf);
+        /* Forward packet */
+        memset(&sendhdr, 0, sizeof(sendhdr));
+        sendhdr.type = header_desc.type;
 
-        ogs_pfcp_send_gtpu(pdr, pkbuf);
-
-        /*
-         * The ogs_pfcp_send_gtpu() function
-         * buffers or frees the Packet Buffer(pkbuf) memory.
-         */
-        return;
+        ogs_pfcp_send_g_pdu(pdr, &sendhdr, sendbuf);
 
     } else if (header_desc.type == OGS_GTPU_MSGTYPE_ERR_IND) {
         ogs_pfcp_far_t *far = NULL;
@@ -265,7 +260,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
         ogs_assert(pdr);
         ogs_assert(true == ogs_pfcp_up_handle_pdr(
-                    pdr, header_desc.type, len, &header_desc, pkbuf, &report));
+                    pdr, header_desc.type, &header_desc, pkbuf, &report));
 
         if (report.type.downlink_data_report) {
             ogs_assert(pdr->sess);
@@ -300,7 +295,7 @@ int sgwu_gtp_init(void)
     ogs_pkbuf_config_t config;
     memset(&config, 0, sizeof config);
 
-    config.cluster_2048_pool = ogs_app()->pool.gtpu;
+    config.cluster_2048_pool = ogs_app()->pool.packet;
 
 #if OGS_USE_TALLOC == 1
     /* allocate a talloc pool for GTP to ensure it doesn't have to go back

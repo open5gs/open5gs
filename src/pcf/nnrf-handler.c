@@ -29,8 +29,7 @@ void pcf_nnrf_handle_nf_discover(
     ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
 
-    pcf_ue_sm_t *pcf_ue_sm = NULL;
-    pcf_ue_am_t *pcf_ue_am = NULL;
+    pcf_ue_t *pcf_ue = NULL;
     pcf_sess_t *sess = NULL;
 
     OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
@@ -61,13 +60,13 @@ void pcf_nnrf_handle_nf_discover(
     }
 
     if (sbi_object->type == OGS_SBI_OBJ_UE_TYPE) {
-        pcf_ue_am = pcf_ue_am_find_by_id(sbi_object_id);
-        ogs_assert(pcf_ue_am);
+        pcf_ue = pcf_ue_find_by_id(sbi_object_id);
+        ogs_assert(pcf_ue);
     } else if (sbi_object->type == OGS_SBI_OBJ_SESS_TYPE) {
         sess = pcf_sess_find_by_id(sbi_object_id);
         ogs_assert(sess);
-        pcf_ue_sm = pcf_ue_sm_find_by_id(sess->pcf_ue_sm_id);
-        ogs_assert(pcf_ue_sm);
+        pcf_ue = pcf_ue_find_by_id(sess->pcf_ue_id);
+        ogs_assert(pcf_ue);
     } else {
         ogs_fatal("(NF discover) Not implemented [%s:%d]",
             ogs_sbi_service_type_to_name(service_type), sbi_object->type);
@@ -79,9 +78,8 @@ void pcf_nnrf_handle_nf_discover(
     nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
                     target_nf_type, requester_nf_type, discovery_option);
     if (!nf_instance) {
-        ogs_error("[%s:%s:%d] (NF discover) No [%s:%s]",
-                    pcf_ue_am ? pcf_ue_am->supi : "Unknown",
-                    pcf_ue_sm ? pcf_ue_sm->supi : "Unknown",
+        ogs_error("[%s:%d] (NF discover) No [%s:%s]",
+                    pcf_ue ? pcf_ue->supi : "Unknown",
                     sess ? sess->psi : 0,
                     ogs_sbi_service_type_to_name(service_type),
                     OpenAPI_nf_type_ToString(requester_nf_type));

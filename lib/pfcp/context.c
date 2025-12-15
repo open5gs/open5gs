@@ -1349,10 +1349,7 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
     pdr = ogs_pfcp_pdr_find(sess, id);
     if (!pdr) {
         pdr = ogs_pfcp_pdr_add(sess);
-        if (!pdr) {
-            ogs_error("ogs_pfcp_pdr_add() failed");
-            return NULL;
-        }
+        ogs_assert(pdr);
         pdr->id = id;
     }
 
@@ -1402,7 +1399,7 @@ int ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
 
-uint8_t ogs_pfcp_object_teid_hash_set(
+void ogs_pfcp_object_teid_hash_set(
         ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr,
         bool restoration_indication)
 {
@@ -1432,20 +1429,12 @@ uint8_t ogs_pfcp_object_teid_hash_set(
                     &ogs_gtp_self()->gtpu_resource_list,
                     pdr->dnn, pdr->src_if);
             if (resource) {
-                if (!((resource->info.v4 && pdr->f_teid.ipv4) ||
-                      (resource->info.v6 && pdr->f_teid.ipv6))) {
-                    ogs_error("CH F-TEID address family mismatch: "
-                            "resource[v4:%d v6:%d] fteid[v4:%d v6:%d]",
-                            resource->info.v4, resource->info.v6,
-                            pdr->f_teid.ipv4, pdr->f_teid.ipv6);
-                    return OGS_PFCP_CAUSE_REQUEST_REJECTED;
-                }
-                if (OGS_OK != ogs_pfcp_user_plane_ip_resource_info_to_f_teid(
-                        &resource->info, &pdr->f_teid, &pdr->f_teid_len)) {
-                    ogs_error("user_plane_ip_resource_info_to_f_teid() "
-                            "failed in CH path");
-                    return OGS_PFCP_CAUSE_REQUEST_REJECTED;
-                }
+                ogs_assert(
+                    (resource->info.v4 && pdr->f_teid.ipv4) ||
+                    (resource->info.v6 && pdr->f_teid.ipv6));
+                ogs_assert(OGS_OK ==
+                    ogs_pfcp_user_plane_ip_resource_info_to_f_teid(
+                    &resource->info, &pdr->f_teid, &pdr->f_teid_len));
                 if (resource->info.teidri)
                     pdr->f_teid.teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
                             pdr->teid, resource->info.teidri,
@@ -1453,26 +1442,16 @@ uint8_t ogs_pfcp_object_teid_hash_set(
                 else
                     pdr->f_teid.teid = pdr->teid;
             } else {
-                if (!((ogs_gtp_self()->gtpu_addr && pdr->f_teid.ipv4) ||
-                    (ogs_gtp_self()->gtpu_addr6 && pdr->f_teid.ipv6))) {
-                    ogs_error("CH F-TEID address family mismatch with local "
-                            "GTP-U address: gtpu[v4:%p v6:%p] "
-                            "fteid[v4:%d v6:%d]",
-                            ogs_gtp_self()->gtpu_addr,
-                            ogs_gtp_self()->gtpu_addr6,
-                            pdr->f_teid.ipv4, pdr->f_teid.ipv6);
-                    return OGS_PFCP_CAUSE_REQUEST_REJECTED;
-                }
-                if (OGS_OK != ogs_pfcp_sockaddr_to_f_teid(
+                ogs_assert(
+                    (ogs_gtp_self()->gtpu_addr && pdr->f_teid.ipv4) ||
+                    (ogs_gtp_self()->gtpu_addr6 && pdr->f_teid.ipv6));
+                ogs_assert(OGS_OK ==
+                    ogs_pfcp_sockaddr_to_f_teid(
                         pdr->f_teid.ipv4 ?
                             ogs_gtp_self()->gtpu_addr : NULL,
                         pdr->f_teid.ipv6 ?
                             ogs_gtp_self()->gtpu_addr6 : NULL,
-                        &pdr->f_teid, &pdr->f_teid_len)) {
-                    ogs_error("ogs_pfcp_sockaddr_to_f_teid() "
-                            "failed in CH path");
-                    return OGS_PFCP_CAUSE_REQUEST_REJECTED;
-                }
+                        &pdr->f_teid, &pdr->f_teid_len));
                 pdr->f_teid.teid = pdr->teid;
             }
         }
@@ -1499,8 +1478,6 @@ uint8_t ogs_pfcp_object_teid_hash_set(
         ogs_fatal("Unknown type [%d]", type);
         ogs_assert_if_reached();
     }
-
-    return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
 
 ogs_pfcp_object_t *ogs_pfcp_object_find_by_teid(uint32_t teid)
@@ -1700,10 +1677,7 @@ ogs_pfcp_far_t *ogs_pfcp_far_find_or_add(
     far = ogs_pfcp_far_find(sess, id);
     if (!far) {
         far = ogs_pfcp_far_add(sess);
-        if (!far) {
-            ogs_error("ogs_pfcp_far_add() failed");
-            return NULL;
-        }
+        ogs_assert(far);
         far->id = id;
     }
 
@@ -1910,8 +1884,8 @@ void ogs_pfcp_far_remove(ogs_pfcp_far_t *far)
     if (far->dnn)
         ogs_free(far->dnn);
 
-    for (i = 0; i < far->num_of_buffered_gtpu; i++)
-        ogs_pkbuf_free(far->buffered_gtpu[i]);
+    for (i = 0; i < far->num_of_buffered_packet; i++)
+        ogs_pkbuf_free(far->buffered_packet[i]);
 
     if (far->id_node)
         ogs_pool_free(&far->sess->far_id_pool, far->id_node);
@@ -1981,10 +1955,7 @@ ogs_pfcp_urr_t *ogs_pfcp_urr_find_or_add(
     urr = ogs_pfcp_urr_find(sess, id);
     if (!urr) {
         urr = ogs_pfcp_urr_add(sess);
-        if (!urr) {
-            ogs_error("ogs_pfcp_urr_add() failed");
-            return NULL;
-        }
+        ogs_assert(urr);
         urr->id = id;
     }
 
@@ -2069,10 +2040,7 @@ ogs_pfcp_qer_t *ogs_pfcp_qer_find_or_add(
     qer = ogs_pfcp_qer_find(sess, id);
     if (!qer) {
         qer = ogs_pfcp_qer_add(sess);
-        if (!qer) {
-            ogs_error("ogs_pfcp_qer_add() failed");
-            return NULL;
-        }
+        ogs_assert(qer);
         qer->id = id;
     }
 

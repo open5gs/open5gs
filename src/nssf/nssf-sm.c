@@ -46,12 +46,6 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *request = NULL;
 
-    nssf_home_t *home = NULL;
-
-    ogs_pool_id_t sbi_object_id = OGS_INVALID_POOL_ID;
-    ogs_sbi_xact_t *sbi_xact = NULL;
-    ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
-
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_subscription_data_t *subscription_data = NULL;
     ogs_sbi_response_t *response = NULL;
@@ -147,8 +141,7 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_NETWORK_SLICE_INFORMATION)
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
-                    nssf_nnrf_nsselection_handle_get_from_amf_or_vnssf(
-                            stream, &message);
+                    nssf_nnrf_nsselection_handle_get(stream, &message);
                     break;
 
                 DEFAULT
@@ -198,16 +191,7 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             break;
         }
 
-        SWITCH(message.h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION)
-            api_version = OGS_SBI_API_V2;
-            break;
-        DEFAULT
-            api_version = OGS_SBI_API_V1;
-        END
-
-        ogs_assert(api_version);
-        if (strcmp(message.h.api.version, api_version) != 0) {
+        if (strcmp(message.h.api.version, OGS_SBI_API_V1) != 0) {
             ogs_error("Not supported version [%s]", message.h.api.version);
             ogs_sbi_message_free(&message);
             ogs_sbi_response_free(response);
@@ -221,33 +205,10 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
                 nf_instance = e->h.sbi.data;
                 ogs_assert(nf_instance);
+                ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
 
-    /*
-     * Guard against dispatching to an FSM that may have been finalized
-     * by an asynchronous shutdown triggered by SIGTERM.
-     *
-     * In init.c’s event_termination(), which can be invoked asynchronously
-     * when the process receives SIGTERM, we iterate over all NF instances:
-     *     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance)
-     *         ogs_sbi_nf_fsm_fini(nf_instance);
-     * and call ogs_fsm_fini() on each instance’s FSM. That finalizes the FSM
-     * and its state is reset to zero.
-     *
-     * After event_termination(), any incoming SBI response—such as an NRF
-     * client callback arriving after deregistration—would otherwise be
-     * dispatched into a dead FSM and trigger an assertion failure.
-     *
-     * To avoid this, we check OGS_FSM_STATE(&nf_instance->sm):
-     *   - If non-zero, the FSM is still active and can safely handle the event.
-     *   - If zero, the FSM has already been finalized by event_termination(),
-     *     so we log and drop the event to allow graceful shutdown.
-     */
-                if (OGS_FSM_STATE(&nf_instance->sm)) {
-                    e->h.sbi.message = &message;
-                    ogs_fsm_dispatch(&nf_instance->sm, e);
-                } else
-                    ogs_error("NF instance FSM has been finalized");
-
+                e->h.sbi.message = &message;
+                ogs_fsm_dispatch(&nf_instance->sm, e);
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
@@ -305,80 +266,6 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             END
             break;
 
-        CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
-            SWITCH(message.h.resource.component[0])
-            CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
-                ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
-                        sbi_xact_id <= OGS_MAX_POOL_ID);
-
-                sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
-                if (!sbi_xact) {
-                    /* CLIENT_WAIT timer could remove SBI transaction
-                     * before receiving SBI message */
-                    ogs_error("SBI transaction has already been removed [%d]",
-                            sbi_xact_id);
-                    break;
-                }
-
-                SWITCH(message.h.method)
-                CASE(OGS_SBI_HTTP_METHOD_GET)
-                    if (message.res_status == OGS_SBI_HTTP_STATUS_OK)
-                        nssf_nnrf_handle_nf_discover(sbi_xact, &message);
-                    else
-                        ogs_error("HTTP response error [%d]",
-                                message.res_status);
-                    break;
-
-                DEFAULT
-                    ogs_error("Invalid HTTP method [%s]", message.h.method);
-                    ogs_assert_if_reached();
-                END
-                break;
-
-            DEFAULT
-                ogs_error("Invalid resource name [%s]",
-                        message.h.resource.component[0]);
-                ogs_assert_if_reached();
-            END
-            break;
-
-        CASE(OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION)
-            sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
-            ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
-                    sbi_xact_id <= OGS_MAX_POOL_ID);
-
-            sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
-            if (!sbi_xact) {
-                /* CLIENT_WAIT timer could remove SBI transaction
-                 * before receiving SBI message */
-                ogs_error("SBI transaction has already been removed [%d]",
-                        sbi_xact_id);
-                break;
-            }
-
-            sbi_object_id = sbi_xact->sbi_object_id;
-            ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
-                    sbi_object_id <= OGS_MAX_POOL_ID);
-
-            ogs_assert(sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
-                    sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID);
-            stream = ogs_sbi_stream_find_by_id(sbi_xact->assoc_stream_id);
-
-            ogs_sbi_xact_remove(sbi_xact);
-
-            home = nssf_home_find_by_id(sbi_object_id);
-            if (!home) {
-                ogs_error("Home Network Context has already been removed");
-                break;
-            }
-
-            e->h.sbi.message = &message;;
-
-            nssf_nnrf_nsselection_handle_get_from_hnssf(home, stream, &message);
-            break;
-
-
         DEFAULT
             ogs_error("Invalid API name [%s]", message.h.service.name);
             ogs_assert_if_reached();
@@ -434,64 +321,6 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
 
             ogs_info("[%s] Need to update Subscription",
                     subscription_data->id);
-            break;
-
-        case OGS_TIMER_SBI_CLIENT_WAIT:
-            /*
-             * ogs_pollset_poll() receives the time of the expiration
-             * of next timer as an argument. If this timeout is
-             * in very near future (1 millisecond), and if there are
-             * multiple events that need to be processed by ogs_pollset_poll(),
-             * these could take more than 1 millisecond for processing,
-             * resulting in the timer already passed the expiration.
-             *
-             * In case that another NF is under heavy load and responds
-             * to an SBI request with some delay of a few seconds,
-             * it can happen that ogs_pollset_poll() adds SBI responses
-             * to the event list for further processing,
-             * then ogs_timer_mgr_expire() is called which will add
-             * an additional event for timer expiration. When all events are
-             * processed one-by-one, the SBI xact would get deleted twice
-             * in a row, resulting in a crash.
-             *
-             * 1. ogs_pollset_poll()
-             *    message was received and put into an event list,
-             * 2. ogs_timer_mgr_expire()
-             *    add an additional event for timer expiration
-             * 3. message event is processed. (free SBI xact)
-             * 4. timer expiration event is processed. (double-free SBI xact)
-             *
-             * To avoid double-free SBI xact,
-             * we need to check ogs_sbi_xact_find_by_id()
-             */
-            sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
-            ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
-                    sbi_xact_id <= OGS_MAX_POOL_ID);
-
-            sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
-            if (!sbi_xact) {
-                ogs_error("SBI transaction has already been removed [%d]",
-                        sbi_xact_id);
-                break;
-            }
-
-            ogs_assert(sbi_xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
-                    sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID);
-            stream = ogs_sbi_stream_find_by_id(sbi_xact->assoc_stream_id);
-
-            ogs_sbi_xact_remove(sbi_xact);
-
-            ogs_error("Cannot receive SBI message");
-
-            if (!stream) {
-                ogs_error("STREAM has alreadt been removed [%d]",
-                        sbi_xact->assoc_stream_id);
-                break;
-            }
-            ogs_assert(true ==
-                ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                    "Cannot receive SBI message", NULL, NULL));
             break;
 
         default:

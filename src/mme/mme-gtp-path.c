@@ -362,6 +362,7 @@ int mme_gtp_send_delete_session_request(
     ogs_gtp_xact_t *xact = NULL;
     mme_ue_t *mme_ue = NULL;
 
+    ogs_assert(enb_ue);
     ogs_assert(action);
     ogs_assert(sess);
     mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
@@ -387,10 +388,7 @@ int mme_gtp_send_delete_session_request(
     }
     xact->delete_action = action;
     xact->local_teid = mme_ue->gn.mme_gn_teid;
-    if (enb_ue)
-        xact->enb_ue_id = enb_ue->id;
-    else
-        xact->enb_ue_id = OGS_INVALID_POOL_ID;
+    xact->enb_ue_id = enb_ue->id;
     ogs_debug("delete_session_request - xact:%p, sess:%p", xact, sess);
 
     rv = ogs_gtp_xact_commit(xact);
@@ -405,6 +403,7 @@ void mme_gtp_send_delete_all_sessions(
     mme_sess_t *sess = NULL, *next_sess = NULL;
     sgw_ue_t *sgw_ue = NULL;
 
+    ogs_assert(enb_ue);
     ogs_assert(mme_ue);
     sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     ogs_assert(sgw_ue);
@@ -657,7 +656,7 @@ void mme_gtp_send_release_all_ue_in_enb(mme_enb_t *enb, int action)
                  * Execute enb_ue_unlink(mme_ue) and enb_ue_remove(enb_ue)
                  * before mme_gtp_send_release_access_bearers_request()
                  */
-                enb_ue_deassociate_mme_ue(enb_ue, mme_ue);
+                enb_ue_unlink(mme_ue);
                 enb_ue_remove(enb_ue);
             }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -31,19 +31,6 @@ bool smf_nsmf_handle_create_sm_context(
 bool smf_nsmf_handle_update_sm_context(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
 bool smf_nsmf_handle_release_sm_context(
-    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
-
-bool smf_nsmf_handle_create_data_in_hsmf(
-    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
-bool smf_nsmf_handle_created_data_in_vsmf(
-    smf_sess_t *sess, ogs_sbi_message_t *recvmsg);
-
-bool smf_nsmf_handle_update_data_in_hsmf(
-    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
-bool smf_nsmf_handle_update_data_in_vsmf(
-    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
-
-bool smf_nsmf_handle_release_data_in_hsmf(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
 
 bool smf_nsmf_callback_handle_sdm_data_change_notify(

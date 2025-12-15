@@ -48,6 +48,7 @@ typedef struct ogs_global_conf_s {
         int no_nssf;
         int no_bsf;
         int no_udr;
+        int no_pwsiwf_sai;
         int no_sepp;
         int no_scp;
         int no_nrf;
@@ -208,28 +209,27 @@ int ogs_app_parse_session_conf(
 ogs_app_policy_conf_t *ogs_app_policy_conf_add(
         ogs_supi_range_t *supi_range, ogs_plmn_id_t *plmn_id);
 ogs_app_policy_conf_t *ogs_app_policy_conf_find(
-        const char *supi, const ogs_plmn_id_t *plmn_id);
+        char *supi, ogs_plmn_id_t *plmn_id);
 void ogs_app_policy_conf_remove(ogs_app_policy_conf_t *policy_conf);
 void ogs_app_policy_conf_remove_all(void);
 
 ogs_app_slice_conf_t *ogs_app_slice_conf_add(
-        ogs_app_policy_conf_t *policy_conf, const ogs_s_nssai_t *s_nssai);
+        ogs_app_policy_conf_t *policy_conf, ogs_s_nssai_t *s_nssai);
 ogs_app_slice_conf_t *ogs_app_slice_conf_find_by_s_nssai(
-        ogs_app_policy_conf_t *policy_conf, const ogs_s_nssai_t *s_nssai);
+        ogs_app_policy_conf_t *policy_conf, ogs_s_nssai_t *s_nssai);
 void ogs_app_slice_conf_remove(ogs_app_slice_conf_t *slice_conf);
 void ogs_app_slice_conf_remove_all(ogs_app_policy_conf_t *policy_conf);
 
 ogs_app_session_conf_t *ogs_app_session_conf_add(
-        ogs_app_slice_conf_t *slice_conf, const char *name);
+        ogs_app_slice_conf_t *slice_conf, char *name);
 ogs_app_session_conf_t *ogs_app_session_conf_find_by_dnn(
-        ogs_app_slice_conf_t *slice_conf, const char *name);
+        ogs_app_slice_conf_t *slice_conf, char *name);
 void ogs_app_session_conf_remove(ogs_app_session_conf_t *session_conf);
 void ogs_app_session_conf_remove_all(
         ogs_app_slice_conf_t *slice_conf);
 
 int ogs_app_config_session_data(
-        const char *supi, const ogs_plmn_id_t *plmn_id,
-        const ogs_s_nssai_t *s_nssai, const char *dnn,
+        char *supi, ogs_plmn_id_t *plmn_id, ogs_s_nssai_t *s_nssai, char *dnn,
         ogs_session_data_t *session_data);
 
 #ifdef __cplusplus

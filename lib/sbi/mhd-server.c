@@ -142,8 +142,7 @@ static ogs_sbi_session_t *session_add(ogs_sbi_server_t *server,
     sbi_sess->connection = connection;
 
     sbi_sess->timer = ogs_timer_add(
-            ogs_app()->timer_mgr, session_timer_expired,
-            OGS_UINT_TO_POINTER(sbi_sess->id));
+            ogs_app()->timer_mgr, session_timer_expired, sbi_sess);
     if (!sbi_sess->timer) {
         ogs_error("ogs_timer_add() failed");
         ogs_pool_id_free(&session_pool, sbi_sess);
@@ -184,22 +183,15 @@ static void session_remove(ogs_sbi_session_t *sbi_sess)
 
 static void session_timer_expired(void *data)
 {
-    ogs_pool_id_t sbi_sess_id = OGS_POINTER_TO_UINT(data);
-    ogs_sbi_session_t *sbi_sess = NULL;
+    ogs_sbi_session_t *sbi_sess = data;
 
-    if (sbi_sess_id >= OGS_MIN_POOL_ID && sbi_sess_id <= OGS_MAX_POOL_ID)
-        sbi_sess = ogs_pool_find_by_id(&session_pool, sbi_sess_id);
-    else
-        ogs_error("Invalid Session ID [%d]", sbi_sess_id);
+    ogs_assert(sbi_sess);
 
     ogs_fatal("An HTTP request was received, "
                 "but the HTTP response is missing.");
     ogs_fatal("Please send the related pcap files for this case.");
 
-    if (sbi_sess)
-        session_remove(sbi_sess);
-    else
-        ogs_error("No Session Context");
+    session_remove(sbi_sess);
 
     ogs_assert_if_reached();
 }

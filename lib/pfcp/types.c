@@ -304,7 +304,7 @@ int16_t ogs_pfcp_build_sdf_filter(
 int16_t ogs_pfcp_parse_sdf_filter(
         ogs_pfcp_sdf_filter_t *filter, ogs_tlv_octet_t *octet)
 {
-    uint32_t size = 0;
+    int16_t size = 0;
 
     ogs_assert(filter);
     ogs_assert(octet);
@@ -454,11 +454,7 @@ int16_t ogs_pfcp_parse_bitrate(
 
     ogs_assert(bitrate);
     ogs_assert(octet);
-    if (octet->len != OGS_PFCP_BITRATE_LEN) {
-        ogs_error("Mismatch IE Length[%d] != Decoded[%d]",
-                OGS_PFCP_BITRATE_LEN, octet->len);
-        return 0;
-    }
+    ogs_assert(octet->len == OGS_PFCP_BITRATE_LEN);
 
     memset(bitrate, 0, sizeof(ogs_pfcp_bitrate_t));
 
@@ -659,8 +655,7 @@ int16_t ogs_pfcp_parse_dropped_dl_traffic_threshold(
         size += sizeof(threshold->number_of_bytes_of_downlink_data);
     }
 
-    if (size != octet->len)
-        ogs_error("Mismatch IE Length[%d] != Decoded[%d]", octet->len, size);
+    ogs_assert(size == octet->len);
 
     return size;
 }
@@ -776,8 +771,7 @@ int16_t ogs_pfcp_parse_volume_measurement(
         size += sizeof(volume->downlink_n_packets);
     }
 
-    if (size != octet->len)
-        ogs_error("Mismatch IE Length[%d] != Decoded[%d]", octet->len, size);
+    ogs_assert(size == octet->len);
 
     return size;
 }

@@ -892,7 +892,7 @@ f.write("""ogs_pkbuf_t *ogs_nas_5gmm_encode(ogs_nas_5gs_message_t *message)
 
     ogs_assert(message);
 
-    /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM.
+    /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     if (!pkbuf) {
@@ -946,7 +946,7 @@ f.write("""ogs_pkbuf_t *ogs_nas_5gsm_encode(ogs_nas_5gs_message_t *message)
 
     ogs_assert(message);
 
-    /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM.
+    /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     if (!pkbuf) {

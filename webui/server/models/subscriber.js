@@ -79,10 +79,7 @@ const Subscriber = new Schema({
             uplink: { value: Number, unit: Number }
           },
         },
-      }],
-
-      lbo_roaming_allowed: Boolean
-
+      }]
     }]
   }],
 

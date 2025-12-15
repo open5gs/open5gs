@@ -211,6 +211,23 @@ void mme_timer_sgs_cli_conn_to_srv(void *data)
     }
 }
 
+void mme_timer_sbc_cli_conn_to_srv(void *data)
+{
+    int rv;
+    mme_event_t *e = NULL;
+    ogs_assert(data);
+
+    e = mme_event_new(MME_EVENT_SGSAP_TIMER);
+    e->timer_id = MME_TIMER_SBC_CLI_CONN_TO_SRV;
+    e->sbc = data;
+
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        mme_event_free(e);
+    }
+}
+
 void mme_timer_s1_holding_timer_expire(void *data)
 {
     int rv;

@@ -70,7 +70,7 @@ int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description)
 
     /* Save DIRECTION */
     dir = token = ogs_strtok_r(NULL, " ", &saveptr);
-    if (!token || strcmp(token, "out") != 0) {
+    if (strcmp(token, "out") != 0) {
         ogs_error("Not begins with reserved keyword : 'permit out'");
         ogs_free(description);
         return OGS_ERROR;
@@ -79,7 +79,7 @@ int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description)
     /* ADDR */
     i = 2;
     token = ogs_strtok_r(NULL, " ", &saveptr);
-    while ((token != NULL) && (i < (MAX_NUM_OF_TOKEN-2))) {
+    while (token != NULL) {
         av[i++] = token;
         token = ogs_strtok_r(NULL, " ", &saveptr);
     }

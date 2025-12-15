@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -19,8 +19,7 @@
 
 #include "ogs-dbi.h"
 
-int ogs_dbi_session_data(
-        const char *supi, const ogs_s_nssai_t *s_nssai, const char *dnn,
+int ogs_dbi_session_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
         ogs_session_data_t *session_data)
 {
     int rv = OGS_OK;
@@ -169,9 +168,6 @@ done:
         } else if (!strcmp(child4_key, OGS_TYPE_STRING) &&
             BSON_ITER_HOLDS_INT32(&child4_iter)) {
             session->session_type = bson_iter_int32(&child4_iter);
-        } else if (!strcmp(child4_key, OGS_LBO_ROAMING_ALLOWED_STRING) &&
-            BSON_ITER_HOLDS_BOOL(&child4_iter)) {
-            session->lbo_roaming_allowed = bson_iter_bool(&child4_iter);
         } else if (!strcmp(child4_key, OGS_QOS_STRING) &&
             BSON_ITER_HOLDS_DOCUMENT(&child4_iter)) {
             bson_iter_recurse(&child4_iter, &child5_iter);

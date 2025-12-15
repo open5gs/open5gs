@@ -67,8 +67,7 @@ ogs_pkbuf_t *testemm_build_attach_request(
         *ue_additional_security_capability =
             &attach_request->ue_additional_security_capability;
 
-    uint8_t classmark_3[11] = {
-        0x60, 0x14, 0x04, 0xef, 0x65, 0x23, 0x3b, 0x88, 0x78, 0xd2, 0x90 };
+    uint8_t classmark_3[11] = "\x60\x14\x04\xef\x65\x23\x3b\x88\x78\xd2\x90";
 
     ogs_assert(test_ue);
     ogs_assert(esmbuf);
@@ -592,7 +591,7 @@ ogs_pkbuf_t *testemm_build_tau_request(
         *ue_additional_security_capability =
             &tau_request->ue_additional_security_capability;
 
-    uint8_t classmark_3[11] = { 0x60, 0x14, 0x04, 0xef, 0x65, 0x23, 0x3b, 0x88, 0x78, 0xd2, 0x90 };
+    uint8_t classmark_3[11] = "\x60\x14\x04\xef\x65\x23\x3b\x88\x78\xd2\x90";
 
     ogs_assert(test_ue);
 
@@ -650,12 +649,20 @@ ogs_pkbuf_t *testemm_build_tau_request(
     }
 
     if (test_ue->tau_request_param.eps_bearer_context_status) {
+        test_sess_t *sess = NULL;
+        test_bearer_t *bearer = NULL;
+
         tau_request->presencemask |=
             OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_PRESENT;
         eps_bearer_context_status->length = 2;
 
-        eps_bearer_context_status->value =
-            test_ue->tau_request_param.eps_bearer_context_status;
+        ogs_list_for_each(&test_ue->sess_list, sess) {
+            ogs_list_for_each(&sess->bearer_list, bearer) {
+                if (bearer->ebi == 5) eps_bearer_context_status->ebi5 = 1;
+                else if (bearer->ebi == 6) eps_bearer_context_status->ebi6 = 1;
+                else if (bearer->ebi == 7) eps_bearer_context_status->ebi7 = 1;
+            }
+        }
     }
 
     if (test_ue->tau_request_param.ms_network_capability) {

@@ -29,6 +29,7 @@
 #include "ogs-app.h"
 #include "ogs-sctp.h"
 #include "metrics.h"
+#include "ogs-sbcap.h"
 
 /* S1AP */
 #include "S1AP_Cause.h"
@@ -53,6 +54,7 @@ typedef struct mme_pgw_s mme_pgw_t;
 typedef struct mme_vlr_s mme_vlr_t;
 typedef struct mme_csmap_s mme_csmap_t;
 typedef struct mme_hssmap_s mme_hssmap_t;
+typedef struct mme_sbcap_s mme_sbcap_t;
 
 typedef struct enb_ue_s enb_ue_t;
 typedef struct sgw_ue_s sgw_ue_t;
@@ -79,9 +81,11 @@ typedef struct mme_context_s {
     const char          *diam_conf_path;  /* MME Diameter conf path */
     ogs_diam_config_t   *diam_config;     /* MME Diameter config */
 
+    uint16_t        sbcap_port;      /* Default SBCAP Port */
     uint16_t        s1ap_port;      /* Default S1AP Port */
     uint16_t        sgsap_port;     /* Default SGsAP Port */
 
+    ogs_list_t      sbcap_list;      /* MME SBCAP IPv4 Server List */
     ogs_list_t      s1ap_list;      /* MME S1AP IPv4 Server List */
     ogs_list_t      s1ap_list6;     /* MME S1AP IPv6 Server List */
 
@@ -99,8 +103,6 @@ typedef struct mme_context_s {
     ogs_list_t      vlr_list;       /* VLR SGsAP Client List */
     ogs_list_t      csmap_list;     /* TAI-LAI Map List */
     ogs_list_t      hssmap_list;    /* PLMN HSS Map List */
-
-    ogs_list_t      emerg_list;     /* Emergency number list */
 
     /* Served GUMME */
     int             num_of_served_gummei;
@@ -156,6 +158,8 @@ typedef struct mme_context_s {
     ogs_hash_t *enb_id_hash;    /* hash table for ENB-ID */
     ogs_hash_t *imsi_ue_hash;   /* hash table (IMSI : MME_UE) */
     ogs_hash_t *guti_ue_hash;   /* hash table (GUTI : MME_UE) */
+    ogs_hash_t *sbcap_addr_hash;  /* hash table for SBC Address */
+    ogs_hash_t *sbcap_id_hash;    /* hash table for SBC-ID */
 
     ogs_hash_t *mme_s11_teid_hash;  /* hash table (MME-S11-TEID : MME_UE) */
     ogs_hash_t *mme_gn_teid_hash;  /* hash table (MME-GN-TEID : MME_UE) */
@@ -165,10 +169,6 @@ typedef struct mme_context_s {
             ogs_time_t value;       /* Timer Value(Seconds) */
         } t3402, t3412, t3423;
     } time;
-
-    struct {
-        const char *dnn;            /* Emergency APN */
-    } emergency;
 } mme_context_t;
 
 typedef struct mme_sgsn_route_s {
@@ -229,6 +229,25 @@ typedef struct mme_vlr_s {
     ogs_poll_t      *poll;      /* VLR SGsAP Poll */
 } mme_vlr_t;
 
+typedef struct mme_sbcap_s { //added by northmoriko _sai refined
+    ogs_lnode_t     lnode;
+
+    ogs_fsm_t       sm;          /* A state machine */
+
+    //ogs_timer_t     *t_conn;     /* client timer to connect to server */
+    ogs_sctp_sock_t sctp; 
+
+    int             max_num_of_ostreams;/* SCTP Max num of outbound streams */
+    uint16_t        ostream_id;     /* vlr_ostream_id generator */
+    //ogs_pkbuf_t
+    ///ogs_sockaddr_t  *sa_list;   /* SBcAP Socket Address List */
+///
+    ///ogs_sock_t      *sock;      /* SBcAP Socket */
+    ///ogs_sockaddr_t  *addr;      /* SBcAP Connected Socket Address */
+    ///ogs_sockopt_t   *option;    /* SBcAP Socket Option */
+    ///ogs_poll_t      *poll;      /* SBcAP Poll */
+} mme_sbcap_t;
+
 typedef struct mme_csmap_s {
     ogs_lnode_t     lnode;
 
@@ -272,15 +291,6 @@ typedef struct mme_enb_s {
     ogs_list_t      enb_ue_list;
 
 } mme_enb_t;
-
-typedef struct mme_emerg_s {
-    ogs_lnode_t     lnode;
-    ogs_pool_id_t   id;
-
-    uint8_t         categories; /* Service categories */
-    const char      *digits;    /* Emergency number */
-
-} mme_emerg_t;
 
 struct enb_ue_s {
     ogs_lnode_t     lnode;
@@ -446,10 +456,10 @@ struct mme_ue_s {
         ogs_nas_detach_type_t detach;
     } nas_eps;
 
-    uint64_t tracking_area_update_request_presencemask;
-    uint16_t tracking_area_update_request_ebcs_value;
-    S1AP_ProcedureCode_t tracking_area_update_accept_proc;
-
+#define MME_TAU_TYPE_INITIAL_UE_MESSAGE    1
+#define MME_TAU_TYPE_UPLINK_NAS_TRANPORT   2
+#define MME_TAU_TYPE_UNPROTECTED_INGERITY  3
+    uint8_t tracking_area_update_request_type;
 
     /* 1. MME initiated detach request to the UE.
      *    (nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE)
@@ -649,7 +659,7 @@ struct mme_ue_s {
         \
         enb_ue_holding = enb_ue_find_by_id((__mME)->enb_ue_id); \
         if (enb_ue_holding) { \
-            enb_ue_holding->mme_ue_id = OGS_INVALID_POOL_ID; \
+            enb_ue_deassociate(enb_ue_holding); \
             \
             ogs_warn("[%s] Holding S1 Context", (__mME)->imsi_bcd); \
             ogs_warn("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]", \
@@ -814,7 +824,6 @@ struct mme_ue_s {
 
 #define GTP_COUNTER_CREATE_SESSION_BY_PATH_SWITCH               1
 #define GTP_COUNTER_DELETE_SESSION_BY_PATH_SWITCH               2
-#define GTP_COUNTER_DELETE_SESSION_BY_TAU                       3
     struct {
         uint8_t request;
         uint8_t response;
@@ -825,15 +834,6 @@ struct mme_ue_s {
     mme_csmap_t     *csmap;
     mme_hssmap_t    *hssmap;
 };
-
-#define MME_UE_REMOVE_WITH_PAGING_FAIL(__mME) \
-    do { \
-        if (MME_PAGING_ONGOING(__mME)) { \
-            ogs_error("Paging is ON-Going [%d]", (__mME)->paging.type); \
-            mme_send_after_paging(__mME, false); \
-        } \
-        mme_ue_remove(__mME); \
-    } while(0)
 
 #define SESSION_CONTEXT_IS_AVAILABLE(__mME) \
     ((__mME) && \
@@ -1059,6 +1059,12 @@ void mme_vlr_remove_all(void);
 void mme_vlr_close(mme_vlr_t *vlr);
 mme_vlr_t *mme_vlr_find_by_sock(const ogs_sock_t *sock);
 
+mme_sbcap_t *mme_sbcap_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
+int mme_sbc_remove(mme_sbcap_t *sbc);
+int mme_sbc_remove_all(void);
+mme_sbcap_t *mme_sbcap_find_by_addr(ogs_sockaddr_t *addr);
+
+
 mme_csmap_t *mme_csmap_add(mme_vlr_t *vlr);
 void mme_csmap_remove(mme_csmap_t *csmap);
 void mme_csmap_remove_all(void);
@@ -1081,6 +1087,8 @@ mme_enb_t *mme_enb_find_by_enb_id(uint32_t enb_id);
 int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id);
 int mme_enb_sock_type(ogs_sock_t *sock);
 mme_enb_t *mme_enb_find_by_id(ogs_pool_id_t id);
+
+int mme_sbcap_sock_type(ogs_sock_t *sock);
 
 enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id);
 void enb_ue_remove(enb_ue_t *enb_ue);
@@ -1188,12 +1196,14 @@ int mme_ue_xact_count(mme_ue_t *mme_ue, uint8_t org);
  *   - Delete Indirect Data Forwarding Tunnel Request/Response
  */
 void enb_ue_associate_mme_ue(enb_ue_t *enb_ue, mme_ue_t *mme_ue);
-void enb_ue_deassociate_mme_ue(enb_ue_t *enb_ue, mme_ue_t *mme_ue);
+void enb_ue_deassociate(enb_ue_t *enb_ue);
+void enb_ue_unlink(mme_ue_t *mme_ue);
 void enb_ue_source_associate_target(enb_ue_t *source_ue, enb_ue_t *target_ue);
 void enb_ue_source_deassociate_target(enb_ue_t *enb_ue);
 
 void sgw_ue_associate_mme_ue(sgw_ue_t *sgw_ue, mme_ue_t *mme_ue);
-void sgw_ue_deassociate_mme_ue(sgw_ue_t *sgw_ue, mme_ue_t *mme_ue);
+void sgw_ue_deassociate(sgw_ue_t *sgw_ue);
+void sgw_ue_unlink(mme_ue_t *mme_ue);
 void sgw_ue_source_associate_target(sgw_ue_t *source_ue, sgw_ue_t *target_ue);
 void sgw_ue_source_deassociate_target(sgw_ue_t *sgw_ue);
 
@@ -1240,10 +1250,6 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue);
 
 void mme_ue_save_memento(mme_ue_t *mme_ue, mme_ue_memento_t *memento);
 void mme_ue_restore_memento(mme_ue_t *mme_ue, const mme_ue_memento_t *memento);
-
-mme_emerg_t *mme_emerg_add(uint8_t categories, const char *digits);
-void mme_emerg_remove(mme_emerg_t *emerg);
-void mme_emerg_remove_all(void);
 
 #ifdef __cplusplus
 }

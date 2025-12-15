@@ -31,7 +31,7 @@ extern "C" {
 #define OGS_MAX_NUM_OF_SESS             4   /* Num of APN(Session) per UE */
 #define OGS_MAX_NUM_OF_BEARER           4   /* Num of Bearer per Session */
 #define OGS_BEARER_PER_UE               8   /* Num of Bearer per UE */
-#define OGS_MAX_NUM_OF_GTPU_BUFFER      64  /* Num of GTPU Buffer per UE */
+#define OGS_MAX_NUM_OF_PACKET_BUFFER    64  /* Num of PacketBuffer per UE */
 
 /*
  * TS24.008
@@ -193,7 +193,6 @@ extern "C" {
 #define OGS_SESSION_STRING "session"
 #define OGS_NAME_STRING "name"
 #define OGS_TYPE_STRING "type"
-#define OGS_LBO_ROAMING_ALLOWED_STRING "lbo_roaming_allowed"
 #define OGS_QOS_STRING "qos"
 #define OGS_INDEX_STRING "index"
 #define OGS_ARP_STRING "arp"
@@ -246,8 +245,7 @@ char *ogs_home_network_domain_from_plmn_id(const ogs_plmn_id_t *plmn_id);
 char *ogs_epc_domain_from_plmn_id(const ogs_plmn_id_t *plmn_id);
 char *ogs_nrf_fqdn_from_plmn_id(const ogs_plmn_id_t *plmn_id);
 char *ogs_nssf_fqdn_from_plmn_id(const ogs_plmn_id_t *plmn_id);
-char *ogs_dnn_oi_from_plmn_id(const ogs_plmn_id_t *plmn_id);
-char *ogs_dnn_oi_from_fqdn(char *fqdn);
+char *ogs_home_network_domain_from_fqdn(char *fqdn);
 uint16_t ogs_plmn_id_mnc_from_fqdn(char *fqdn);
 uint16_t ogs_plmn_id_mcc_from_fqdn(char *fqdn);
 
@@ -433,21 +431,7 @@ ED2(uint8_t spare:5;,
     };
 } __attribute__ ((packed)) ogs_paa_t;
 
-/*
- *  Bitrate Upper Bound According to 3GPP Standards
- *
- *  EPC (S1AP): 3GPP TS 36.413 §9.2.1.19 Bit Rate
- *      - Maximum allowed bitrate value specified for EPC
- *
- *  5GC (NGAP): 3GPP TS 38.414 §9.3.1.4 Bit Rate
- *      - Defines larger bitrate ceiling due to 5GC performance model
- *
- *  NOTE: These values represent the upper boundary (ceiling) of the encode
- *        bitrate field in each control-plane protocol.
- */
-#define OGS_MAX_BITRATE_S1AP    10000000000UL        /* S1AP / EPC */
-#define OGS_MAX_BITRATE_NGAP    4000000000000UL      /* NGAP / 5GC */
-
+#define MAX_BIT_RATE 10000000000UL
 
 typedef struct ogs_bitrate_s {
     uint64_t downlink;        /* bits per seconds */
@@ -636,8 +620,6 @@ typedef struct ogs_session_s {
 #define OGS_PDU_SESSION_TYPE_TO_DIAMETER(x)         ((x)-1)
 #define OGS_PDU_SESSION_TYPE_FROM_DIAMETER(x)       ((x)+1)
     uint8_t session_type;
-
-    bool lbo_roaming_allowed; /* true: Allowed, false: Not allowed */
 
 #define OGS_SSC_MODE_1                              1
 #define OGS_SSC_MODE_2                              2

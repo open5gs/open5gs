@@ -21,7 +21,6 @@
 #include "s5c-build.h"
 #include "pfcp-path.h"
 #include "gtp-path.h"
-#include "sbi-path.h"
 
 #include "ipfw/ipfw2.h"
 
@@ -42,7 +41,7 @@ static void gtp_bearer_timeout(ogs_gtp_xact_t *xact, void *data)
 
     bearer = smf_bearer_find_by_id(bearer_id);
     if (!bearer) {
-        ogs_warn("Bearer has already been removed [%d]", type);
+        ogs_error("Bearer has already been removed [%d]", type);
         return;
     }
 
@@ -587,9 +586,9 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                 } else {
                     ogs_assert(OGS_OK ==
                         ogs_pfcp_sockaddr_to_f_teid(
-                            sess->local_ul_addr, sess->local_ul_addr6,
+                            sess->upf_n3_addr, sess->upf_n3_addr6,
                             &ul_pdr->f_teid, &ul_pdr->f_teid_len));
-                    ul_pdr->f_teid.teid = sess->local_ul_teid;
+                    ul_pdr->f_teid.teid = sess->upf_n3_teid;
                 }
 
                 qos_flow->pcc_rule.id = ogs_strdup(pcc_rule->id);
@@ -780,9 +779,6 @@ void smf_qos_flow_binding(smf_sess_t *sess)
     if (ogs_list_count(&sess->qos_flow_to_modify_list)) {
         ogs_assert(OGS_OK ==
                 smf_5gc_pfcp_send_qos_flow_list_modification_request(
-                    sess, NULL,
-                    HOME_ROUTED_ROAMING_IN_HSMF(sess) ?
-                        OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|pfcp_flags :
-                        pfcp_flags, 0));
+                    sess, NULL, pfcp_flags, 0));
     }
 }

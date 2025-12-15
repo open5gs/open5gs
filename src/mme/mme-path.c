@@ -29,6 +29,7 @@ void mme_send_delete_session_or_detach(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
 {
     int r, xact_count;
     ogs_assert(mme_ue);
+    ogs_assert(enb_ue);
 
     xact_count = mme_ue_xact_count(mme_ue, OGS_GTP_LOCAL_ORIGINATOR);
 
@@ -86,7 +87,7 @@ void mme_send_delete_session_or_detach(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
                         S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
             } else {
                 ogs_warn("[%s] MME-UE Context Removed", mme_ue->imsi_bcd);
-                MME_UE_REMOVE_WITH_PAGING_FAIL(mme_ue);
+                mme_ue_remove(mme_ue);
             }
         }
         break;
@@ -323,113 +324,4 @@ cleanup:
     /* the above will clear the failure flag, restore it if we failed */
     if (failed)
         mme_ue->paging.failed = true;
-}
-
-/* ----------------------------------------------------------------------
- * Function: mme_send_delete_session_or_tau_accept
- * ----------------------------------------------------------------------
- * - Check UE's EPS Bearer Context Status (BCS) regardless of active_flag
- *   against MME's sessions before sending TAU ACCEPT.
- * - If UE does not report the default bearer EBI, delete that session.
- * - Otherwise, send TAU ACCEPT immediately.
- * ---------------------------------------------------------------------- */
-void mme_send_delete_session_or_tau_accept(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
-{
-    sgw_ue_t *sgw_ue = NULL;
-    mme_sess_t *sess = NULL;
-    mme_bearer_t *def = NULL;
-
-    uint16_t mask;
-    uint8_t ebi;
-    int deleted = 0;
-
-    ogs_assert(enb_ue);
-    ogs_assert(mme_ue);
-
-    mask = mme_ue->tracking_area_update_request_ebcs_value;
-
-    ogs_list_for_each(&mme_ue->sess_list, sess) {
-        def = mme_default_bearer_in_sess(sess);
-        if (!def) {
-            ogs_warn("[%s] No default bearer; skip session", mme_ue->imsi_bcd);
-            continue;
-        }
-
-        ebi = def->ebi;
-        if (ebi > 15) {
-            ogs_warn("[%s] Invalid EBI=%u; skip", mme_ue->imsi_bcd, ebi);
-            continue;
-        }
-
-        /* If UE's BCS bit for this EBI is 0,
-         * delete the session */
-        if (!(mask & (1 << ebi))) {
-            ogs_warn("[%s] BCS mismatch: UE missing EBI=%u",
-                    mme_ue->imsi_bcd, ebi);
-            sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
-            ogs_assert(sgw_ue);
-
-            GTP_COUNTER_INCREMENT(
-                mme_ue, GTP_COUNTER_DELETE_SESSION_BY_TAU);
-
-            mme_gtp_send_delete_session_request(
-                enb_ue, sgw_ue, sess,
-                OGS_GTP_DELETE_SEND_TAU_ACCEPT);
-
-            deleted++;
-        }
-    }
-
-    if (deleted > 0) {
-        ogs_warn("[%s] Deleted %d session(s) due to BCS mismatch, "
-                "active_flag=%d",
-                mme_ue->imsi_bcd, deleted,
-                mme_ue->nas_eps.update.active_flag);
-    } else {
-        /*
-         * Choose S1AP procedure based on active_flag:
-         *  - active_flag==1 : InitialContextSetup
-         *  - active_flag==0 : DownlinkNASTransport
-         */
-        ogs_info("[%s] Send TAU accept(BCS match, active_flag=%d)",
-                 mme_ue->imsi_bcd, mme_ue->nas_eps.update.active_flag);
-        mme_send_tau_accept_and_check_release(enb_ue, mme_ue);
-    }
-}
-
-void mme_send_tau_accept_and_check_release(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
-{
-    int r;
-
-    ogs_assert(mme_ue);
-    ogs_assert(enb_ue);
-
-    r = nas_eps_send_tau_accept(mme_ue,
-            mme_ue->tracking_area_update_accept_proc);
-    ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
-
-    /*
-     * TS 24.301 Ch5.5.3.3
-     * When active_flag is 0, check if the P-TMSI has been updated.
-     * If the P-TMSI has changed, wait to receive the TAU Complete message
-     * from the UE before sending the UEContextReleaseCommand.
-     *
-     * This ensures that the UE has acknowledged the new P-TMSI,
-     * allowing the TAU procedure to complete successfully
-     * and maintaining synchronization between the UE and the network.
-     */
-    ogs_info("[%s] TAU done (sgsap_connected=%d, next_ptmsi=%u)",
-         mme_ue->imsi_bcd,
-         MME_SGSAP_IS_CONNECTED(mme_ue),
-         (unsigned)mme_ue->next.p_tmsi);
-    if (!mme_ue->nas_eps.update.active_flag &&
-        !MME_NEXT_P_TMSI_IS_AVAILABLE(mme_ue)) {
-        enb_ue->relcause.group = S1AP_Cause_PR_nas;
-        enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
-
-        ogs_info("[%s] release access bearer", mme_ue->imsi_bcd);
-
-        mme_send_release_access_bearer_or_ue_context_release(enb_ue);
-    }
 }

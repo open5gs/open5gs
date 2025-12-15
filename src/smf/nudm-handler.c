@@ -50,6 +50,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     ogs_assert(smf_ue);
     ogs_assert(recvmsg);
 
+
     if ((!recvmsg->SessionManagementSubscriptionDataList) ||
         (recvmsg->SessionManagementSubscriptionDataList->count == 0))
     {
@@ -388,8 +389,12 @@ bool smf_nudm_sdm_handle_subscription(smf_sess_t *sess, ogs_sbi_stream_t *stream
     char *strerror = NULL;
     smf_ue_t *smf_ue;
 
+    ogs_sbi_server_t *server = NULL;
     ogs_sbi_header_t header;
+    ogs_sbi_message_t sendmsg;
     ogs_sbi_message_t message;
+    ogs_sbi_response_t *response = NULL;
+    OpenAPI_sm_context_created_data_t SmContextCreatedData;
 
     bool rc;
     ogs_sbi_client_t *client = NULL;
@@ -465,11 +470,35 @@ bool smf_nudm_sdm_handle_subscription(smf_sess_t *sess, ogs_sbi_stream_t *stream
 
 
     /*********************************************************************
-     * If NOT Home-Routed Roaming,
      * Send HTTP_STATUS_CREATED(/nsmf-pdusession/v1/sm-context) to the AMF
      *********************************************************************/
-    if (!HOME_ROUTED_ROAMING_IN_HSMF(sess))
-        smf_sbi_send_sm_context_created_data(sess, stream);
+
+    memset(&SmContextCreatedData, 0, sizeof(SmContextCreatedData));
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    memset(&header, 0, sizeof(header));
+
+    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION;
+    header.api.version = (char *)OGS_SBI_API_V1;
+    header.resource.component[0] =
+        (char *)OGS_SBI_RESOURCE_NAME_SM_CONTEXTS;
+    header.resource.component[1] = sess->sm_context_ref;
+
+    server = ogs_sbi_server_from_stream(stream);
+    ogs_assert(server);
+
+    sendmsg.http.location = ogs_sbi_server_uri(server, &header);
+    ogs_assert(sendmsg.http.location);
+
+    sendmsg.SmContextCreatedData = &SmContextCreatedData;
+
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    smf_metrics_inst_by_slice_add(&sess->serving_plmn_id, &sess->s_nssai,
+            SMF_METR_CTR_SM_PDUSESSIONCREATIONSUCC, 1);
+
+    ogs_free(sendmsg.http.location);
 
     r = smf_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,

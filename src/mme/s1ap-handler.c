@@ -139,19 +139,6 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
         return;
     }
 
-    if (Global_ENB_ID->pLMNidentity.size != sizeof(enb->plmn_id)) {
-        ogs_error("Invalid PLMNIdentity size = %d (expected %d)",
-                (int)Global_ENB_ID->pLMNidentity.size,
-                (int)sizeof(enb->plmn_id));
-        group = S1AP_Cause_PR_misc;
-        cause = S1AP_CauseProtocol_semantic_error;
-
-        r = s1ap_send_s1_setup_failure(enb, group, cause);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
-
     if (!SupportedTAs) {
         ogs_error("No SupportedTAs");
         group = S1AP_Cause_PR_misc;
@@ -204,30 +191,6 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
                         OGS_MAX_NUM_OF_SUPPORTED_TA,
                         (int)OGS_ARRAY_SIZE(enb->supported_ta_list));
                 break;
-            }
-
-            if (tAC->size != sizeof(uint16_t)) {
-                ogs_error("Invalid tAC size = %d (expected %d)",
-                        (int)tAC->size, (int)sizeof(uint16_t));
-                group = S1AP_Cause_PR_misc;
-                cause = S1AP_CauseProtocol_semantic_error;
-
-                r = s1ap_send_s1_setup_failure(enb, group, cause);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return;
-            }
-
-            if (pLMNidentity->size != sizeof(ogs_plmn_id_t)) {
-                ogs_error("Invalid pLMNidentity size = %d (expected %d)",
-                        (int)pLMNidentity->size, (int)sizeof(ogs_plmn_id_t));
-                group = S1AP_Cause_PR_misc;
-                cause = S1AP_CauseProtocol_semantic_error;
-
-                r = s1ap_send_s1_setup_failure(enb, group, cause);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return;
             }
 
             memcpy(&enb->supported_ta_list[enb->num_of_supported_ta_list].tac,
@@ -370,31 +333,6 @@ void s1ap_handle_enb_configuration_update(
                             OGS_MAX_NUM_OF_SUPPORTED_TA,
                             (int)OGS_ARRAY_SIZE(enb->supported_ta_list));
                     break;
-                }
-
-                if (tAC->size != sizeof(uint16_t)) {
-                    ogs_error("Invalid tAC size = %d (expected %d)",
-                            (int)tAC->size, (int)sizeof(uint16_t));
-                    group = S1AP_Cause_PR_misc;
-                    cause = S1AP_CauseProtocol_semantic_error;
-
-                    r = s1ap_send_s1_setup_failure(enb, group, cause);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                    return;
-                }
-
-                if (pLMNidentity->size != sizeof(ogs_plmn_id_t)) {
-                    ogs_error("Invalid pLMNidentity size = %d (expected %d)",
-                            (int)pLMNidentity->size,
-                            (int)sizeof(ogs_plmn_id_t));
-                    group = S1AP_Cause_PR_misc;
-                    cause = S1AP_CauseProtocol_semantic_error;
-
-                    r = s1ap_send_s1_setup_failure(enb, group, cause);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                    return;
                 }
 
                 memcpy(&enb->supported_ta_list[
@@ -562,30 +500,8 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
             nas_guti.mme_gid = served_gummei->mme_gid[0];
 
             /* size must be 1 */
-            if (S_TMSI->mMEC.size != 1) {
-                ogs_error("Invalid S_TMSI->mMEC.size = %d (expected 1)",
-                        (int)S_TMSI->mMEC.size);
-                r = s1ap_send_error_indication1(
-                        enb_ue,
-                        S1AP_Cause_PR_protocol,
-                        S1AP_CauseProtocol_semantic_error);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return;
-            }
             memcpy(&nas_guti.mme_code, S_TMSI->mMEC.buf, S_TMSI->mMEC.size);
             /* size must be 4 */
-            if (S_TMSI->m_TMSI.size != 4) {
-                ogs_error("Invalid S_TMSI->m_TMSI.size = %d (expected 4)",
-                        (int)S_TMSI->m_TMSI.size);
-                r = s1ap_send_error_indication1(
-                        enb_ue,
-                        S1AP_Cause_PR_protocol,
-                        S1AP_CauseProtocol_semantic_error);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return;
-            }
             memcpy(&nas_guti.m_tmsi, S_TMSI->m_TMSI.buf, S_TMSI->m_TMSI.size);
             nas_guti.m_tmsi = be32toh(nas_guti.m_tmsi);
 
@@ -670,61 +586,18 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
     }
 
     pLMNidentity = &TAI->pLMNidentity;
-    if (pLMNidentity->size != sizeof(enb_ue->saved.tai.plmn_id)) {
-        ogs_error("Invalid pLMNidentity->size = %d (expected %d)",
-                (int)pLMNidentity->size,
-                (int)sizeof(enb_ue->saved.tai.plmn_id));
-        r = s1ap_send_error_indication1(
-                enb_ue,
-                S1AP_Cause_PR_protocol,
-                S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     tAC = &TAI->tAC;
-    if (tAC->size != sizeof(enb_ue->saved.tai.tac)) {
-        ogs_error("Invalid tAC->size = %d (expected %d)",
-                (int)tAC->size, (int)sizeof(enb_ue->saved.tai.tac));
-        r = s1ap_send_error_indication1(
-                enb_ue,
-                S1AP_Cause_PR_protocol,
-                S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
     memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.tai.plmn_id));
     memcpy(&enb_ue->saved.tai.tac, tAC->buf, sizeof(enb_ue->saved.tai.tac));
     enb_ue->saved.tai.tac = be16toh(enb_ue->saved.tai.tac);
 
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
-    if (pLMNidentity->size != sizeof(enb_ue->saved.e_cgi.plmn_id)) {
-        ogs_error("Invalid pLMNidentity->size = %d (expected %d)",
-                (int)pLMNidentity->size,
-                (int)sizeof(enb_ue->saved.e_cgi.plmn_id));
-        r = s1ap_send_error_indication1(
-                enb_ue,
-                S1AP_Cause_PR_protocol,
-                S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     cell_ID = &EUTRAN_CGI->cell_ID;
-    if (cell_ID->size != sizeof(enb_ue->saved.e_cgi.cell_id)) {
-        ogs_error("Invalid cell_ID->size = %d (expected %d)",
-                (int)cell_ID->size,
-                (int)sizeof(enb_ue->saved.e_cgi.cell_id));
-        r = s1ap_send_error_indication1(
-                enb_ue,
-                S1AP_Cause_PR_protocol,
-                S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(cell_ID);
     memcpy(&enb_ue->saved.e_cgi.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.e_cgi.plmn_id));
     memcpy(&enb_ue->saved.e_cgi.cell_id, cell_ID->buf,
@@ -872,26 +745,9 @@ void s1ap_handle_uplink_nas_transport(
     }
 
     pLMNidentity = &TAI->pLMNidentity;
-    if (pLMNidentity->size != sizeof(tai.plmn_id)) {
-        ogs_error("Invalid pLMNidentity->size = %d (expected %d)",
-                (int)pLMNidentity->size,
-                (int)sizeof(tai.plmn_id));
-        r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     tAC = &TAI->tAC;
-    if (tAC->size != sizeof(tai.tac)) {
-        ogs_error("Invalid tAC->size = %d (expected %d)",
-                (int)tAC->size, (int)sizeof(tai.tac));
-        r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
     memcpy(&tai.plmn_id, pLMNidentity->buf, sizeof(tai.plmn_id));
     memcpy(&tai.tac, tAC->buf, sizeof(tai.tac));
     tai.tac = be16toh(tai.tac);
@@ -911,27 +767,9 @@ void s1ap_handle_uplink_nas_transport(
     ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
 
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
-    if (pLMNidentity->size != sizeof(enb_ue->saved.e_cgi.plmn_id)) {
-        ogs_error("Invalid pLMNidentity->size = %d (expected %d)",
-                (int)pLMNidentity->size,
-                (int)sizeof(enb_ue->saved.e_cgi.plmn_id));
-        r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     cell_ID = &EUTRAN_CGI->cell_ID;
-    if (cell_ID->size != sizeof(enb_ue->saved.e_cgi.cell_id)) {
-        ogs_error("Invalid cell_ID->size = %d (expected %d)",
-                (int)cell_ID->size,
-                (int)sizeof(enb_ue->saved.e_cgi.cell_id));
-        r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(cell_ID);
     memcpy(&enb_ue->saved.e_cgi.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.e_cgi.plmn_id));
     memcpy(&enb_ue->saved.e_cgi.cell_id, cell_ID->buf,
@@ -939,26 +777,9 @@ void s1ap_handle_uplink_nas_transport(
     enb_ue->saved.e_cgi.cell_id = (be32toh(enb_ue->saved.e_cgi.cell_id) >> 4);
 
     pLMNidentity = &TAI->pLMNidentity;
-    if (pLMNidentity->size != sizeof(enb_ue->saved.tai.plmn_id)) {
-        ogs_error("Invalid pLMNidentity->size = %d (expected %d)",
-                (int)pLMNidentity->size,
-                (int)sizeof(enb_ue->saved.tai.plmn_id));
-        r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     tAC = &TAI->tAC;
-    if (tAC->size != sizeof(enb_ue->saved.tai.tac)) {
-        ogs_error("Invalid tAC->size = %d (expected %d)",
-                (int)tAC->size, (int)sizeof(enb_ue->saved.tai.tac));
-        r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
     memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.tai.plmn_id));
     memcpy(&enb_ue->saved.tai.tac, tAC->buf, sizeof(enb_ue->saved.tai.tac));
@@ -1221,24 +1042,9 @@ void s1ap_handle_initial_context_setup_response(
                 return;
             }
 
-            if (e_rab->gTP_TEID.size != sizeof(bearer->enb_s1u_teid)) {
-                ogs_error("Invalid e_rab->gTP_TEID.size = %d (expected %d)",
-                        (int)e_rab->gTP_TEID.size,
-                        (int)sizeof(bearer->enb_s1u_teid));
-                r = s1ap_send_error_indication2(mme_ue,
-                        S1AP_Cause_PR_protocol,
-                        S1AP_CauseProtocol_semantic_error);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return;
-            }
             memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf,
                     sizeof(bearer->enb_s1u_teid));
             bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
-
-            ogs_debug("UE[%s] EBI[%d] Update enb_s1u_teid = 0x%x",
-                    mme_ue->imsi_bcd, bearer->ebi, bearer->enb_s1u_teid);
-
             rv = ogs_asn_BIT_STRING_to_ip(
                     &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
             if (rv != OGS_OK) {
@@ -1252,14 +1058,8 @@ void s1ap_handle_initial_context_setup_response(
                 return;
             }
 
-            ogs_log_hexdump(OGS_LOG_DEBUG,
-                    e_rab->transportLayerAddress.buf,
-                    e_rab->transportLayerAddress.size);
-            ogs_debug("    IPv4(%d): 0x%x",
-                    bearer->enb_s1u_ip.ipv4, bearer->enb_s1u_ip.addr);
-            ogs_debug("    IPv6(%d):", bearer->enb_s1u_ip.ipv6);
-            ogs_log_hexdump(OGS_LOG_DEBUG,
-                    bearer->enb_s1u_ip.addr6, OGS_IPV6_LEN);
+            ogs_debug("    EBI[%d] ENB-S1U-TEID[%d]",
+                    bearer->ebi, bearer->enb_s1u_teid);
 
             if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
                 ogs_debug("    NAS_EPS Type[%d]", mme_ue->nas_eps.type);
@@ -1646,11 +1446,6 @@ void s1ap_handle_e_rab_setup_response(
 
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
-    sgw_ue_t *sgw_ue = NULL;
-
-    mme_sess_t *sess = NULL;
-    mme_bearer_t *bearer = NULL;
-    mme_bearer_t *linked_bearer = NULL;
 
     ogs_assert(enb);
     ogs_assert(enb->sctp.sock);
@@ -1745,6 +1540,8 @@ void s1ap_handle_e_rab_setup_response(
             S1AP_E_RABSetupItemBearerSUResIEs_t *item = NULL;
             S1AP_E_RABSetupItemBearerSURes_t *e_rab = NULL;
 
+            mme_bearer_t *bearer = NULL;
+
             item = (S1AP_E_RABSetupItemBearerSUResIEs_t *)
                 E_RABSetupListBearerSURes->list.array[i];
             if (!item) {
@@ -1779,24 +1576,9 @@ void s1ap_handle_e_rab_setup_response(
                 return;
             }
 
-            if (e_rab->gTP_TEID.size != sizeof(bearer->enb_s1u_teid)) {
-                ogs_error("Invalid e_rab->gTP_TEID.size = %d (expected %d)",
-                        (int)e_rab->gTP_TEID.size,
-                        (int)sizeof(bearer->enb_s1u_teid));
-                r = s1ap_send_error_indication2(mme_ue,
-                        S1AP_Cause_PR_protocol,
-                        S1AP_CauseProtocol_semantic_error);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return;
-            }
             memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf,
-                    sizeof(bearer->enb_s1u_teid));
+                sizeof(bearer->enb_s1u_teid));
             bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
-
-            ogs_debug("UE[%s] EBI[%d] Update enb_s1u_teid = 0x%x",
-                    mme_ue->imsi_bcd, bearer->ebi, bearer->enb_s1u_teid);
-
             rv = ogs_asn_BIT_STRING_to_ip(
                     &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
             if (rv != OGS_OK) {
@@ -1810,17 +1592,10 @@ void s1ap_handle_e_rab_setup_response(
                 return;
             }
 
-            ogs_log_hexdump(OGS_LOG_DEBUG,
-                    e_rab->transportLayerAddress.buf,
-                    e_rab->transportLayerAddress.size);
-            ogs_debug("    IPv4(%d): 0x%x",
-                    bearer->enb_s1u_ip.ipv4, bearer->enb_s1u_ip.addr);
-            ogs_debug("    IPv6(%d):", bearer->enb_s1u_ip.ipv6);
-            ogs_log_hexdump(OGS_LOG_DEBUG,
-                    bearer->enb_s1u_ip.addr6, OGS_IPV6_LEN);
+            ogs_debug("    EBI[%d]", bearer->ebi);
 
             if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
-                linked_bearer = mme_linked_bearer(bearer);
+                mme_bearer_t *linked_bearer = mme_linked_bearer(bearer);
                 ogs_assert(linked_bearer);
                 ogs_debug("    Linked-EBI[%d]", linked_bearer->ebi);
 
@@ -1841,16 +1616,13 @@ void s1ap_handle_e_rab_setup_response(
     }
 
     if (E_RABFailedToSetupListBearerSURes) {
-        ogs_warn("E_RABFailedToSetupListBearerSURes");
+        ogs_debug("E_RABFailedToSetupListBearerSURes");
         for (i = 0; i < E_RABFailedToSetupListBearerSURes->list.count; i++) {
-            S1AP_E_RABItemIEs_t *item = NULL;
-            S1AP_E_RABItem_t *e_rab = NULL;
-
-            item = (S1AP_E_RABItemIEs_t *)
+            S1AP_E_RABItem_t *item = (S1AP_E_RABItem_t *)
                 E_RABFailedToSetupListBearerSURes->list.array[i];
 
             if (!item) {
-                ogs_error("No S1AP_E_RABItemIEs_t");
+                ogs_error("No S1AP_E_RABItem_t");
                 r = s1ap_send_error_indication2(mme_ue,
                         S1AP_Cause_PR_protocol,
                         S1AP_CauseProtocol_semantic_error);
@@ -1859,44 +1631,9 @@ void s1ap_handle_e_rab_setup_response(
                 return;
             }
 
-            e_rab = &item->value.choice.E_RABItem;
-
-            ogs_warn("RAB_ID: %x", (int)e_rab->e_RAB_ID);
-            ogs_warn("    Cause[Group:%d Cause:%d]",
-                (int)e_rab->cause.present,
-                (int)e_rab->cause.choice.radioNetwork);
-
-            bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
-            if (!bearer) {
-                ogs_error("No Bearer [%d]", (int)e_rab->e_RAB_ID);
-                r = s1ap_send_error_indication2(mme_ue,
-                        S1AP_Cause_PR_radioNetwork,
-                        S1AP_CauseRadioNetwork_unknown_E_RAB_ID);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return;
-            }
-
-            linked_bearer = mme_linked_bearer(bearer);
-            ogs_assert(linked_bearer);
-            ogs_debug("    Linked-EBI[%d]", linked_bearer->ebi);
-
-            if (bearer->ebi == linked_bearer->ebi) {
-                sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
-                ogs_assert(sgw_ue);
-
-                sess = mme_sess_find_by_id(bearer->sess_id);
-                ogs_assert(sess);
-
-                /* Radio failure cleanup:
-                 * delete session without E-RAB release procedure */
-                ogs_assert(OGS_OK ==
-                    mme_gtp_send_delete_session_request(enb_ue, sgw_ue, sess,
-                        OGS_GTP_DELETE_NO_ACTION));
-                ogs_warn("Delete Session Request");
-            } else {
-                ogs_error("Not implemented : remove dedicated bearer");
-            }
+            ogs_debug("RAB_ID: %d", (int)item->e_RAB_ID);
+            ogs_debug("    Cause[Group:%d Cause:%d]",
+                (int)item->cause.present, (int)item->cause.choice.radioNetwork);
         }
     }
 
@@ -2158,7 +1895,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
 
         if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
-            ogs_info("Mobile Reachable timer started for IMSI[%s]",
+            ogs_debug("Mobile Reachable timer started for IMSI[%s]",
                 mme_ue->imsi_bcd);
         /*
          * TS 24.301
@@ -2224,13 +1961,12 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         break;
     case S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK:
         ogs_debug("    Action: S1 normal release");
-
-        if (mme_ue)
-            enb_ue_deassociate_mme_ue(enb_ue, mme_ue);
-        else
-            ogs_error("No UE(mme-ue) context");
-
         enb_ue_remove(enb_ue);
+        if (!mme_ue) {
+            ogs_error("No UE(mme-ue) context");
+            return;
+        }
+        enb_ue_unlink(mme_ue);
         break;
     case S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE:
         ogs_debug("    Action: UE context remove");
@@ -2321,16 +2057,16 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         break;
     case S1AP_UE_CTX_REL_S1_PAGING:
         ogs_debug("    Action: S1 paging");
-        if (mme_ue) {
-            enb_ue_deassociate_mme_ue(enb_ue, mme_ue);
-
-            r = s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-        } else
-            ogs_error("No UE(mme-ue) context");
-
         enb_ue_remove(enb_ue);
+        if (!mme_ue) {
+            ogs_error("No UE(mme-ue) context");
+            return;
+        }
+        enb_ue_unlink(mme_ue);
+
+        r = s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         break;
     default:
         ogs_error("Invalid Action[%d]", enb_ue->ue_ctx_rel_action);
@@ -2485,24 +2221,9 @@ void s1ap_handle_e_rab_modification_indication(
             return;
         }
 
-        if (e_rab->dL_GTP_TEID.size != sizeof(bearer->enb_s1u_teid)) {
-            ogs_error("Invalid e_rab->dL_GTP_TEID.size = %d (expected %d)",
-                    (int)e_rab->dL_GTP_TEID.size,
-                    (int)sizeof(bearer->enb_s1u_teid));
-            r = s1ap_send_error_indication2(mme_ue,
-                    S1AP_Cause_PR_protocol,
-                    S1AP_CauseProtocol_semantic_error);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-            return;
-        }
         memcpy(&bearer->enb_s1u_teid, e_rab->dL_GTP_TEID.buf,
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
-
-        ogs_debug("UE[%s] EBI[%d] Update enb_s1u_teid = 0x%x",
-                mme_ue->imsi_bcd, bearer->ebi, bearer->enb_s1u_teid);
-
         rv = ogs_asn_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
         if (rv != OGS_OK) {
@@ -2515,15 +2236,6 @@ void s1ap_handle_e_rab_modification_indication(
             ogs_assert(r != OGS_ERROR);
             return;
         }
-
-        ogs_log_hexdump(OGS_LOG_DEBUG,
-                e_rab->transportLayerAddress.buf,
-                e_rab->transportLayerAddress.size);
-        ogs_debug("    IPv4(%d): 0x%x",
-                bearer->enb_s1u_ip.ipv4, bearer->enb_s1u_ip.addr);
-        ogs_debug("    IPv6(%d):", bearer->enb_s1u_ip.ipv6);
-        ogs_log_hexdump(OGS_LOG_DEBUG,
-                bearer->enb_s1u_ip.addr6, OGS_IPV6_LEN);
 
         if (ogs_list_exists(
                     &mme_ue->bearer_to_modify_list,
@@ -2604,47 +2316,7 @@ void s1ap_handle_enb_direct_information_transfer(
     switch (RIMRoutingAddress->present) {
     case S1AP_RIMRoutingAddress_PR_gERAN_Cell_ID:
         geran_cell_id = RIMRoutingAddress->choice.gERAN_Cell_ID;
-        if (!geran_cell_id) {
-            ogs_error("No gERAN_Cell_ID");
-            r = s1ap_send_error_indication(enb, NULL, NULL,
-                    S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-            return;
-        }
-        if (geran_cell_id->lAI.pLMNidentity.size != sizeof(plmn_id)) {
-            ogs_error("Invalid geran_cell_id->lAI.pLMNidentity.size = %d "
-                    "(expected %d)",
-                    (int)geran_cell_id->lAI.pLMNidentity.size,
-                    (int)sizeof(plmn_id));
-            r = s1ap_send_error_indication(enb, NULL, NULL,
-                    S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-            return;
-        }
-        if (geran_cell_id->lAI.lAC.size != sizeof(uint16_t)) {
-            ogs_error("Invalid geran_cell_id->lAI.lAC.size = %d "
-                    "(expected %d)",
-                    (int)geran_cell_id->lAI.lAC.size,
-                    (int)sizeof(uint16_t));
-            r = s1ap_send_error_indication(enb, NULL, NULL,
-                    S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-            return;
-        }
-        if (geran_cell_id->cI.size != sizeof(uint16_t)) {
-            ogs_error("Invalid geran_cell_id->cI.size = %d "
-                    "(expected %d)",
-                    (int)geran_cell_id->cI.size,
-                    (int)sizeof(uint16_t));
-            r = s1ap_send_error_indication(enb, NULL, NULL,
-                    S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-            return;
-        }
+        ogs_assert(geran_cell_id);
         memcpy(&plmn_id, geran_cell_id->lAI.pLMNidentity.buf, sizeof(plmn_id));
         ogs_nas_from_plmn_id(&rai.lai.nas_plmn_id, &plmn_id);
         memcpy(&rai.lai.lac, geran_cell_id->lAI.lAC.buf, sizeof(uint16_t));
@@ -2835,26 +2507,9 @@ void s1ap_handle_path_switch_request(
     }
 
     pLMNidentity = &TAI->pLMNidentity;
-    if (pLMNidentity->size != sizeof(tai.plmn_id)) {
-        ogs_error("Invalid pLMNidentity->size = %d (expected %d)",
-                (int)pLMNidentity->size,
-                (int)sizeof(tai.plmn_id));
-        r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     tAC = &TAI->tAC;
-    if (tAC->size != sizeof(tai.tac)) {
-        ogs_error("Invalid tAC->size = %d (expected %d)",
-                (int)tAC->size, (int)sizeof(tai.tac));
-        r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
     memcpy(&tai.plmn_id, pLMNidentity->buf, sizeof(tai.plmn_id));
     memcpy(&tai.tac, tAC->buf, sizeof(tai.tac));
     tai.tac = be16toh(tai.tac);
@@ -2921,61 +2576,18 @@ void s1ap_handle_path_switch_request(
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     pLMNidentity = &TAI->pLMNidentity;
-    if (pLMNidentity->size != sizeof(enb_ue->saved.tai.plmn_id)) {
-        ogs_error("Invalid pLMNidentity->size = %d (expected %d)",
-                (int)pLMNidentity->size,
-                (int)sizeof(enb_ue->saved.tai.plmn_id));
-        r = s1ap_send_error_indication1(
-                enb_ue,
-                S1AP_Cause_PR_protocol,
-                S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     tAC = &TAI->tAC;
-    if (tAC->size != sizeof(enb_ue->saved.tai.tac)) {
-        ogs_error("Invalid tAC->size = %d (expected %d)",
-                (int)tAC->size, (int)sizeof(enb_ue->saved.tai.tac));
-        r = s1ap_send_error_indication1(
-                enb_ue,
-                S1AP_Cause_PR_protocol,
-                S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
     memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.tai.plmn_id));
     memcpy(&enb_ue->saved.tai.tac, tAC->buf, sizeof(enb_ue->saved.tai.tac));
     enb_ue->saved.tai.tac = be16toh(enb_ue->saved.tai.tac);
 
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
-    if (pLMNidentity->size != sizeof(enb_ue->saved.e_cgi.plmn_id)) {
-        ogs_error("Invalid pLMNidentity->size = %d (expected %d)",
-                (int)pLMNidentity->size,
-                (int)sizeof(enb_ue->saved.e_cgi.plmn_id));
-        r = s1ap_send_error_indication1(
-                enb_ue,
-                S1AP_Cause_PR_protocol,
-                S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     cell_ID = &EUTRAN_CGI->cell_ID;
-    if (cell_ID->size != sizeof(enb_ue->saved.e_cgi.cell_id)) {
-        ogs_error("Invalid cell_ID->size = %d (expected %d)",
-                (int)cell_ID->size,
-                (int)sizeof(enb_ue->saved.e_cgi.cell_id));
-        r = s1ap_send_error_indication1(
-                enb_ue,
-                S1AP_Cause_PR_protocol,
-                S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(cell_ID);
     memcpy(&enb_ue->saved.e_cgi.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.e_cgi.plmn_id));
     memcpy(&enb_ue->saved.e_cgi.cell_id, cell_ID->buf,
@@ -3001,37 +2613,12 @@ void s1ap_handle_path_switch_request(
     integrityProtectionAlgorithms =
         &UESecurityCapabilities->integrityProtectionAlgorithms;
 
-    if (encryptionAlgorithms->size != sizeof(eea)) {
-        ogs_error("Invalid encryptionAlgorithms->size = %d (expected %d)",
-                (int)encryptionAlgorithms->size,
-                (int)sizeof(eea));
-        r = s1ap_send_error_indication1(
-                enb_ue,
-                S1AP_Cause_PR_protocol,
-                S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
     memcpy(&eea, encryptionAlgorithms->buf, sizeof(eea));
     eea = be16toh(eea);
     eea0 = mme_ue->ue_network_capability.eea0;
     mme_ue->ue_network_capability.eea = eea >> 9;
     mme_ue->ue_network_capability.eea0 = eea0;
 
-    if (integrityProtectionAlgorithms->size != sizeof(eia)) {
-        ogs_error("Invalid integrityProtectionAlgorithms->size = %d "
-                "(expected %d)",
-                (int)integrityProtectionAlgorithms->size,
-                (int)sizeof(eia));
-        r = s1ap_send_error_indication1(
-                enb_ue,
-                S1AP_Cause_PR_protocol,
-                S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
     memcpy(&eia, integrityProtectionAlgorithms->buf, sizeof(eia));
     eia = be16toh(eia);
     eia0 = mme_ue->ue_network_capability.eia0;
@@ -3082,24 +2669,9 @@ void s1ap_handle_path_switch_request(
             return;
         }
 
-        if (e_rab->gTP_TEID.size != sizeof(bearer->enb_s1u_teid)) {
-            ogs_error("Invalid e_rab->gTP_TEID.size = %d (expected %d)",
-                    (int)e_rab->gTP_TEID.size,
-                    (int)sizeof(bearer->enb_s1u_teid));
-            r = s1ap_send_error_indication2(mme_ue,
-                    S1AP_Cause_PR_protocol,
-                    S1AP_CauseProtocol_semantic_error);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-            return;
-        }
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf,
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
-
-        ogs_debug("UE[%s] EBI[%d] Update enb_s1u_teid = 0x%x",
-                mme_ue->imsi_bcd, bearer->ebi, bearer->enb_s1u_teid);
-
         rv = ogs_asn_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
         if (rv != OGS_OK) {
@@ -3112,15 +2684,6 @@ void s1ap_handle_path_switch_request(
             ogs_assert(r != OGS_ERROR);
             return;
         }
-
-        ogs_log_hexdump(OGS_LOG_DEBUG,
-                e_rab->transportLayerAddress.buf,
-                e_rab->transportLayerAddress.size);
-        ogs_debug("    IPv4(%d): 0x%x",
-                bearer->enb_s1u_ip.ipv4, bearer->enb_s1u_ip.addr);
-        ogs_debug("    IPv6(%d):", bearer->enb_s1u_ip.ipv6);
-        ogs_log_hexdump(OGS_LOG_DEBUG,
-                bearer->enb_s1u_ip.addr6, OGS_IPV6_LEN);
 
         if (ogs_list_exists(
                     &mme_ue->bearer_to_modify_list,
@@ -3207,30 +2770,6 @@ void s1ap_handle_enb_configuration_transfer(
         ogs_s1ap_ENB_ID_to_uint32(
                 &targeteNB_ID->global_ENB_ID.eNB_ID, &target_enb_id);
 
-        if (sourceeNB_ID->selected_TAI.tAC.size != sizeof(source_tac)) {
-            ogs_error("Invalid sourceeNB_ID->selected_TAI.tAC.size = %d "
-                    "(expected %d)",
-                    (int)sourceeNB_ID->selected_TAI.tAC.size,
-                    (int)sizeof(source_tac));
-            r = s1ap_send_error_indication(enb, NULL, NULL,
-                    S1AP_Cause_PR_radioNetwork,
-                    S1AP_CauseRadioNetwork_unknown_targetID);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-            return;
-        }
-        if (targeteNB_ID->selected_TAI.tAC.size != sizeof(target_tac)) {
-            ogs_error("Invalid targeteNB_ID->selected_TAI.tAC.size = %d "
-                    "(expected %d)",
-                    (int)targeteNB_ID->selected_TAI.tAC.size,
-                    (int)sizeof(target_tac));
-            r = s1ap_send_error_indication(enb, NULL, NULL,
-                    S1AP_Cause_PR_radioNetwork,
-                    S1AP_CauseRadioNetwork_unknown_targetID);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-            return;
-        }
         memcpy(&source_tac, sourceeNB_ID->selected_TAI.tAC.buf,
                 sizeof(source_tac));
         source_tac = be16toh(source_tac);
@@ -3320,24 +2859,6 @@ static void s1ap_handle_handover_required_intralte(enb_ue_t *source_ue,
 
     if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         ogs_error("No Security Context");
-        r = s1ap_send_handover_preparation_failure(source_ue,
-                S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
-
-    if (!SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-        ogs_error("No Session Context : IMSI[%s]", mme_ue->imsi_bcd);
-        r = s1ap_send_handover_preparation_failure(source_ue,
-                S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
-
-    if (!ACTIVE_EPS_BEARERS_IS_AVAIABLE(mme_ue)) {
-        ogs_error("No active EPS bearers : IMSI[%s]", mme_ue->imsi_bcd);
         r = s1ap_send_handover_preparation_failure(source_ue,
                 S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
         ogs_expect(r == OGS_OK);
@@ -3686,24 +3207,9 @@ void s1ap_handle_handover_request_ack(
             return;
         }
 
-        if (e_rab->gTP_TEID.size != sizeof(bearer->enb_s1u_teid)) {
-            ogs_error("Invalid e_rab->gTP_TEID.size = %d (expected %d)",
-                    (int)e_rab->gTP_TEID.size,
-                    (int)sizeof(bearer->enb_s1u_teid));
-            r = s1ap_send_error_indication2(mme_ue,
-                    S1AP_Cause_PR_protocol,
-                    S1AP_CauseProtocol_semantic_error);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-            return;
-        }
         memcpy(&bearer->target_s1u_teid, e_rab->gTP_TEID.buf,
                 sizeof(bearer->target_s1u_teid));
         bearer->target_s1u_teid = be32toh(bearer->target_s1u_teid);
-
-        ogs_debug("UE[%s] EBI[%d] Update target_s1u_teid = 0x%x",
-                mme_ue->imsi_bcd, bearer->ebi, bearer->target_s1u_teid);
-
         rv = ogs_asn_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->target_s1u_ip);
         if (rv != OGS_OK) {
@@ -3717,34 +3223,12 @@ void s1ap_handle_handover_request_ack(
             return;
         }
 
-        ogs_log_hexdump(OGS_LOG_DEBUG,
-                e_rab->transportLayerAddress.buf,
-                e_rab->transportLayerAddress.size);
-        ogs_debug("    IPv4(%d): 0x%x",
-                bearer->target_s1u_ip.ipv4, bearer->target_s1u_ip.addr);
-        ogs_debug("    IPv6(%d):", bearer->target_s1u_ip.ipv6);
-        ogs_log_hexdump(OGS_LOG_DEBUG,
-                bearer->target_s1u_ip.addr6, OGS_IPV6_LEN);
-
         if (e_rab->dL_transportLayerAddress && e_rab->dL_gTP_TEID) {
-            if (e_rab->dL_gTP_TEID->size != sizeof(bearer->enb_dl_teid)) {
-                ogs_error("Invalid e_rab->dL_gTP_TEID.size = %d (expected %d)",
-                        (int)e_rab->dL_gTP_TEID->size,
-                        (int)sizeof(bearer->enb_dl_teid));
-                r = s1ap_send_error_indication2(mme_ue,
-                        S1AP_Cause_PR_protocol,
-                        S1AP_CauseProtocol_semantic_error);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return;
-            }
+            ogs_assert(e_rab->dL_gTP_TEID->buf);
+            ogs_assert(e_rab->dL_transportLayerAddress->buf);
             memcpy(&bearer->enb_dl_teid, e_rab->dL_gTP_TEID->buf,
                     sizeof(bearer->enb_dl_teid));
             bearer->enb_dl_teid = be32toh(bearer->enb_dl_teid);
-
-            ogs_debug("UE[%s] EBI[%d] Update enb_dl_teid = 0x%x",
-                    mme_ue->imsi_bcd, bearer->ebi, bearer->enb_dl_teid);
-
             rv = ogs_asn_BIT_STRING_to_ip(
                     e_rab->dL_transportLayerAddress, &bearer->enb_dl_ip);
             if (rv != OGS_OK) {
@@ -3757,29 +3241,11 @@ void s1ap_handle_handover_request_ack(
                 ogs_assert(r != OGS_ERROR);
                 return;
             }
-
-            ogs_log_hexdump(OGS_LOG_DEBUG,
-                    e_rab->dL_transportLayerAddress->buf,
-                    e_rab->dL_transportLayerAddress->size);
-            ogs_debug("    IPv4(%d): 0x%x",
-                    bearer->enb_dl_ip.ipv4, bearer->enb_dl_ip.addr);
-            ogs_debug("    IPv6(%d):", bearer->enb_dl_ip.ipv6);
-            ogs_log_hexdump(OGS_LOG_DEBUG,
-                    bearer->enb_dl_ip.addr6, OGS_IPV6_LEN);
         }
 
         if (e_rab->uL_TransportLayerAddress && e_rab->uL_GTP_TEID) {
-            if (e_rab->uL_GTP_TEID->size != sizeof(bearer->enb_ul_teid)) {
-                ogs_error("Invalid e_rab->uL_GTP_TEID.size = %d (expected %d)",
-                        (int)e_rab->uL_GTP_TEID->size,
-                        (int)sizeof(bearer->enb_ul_teid));
-                r = s1ap_send_error_indication2(mme_ue,
-                        S1AP_Cause_PR_protocol,
-                        S1AP_CauseProtocol_semantic_error);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return;
-            }
+            ogs_assert(e_rab->uL_GTP_TEID->buf);
+            ogs_assert(e_rab->uL_TransportLayerAddress->buf);
             memcpy(&bearer->enb_ul_teid, e_rab->uL_GTP_TEID->buf,
                     sizeof(bearer->enb_ul_teid));
             bearer->enb_ul_teid = be32toh(bearer->enb_ul_teid);
@@ -3795,15 +3261,6 @@ void s1ap_handle_handover_request_ack(
                 ogs_assert(r != OGS_ERROR);
                 return;
             }
-
-            ogs_log_hexdump(OGS_LOG_DEBUG,
-                    e_rab->uL_TransportLayerAddress->buf,
-                    e_rab->uL_TransportLayerAddress->size);
-            ogs_debug("    IPv4(%d): 0x%x",
-                    bearer->enb_ul_ip.ipv4, bearer->enb_ul_ip.addr);
-            ogs_debug("    IPv6(%d):", bearer->enb_ul_ip.ipv6);
-            ogs_log_hexdump(OGS_LOG_DEBUG,
-                    bearer->enb_ul_ip.addr6, OGS_IPV6_LEN);
         }
     }
 
@@ -4305,30 +3762,9 @@ void s1ap_handle_handover_notification(
     CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
 
     pLMNidentity = &TAI->pLMNidentity;
-    if (pLMNidentity->size != sizeof(target_ue->saved.tai.plmn_id)) {
-        ogs_error("Invalid pLMNidentity->size = %d (expected %d)",
-                (int)pLMNidentity->size,
-                (int)sizeof(target_ue->saved.tai.plmn_id));
-        r = s1ap_send_error_indication2(
-                mme_ue,
-                S1AP_Cause_PR_protocol,
-                S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     tAC = &TAI->tAC;
-    if (tAC->size != sizeof(target_ue->saved.tai.tac)) {
-        ogs_error("Invalid tAC->size = %d (expected %d)",
-                (int)tAC->size, (int)sizeof(target_ue->saved.tai.tac));
-        r = s1ap_send_error_indication2(
-                mme_ue,
-                S1AP_Cause_PR_protocol,
-                S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
     memcpy(&target_ue->saved.tai.plmn_id, pLMNidentity->buf,
             sizeof(target_ue->saved.tai.plmn_id));
     memcpy(&target_ue->saved.tai.tac,
@@ -4336,31 +3772,9 @@ void s1ap_handle_handover_notification(
     target_ue->saved.tai.tac = be16toh(target_ue->saved.tai.tac);
 
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
-    if (pLMNidentity->size != sizeof(target_ue->saved.e_cgi.plmn_id)) {
-        ogs_error("Invalid pLMNidentity->size = %d (expected %d)",
-                (int)pLMNidentity->size,
-                (int)sizeof(target_ue->saved.e_cgi.plmn_id));
-        r = s1ap_send_error_indication2(
-                mme_ue,
-                S1AP_Cause_PR_protocol,
-                S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     cell_ID = &EUTRAN_CGI->cell_ID;
-    if (cell_ID->size != sizeof(target_ue->saved.e_cgi.cell_id)) {
-        ogs_error("Invalid cell_ID->size = %d (expected %d)",
-                (int)cell_ID->size,
-                (int)sizeof(target_ue->saved.e_cgi.cell_id));
-        r = s1ap_send_error_indication1(
-                target_ue,
-                S1AP_Cause_PR_protocol,
-                S1AP_CauseProtocol_semantic_error);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
+    ogs_assert(cell_ID);
     memcpy(&target_ue->saved.e_cgi.plmn_id, pLMNidentity->buf,
             sizeof(target_ue->saved.e_cgi.plmn_id));
     memcpy(&target_ue->saved.e_cgi.cell_id, cell_ID->buf,
@@ -4399,24 +3813,13 @@ void s1ap_handle_handover_notification(
 
     ogs_list_for_each(&mme_ue->sess_list, sess) {
         ogs_list_for_each(&sess->bearer_list, bearer) {
-            if (bearer->target_s1u_ip.ipv4 || bearer->target_s1u_ip.ipv6) {
-                bearer->enb_s1u_teid = bearer->target_s1u_teid;
-                ogs_debug("UE[%s] EBI[%d] Update enb_s1u_teid = 0x%x",
-                        mme_ue->imsi_bcd, bearer->ebi, bearer->enb_s1u_teid);
+            bearer->enb_s1u_teid = bearer->target_s1u_teid;
+            memcpy(&bearer->enb_s1u_ip, &bearer->target_s1u_ip,
+                    sizeof(ogs_ip_t));
 
-                memcpy(&bearer->enb_s1u_ip, &bearer->target_s1u_ip,
-                        sizeof(ogs_ip_t));
+            ogs_list_add(
+                    &mme_ue->bearer_to_modify_list, &bearer->to_modify_node);
 
-                ogs_debug("    IPv4(%d): 0x%x",
-                        bearer->enb_s1u_ip.ipv4, bearer->enb_s1u_ip.addr);
-                ogs_debug("    IPv6(%d):", bearer->enb_s1u_ip.ipv6);
-                ogs_log_hexdump(OGS_LOG_DEBUG,
-                        bearer->enb_s1u_ip.addr6, OGS_IPV6_LEN);
-
-                ogs_list_add(
-                        &mme_ue->bearer_to_modify_list,
-                        &bearer->to_modify_node);
-            }
         }
     }
 

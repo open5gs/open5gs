@@ -44,7 +44,6 @@ int sgsap_send_to_vlr(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf);
 
 int sgsap_send_location_update_request(mme_ue_t *mme_ue);
 int sgsap_send_tmsi_reallocation_complete(mme_ue_t *mme_ue);
-int sgsap_send_ue_activity_indication(mme_ue_t *mme_ue);
 int sgsap_send_detach_indication(mme_ue_t *mme_ue);
 int sgsap_send_mo_csfb_indication(mme_ue_t *mme_ue);
 int sgsap_send_paging_reject(mme_ue_t *mme_ue, uint8_t sgs_cause);

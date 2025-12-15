@@ -260,8 +260,8 @@ typedef struct ogs_pfcp_far_s {
 
     ogs_pfcp_smreq_flags_t  smreq_flags;
 
-    uint32_t                num_of_buffered_gtpu;
-    ogs_pkbuf_t             *buffered_gtpu[OGS_MAX_NUM_OF_GTPU_BUFFER];
+    uint32_t                num_of_buffered_packet;
+    ogs_pkbuf_t             *buffered_packet[OGS_MAX_NUM_OF_PACKET_BUFFER];
 
     struct {
         bool prepared;
@@ -438,7 +438,7 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
 
 int ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr);
 
-uint8_t ogs_pfcp_object_teid_hash_set(
+void ogs_pfcp_object_teid_hash_set(
         ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr,
         bool restoration_indication);
 ogs_pfcp_object_t *ogs_pfcp_object_find_by_teid(uint32_t teid);

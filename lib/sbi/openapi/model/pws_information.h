@@ -23,6 +23,18 @@ typedef struct OpenAPI_pws_information_s OpenAPI_pws_information_t;
 typedef struct OpenAPI_pws_information_s {
     int message_identifier;
     int serial_number;
+    
+    // //added by sairisan
+    // uint16_t message_identifier;
+    // uint16_t serial_number;
+    // // uint8_t warning_type;
+    // uint32_t no_of_tai;        
+    // uint32_t repetition_period;
+    // uint32_t number_of_broadcast;
+    uint8_t data_coding_scheme;
+    // uint32_t message_length;
+    // uint8_t message_contents[1024]; /* TODO: max 9600 */
+
     struct OpenAPI_n2_info_content_s *pws_container;
     OpenAPI_list_t *bc_empty_area_list;
     bool is_send_ran_response;

@@ -37,8 +37,6 @@ int esm_handle_pdn_connectivity_request(
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     uint8_t security_protected_required = 0;
-    const char *emergency_dnn = mme_self()->emergency.dnn;
-    bool emergency;
 
     ogs_assert(bearer);
     sess = mme_sess_find_by_id(bearer->sess_id);
@@ -61,20 +59,6 @@ int esm_handle_pdn_connectivity_request(
         return OGS_ERROR;
     }
 
-    if (req->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4 ||
-        req->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV6 ||
-        req->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4V6) {
-        /* OK */
-    } else {
-        /* NOT-allowed PDN Type */
-        r = nas_eps_send_pdn_connectivity_reject(
-                sess, OGS_NAS_ESM_CAUSE_UNKNOWN_PDN_TYPE,
-                create_action);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return OGS_ERROR;
-    }
-
     memcpy(&sess->ue_request_type,
             &req->request_type, sizeof(sess->ue_request_type));
 
@@ -89,27 +73,10 @@ int esm_handle_pdn_connectivity_request(
                 security_protected_required);
     }
 
-    emergency = (req->request_type.value == OGS_NAS_EPS_REQUEST_TYPE_EMERGENCY);
-    if (emergency && !emergency_dnn) {
-        /* Emergency call, but no emergency APN defined */
-        r = nas_eps_send_pdn_connectivity_reject(
-                sess, OGS_NAS_ESM_CAUSE_REQUEST_REJECTED_UNSPECIFIED, create_action);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        ogs_warn("Emergency call, but no emergency APN defined");
-        return OGS_ERROR;
-    }
-    if ((req->presencemask &
-            OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT) ||
-        emergency) {
-        const char *apn;
-        if (emergency) {
-            apn = emergency_dnn;
-            sess->ue_request_type.value = 1;
-        } else {
-            apn = req->access_point_name.apn;
-        }
-        sess->session = mme_session_find_by_apn(mme_ue, apn);
+    if (req->presencemask &
+            OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT) {
+        sess->session = mme_session_find_by_apn(
+                            mme_ue, req->access_point_name.apn);
         if (!sess->session) {
             /* Invalid APN */
             r = nas_eps_send_pdn_connectivity_reject(
@@ -117,7 +84,7 @@ int esm_handle_pdn_connectivity_request(
                     create_action);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
-            ogs_warn("Invalid APN[%s]", apn);
+            ogs_warn("Invalid APN[%s]", req->access_point_name.apn);
             return OGS_ERROR;
         }
 

@@ -42,8 +42,8 @@ libamf_sources = files('''
 
     namf-build.c
     namf-handler.c
-    namf-oam.c
     sbi-path.c
+
 
     ngap-sctp.c
     ngap-build.c
@@ -62,9 +62,6 @@ libamf_sources = files('''
 
     init.c
     metrics.c
-    gnb-info.c
-    ue-info.c
-    ../../lib/metrics/prometheus/json_pager.c
 '''.split())
 
 libamf = static_library('amf',

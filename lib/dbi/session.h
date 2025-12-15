@@ -28,8 +28,7 @@
 extern "C" {
 #endif
 
-int ogs_dbi_session_data(
-        const char *supi, const ogs_s_nssai_t *s_nssai, const char *dnn,
+int ogs_dbi_session_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
         ogs_session_data_t *session_data);
 
 #ifdef __cplusplus

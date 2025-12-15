@@ -54,23 +54,19 @@ libsmf_sources = files('''
     nnrf-handler.h
     nudm-build.h
     nudm-handler.h
-    nsmf-build.h
     nsmf-handler.h
     namf-build.h
     namf-handler.h
     npcf-build.h
     npcf-handler.h
     sbi-path.h
-    gsmue-message.h
     gsm-build.h
     gsm-handler.h
     nas-path.h
     ngap-build.h
     ngap-handler.h
     ngap-path.h
-    local-path.h
     metrics.h
-    pdu-info.h
 
     init.c
     event.c
@@ -97,24 +93,19 @@ libsmf_sources = files('''
     nnrf-handler.c
     nudm-build.c
     nudm-handler.c
-    nsmf-build.c
     nsmf-handler.c
     namf-build.c
     namf-handler.c
     npcf-build.c
     npcf-handler.c
     sbi-path.c
-    gsmue-message.c
     gsm-build.c
     gsm-handler.c
     nas-path.c
     ngap-build.c
     ngap-handler.c
     ngap-path.c
-    local-path.c
     metrics.c
-    pdu-info.c
-    ../../lib/metrics/prometheus/json_pager.c
 '''.split())
 
 libsmf = static_library('smf',

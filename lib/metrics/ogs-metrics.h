@@ -20,33 +20,25 @@
 #ifndef OGS_METRICS_H
 #define OGS_METRICS_H
 
-/* MUST come first to satisfy core headers like ogs-list.h */
-#include "core/ogs-core.h"
-
-/* App layer (logging domain, etc.) */
 #include "app/ogs-app.h"
 
-/* Expose internal metrics structures to metrics library users */
 #define OGS_METRICS_INSIDE
-#include "metrics/context.h"
-#undef OGS_METRICS_INSIDE
 
+#include "metrics/context.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#undef OGS_METRICS_INSIDE
 
-#ifdef __cplusplus
-}
-#endif
+extern int __ogs_metrics_domain;
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __ogs_metrics_domain
 
 #ifdef __cplusplus
-} /* extern "C" */
+}
 #endif
 
 #endif /* OGS_METRICS_H */
-

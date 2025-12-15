@@ -20,8 +20,6 @@
 #include "test-common.h"
 #include "af/sbi-path.h"
 
-#define ENABLE_PCF_INITIATED_SESSION_RELEASE 0
-
 static void test1_func(abts_case *tc, void *data)
 {
     int rv;
@@ -317,7 +315,6 @@ static void test1_func(abts_case *tc, void *data)
     af_local_send_to_pcf(af_sess, &af_param,
             af_npcf_policyauthorization_build_create);
 
-#if !ENABLE_PCF_INITIATED_SESSION_RELEASE
     /* Receive PDUSessionResourceModifyRequest +
      * DL NAS transport +
      * PDU session modification command */
@@ -414,48 +411,10 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-#else
-    /* Receive PDUSessionResourceReleaseCommand +
-     * DL NAS transport +
-     * PDU session release command */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-    ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_PDUSessionResourceRelease,
-            test_ue->ngap_procedure_code);
-
-    /* Send PDUSessionResourceReleaseResponse */
-    sendbuf = testngap_build_pdu_session_resource_release_response(sess);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Send UplinkNASTransport +
-     * UL NAS trasnport +
-     * PDU session resource release complete */
-    sess->ul_nas_transport_param.request_type = 0;
-    sess->ul_nas_transport_param.dnn = 0;
-    sess->ul_nas_transport_param.s_nssai = 0;
-
-    sess->pdu_session_establishment_param.ssc_mode = 0;
-    sess->pdu_session_establishment_param.epco = 0;
-
-    gsmbuf = testgsm_build_pdu_session_release_complete(sess);
-    ABTS_PTR_NOTNULL(tc, gsmbuf);
-    gmmbuf = testgmm_build_ul_nas_transport(sess,
-            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-#endif
 
     /* Wait for PDU session resource modify complete */
     ogs_msleep(100);
 
-#if !ENABLE_PCF_INITIATED_SESSION_RELEASE
     /* Test Bearer Remove */
     test_bearer_remove(qos_flow);
 
@@ -472,7 +431,6 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Wait for PDU session resource modify complete */
     ogs_msleep(100);
-#endif
 
     /* Send UEContextReleaseRequest */
     sendbuf = testngap_build_ue_context_release_request(test_ue,

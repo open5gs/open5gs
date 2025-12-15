@@ -261,18 +261,10 @@ uint8_t smf_s5c_handle_create_session_request(
     /* Select PGW based on UE Location Information */
     smf_sess_select_upf(sess);
 
-    if (!sess->pfcp_node) {
-        ogs_error("[%s:%s] No UPF available for session",
-                  smf_ue->imsi_bcd, sess->session.name);
-        return OGS_GTP2_CAUSE_SYSTEM_FAILURE;
-    }
-
     /* Check if selected PGW is associated with SMF */
-    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
-        ogs_error("[%s:%s] selected UPF is not assocated with SMF",
-                  smf_ue->imsi_bcd, sess->session.name);
+    ogs_assert(sess->pfcp_node);
+    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated))
         return OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
-    }
 
     /* UE IP Address */
     paa = req->pdn_address_allocation.data;
@@ -893,8 +885,7 @@ void smf_s5c_handle_create_bearer_response(
 
     ogs_assert(OGS_OK ==
         smf_epc_pfcp_send_one_bearer_modification_request(
-            bearer, OGS_INVALID_POOL_ID,
-            OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE,
+            bearer, OGS_INVALID_POOL_ID, OGS_PFCP_MODIFY_ACTIVATE,
             OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
             OGS_GTP2_CAUSE_UNDEFINED_VALUE));
 }

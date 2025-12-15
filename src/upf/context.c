@@ -178,10 +178,7 @@ upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *cp_f_seid)
     ogs_assert(cp_f_seid);
 
     ogs_pool_id_calloc(&upf_sess_pool, &sess);
-    if (!sess) {
-        ogs_error("Maximum number of Session reached");
-        return NULL;
-    }
+    ogs_assert(sess);
 
     ogs_pfcp_pool_init(&sess->pfcp);
 

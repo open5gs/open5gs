@@ -32,8 +32,6 @@ typedef struct sockinfo_s {
 typedef struct connection_s {
     ogs_lnode_t lnode;
 
-    ogs_pool_id_t id;
-
     void *data;
 
     char *method;
@@ -163,7 +161,7 @@ ogs_sbi_client_t *ogs_sbi_client_add(
     curl_multi_setopt(multi, CURLMOPT_SOCKETDATA, client);
     curl_multi_setopt(multi, CURLMOPT_TIMERFUNCTION, multi_timer_cb);
     curl_multi_setopt(multi, CURLMOPT_TIMERDATA, client);
-#if CURL_AT_LEAST_VERSION(7,67,0)
+#ifdef CURLMOPT_MAX_CONCURRENT_STREAMS
     curl_multi_setopt(multi, CURLMOPT_MAX_CONCURRENT_STREAMS,
                         ogs_app()->pool.stream);
 #endif
@@ -172,7 +170,7 @@ ogs_sbi_client_t *ogs_sbi_client_add(
 
     ogs_list_add(&ogs_sbi_self()->client_list, client);
 
-    ogs_debug("CLIENT added with Ref [%d]", client->reference_count);
+    ogs_debug("CLEINT added with Ref [%d]", client->reference_count);
 
     return client;
 }
@@ -183,7 +181,7 @@ void ogs_sbi_client_remove(ogs_sbi_client_t *client)
 
     ogs_assert(client);
 
-    ogs_debug("CLIENT UnRef [%d]", client->reference_count);
+    ogs_debug("CLEINT UnRef [%d]", client->reference_count);
     if (client->fqdn)
         ogs_debug("- fqdn [%s:%d]", client->fqdn, client->fqdn_port);
     if (client->resolve)
@@ -201,7 +199,7 @@ void ogs_sbi_client_remove(ogs_sbi_client_t *client)
         return;
     }
 
-    ogs_debug("CLIENT removed [%d]", client->reference_count);
+    ogs_debug("CLEINT removed [%d]", client->reference_count);
 
     ogs_list_remove(&ogs_sbi_self()->client_list, client);
 
@@ -415,11 +413,12 @@ static connection_t *connection_add(
     ogs_assert(request);
     ogs_assert(request->h.method);
 
-    ogs_pool_id_calloc(&connection_pool, &conn);
+    ogs_pool_alloc(&connection_pool, &conn);
     if (!conn) {
         ogs_error("ogs_pool_alloc() failed");
         return NULL;
     }
+    memset(conn, 0, sizeof(connection_t));
 
     conn->client = client;
     conn->client_cb = client_cb;
@@ -457,8 +456,7 @@ static connection_t *connection_add(
     }
 
     conn->timer = ogs_timer_add(
-            ogs_app()->timer_mgr, connection_timer_expired,
-            OGS_UINT_TO_POINTER(conn->id));
+            ogs_app()->timer_mgr, connection_timer_expired, conn);
     if (!conn->timer) {
         ogs_error("conn->timer is NULL");
         connection_free(conn);
@@ -494,8 +492,8 @@ static connection_t *connection_add(
     /* HTTPS certificate-related settings */
     if (client->scheme == OpenAPI_uri_scheme_https) {
         if (client->insecure_skip_verify) {
-            curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYPEER, 0L);
-            curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_easy_setopt(conn->easy, CURLOPT_SSL_VERIFYHOST, 0);
         } else {
             if (client->cacert)
                 curl_easy_setopt(conn->easy, CURLOPT_CAINFO, client->cacert);
@@ -546,6 +544,9 @@ static connection_t *connection_add(
             ogs_debug("SENDING...[%d]", (int)request->http.content_length);
             if (request->http.content_length)
                 ogs_debug("%s", request->http.content);
+            if (request->http.content && request->http.content_length) {
+                ogs_debug("%.*s", (int)request->http.content_length, request->http.content);
+            }
         }
     }
 
@@ -635,7 +636,7 @@ static void connection_free(connection_t *conn)
     if (conn->method)
         ogs_free(conn->method);
 
-    ogs_pool_id_free(&connection_pool, conn);
+    ogs_pool_free(&connection_pool, conn);
 }
 
 static void connection_remove_all(ogs_sbi_client_t *client)
@@ -650,20 +651,12 @@ static void connection_remove_all(ogs_sbi_client_t *client)
 
 static void connection_timer_expired(void *data)
 {
-    ogs_pool_id_t conn_id = OGS_POINTER_TO_UINT(data);
     connection_t *conn = NULL;
     CURLcode res;
     char *effective_url = NULL;
 
-    if (conn_id >= OGS_MIN_POOL_ID && conn_id <= OGS_MAX_POOL_ID)
-        conn = ogs_pool_find_by_id(&connection_pool, conn_id);
-    else
-        ogs_error("Invalid Connection ID [%d]", conn_id);
-
-    if (!conn) {
-        ogs_error("No Connection");
-        return;
-    }
+    conn = data;
+    ogs_assert(conn);
 
     ogs_error("Connection timer expired [METHOD:%s]", conn->method);
 
@@ -764,7 +757,7 @@ static void check_multi_info(ogs_sbi_client_t *client)
                 }
 
             } else
-                ogs_warn("%s (%d): %s", curl_easy_strerror(res), res, conn->error);
+                ogs_warn("[%d] %s", res, conn->error);
 
             ogs_assert(conn->client_cb);
             if (res == CURLE_OK)

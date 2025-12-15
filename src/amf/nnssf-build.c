@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -24,14 +24,8 @@ ogs_sbi_request_t *amf_nnssf_nsselection_build_get(
 {
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
-    amf_nnssf_nsselection_param_t *param = data;
 
-    amf_ue_t *amf_ue = NULL;
-
-    ogs_assert(param);
     ogs_assert(sess);
-    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
-    ogs_assert(amf_ue);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
@@ -42,59 +36,19 @@ ogs_sbi_request_t *amf_nnssf_nsselection_build_get(
 
     message.param.nf_id = NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
     if (!message.param.nf_id) {
-        ogs_error("No nf-id");
+        ogs_error("No nf_id");
         goto end;
     }
     message.param.nf_type = NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);
     if (!message.param.nf_type) {
-        ogs_error("No nf-type");
+        ogs_error("No nf_type");
         goto end;
     }
 
-    message.param.slice_info_for_pdu_session_presence =
-        param->slice_info_for_pdu_session.presence;
-
-    if (!message.param.slice_info_for_pdu_session_presence) {
-        ogs_error("No sliceInfoForPDUSession");
-        goto end;
-    }
-
-    if (!param->slice_info_for_pdu_session.snssai) {
-        ogs_error("No sNssai");
-        goto end;
-    }
-
-    message.param.snssai_presence = true;
-    memcpy(&message.param.s_nssai,
-            param->slice_info_for_pdu_session.snssai,
+    message.param.slice_info_request_for_pdu_session_presence = true;
+    message.param.roaming_indication = OpenAPI_roaming_indication_NON_ROAMING;
+    memcpy(&message.param.s_nssai, &sess->s_nssai,
             sizeof(message.param.s_nssai));
-
-    message.param.roaming_indication =
-        param->slice_info_for_pdu_session.roaming_indication;
-
-    if (!message.param.roaming_indication) {
-        ogs_error("No roamingIndication");
-        goto end;
-    }
-
-    if (param->slice_info_for_pdu_session.home_snssai) {
-        message.param.home_snssai_presence = true;
-        if (message.param.home_snssai_presence)
-            memcpy(&message.param.home_snssai,
-                    param->slice_info_for_pdu_session.home_snssai,
-                    sizeof(message.param.home_snssai));
-    }
-
-    if (param->home_plmn_id) {
-        message.param.home_plmn_id_presence = true;
-        memcpy(&message.param.home_plmn_id,
-                param->home_plmn_id, sizeof(message.param.home_plmn_id));
-    }
-
-    if (param->tai) {
-        message.param.tai_presence = true;
-        memcpy(&message.param.tai, param->tai, sizeof(message.param.tai));
-    }
 
     request = ogs_sbi_build_request(&message);
     ogs_expect(request);

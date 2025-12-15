@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -44,7 +44,6 @@ int smf_sbi_open(void)
     ogs_sbi_nf_instance_build_default(nf_instance);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SCP);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AMF);
-    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SMF);
 
     /* Build NF service information. It will be transmitted to NRF. */
     if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)) {
@@ -54,7 +53,6 @@ int smf_sbi_open(void)
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_AMF);
-        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_SMF);
     }
 
     /* Initialize NRF NF Instance */
@@ -236,13 +234,13 @@ int smf_sbi_discover_and_send(
     return OGS_OK;
 }
 
-ogs_sbi_xact_t *smf_namf_comm_create_n1_n2_message_xact(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream,
-        smf_n1_n2_message_transfer_param_t *param)
+void smf_namf_comm_send_n1_n2_message_transfer(
+        smf_sess_t *sess, smf_n1_n2_message_transfer_param_t *param)
 {
     smf_ue_t *smf_ue = NULL;
     ogs_sbi_xact_t *xact = NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
+    int r;
 
     ogs_assert(sess);
     smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
@@ -255,7 +253,7 @@ ogs_sbi_xact_t *smf_namf_comm_create_n1_n2_message_xact(
     discovery_option = ogs_sbi_discovery_option_new();
     ogs_assert(discovery_option);
     ogs_sbi_discovery_option_set_target_nf_instance_id(
-            discovery_option, sess->amf_nf_id);
+            discovery_option, sess->serving_nf_id);
 
     xact = ogs_sbi_xact_add(
             sess->id, &sess->sbi, OGS_SBI_SERVICE_TYPE_NAMF_COMM,
@@ -263,38 +261,11 @@ ogs_sbi_xact_t *smf_namf_comm_create_n1_n2_message_xact(
             (ogs_sbi_build_f)smf_namf_comm_build_n1_n2_message_transfer,
             sess, param);
     if (!xact) {
-        ogs_error("ogs_sbi_xact_add() failed");
-        return NULL;
+        ogs_error("smf_namf_comm_send_n1_n2_message_transfer() failed");
+        return;
     }
 
     xact->state = param->state;
-
-    if (stream) {
-        xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
-        ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
-                xact->assoc_stream_id <= OGS_MAX_POOL_ID);
-    }
-
-    return xact;
-}
-
-void smf_namf_comm_send_n1_n2_message_transfer(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream,
-        smf_n1_n2_message_transfer_param_t *param)
-{
-    ogs_sbi_xact_t *xact = NULL;
-    int r;
-
-    ogs_assert(sess);
-    ogs_assert(param);
-    ogs_assert(param->state);
-    ogs_assert(param->n1smbuf || param->n2smbuf);
-
-    xact = smf_namf_comm_create_n1_n2_message_xact(sess, stream, param);
-    if (!xact) {
-        ogs_error("smf_namf_comm_create_n1_n2_message_xact() failed");
-        return;
-    }
 
     r = ogs_sbi_discover_and_send(xact);
     if (r != OGS_OK) {
@@ -305,55 +276,17 @@ void smf_namf_comm_send_n1_n2_message_transfer(
 }
 
 void smf_namf_comm_send_n1_n2_pdu_establishment_reject(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream)
+        smf_sess_t *sess)
 {
     smf_n1_n2_message_transfer_param_t param;
 
     memset(&param, 0, sizeof(param));
-    param.state = SMF_UE_OR_NETWORK_REQUESTED_PDU_SESSION_RELEASE;
+    param.state = SMF_NETWORK_REQUESTED_PDU_SESSION_RELEASE;
     param.n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
         OGS_5GSM_CAUSE_NETWORK_FAILURE);
     ogs_assert(param.n1smbuf);
 
-    smf_namf_comm_send_n1_n2_message_transfer(sess, stream, &param);
-}
-
-void smf_sbi_send_sm_context_created_data(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream)
-{
-    OpenAPI_sm_context_created_data_t SmContextCreatedData;
-
-    ogs_sbi_server_t *server = NULL;
-    ogs_sbi_header_t header;
-    ogs_sbi_message_t sendmsg;
-    ogs_sbi_response_t *response = NULL;
-
-    memset(&SmContextCreatedData, 0, sizeof(SmContextCreatedData));
-
-    memset(&sendmsg, 0, sizeof(sendmsg));
-
-    memset(&header, 0, sizeof(header));
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION;
-    header.api.version = (char *)OGS_SBI_API_V1;
-    header.resource.component[0] =
-        (char *)OGS_SBI_RESOURCE_NAME_SM_CONTEXTS;
-    header.resource.component[1] = sess->sm_context_ref;
-
-    server = ogs_sbi_server_from_stream(stream);
-    ogs_assert(server);
-    sendmsg.http.location = ogs_sbi_server_uri(server, &header);
-    ogs_assert(sendmsg.http.location);
-
-    sendmsg.SmContextCreatedData = &SmContextCreatedData;
-
-    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
-    ogs_assert(response);
-    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
-
-    smf_metrics_inst_by_slice_add(&sess->serving_plmn_id, &sess->s_nssai,
-            SMF_METR_CTR_SM_PDUSESSIONCREATIONSUCC, 1);
-
-    ogs_free(sendmsg.http.location);
+    smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
 }
 
 void smf_sbi_send_sm_context_create_error(
@@ -405,267 +338,6 @@ void smf_sbi_send_sm_context_create_error(
 
     if (n1smbuf)
         ogs_pkbuf_free(n1smbuf);
-}
-
-void smf_sbi_send_pdu_session_created_data(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream)
-{
-    int rv;
-    OpenAPI_pdu_session_created_data_t PduSessionCreatedData;
-
-    OpenAPI_tunnel_info_t hcnTunnelInfo;
-    char ssc_mode[2];
-    OpenAPI_ambr_t sessionAmbr;
-    OpenAPI_list_t *qosFlowsSetupList = NULL;
-    OpenAPI_qos_flow_setup_item_t *qosFlowSetupItem = NULL;
-    OpenAPI_qos_flow_profile_t *qosFlowProfile = NULL;
-    OpenAPI_arp_t *Arp = NULL;
-
-    ogs_nas_qos_rule_t qos_rule[OGS_NAS_MAX_NUM_OF_QOS_RULE];
-    ogs_nas_qos_rules_t authorized_qos_rules;
-
-    ogs_nas_qos_flow_description_t
-        qos_flow_description[OGS_NAS_MAX_NUM_OF_QOS_FLOW_DESCRIPTION];
-    ogs_nas_qos_flow_descriptions_t authorized_qos_flow_descriptions;
-
-    /*
-     * TS29.502
-     * 6.1.6.2.10 Type: PduSessionCreatedData
-     *
-     * This IE shall be present if the H-SMF/SMF has assigned
-     * IPv6 interface identifier to the UE during
-     * the PDU session establishment for the Home-routed Roaming scenario
-     * or for a PDU session with an I-SMF.
-     *
-     * When present, it shall encode the UE IPv6 Interface Identifier
-     * to be used by the UE for its link-local address configuration
-     * with 16 hexadecimal digits.
-     *
-     * Pattern: "^[A-Fa-f0-9]{16}$"
-     */
-    char ue_ipv6_interface_id[16+1]; /* 16 + 1(string-termiante:'\0') */
-
-    int enc_len = 0;
-
-    OpenAPI_ref_to_binary_data_t n1SmInfoToUe;
-    ogs_pkbuf_t *n1SmBufToUe = NULL;
-
-    ogs_sbi_server_t *server = NULL;
-    ogs_sbi_header_t header;
-    ogs_sbi_message_t sendmsg;
-    ogs_sbi_response_t *response = NULL;
-
-    smf_bearer_t *qos_flow = NULL;
-
-    memset(&PduSessionCreatedData, 0, sizeof(PduSessionCreatedData));
-    memset(ssc_mode, 0, sizeof(ssc_mode));
-    memset(&hcnTunnelInfo, 0, sizeof(hcnTunnelInfo));
-    memset(&sessionAmbr, 0, sizeof(sessionAmbr));
-
-    ogs_assert(sess->session.session_type);
-    PduSessionCreatedData.pdu_session_type = sess->session.session_type;
-
-    ogs_assert(sess->session.ssc_mode);
-    ssc_mode[0] = ogs_to_hex(sess->session.ssc_mode);
-    PduSessionCreatedData.ssc_mode = ssc_mode;
-
-    if (sess->local_ul_addr)
-        hcnTunnelInfo.ipv4_addr = ogs_ipstrdup(sess->local_ul_addr);
-    if (sess->local_ul_addr6)
-        hcnTunnelInfo.ipv6_addr = ogs_ipstrdup(sess->local_ul_addr6);
-    hcnTunnelInfo.gtp_teid = ogs_uint32_to_0string(sess->local_ul_teid);
-    PduSessionCreatedData.hcn_tunnel_info = &hcnTunnelInfo;
-
-    if (sess->session.ambr.uplink)
-        sessionAmbr.uplink = ogs_sbi_bitrate_to_string(
-            sess->session.ambr.uplink, OGS_SBI_BITRATE_KBPS);
-    if (sess->session.ambr.downlink)
-        sessionAmbr.downlink = ogs_sbi_bitrate_to_string(
-            sess->session.ambr.downlink, OGS_SBI_BITRATE_KBPS);
-
-    if (sessionAmbr.uplink || sessionAmbr.downlink)
-        PduSessionCreatedData.session_ambr = &sessionAmbr;
-
-    qos_flow = smf_default_bearer_in_sess(sess);
-    ogs_assert(qos_flow);
-    ogs_assert(ogs_list_next(qos_flow) == NULL);
-
-    memset(qos_rule, 0, sizeof(qos_rule));
-    gsm_encode_default_qos_rule(&qos_rule[0], qos_flow);
-
-    memset(&authorized_qos_rules, 0, sizeof(authorized_qos_rules));
-    rv = ogs_nas_build_qos_rules(&authorized_qos_rules, qos_rule, 1);
-    ogs_assert(rv == OGS_OK);
-    ogs_assert(authorized_qos_rules.length);
-
-    /* QoS flow descriptions */
-    memset(&qos_flow_description, 0, sizeof(qos_flow_description));
-    gsm_encode_default_qos_flow_description(&qos_flow_description[0], qos_flow);
-
-    memset(&authorized_qos_flow_descriptions, 0,
-            sizeof(authorized_qos_flow_descriptions));
-    rv = ogs_nas_build_qos_flow_descriptions(
-            &authorized_qos_flow_descriptions, qos_flow_description, 1);
-    ogs_assert(rv == OGS_OK);
-    ogs_assert(authorized_qos_flow_descriptions.length);
-
-    qosFlowsSetupList = OpenAPI_list_create();
-    ogs_assert(qosFlowsSetupList);
-
-    qosFlowSetupItem = ogs_calloc(1, sizeof(*qosFlowSetupItem));
-    ogs_assert(qosFlowSetupItem);
-
-    qosFlowSetupItem->qfi = qos_flow->qfi;
-    if (qos_rule[0].DQR_bit) {
-        qosFlowSetupItem->is_default_qos_rule_ind = true;
-        qosFlowSetupItem->default_qos_rule_ind = true;
-    }
-
-    enc_len = ogs_base64_encode_len(authorized_qos_rules.length);
-    qosFlowSetupItem->qos_rules = ogs_calloc(1, enc_len);
-    ogs_assert(qosFlowSetupItem->qos_rules);
-    ogs_base64_encode(qosFlowSetupItem->qos_rules,
-            authorized_qos_rules.buffer, authorized_qos_rules.length);
-
-    ogs_free(authorized_qos_rules.buffer);
-
-    enc_len = ogs_base64_encode_len(
-            authorized_qos_flow_descriptions.length);
-    qosFlowSetupItem->qos_flow_description = ogs_calloc(1, enc_len);
-    ogs_assert(qosFlowSetupItem->qos_flow_description);
-    ogs_base64_encode(qosFlowSetupItem->qos_flow_description,
-            authorized_qos_flow_descriptions.buffer,
-            authorized_qos_flow_descriptions.length);
-
-    ogs_free(authorized_qos_flow_descriptions.buffer);
-
-    Arp = ogs_calloc(1, sizeof(*Arp));
-    ogs_assert(Arp);
-    if (qos_flow->qos.arp.pre_emption_capability ==
-            OGS_5GC_PRE_EMPTION_ENABLED)
-        Arp->preempt_cap = OpenAPI_preemption_capability_MAY_PREEMPT;
-    else if (qos_flow->qos.arp.pre_emption_capability ==
-            OGS_5GC_PRE_EMPTION_DISABLED)
-        Arp->preempt_cap = OpenAPI_preemption_capability_NOT_PREEMPT;
-    else {
-        ogs_error("No Arp->preempt_cap");
-        goto end;
-    }
-
-    if (qos_flow->qos.arp.pre_emption_vulnerability ==
-            OGS_5GC_PRE_EMPTION_ENABLED)
-        Arp->preempt_vuln = OpenAPI_preemption_vulnerability_PREEMPTABLE;
-    else if (qos_flow->qos.arp.pre_emption_vulnerability ==
-            OGS_5GC_PRE_EMPTION_DISABLED)
-        Arp->preempt_vuln = OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
-    else {
-        ogs_error("No Arp->preempt_vuln");
-        goto end;
-    }
-    Arp->priority_level = qos_flow->qos.arp.priority_level;
-
-    qosFlowProfile = ogs_calloc(1, sizeof(*qosFlowProfile));
-    ogs_assert(qosFlowProfile);
-    qosFlowProfile->arp = Arp;
-    qosFlowProfile->_5qi = qos_flow->qos.index;
-
-    qosFlowSetupItem->qos_flow_profile = qosFlowProfile;
-
-    OpenAPI_list_add(qosFlowsSetupList, qosFlowSetupItem);
-
-    if (qosFlowsSetupList->count)
-        PduSessionCreatedData.qos_flows_setup_list = qosFlowsSetupList;
-    else
-        OpenAPI_list_free(qosFlowsSetupList);
-
-    PduSessionCreatedData.h_smf_instance_id =
-        NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
-    ogs_assert(PduSessionCreatedData.h_smf_instance_id);
-
-    memset(ue_ipv6_interface_id, 0, sizeof(ue_ipv6_interface_id));
-    if (sess->paa.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        PduSessionCreatedData.ue_ipv4_address =
-            ogs_ipv4_to_string(sess->paa.addr);
-    } else if (sess->paa.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
-        PduSessionCreatedData.ue_ipv6_prefix =
-            ogs_ipv6prefix_to_string(
-                    sess->paa.addr6, OGS_IPV6_DEFAULT_PREFIX_LEN);
-        ogs_hex_to_ascii(
-                sess->paa.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1,
-                ue_ipv6_interface_id, sizeof(ue_ipv6_interface_id));
-        PduSessionCreatedData.ue_ipv6_interface_id = ue_ipv6_interface_id;
-    } else if (sess->paa.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        PduSessionCreatedData.ue_ipv4_address =
-            ogs_ipv4_to_string(sess->paa.both.addr);
-        PduSessionCreatedData.ue_ipv6_prefix =
-            ogs_ipv6prefix_to_string(
-                    sess->paa.both.addr6, OGS_IPV6_DEFAULT_PREFIX_LEN);
-        ogs_hex_to_ascii(
-                sess->paa.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1,
-                ue_ipv6_interface_id, sizeof(ue_ipv6_interface_id));
-        PduSessionCreatedData.ue_ipv6_interface_id = ue_ipv6_interface_id;
-    } else {
-        ogs_error("Invalid sess->session.session_type[%d]",
-                sess->paa.session_type);
-        goto end;
-    }
-
-    memset(&sendmsg, 0, sizeof(sendmsg));
-
-    n1SmBufToUe = gsmue_build_pdu_session_establishment_accept(sess);
-    ogs_assert(n1SmBufToUe);
-
-    n1SmInfoToUe.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
-    PduSessionCreatedData.n1_sm_info_to_ue = &n1SmInfoToUe;
-
-    sendmsg.part[sendmsg.num_of_part].pkbuf = n1SmBufToUe;
-    sendmsg.part[sendmsg.num_of_part].content_id =
-        (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
-    sendmsg.part[sendmsg.num_of_part].content_type =
-        (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
-    sendmsg.num_of_part++;
-
-    memset(&header, 0, sizeof(header));
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION;
-    header.api.version = (char *)OGS_SBI_API_V1;
-    header.resource.component[0] =
-        (char *)OGS_SBI_RESOURCE_NAME_PDU_SESSIONS;
-    ogs_assert(sess->pdu_session_ref);
-    header.resource.component[1] = sess->pdu_session_ref;
-
-    server = ogs_sbi_server_from_stream(stream);
-    ogs_assert(server);
-    sendmsg.http.location = ogs_sbi_server_uri(server, &header);
-    ogs_assert(sendmsg.http.location);
-
-    sendmsg.PduSessionCreatedData = &PduSessionCreatedData;
-
-    response = ogs_sbi_build_response(&sendmsg,
-            OGS_SBI_HTTP_STATUS_CREATED);
-    ogs_assert(response);
-    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
-
-    ogs_free(sendmsg.http.location);
-
-end:
-    if (hcnTunnelInfo.ipv4_addr)
-        ogs_free(hcnTunnelInfo.ipv4_addr);
-    if (hcnTunnelInfo.ipv6_addr)
-        ogs_free(hcnTunnelInfo.ipv6_addr);
-    if (hcnTunnelInfo.gtp_teid)
-        ogs_free(hcnTunnelInfo.gtp_teid);
-
-    if (sessionAmbr.uplink)
-        ogs_free(sessionAmbr.uplink);
-    if (sessionAmbr.downlink)
-        ogs_free(sessionAmbr.downlink);
-
-    CLEAR_QOS_FLOWS_SETUP_LIST(PduSessionCreatedData.qos_flows_setup_list);
-
-    if (PduSessionCreatedData.ue_ipv4_address)
-        ogs_free(PduSessionCreatedData.ue_ipv4_address);
-    if (PduSessionCreatedData.ue_ipv6_prefix)
-        ogs_free(PduSessionCreatedData.ue_ipv6_prefix);
 }
 
 void smf_sbi_send_sm_context_updated_data(
@@ -842,92 +514,6 @@ static int client_notify_cb(
     return OGS_OK;
 }
 
-int smf_sbi_cleanup_session(
-    smf_sess_t              *sess,
-    ogs_sbi_stream_t        *stream,
-    int                      state,
-    smf_sbi_cleanup_mode_t   mode)
-{
-    smf_ue_t *smf_ue = NULL;
-    int r = OGS_ERROR;
-
-    ogs_assert(mode);
-
-    ogs_assert(sess);
-    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
-    ogs_assert(smf_ue);
-
-    ogs_assert(state);
-
-    switch (mode) {
-    case SMF_SBI_CLEANUP_MODE_POLICY_FIRST:
-        if (PCF_SM_POLICY_ASSOCIATED(sess)) {
-            r = smf_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL,
-                NULL,
-                smf_npcf_smpolicycontrol_build_delete,
-                sess, stream, state, NULL);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-        } else if (UDM_SDM_SUBSCRIBED(sess)) {
-            ogs_error("[%s:%d] No PolicyAssociationId. Forcibly remove SESSION",
-                    smf_ue->supi, sess->psi);
-            r = smf_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NUDM_SDM,
-                NULL,
-                smf_nudm_sdm_build_subscription_delete,
-                sess, stream, state, NULL);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-        } else {
-            ogs_error("[%s:%d] No UDM Subscription. Forcibly remove SESSION",
-                    smf_ue->supi, sess->psi);
-            r = smf_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NUDM_UECM,
-                NULL,
-                smf_nudm_uecm_build_deregistration,
-                sess, stream, state, NULL);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-        }
-        break;
-
-    case SMF_SBI_CLEANUP_MODE_SUBSCRIPTION_FIRST:
-        if (UDM_SDM_SUBSCRIBED(sess)) {
-            r = smf_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NUDM_SDM,
-                NULL,
-                smf_nudm_sdm_build_subscription_delete,
-                sess, stream, state, NULL);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-        } else {
-            ogs_error("[%s:%d] No UDM Subscription. Forcibly remove SESSION",
-                    smf_ue->supi, sess->psi);
-            r = smf_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NUDM_UECM,
-                NULL,
-                smf_nudm_uecm_build_deregistration,
-                sess, stream, state, NULL);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-        }
-        break;
-
-    case SMF_SBI_CLEANUP_MODE_CONTEXT_ONLY:
-        r = smf_sbi_discover_and_send(
-            OGS_SBI_SERVICE_TYPE_NUDM_UECM,
-            NULL,
-            smf_nudm_uecm_build_deregistration,
-            sess, stream, state, NULL);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        break;
-    }
-
-    return r;
-}
-
 bool smf_sbi_send_sm_context_status_notify(smf_sess_t *sess)
 {
     bool rc;
@@ -941,217 +527,6 @@ bool smf_sbi_send_sm_context_status_notify(smf_sess_t *sess)
     request = smf_namf_callback_build_sm_context_status(sess, NULL);
     if (!request) {
         ogs_error("smf_namf_callback_build_sm_context_status() failed");
-        return false;
-    }
-
-    rc = ogs_sbi_send_request_to_client(
-            client, client_notify_cb, request, NULL);
-    ogs_expect(rc == true);
-
-    ogs_sbi_request_free(request);
-
-    return rc;
-}
-
-void smf_sbi_send_pdu_session_create_error(
-        ogs_sbi_stream_t *stream,
-        int status, ogs_sbi_app_errno_e err, int n1SmCause,
-        const char *title, const char *detail,
-        ogs_pkbuf_t *n1SmBufToUe)
-{
-    ogs_sbi_message_t sendmsg;
-    ogs_sbi_response_t *response = NULL;
-
-    OpenAPI_pdu_session_create_error_t PduSessionCreateError;
-    OpenAPI_problem_details_t problem;
-    OpenAPI_ref_to_binary_data_t n1SmMsgToUe;
-
-    ogs_assert(stream);
-
-    memset(&sendmsg, 0, sizeof(sendmsg));
-    memset(&problem, 0, sizeof(problem));
-    memset(&PduSessionCreateError, 0, sizeof(PduSessionCreateError));
-
-    if (status) {
-        problem.is_status = true;
-        problem.status = status;
-    }
-    problem.title = (char*)title;
-    problem.detail = (char*)detail;
-    if (err > OGS_SBI_APP_ERRNO_NULL && err < OGS_SBI_MAX_NUM_OF_APP_ERRNO)
-        problem.cause = (char*)ogs_sbi_app_strerror(err);
-
-    sendmsg.PduSessionCreateError = &PduSessionCreateError;
-
-    memset(&PduSessionCreateError, 0, sizeof(PduSessionCreateError));
-    PduSessionCreateError.error = &problem;
-
-    if (n1SmCause)
-        PduSessionCreateError.n1sm_cause = ogs_msprintf("%02x", n1SmCause);
-
-    if (n1SmBufToUe) {
-        PduSessionCreateError.n1_sm_info_to_ue = &n1SmMsgToUe;
-        n1SmMsgToUe.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
-        sendmsg.part[0].content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
-        sendmsg.part[0].content_type = (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
-        sendmsg.part[0].pkbuf = n1SmBufToUe;
-        sendmsg.num_of_part = 1;
-    }
-
-    response = ogs_sbi_build_response(&sendmsg, problem.status);
-    ogs_assert(response);
-    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
-
-    smf_metrics_inst_by_cause_add(problem.status,
-            SMF_METR_CTR_SM_PDUSESSIONCREATIONFAIL, 1);
-
-    if (PduSessionCreateError.n1sm_cause)
-        ogs_free(PduSessionCreateError.n1sm_cause);
-    if (n1SmBufToUe)
-        ogs_pkbuf_free(n1SmBufToUe);
-}
-
-void smf_sbi_send_hsmf_update_error(
-        ogs_sbi_stream_t *stream,
-        int status, ogs_sbi_app_errno_e err, int n1SmCause,
-        const char *title, const char *detail,
-        ogs_pkbuf_t *n1SmBufToUe)
-{
-    ogs_sbi_message_t sendmsg;
-    ogs_sbi_response_t *response = NULL;
-
-    OpenAPI_hsmf_update_error_t HsmfUpdateError;
-    OpenAPI_problem_details_t problem;
-    OpenAPI_ref_to_binary_data_t n1SmMsgToUe;
-
-    ogs_assert(stream);
-
-    memset(&sendmsg, 0, sizeof(sendmsg));
-    memset(&problem, 0, sizeof(problem));
-    memset(&HsmfUpdateError, 0, sizeof(HsmfUpdateError));
-
-    if (status) {
-        problem.is_status = true;
-        problem.status = status;
-    }
-    problem.title = (char*)title;
-    problem.detail = (char*)detail;
-    if (err > OGS_SBI_APP_ERRNO_NULL && err < OGS_SBI_MAX_NUM_OF_APP_ERRNO)
-        problem.cause = (char*)ogs_sbi_app_strerror(err);
-
-    sendmsg.HsmfUpdateError = &HsmfUpdateError;
-
-    memset(&HsmfUpdateError, 0, sizeof(HsmfUpdateError));
-    HsmfUpdateError.error = &problem;
-
-    if (n1SmCause)
-        HsmfUpdateError.n1sm_cause = ogs_msprintf("%02x", n1SmCause);
-
-    if (n1SmBufToUe) {
-        HsmfUpdateError.n1_sm_info_to_ue = &n1SmMsgToUe;
-        n1SmMsgToUe.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
-        sendmsg.part[0].content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
-        sendmsg.part[0].content_type = (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
-        sendmsg.part[0].pkbuf = n1SmBufToUe;
-        sendmsg.num_of_part = 1;
-    }
-
-    response = ogs_sbi_build_response(&sendmsg, problem.status);
-    ogs_assert(response);
-    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
-
-    if (HsmfUpdateError.n1sm_cause)
-        ogs_free(HsmfUpdateError.n1sm_cause);
-    if (n1SmBufToUe)
-        ogs_pkbuf_free(n1SmBufToUe);
-}
-
-void smf_sbi_send_vsmf_update_error(
-        ogs_sbi_stream_t *stream,
-        int status, ogs_sbi_app_errno_e err, int n1SmCause,
-        const char *title, const char *detail,
-        ogs_pkbuf_t *n1SmBufFromUe)
-{
-    ogs_sbi_message_t sendmsg;
-    ogs_sbi_response_t *response = NULL;
-
-    OpenAPI_vsmf_update_error_t VsmfUpdateError;
-    OpenAPI_ext_problem_details_t problem;
-    OpenAPI_ref_to_binary_data_t n1SmMsgFromUe;
-
-    ogs_assert(stream);
-
-    memset(&sendmsg, 0, sizeof(sendmsg));
-    memset(&problem, 0, sizeof(problem));
-    memset(&VsmfUpdateError, 0, sizeof(VsmfUpdateError));
-
-    if (status) {
-        problem.is_status = true;
-        problem.status = status;
-    }
-    problem.title = (char*)title;
-    problem.detail = (char*)detail;
-    if (err > OGS_SBI_APP_ERRNO_NULL && err < OGS_SBI_MAX_NUM_OF_APP_ERRNO)
-        problem.cause = (char*)ogs_sbi_app_strerror(err);
-
-    sendmsg.VsmfUpdateError = &VsmfUpdateError;
-
-    memset(&VsmfUpdateError, 0, sizeof(VsmfUpdateError));
-    VsmfUpdateError.error = &problem;
-
-    if (n1SmCause)
-        VsmfUpdateError.n1sm_cause = ogs_msprintf("%02x", n1SmCause);
-
-    if (n1SmBufFromUe) {
-        VsmfUpdateError.n1_sm_info_from_ue = &n1SmMsgFromUe;
-        n1SmMsgFromUe.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
-        sendmsg.part[0].content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
-        sendmsg.part[0].content_type = (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
-        sendmsg.part[0].pkbuf = n1SmBufFromUe;
-        sendmsg.num_of_part = 1;
-    }
-
-    response = ogs_sbi_build_response(&sendmsg, problem.status);
-    ogs_assert(response);
-    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
-
-    if (VsmfUpdateError.n1sm_cause)
-        ogs_free(VsmfUpdateError.n1sm_cause);
-    if (n1SmBufFromUe)
-        ogs_pkbuf_free(n1SmBufFromUe);
-}
-
-void smf_sbi_send_released_data(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream)
-{
-    OpenAPI_released_data_t ReleasedData;
-
-    ogs_sbi_message_t sendmsg;
-    ogs_sbi_response_t *response = NULL;
-
-    memset(&ReleasedData, 0, sizeof(ReleasedData));
-    memset(&sendmsg, 0, sizeof(sendmsg));
-
-    sendmsg.ReleasedData = &ReleasedData;
-
-    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
-    ogs_assert(response);
-    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
-}
-
-bool smf_sbi_send_status_notify(smf_sess_t *sess)
-{
-    bool rc;
-    ogs_sbi_request_t *request = NULL;
-    ogs_sbi_client_t *client = NULL;
-
-    ogs_assert(sess);
-    client = sess->v_smf.client;
-    ogs_assert(client);
-
-    request = smf_nsmf_pdusession_build_status(sess, NULL);
-    if (!request) {
-        ogs_error("smf_nsmf_pdusession_build_status() failed");
         return false;
     }
 

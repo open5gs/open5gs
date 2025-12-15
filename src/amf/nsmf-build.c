@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -42,6 +42,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
     ogs_assert(amf_ue);
     ogs_assert(amf_ue->nas.access_type);
+    ogs_assert(ran_ue_find_by_id(amf_ue->ran_ue_id));
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
@@ -55,6 +56,20 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     memset(&hplmnSnssai, 0, sizeof(hplmnSnssai));
     memset(&header, 0, sizeof(header));
     memset(&ueLocation, 0, sizeof(ueLocation));
+
+    SmContextCreateData.serving_nf_id =
+        NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
+    if (!SmContextCreateData.serving_nf_id) {
+        ogs_error("No serving_nf_id");
+        goto end;
+    }
+
+    SmContextCreateData.serving_network =
+        ogs_sbi_build_plmn_id_nid(&amf_ue->nr_tai.plmn_id);
+    if (!SmContextCreateData.serving_nf_id) {
+        ogs_error("No serving_network");
+        goto end;
+    }
 
     SmContextCreateData.supi = amf_ue->supi;
     SmContextCreateData.pei = amf_ue->pei;
@@ -95,13 +110,17 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
      * is absent, the serving core network operator shall be assumed.
      */
     if (ogs_sbi_plmn_id_in_vplmn(&amf_ue->home_plmn_id) == true) {
-        char *dnn_oi = ogs_dnn_oi_from_plmn_id(&amf_ue->home_plmn_id);
-        ogs_assert(dnn_oi);
+        char *home_network_domain = NULL;
 
-        SmContextCreateData.dnn = ogs_msprintf("%s.%s", sess->dnn, dnn_oi);
+        home_network_domain =
+            ogs_home_network_domain_from_plmn_id(&amf_ue->home_plmn_id);
+        ogs_assert(home_network_domain);
+
+        SmContextCreateData.dnn =
+            ogs_msprintf("%s.%s", sess->dnn, home_network_domain);
         ogs_assert(SmContextCreateData.dnn);
 
-        ogs_free(dnn_oi);
+        ogs_free(home_network_domain);
 
     } else {
 
@@ -120,53 +139,12 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
         SmContextCreateData.hplmn_snssai = &hplmnSnssai;
     }
 
-    SmContextCreateData.serving_nf_id =
-        NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
-    if (!SmContextCreateData.serving_nf_id) {
-        ogs_error("No serving_nf_id");
-        goto end;
-    }
-
     SmContextCreateData.guami = ogs_sbi_build_guami(amf_ue->guami);
     if (!SmContextCreateData.guami) {
         ogs_error("No guami");
         goto end;
     }
-
-    SmContextCreateData.serving_network =
-        ogs_sbi_build_plmn_id_nid(&amf_ue->nr_tai.plmn_id);
-    if (!SmContextCreateData.serving_network) {
-        ogs_error("No serving_network");
-        goto end;
-    }
-
-    if (sess->request_type >= OpenAPI_request_type_INITIAL_REQUEST &&
-            sess->request_type <=
-            OpenAPI_request_type_EXISTING_EMERGENCY_PDU_SESSION)
-        SmContextCreateData.request_type = sess->request_type;
-
-    n1SmMsg.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
-    SmContextCreateData.n1_sm_msg = &n1SmMsg;
-
-    SmContextCreateData.an_type = amf_ue->nas.access_type;
-    SmContextCreateData.rat_type = amf_ue_rat_type(amf_ue);
-
-    ueLocation.nr_location = ogs_sbi_build_nr_location(
-            &amf_ue->nr_tai, &amf_ue->nr_cgi);
-    if (!ueLocation.nr_location) {
-        ogs_error("No ueLocation.nr_location");
-        goto end;
-    }
-    if (amf_ue->ue_location_timestamp)
-        ueLocation.nr_location->ue_location_timestamp =
-            ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
-
-    SmContextCreateData.ue_location = &ueLocation;
-    SmContextCreateData.ue_time_zone = ogs_sbi_timezone_string(ogs_timezone());
-    if (!SmContextCreateData.ue_time_zone) {
-        ogs_error("No ue_time_zone");
-        goto end;
-    }
+    SmContextCreateData.an_type = amf_ue->nas.access_type; 
 
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_CALLBACK;
     header.api.version = (char *)OGS_SBI_API_V1;
@@ -187,33 +165,29 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     SmContextCreateData.sm_context_status_uri =
         ogs_sbi_server_uri(server, &header);
 
-    if (ogs_sbi_plmn_id_in_vplmn(&amf_ue->home_plmn_id) == true) {
-        if (sess->lbo_roaming_allowed == false) {
-            ogs_sbi_nf_instance_t *h_smf_instance = NULL;
-            ogs_sbi_client_t *h_smf_client = NULL;
-            char *apiroot = NULL;
+    n1SmMsg.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+    SmContextCreateData.n1_sm_msg = &n1SmMsg;
 
-            /* Home-Routed Roaming */
-            h_smf_instance = OGS_SBI_GET_NF_INSTANCE(
-                    sess->sbi.home_nsmf_pdusession);
-            ogs_assert(h_smf_instance);
-            h_smf_client = NF_INSTANCE_CLIENT(h_smf_instance);
-            ogs_assert(h_smf_client);
+    SmContextCreateData.rat_type = amf_ue_rat_type(amf_ue);
 
-            SmContextCreateData.h_smf_id = h_smf_instance->id;
+    ueLocation.nr_location = ogs_sbi_build_nr_location(
+            &amf_ue->nr_tai, &amf_ue->nr_cgi);
+    if (!ueLocation.nr_location) {
+        ogs_error("No ueLocation.nr_location");
+        goto end;
+    }
+    ueLocation.nr_location->ue_location_timestamp =
+        ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
+    if (!ueLocation.nr_location->ue_location_timestamp) {
+        ogs_error("No ue_location_timestamp");
+        goto end;
+    }
 
-            apiroot = ogs_sbi_client_apiroot(h_smf_client);
-            ogs_assert(apiroot);
-
-            SmContextCreateData.h_smf_uri =
-                ogs_msprintf("%s/%s/%s/%s", apiroot,
-                        (char *)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION,
-                        (char *)OGS_SBI_API_V1,
-                        (char *)OGS_SBI_RESOURCE_NAME_PDU_SESSIONS);
-            ogs_assert(SmContextCreateData.h_smf_uri);
-
-            ogs_free(apiroot);
-        }
+    SmContextCreateData.ue_location = &ueLocation;
+    SmContextCreateData.ue_time_zone = ogs_sbi_timezone_string(ogs_timezone());
+    if (!SmContextCreateData.ue_time_zone) {
+        ogs_error("No ue_time_zone");
+        goto end;
     }
 
     /*
@@ -250,10 +224,22 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     message.http.accept = (char *)(OGS_SBI_CONTENT_JSON_TYPE ","
         OGS_SBI_CONTENT_NGAP_TYPE "," OGS_SBI_CONTENT_PROBLEM_TYPE);
 
-    if (param && param->nrf_uri) {
+/*
+ * Callback Header Configuration
+ *
+ * The 3gpp-Sbi-Callback HTTP header (per 3GPP TS 29.500 v17.9.0) indicates that
+ * a message is an asynchronous notification or callback. This header should be
+ * included only in HTTP POST requests that are callbacks (e.g., event or
+ * notification messages) and must not be added to regular service requests,
+ * such as registration (HTTP PUT) or subscription requests.
+ */
+    message.http.custom.callback =
+        (char *)OGS_SBI_CALLBACK_NSMF_PDUSESSION_STATUS_NOTIFY;
+
+    if (param && param->nrf_uri.nrf.id) {
         message.http.custom.nrf_uri =
             ogs_msprintf("%s: \"%s\"",
-                    OGS_SBI_SERVICE_NAME_NNRF_DISC, param->nrf_uri);
+                    OGS_SBI_SERVICE_NAME_NNRF_DISC, param->nrf_uri.nrf.id);
     }
 
     request = ogs_sbi_build_request(&message);
@@ -284,9 +270,6 @@ end:
     if (SmContextCreateData.ue_time_zone)
         ogs_free(SmContextCreateData.ue_time_zone);
 
-    if (SmContextCreateData.h_smf_uri)
-        ogs_free(SmContextCreateData.h_smf_uri);
-
     if (message.http.custom.nrf_uri)
         ogs_free(message.http.custom.nrf_uri);
 
@@ -310,14 +293,14 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
 
     ogs_assert(param);
     ogs_assert(sess);
-    ogs_assert(sess->sm_context_resource_uri);
+    ogs_assert(sess->sm_context.resource_uri);
     amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
     ogs_assert(amf_ue);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.uri = ogs_msprintf("%s/%s",
-            sess->sm_context_resource_uri, OGS_SBI_RESOURCE_NAME_MODIFY);
+            sess->sm_context.resource_uri, OGS_SBI_RESOURCE_NAME_MODIFY);
     ogs_assert(message.h.uri);
 
     memset(&ueLocation, 0, sizeof(ueLocation));
@@ -385,9 +368,12 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
             ogs_error("No ueLocation.nr_location");
             goto end;
         }
-        if (amf_ue->ue_location_timestamp)
-            ueLocation.nr_location->ue_location_timestamp =
-                ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
+        ueLocation.nr_location->ue_location_timestamp =
+            ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
+        if (!ueLocation.nr_location->ue_location_timestamp) {
+            ogs_error("No ueLocation.nr_location->ue_location_timestamp");
+            goto end;
+        }
 
         SmContextUpdateData.ue_location = &ueLocation;
     }
@@ -439,31 +425,31 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_release_sm_context(
     OpenAPI_ng_ap_cause_t ngApCause;
     OpenAPI_user_location_t ueLocation;
 
-    ogs_assert(param);
-
     ogs_assert(sess);
-    ogs_assert(sess->sm_context_resource_uri);
+    ogs_assert(sess->sm_context.resource_uri);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.uri = ogs_msprintf("%s/%s",
-            sess->sm_context_resource_uri, OGS_SBI_RESOURCE_NAME_RELEASE);
+            sess->sm_context.resource_uri, OGS_SBI_RESOURCE_NAME_RELEASE);
     ogs_assert(message.h.uri);
 
     memset(&SmContextReleaseData, 0, sizeof(SmContextReleaseData));
 
-    SmContextReleaseData.cause = param->cause;
+    if (param) {
+        SmContextReleaseData.cause = param->cause;
 
-    if (param->ngApCause.group) {
-        SmContextReleaseData.ng_ap_cause = &ngApCause;
-        memset(&ngApCause, 0, sizeof(ngApCause));
-        ngApCause.group = param->ngApCause.group;
-        ngApCause.value = param->ngApCause.value;
-    }
+        if (param->ngApCause.group) {
+            SmContextReleaseData.ng_ap_cause = &ngApCause;
+            memset(&ngApCause, 0, sizeof(ngApCause));
+            ngApCause.group = param->ngApCause.group;
+            ngApCause.value = param->ngApCause.value;
+        }
 
-    if (param->gmm_cause) {
-        SmContextReleaseData._5g_mm_cause_value = param->gmm_cause;
-        SmContextReleaseData.is__5g_mm_cause_value = true;
+        if (param->gmm_cause) {
+            SmContextReleaseData._5g_mm_cause_value = param->gmm_cause;
+            SmContextReleaseData.is__5g_mm_cause_value = true;
+        }
     }
 
     memset(&ueLocation, 0, sizeof(ueLocation));
@@ -474,27 +460,24 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_release_sm_context(
         goto end;
     }
 
-    if (param->ue_location) {
-        ueLocation.nr_location = ogs_sbi_build_nr_location(
-                &amf_ue->nr_tai, &amf_ue->nr_cgi);
-        if (!ueLocation.nr_location) {
-            ogs_error("No ueLocation.nr_location");
-            goto end;
-        }
-        if (amf_ue->ue_location_timestamp)
-            ueLocation.nr_location->ue_location_timestamp =
-                ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
-
-        SmContextReleaseData.ue_location = &ueLocation;
+    ueLocation.nr_location = ogs_sbi_build_nr_location(
+            &amf_ue->nr_tai, &amf_ue->nr_cgi);
+    if (!ueLocation.nr_location) {
+        ogs_error("No ueLocation.nr_location");
+        goto end;
+    }
+    ueLocation.nr_location->ue_location_timestamp =
+        ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
+    if (!ueLocation.nr_location->ue_location_timestamp) {
+        ogs_error("No ueLocation.nr_location->ue_location_timestamp");
+        goto end;
     }
 
-    if (param->ue_timezone) {
-        SmContextReleaseData.ue_time_zone =
-            ogs_sbi_timezone_string(ogs_timezone());
-        if (!SmContextReleaseData.ue_time_zone) {
-            ogs_error("No SmContextReleaseData.ue_time_zone");
-            goto end;
-        }
+    SmContextReleaseData.ue_location = &ueLocation;
+    SmContextReleaseData.ue_time_zone = ogs_sbi_timezone_string(ogs_timezone());
+    if (!SmContextReleaseData.ue_time_zone) {
+        ogs_error("No SmContextReleaseData.ue_time_zone");
+        goto end;
     }
 
     message.SmContextReleaseData = &SmContextReleaseData;

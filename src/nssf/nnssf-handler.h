@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -26,10 +26,7 @@
 extern "C" {
 #endif
 
-bool nssf_nnrf_nsselection_handle_get_from_amf_or_vnssf(
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
-bool nssf_nnrf_nsselection_handle_get_from_hnssf(
-        nssf_home_t *home,
+bool nssf_nnrf_nsselection_handle_get(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
 
 #ifdef __cplusplus

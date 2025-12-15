@@ -81,7 +81,7 @@ void nrf_nf_state_final(ogs_fsm_t *s, nrf_event_t *e)
 
 void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
 {
-    bool handled = false;
+    bool handled;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
@@ -128,9 +128,7 @@ void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
 
                     handled = nrf_nnrf_handle_nf_register(
                             nf_instance, stream, message);
-                    if (handled == true)
-                        OGS_FSM_TRAN(s, nrf_nf_state_registered);
-                    else
+                    if (handled == false)
                         OGS_FSM_TRAN(s, nrf_nf_state_exception);
                     break;
 
@@ -141,7 +139,6 @@ void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED, message,
                             "Invalid HTTP method", message->h.method, NULL));
-                    OGS_FSM_TRAN(s, nrf_nf_state_exception);
                 END
                 break;
 
@@ -153,7 +150,6 @@ void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
                         OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED, message,
                         "Invalid resource name",
                         message->h.resource.component[0], NULL));
-                OGS_FSM_TRAN(s, nrf_nf_state_exception);
             END
             break;
 
@@ -165,8 +161,9 @@ void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
                     OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED, message,
                     "Invalid resource name", message->h.service.name,
                     NULL));
-            OGS_FSM_TRAN(s, nrf_nf_state_exception);
         END
+
+        OGS_FSM_TRAN(s, nrf_nf_state_registered);
         break;
 
     default:
@@ -178,6 +175,7 @@ void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
                 message, "Unknown event", nrf_event_get_name(e),
                 NULL));
         OGS_FSM_TRAN(s, nrf_nf_state_exception);
+        break;
     }
 }
 
@@ -280,7 +278,6 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED, message,
                             "Invalid HTTP method", message->h.method, NULL));
-                    OGS_FSM_TRAN(s, nrf_nf_state_exception);
                 END
                 break;
 
@@ -292,7 +289,6 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
                         OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED, message,
                         "Invalid resource name",
                         message->h.resource.component[0], NULL));
-                OGS_FSM_TRAN(s, nrf_nf_state_exception);
             END
             break;
 
@@ -304,7 +300,6 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
                     OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED, message,
                     "Invalid resource name", message->h.service.name,
                     NULL));
-            OGS_FSM_TRAN(s, nrf_nf_state_exception);
         END
         break;
 
@@ -317,6 +312,7 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
                 message, "Unknown event", nrf_event_get_name(e),
                 NULL));
         OGS_FSM_TRAN(s, nrf_nf_state_exception);
+        break;
     }
 }
 

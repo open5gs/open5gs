@@ -420,22 +420,3 @@ char *ogs_trimcharacter(char *str, char to_remove)
     return ogs_right_trimcharacter(
             ogs_left_trimcharacter(str, to_remove), to_remove);
 }
-
-char *ogs_strrstr(const char *haystack, const char *needle)
-{
-    char *result = NULL;
-    char *p = (char *)haystack;
-
-    if (!haystack || !needle)
-        return NULL;
-
-    if (*needle == '\0')
-        return (char *)haystack;
-
-    while ((p = strstr(p, needle)) != NULL) {
-        result = p;
-        p++;
-    }
-
-    return result;
-}

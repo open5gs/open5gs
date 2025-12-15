@@ -214,7 +214,7 @@ static void _gtpv1_tun_recv_common_cb(
         upf_sess_urr_acc_add(sess, pdr->urr[i], recvbuf->len, false);
 
     ogs_assert(true == ogs_pfcp_up_handle_pdr(
-                pdr, OGS_GTPU_MSGTYPE_GPDU, 0, NULL, recvbuf, &report));
+                pdr, OGS_GTPU_MSGTYPE_GPDU, NULL, recvbuf, &report));
 
     /*
      * Issue #2210, Discussion #2208, #2209
@@ -316,14 +316,14 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     if (header_desc.type == OGS_GTPU_MSGTYPE_ECHO_REQ) {
         ogs_pkbuf_t *echo_rsp;
 
-        ogs_info("[RECV] Echo Request from [%s]", OGS_ADDR(&from, buf1));
+        ogs_debug("[RECV] Echo Request from [%s]", OGS_ADDR(&from, buf1));
         echo_rsp = ogs_gtp2_handle_echo_req(pkbuf);
         ogs_expect(echo_rsp);
         if (echo_rsp) {
             ssize_t sent;
 
             /* Echo reply */
-            ogs_info("[SEND] Echo Response to [%s]", OGS_ADDR(&from, buf1));
+            ogs_debug("[SEND] Echo Response to [%s]", OGS_ADDR(&from, buf1));
 
             sent = ogs_sendto(fd, echo_rsp->data, echo_rsp->len, 0, &from);
             if (sent < 0 || sent != echo_rsp->len) {
@@ -440,23 +440,10 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
             ogs_list_for_each(&pfcp_sess->pdr_list, pdr) {
 
-                /*
-                 * Originally, we checked the Source Interface
-                 * for packets received with a TEID.
-                 *
-                 * However, in the case of Home Routed Roaming,
-                 * packets arriving at the V-UPF from the Core
-                 * do not come through a TUN interface
-                 * but as standard GTP-U packets.
-                 *
-                 * Therefore, this code has been removed to support
-                 * the roaming functionality.
-                 */
-#if 0 /* <DEPRECATED> */
+                /* Check if Source Interface */
                 if (pdr->src_if != OGS_PFCP_INTERFACE_ACCESS &&
                     pdr->src_if != OGS_PFCP_INTERFACE_CP_FUNCTION)
                     continue;
-#endif
 
                 /* Check if TEID */
                 if (header_desc.teid != pdr->f_teid.teid)
@@ -516,92 +503,18 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         far = pdr->far;
         ogs_assert(far);
 
-        /*
-         * From Issue #1354
-         *
-         * Do not check Router Advertisement
-         *    pdr->src_if = OGS_PFCP_INTERFACE_CP_FUNCTION;
-         *    far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
-         *
-         * Do not check Indirect Tunnel
-         *    pdr->dst_if = OGS_PFCP_INTERFACE_ACCESS;
-         *    far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
-         */
+        if (ip_h->ip_v == 4 && sess->ipv4) {
+            src_addr = (void *)&ip_h->ip_src.s_addr;
+            ogs_assert(src_addr);
 
-        /*
-         * The implementation was initially based on Issue #1354,
-         * where the system was designed not to perform checks
-         * when FAR->dst_if was set to ACCESS.
-         *
-         * However, this has now been updated
-         * to a new approach that checks for IP source spoofing
-         * only when PDR->src_if is set to ACCESS.
-         *
-         * That said, for Home Routed Roaming scenarios, the system skips
-         * this process during uplink traffic, as the V-UPF does not hold
-         * IP address information in such cases.
-         *
-         * <Normal>
-         * o DL
-         *  PDR->src : Core/N6
-         *  FAT->dst : Access/N3
-         * o UL
-         *  PDR->src : Access/N3
-         *  FAT->dst : Core/N6
-         * o CP2UP
-         *  PDR->src : CP-function
-         *  FAT->dst : Access/N3
-         * o UP2CP
-         *  PDR->src : Access/N3
-         *  FAT->dst : CP-function
-         *
-         * <Indirect>
-         *  PDR->src : Access/UL-Forwarding
-         *  FAT->dst : Access/DL-Forwarding
-         *
-         * <Home Routed Roaming>
-         * - VPLMN
-         * o DL
-         *  PDR->src : Core/N9-for-roaming
-         *  FAT->dst : Access/N3
-         * o UL
-         *  PDR->src : Access/N3
-         *  FAT->dst : Core/N9-for-roaming
-         * - HPLMN
-         * o DL
-         *  PDR->src : Core/N6
-         *  FAT->dst : Access/N9-for-roaming
-         * o UL
-         *  PDR->src : Access/N9-for-roaming
-         *  FAT->dst : Core/N6
-         */
-
-        /*
-         * We first verify whether the Source Interface of the PDR is set
-         * to ACCESS and if it corresponds to N3 3GPP ACCESS.
-         *
-         * This is because IP source spoofing checks are performed only
-         * in such cases.
-         */
-        if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS &&
-            pdr->src_if_type_presence == true &&
-            (pdr->src_if_type == OGS_PFCP_3GPP_INTERFACE_TYPE_N3_3GPP_ACCESS ||
-             pdr->src_if_type == OGS_PFCP_3GPP_INTERFACE_TYPE_N9_FOR_ROAMING)) {
-
-            if (far->dst_if_type_presence == true &&
-                far->dst_if_type ==
-                    OGS_PFCP_3GPP_INTERFACE_TYPE_N9_FOR_ROAMING) {
-                /*
-                 * <SKIP>
-                 *
-                 * However, Home Routed Roaming is excluded from this check,
-                 * as the V-UPF does not have the necessary IP address
-                 * information to perform the verification.
-                 */
-
-            } else if (ip_h->ip_v == 4 && sess->ipv4) {
-                src_addr = (void *)&ip_h->ip_src.s_addr;
-                ogs_assert(src_addr);
+            /*
+             * From Issue #1354
+             *
+             * Do not check Indirect Tunnel
+             *    pdr->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+             *    far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+             */
+            if (far->dst_if != OGS_PFCP_INTERFACE_ACCESS) {
 
                 if (src_addr[0] == sess->ipv4->addr[0]) {
                     /* Source IP address should be matched in uplink */
@@ -616,46 +529,60 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
                     goto cleanup;
                 }
+            }
 
-                subnet = sess->ipv4->subnet;
-                eth_type = ETHERTYPE_IP;
+            subnet = sess->ipv4->subnet;
+            eth_type = ETHERTYPE_IP;
 
-            } else if (ip_h->ip_v == 6 && sess->ipv6) {
-                struct ip6_hdr *ip6_h = (struct ip6_hdr *)pkbuf->data;
-                ogs_assert(ip6_h);
-                src_addr = (void *)ip6_h->ip6_src.s6_addr;
-                ogs_assert(src_addr);
+        } else if (ip_h->ip_v == 6 && sess->ipv6) {
+            struct ip6_hdr *ip6_h = (struct ip6_hdr *)pkbuf->data;
+            ogs_assert(ip6_h);
+            src_addr = (void *)ip6_h->ip6_src.s6_addr;
+            ogs_assert(src_addr);
 
-    /*
-     * Discussion #1776 was raised,
-     * but we decided not to allow unspecified addresses
-     * because Open5GS has already sent interface identifiers
-     * in the registgration/attach process.
-     *
-     *
-     * RFC4861
-     * 4.  Message Formats
-     * 4.1.  Router Solicitation Message Format
-     * IP Fields:
-     *    Source Address
-     *                  An IP address assigned to the sending interface, or
-     *                  the unspecified address if no address is assigned
-     *                  to the sending interface.
-     *
-     * 6.1.  Message Validation
-     * 6.1.1.  Validation of Router Solicitation Messages
-     *  Hosts MUST silently discard any received Router Solicitation
-     *  Messages.
-     *
-     *  A router MUST silently discard any received Router Solicitation
-     *  messages that do not satisfy all of the following validity checks:
-     *
-     *  ..
-     *  ..
-     *
-     *  - If the IP source address is the unspecified address, there is no
-     *    source link-layer address option in the message.
-     */
+            /*
+             * From Issue #1354
+             *
+             * Do not check Router Advertisement
+             *    pdr->src_if = OGS_PFCP_INTERFACE_CP_FUNCTION;
+             *    far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+             *
+             * Do not check Indirect Tunnel
+             *    pdr->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+             *    far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
+             */
+            if (far->dst_if != OGS_PFCP_INTERFACE_ACCESS) {
+
+/*
+ * Discussion #1776 was raised,
+ * but we decided not to allow unspecified addresses
+ * because Open5GS has already sent interface identifiers
+ * in the registgration/attach process.
+ *
+ *
+ * RFC4861
+ * 4.  Message Formats
+ * 4.1.  Router Solicitation Message Format
+ * IP Fields:
+ *    Source Address
+ *                  An IP address assigned to the sending interface, or
+ *                  the unspecified address if no address is assigned
+ *                  to the sending interface.
+ *
+ * 6.1.  Message Validation
+ * 6.1.1.  Validation of Router Solicitation Messages
+ *  Hosts MUST silently discard any received Router Solicitation
+ *  Messages.
+ *
+ *  A router MUST silently discard any received Router Solicitation
+ *  messages that do not satisfy all of the following validity checks:
+ *
+ *  ..
+ *  ..
+ *
+ *  - If the IP source address is the unspecified address, there is no
+ *    source link-layer address option in the message.
+ */
                 if (IN6_IS_ADDR_LINKLOCAL((struct in6_addr *)src_addr) &&
                     src_addr[2] == sess->ipv6->addr[2] &&
                     src_addr[3] == sess->ipv6->addr[3]) {
@@ -686,22 +613,19 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
                     goto cleanup;
                 }
-
-                subnet = sess->ipv6->subnet;
-                eth_type = ETHERTYPE_IPV6;
-
-            } else {
-                ogs_error("Invalid packet [IP version:%d, Packet Length:%d]",
-                        ip_h->ip_v, pkbuf->len);
-                ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-                goto cleanup;
             }
 
+            subnet = sess->ipv6->subnet;
+            eth_type = ETHERTYPE_IPV6;
+
+        } else {
+            ogs_error("Invalid packet [IP version:%d, Packet Length:%d]",
+                    ip_h->ip_v, pkbuf->len);
+            ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+            goto cleanup;
         }
 
-        if (far->dst_if == OGS_PFCP_INTERFACE_CORE &&
-            far->dst_if_type_presence == true &&
-            far->dst_if_type == OGS_PFCP_3GPP_INTERFACE_TYPE_N6) {
+        if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {
 
             if (!subnet) {
 #if 0 /* It's redundant log message */
@@ -734,39 +658,12 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             if (ogs_tun_write(dev->fd, pkbuf) != OGS_OK)
                 ogs_warn("ogs_tun_write() failed");
 
-        } else {
-
-            /*
-             * The following code is unnecessary and has been removed.
-             * The reason for its initial implementation is unclear.
-             */
-#if 0 /* <DEPRECATED> */
-            if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
-                if (!far->gnode) {
-                    ogs_error("No Outer Header Creation in FAR");
-                    goto cleanup;
-                }
-
-                if ((far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) == 0) {
-                    ogs_error("Not supported Apply Action [0x%x]",
-                                far->apply_action);
-                    goto cleanup;
-                }
-            }
-#endif
-
+        } else if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
             ogs_assert(true == ogs_pfcp_up_handle_pdr(
-                        pdr, header_desc.type, len, &header_desc,
-                        pkbuf, &report));
-
-#if 0 /* <DEPRECATED> */
-            if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
-                ogs_assert(report.type.downlink_data_report == 0);
-            }
-#endif
+                        pdr, header_desc.type, &header_desc, pkbuf, &report));
 
             if (report.type.downlink_data_report) {
-                ogs_error("User Traffic Buffered");
+                ogs_error("Indirect Data Fowarding Buffered");
 
                 report.downlink_data.pdr_id = pdr->id;
                 if (pdr->qer && pdr->qer->qfi)
@@ -781,6 +678,34 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
              * buffers or frees the Packet Buffer(pkbuf) memory.
              */
             return;
+
+        } else if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
+
+            if (!far->gnode) {
+                ogs_error("No Outer Header Creation in FAR");
+                goto cleanup;
+            }
+
+            if ((far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) == 0) {
+                ogs_error("Not supported Apply Action [0x%x]",
+                            far->apply_action);
+                goto cleanup;
+            }
+
+            ogs_assert(true == ogs_pfcp_up_handle_pdr(
+                        pdr, header_desc.type, &header_desc, pkbuf, &report));
+
+            ogs_assert(report.type.downlink_data_report == 0);
+
+            /*
+             * The ogs_pfcp_up_handle_pdr() function
+             * buffers or frees the Packet Buffer(pkbuf) memory.
+             */
+            return;
+
+        } else {
+            ogs_fatal("Not implemented : FAR-DST_IF[%d]", far->dst_if);
+            ogs_assert_if_reached();
         }
     } else {
         ogs_error("[DROP] Invalid GTPU Type [%d]", header_desc.type);
@@ -796,7 +721,7 @@ int upf_gtp_init(void)
     ogs_pkbuf_config_t config;
     memset(&config, 0, sizeof config);
 
-    config.cluster_2048_pool = ogs_app()->pool.gtpu;
+    config.cluster_2048_pool = ogs_app()->pool.packet;
 
 #if OGS_USE_TALLOC == 1
     /* allocate a talloc pool for GTP to ensure it doesn't have to go back
@@ -967,7 +892,7 @@ static void upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)
                             ogs_assert(sendbuf);
                             ogs_assert(true ==
                                 ogs_pfcp_up_handle_pdr(
-                                    pdr, OGS_GTPU_MSGTYPE_GPDU, 0,
+                                    pdr, OGS_GTPU_MSGTYPE_GPDU,
                                     NULL, sendbuf, &report));
                             break;
                         }

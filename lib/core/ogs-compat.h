@@ -61,8 +61,6 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include <ctype.h>
-
 #endif
 
 #endif
