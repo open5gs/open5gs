@@ -1,0 +1,198 @@
+logger:
+  file:
+    path: ./var/log/open5gs/lmf.log
+    level: debug   # fatal|error|warn|info(default)|debug|tracelogger:
+#  level: info   # fatal|error|warn|info(default)|debug|tracelogger:
+
+global:
+  max:
+    ue: 1024  # The number of UE can be increased depending on memory size.
+#    peer: 64
+
+lmf:
+  sbi:
+    server:
+      - address: 127.0.0.16
+        port: 7777
+    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+      amf:
+        - uri: http://127.0.0.5:7777
+      scp:
+        - uri: http://127.0.0.200:7777
+
+  # Cell database for location calculation
+  # Each cell entry contains geographic position and antenna configuration
+  cell_database:
+    cells:
+      # Example cell entry - update with your actual cell information
+      - ncgi: 190001
+        plmn_id:
+          mcc: 999
+          mnc: 70
+        latitude: 48.2345
+        longitude: 17.2562
+        altitude: 137.0         # Meters above sea level
+        cell_radius: 500       # Cell radius in meters
+        antenna:
+          azimuth: 120         # Antenna azimuth in degrees (0-360)
+          beamwidth: 65        # Antenna beamwidth in degrees
+          tilt: -5             # Antenna tilt in degrees (negative = down)
+
+      - ncgi: 2b2cdc06f
+        plmn_id:
+          mcc: 999
+          mnc: 70
+        latitude: 48.139848
+        longitude: 17.128145
+        altitude: 150.0
+        cell_radius: 200
+        antenna:
+          azimuth: 60
+          beamwidth: 65
+          tilt: -5
+
+################################################################################
+# SBI Server
+################################################################################
+#  o Bind to the address on the eth0 and advertise as open5gs-lmf.svc.local
+#  sbi:
+#    server:
+#      - dev:eth0
+#        advertise: open5gs-lmf.svc.local
+#
+#  o Specify a custom port number 7777 while binding to the given address
+#  sbi:
+#    server:
+#      - address: lmf.localdomain
+#        port: 7777
+#
+#  o Bind to 127.0.0.16 and advertise as open5gs-lmf.svc.local
+#  sbi:
+#    server:
+#      - address: 127.0.0.16
+#        port: 7777
+#        advertise: open5gs-lmf.svc.local
+#
+#  o Bind to port 7777 but advertise with a different port number 8888
+#  sbi:
+#    server:
+#      - address: 127.0.0.16
+#        port: 7777
+#        advertise: open5gs-lmf.svc.local:8888
+#
+################################################################################
+# SBI Client
+################################################################################
+#  o Direct Communication with NRF
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#
+#  o Indirect Communication by Delegating to SCP
+#  sbi:
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#
+#  o Indirect Communication without Delegation
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#      delegated:
+#        nrf:
+#          nfm: no    # Directly communicate NRF management functions
+#          disc: no   # Directly communicate NRF discovery
+#        scp:
+#          next: no   # Do not delegate to SCP for next-hop
+#
+#  o Indirect Communication with Delegated Discovery
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#      delegated:
+#        nrf:
+#          nfm: no    # Directly communicate NRF management functions
+#          disc: yes  # Delegate discovery to SCP
+#        scp:
+#          next: yes  # Delegate to SCP for next-hop communications
+#
+#  o Default delegation: all communications are delegated to the SCP
+#  sbi:
+#    client:
+#      nrf:
+#        - uri: http://127.0.0.10:7777
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#      # No 'delegated' section; defaults to AUTO delegation
+#
+################################################################################
+# HTTPS scheme with TLS
+################################################################################
+#  o Set as default if not individually set
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/lmf.key
+#        cert: @sysconfdir@/open5gs/tls/lmf.crt
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#  sbi:
+#    server:
+#      - address: lmf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
+#
+#  o Enable SSL key logging for Wireshark
+#    - This configuration allows capturing SSL/TLS session keys
+#      for debugging or analysis purposes using Wireshark.
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/lmf.key
+#        cert: @sysconfdir@/open5gs/tls/lmf.crt
+#        sslkeylogfile: @localstatedir@/log/open5gs/tls/lmf-server-sslkeylog.log
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_sslkeylogfile: @localstatedir@/log/open5gs/tls/lmf-client-sslkeylog.log
+#  sbi:
+#    server:
+#      - address: lmf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
+#
+#  o Add client TLS verification
+#  default:
+#    tls:
+#      server:
+#        scheme: https
+#        private_key: @sysconfdir@/open5gs/tls/lmf.key
+#        cert: @sysconfdir@/open5gs/tls/lmf.crt
+#        verify_client: true
+#        verify_client_cacert: @sysconfdir@/open5gs/tls/ca.crt
+#      client:
+#        scheme: https
+#        cacert: @sysconfdir@/open5gs/tls/ca.crt
+#        client_private_key: @sysconfdir@/open5gs/tls/lmf.key
+#        client_cert: @sysconfdir@/open5gs/tls/lmf.crt
+#  sbi:
+#    server:
+#      - address: lmf.localdomain
+#    client:
+#      nrf:
+#        - uri: https://nrf.localdomain
+
