@@ -667,16 +667,34 @@ void sgwc_sxa_handle_session_modification_response(
                 ogs_assert_if_reached();
             }
         } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
-            s11_xact = ogs_gtp_xact_find_by_id(pfcp_xact->assoc_xact_id);
+            if (flags & OGS_PFCP_MODIFY_ERROR_INDICATION) {
+                /* It's faked method for receiving `bearer` context */
+                bearer = sgwc_bearer_find_by_id(pfcp_xact->assoc_xact_id);
+                ogs_assert(bearer);
+                sgwc_ue = sgwc_ue_find_by_id(bearer->sgwc_ue_id);
+                ogs_assert(sgwc_ue);
 
-            if (s11_xact) {
-                ogs_gtp_send_error_message(
-                        s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                        OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE, cause_value);
+                ogs_assert(flags & OGS_PFCP_MODIFY_SESSION);
+                if (SGWC_SESSION_SYNC_DONE(sgwc_ue,
+                        OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE, flags)) {
+                    ogs_assert(OGS_OK ==
+                        sgwc_gtp_send_downlink_data_notification(
+                            OGS_GTP2_CAUSE_ERROR_INDICATION_RECEIVED, bearer));
+                }
             } else {
-                   ogs_error("No s11_xact: IMSI[%s] flags[0x%llx] assoc_xact_id[%u]",
-                           sgwc_ue ? sgwc_ue->imsi_bcd : "unknown", (long long)flags,
-                           pfcp_xact->assoc_xact_id);
+                s11_xact = ogs_gtp_xact_find_by_id(pfcp_xact->assoc_xact_id);
+
+                if (s11_xact) {
+                    ogs_gtp_send_error_message(
+                            s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                            OGS_GTP2_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE,
+                            cause_value);
+                } else {
+                   ogs_error("No s11_xact: IMSI[%s] flags[0x%llx] "
+                           "assoc_xact_id[%u]",
+                           sgwc_ue ? sgwc_ue->imsi_bcd : "unknown",
+                           (long long)flags, pfcp_xact->assoc_xact_id);
+                }
             }
         }
 
