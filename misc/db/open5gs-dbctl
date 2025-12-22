@@ -26,7 +26,7 @@ display_help() {
     echo "   showfiltered: shows {imsi key opc apn ip} information of subscriber"
     echo "   ambr_speed {imsi dl_value dl_unit ul_value ul_unit}: Change AMBR speed from a specific user and the  unit values are \"[0=bps 1=Kbps 2=Mbps 3=Gbps 4=Tbps ]\""
     echo "   subscriber_status {imsi subscriber_status_val={0,1} operator_determined_barring={0..8}}: Change TS 29.272 values for Subscriber-Status (7.3.29) and Operator-Determined-Barring (7.3.30)"
-    echo "   lbo_roaming {imsi lbo_roaming_allowed={0,1}}: Change roaming type for a specific subscriber: 0 = HR roaming, 1 = LBO roaming (default)"
+    echo "   lbo_roaming_allowed {imsi lbo_roaming_allowed={0,1}}: Change roaming type for a specific subscriber: 0 = HR roaming, 1 = LBO roaming (default)"
 
 }
 
@@ -801,20 +801,22 @@ if [ "$1" = "subscriber_status" ]; then
     echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl subscriber_status imsi subscriber_status_val={0,1} operator_determined_barring={0..8}"
     exit 1
 fi
-###TODO###
-if [ "$1" = "lbo_roaming" ]; then
-    if [ "$#" -eq 4 ]; then
+if [ "$1" = "lbo_roaming_allowed" ]; then
+    if [ "$#" -eq 3 ]; then
         IMSI=$2
-        SUB_STATUS=$3
-        OP_DET_BARRING=$4
+        LBO_ALLOWED=$3
+        if [ $LBO_ALLOWED = "1" ]; then
+            LBO_ALLOWED_BOOL=true
+        else
+            BOOL_VALUE=false
+        fi
         mongosh --eval "db.subscribers.updateOne({ \"imsi\": \"$IMSI\"},
-            {\$set: { \"subscriber_status\": $SUB_STATUS,
-                      \"operator_determined_barring\": $OP_DET_BARRING
+            {\$set: { \"slice.0.session.0.lbo_roaming_allowed\": $LBO_ALLOWED_BOOL
                     }
             });" $DB_URI
         exit $?
     fi
-    echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl subscriber_status imsi subscriber_status_val={0,1} operator_determined_barring={0..8}"
+    echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl lbo_roaming_allowed imsi lbo_roaming_allowed={0,1}"
     exit 1
 fi
 if [ "$1" = "showall" ]; then
