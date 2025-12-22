@@ -808,7 +808,7 @@ if [ "$1" = "lbo_roaming_allowed" ]; then
         if [ $LBO_ALLOWED = "1" ]; then
             LBO_ALLOWED_BOOL=true
         else
-            BOOL_VALUE=false
+            LBO_ALLOWED_BOOL=false
         fi
         mongosh --eval "db.subscribers.updateOne({ \"imsi\": \"$IMSI\"},
             {\$set: { \"slice.0.session.0.lbo_roaming_allowed\": $LBO_ALLOWED_BOOL
