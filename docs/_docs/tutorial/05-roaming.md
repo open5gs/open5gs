@@ -669,7 +669,7 @@ $ diff -u ./install/etc/open5gs/bsf.yaml ./install.new/etc/open5gs/bsf.yaml
    sbi:
      server:
 -      - address: 127.0.0.15
-+      - address: 127.0.1.15
++      - address: 127.0.2.15
          port: 7777
      client:
  #      nrf:
