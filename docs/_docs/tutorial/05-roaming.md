@@ -51,7 +51,7 @@ For routing to the Home PLMN, the NRF, AUSF, and UDM addresses in H-PLMN must us
 +127.0.2.12	udm.5gc.mnc001.mcc001.3gppnetwork.org
 +127.0.2.14	nssf.5gc.mnc001.mcc001.3gppnetwork.org
 +127.0.2.4	smf.5gc.mnc001.mcc001.3gppnetwork.org
-+127.0.2.15	baf.5gc.mnc001.mcc001.3gppnetwork.org
++127.0.2.15	bsf.5gc.mnc001.mcc001.3gppnetwork.org
 +
 +127.0.3.10	nrf.5gc.mnc010.mcc315.3gppnetwork.org
 +127.0.3.11	ausf.5gc.mnc010.mcc315.3gppnetwork.org
@@ -669,7 +669,7 @@ $ diff -u ./install/etc/open5gs/bsf.yaml ./install.new/etc/open5gs/bsf.yaml
    sbi:
      server:
 -      - address: 127.0.0.15
-+      - address: 127.0.1.15
++      - address: 127.0.2.15
          port: 7777
      client:
  #      nrf:
