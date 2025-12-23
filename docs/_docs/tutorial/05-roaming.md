@@ -662,9 +662,9 @@ The visited network BSF requires updated addresses to align with the visited net
 
 ```diff
 $ diff -u ./install/etc/open5gs/bsf.yaml ./install.new/etc/open5gs/bsf.yaml
---- ./install/etc/open5gs/bsf.yaml	2025-07-18 21:57:51.405548049 +0900
-+++ ./install.new/etc/open5gs/bsf.yaml	2025-07-18 21:30:49.312390532 +0900
-@@ -11,13 +11,13 @@
+--- ./install/etc/open5gs/bsf.yaml	2025-12-23 15:08:00.929141999 +0900
++++ ./install.new/etc/open5gs/bsf.yaml	2025-12-23 15:08:31.540143864 +0900
+@@ -11,7 +11,7 @@
  bsf:
    sbi:
      server:
@@ -673,13 +673,6 @@ $ diff -u ./install/etc/open5gs/bsf.yaml ./install.new/etc/open5gs/bsf.yaml
          port: 7777
      client:
  #      nrf:
- #        - uri: http://127.0.0.10:7777
-       scp:
--        - uri: http://127.0.0.200:7777
-+        - uri: http://127.0.1.200:7777
-
- ################################################################################
- # SBI Server
 ```
 The visited network NSSF must use the visited PLMN FQDN and reference the appropriate NRF for network slice selection services.
 
