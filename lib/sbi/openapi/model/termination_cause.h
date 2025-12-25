@@ -1,7 +1,7 @@
 /*
  * termination_cause.h
  *
- * 
+ * Specifies causes of event reporting termination.
  */
 
 #ifndef _OpenAPI_termination_cause_H_
@@ -12,16 +12,22 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "termination_cause_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_termination_cause_NULL = 0, OpenAPI_termination_cause_ALL_SDF_DEACTIVATION, OpenAPI_termination_cause_PDU_SESSION_TERMINATION, OpenAPI_termination_cause_PS_TO_CS_HO, OpenAPI_termination_cause_INSUFFICIENT_SERVER_RESOURCES, OpenAPI_termination_cause_INSUFFICIENT_QOS_FLOW_RESOURCES, OpenAPI_termination_cause_SPONSORED_DATA_CONNECTIVITY_DISALLOWED } OpenAPI_termination_cause_e;
+typedef struct OpenAPI_termination_cause_s OpenAPI_termination_cause_t;
+typedef struct OpenAPI_termination_cause_s {
+} OpenAPI_termination_cause_t;
 
-char* OpenAPI_termination_cause_ToString(OpenAPI_termination_cause_e termination_cause);
-
-OpenAPI_termination_cause_e OpenAPI_termination_cause_FromString(char* termination_cause);
+OpenAPI_termination_cause_t *OpenAPI_termination_cause_create(
+);
+void OpenAPI_termination_cause_free(OpenAPI_termination_cause_t *termination_cause);
+OpenAPI_termination_cause_t *OpenAPI_termination_cause_parseFromJSON(cJSON *termination_causeJSON);
+cJSON *OpenAPI_termination_cause_convertToJSON(OpenAPI_termination_cause_t *termination_cause);
+OpenAPI_termination_cause_t *OpenAPI_termination_cause_copy(OpenAPI_termination_cause_t *dst, OpenAPI_termination_cause_t *src);
 
 #ifdef __cplusplus
 }

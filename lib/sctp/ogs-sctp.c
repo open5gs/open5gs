@@ -94,21 +94,37 @@ static void sctp_write_callback(short when, ogs_socket_t fd, void *data)
 {
     ogs_sctp_sock_t *sctp = data;
     ogs_pkbuf_t *pkbuf = NULL;
+    int rv;
 
     ogs_assert(sctp);
-    if (ogs_list_empty(&sctp->write_queue) == true) {
-        ogs_assert(sctp->poll.write);
-        ogs_pollset_remove(sctp->poll.write);
-        sctp->poll.write = NULL;
-        return;
+    
+    /* Process all messages in the queue while socket is writable */
+    while (!ogs_list_empty(&sctp->write_queue)) {
+        pkbuf = ogs_list_first(&sctp->write_queue);
+        ogs_assert(pkbuf);
+        ogs_list_remove(&sctp->write_queue, pkbuf);
+
+        ogs_info("SCTP write callback: sending %u bytes (stream=%d, remaining in queue=%d)",
+                pkbuf->len, (int)ogs_sctp_stream_no_in_pkbuf(pkbuf),
+                ogs_list_count(&sctp->write_queue));
+
+        ogs_assert(sctp->sock);
+        rv = ogs_sctp_senddata(sctp->sock, pkbuf, NULL);
+        if (rv != OGS_OK) {
+            ogs_error("SCTP senddata failed, will retry in next poll cycle");
+            /* Put the message back at the front of the queue */
+            ogs_list_add(&sctp->write_queue, pkbuf);
+            break;
+        }
     }
-
-    pkbuf = ogs_list_first(&sctp->write_queue);
-    ogs_assert(pkbuf);
-    ogs_list_remove(&sctp->write_queue, pkbuf);
-
-    ogs_assert(sctp->sock);
-    ogs_sctp_senddata(sctp->sock, pkbuf, NULL);
+    
+    /* If queue is empty, remove the pollset entry */
+    if (ogs_list_empty(&sctp->write_queue)) {
+        if (sctp->poll.write) {
+            ogs_pollset_remove(sctp->poll.write);
+            sctp->poll.write = NULL;
+        }
+    }
 }
 
 void ogs_sctp_flush_and_destroy(ogs_sctp_sock_t *sctp)

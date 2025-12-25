@@ -103,6 +103,9 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
                 ngap_handle_uplink_ran_configuration_transfer(gnb, pdu, pkbuf);
                 break;
+            case NGAP_ProcedureCode_id_UplinkUEAssociatedNRPPaTransport:
+                ngap_handle_uplink_ue_associated_nrppa_transport(gnb, pdu);
+                break;
             case NGAP_ProcedureCode_id_HandoverPreparation:
                 ngap_handle_handover_required(gnb, pdu);
                 break;
@@ -200,6 +203,7 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             ogs_timer_delete(e->timer);
             break;
+        /* AMF_TIMER_NRPPA_DELAYED_FORWARD is handled in amf-sm.c, not here */
         default:
             ogs_error("Unknown timer[%s:%d]",
                     amf_timer_get_name(e->h.timer_id), e->h.timer_id);

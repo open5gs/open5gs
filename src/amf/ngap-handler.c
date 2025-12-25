@@ -21,6 +21,7 @@
 #include "ngap-path.h"
 #include "sbi-path.h"
 #include "nas-path.h"
+#include "namf-handler.h"
 
 static bool maximum_number_of_gnbs_is_reached(void)
 {
@@ -578,6 +579,33 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                  */
                 CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
                 CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
+                
+                /* Check for stored NRPPa request after UE association (e.g., after Service Request)
+                 * Note: For Service Request, we defer forwarding until Service Accept is sent
+                 * (UE context must be fully ready at gNB before forwarding NRPPa).
+                 * For Initial Registration, forwarding happens in Initial Context Setup Response handler. */
+                if (amf_ue->nrppa.pending && amf_ue->nrppa.stored_nrppa_pdu) {
+                    ogs_info("[%s] Transferring stored NRPPa request from amf_ue to ran_ue (will forward after Service Request completes)",
+                            amf_ue->supi ? amf_ue->supi : "Unknown");
+                    
+                    /* Transfer to ran_ue storage (don't forward yet - wait for Service Request to complete) */
+                    ran_ue->nrppa.pending = true;
+                    ran_ue->nrppa.stream_id = amf_ue->nrppa.stream_id;
+                    ran_ue->nrppa.stored_nrppa_pdu = amf_ue->nrppa.stored_nrppa_pdu;
+                    ran_ue->nrppa.stored_lmf_instance_id = amf_ue->nrppa.stored_lmf_instance_id;
+                    ran_ue->nrppa.callback_uri = amf_ue->nrppa.callback_uri;
+                    ran_ue->nrppa.client = amf_ue->nrppa.client;
+                    ran_ue->nrppa.measurement_id = amf_ue->nrppa.measurement_id;
+                    
+                    /* Clear amf_ue storage */
+                    amf_ue->nrppa.stored_nrppa_pdu = NULL;
+                    amf_ue->nrppa.stored_lmf_instance_id = NULL;
+                    amf_ue->nrppa.callback_uri = NULL;
+                    amf_ue->nrppa.client = NULL;
+                    amf_ue->nrppa.pending = false;
+                    amf_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+                    /* Note: Will be forwarded in nas_5gs_send_service_accept() or ngap_handle_initial_context_setup_response() */
+                }
             }
         }
     }
@@ -1186,6 +1214,115 @@ void ngap_handle_initial_context_setup_response(
 
         AMF_UE_CLEAR_PAGING_INFO(amf_ue);
     }
+
+    /* Process stored NRPPa request if UE was paged for NRPPa */
+    /* Check amf_ue first (for IDLE UEs without ran_ue), then ran_ue */
+    ogs_pkbuf_t *stored_pdu = NULL;
+    char *stored_lmf_id = NULL;
+    ogs_pool_id_t stored_stream_id = OGS_INVALID_POOL_ID;
+    bool nrppa_pending = false;
+
+    if (amf_ue->nrppa.pending && amf_ue->nrppa.stored_nrppa_pdu) {
+        /* Transfer from amf_ue to ran_ue now that ran_ue exists */
+        stored_pdu = amf_ue->nrppa.stored_nrppa_pdu;
+        stored_lmf_id = amf_ue->nrppa.stored_lmf_instance_id;
+        stored_stream_id = amf_ue->nrppa.stream_id;
+        nrppa_pending = true;
+        
+        /* Transfer to ran_ue */
+        ran_ue->nrppa.pending = true;
+        ran_ue->nrppa.stream_id = stored_stream_id;
+        ran_ue->nrppa.stored_nrppa_pdu = stored_pdu;
+        ran_ue->nrppa.stored_lmf_instance_id = stored_lmf_id;
+        
+        /* Transfer callback info and measurement ID */
+        ran_ue->nrppa.callback_uri = amf_ue->nrppa.callback_uri;
+        ran_ue->nrppa.client = amf_ue->nrppa.client;
+        ran_ue->nrppa.measurement_id = amf_ue->nrppa.measurement_id;
+        
+        /* Clear amf_ue storage */
+        amf_ue->nrppa.stored_nrppa_pdu = NULL;
+        amf_ue->nrppa.stored_lmf_instance_id = NULL;
+        amf_ue->nrppa.callback_uri = NULL;
+        amf_ue->nrppa.client = NULL;
+        amf_ue->nrppa.pending = false;
+        amf_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+    } else if (ran_ue && ran_ue->nrppa.pending && ran_ue->nrppa.stored_nrppa_pdu) {
+        /* Already in ran_ue (transferred from amf_ue in ngap_handle_initial_ue_message) */
+        stored_pdu = ran_ue->nrppa.stored_nrppa_pdu;
+        stored_lmf_id = ran_ue->nrppa.stored_lmf_instance_id;
+        stored_stream_id = ran_ue->nrppa.stream_id;
+        nrppa_pending = true;
+    }
+
+    if (nrppa_pending && ran_ue && stored_pdu) {
+        
+        /* Check if stream still exists - if not, we can still forward if we have a callback URI */
+        ogs_sbi_stream_t *check_stream = ogs_sbi_stream_find_by_id(stored_stream_id);
+        bool has_callback = (ran_ue->nrppa.callback_uri != NULL);
+        
+        if (!check_stream && !has_callback) {
+            ogs_warn("[%s] Stream [%d] no longer exists and no callback URI for stored NRPPa request, cleaning up",
+                    amf_ue->supi ? amf_ue->supi : "Unknown", stored_stream_id);
+            /* Stream is gone and no callback - client timed out and no way to notify, clean up */
+            ogs_pkbuf_free(stored_pdu);
+            ran_ue->nrppa.stored_nrppa_pdu = NULL;
+            if (stored_lmf_id) {
+                ogs_free(stored_lmf_id);
+                ran_ue->nrppa.stored_lmf_instance_id = NULL;
+            }
+            ran_ue->nrppa.pending = false;
+            ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+        } else {
+            if (!check_stream && has_callback) {
+                ogs_info("[%s] Stream [%d] no longer exists but callback URI is available, forwarding NRPPa anyway (notification will be sent via callback)",
+                        amf_ue->supi ? amf_ue->supi : "Unknown", stored_stream_id);
+            }
+            
+            ogs_info("[%s] Processing stored NRPPa request after UE connection",
+                    amf_ue->supi ? amf_ue->supi : "Unknown");
+
+            /* Forward stored NRPPa PDU to gNB */
+            r = ngap_send_downlink_ue_associated_nrppa_transport(
+                    ran_ue,
+                    stored_pdu,
+                    stored_lmf_id);
+
+            /* Clean up stored data regardless of success/failure */
+            ogs_pkbuf_free(stored_pdu);
+            ran_ue->nrppa.stored_nrppa_pdu = NULL;
+            if (stored_lmf_id) {
+                ogs_free(stored_lmf_id);
+                ran_ue->nrppa.stored_lmf_instance_id = NULL;
+            }
+
+            if (r != OGS_OK) {
+                ogs_error("[%s] Failed to forward stored NRPPa request to gNB",
+                        amf_ue->supi ? amf_ue->supi : "Unknown");
+                /* Send error response to LMF if stream still exists, otherwise send via callback */
+                if (check_stream) {
+                    ogs_sbi_server_send_error(check_stream,
+                            OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                            NULL, "Failed to forward NRPPa request",
+                            "UE connected but NRPPa forwarding failed", NULL);
+                } else if (has_callback && ran_ue->nrppa.client) {
+                    /* Send error notification via callback */
+                    ogs_warn("[%s] Sending error notification via callback (stream closed)",
+                            amf_ue->supi ? amf_ue->supi : "Unknown");
+                    /* Error notification will be handled when gNB sends failure response */
+                }
+                /* Clear pending flag */
+                ran_ue->nrppa.pending = false;
+                ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+            } else {
+                ogs_info("[%s] Stored NRPPa request forwarded to gNB successfully",
+                        amf_ue->supi ? amf_ue->supi : "Unknown");
+                /* Note: Don't clear pending flag yet - wait for gNB response */
+                /* The stored_nrppa_pdu and stored_lmf_instance_id are already freed above */
+                /* If stream is closed, we'll use callback URI for notification */
+            }
+        }
+    }
 }
 
 void ngap_handle_initial_context_setup_failure(
@@ -1474,6 +1611,49 @@ void ngap_handle_ue_context_modification_failure(
     if (Cause) {
         ogs_warn("    Cause[Group:%d Cause:%d]",
                 Cause->present, (int)Cause->choice.radioNetwork);
+    }
+
+    /* Check if there's a pending NRPPa request for this UE */
+    if (ran_ue && ran_ue->nrppa.pending && 
+        ran_ue->nrppa.stream_id != OGS_INVALID_POOL_ID) {
+        ogs_sbi_stream_t *stream = NULL;
+        int status = OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE;
+        char *error_detail = NULL;
+
+        ogs_warn("ErrorIndication received while NRPPa request is pending (UE index=%u)",
+                ran_ue->index);
+
+        /* Create error detail message */
+        if (Cause) {
+            error_detail = ogs_msprintf("gNB rejected NRPPa request: Cause Group=%d Cause=%d",
+                    Cause->present, (int)Cause->choice.radioNetwork);
+        } else {
+            error_detail = ogs_strdup("gNB rejected NRPPa request: Unknown cause");
+        }
+
+        stream = ogs_sbi_stream_find_by_id(ran_ue->nrppa.stream_id);
+        if (!stream) {
+            ogs_warn("Failed to find pending NRPPa SBI stream [%d]",
+                    ran_ue->nrppa.stream_id);
+            if (error_detail)
+                ogs_free(error_detail);
+            ran_ue->nrppa.pending = false;
+            ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+            return;
+        }
+
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, status, NULL,
+                "NRPPa request rejected by gNB", error_detail, NULL));
+
+        if (error_detail)
+            ogs_free(error_detail);
+
+        ran_ue->nrppa.pending = false;
+        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+
+        ogs_info("Sent error response to LMF for NRPPa request (UE index=%u)",
+                ran_ue->index);
     }
 }
 
@@ -2711,6 +2891,270 @@ void ngap_handle_uplink_ran_configuration_transfer(
         /* ogs_asn_copy_ie() could be failed from received packet.
          * So we should not use ogs_assert(r != OGS_ERROR).*/
     }
+}
+
+void ngap_handle_uplink_ue_associated_nrppa_transport(
+        amf_gnb_t *gnb, ogs_ngap_message_t *message)
+{
+    int rv;
+    uint64_t amf_ue_ngap_id = 0;
+
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_UplinkUEAssociatedNRPPaTransport_t
+        *UplinkUEAssociatedNRPPaTransport = NULL;
+
+    NGAP_UplinkUEAssociatedNRPPaTransportIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_NRPPa_PDU_t *NRPPa_PDU = NULL;
+
+    ran_ue_t *ran_ue = NULL;
+    amf_ue_t *amf_ue = NULL;
+    ogs_pkbuf_t *nrppa_pkbuf = NULL;
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+    ogs_sbi_stream_t *stream = NULL;
+    ogs_sbi_client_t *callback_client = NULL;
+    char *callback_uri = NULL;
+    uint32_t measurement_id = 0;
+    char *location_uri = NULL;
+
+    ogs_assert(gnb);
+    ogs_assert(message);
+
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+
+    UplinkUEAssociatedNRPPaTransport =
+        &initiatingMessage->value.choice.UplinkUEAssociatedNRPPaTransport;
+    ogs_assert(UplinkUEAssociatedNRPPaTransport);
+
+    ogs_debug("UplinkUEAssociatedNRPPaTransport");
+    for (ie = NULL, rv = 0;
+            rv < UplinkUEAssociatedNRPPaTransport->protocolIEs.list.count; rv++) {
+        ie = UplinkUEAssociatedNRPPaTransport->protocolIEs.list.array[rv];
+        switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
+            AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+            break;
+        case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID:
+            RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+            break;
+        case NGAP_ProtocolIE_ID_id_NRPPa_PDU:
+            NRPPa_PDU = &ie->value.choice.NRPPa_PDU;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (!NRPPa_PDU || !NRPPa_PDU->buf || NRPPa_PDU->size <= 0) {
+        ogs_error("NRPPa_PDU missing in UplinkUEAssociatedNRPPaTransport");
+        ngap_send_error_indication(gnb, NULL, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    if (AMF_UE_NGAP_ID &&
+            asn_INTEGER2ulong(AMF_UE_NGAP_ID, &amf_ue_ngap_id) == 0)
+        ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+
+    if (!ran_ue && RAN_UE_NGAP_ID)
+        ran_ue = ran_ue_find_by_ran_ue_ngap_id(gnb, *RAN_UE_NGAP_ID);
+
+    if (!ran_ue) {
+        ogs_error("NRPPa response for unknown UE");
+        ngap_send_error_indication(gnb, NULL, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    if (!ran_ue->nrppa.pending) {
+        ogs_warn("NRPPa response received with no pending request (UE index=%u)",
+                ran_ue->index);
+        return;
+    }
+
+    /* Get amf_ue for access to amf_ue->nrppa if needed */
+    amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
+    if (!amf_ue) {
+        ogs_error("AMF UE not found for ran_ue index=%u", ran_ue->index);
+        ran_ue->nrppa.pending = false;
+        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+        return;
+    }
+
+    /* Extract NRPPa PDU */
+    nrppa_pkbuf = ogs_pkbuf_alloc(NULL, NRPPa_PDU->size);
+    if (!nrppa_pkbuf) {
+        ogs_error("ogs_pkbuf_alloc() failed");
+        ran_ue->nrppa.pending = false;
+        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+        return;
+    }
+    ogs_pkbuf_put_data(nrppa_pkbuf, NRPPa_PDU->buf, NRPPa_PDU->size);
+
+    /* Check for callback URI (priority: ran_ue first, then amf_ue) */
+    if (ran_ue->nrppa.callback_uri && ran_ue->nrppa.client && 
+        ran_ue->nrppa.measurement_id != 0) {
+        callback_uri = ran_ue->nrppa.callback_uri;
+        callback_client = ran_ue->nrppa.client;
+        measurement_id = ran_ue->nrppa.measurement_id;
+        ogs_info("Using callback URI from ran_ue for NRPPa notification (UE index=%u, measurement_id=%u)",
+                ran_ue->index, measurement_id);
+    } else if (amf_ue->nrppa.callback_uri && amf_ue->nrppa.client &&
+               amf_ue->nrppa.measurement_id != 0 &&
+               (ran_ue->nrppa.measurement_id == 0 || 
+                amf_ue->nrppa.measurement_id == ran_ue->nrppa.measurement_id)) {
+        callback_uri = amf_ue->nrppa.callback_uri;
+        callback_client = amf_ue->nrppa.client;
+        measurement_id = amf_ue->nrppa.measurement_id;
+        ogs_info("Using callback URI from amf_ue for NRPPa notification (UE index=%u, measurement_id=%u)",
+                ran_ue->index, measurement_id);
+    }
+
+    /* Build location URI for callback (if available) */
+    if (callback_uri && amf_ue->supi) {
+        ogs_sbi_server_t *server = NULL;
+        ogs_sbi_header_t header;
+        char location_str[OGS_HUGE_LEN];
+
+        /* Use any server from the list to build location URI (all have same base URI) */
+        ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
+            memset(&header, 0, sizeof(header));
+            header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_COMM;
+            header.api.version = (char *)OGS_SBI_API_V1;
+            header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXTS;
+            header.resource.component[1] = amf_ue->supi;
+            header.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_NRPPA_MEASUREMENT_STATUS;
+            ogs_snprintf(location_str, sizeof(location_str), "%u", measurement_id);
+            header.resource.component[3] = location_str;
+
+            location_uri = ogs_sbi_server_uri(server, &header);
+            break;
+        }
+    }
+
+    /* Send callback notification if callback URI is available */
+    if (callback_uri && callback_client) {
+        bool notify_sent = false;
+
+        ogs_info("Sending NRPPa measurement result notification to callback URI (UE index=%u)",
+                ran_ue->index);
+
+        notify_sent = amf_sbi_send_nrppa_measurement_notify(
+                callback_client, callback_uri, nrppa_pkbuf,
+                measurement_id, location_uri);
+
+        if (notify_sent) {
+            ogs_info("NRPPa measurement result notification sent successfully (UE index=%u)",
+                    ran_ue->index);
+        } else {
+            ogs_error("Failed to send NRPPa measurement result notification (UE index=%u)",
+                    ran_ue->index);
+        }
+
+        /* Free location URI if allocated */
+        if (location_uri)
+            ogs_free(location_uri);
+
+        /* Clean up */
+        ogs_pkbuf_free(nrppa_pkbuf);
+        ran_ue->nrppa.pending = false;
+        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+        if (ran_ue->nrppa.callback_uri) {
+            ogs_free(ran_ue->nrppa.callback_uri);
+            ran_ue->nrppa.callback_uri = NULL;
+        }
+        /* Clear client reference (we don't own the client, just store a reference) */
+        ran_ue->nrppa.client = NULL;
+        if (amf_ue->nrppa.callback_uri && amf_ue->nrppa.measurement_id == measurement_id) {
+            ogs_free(amf_ue->nrppa.callback_uri);
+            amf_ue->nrppa.callback_uri = NULL;
+        }
+        if (amf_ue->nrppa.measurement_id == measurement_id) {
+            /* Clear client reference (we don't own the client, just store a reference) */
+            amf_ue->nrppa.client = NULL;
+        }
+
+        return;
+    }
+
+    /* No callback URI - try stream-based response (for CONNECTED UE case) */
+    if (ran_ue->nrppa.stream_id == OGS_INVALID_POOL_ID) {
+        ogs_warn("NRPPa response missing stored stream and no callback URI (UE index=%u)",
+                ran_ue->index);
+        ogs_pkbuf_free(nrppa_pkbuf);
+        ran_ue->nrppa.pending = false;
+        return;
+    }
+
+    ogs_info("Sending NRPPa response via stream (UE index=%u)", ran_ue->index);
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    sendmsg.part[sendmsg.num_of_part].pkbuf = nrppa_pkbuf;
+    sendmsg.part[sendmsg.num_of_part].content_id =
+        ogs_strdup(OGS_SBI_CONTENT_NRPPa_SM_ID);
+    sendmsg.part[sendmsg.num_of_part].content_type =
+        ogs_strdup(OGS_SBI_CONTENT_NRPPa_TYPE);
+    ogs_assert(sendmsg.part[sendmsg.num_of_part].content_id);
+    ogs_assert(sendmsg.part[sendmsg.num_of_part].content_type);
+    sendmsg.num_of_part++;
+
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
+    if (!response) {
+        ogs_error("ogs_sbi_build_response() failed");
+        /* Free manually allocated content_id and content_type before freeing message */
+        if (sendmsg.part[0].content_id)
+            ogs_free(sendmsg.part[0].content_id);
+        if (sendmsg.part[0].content_type)
+            ogs_free(sendmsg.part[0].content_type);
+        ogs_sbi_message_free(&sendmsg);
+        ran_ue->nrppa.pending = false;
+        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+        return;
+    }
+
+    /* Free manually allocated content_id and content_type after ogs_sbi_build_response() duplicates them */
+    if (sendmsg.part[0].content_id) {
+        ogs_free(sendmsg.part[0].content_id);
+        sendmsg.part[0].content_id = NULL;
+    }
+    if (sendmsg.part[0].content_type) {
+        ogs_free(sendmsg.part[0].content_type);
+        sendmsg.part[0].content_type = NULL;
+    }
+
+    stream = ogs_sbi_stream_find_by_id(ran_ue->nrppa.stream_id);
+    if (!stream) {
+        ogs_warn("Failed to find pending NRPPa SBI stream [%d] (UE index=%u)",
+                ran_ue->nrppa.stream_id, ran_ue->index);
+        ogs_sbi_response_free(response);
+        /* content_id and content_type already freed above */
+        ogs_sbi_message_free(&sendmsg);
+        ran_ue->nrppa.pending = false;
+        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+        return;
+    }
+
+    rv = ogs_sbi_server_send_response(stream, response);
+    if (!rv) {
+        ogs_error("ogs_sbi_server_send_response() failed for NRPPa result (UE index=%u)",
+                ran_ue->index);
+        ogs_sbi_response_free(response);
+        /* content_id and content_type already freed above */
+        ogs_sbi_message_free(&sendmsg);
+        ran_ue->nrppa.pending = false;
+        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+        return;
+    }
+
+    ogs_sbi_message_free(&sendmsg);
+
+    ran_ue->nrppa.pending = false;
+    ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+
+    ogs_info("Sent NRPPa response to LMF via stream (UE index=%u)", ran_ue->index);
 }
 
 void ngap_handle_path_switch_request(
@@ -4898,5 +5342,48 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     if (Cause) {
         ogs_warn("    Cause[Group:%d Cause:%d]",
                 Cause->present, (int)Cause->choice.radioNetwork);
+    }
+
+    /* Check if there's a pending NRPPa request for this UE */
+    if (ran_ue && ran_ue->nrppa.pending && 
+        ran_ue->nrppa.stream_id != OGS_INVALID_POOL_ID) {
+        ogs_sbi_stream_t *stream = NULL;
+        int status = OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE;
+        char *error_detail = NULL;
+
+        ogs_warn("ErrorIndication received while NRPPa request is pending (UE index=%u)",
+                ran_ue->index);
+
+        /* Create error detail message */
+        if (Cause) {
+            error_detail = ogs_msprintf("gNB rejected NRPPa request: Cause Group=%d Cause=%d",
+                    Cause->present, (int)Cause->choice.radioNetwork);
+        } else {
+            error_detail = ogs_strdup("gNB rejected NRPPa request: Unknown cause");
+        }
+
+        stream = ogs_sbi_stream_find_by_id(ran_ue->nrppa.stream_id);
+        if (!stream) {
+            ogs_warn("Failed to find pending NRPPa SBI stream [%d]",
+                    ran_ue->nrppa.stream_id);
+            if (error_detail)
+                ogs_free(error_detail);
+            ran_ue->nrppa.pending = false;
+            ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+            return;
+        }
+
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, status, NULL,
+                "NRPPa request rejected by gNB", error_detail, NULL));
+
+        if (error_detail)
+            ogs_free(error_detail);
+
+        ran_ue->nrppa.pending = false;
+        ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+
+        ogs_info("Sent error response to LMF for NRPPa request (UE index=%u)",
+                ran_ue->index);
     }
 }

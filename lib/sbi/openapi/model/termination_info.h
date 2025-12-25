@@ -12,7 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "termination_cause.h"
+#include "termination_cause_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,12 +20,12 @@ extern "C" {
 
 typedef struct OpenAPI_termination_info_s OpenAPI_termination_info_t;
 typedef struct OpenAPI_termination_info_s {
-    OpenAPI_termination_cause_e term_cause;
+    OpenAPI_termination_cause_any_of_e term_cause;
     char *res_uri;
 } OpenAPI_termination_info_t;
 
 OpenAPI_termination_info_t *OpenAPI_termination_info_create(
-    OpenAPI_termination_cause_e term_cause,
+    OpenAPI_termination_cause_any_of_e term_cause,
     char *res_uri
 );
 void OpenAPI_termination_info_free(OpenAPI_termination_info_t *termination_info);
