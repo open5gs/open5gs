@@ -1054,7 +1054,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         state == SMF_UECM_STATE_DEREG_BY_N1N2 ||
                         state == SMF_UECM_STATE_DEREG_BY_N1N2_HR) {
                 /* SMF Deregistration */
-                if (sbi_message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)
+                if (sbi_message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT &&
+                        sbi_message.res_status != OGS_SBI_HTTP_STATUS_NOT_FOUND)
                     unknown_res_status = true;
             } else {
                 ogs_fatal("Unknown state [%d]", state);
