@@ -293,6 +293,8 @@ void sgwc_s11_handle_create_session_request(
     /* Check if selected SGW-U is associated with SGW-C */
     ogs_assert(sess->pfcp_node);
     if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, sgwc_pfcp_state_associated)) {
+        ogs_error("[%s:%s] Remote peer not responding",
+                  sgwc_ue->imsi_bcd, sess->session.name);
         cause_value = OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING;
         goto cleanup;
     }
@@ -316,8 +318,12 @@ void sgwc_s11_handle_create_session_request(
 
         decoded = ogs_gtp2_parse_bearer_qos(&bearer_qos,
                 &req->bearer_contexts_to_be_created[i].bearer_level_qos);
-        ogs_assert(decoded ==
-                req->bearer_contexts_to_be_created[i].bearer_level_qos.len);
+        if (GTP2_BEARER_QOS_LEN != decoded) {
+            ogs_error("Invalid Bearer QoS IE in Create Session Request "
+                    "(decoded=%d, expected=%d)", decoded, GTP2_BEARER_QOS_LEN);
+            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+            goto cleanup;
+        }
 
         bearer = sgwc_bearer_add(sess);
         ogs_assert(bearer);

@@ -31,7 +31,13 @@ int16_t ogs_gtp2_parse_bearer_qos(
 
     ogs_assert(bearer_qos);
     ogs_assert(octet);
-    ogs_assert(octet->len == GTP2_BEARER_QOS_LEN);
+
+    /* Validate IE length instead of asserting */
+    if (octet->len != GTP2_BEARER_QOS_LEN) {
+        ogs_error("Invalid Bearer QoS IE length [%u], expected [%u]",
+                octet->len, GTP2_BEARER_QOS_LEN);
+        return 0;
+    }
 
     source = (ogs_gtp2_bearer_qos_t *)octet->data;
 
@@ -208,7 +214,12 @@ int16_t ogs_gtp2_parse_flow_qos(
 
     ogs_assert(flow_qos);
     ogs_assert(octet);
-    ogs_assert(octet->len == GTP2_FLOW_QOS_LEN);
+
+    if (octet->len != GTP2_FLOW_QOS_LEN) {
+        ogs_error("Invalid Flow QoS IE length [%u], expected [%u]",
+                octet->len, GTP2_FLOW_QOS_LEN);
+        return 0;
+    }
 
     source = (ogs_gtp2_flow_qos_t *)octet->data;
 

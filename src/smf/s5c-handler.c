@@ -344,8 +344,11 @@ uint8_t smf_s5c_handle_create_session_request(
 
         decoded = ogs_gtp2_parse_bearer_qos(&bearer_qos,
                 &req->bearer_contexts_to_be_created[i].bearer_level_qos);
-        ogs_assert(decoded ==
-                req->bearer_contexts_to_be_created[i].bearer_level_qos.len);
+        if (GTP2_BEARER_QOS_LEN != decoded) {
+            ogs_error("Invalid Bearer QoS IE in Create Session Request "
+                    "(decoded=%d, expected=%d)", decoded, GTP2_BEARER_QOS_LEN);
+            return OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+        }
 
         bearer = smf_bearer_add(sess);
         ogs_assert(bearer);
@@ -1488,7 +1491,15 @@ void smf_s5c_handle_bearer_resource_command(
 
         decoded = ogs_gtp2_parse_flow_qos(
                 &flow_qos, &cmd->flow_quality_of_service);
-        ogs_assert(cmd->flow_quality_of_service.len == decoded);
+        if (GTP2_FLOW_QOS_LEN != decoded) {
+            ogs_error("Invalid Flow QoS IE length (decoded=%d, ie_len=%u)",
+                      decoded, GTP2_FLOW_QOS_LEN);
+            ogs_gtp2_send_error_message(
+                    xact, get_sender_f_teid(sess, sender_f_teid),
+                    OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
+                    OGS_GTP2_CAUSE_INVALID_MESSAGE_FORMAT);
+            return;
+        }
 
         bearer->qos.mbr.uplink = flow_qos.ul_mbr;
         bearer->qos.mbr.downlink = flow_qos.dl_mbr;
