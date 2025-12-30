@@ -228,21 +228,31 @@ void sgwc_s5c_handle_create_session_response(
         }
         if (rsp->bearer_contexts_created[i].eps_bearer_id.presence == 0) {
             ogs_error("No EPS Bearer ID");
-            break;
+            ogs_gtp_send_error_message(
+                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                    OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
+                    OGS_GTP2_CAUSE_MANDATORY_IE_MISSING);
+            return;
         }
         if (rsp->bearer_contexts_created[i].s5_s8_u_sgw_f_teid.presence == 0) {
             ogs_error("No GTP TEID");
-            break;
+            ogs_gtp_send_error_message(
+                    s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                    OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
+                    OGS_GTP2_CAUSE_MANDATORY_IE_MISSING);
+            return;
         }
 
         /* EPS Bearer ID */
         bearer = sgwc_bearer_find_by_sess_ebi(sess,
                     rsp->bearer_contexts_created[i].eps_bearer_id.u8);
         if (!bearer) {
+            ogs_error("No Bearer [%d]",
+                    rsp->bearer_contexts_created[i].eps_bearer_id.u8);
             ogs_gtp_send_error_message(
                     s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                     OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
-                    OGS_GTP2_CAUSE_MANDATORY_IE_MISSING);
+                    OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
             return;
         }
 
@@ -259,6 +269,7 @@ void sgwc_s5c_handle_create_session_response(
 
         rv = ogs_gtp2_f_teid_to_ip(pgw_s5u_teid, &ul_tunnel->remote_ip);
         if (rv != OGS_OK) {
+            ogs_error("ogs_gtp2_f_teid_to_ip() failed");
             ogs_gtp_send_error_message(
                     s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                     OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
