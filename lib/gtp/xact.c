@@ -77,7 +77,11 @@ ogs_gtp_xact_t *ogs_gtp1_xact_local_create(ogs_gtp_node_t *gnode,
     ogs_assert(hdesc);
 
     ogs_pool_id_calloc(&pool, &xact);
-    ogs_assert(xact);
+    if (!xact) {
+        ogs_error("Maximum number of xact[%lld] reached",
+                    (long long)ogs_app()->pool.xact);
+        return NULL;
+    }
     xact->index = ogs_pool_index(&pool, xact);
 
     xact->gtp_version = 1;
@@ -94,7 +98,12 @@ ogs_gtp_xact_t *ogs_gtp1_xact_local_create(ogs_gtp_node_t *gnode,
         xact->tm_response = ogs_timer_add(
                 ogs_app()->timer_mgr, response_timeout,
                 OGS_UINT_TO_POINTER(xact->id));
-        ogs_assert(xact->tm_response);
+        if (!xact->tm_response) {
+            ogs_error("Maximum number of xact->tm_response[%lld] reached",
+                        (long long)ogs_app()->pool.timer);
+            ogs_gtp_xact_delete(xact);
+            return NULL;
+        }
         xact->response_rcount =
             ogs_local_conf()->time.message.gtp.n3_response_rcount;
     }
@@ -102,7 +111,12 @@ ogs_gtp_xact_t *ogs_gtp1_xact_local_create(ogs_gtp_node_t *gnode,
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout,
             OGS_UINT_TO_POINTER(xact->id));
-    ogs_assert(xact->tm_holding);
+    if (!xact->tm_holding) {
+        ogs_error("Maximum number of xact->tm_holding[%lld] reached",
+                    (long long)ogs_app()->pool.timer);
+        ogs_gtp_xact_delete(xact);
+        return NULL;
+    }
     xact->holding_rcount = ogs_local_conf()->time.message.gtp.n3_holding_rcount;
 
     ogs_list_add(&xact->gnode->local_list, xact);
@@ -134,7 +148,11 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     ogs_assert(hdesc);
 
     ogs_pool_id_calloc(&pool, &xact);
-    ogs_assert(xact);
+    if (!xact) {
+        ogs_error("Maximum number of xact[%lld] reached",
+                    (long long)ogs_app()->pool.xact);
+        return NULL;
+    }
     xact->index = ogs_pool_index(&pool, xact);
 
     xact->gtp_version = 2;
@@ -153,14 +171,24 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout,
             OGS_UINT_TO_POINTER(xact->id));
-    ogs_assert(xact->tm_response);
+    if (!xact->tm_response) {
+        ogs_error("Maximum number of xact->tm_response[%lld] reached",
+                    (long long)ogs_app()->pool.timer);
+        ogs_gtp_xact_delete(xact);
+        return NULL;
+    }
     xact->response_rcount =
         ogs_local_conf()->time.message.gtp.n3_response_rcount,
 
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout,
             OGS_UINT_TO_POINTER(xact->id));
-    ogs_assert(xact->tm_holding);
+    if (!xact->tm_holding) {
+        ogs_error("Maximum number of xact->tm_holding[%lld] reached",
+                    (long long)ogs_app()->pool.timer);
+        ogs_gtp_xact_delete(xact);
+        return NULL;
+    }
     xact->holding_rcount = ogs_local_conf()->time.message.gtp.n3_holding_rcount,
 
     xact->tm_peer = ogs_timer_add(ogs_app()->timer_mgr, peer_timeout,
@@ -192,7 +220,11 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
     ogs_assert(gnode);
 
     ogs_pool_id_calloc(&pool, &xact);
-    ogs_assert(xact);
+    if (!xact) {
+        ogs_error("Maximum number of xact[%lld] reached",
+                    (long long)ogs_app()->pool.xact);
+        return NULL;
+    }
     xact->index = ogs_pool_index(&pool, xact);
 
     xact->gtp_version = gtp_version;
@@ -204,14 +236,24 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout,
             OGS_UINT_TO_POINTER(xact->id));
-    ogs_assert(xact->tm_response);
+    if (!xact->tm_response) {
+        ogs_error("Maximum number of xact->tm_response[%lld] reached",
+                    (long long)ogs_app()->pool.timer);
+        ogs_gtp_xact_delete(xact);
+        return NULL;
+    }
     xact->response_rcount =
         ogs_local_conf()->time.message.gtp.n3_response_rcount,
 
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout,
             OGS_UINT_TO_POINTER(xact->id));
-    ogs_assert(xact->tm_holding);
+    if (!xact->tm_holding) {
+        ogs_error("Maximum number of xact->tm_holding[%lld] reached",
+                    (long long)ogs_app()->pool.timer);
+        ogs_gtp_xact_delete(xact);
+        return NULL;
+    }
     xact->holding_rcount = ogs_local_conf()->time.message.gtp.n3_holding_rcount,
 
     xact->tm_peer = ogs_timer_add(ogs_app()->timer_mgr, peer_timeout,

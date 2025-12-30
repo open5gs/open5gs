@@ -201,7 +201,10 @@ sgwc_ue_t *sgwc_ue_add_by_message(ogs_gtp2_message_t *message)
     if (sgwc_ue)
         sgwc_ue_remove(sgwc_ue);
     sgwc_ue = sgwc_ue_add(req->imsi.data, req->imsi.len);
-    ogs_assert(sgwc_ue);
+    if (!sgwc_ue) {
+        ogs_error("sgwc_ue_add() failed");
+        return NULL;
+    }
 
     return sgwc_ue;
 }
@@ -214,7 +217,11 @@ sgwc_ue_t *sgwc_ue_add(uint8_t *imsi, int imsi_len)
     ogs_assert(imsi_len);
 
     ogs_pool_id_calloc(&sgwc_ue_pool, &sgwc_ue);
-    ogs_assert(sgwc_ue);
+    if (!sgwc_ue) {
+        ogs_error("Maximum number of sgwc_ue[%lld] reached",
+                    (long long)ogs_global_conf()->max.ue);
+        return NULL;
+    }
 
     /* Set SGW-S11-TEID */
     ogs_pool_alloc(&sgwc_s11_teid_pool, &sgwc_ue->sgw_s11_teid_node);

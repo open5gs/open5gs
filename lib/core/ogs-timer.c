@@ -81,7 +81,7 @@ ogs_timer_t *ogs_timer_add(
 
     ogs_pool_alloc(&manager->pool, &timer);
     if (!timer) {
-        ogs_fatal("ogs_pool_alloc() failed");
+        ogs_error("Failed to allocate timer object from pool");
         return NULL;
     }
 

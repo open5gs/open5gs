@@ -75,7 +75,11 @@ ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
     ogs_assert(node);
 
     ogs_pool_id_calloc(&pool, &xact);
-    ogs_assert(xact);
+    if (!xact) {
+        ogs_error("Maximum number of xact[%lld] reached",
+                    (long long)ogs_app()->pool.xact);
+        return NULL;
+    }
     xact->index = ogs_pool_index(&pool, xact);
 
     xact->org = OGS_PFCP_LOCAL_ORIGINATOR;
@@ -87,21 +91,36 @@ ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout,
             OGS_UINT_TO_POINTER(xact->id));
-    ogs_assert(xact->tm_response);
+    if (!xact->tm_response) {
+        ogs_error("Maximum number of xact->tm_response[%lld] reached",
+                    (long long)ogs_app()->pool.timer);
+        ogs_pfcp_xact_delete(xact);
+        return NULL;
+    }
     xact->response_rcount =
         ogs_local_conf()->time.message.pfcp.n1_response_rcount;
 
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout,
             OGS_UINT_TO_POINTER(xact->id));
-    ogs_assert(xact->tm_holding);
+    if (!xact->tm_holding) {
+        ogs_error("Maximum number of xact->tm_holding[%lld] reached",
+                    (long long)ogs_app()->pool.timer);
+        ogs_pfcp_xact_delete(xact);
+        return NULL;
+    }
     xact->holding_rcount =
         ogs_local_conf()->time.message.pfcp.n1_holding_rcount;
 
     xact->tm_delayed_commit = ogs_timer_add(
             ogs_app()->timer_mgr, delayed_commit_timeout,
             OGS_UINT_TO_POINTER(xact->id));
-    ogs_assert(xact->tm_delayed_commit);
+    if (!xact->tm_delayed_commit) {
+        ogs_error("Maximum number of xact->tm_delayed_commit[%lld] reached",
+                    (long long)ogs_app()->pool.timer);
+        ogs_pfcp_xact_delete(xact);
+        return NULL;
+    }
 
     ogs_list_add(xact->org == OGS_PFCP_LOCAL_ORIGINATOR ?
             &xact->node->local_list : &xact->node->remote_list, xact);
@@ -124,7 +143,11 @@ static ogs_pfcp_xact_t *ogs_pfcp_xact_remote_create(
     ogs_assert(node);
 
     ogs_pool_id_calloc(&pool, &xact);
-    ogs_assert(xact);
+    if (!xact) {
+        ogs_error("Maximum number of xact[%lld] reached",
+                    (long long)ogs_app()->pool.xact);
+        return NULL;
+    }
     xact->index = ogs_pool_index(&pool, xact);
 
     xact->org = OGS_PFCP_REMOTE_ORIGINATOR;
@@ -134,21 +157,36 @@ static ogs_pfcp_xact_t *ogs_pfcp_xact_remote_create(
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout,
             OGS_UINT_TO_POINTER(xact->id));
-    ogs_assert(xact->tm_response);
+    if (!xact->tm_response) {
+        ogs_error("Maximum number of xact->tm_response[%lld] reached",
+                    (long long)ogs_app()->pool.timer);
+        ogs_pfcp_xact_delete(xact);
+        return NULL;
+    }
     xact->response_rcount =
         ogs_local_conf()->time.message.pfcp.n1_response_rcount;
 
     xact->tm_holding = ogs_timer_add(
             ogs_app()->timer_mgr, holding_timeout,
             OGS_UINT_TO_POINTER(xact->id));
-    ogs_assert(xact->tm_holding);
+    if (!xact->tm_holding) {
+        ogs_error("Maximum number of xact->tm_holding[%lld] reached",
+                    (long long)ogs_app()->pool.timer);
+        ogs_pfcp_xact_delete(xact);
+        return NULL;
+    }
     xact->holding_rcount =
         ogs_local_conf()->time.message.pfcp.n1_holding_rcount;
 
     xact->tm_delayed_commit = ogs_timer_add(
             ogs_app()->timer_mgr, delayed_commit_timeout,
             OGS_UINT_TO_POINTER(xact->id));
-    ogs_assert(xact->tm_delayed_commit);
+    if (!xact->tm_delayed_commit) {
+        ogs_error("Maximum number of xact->tm_delayed_commit[%lld] reached",
+                    (long long)ogs_app()->pool.timer);
+        ogs_pfcp_xact_delete(xact);
+        return NULL;
+    }
 
     ogs_list_add(xact->org == OGS_PFCP_LOCAL_ORIGINATOR ?
             &xact->node->local_list : &xact->node->remote_list, xact);
