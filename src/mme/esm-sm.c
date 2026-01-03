@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -103,7 +103,11 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(message);
 
         enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
-        ogs_assert(enb_ue);
+        if (!enb_ue)
+            ogs_warn("No eNB-UE context; dropping ESM message(type:%d) "
+                    "IMSI[%s] PTI[%d] EBI[%d]",
+                    message->esm.h.message_type,
+                    mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
         switch (message->esm.h.message_type) {
         case OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST:
@@ -148,12 +152,9 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             CLEAR_BEARER_TIMER(bearer->t3489);
 
             h.type = e->nas_type;
-            enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
 
             if (h.integrity_protected == 0) {
                 ogs_error("[%s] No Integrity Protected", mme_ue->imsi_bcd);
-
-                ogs_assert(enb_ue);
 
                 r = nas_eps_send_attach_reject(enb_ue, mme_ue,
                         OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
@@ -171,8 +172,6 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
                 ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
-
-                ogs_assert(enb_ue);
 
                 r = nas_eps_send_attach_reject(enb_ue, mme_ue,
                         OGS_NAS_EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
@@ -309,13 +308,17 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(message);
 
         enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
+        if (!enb_ue)
+            ogs_warn("No eNB-UE context; dropping ESM message(type:%d) "
+                    "IMSI[%s] PTI[%d] EBI[%d]",
+                    message->esm.h.message_type,
+                    mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
         switch (message->esm.h.message_type) {
         case OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST:
             ogs_debug("PDN Connectivity request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
-            ogs_assert(enb_ue);
             rv = esm_handle_pdn_connectivity_request(
                     enb_ue, bearer, &message->esm.pdn_connectivity_request,
                     e->create_action);
@@ -331,7 +334,6 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
-            ogs_assert(enb_ue);
             if (MME_HAVE_SGW_S1U_PATH(sess)) {
                 sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
                 ogs_assert(sgw_ue);
@@ -373,7 +375,6 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("Bearer resource allocation request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
-            ogs_assert(enb_ue);
             esm_handle_bearer_resource_allocation_request(
                     enb_ue, bearer, message);
             break;
@@ -381,7 +382,6 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("Bearer resource modification request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
-            ogs_assert(enb_ue);
             esm_handle_bearer_resource_modification_request(
                     enb_ue, bearer, message);
             break;
@@ -428,7 +428,11 @@ void esm_state_pdn_will_disconnect(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(message);
 
         enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
-        ogs_assert(enb_ue);
+        if (!enb_ue)
+            ogs_warn("No eNB-UE context; dropping ESM message(type:%d) "
+                    "IMSI[%s] PTI[%d] EBI[%d]",
+                    message->esm.h.message_type,
+                    mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
         switch (message->esm.h.message_type) {
         case OGS_NAS_EPS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:
