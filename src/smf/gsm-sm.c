@@ -1024,8 +1024,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 ogs_assert(pfcp_xact);
                 diam_err = smf_gy_handle_cca_update_request(
                         sess, gy_message, pfcp_xact);
-                if (diam_err != ER_DIAMETER_SUCCESS)
+                if (diam_err != ER_DIAMETER_SUCCESS) {
+                    e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED;
                     OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
+                }
                 break;
             }
             break;
