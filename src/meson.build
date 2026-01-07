@@ -19,11 +19,7 @@ srcinc = include_directories('.')
 
 package_version = 'v' + meson.project_version()
 if git.found()
-    if meson.version().version_compare('>=0.47.0')
-        git_version = run_command('git', ['describe', '--abbrev=7', '--dirty=+'], check: false)
-    else
-        git_version = run_command('git', ['describe', '--abbrev=7', '--dirty=+'])
-    endif
+    git_version = run_command('git', ['describe', '--abbrev=7', '--dirty=+'], check: false)
     if git_version.returncode() == 0
         package_version = git_version.stdout().strip()
     endif
