@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -127,16 +127,16 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         }
         e->gtp_xact_id = gtp_xact ? gtp_xact->id : OGS_INVALID_POOL_ID;
 
-        if (gtp2_message.h.teid_presence && gtp2_message.h.teid != 0) {
+        if (gtp2_message.h.teid_presence && gtp2_message.h.teid != 0)
             sess = smf_sess_find_by_teid(gtp2_message.h.teid);
-        } else if (gtp_xact->local_teid) { /* rx no TEID or TEID=0 */
+
+        if (!sess && gtp_xact->local_teid) /* rx no TEID or TEID=0 */
             /* 3GPP TS 29.274 5.5.2: we receive TEID=0 under some
              * conditions, such as cause "Session context not found". In those
              * cases, we still want to identify the local session which
              * originated the message, so try harder by using the TEID we
              * locally stored in xact when sending the original request: */
             sess = smf_sess_find_by_teid(gtp_xact->local_teid);
-        }
 
         switch(gtp2_message.h.type) {
         case OGS_GTP2_ECHO_REQUEST_TYPE:
