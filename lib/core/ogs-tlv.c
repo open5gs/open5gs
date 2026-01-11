@@ -34,7 +34,10 @@ ogs_tlv_t *ogs_tlv_get(void)
     ogs_pool_alloc(&pool, &tlv);
 
     /* check for error */
-    ogs_assert(tlv);
+    if (!tlv) {
+        ogs_error("ogs_tlv_get() failed");
+        return NULL;
+    }
 
     /* initialize tlv node */
     memset(tlv, 0, sizeof(ogs_tlv_t));
@@ -443,22 +446,65 @@ ogs_tlv_t *ogs_tlv_parse_block(uint32_t length, void *data, uint8_t mode)
     ogs_tlv_t *curr = NULL;
 
     root = curr = ogs_tlv_get();
-
-    ogs_assert(curr);
+    if (!curr) {
+        ogs_error("ogs_tlv_parse_block() failed[LEN:%d,MODE:%d] - no tlv",
+                length, mode);
+/*
+ * Limit hexdump size to avoid excessive logging when handling malformed
+ * or intentionally crafted messages. This prevents log flooding and
+ * secondary DoS effects while still providing enough data for debugging.
+ */
+        ogs_log_hexdump(OGS_LOG_ERROR, data, ogs_min(length, 512));
+        return NULL;
+    }
 
     pos = tlv_get_element(curr, pos, mode);
-
-    ogs_assert(pos);
+    if (!pos) {
+        ogs_error("ogs_tlv_parse_block() failed[LEN:%u,MODE:%u] - parse error",
+                length, mode);
+/*
+ * Limit hexdump size to avoid excessive logging when handling malformed
+ * or intentionally crafted messages. This prevents log flooding and
+ * secondary DoS effects while still providing enough data for debugging.
+ */
+        ogs_log_hexdump(OGS_LOG_ERROR, data, ogs_min(length, 512));
+        ogs_tlv_free_all(root);
+        return NULL;
+    }
 
     while(pos - blk < length) {
         prev = curr;
 
         curr = ogs_tlv_get();
-        ogs_assert(curr);
+        if (!curr) {
+            ogs_error("ogs_tlv_parse_block() failed[LEN:%d,MODE:%d]",
+                    length, mode);
+/*
+ * Limit hexdump size to avoid excessive logging when handling malformed
+ * or intentionally crafted messages. This prevents log flooding and
+ * secondary DoS effects while still providing enough data for debugging.
+ */
+            ogs_log_hexdump(OGS_LOG_ERROR, data, ogs_min(length, 512));
+
+            ogs_tlv_free_all(root);
+            return NULL;
+        }
         prev->next = curr;
 
         pos = tlv_get_element(curr, pos, mode);
-        ogs_assert(pos);
+        if (!pos) {
+            ogs_error("ogs_tlv_parse_block() failed[LEN:%d,MODE:%d]",
+                    length, mode);
+/*
+ * Limit hexdump size to avoid excessive logging when handling malformed
+ * or intentionally crafted messages. This prevents log flooding and
+ * secondary DoS effects while still providing enough data for debugging.
+ */
+            ogs_log_hexdump(OGS_LOG_ERROR, data, ogs_min(length, 512));
+
+            ogs_tlv_free_all(root);
+            return NULL;
+        }
     }
 
     if (length != (pos - blk)) {
