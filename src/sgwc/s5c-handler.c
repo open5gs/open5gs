@@ -98,11 +98,11 @@ void sgwc_s5c_handle_create_session_response(
      * Check Transaction
      ********************/
     ogs_assert(s5c_xact);
+    s11_xact = ogs_gtp_xact_find_by_id(s5c_xact->assoc_xact_id);
 
     rv = ogs_gtp_xact_commit(s5c_xact);
     ogs_expect(rv == OGS_OK);
 
-    s11_xact = ogs_gtp_xact_find_by_id(s5c_xact->assoc_xact_id);
     if (!s11_xact) {
         ogs_error("No S11 Transaction");
         return;
@@ -353,11 +353,11 @@ void sgwc_s5c_handle_modify_bearer_response(
      * Check Transaction
      ********************/
     ogs_assert(s5c_xact);
+    s11_xact = ogs_gtp_xact_find_by_id(s5c_xact->assoc_xact_id);
 
     rv = ogs_gtp_xact_commit(s5c_xact);
     ogs_expect(rv == OGS_OK);
 
-    s11_xact = ogs_gtp_xact_find_by_id(s5c_xact->assoc_xact_id);
     if (!s11_xact) {
         ogs_error("No S11 Transaction");
         return;
@@ -498,11 +498,11 @@ void sgwc_s5c_handle_delete_session_response(
      * Check Transaction
      ********************/
     ogs_assert(s5c_xact);
+    s11_xact = ogs_gtp_xact_find_by_id(s5c_xact->assoc_xact_id);
 
     rv = ogs_gtp_xact_commit(s5c_xact);
     ogs_expect(rv == OGS_OK);
 
-    s11_xact = ogs_gtp_xact_find_by_id(s5c_xact->assoc_xact_id);
     if (!s11_xact) {
         ogs_error("No S11 Transaction");
         return;
