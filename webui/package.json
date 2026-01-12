@@ -50,6 +50,7 @@
   "scripts": {
     "dev": "node server/index.js",
     "build": "next build",
+    "prestart": "node server/ensure-secret.js",
     "start": "NODE_ENV=production node server/index.js"
   }
 }
