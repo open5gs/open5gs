@@ -452,6 +452,27 @@ void sgwc_s5c_handle_modify_bearer_response(
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     if (modify_action == OGS_GTP_MODIFY_IN_PATH_SWITCH_REQUEST) {
+        sgwc_bearer_t *bearer = NULL;
+        sgwc_tunnel_t *ul_tunnel = NULL;
+
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            ul_tunnel = sgwc_ul_tunnel_in_bearer(bearer);
+
+            /* Defensive check: UL tunnel remote IP must be initialized */
+            if (!ul_tunnel ||
+                (!ul_tunnel->remote_ip.ipv4 && !ul_tunnel->remote_ip.ipv6)) {
+
+                ogs_error("ModifyBearerResponse missing PGW S5U address "
+                        "(SEID=%u, bearer=%u)", sess->id, bearer->ebi);
+
+                ogs_gtp_send_error_message(
+                        s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                        OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
+                        OGS_GTP2_CAUSE_MANDATORY_IE_MISSING);
+                return;
+            }
+        }
+
         ogs_assert(OGS_OK ==
             sgwc_gtp_send_create_session_response(sess, s11_xact));
     } else {
