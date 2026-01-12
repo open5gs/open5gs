@@ -104,7 +104,8 @@ void sgwc_s5c_handle_create_session_response(
     ogs_expect(rv == OGS_OK);
 
     if (!s11_xact) {
-        ogs_error("No S11 Transaction");
+        ogs_error("No S11 Transaction (assoc_xact_id=%u)",
+                s5c_xact->assoc_xact_id);
         return;
     }
 
@@ -359,7 +360,8 @@ void sgwc_s5c_handle_modify_bearer_response(
     ogs_expect(rv == OGS_OK);
 
     if (!s11_xact) {
-        ogs_error("No S11 Transaction");
+        ogs_error("No S11 Transaction (assoc_xact_id=%u)",
+                s5c_xact->assoc_xact_id);
         return;
     }
     modify_action = s5c_xact->modify_action;
@@ -525,7 +527,8 @@ void sgwc_s5c_handle_delete_session_response(
     ogs_expect(rv == OGS_OK);
 
     if (!s11_xact) {
-        ogs_error("No S11 Transaction");
+        ogs_error("No S11 Transaction (assoc_xact_id=%u)",
+                s5c_xact->assoc_xact_id);
         return;
     }
 
@@ -997,6 +1000,7 @@ void sgwc_s5c_handle_bearer_resource_failure_indication(
         sgwc_sess_t *sess, ogs_gtp_xact_t *s5c_xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp2_message_t *message)
 {
+    int rv;
     uint8_t cause_value = 0;
     ogs_gtp_xact_t *s11_xact = NULL;
     ogs_gtp2_bearer_resource_failure_indication_t *ind = NULL;
@@ -1014,7 +1018,15 @@ void sgwc_s5c_handle_bearer_resource_failure_indication(
      ********************/
     ogs_assert(s5c_xact);
     s11_xact = ogs_gtp_xact_find_by_id(s5c_xact->assoc_xact_id);
-    ogs_assert(s11_xact);
+
+    rv = ogs_gtp_xact_commit(s5c_xact);
+    ogs_expect(rv == OGS_OK);
+
+    if (!s11_xact) {
+        ogs_error("No S11 Transaction (assoc_xact_id=%u)",
+                s5c_xact->assoc_xact_id);
+        return;
+    }
 
     /************************
      * Check Session Context
