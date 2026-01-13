@@ -1250,22 +1250,17 @@ int amf_nsmf_pdusession_handle_release_sm_context(
 
                 } else if (OGS_FSM_CHECK(&amf_ue->sm,
                             gmm_state_authentication)) {
-                    ogs_fatal("Release SM Context in authentication");
-                    ogs_assert_if_reached();
+                    ogs_fatal("[%s] Release SM Context in authentication",amf_ue->supi);
                 } else if (OGS_FSM_CHECK(
                             &amf_ue->sm, gmm_state_security_mode)) {
-                    ogs_fatal("Release SM Context in security-mode");
-                    ogs_assert_if_reached();
+                    ogs_fatal("[%s] Release SM Context in security-mode",amf_ue->supi);
                 } else if (OGS_FSM_CHECK(&amf_ue->sm,
                                 gmm_state_initial_context_setup)) {
-                    ogs_fatal("Release SM Context in initial-context-setup");
-                    ogs_assert_if_reached();
+                    ogs_fatal("[%s] Release SM Context in initial-context-setup",amf_ue->supi);
                 } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
-                    ogs_fatal("Release SM Context in registered");
-                    ogs_assert_if_reached();
+                    ogs_fatal("[%s] Release SM Context in registered",amf_ue->supi);
                 } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
-                    ogs_fatal("Release SM Context in exception");
-                    ogs_assert_if_reached();
+                    ogs_fatal("[%s] Release SM Context in exception",amf_ue->supi);
                 } else {
                     ogs_fatal("Release SM Context : INVALID STATE");
                     ogs_assert_if_reached();
