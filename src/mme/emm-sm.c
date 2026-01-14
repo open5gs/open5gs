@@ -1073,6 +1073,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
+        mme_ue->auth_synch_fail_count = 0;
         break;
     case OGS_FSM_EXIT_SIG:
         break;
@@ -1132,7 +1133,17 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                         "(Non-EPS authentication unacceptable)");
                 break;
             case OGS_NAS_EMM_CAUSE_SYNCH_FAILURE:
-                ogs_info("Authentication failure(Synch failure)");
+                ogs_warn("[%s] Authentication failure(Synch failure[count=%d])",
+                        mme_ue->imsi_bcd, mme_ue->auth_synch_fail_count);
+
+                mme_ue->auth_synch_fail_count++;
+
+                if (mme_ue->auth_synch_fail_count >= 2) {
+                    ogs_warn("[%s] Too many authentication synch failures, "
+                            "sending AUTHENTICATION REJECT", mme_ue->imsi_bcd);
+                    break;
+                }
+
                 mme_s6a_send_air(enb_ue, mme_ue,
                         authentication_failure_parameter);
                 return;
