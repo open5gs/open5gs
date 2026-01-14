@@ -2043,6 +2043,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
 
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
+        amf_ue->auth_synch_fail_count = 0;
         break;
     case OGS_FSM_EXIT_SIG:
         break;
@@ -2114,7 +2115,17 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 return;
 
             case OGS_5GMM_CAUSE_SYNCH_FAILURE:
-                ogs_warn("Authentication failure(Synch failure)");
+                ogs_warn("[%s] Authentication failure(Synch failure[count=%d])",
+                        amf_ue->suci, amf_ue->auth_synch_fail_count);
+
+                amf_ue->auth_synch_fail_count++;
+
+                if (amf_ue->auth_synch_fail_count >= 2) {
+                    ogs_warn("[%s] Too many authentication synch failures, "
+                            "sending AUTHENTICATION REJECT", amf_ue->suci);
+                    break;
+                }
+
                 if (authentication_failure_parameter->length != OGS_AUTS_LEN) {
                     ogs_error("Invalid AUTS Length [%d]",
                             authentication_failure_parameter->length);

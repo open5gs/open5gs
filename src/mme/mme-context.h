@@ -540,6 +540,9 @@ struct mme_ue_s {
     int             security_context_available;
     int             mac_failed;
 
+    /* Authentication synch failure counter */
+    uint8_t auth_synch_fail_count;
+
     /* flag: 1 = allow restoration of context, 0 = disallow */
     bool            can_restore_context;
 
