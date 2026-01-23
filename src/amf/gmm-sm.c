@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -415,15 +415,20 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
             if ((sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)) {
-                ogs_error("[%s] HTTP response error [%d]",
-                          amf_ue->supi, sbi_message->res_status);
+                ogs_error("[%s] HTTP response error [%d] in (%s:%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method,
+                        sbi_message->h.resource.component[1]);
             }
 
             SWITCH(sbi_message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
             CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
-                ogs_error("[%s] Ignore SBI message", amf_ue->supi);
+                ogs_error("[%s] Ignore SBI message [%d] in (%s:%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method,
+                        sbi_message->h.resource.component[1]);
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
@@ -493,18 +498,25 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
                     } else {
-                        ogs_fatal("Invalid state [%d]", state);
+                        ogs_fatal("[%s:%d] Invalid state [%d] in (%s:%s)",
+                                amf_ue->supi, state, sbi_message->res_status,
+                                sbi_message->h.method,
+                                sbi_message->h.resource.component[1]);
                         ogs_assert_if_reached();
                     }
                     break;
                 DEFAULT
-                    ogs_error("[%s] Ignore invalid HTTP method [%s]",
-                            amf_ue->suci, sbi_message->h.method);
+                    ogs_error("[%s] Ignore invalid HTTP method [%d] in (%s:%s)",
+                            amf_ue->supi, sbi_message->res_status,
+                            sbi_message->h.method,
+                            sbi_message->h.resource.component[1]);
                 END
                 break;
 
             DEFAULT
-                ogs_error("Invalid resource name [%s]",
+                ogs_fatal("[%s] Invalid resource name [%d] in (%s:%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method,
                         sbi_message->h.resource.component[1]);
                 ogs_assert_if_reached();
             END
@@ -663,7 +675,8 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
                 SWITCH(sbi_message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-                    if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) {
+                    if (sbi_message->res_status !=
+                            OGS_SBI_HTTP_STATUS_CREATED) {
                         ogs_error("[%s] HTTP response error [%d]",
                                 amf_ue->supi, sbi_message->res_status);
                     }
@@ -1076,7 +1089,6 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NAUSF_AUTH)
             SWITCH(sbi_message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS)
-
                 if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
                     sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK &&
                     sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
@@ -1219,15 +1231,20 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
             if ((sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)) {
-                ogs_error("[%s] HTTP response error [%d]",
-                          amf_ue->supi, sbi_message->res_status);
+                ogs_error("[%s] HTTP response error [%d] in (%s:%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method,
+                        sbi_message->h.resource.component[1]);
             }
 
             SWITCH(sbi_message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
             CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
-                ogs_error("[%s] Ignore SBI message", amf_ue->supi);
+                ogs_error("[%s] Ignore SBI message [%d] in (%s:%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method,
+                        sbi_message->h.resource.component[1]);
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
@@ -1273,19 +1290,48 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                                 amf_ue, state, NULL);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
+                    } else if (state == AMF_UE_INITIATED_DE_REGISTERED) {
+/*
+ * Issues: #4209
+ *
+ * gmm_state_registered()
+ *
+ * Ignore SDM subscription DELETE response.
+ *
+ * In some scenarios, a DELETE response for SDM_SUBSCRIPTIONS may arrive
+ * while the AMF is already handling a subsequent Registration Request
+ * (Integrity Protected). In this code path, the DELETE response is not
+ * relevant and does not require any further processing.
+ *
+ * The response is intentionally ignored to avoid unnecessary handling.
+ */
+                        ogs_warn("[%s] Ignoring SDM_SUBSCRIPTIONS DELETE "
+                                "response [%d] in (%s:%s)",
+                                amf_ue->supi, sbi_message->res_status,
+                                sbi_message->h.method,
+                                sbi_message->h.resource.component[1]);
+
+                        UDM_SDM_CLEAR(amf_ue);
                     } else {
-                        ogs_fatal("Invalid state [%d]", state);
+                        ogs_fatal("[%s:%d] Invalid state [%d] in (%s:%s)",
+                                amf_ue->supi, state, sbi_message->res_status,
+                                sbi_message->h.method,
+                                sbi_message->h.resource.component[1]);
                         ogs_assert_if_reached();
                     }
                     break;
                 DEFAULT
-                    ogs_warn("[%s] Ignore invalid HTTP method [%s]",
-                            amf_ue->suci, sbi_message->h.method);
+                    ogs_error("[%s] Ignore invalid HTTP method [%d] in (%s:%s)",
+                            amf_ue->supi, sbi_message->res_status,
+                            sbi_message->h.method,
+                            sbi_message->h.resource.component[1]);
                 END
                 break;
 
             DEFAULT
-                ogs_error("Invalid resource name [%s]",
+                ogs_fatal("[%s] Invalid resource name [%d] in (%s:%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method,
                         sbi_message->h.resource.component[1]);
                 ogs_assert_if_reached();
             END
@@ -1402,7 +1448,8 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
                 SWITCH(sbi_message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-                    if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) {
+                    if (sbi_message->res_status !=
+                            OGS_SBI_HTTP_STATUS_CREATED) {
                         ogs_error("[%s] HTTP response error [%d]",
                                 amf_ue->supi, sbi_message->res_status);
                     }
@@ -1633,13 +1680,15 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_MOB_REQ);
                 break;
             case OGS_NAS_5GS_REGISTRATION_TYPE_PERIODIC_UPDATING:
-                amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_PERIOD_REQ);
+                amf_metrics_inst_global_inc(
+                        AMF_METR_GLOB_CTR_RM_REG_PERIOD_REQ);
                 break;
             case OGS_NAS_5GS_REGISTRATION_TYPE_EMERGENCY:
                 amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_EMERG_REQ);
                 break;
             default:
-                ogs_error("Unknown reg_type[%d]", amf_ue->nas.registration.value);
+                ogs_error("Unknown reg_type[%d]",
+                        amf_ue->nas.registration.value);
             }
 
             if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
@@ -1658,7 +1707,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 ogs_sbi_discovery_option_t *discovery_option = NULL;
                 ogs_guami_t guami;
 
-                amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_INITIAL_STATE;
+                amf_ue->amf_ue_context_transfer_state =
+                    UE_CONTEXT_INITIAL_STATE;
 
                 discovery_option = ogs_sbi_discovery_option_new();
                 ogs_assert(discovery_option);
@@ -1729,7 +1779,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                     if (!UDM_SDM_SUBSCRIBED(amf_ue)) {
                         r = amf_ue_sbi_discover_and_send(
                                 OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
-                                amf_nudm_uecm_build_registration, amf_ue, 0, NULL);
+                                amf_nudm_uecm_build_registration,
+                                amf_ue, 0, NULL);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
                         OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
@@ -1784,10 +1835,11 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             ogs_info("Service request");
 
             if (state != GMM_COMMON_STATE_REGISTERED) {
-                ogs_info("[%s] Handling service request failed [Not registered]",
-                            amf_ue->suci);
+                ogs_info("[%s] Handling service request failed "
+                        "[Not registered]", amf_ue->suci);
                 r = nas_5gs_send_service_reject(ran_ue, amf_ue,
-                    OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                    OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK
+                    );
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
@@ -1809,7 +1861,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             if (!AMF_UE_HAVE_SUCI(amf_ue)) {
                 ogs_info("Service request : Unknown UE");
                 r = nas_5gs_send_service_reject(ran_ue, amf_ue,
-                    OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                    OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK
+                    );
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
@@ -1819,7 +1872,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             if (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue)) {
                 ogs_error("No Security Context");
                 r = nas_5gs_send_service_reject(ran_ue, amf_ue,
-                    OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                    OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK
+                    );
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
@@ -2349,20 +2403,59 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             if ((sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)) {
-                ogs_error("[%s] HTTP response error [%d]",
-                          amf_ue->supi, sbi_message->res_status);
+                ogs_error("[%s] HTTP response error [%d] in (%s:%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method,
+                        sbi_message->h.resource.component[1]);
             }
 
             SWITCH(sbi_message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
             CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
-            CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
-                ogs_error("[%s] Ignore SBI message", amf_ue->supi);
+                ogs_error("[%s] Ignore SBI message [%d] in (%s:%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method,
+                        sbi_message->h.resource.component[1]);
                 break;
 
+            CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+/*
+ * Issues: #4209
+ *
+ * gmm_state_authentication()
+ *
+ * Ignore SDM subscription DELETE response.
+ *
+ * In some scenarios, a DELETE response for SDM_SUBSCRIPTIONS may arrive
+ * while the AMF is already handling a subsequent Registration Request
+ * (Integrity Protected). In this code path, the DELETE response is not
+ * relevant and does not require any further processing.
+ *
+ * The response is intentionally ignored to avoid unnecessary handling.
+ */
+                    ogs_warn("[%s] Ignoring SDM_SUBSCRIPTIONS DELETE response"
+                            "[%d] in (%s:%s)",
+                            amf_ue->supi, sbi_message->res_status,
+                            sbi_message->h.method,
+                            sbi_message->h.resource.component[1]);
+
+                    UDM_SDM_CLEAR(amf_ue);
+                    break;
+                DEFAULT
+                    ogs_error("[%s] Ignoring invalid HTTP method"
+                            "[%d] in (%s:%s)",
+                            amf_ue->supi, sbi_message->res_status,
+                            sbi_message->h.method,
+                            sbi_message->h.resource.component[1]);
+                END
+                break;
             DEFAULT
-                ogs_error("Invalid resource name [%s]",
+                ogs_fatal("[%s] Invalid resource name [%d] in (%s:%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method,
                         sbi_message->h.resource.component[1]);
                 ogs_assert_if_reached();
             END
@@ -2373,7 +2466,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
                 SWITCH(sbi_message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-                    if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) {
+                    if (sbi_message->res_status !=
+                            OGS_SBI_HTTP_STATUS_CREATED) {
                         ogs_error("[%s] HTTP response error [%d]",
                                 amf_ue->supi, sbi_message->res_status);
                     }
@@ -2504,7 +2598,8 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
-            if (amf_ue->amf_ue_context_transfer_state == UE_CONTEXT_TRANSFER_NEW_AMF_STATE) {
+            if (amf_ue->amf_ue_context_transfer_state ==
+                    UE_CONTEXT_TRANSFER_NEW_AMF_STATE) {
                 /*
                 * UE context transfer message has been sent
                 * to old AMF after Registration request.
@@ -2532,7 +2627,8 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
 
-                amf_ue->amf_ue_context_transfer_state = REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE;
+                amf_ue->amf_ue_context_transfer_state =
+                    REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE;
                 break;
             }
 
@@ -2592,7 +2688,8 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
         case OGS_NAS_5GS_SERVICE_REQUEST:
             ogs_info("[%s] Service request", amf_ue->supi);
             r = nas_5gs_send_service_reject(ran_ue, amf_ue,
-                    OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                    OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK
+                    );
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
             OGS_FSM_TRAN(s, &gmm_state_exception);
@@ -2673,18 +2770,22 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
                 SWITCH(sbi_message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE)
-                    if (amf_ue->amf_ue_context_transfer_state != REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE) {
+                    if (amf_ue->amf_ue_context_transfer_state !=
+                            REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE) {
                         ogs_error("UE context transfer state not correct");
                     }
                     if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
                         ogs_error("[%s] HTTP response error [%d]",
                                 amf_ue->supi, sbi_message->res_status);
                     }
-                    r = amf_namf_comm_handle_registration_status_update_response(sbi_message, amf_ue);
+                    r =
+                    amf_namf_comm_handle_registration_status_update_response(
+                            sbi_message, amf_ue);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
 
-                    amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_INITIAL_STATE;
+                    amf_ue->amf_ue_context_transfer_state =
+                        UE_CONTEXT_INITIAL_STATE;
 
                     /* Continue with registration */
                     ogs_kdf_kgnb_and_kn3iwf(
@@ -2699,13 +2800,15 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
 
-                    if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST) {
+                    if (amf_ue->nas.message_type ==
+                            OGS_NAS_5GS_REGISTRATION_REQUEST) {
                         OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
                     } else if (amf_ue->nas.message_type ==
                                 OGS_NAS_5GS_SERVICE_REQUEST) {
                         OGS_FSM_TRAN(s, &gmm_state_registered);
                     } else {
-                        ogs_fatal("Invalid OGS_NAS_5GS[%d]", amf_ue->nas.message_type);
+                        ogs_fatal("Invalid OGS_NAS_5GS[%d]",
+                                amf_ue->nas.message_type);
                         ogs_assert_if_reached();
                     }
                     break;
@@ -2894,6 +2997,32 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
+            if (!strcmp(sbi_message->h.resource.component[1],
+                        OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS) &&
+                !strcmp(sbi_message->h.method, OGS_SBI_HTTP_METHOD_DELETE)) {
+/*
+ * Issues: #4209
+ *
+ * gmm_state_initial_context_setup()
+ *
+ * Ignore SDM subscription DELETE response.
+ *
+ * In some scenarios, a DELETE response for SDM_SUBSCRIPTIONS may arrive
+ * while the AMF is already handling a subsequent Registration Request
+ * (Integrity Protected). In this code path, the DELETE response is not
+ * relevant and does not require any further processing.
+ *
+ * The response is intentionally ignored to avoid unnecessary handling.
+ */
+                ogs_warn("[%s] Ignoring SDM_SUBSCRIPTIONS DELETE response"
+                        "[%d] in (%s:%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method,
+                        sbi_message->h.resource.component[1]);
+
+                UDM_SDM_CLEAR(amf_ue);
+                break;
+            }
 
             SWITCH(sbi_message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
@@ -2902,8 +3031,10 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
                 if ((sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) &&
                     (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED)) {
-                    ogs_error("[%s] HTTP response error [%d]",
-                            amf_ue->supi, sbi_message->res_status);
+                    ogs_error("[%s] HTTP response error [%d] in (%s:%s)",
+                            amf_ue->supi, sbi_message->res_status,
+                            sbi_message->h.method,
+                            sbi_message->h.resource.component[1]);
                     r = nas_5gs_send_gmm_reject(
                             ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
                             OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
@@ -2916,15 +3047,18 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 rv = amf_nudm_sdm_handle_provisioned(
                         amf_ue, state, sbi_message);
                 if (rv != OGS_OK) {
-                    ogs_error("[%s] amf_nudm_sdm_handle_provisioned(%s) failed",
-                            amf_ue->supi, sbi_message->h.resource.component[1]);
+                    ogs_error("[%s] amf_nudm_sdm_handle_provisioned(%s:%s) "
+                            "failed", amf_ue->supi, sbi_message->h.method,
+                            sbi_message->h.resource.component[1]);
                     OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
                     break;
                 }
                 break;
 
             DEFAULT
-                ogs_error("Invalid resource name [%s]",
+                ogs_fatal("[%s] Invalid resource name [%d] in (%s:%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method,
                         sbi_message->h.resource.component[1]);
                 ogs_assert_if_reached();
             END
@@ -3078,10 +3212,12 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_MOB_SUCC);
                 break;
             case OGS_NAS_5GS_REGISTRATION_TYPE_PERIODIC_UPDATING:
-                amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_PERIOD_SUCC);
+                amf_metrics_inst_global_inc(
+                        AMF_METR_GLOB_CTR_RM_REG_PERIOD_SUCC);
                 break;
             case OGS_NAS_5GS_REGISTRATION_TYPE_EMERGENCY:
-                amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_RM_REG_EMERG_SUCC);
+                amf_metrics_inst_global_inc(
+                        AMF_METR_GLOB_CTR_RM_REG_EMERG_SUCC);
                 break;
             default:
                 ogs_error("Unknown reg_type[%d]",
@@ -3246,7 +3382,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
 
-        if (amf_ue->amf_ue_context_transfer_state == UE_CONTEXT_TRANSFER_NEW_AMF_STATE) {
+        if (amf_ue->amf_ue_context_transfer_state ==
+                UE_CONTEXT_TRANSFER_NEW_AMF_STATE) {
             /*
             * UE context transfer message has been sent
             * to old AMF after Registration request.
@@ -3274,7 +3411,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
 
-            amf_ue->amf_ue_context_transfer_state = REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE;
+            amf_ue->amf_ue_context_transfer_state =
+                REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE;
             break;
         }
 
@@ -3544,20 +3682,59 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
             if ((sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)) {
-                ogs_error("[%s] HTTP response error [%d]",
-                          amf_ue->supi, sbi_message->res_status);
+                ogs_error("[%s] HTTP response error [%d] in (%s:%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method,
+                        sbi_message->h.resource.component[1]);
             }
 
             SWITCH(sbi_message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
             CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
-            CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
-                ogs_error("[%s] Ignore SBI message", amf_ue->supi);
+                ogs_error("[%s] Ignore SBI message [%d] in (%s:%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method,
+                        sbi_message->h.resource.component[1]);
                 break;
 
+            CASE(OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+/*
+ * Issues: #4209
+ *
+ * gmm_state_exception()
+ *
+ * Ignore SDM subscription DELETE response.
+ *
+ * In some scenarios, a DELETE response for SDM_SUBSCRIPTIONS may arrive
+ * while the AMF is already handling a subsequent Registration Request
+ * (Integrity Protected). In this code path, the DELETE response is not
+ * relevant and does not require any further processing.
+ *
+ * The response is intentionally ignored to avoid unnecessary handling.
+ */
+                    ogs_warn("[%s] Ignoring SDM_SUBSCRIPTIONS DELETE response"
+                            "[%d] in (%s:%s)",
+                            amf_ue->supi, sbi_message->res_status,
+                            sbi_message->h.method,
+                            sbi_message->h.resource.component[1]);
+
+                    UDM_SDM_CLEAR(amf_ue);
+                    break;
+                DEFAULT
+                    ogs_error("[%s] Ignoring invalid HTTP method"
+                            "[%d] in (%s:%s)",
+                            amf_ue->supi, sbi_message->res_status,
+                            sbi_message->h.method,
+                            sbi_message->h.resource.component[1]);
+                END
+                break;
             DEFAULT
-                ogs_error("Invalid resource name [%s]",
+                ogs_fatal("[%s] Invalid resource name [%d] in (%s:%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method,
                         sbi_message->h.resource.component[1]);
                 ogs_assert_if_reached();
             END
@@ -3568,7 +3745,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
                 SWITCH(sbi_message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-                    if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) {
+                    if (sbi_message->res_status !=
+                            OGS_SBI_HTTP_STATUS_CREATED) {
                         ogs_error("[%s] HTTP response error [%d]",
                                 amf_ue->supi, sbi_message->res_status);
                     }
@@ -3593,18 +3771,22 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
                 SWITCH(sbi_message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE)
-                    if (amf_ue->amf_ue_context_transfer_state != REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE) {
+                    if (amf_ue->amf_ue_context_transfer_state !=
+                            REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE) {
                         ogs_error("UE context transfer state not correct");
                     }
                     if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
                         ogs_error("[%s] HTTP response error [%d]",
                                 amf_ue->supi, sbi_message->res_status);
                     }
-                    r = amf_namf_comm_handle_registration_status_update_response(sbi_message, amf_ue);
+                    r =
+                    amf_namf_comm_handle_registration_status_update_response(
+                            sbi_message, amf_ue);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
 
-                    amf_ue->amf_ue_context_transfer_state = UE_CONTEXT_INITIAL_STATE;
+                    amf_ue->amf_ue_context_transfer_state =
+                        UE_CONTEXT_INITIAL_STATE;
 
                     /* Continue with release command */
                     xact_count = amf_sess_xact_count(amf_ue);
