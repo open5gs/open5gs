@@ -8,6 +8,7 @@
   "license": "AGPL-3.0",
   "dependencies": {
     "axios": "^0.27.2",
+    "co": "^4.6.0",
     "babel-plugin-polished": "^1.1.0",
     "babel-plugin-styled-components": "^2.0.7",
     "body-parser": "^1.20.2",
@@ -20,6 +21,7 @@
     "lodash": "^4.17.21",
     "lusca": "^1.7.0",
     "method-override": "^3.0.0",
+    "mongodb": "^4.17.2",
     "mongoose": "^5.13.20",
     "mongoose-long": "^0.7.1",
     "morgan": "^1.10.0",
