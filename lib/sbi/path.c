@@ -660,7 +660,12 @@ bool ogs_sbi_send_request_to_nf_instance(
 #endif
     }
 
-    return ogs_sbi_send_request_with_sepp_discovery(client, xact);
+    if (ogs_sbi_send_request_with_sepp_discovery(client, xact) == false) {
+        ogs_sbi_xact_remove(xact);
+        return false;
+    }
+
+    return true;
 }
 
 bool ogs_sbi_send_request_with_sepp_discovery(
@@ -687,7 +692,6 @@ bool ogs_sbi_send_request_with_sepp_discovery(
             ogs_error("No SEPP(%p) and NRF(%p) [%s]",
                     sepp_client, nrf_client, client->fqdn);
 
-            ogs_sbi_xact_remove(xact);
             return false;
 
         } else if (!sepp_client) {
@@ -697,7 +701,6 @@ bool ogs_sbi_send_request_with_sepp_discovery(
             xact->target_apiroot = ogs_sbi_client_apiroot(client);
             if (!xact->target_apiroot) {
                 ogs_error("ogs_strdup(xact->target_apiroot) failed");
-                ogs_sbi_xact_remove(xact);
                 return false;
             }
 
@@ -705,7 +708,6 @@ bool ogs_sbi_send_request_with_sepp_discovery(
                         OpenAPI_nf_type_SEPP, xact->requester_nf_type, NULL);
             if (!nrf_request) {
                 ogs_error("ogs_nnrf_disc_build_discover() failed");
-                ogs_sbi_xact_remove(xact);
                 return false;
             }
 
@@ -714,7 +716,6 @@ bool ogs_sbi_send_request_with_sepp_discovery(
                     OGS_UINT_TO_POINTER(xact->id));
             if (rc == false) {
                 ogs_error("ogs_sbi_client_send_request() failed");
-                ogs_sbi_xact_remove(xact);
             }
 
             ogs_sbi_request_free(nrf_request);
@@ -728,7 +729,6 @@ bool ogs_sbi_send_request_with_sepp_discovery(
             OGS_UINT_TO_POINTER(xact->id));
     if (rc == false) {
         ogs_error("ogs_sbi_send_request_to_client() failed");
-        ogs_sbi_xact_remove(xact);
     }
 
     return rc;
