@@ -61,16 +61,18 @@ int ngap_send_to_gnb(amf_gnb_t *gnb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
         return OGS_ERROR;
     }
 
-    ogs_debug("    IP[%s] RAN_ID[%d]",
-            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
+    ogs_info("    IP[%s] RAN_ID[%d] stream[%d] type[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id, stream_no, gnb->sctp.type);
 
     ogs_sctp_ppid_in_pkbuf(pkbuf) = OGS_SCTP_NGAP_PPID;
     ogs_sctp_stream_no_in_pkbuf(pkbuf) = stream_no;
 
     if (gnb->sctp.type == SOCK_STREAM) {
+        ogs_info("    Queueing message to SCTP write buffer (SOCK_STREAM)");
         ogs_sctp_write_to_buffer(&gnb->sctp, pkbuf);
         return OGS_OK;
     } else {
+        ogs_info("    Sending message directly via SCTP (SOCK_SEQPACKET)");
         return ogs_sctp_senddata(gnb->sctp.sock, pkbuf, gnb->sctp.addr);
     }
 }
@@ -90,13 +92,30 @@ int ngap_send_to_ran_ue(ran_ue_t *ran_ue, ogs_pkbuf_t *pkbuf)
 
     gnb = amf_gnb_find_by_id(ran_ue->gnb_id);
     if (!gnb) {
-        ogs_error("[%d] gNB has already been removed", ran_ue->gnb_id);
+        ogs_error("[ran_ue_id=%d] gNB[%d] has already been removed", 
+                ran_ue->id, ran_ue->gnb_id);
         ogs_pkbuf_free(pkbuf);
         return OGS_NOTFOUND;
     }
 
+    ogs_info("[ran_ue_id=%d] Sending to gNB[%d] stream[%d] pkbuf[%u bytes]",
+            ran_ue->id, ran_ue->gnb_id, ran_ue->gnb_ostream_id, pkbuf->len);
+    
+    if (ran_ue->gnb_ostream_id == 0) {
+        ogs_error("[ran_ue_id=%d] Invalid gNB output stream ID (0) - cannot send message",
+                ran_ue->id);
+        ogs_pkbuf_free(pkbuf);
+        return OGS_ERROR;
+    }
+
     rv = ngap_send_to_gnb(gnb, pkbuf, ran_ue->gnb_ostream_id);
-    ogs_expect(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("[ran_ue_id=%d] ngap_send_to_gnb() failed: %d", ran_ue->id, rv);
+        return rv;
+    }
+    
+    ogs_info("[ran_ue_id=%d] ngap_send_to_gnb() returned OK - message should be sent",
+            ran_ue->id);
 
     return rv;
 }
@@ -528,6 +547,46 @@ int ngap_send_downlink_ran_configuration_transfer(
 
     rv = ngap_send_to_gnb(target_gnb, ngapbuf, NGAP_NON_UE_SIGNALLING);
     ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
+int ngap_send_downlink_ue_associated_nrppa_transport(
+        ran_ue_t *ran_ue, ogs_pkbuf_t *nrppa_pdu, const char *lmf_instance_id)
+{
+    int rv;
+    ogs_pkbuf_t *ngapbuf = NULL;
+
+    ogs_assert(ran_ue);
+    ogs_assert(nrppa_pdu);
+
+    ogs_info("[ran_ue_id=%d] Building DownlinkUEAssociatedNRPPaTransport message",
+            ran_ue->id);
+
+    ngapbuf = ngap_build_downlink_ue_associated_nrppa_transport(ran_ue, nrppa_pdu, lmf_instance_id);
+    if (!ngapbuf) {
+        ogs_error("[ran_ue_id=%d] ngap_build_downlink_ue_associated_nrppa_transport() failed",
+                ran_ue->id);
+        return OGS_ERROR;
+    }
+
+    ogs_info("[ran_ue_id=%d] Sending NGAP DownlinkUEAssociatedNRPPaTransport to gNB (gnb_id=%d)",
+            ran_ue->id, ran_ue->gnb_id);
+
+    rv = ngap_send_to_ran_ue(ran_ue, ngapbuf);
+    if (rv != OGS_OK) {
+        ogs_error("[ran_ue_id=%d] ngap_send_to_ran_ue() failed: %d",
+                ran_ue->id, rv);
+        return rv;
+    }
+
+    if (rv == OGS_OK) {
+        ogs_info("[ran_ue_id=%d] NGAP DownlinkUEAssociatedNRPPaTransport queued successfully (will be sent by SCTP write callback)",
+                ran_ue->id);
+    } else {
+        ogs_error("[ran_ue_id=%d] NGAP DownlinkUEAssociatedNRPPaTransport failed to queue: %d",
+                ran_ue->id, rv);
+    }
 
     return rv;
 }

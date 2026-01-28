@@ -42,6 +42,7 @@ libsbi_openapi_sources = files('''
     model/accumulated_usage.c
     model/accuracy_any_of.c
     model/accuracy.c
+    model/accuracy_fulfilment_indicator.c
     model/accu_usage_report.c
     model/acknowledge_info.c
     model/acs_info_1.c
@@ -133,6 +134,7 @@ libsbi_openapi_sources = files('''
     model/app_session_context_update_data_patch.c
     model/area_1.c
     model/area.c
+    model/area_event_info.c
     model/area_of_interest_event_state.c
     model/area_of_validity.c
     model/area_scope.c
@@ -410,6 +412,9 @@ libsbi_openapi_sources = files('''
     model/global_ran_node_id.c
     model/gmlc_info.c
     model/gnb_id.c
+    model/gnss_id_any_of.c
+    model/gnss_id.c
+    model/gnss_positioning_method_and_usage.c
     model/gpsi_type.c
     model/group_identifiers.c
     model/guami.c
@@ -450,6 +455,7 @@ libsbi_openapi_sources = files('''
     model/inter_freq_target_info.c
     model/internal_group_id_range.c
     model/invalid_param.c
+    model/input_data.c
     model/ip_addr_1.c
     model/ip_addr.c
     model/ip_address_1.c
@@ -480,6 +486,9 @@ libsbi_openapi_sources = files('''
     model/lcs_mo_service_class.c
     model/lcs_privacy.c
     model/lcs_privacy_data.c
+    model/lcs_priority.c
+    model/lcs_qos_class.c
+    model/ldr_type.c
     model/limit_id_to_monitoring_key.c
     model/line_type.c
     model/link.c
@@ -490,15 +499,18 @@ libsbi_openapi_sources = files('''
     model/local3d_point_uncertainty_ellipsoid_all_of.c
     model/local3d_point_uncertainty_ellipsoid.c
     model/local_origin.c
+    model/local_area.c
     model/location_accuracy_any_of.c
     model/location_accuracy.c
     model/location_area_1.c
     model/location_area.c
     model/location_area_id.c
+    model/location_data.c
     model/location_filter_any_of.c
     model/location_filter.c
     model/location_info.c
     model/location_privacy_ind.c
+    model/location_qo_s.c
     model/location_reporting_configuration_1.c
     model/location_reporting_configuration.c
     model/logging_duration_mdt.c
@@ -543,10 +555,12 @@ libsbi_openapi_sources = files('''
     model/message_waiting_data.c
     model/metering_method.c
     model/mfaf_info.c
+    model/minor_location_qo_s.c
     model/ml_analytics_info.c
     model/mm_context.c
     model/mme_capabilities.c
     model/mnpf_info.c
+    model/motion_event_info.c
     model/model_3_g_aka_av.c
     model/model_5_g_ddnmf_info.c
     model/model_5_gvn_group_configuration.c
@@ -721,6 +735,8 @@ libsbi_openapi_sources = files('''
     model/nwdaf_registration_info.c
     model/nwdaf_registration_modification.c
     model/nwdaf_subscription.c
+    model/occurrence_info_any_of.c
+    model/occurrence_info.c
     model/object.c
     model/observed_redundant_trans_exp.c
     model/odb_data.c
@@ -786,6 +802,7 @@ libsbi_openapi_sources = files('''
     model/periodic_communication_indicator.c
     model/periodicity_any_of.c
     model/periodicity.c
+    model/periodic_event_info.c
     model/pfd_change_notification.c
     model/pfd_content.c
     model/pfd_data.c
@@ -830,7 +847,11 @@ libsbi_openapi_sources = files('''
     model/polygon_all_of.c
     model/polygon.c
     model/port_management_container.c
+    model/positioning_method_and_usage.c
+    model/positioning_method.c
     model/positioning_method_mdt.c
+    model/positioning_mode_any_of.c
+    model/positioning_mode.c
     model/pp5g_vn_group_profile_data.c
     model/pp_active_time.c
     model/pp_data.c
@@ -946,8 +967,12 @@ libsbi_openapi_sources = files('''
     model/release_sm_context_request.c
     model/relocate_ue_context_request.c
     model/report_amount_mdt.c
+    model/reporting_area_type_any_of.c
+    model/reporting_area_type.c
+    model/reporting_area.c
     model/reporting_frequency.c
     model/reporting_information.c
+    model/reporting_access_type.c
     model/reporting_level.c
     model/reporting_options_1.c
     model/reporting_options.c
@@ -962,6 +987,7 @@ libsbi_openapi_sources = files('''
     model/requested_rule_data_type.c
     model/requested_usage_data.c
     model/request_indication.c
+    model/response_time.c
     model/request_trigger.c
     model/request_type.c
     model/required_access_info.c
@@ -1190,6 +1216,7 @@ libsbi_openapi_sources = files('''
     model/target_ue_information.c
     model/temporal_validity.c
     model/termination_cause.c
+    model/termination_cause_any_of.c
     model/termination_info.c
     model/termination_notification.c
     model/threshold_level.c
@@ -1250,6 +1277,7 @@ libsbi_openapi_sources = files('''
     model/udr_info.c
     model/udsf_info.c
     model/ue_analytics_context_descriptor.c
+    model/ue_area_indication.c
     model/ue_auth.c
     model/ue_authentication_ctx_5g_auth_data.c
     model/ue_authentication_ctx.c
@@ -1273,11 +1301,14 @@ libsbi_openapi_sources = files('''
     model/ue_context_transfer_request.c
     model/ue_context_transfer_rsp_data.c
     model/ue_context_transfer_status.c
+    model/ue_connectivity_state.c
     model/ue_differentiation_info.c
     model/ue_id.c
     model/ue_identity_info.c
     model/ue_in_area_filter.c
     model/ue_initiated_resource_request.c
+    model/ue_lcs_capability.c
+    model/ue_location_service_ind.c
     model/ue_mobility.c
     model/ue_n1_n2_info_subscription_create_data.c
     model/ue_n1_n2_info_subscription_created_data.c
@@ -1335,12 +1366,17 @@ libsbi_openapi_sources = files('''
     model/usage_monitoring_data.c
     model/usage_mon_level_any_of.c
     model/usage_mon_level.c
+    model/usage_any_of.c
+    model/usage.c
     model/usage_threshold.c
     model/usage_threshold_rm.c
     model/user_consent.c
     model/user_data_congestion_info.c
     model/user_identifier.c
     model/user_location.c
+    model/velocity_estimate.c
+    model/velocity_requested.c
+    model/vertical_direction.c
     model/utra_location.c
     model/uuaa_mm_status.c
     model/v2x_capability.c
@@ -1367,6 +1403,8 @@ libsbi_openapi_sources = files('''
     model/wlan_performance_req.c
     model/wlan_per_ss_id_performance_info.c
     model/wlan_per_ts_performance_info.c
+    model/input_data.c
+    model/location_data.c
 '''.split())
 
 libsbi_openapi_inc = include_directories('.')
@@ -1376,6 +1414,7 @@ sbi_openapi_cc_flags = ['-DOGS_SBI_COMPILATION']
 if cc.get_id() == 'gcc' or cc.get_id() == 'clang'
     sbi_openapi_cc_flags += cc.get_supported_arguments([
                     '-Wno-strict-prototypes',
+                    '-Wno-error=strict-prototypes',
                     '-Wno-missing-prototypes',
                     '-Wno-missing-declarations',
                     '-Wno-unused-variable',

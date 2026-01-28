@@ -37,6 +37,7 @@ int amf_sbi_open(void)
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SCP);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_SMF);
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AMF);
+    ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_LMF);
 
     /* Build NF service information. It will be transmitted to NRF. */
     if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NAMF_COMM)) {
@@ -47,6 +48,7 @@ int amf_sbi_open(void)
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_SMF);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_AMF);
+        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_LMF);
     }
 
     /* Initialize NRF NF Instance */
@@ -133,8 +135,12 @@ int amf_ue_sbi_discover_and_send(
         ogs_error("amf_ue_sbi_discover_and_send() failed");
         r = nas_5gs_send_gmm_reject_from_sbi(
                 amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
+        if (r == OGS_NOTFOUND) {
+            /* NG context already removed, nothing to do */
+        } else {
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        }
         return OGS_ERROR;
     }
 
@@ -146,8 +152,12 @@ int amf_ue_sbi_discover_and_send(
         ogs_sbi_xact_remove(xact);
         r = nas_5gs_send_gmm_reject_from_sbi(
                 amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
+        if (r == OGS_NOTFOUND) {
+            /* NG context already removed, nothing to do */
+        } else {
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        }
         return rv;
     }
 
@@ -661,6 +671,8 @@ static int client_notify_cb(
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
         ogs_error("cannot parse HTTP response");
+        /* Don't free message.h here - it's shared with response->h
+         * which will be freed by ogs_sbi_response_free() */
         ogs_sbi_message_free(&message);
         ogs_sbi_response_free(response);
         return OGS_ERROR;
@@ -670,6 +682,8 @@ static int client_notify_cb(
         ogs_error("N1-N2-Message Transfer Failure Notification failed [%d]",
                 message.res_status);
 
+    /* Don't free message.h here - it's shared with response->h
+     * which will be freed by ogs_sbi_response_free() */
     ogs_sbi_message_free(&message);
     ogs_sbi_response_free(response);
     return OGS_OK;

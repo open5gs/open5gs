@@ -1,0 +1,47 @@
+# Limited NRPPa subset for ECID support
+
+libasn1c_nrppa_sources = files('''
+    NRPPa_NRPPa-PDU.c
+    NRPPa_InitiatingMessage.c
+    NRPPa_ECID-MeasurementInitiationRequest.c
+    NRPPa_ECID-MeasurementInitiationResponse.c
+    NRPPa_ECID-MeasurementFailure.c
+    NRPPa_RequestedMeasurementTypeList.c
+    NRPPa_MeasurementPeriod.c
+    NRPPa_NRPPa-MeasurementID.c
+    NRPPa_NRPPa-TransactionID.c
+    NRPPa_NRPPa-ProcedureCode.c
+    NRPPa_NRPPa-Criticality.c
+    NRPPa_NRPPa-UE-NGAP-ID.c
+    NRPPa_NRPPa-FailureCause.c
+    NRPPa_NRPPa-TimeStamp.c
+    NRPPa_NR-CGI.c
+    NRPPa_PLMN-Identity.c
+    NRPPa_NRCellIdentity.c
+    NRPPa_NeighborCellConfig.c
+    NRPPa_ECID-ServingCellMeasurement.c
+    NRPPa_ECID-NeighborCellMeasurement.c
+    NRPPa_ECID-NeighborCellMeasurementList.c
+    NRPPa_NRPPa-Rsrp.c
+    NRPPa_NRPPa-Rsrq.c
+    NRPPa_TimingAdvance.c
+    NRPPa_AngleOfArrival.c
+    NRPPa_SuccessfulOutcome.c
+    NRPPa_UnsuccessfulOutcome.c
+'''.split())
+
+libasn1c_nrppa_inc = include_directories('.')
+
+libasn1c_nrppa = library('ogsasn1c-nrppa',
+    sources : libasn1c_nrppa_sources,
+    version : libogslib_version,
+    c_args : libasn1c_common_cc_flags,
+    include_directories : libasn1c_nrppa_inc,
+    dependencies : [libasn1c_common_dep, libasn1c_util_dep],
+    install : true)
+
+libasn1c_nrppa_dep = declare_dependency(
+    link_with : libasn1c_nrppa,
+    include_directories : libasn1c_nrppa_inc,
+    dependencies : [libasn1c_common_dep, libasn1c_util_dep])
+
