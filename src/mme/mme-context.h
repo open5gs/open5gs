@@ -621,15 +621,17 @@ struct mme_ue_s {
     /* ESM Info */
     ogs_list_t      sess_list;
 
+#define INVALID_EPS_BEARER_ID       0
 #define MIN_EPS_BEARER_ID           5
 #define MAX_EPS_BEARER_ID           15
 
 #define CLEAR_EPS_BEARER_ID(__mME) \
     do { \
         ogs_assert((__mME)); \
-        mme_ebi_pool_clear(__mME); \
+        (__mME)->ebi_bitmap = 0; \
     } while(0)
-    OGS_POOL(ebi_pool, uint8_t);
+
+    uint16_t ebi_bitmap; /* bit5~bit15 used */
 
     /* Paging Info */
 #define ECM_CONNECTED(__mME) \
@@ -956,7 +958,6 @@ typedef struct mme_bearer_s {
 
     ogs_fsm_t       sm;             /* State Machine */
 
-    uint8_t         *ebi_node;      /* Pool-Node for EPS Bearer ID */
     uint8_t         ebi;            /* EPS Bearer ID */
 
     uint32_t        enb_s1u_teid;
@@ -1234,9 +1235,9 @@ int mme_find_served_tai(ogs_eps_tai_t *tai);
 mme_m_tmsi_t *mme_m_tmsi_alloc(void);
 int mme_m_tmsi_free(mme_m_tmsi_t *tmsi);
 
-void mme_ebi_pool_init(mme_ue_t *mme_ue);
-void mme_ebi_pool_final(mme_ue_t *mme_ue);
-void mme_ebi_pool_clear(mme_ue_t *mme_ue);
+uint8_t mme_ebi_alloc(mme_ue_t *mme_ue);
+int mme_ebi_free(mme_ue_t *mme_ue, int ebi);
+int mme_ebi_reserve(mme_ue_t *mme_ue, int ebi);
 
 uint8_t mme_selected_int_algorithm(mme_ue_t *mme_ue);
 uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue);

@@ -3685,8 +3685,6 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     }
     mme_ue->gn.gtp_xact_id = OGS_INVALID_POOL_ID;
 
-    mme_ebi_pool_init(mme_ue);
-
     ogs_list_init(&mme_ue->sess_list);
 
     /* Set MME-S11-TEID */
@@ -3797,8 +3795,6 @@ void mme_ue_remove(mme_ue_t *mme_ue)
 
     mme_sess_remove_all(mme_ue);
     mme_session_remove_all(mme_ue);
-
-    mme_ebi_pool_final(mme_ue);
 
     ogs_pool_free(&mme_s11_teid_pool, mme_ue->mme_s11_teid_node);
     ogs_pool_free(&mme_gn_teid_pool, mme_ue->gn.mme_gn_teid_node);
@@ -4110,10 +4106,12 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
                 ogs_list_for_each(&old_sess->bearer_list, old_bearer) {
                     old_bearer->mme_ue_id = mme_ue->id;
 
-                    if (old_bearer->ebi_node)
-                        ogs_pool_free(
-                                &old_mme_ue->ebi_pool, old_bearer->ebi_node);
-                    old_bearer->ebi_node = NULL;
+                    if (mme_ebi_reserve(mme_ue, old_bearer->ebi) == OGS_OK)
+                        ogs_info("Bearer reserved (EBI=%d IMSI=%s)",
+                                old_bearer->ebi, mme_ue->imsi_bcd);
+                    else
+                        ogs_error("Failed to reserve bearer (EBI=%d IMSI=%s)",
+                                old_bearer->ebi, mme_ue->imsi_bcd);
                 }
                 old_sess->mme_ue_id = mme_ue->id;
             }
@@ -4567,13 +4565,19 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
 
     ogs_list_init(&bearer->update.xact_list);
 
-    ogs_pool_alloc(&mme_ue->ebi_pool, &bearer->ebi_node);
-    ogs_assert(bearer->ebi_node);
+    /*
+     * Allocate a new EBI from the UE bitmap.
+     * If all EBIs are exhausted, reject bearer creation.
+     */
+    bearer->ebi = mme_ebi_alloc(mme_ue);
+    if (bearer->ebi == INVALID_EPS_BEARER_ID) {
+        ogs_error("Bearer add failed: EBI pool exhausted (IMSI=%s)",
+                mme_ue->imsi_bcd);
+        ogs_pool_free(&mme_bearer_pool, bearer);
+        return NULL;
+    }
 
-    bearer->ebi = *(bearer->ebi_node);
-
-    ogs_assert(bearer->ebi >= MIN_EPS_BEARER_ID &&
-                bearer->ebi <= MAX_EPS_BEARER_ID);
+    ogs_info("Bearer added (EBI=%d IMSI=%s)", bearer->ebi, mme_ue->imsi_bcd);
 
     bearer->mme_ue_id = mme_ue->id;
     bearer->sess_id = sess->id;
@@ -4605,6 +4609,8 @@ void mme_bearer_remove(mme_bearer_t *bearer)
     sess = mme_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
 
+    ogs_info("Bearer removed (EBI=%d IMSI=%s)", bearer->ebi, mme_ue->imsi_bcd);
+
     memset(&e, 0, sizeof(e));
     e.bearer_id = bearer->id;
     ogs_fsm_fini(&bearer->sm, &e);
@@ -4616,8 +4622,7 @@ void mme_bearer_remove(mme_bearer_t *bearer)
 
     OGS_TLV_CLEAR_DATA(&bearer->tft);
 
-    if (bearer->ebi_node)
-        ogs_pool_free(&mme_ue->ebi_pool, bearer->ebi_node);
+    ogs_expect(OGS_OK == mme_ebi_free(mme_ue, bearer->ebi));
 
     ogs_list_for_each_entry_safe(&bearer->update.xact_list,
             next_xact, xact, to_update_node) {
@@ -5108,36 +5113,73 @@ int mme_m_tmsi_free(mme_m_tmsi_t *m_tmsi)
     return OGS_OK;
 }
 
-void mme_ebi_pool_init(mme_ue_t *mme_ue)
+/*
+ * EPS Bearer ID (EBI) management
+ *
+ * In EPC, valid EBIs are in range [5..15].
+ * Each UE can have at most 11 bearers.
+ *
+ * We track EBI usage with a bitmap rather than ogs_pool nodes,
+ * because bearer contexts may migrate between MME-UE objects
+ * during UE context relocation (OLD UE -> NEW UE).
+ *
+ * Bitmap-based tracking avoids ownership issues with pool-internal
+ * pointers (ebi_node) and supports safe EBI reservation.
+ */
+uint8_t mme_ebi_alloc(mme_ue_t *mme_ue)
 {
-    int i, index;
+    uint8_t ebi;
 
     ogs_assert(mme_ue);
 
-    ogs_pool_create(&mme_ue->ebi_pool, MAX_EPS_BEARER_ID-MIN_EPS_BEARER_ID+1);
+    for (ebi = MIN_EPS_BEARER_ID; ebi <= MAX_EPS_BEARER_ID; ebi++) {
 
-    for (i = MIN_EPS_BEARER_ID, index = 0;
-            i <= MAX_EPS_BEARER_ID; i++, index++) {
-        mme_ue->ebi_pool.array[index] = i;
+        if (!(mme_ue->ebi_bitmap & (1 << ebi))) {
+            mme_ue->ebi_bitmap |= (1 << ebi);
+            ogs_debug("EBI allocated [%d]", ebi);
+            return ebi;
+        }
     }
+
+    ogs_error("No available EBI (range %d-%d)",
+            MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
+
+    return INVALID_EPS_BEARER_ID; /* no available EBI */
 }
 
-void mme_ebi_pool_final(mme_ue_t *mme_ue)
+int mme_ebi_free(mme_ue_t *mme_ue, int ebi)
 {
     ogs_assert(mme_ue);
 
-    ogs_pool_destroy(&mme_ue->ebi_pool);
+    if (ebi < MIN_EPS_BEARER_ID || ebi > MAX_EPS_BEARER_ID) {
+        ogs_error("Invalid EBI to free [%d]", ebi);
+        return OGS_ERROR;
+    }
+
+    mme_ue->ebi_bitmap &= ~(1 << ebi);
+
+    ogs_debug("EBI freed [%d]", ebi);
+
+    return OGS_OK;
 }
 
-void mme_ebi_pool_clear(mme_ue_t *mme_ue)
+int mme_ebi_reserve(mme_ue_t *mme_ue, int ebi)
 {
     ogs_assert(mme_ue);
 
-    /* Suppress log message (mme_ue->ebi_pool.avail != mme_ue->ebi_pool.size) */
-    mme_ue->ebi_pool.avail = mme_ue->ebi_pool.size;
+    if (ebi < MIN_EPS_BEARER_ID || ebi > MAX_EPS_BEARER_ID) {
+        ogs_error("Invalid EBI to reserve [%d]", ebi);
+        return OGS_ERROR;
+    }
 
-    mme_ebi_pool_final(mme_ue);
-    mme_ebi_pool_init(mme_ue);
+    if (mme_ue->ebi_bitmap & (1 << ebi)) {
+        ogs_error("EBI [%d] already reserved", ebi);
+        return OGS_ERROR;
+    }
+
+    mme_ue->ebi_bitmap |= (1 << ebi);
+    ogs_debug("EBI reserved [%d]", ebi);
+    return OGS_OK;
 }
 
 uint8_t mme_selected_int_algorithm(mme_ue_t *mme_ue)

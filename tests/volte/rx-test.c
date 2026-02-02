@@ -1530,7 +1530,7 @@ static void test4_func(abts_case *tc, void *data)
             test_ue->s1ap_procedure_code);
 
     /* Send E-RABSetupResponse */
-    bearer = test_bearer_find_by_ue_ebi(test_ue, 7);
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -1565,7 +1565,7 @@ static void test4_func(abts_case *tc, void *data)
             test_ue->s1ap_procedure_code);
 
     /* Send E-RABSetupResponse */
-    bearer = test_bearer_find_by_ue_ebi(test_ue, 8);
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 7);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
     ABTS_PTR_NOTNULL(tc, sendbuf);

@@ -926,7 +926,7 @@ static void test_issues4141_func(abts_case *tc, void *data)
             test_ue->s1ap_procedure_code);
 
     /* Send E-RABSetupResponse */
-    bearer = test_bearer_find_by_ue_ebi(test_ue, 8);
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 6);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -952,7 +952,7 @@ static void test_issues4141_func(abts_case *tc, void *data)
             test_ue->s1ap_procedure_code);
 
     /* Send Activate dedicated EPS bearer context accept */
-    bearer = test_bearer_find_by_ue_ebi(test_ue, 9);
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 7);
     ogs_assert(bearer);
     esmbuf = testesm_build_activate_dedicated_eps_bearer_context_accept(bearer);
     ABTS_PTR_NOTNULL(tc, esmbuf);
