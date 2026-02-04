@@ -795,6 +795,34 @@ static int nf_discover_handler(
 
     ogs_nnrf_disc_handle_nf_discover_search_result(message.SearchResult);
 
+    /* Debug: List all AMF instances in cache */
+    {
+        ogs_sbi_nf_instance_t *nf_inst = NULL;
+        ogs_sbi_nf_service_t *nf_svc = NULL;
+        int j;
+        ogs_info("SCP: After processing SearchResult, checking for target_nf_type=%s, requester_nf_type=%s",
+                OpenAPI_nf_type_ToString(target_nf_type),
+                OpenAPI_nf_type_ToString(requester_nf_type));
+        ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_inst) {
+            if (nf_inst->nf_type == target_nf_type) {
+                ogs_info("SCP: Found AMF instance [%s], num_of_allowed_nf_type=%d",
+                        nf_inst->id, nf_inst->num_of_allowed_nf_type);
+                for (j = 0; j < nf_inst->num_of_allowed_nf_type; j++) {
+                    ogs_info("SCP:   AMF instance allowed_nf_type[%d]=%s",
+                            j, OpenAPI_nf_type_ToString(nf_inst->allowed_nf_type[j]));
+                }
+                ogs_list_for_each(&nf_inst->nf_service_list, nf_svc) {
+                    ogs_info("SCP:   Service [%s], num_of_allowed_nf_type=%d",
+                            nf_svc->name, nf_svc->num_of_allowed_nf_type);
+                    for (j = 0; j < nf_svc->num_of_allowed_nf_type; j++) {
+                        ogs_info("SCP:     Service allowed_nf_type[%d]=%s",
+                                j, OpenAPI_nf_type_ToString(nf_svc->allowed_nf_type[j]));
+                    }
+                }
+            }
+        }
+    }
+
     nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
             target_nf_type, requester_nf_type, discovery_option);
     if (!nf_instance) {
@@ -1044,6 +1072,7 @@ static bool send_request(
 
     ogs_sbi_http_hash_free(scp_request.http.headers);
     ogs_free(scp_request.h.uri);
+    ogs_free(scp_request.h.method);
     ogs_free(uri_apiroot);
 
     return rc;
@@ -1061,7 +1090,7 @@ static void copy_request(
     memset(target, 0, sizeof(*target));
 
     /* HTTP method/params/content */
-    target->h.method = source->h.method;
+    target->h.method = source->h.method ? ogs_strdup(source->h.method) : NULL;
     target->http.params = source->http.params;
     target->http.content = source->http.content;
     target->http.content_length = source->http.content_length;

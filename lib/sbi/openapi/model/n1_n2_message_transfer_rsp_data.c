@@ -72,14 +72,16 @@ OpenAPI_n1_n2_message_transfer_rsp_data_t *OpenAPI_n1_n2_message_transfer_rsp_da
     cJSON *supported_features = NULL;
     cause = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_rsp_dataJSON, "cause");
     if (!cause) {
-        ogs_error("OpenAPI_n1_n2_message_transfer_rsp_data_parseFromJSON() failed [cause]");
-        goto end;
+        /* Cause field is optional in multipart NRPPa responses from AMF */
+        ogs_debug("OpenAPI_n1_n2_message_transfer_rsp_data_parseFromJSON() [cause] field not present (optional for NRPPa)");
+        causeVariable = OpenAPI_n1_n2_message_transfer_cause_NULL;
+    } else {
+        if (!cJSON_IsString(cause)) {
+            ogs_error("OpenAPI_n1_n2_message_transfer_rsp_data_parseFromJSON() failed [cause]");
+            goto end;
+        }
+        causeVariable = OpenAPI_n1_n2_message_transfer_cause_FromString(cause->valuestring);
     }
-    if (!cJSON_IsString(cause)) {
-        ogs_error("OpenAPI_n1_n2_message_transfer_rsp_data_parseFromJSON() failed [cause]");
-        goto end;
-    }
-    causeVariable = OpenAPI_n1_n2_message_transfer_cause_FromString(cause->valuestring);
 
     supported_features = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_rsp_dataJSON, "supportedFeatures");
     if (supported_features) {

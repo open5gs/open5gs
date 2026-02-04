@@ -1426,6 +1426,22 @@ void ran_ue_remove(ran_ue_t *ran_ue)
 
     if (gnb) ogs_list_remove(&gnb->ran_ue_list, ran_ue);
 
+    /* Cleanup stored NRPPa PDU and LMF instance ID if pending */
+    if (ran_ue->nrppa.stored_nrppa_pdu) {
+        ogs_pkbuf_free(ran_ue->nrppa.stored_nrppa_pdu);
+        ran_ue->nrppa.stored_nrppa_pdu = NULL;
+    }
+    if (ran_ue->nrppa.stored_lmf_instance_id) {
+        ogs_free(ran_ue->nrppa.stored_lmf_instance_id);
+        ran_ue->nrppa.stored_lmf_instance_id = NULL;
+    }
+    if (ran_ue->nrppa.callback_uri) {
+        ogs_free(ran_ue->nrppa.callback_uri);
+        ran_ue->nrppa.callback_uri = NULL;
+    }
+    /* Clear client reference (we don't own the client, just store a reference) */
+    ran_ue->nrppa.client = NULL;
+
     ogs_assert(ran_ue->t_ng_holding);
     ogs_timer_delete(ran_ue->t_ng_holding);
 
@@ -1709,6 +1725,24 @@ void amf_ue_remove(amf_ue_t *amf_ue)
 
     /* Clear 5GSM Message */
     AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
+
+    /* Cleanup stored NRPPa request if pending */
+    if (amf_ue->nrppa.stored_nrppa_pdu) {
+        ogs_pkbuf_free(amf_ue->nrppa.stored_nrppa_pdu);
+        amf_ue->nrppa.stored_nrppa_pdu = NULL;
+    }
+    if (amf_ue->nrppa.stored_lmf_instance_id) {
+        ogs_free(amf_ue->nrppa.stored_lmf_instance_id);
+        amf_ue->nrppa.stored_lmf_instance_id = NULL;
+    }
+    if (amf_ue->nrppa.callback_uri) {
+        ogs_free(amf_ue->nrppa.callback_uri);
+        amf_ue->nrppa.callback_uri = NULL;
+    }
+    /* Clear client reference (we don't own the client, just store a reference) */
+    amf_ue->nrppa.client = NULL;
+    amf_ue->nrppa.pending = false;
+    amf_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
 
     OpenAPI_list_free(amf_ue->rat_restrictions);
     OpenAPI_list_free(amf_ue->to_release_session_list);
