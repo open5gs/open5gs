@@ -50,7 +50,7 @@ void ogs_nnrf_nfm_handle_nf_register(
         nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
 
     if (NFProfile->plmn_list) {
-        nf_instance->num_of_plmn_id = 0;
+        ogs_local_conf()->num_of_serving_plmn_id = 0;
         OpenAPI_list_for_each(NFProfile->plmn_list, node) {
             OpenAPI_plmn_id_t *PlmnId = node->data;
             if (PlmnId) {
