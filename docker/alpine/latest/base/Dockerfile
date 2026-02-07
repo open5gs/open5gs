@@ -2,7 +2,7 @@ ARG dist=alpine
 ARG tag=latest
 FROM ${dist}:${tag}
 
-MAINTAINER Sukchan Lee <acetcom@gmail.com>
+LABEL org.opencontainers.image.authors="Sukchan Lee <acetcom@gmail.com>"
 
 RUN apk update && \
     apk add --no-cache \

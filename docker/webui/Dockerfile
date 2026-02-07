@@ -1,6 +1,6 @@
 FROM node:19
 
-MAINTAINER Sukchan Lee <acetcom@gmail.com>
+LABEL org.opencontainers.image.authors="Sukchan Lee <acetcom@gmail.com>"
 
 COPY webui /usr/src/open5gs/webui
 
