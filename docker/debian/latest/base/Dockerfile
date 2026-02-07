@@ -2,7 +2,7 @@ ARG dist=ubuntu
 ARG tag=latest
 FROM ${dist}:${tag}
 
-MAINTAINER Sukchan Lee <acetcom@gmail.com>
+LABEL org.opencontainers.image.authors="Sukchan Lee <acetcom@gmail.com>"
 
 RUN apt-get update && \
     apt-get upgrade -y && \
