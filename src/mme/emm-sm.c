@@ -269,6 +269,14 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
         case MME_TIMER_IMPLICIT_DETACH:
             ogs_info("[%s] Implicit Detach timer expired, detaching UE",
                 mme_ue->imsi_bcd);
+
+            /*
+             * Reset the deferral flag for this implicit detach handling.
+             * mme_send_delete_session_or_detach() may set this flag if the UE
+             * must be removed locally (e.g., no S1 context exists).
+             */
+            mme_ue->ue_context_will_remove = false;
+
             CLEAR_MME_UE_TIMER(mme_ue->t_implicit_detach);
             /* TS 24.301 5.3.5
              * If the implicit detach timer expires before the UE contacts
@@ -282,7 +290,18 @@ void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
                         enb_ue_find_by_id(mme_ue->enb_ue_id), mme_ue);
             }
 
-            OGS_FSM_TRAN(s, &emm_state_de_registered);
+            /*
+             * Do not remove the UE context directly in this handler.
+             *
+             * If mme_send_delete_session_or_detach() decided that local removal
+             * is required, transition to a dedicated state that will remove the
+             * UE context on entry. Otherwise follow the normal de-registered
+             * transition for implicit detach.
+             */
+            if (mme_ue->ue_context_will_remove == true)
+                OGS_FSM_TRAN(s, &emm_state_ue_context_will_remove);
+            else
+                OGS_FSM_TRAN(s, &emm_state_de_registered);
             break;
 
         default:
@@ -1825,6 +1844,48 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
     default:
         ogs_error("Unknown event[%s]", mme_event_get_name(e));
         break;
+    }
+}
+
+/*
+ * EMM state: UE context will remove.
+ *
+ * This state exists to perform UE context removal at a safe point,
+ * after the triggering EMM event has completed its core handling
+ * and a state transition has been decided.
+ *
+ * It is primarily used by implicit detach paths where the UE may be
+ * removed locally (e.g., no S1 context) and we must avoid freeing
+ * mme_ue inside the original EMM timer handler.
+ */
+void emm_state_ue_context_will_remove(ogs_fsm_t *s, mme_event_t *e)
+{
+    mme_ue_t *mme_ue = NULL;
+
+    ogs_assert(s);
+    ogs_assert(e);
+
+    mme_sm_debug(e);
+
+    mme_ue = mme_ue_find_by_id(e->mme_ue_id);
+    ogs_assert(mme_ue);
+
+    switch (e->id) {
+    case OGS_FSM_ENTRY_SIG:
+        /*
+         * Remove UE context on state entry.
+         *
+         * MME_UE_REMOVE_WITH_PAGING_FAIL() handles corner cases where
+         * paging procedures may still be in progress.
+         */
+        MME_UE_REMOVE_WITH_PAGING_FAIL(mme_ue);
+        break;
+
+    case OGS_FSM_EXIT_SIG:
+        break;
+
+    default:
+        ogs_error("Unknown event[%s]", mme_event_get_name(e));
     }
 }
 

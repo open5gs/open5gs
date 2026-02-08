@@ -546,6 +546,19 @@ struct mme_ue_s {
     /* flag: 1 = allow restoration of context, 0 = disallow */
     bool            can_restore_context;
 
+    /*
+     * ue_context_will_remove:
+     *
+     * Set when the UE context must be removed locally after the current
+     * EMM event completes, but we must not free the UE context inside
+     * the ongoing procedure.
+     *
+     * This flag is used to defer UE context removal to a dedicated EMM
+     * state (emm_state_ue_context_will_remove) to avoid use-after-free
+     * and double-free scenarios in implicit detach paths.
+     */
+    bool            ue_context_will_remove;
+
     /* Memento of context fields */
     mme_ue_memento_t memento;
 
