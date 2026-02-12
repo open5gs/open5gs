@@ -2805,6 +2805,92 @@ void ogs_sbi_subscription_data_remove_all_by_nf_instance_id(
     }
 }
 
+/*
+ * Send DELETE requests to NRF for all subscriptions belonging
+ * to the given NF instance before re-registration.
+ *
+ * This prevents subscription accumulation during repeated
+ * re-registration loops (e.g., heartbeat flapping).
+ *
+ * IMPORTANT:
+ * Local subscription_data MUST NOT be removed here.
+ * Cleanup is performed asynchronously in the unsubscribe
+ * response handler once NRF confirms deletion.
+ */
+void ogs_sbi_subscription_data_delete_and_remove_all_by_nf_instance_id(
+        const char *nf_instance_id)
+{
+    ogs_sbi_subscription_data_t *subscription_data = NULL;
+
+    ogs_assert(nf_instance_id);
+
+    ogs_list_for_each(
+            &ogs_sbi_self()->subscription_data_list, subscription_data) {
+
+        if (!subscription_data->id) {
+            ogs_error("Skip subscription delete: id is NULL");
+            continue;
+        }
+
+        if (!subscription_data->req_nf_instance_id) {
+            ogs_error("Skip subscription delete: req_nf_instance_id is NULL");
+            continue;
+        }
+
+        if (!subscription_data->resource_uri) {
+            ogs_error("Skip subscription delete: resource_uri is NULL");
+            continue;
+        }
+
+        if (strcmp(subscription_data->req_nf_instance_id,
+                   nf_instance_id) != 0) {
+            ogs_error("Skip subscription delete: nf_instance_id mismatch "
+                  "[target:%s, current:%s]",
+                  subscription_data->req_nf_instance_id, nf_instance_id);
+            continue;
+        }
+
+        /*
+         * Prevent duplicate DELETE transmissions.
+         * (Simple guard using existing state field or flag placeholder)
+         */
+        if (subscription_data->flags & OGS_SBI_SUBSCRIPTION_DELETE_SENT) {
+            ogs_debug("[%s] Skip subscription delete: DELETE already sent",
+                    subscription_data->id);
+            continue;
+        }
+
+        subscription_data->flags |= OGS_SBI_SUBSCRIPTION_DELETE_SENT;
+
+        /*
+         * If we have a subscription resource identifier,
+         * send DELETE to NRF to cleanup remote subscription state.
+         *
+         * Typical resource:
+         *   /nnrf-nfm/v1/subscriptions/{subscriptionId}
+         */
+        ogs_info("[%s] Sending NRF subscription DELETE before "
+                "NF re-registration", subscription_data->id);
+
+
+        /* Build DELETE request */
+        ogs_nnrf_nfm_send_nf_status_unsubscribe(subscription_data);
+
+        /*
+         * NOTE:
+         * Do NOT remove subscription_data here.
+         *
+         * Local cleanup is performed in the unsubscribe
+         * response handler once NRF confirms deletion.
+         *
+         * Removing here could lead to:
+         *   - Use-after-free
+         *   - Double free
+         *   - Dangling transaction context
+         */
+    }
+}
+
 void ogs_sbi_subscription_data_remove_all(void)
 {
     ogs_sbi_subscription_data_t *subscription_data = NULL;
