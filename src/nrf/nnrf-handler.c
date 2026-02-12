@@ -842,6 +842,13 @@ bool nrf_nnrf_handle_nf_status_unsubscribe(
         return false;
     }
 
+    ogs_info("[%s] Removing local subscription data after NRF unsubscribe "
+            "[duration:%lld,validity:%d.%06d]",
+            subscription_data->id,
+            (long long)subscription_data->validity_duration,
+            (int)ogs_time_sec(subscription_data->validity_duration),
+            (int)ogs_time_usec(subscription_data->validity_duration));
+
     ogs_assert(subscription_data->id);
     ogs_sbi_subscription_data_remove(subscription_data);
 

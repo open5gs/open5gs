@@ -335,6 +335,9 @@ typedef struct ogs_sbi_subscription_data_s {
     ogs_timer_t *t_validity;                /* check validation */
     ogs_timer_t *t_patch;                   /* for sending PATCH */
 
+#define OGS_SBI_SUBSCRIPTION_DELETE_SENT  (1 << 0)
+    uint32_t flags;                         /* Subscription lifecycle flags */
+
     char *id;                               /* SubscriptionId */
     char *req_nf_instance_id;               /* reqNfInstanceId */
     OpenAPI_nf_type_e req_nf_type;          /* reqNfType */
@@ -640,6 +643,8 @@ void ogs_sbi_subscription_data_remove(
         ogs_sbi_subscription_data_t *subscription_data);
 void ogs_sbi_subscription_data_remove_all_by_nf_instance_id(
         char *nf_instance_id);
+void ogs_sbi_subscription_data_delete_and_remove_all_by_nf_instance_id(
+        const char *nf_instance_id);
 void ogs_sbi_subscription_data_remove_all(void);
 ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_find(char *id);
 

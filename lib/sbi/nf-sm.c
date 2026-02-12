@@ -432,6 +432,20 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
                     NF_INSTANCE_ID(ogs_sbi_self()->nf_instance),
                     OpenAPI_nf_type_ToString(
                         NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance)));
+
+
+        /*
+         * In case of NF re-registration due to heartbeat loss, clear any
+         * local subscription bookkeeping tied to the current NF instance id.
+         *
+         * This prevents unbounded growth of subscription_data entries when
+         * re-registration and re-subscription loops happen (e.g., docker-compose
+         * timing/race), which could otherwise exhaust subscription_data_pool.
+         */
+            if (ogs_sbi_self()->nf_instance && ogs_sbi_self()->nf_instance->id)
+                ogs_sbi_subscription_data_delete_and_remove_all_by_nf_instance_id(
+                        ogs_sbi_self()->nf_instance->id);
+
             OGS_FSM_TRAN(s, &ogs_sbi_nf_state_will_register);
             break;
 
