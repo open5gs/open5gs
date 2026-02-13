@@ -18,4 +18,5 @@
 subdir('common')
 subdir('util')
 subdir('ngap')
+subdir('nrppa_ecid')
 subdir('s1ap')

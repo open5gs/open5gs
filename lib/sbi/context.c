@@ -2263,6 +2263,12 @@ bool ogs_sbi_discovery_option_service_names_is_matched(
                 if (ogs_sbi_nf_service_is_allowed_nf_type(
                         nf_service, requester_nf_type) == true) {
                     return true;
+                } else {
+                    ogs_debug("Service [%s] does not allow NF type [%s] "
+                            "(num_of_allowed_nf_type=%d)",
+                            nf_service->name,
+                            OpenAPI_nf_type_ToString(requester_nf_type),
+                            nf_service->num_of_allowed_nf_type);
                 }
             }
         }
@@ -2372,6 +2378,21 @@ bool ogs_sbi_discovery_param_is_matched(
 
     if (nf_instance->nf_type != target_nf_type)
         return false;
+
+    /* Check if NF instance allows requester_nf_type */
+    /* Exception: Allow an NF to find its own instance (for getting endpoint info, etc.) */
+    if (target_nf_type == requester_nf_type &&
+        ogs_sbi_self()->nf_instance &&
+        nf_instance->id &&
+        ogs_sbi_self()->nf_instance->id &&
+        strcmp(nf_instance->id, ogs_sbi_self()->nf_instance->id) == 0) {
+        /* This is the self instance, allow it */
+    } else {
+        /* For other instances, check if requester_nf_type is allowed */
+        if (ogs_sbi_nf_instance_is_allowed_nf_type(
+                nf_instance, requester_nf_type) == false)
+            return false;
+    }
 
     /*
      * For the same PLMN, The target-plmn-list may not be included
@@ -2525,12 +2546,8 @@ void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object)
 
     ogs_assert(sbi_object);
 
-    if (ogs_list_count(&sbi_object->xact_list)) {
-        ogs_sbi_xact_t *xact = NULL; \
-        ogs_error("SBI running [%d]", ogs_list_count(&sbi_object->xact_list));
-        ogs_list_for_each(&sbi_object->xact_list, xact)
-            OGS_SBI_XACT_LOG(xact);
-    }
+    /* Remove all remaining transactions */
+    ogs_sbi_xact_remove_all(sbi_object);
 
     for (i = 0; i < OGS_SBI_MAX_NUM_OF_SERVICE_TYPE; i++) {
         if (sbi_object->service_type_array[i].nf_instance_id)
@@ -2660,8 +2677,12 @@ void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact)
     sbi_object = xact->sbi_object;
     ogs_assert(sbi_object);
 
-    if (xact->discovery_option)
+    if (xact->discovery_option) {
+        ogs_debug("ogs_sbi_xact_remove: freeing xact->discovery_option=%p",
+                xact->discovery_option);
         ogs_sbi_discovery_option_free(xact->discovery_option);
+        xact->discovery_option = NULL; /* Prevent double-free */
+    }
 
     ogs_assert(xact->t_response);
     ogs_timer_delete(xact->t_response);

@@ -1088,22 +1088,38 @@ bool nrf_nnrf_handle_nf_discover(
 
     i = 0;
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
-        if (NF_INSTANCE_EXCLUDED_FROM_DISCOVERY(nf_instance))
+        if (NF_INSTANCE_EXCLUDED_FROM_DISCOVERY(nf_instance)) {
+            ogs_debug("NRF: AMF instance [%s] excluded from discovery", nf_instance->id);
             continue;
+        }
 
-        if (nf_instance->nf_type != recvmsg->param.target_nf_type)
+        if (nf_instance->nf_type != recvmsg->param.target_nf_type) {
+            ogs_debug("NRF: AMF instance [%s] nf_type mismatch (expected=%s, got=%s)",
+                    nf_instance->id,
+                    OpenAPI_nf_type_ToString(recvmsg->param.target_nf_type),
+                    OpenAPI_nf_type_ToString(nf_instance->nf_type));
             continue;
+        }
 
         if (ogs_sbi_nf_instance_is_allowed_nf_type(
-                nf_instance, recvmsg->param.requester_nf_type) == false)
+                nf_instance, recvmsg->param.requester_nf_type) == false) {
+            ogs_debug("NRF: AMF instance [%s] does not allow requester_nf_type=%s (num_of_allowed_nf_type=%d)",
+                    nf_instance->id,
+                    OpenAPI_nf_type_ToString(recvmsg->param.requester_nf_type),
+                    nf_instance->num_of_allowed_nf_type);
             continue;
+        }
 
         if (discovery_option &&
             ogs_sbi_discovery_option_is_matched(
                 nf_instance,
                 recvmsg->param.requester_nf_type,
-                discovery_option) == false)
+                discovery_option) == false) {
+            ogs_debug("NRF: AMF instance [%s] does not match discovery_option (target_nf_instance_id=%s)",
+                    nf_instance->id,
+                    discovery_option->target_nf_instance_id ? discovery_option->target_nf_instance_id : "NULL");
             continue;
+        }
 
         if (recvmsg->param.limit && i >= recvmsg->param.limit)
             break;
@@ -1370,6 +1386,9 @@ static int discover_handler(
                 status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
                 "response_handler() failed [%d]", status);
 
+        if (response)
+            ogs_sbi_response_free(response);
+
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
@@ -1385,23 +1404,31 @@ static int discover_handler(
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
         ogs_error("cannot parse HTTP response");
-        goto cleanup;
+        ogs_sbi_response_free(response);
+        nrf_assoc_remove(assoc);
+        return OGS_ERROR;
     }
 
     if (message.res_status != OGS_SBI_HTTP_STATUS_OK) {
         ogs_error("NF-Discover failed [%d]", message.res_status);
-        goto cleanup;
+        ogs_sbi_message_free(&message);
+        ogs_sbi_response_free(response);
+        nrf_assoc_remove(assoc);
+        return OGS_ERROR;
     }
 
     if (!message.SearchResult) {
         ogs_error("No SearchResult");
-        goto cleanup;
+        ogs_sbi_message_free(&message);
+        ogs_sbi_response_free(response);
+        nrf_assoc_remove(assoc);
+        return OGS_ERROR;
     }
 
     handle_nf_discover_search_result(message.SearchResult);
 
-cleanup:
     ogs_expect(true == ogs_sbi_server_send_response(stream, response));
+    /* ogs_sbi_server_send_response() already frees the response */
     nrf_assoc_remove(assoc);
     ogs_sbi_message_free(&message);
 

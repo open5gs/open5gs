@@ -64,6 +64,9 @@ ogs_pkbuf_t *ngap_build_paging(amf_ue_t *amf_ue);
 ogs_pkbuf_t *ngap_build_downlink_ran_configuration_transfer(
     NGAP_SONConfigurationTransfer_t *transfer);
 
+ogs_pkbuf_t *ngap_build_downlink_ue_associated_nrppa_transport(
+        ran_ue_t *ran_ue, ogs_pkbuf_t *nrppa_pdu, const char *lmf_instance_id);
+
 ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue);
 
 ogs_pkbuf_t *ngap_build_handover_request(ran_ue_t *target_ue);

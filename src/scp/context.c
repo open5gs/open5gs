@@ -337,6 +337,9 @@ void scp_assoc_remove(scp_assoc_t *assoc)
     ogs_assert(assoc->discovery_option);
     ogs_sbi_discovery_option_free(assoc->discovery_option);
 
+    /* Don't free assoc->request here - it's owned by stream->request */
+    /* The stream will free it when stream_remove() is called */
+
     if (assoc->client)
         ogs_sbi_client_remove(assoc->client);
 

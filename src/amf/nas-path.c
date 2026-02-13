@@ -272,8 +272,25 @@ int nas_5gs_send_service_accept(amf_ue_t *amf_ue)
      */
     transfer_needed = PDU_RES_SETUP_REQ_TRANSFER_NEEDED(amf_ue);
 
+    /* Check if there's a pending NRPPa request - if so, we need to send
+     * InitialContextSetupRequest to establish UE context, as the gNB requires
+     * InitialContextSetup to be completed before it can process NRPPa requests.
+     * Check both ran_ue and amf_ue, as the request might be in either location
+     * depending on when it was received (amf_ue if IDLE, ran_ue if already transferred).
+     */
+    bool nrppa_pending = false;
+    if (ran_ue && ran_ue->nrppa.pending && ran_ue->nrppa.stored_nrppa_pdu) {
+        nrppa_pending = true;
+    } else if (amf_ue->nrppa.pending && amf_ue->nrppa.stored_nrppa_pdu) {
+        nrppa_pending = true;
+    }
+
     if (ran_ue->initial_context_setup_request_sent == false &&
-        (ran_ue->ue_context_requested == true || transfer_needed == true)) {
+        (ran_ue->ue_context_requested == true || transfer_needed == true || nrppa_pending == true)) {
+        if (nrppa_pending && !ran_ue->ue_context_requested && !transfer_needed) {
+            ogs_info("[%s] Sending InitialContextSetupRequest for pending NRPPa request (gNB requires UE context for NRPPa)",
+                    amf_ue->supi ? amf_ue->supi : "Unknown");
+        }
         ngapbuf = ngap_ue_build_initial_context_setup_request(amf_ue, gmmbuf);
         if (!ngapbuf) {
             ogs_error("ngap_ue_build_initial_context_setup_request() failed");
@@ -299,6 +316,85 @@ int nas_5gs_send_service_accept(amf_ue_t *amf_ue)
         } else {
             rv = nas_5gs_send_to_downlink_nas_transport(ran_ue, amf_ue, gmmbuf);
             ogs_expect(rv == OGS_OK);
+        }
+    }
+
+    /* Forward stored NRPPa request if present after Service Accept completes.
+     * For Initial Context Setup cases, forwarding happens in ngap_handle_initial_context_setup_response.
+     * If InitialContextSetupRequest was sent above (for NRPPa), forwarding will happen
+     * in ngap_handle_initial_context_setup_response, so we don't need to do anything here.
+     */
+    if (ran_ue && ran_ue->nrppa.pending && ran_ue->nrppa.stored_nrppa_pdu && CM_CONNECTED(amf_ue)) {
+        if (!ran_ue->initial_context_setup_request_sent) {
+            /* This should not happen if nrppa_pending was true above, but handle it as fallback */
+            /* Service Request without Initial Context Setup - delay NRPPa forwarding.
+             * The gNB needs time to process Service Accept before NRPPa can be sent.
+             * We use a timer to delay forwarding by 300ms.
+             */
+            amf_event_t *e = amf_event_new(AMF_EVENT_NGAP_TIMER);
+            bool timer_setup_ok = false;
+            
+            if (e) {
+                e->h.timer_id = AMF_TIMER_NRPPA_DELAYED_FORWARD;
+                e->ran_ue_id = ran_ue->id;
+                
+                e->timer = ogs_timer_add(ogs_app()->timer_mgr, amf_timer_nrppa_delayed_forward, e);
+                if (e->timer) {
+                    /* Use 2000ms delay to let gNB fully process Service Accept and establish UE context.
+                     * The gNB needs time to:
+                     * 1. Process Service Accept
+                     * 2. Establish RRC connection with UE (RRC Setup Complete)
+                     * 3. Set up UE context in gNB
+                     * 4. Be ready to process NRPPa requests
+                     * 
+                     * For IDLE→CONNECTED transitions, the gNB may need more time than for
+                     * already-CONNECTED UEs. The "requested-item-temporarily-not-available" error
+                     * suggests the UE context isn't fully ready yet.
+                     */
+                    ogs_timer_start(e->timer, ogs_time_from_msec(2000));
+                    timer_setup_ok = true;
+                } else {
+                    ogs_error("[%s] Failed to create timer for delayed NRPPa forwarding",
+                            amf_ue->supi ? amf_ue->supi : "Unknown");
+                    ogs_event_free(e);
+                }
+            } else {
+                ogs_error("[%s] Failed to create event for delayed NRPPa forwarding",
+                        amf_ue->supi ? amf_ue->supi : "Unknown");
+            }
+            
+            /* If timer setup failed, forward immediately as fallback */
+            if (!timer_setup_ok) {
+                ogs_pkbuf_t *stored_pdu = ran_ue->nrppa.stored_nrppa_pdu;
+                char *stored_lmf_id = ran_ue->nrppa.stored_lmf_instance_id;
+                
+                ogs_warn("[%s] Falling back to immediate NRPPa forwarding after timer setup failure",
+                        amf_ue->supi ? amf_ue->supi : "Unknown");
+                
+                int nrppa_rv = ngap_send_downlink_ue_associated_nrppa_transport(
+                        ran_ue, stored_pdu, stored_lmf_id);
+                
+                ogs_pkbuf_free(stored_pdu);
+                ran_ue->nrppa.stored_nrppa_pdu = NULL;
+                if (stored_lmf_id) {
+                    ogs_free(stored_lmf_id);
+                    ran_ue->nrppa.stored_lmf_instance_id = NULL;
+                }
+                
+                if (nrppa_rv != OGS_OK) {
+                    ogs_error("[%s] Failed to forward stored NRPPa request to gNB",
+                            amf_ue->supi ? amf_ue->supi : "Unknown");
+                    ran_ue->nrppa.pending = false;
+                    ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+                } else {
+                    ogs_info("[%s] Stored NRPPa request forwarded to gNB",
+                            amf_ue->supi ? amf_ue->supi : "Unknown");
+                }
+            }
+        } else {
+            ogs_info("[%s] Initial Context Setup Request was sent, will forward stored NRPPa request after Initial Context Setup Response",
+                    amf_ue->supi ? amf_ue->supi : "Unknown");
+            /* NRPPa will be forwarded in ngap_handle_initial_context_setup_response */
         }
     }
 

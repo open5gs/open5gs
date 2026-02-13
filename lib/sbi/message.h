@@ -24,6 +24,9 @@
 #ifndef OGS_SBI_MESSAGE_H
 #define OGS_SBI_MESSAGE_H
 
+#include "openapi/model/input_data.h"
+#include "openapi/model/location_data.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -130,12 +133,17 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES        "n1-n2-messages"
 #define OGS_SBI_RESOURCE_NAME_TRANSFER              "transfer"
 #define OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE       "transfer-update"
+#define OGS_SBI_RESOURCE_NAME_LOCATION_INFO         "location-info"
 
 #define OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS     "sm-context-status"
 #define OGS_SBI_RESOURCE_NAME_AM_POLICY_NOTIFY      "am-policy-notify"
 #define OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY          "dereg-notify"
 #define OGS_SBI_RESOURCE_NAME_SDMSUBSCRIPTION_NOTIFY \
                                             "sdmsubscription-notify"
+#define OGS_SBI_RESOURCE_NAME_NRPPA_MEASUREMENT_REQUEST \
+                                            "nrppa-measurement-request"
+#define OGS_SBI_RESOURCE_NAME_NRPPA_MEASUREMENT_STATUS \
+                                            "nrppa-measurement-status"
 
 #define OGS_SBI_RESOURCE_NAME_POLICIES              "policies"
 #define OGS_SBI_RESOURCE_NAME_SM_POLICIES           "sm-policies"
@@ -273,6 +281,7 @@ extern "C" {
 #define OGS_SBI_APPLICATION_3GPPHAL_TYPE            "3gppHal+json"
 #define OGS_SBI_APPLICATION_5GNAS_TYPE              "vnd.3gpp.5gnas"
 #define OGS_SBI_APPLICATION_NGAP_TYPE               "vnd.3gpp.ngap"
+#define OGS_SBI_APPLICATION_NRPPa_TYPE              "vnd.3gpp.nrppa"
 
 #define OGS_SBI_CUSTOM_3GPP_COMMON                  "3gpp-Sbi-"
 #define OGS_SBI_CUSTOM_MESSAGE_PRIORITY  \
@@ -382,6 +391,8 @@ extern "C" {
     OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_5GNAS_TYPE
 #define OGS_SBI_CONTENT_NGAP_TYPE                   \
     OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_NGAP_TYPE
+#define OGS_SBI_CONTENT_NRPPa_TYPE                  \
+    OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_NRPPa_TYPE
 
 #define OGS_SBI_MULTIPART_TYPE                      "multipart"
 #define OGS_SBI_MULTIPART_RELATED_TYPE              "related"
@@ -391,6 +402,7 @@ extern "C" {
 #define OGS_SBI_CONTENT_ID                          "Content-Id"
 #define OGS_SBI_CONTENT_5GNAS_SM_ID                 "5gnas-sm"
 #define OGS_SBI_CONTENT_NGAP_SM_ID                  "ngap-sm"
+#define OGS_SBI_CONTENT_NRPPa_SM_ID                 "nrppa"
 
 #define OGS_SBI_CALLBACK_NSMF_PDUSESSION_UPDATE \
     "Nsmf_PDUSession_Update"
@@ -488,6 +500,7 @@ typedef struct ogs_sbi_message_s {
         char *content_type;
         char *location;
         char *cache_control;
+        char *body;
 
         struct {
             char *callback;
@@ -605,6 +618,8 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_deregistration_data_t *DeregistrationData;
     OpenAPI_sdm_subscription_t *SDMSubscription;
     OpenAPI_modification_notification_t *ModificationNotification;
+    OpenAPI_input_data_t *InputData;
+    OpenAPI_location_data_t *LocationData;
     OpenAPI_smf_registration_t *SmfRegistration;
     OpenAPI_sec_negotiate_req_data_t *SecNegotiateReqData;
     OpenAPI_sec_negotiate_rsp_data_t *SecNegotiateRspData;
