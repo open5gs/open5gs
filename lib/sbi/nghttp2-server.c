@@ -1466,6 +1466,20 @@ static int on_data_chunk_recv(nghttp2_session *session, uint8_t flags,
     ogs_assert(data);
     ogs_assert(len);
 
+#define MAX_HTTP_CONTENT_LEN (256 * 1024 * 1024) /* 256MB */
+    if (request->http.content_length + len > MAX_HTTP_CONTENT_LEN) {
+        stream->memory_overflow = true;
+
+        ogs_error("Payload too large : Content-Length[%d], len[%d]",
+                    (int)request->http.content_length, (int)len);
+
+        ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_PAYLOAD_TOO_LARGE,
+                NULL, "Payload too large", NULL, NULL);
+
+        return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
+    }
+
     if (request->http.content == NULL) {
         ogs_assert(request->http.content_length == 0);
         ogs_assert(offset == 0);
@@ -1481,9 +1495,13 @@ static int on_data_chunk_recv(nghttp2_session *session, uint8_t flags,
     if (!content) {
         stream->memory_overflow = true;
 
-        ogs_error("Overflow : Content-Length[%d], len[%d]",
+        ogs_error("Memory Overflow : Content-Length[%d], len[%d]",
                     (int)request->http.content_length, (int)len);
         ogs_log_hexdump(OGS_LOG_ERROR, data, len);
+
+        ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE,
+                NULL, "Memory Overflow", NULL, NULL);
 
         return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
     }
