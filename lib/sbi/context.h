@@ -514,6 +514,7 @@ ogs_sbi_client_t *ogs_sbi_client_find_by_service_type(
         ogs_sbi_service_type_e service_type);
 
 void ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
+bool nf_instance_has_usable_client(ogs_sbi_nf_instance_t *nf_instance);
 
 int ogs_sbi_default_client_port(OpenAPI_uri_scheme_e scheme);
 

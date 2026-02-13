@@ -615,7 +615,8 @@ static void handle_scp_info(
         }
     }
 
-    if (scp_info.http.presence || scp_info.https.presence) {
+    if (scp_info.http.presence || scp_info.https.presence ||
+        scp_info.num_of_domain) {
         nf_info = ogs_sbi_nf_info_add(
                 &nf_instance->nf_info_list, OpenAPI_nf_type_SCP);
         ogs_assert(nf_info);
