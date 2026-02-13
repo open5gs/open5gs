@@ -42,7 +42,7 @@ ogs_sbi_request_t *smf_nudm_sdm_build_get(smf_sess_t *sess, void *data)
             sizeof(message.param.s_nssai));
 
     message.param.plmn_id_presence = true;
-    memcpy(&message.param.plmn_id, &sess->home_plmn_id,
+    memcpy(&message.param.plmn_id, &sess->serving_plmn_id,
             sizeof(message.param.plmn_id));
 
     if (sess->session.name)
