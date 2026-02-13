@@ -86,6 +86,19 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
         return false;
     }
 
+    if (!NFProfile->fqdn &&
+        (!NFProfile->ipv4_addresses || !NFProfile->ipv4_addresses->first) &&
+        (!NFProfile->ipv6_addresses || !NFProfile->ipv6_addresses->first)) {
+        ogs_error("NFProfile missing endpoint: id=%s type=%s",
+                nf_instance->id,
+                OpenAPI_nf_type_ToString(NFProfile->nf_type));
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "NFProfile missing endpoint", nf_instance->id, NULL));
+        return false;
+    }
+
     /* Validate the PLMN-ID against configured serving PLMN-IDs */
     if (NFProfile->plmn_list) {
         /* Set PLMN status to invalid */

@@ -2052,7 +2052,8 @@ static ogs_sbi_client_t *nf_instance_find_client(
                 return NULL;
             }
         }
-    }
+    } else
+        ogs_error("No endpoint info, skip client creation");
 
     return client;
 }

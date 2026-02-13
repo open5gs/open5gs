@@ -1397,6 +1397,21 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
 
         j = 0;
         while(params[j].key && params[j].val) {
+            if (j >= MAX_NUM_OF_PARAM_IN_QUERY) {
+                ogs_error("Too many query params (max=%d)",
+                        MAX_NUM_OF_PARAM_IN_QUERY);
+                ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
+                        "Too many query parameters", NULL, NULL);
+
+                ogs_free(query);
+
+                ogs_free(namestr);
+                ogs_free(valuestr);
+
+                return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
+            }
+
             if (strlen(params[j].key))
                 ogs_sbi_header_set(request->http.params,
                         params[j].key, params[j].val);
@@ -1404,12 +1419,6 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
                 ogs_warn("No KEY in Query-Parms");
 
             j++;
-        }
-
-        if (j >= MAX_NUM_OF_PARAM_IN_QUERY+1) {
-            ogs_fatal("Maximum number(%d) of query params reached",
-                    MAX_NUM_OF_PARAM_IN_QUERY);
-            ogs_assert_if_reached();
         }
 
         ogs_free(query);
@@ -1439,6 +1448,7 @@ static int on_data_chunk_recv(nghttp2_session *session, uint8_t flags,
 {
     ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_request_t *request = NULL;
+    char *content = NULL;
 
     size_t offset = 0;
 
@@ -1460,23 +1470,25 @@ static int on_data_chunk_recv(nghttp2_session *session, uint8_t flags,
         ogs_assert(request->http.content_length == 0);
         ogs_assert(offset == 0);
 
-        request->http.content = (char*)ogs_malloc(len + 1);
+        content = (char*)ogs_malloc(len + 1);
     } else {
         ogs_assert(request->http.content_length != 0);
 
-        request->http.content = (char*)ogs_realloc(
+        content = (char*)ogs_realloc(
                 request->http.content, request->http.content_length + len + 1);
     }
 
-    if (!request->http.content) {
+    if (!content) {
         stream->memory_overflow = true;
 
         ogs_error("Overflow : Content-Length[%d], len[%d]",
                     (int)request->http.content_length, (int)len);
         ogs_log_hexdump(OGS_LOG_ERROR, data, len);
 
-        return 0;
+        return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
     }
+
+    request->http.content = content;
 
     offset = request->http.content_length;
     request->http.content_length += len;
