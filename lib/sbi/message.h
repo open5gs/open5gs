@@ -28,6 +28,8 @@
 extern "C" {
 #endif
 
+#define USE_SEND_DATA_WITH_NO_COPY 1
+
 #define OGS_SBI_HTTP_PORT                           80
 #define OGS_SBI_HTTPS_PORT                          443
 
@@ -649,6 +651,11 @@ typedef struct ogs_sbi_response_s {
     ogs_sbi_http_message_t http;
 
     int status;
+    size_t read_offset;
+#if USE_SEND_DATA_WITH_NO_COPY
+    size_t send_offset;
+#endif
+
 } ogs_sbi_response_t;
 
 void ogs_sbi_message_init(int num_of_request_pool, int num_of_response_pool);
