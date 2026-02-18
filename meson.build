@@ -18,7 +18,7 @@
 project('open5gs', 'c', 'cpp',
     version : '2.7.6',
     license : 'AGPL-3.0-or-later',
-    meson_version : '>= 0.43.0',
+    meson_version : '>= 0.55.0',
     default_options : [
         'warning_level=1',
         'c_std=gnu89',
@@ -42,11 +42,7 @@ git = find_program('git', required: false)
 #python = import('python')
 #python3 = python.find_installation('python3')
 python3 = find_program('python3', 'python')
-if meson.version().version_compare('>=0.55.0')
 python3_exe = join_paths(python3.full_path())
-else
-python3_exe = join_paths(python3.path())
-endif
 mkdir_p = 'import os; os.makedirs("@0@", exist_ok=True) if not os.environ.get("DESTDIR") else False;'
 symlink = 'import os; os.symlink("@0@", "@1@") if not os.environ.get("DESTDIR") and not os.path.islink("@1@") else False;'
 install_conf = 'import os; import shutil; shutil.copy("@0@", "@1@") if not os.environ.get("DESTDIR") and not os.path.isfile(os.path.join("@1@", os.path.split("@0@")[1])) else False;'
@@ -154,8 +150,7 @@ message('\n'.join([
 if cppcheck.found()
     run_target('analyze-cppcheck',
     command : [ 'misc/static-code-analyze.sh',
-        meson.version().version_compare('>=0.55.0') ?
-          cppcheck.full_path() : cppcheck.path(),
+        cppcheck.full_path(),
         meson.current_build_dir(),
         meson.current_source_dir()
         ]
@@ -165,8 +160,7 @@ endif
 if clangtidy.found()
     run_target('analyze-clang-tidy',
     command : [ 'misc/static-code-analyze.sh',
-        meson.version().version_compare('>=0.55.0') ?
-          clangtidy.full_path() : clangtidy.path(),
+        clangtidy.full_path(),
         meson.current_build_dir(),
         meson.current_source_dir()
         ]
