@@ -683,6 +683,13 @@ void smf_5gc_n4_handle_session_modification_response(
      * 15. V: ogs_sbi_send_http_status_no_content
      * 16. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
      */
+                    if (!sess->pdu_session_resource_uri) {
+                        /* In case of HR roaming, H-SMF might have crashed and resource URI
+                         is not recieved. If UE sends deregister, avoid V-SMF crash */
+                        ogs_error("No pdu_session_resource_uri");
+                        return;
+                    }
+
                     r = smf_sbi_discover_and_send(
                             OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
                             smf_nsmf_pdusession_build_release_data,

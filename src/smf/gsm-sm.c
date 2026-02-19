@@ -1721,7 +1721,11 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     "failed() [%d]",
                                     smf_ue->supi, sess->psi,
                                     sbi_message->res_status);
-                            OGS_FSM_TRAN(s, smf_gsm_state_exception);
+                            if (sess->h_smf_gsm_cause) {
+                                OGS_FSM_TRAN(s, smf_gsm_state_5gc_n1_n2_reject);
+                            } else {
+                                OGS_FSM_TRAN(s, smf_gsm_state_exception);
+                            }
                         }
                     END
                     break;
@@ -1839,6 +1843,12 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
                 sess->nsmf_param.request_indication =
                     OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
+
+                if (!sess->pdu_session_resource_uri) {
+                    ogs_error("No pdu_session_resource_uri");
+                    OGS_FSM_TRAN(s, smf_gsm_state_5gc_n1_n2_reject);
+                    break;
+                }
 
                 r = smf_sbi_discover_and_send(
                         OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
@@ -2151,6 +2161,43 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
             OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
 
+        }
+        break;
+
+    case OGS_EVENT_SBI_TIMER:
+        ogs_sbi_xact_t *sbi_xact = NULL;
+        ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
+
+        sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
+                sbi_xact_id <= OGS_MAX_POOL_ID);
+
+        sbi_xact = ogs_sbi_xact_find_by_id(sbi_xact_id);
+        if (!sbi_xact) {
+            ogs_error("SBI transaction has already been removed [%d]",
+                    sbi_xact_id);
+            break;
+        }
+        if (sbi_xact->request->h.method) {
+            SWITCH(sbi_xact->request->h.method)
+            CASE(OGS_SBI_HTTP_METHOD_POST)
+                char *service_name = (char *)ogs_sbi_service_type_to_name(sbi_xact->service_type);
+                SWITCH(service_name)
+                CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
+                    if (strstr(sbi_xact->request->h.uri, OGS_SBI_RESOURCE_NAME_PDU_SESSIONS)) {
+                        /* No response from H-SMF, send PDU session establishment reject */
+                        sess->h_smf_gsm_cause = OGS_5GSM_CAUSE_NETWORK_FAILURE;
+                        ogs_error("CreatePduSession() failed, cause [%d]", sess->h_smf_gsm_cause);
+                        OGS_FSM_TRAN(s, smf_gsm_state_5gc_n1_n2_reject);
+                    }
+                    break;
+
+                DEFAULT
+                END
+
+                break;
+            DEFAULT
+            END
         }
         break;
 

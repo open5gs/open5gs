@@ -2099,9 +2099,11 @@ bool smf_nsmf_handle_created_data_in_vsmf(
             return false;
         }
 
-        if (PduSessionCreateError->n1sm_cause)
+        if (PduSessionCreateError->n1sm_cause) {
             gsm_cause = ogs_uint64_from_string_hexadecimal(
                     PduSessionCreateError->n1sm_cause);
+            sess->h_smf_gsm_cause = gsm_cause;
+        }
 
         ogs_error("CreatePduSession() failed [%d] cause [%d]",
                 recvmsg->res_status, gsm_cause);
