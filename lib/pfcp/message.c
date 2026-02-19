@@ -622,10 +622,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_urr_id =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_linked_urr_id =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "Linked URR ID",
     OGS_PFCP_LINKED_URR_ID_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_linked_urr_id_t),
     { NULL }
