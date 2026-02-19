@@ -673,6 +673,7 @@ int amf_namf_callback_handle_dereg_notify(
     /*
      * - AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED
      * 1. UDM_UECM_DeregistrationNotification
+     * 2.a Paging (if CM_IDLE)
      * 2. Deregistration request
      * 3. UDM_SDM_Unsubscribe
      * 4. UDM_UECM_Deregisration
@@ -685,6 +686,10 @@ int amf_namf_callback_handle_dereg_notify(
      * 10. Signalling Connecion Release
      */
     if (CM_CONNECTED(amf_ue)) {
+        /* If the UE is in CM-CONNECTED state,
+         * the AMF may explicitly deregister the UE by sending a
+         * Deregistration Request message 
+         */
         r = nas_5gs_send_de_registration_request(
                 amf_ue,
                 DeregistrationData->dereg_reason,
@@ -694,31 +699,38 @@ int amf_namf_callback_handle_dereg_notify(
 
         state = AMF_NETWORK_INITIATED_EXPLICIT_DE_REGISTERED;
 
-    } else if (CM_IDLE(amf_ue)) {
-        ogs_error("Not implemented : Use Implicit De-registration");
+        if (UDM_SDM_SUBSCRIBED(amf_ue)) {
+            r = amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                    amf_nudm_sdm_build_subscription_delete,
+                    amf_ue, state, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
+            r = amf_ue_sbi_discover_and_send(
+                    OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                    NULL,
+                    amf_npcf_am_policy_control_build_delete,
+                    amf_ue, state, NULL);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        }
 
-        state = AMF_NETWORK_INITIATED_IMPLICIT_DE_REGISTERED;
+    } else if (CM_IDLE(amf_ue)) {
+        /* If the UE is in RM-REGISTERED state and CM-IDLE and
+         * reachable in 3GPP access, the AMF sends a Paging message
+         * Do deregister UE when enters CM-CONNECTED state,
+         * remember dereg_reason.
+         */
+        amf_ue->do_deregister = DeregistrationData->dereg_reason;
+
+        r = ngap_send_paging(amf_ue);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
 
     } else {
         ogs_fatal("Invalid State");
         ogs_assert_if_reached();
-    }
-
-    if (UDM_SDM_SUBSCRIBED(amf_ue)) {
-        r = amf_ue_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
-                amf_nudm_sdm_build_subscription_delete,
-                amf_ue, state, NULL);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-    } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
-        r = amf_ue_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
-                NULL,
-                amf_npcf_am_policy_control_build_delete,
-                amf_ue, state, NULL);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
     }
 
 cleanup:
