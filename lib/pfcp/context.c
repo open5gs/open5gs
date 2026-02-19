@@ -758,6 +758,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         ogs_pfcp_subnet_t *subnet = NULL;
                         const char *ipstr = NULL;
                         const char *gateway = NULL;
+                        const char *mac_address = NULL;
                         const char *mask_or_numbits = NULL;
                         const char *dnn = NULL;
                         const char *dev = self.tun_ifname;
@@ -798,6 +799,8 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 }
                             } else if (!strcmp(subnet_key, "gateway")) {
                                 gateway = ogs_yaml_iter_value(&subnet_iter);
+                            } else if (!strcmp(subnet_key, "mac_address")) {
+                                mac_address = ogs_yaml_iter_value(&subnet_iter);
                             } else if (!strcmp(subnet_key, "apn") ||
                                         !strcmp(subnet_key, "dnn")) {
                                 dnn = ogs_yaml_iter_value(&subnet_iter);
@@ -842,7 +845,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         }
 
                         subnet = ogs_pfcp_subnet_add(
-                                ipstr, mask_or_numbits, gateway, dnn, dev);
+                                ipstr, mask_or_numbits, gateway, dnn, dev, mac_address);
                         ogs_assert(subnet);
 
                         subnet->num_of_range = num;
@@ -2418,7 +2421,7 @@ ogs_pfcp_dev_t *ogs_pfcp_dev_find_by_ifname(const char *ifname)
 
 ogs_pfcp_subnet_t *ogs_pfcp_subnet_add(
         const char *ipstr, const char *mask_or_numbits,
-        const char *gateway, const char *dnn, const char *ifname)
+        const char *gateway, const char *dnn, const char *ifname, const char *mac_address)
 {
     int rv;
     ogs_pfcp_dev_t *dev = NULL;
@@ -2481,6 +2484,12 @@ ogs_pfcp_subnet_t *ogs_pfcp_subnet_add(
 
     if (gateway) {
         rv = ogs_ipsubnet(&subnet->gw, gateway, NULL);
+        ogs_assert(rv == OGS_OK);
+    }
+
+    if (mac_address) {
+        subnet->bridge = true;
+        rv = ogs_macaddress((uint8_t *)&subnet->mac_addr, mac_address);
         ogs_assert(rv == OGS_OK);
     }
 
