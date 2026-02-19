@@ -2442,11 +2442,15 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                                     NGAP_CauseNas_normal_release);
                         ogs_assert(n2smbuf);
 
-                        ogs_assert(stream);
-                        smf_sbi_send_sm_context_updated_data_n1_n2_message(
-                                sess, stream, n1smbuf,
-                                OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD,
-                                n2smbuf);
+                        if (stream) {
+                            smf_sbi_send_sm_context_updated_data_n1_n2_message(
+                                    sess, stream, n1smbuf,
+                                    OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD,
+                                    n2smbuf);
+                        } else {
+                            ogs_error("Stream has already been removed");
+                            break;
+                        }
                     }
 
                     OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
