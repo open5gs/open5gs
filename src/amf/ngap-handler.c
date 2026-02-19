@@ -4899,4 +4899,19 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         ogs_warn("    Cause[Group:%d Cause:%d]",
                 Cause->present, (int)Cause->choice.radioNetwork);
     }
+
+    if (ran_ue) {
+        amf_ue_t *amf_ue = NULL;
+
+        ogs_warn("    Performing local release for"
+                " RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+                (long long)ran_ue->ran_ue_ngap_id,
+                (long long)ran_ue->amf_ue_ngap_id);
+
+        amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
+        if (amf_ue) {
+            amf_ue_deassociate_ran_ue(amf_ue, ran_ue);
+        }
+        ran_ue_remove(ran_ue);
+    }
 }
