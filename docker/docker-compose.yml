@@ -8,6 +8,12 @@ services:
     volumes:
       - mongodb:/data/db
       - ../docs/assets/webui/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    # Healthcheck for MongoDB
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   webui:
     build:
@@ -22,6 +28,12 @@ services:
     environment:
       - DB_URI=mongodb://mongodb/open5gs
       - WAIT_HOSTS=mongodb:27017
+    # Healthcheck for WebUI
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9999" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   base:
     build:
@@ -31,7 +43,6 @@ services:
         tag: ${TAG-latest}
     image: ${USER}/${DIST-ubuntu}-${TAG-latest}-open5gs-base
     command: /bin/bash -c "echo 'base' services"
-
   build:
     build:
       context: ../
