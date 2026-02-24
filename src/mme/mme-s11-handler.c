@@ -559,8 +559,8 @@ void mme_s11_handle_create_session_response(
         }
 
     } else if (create_action == OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE) {
-        /* 3GPP TS 23.401 D.3.6 step 13, 14: */
-        mme_s6a_send_ulr(enb_ue, mme_ue);
+        /* 3GPP TS 23.401 D.3.6 "Gn/Gp SGSN to MME Tracking Area Update" step 13, 14: */
+        mme_s6a_send_ulr(enb_ue, mme_ue, OGS_DIAM_S6A_ULR_SINGLE_REGISTRATION_IND);
     } else if (create_action == OGS_GTP_CREATE_IN_UPLINK_NAS_TRANSPORT) {
         r = nas_eps_send_activate_default_bearer_context_request(
                 bearer, create_action);
