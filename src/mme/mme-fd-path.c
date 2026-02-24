@@ -1261,7 +1261,7 @@ cleanup:
 }
 
 /* MME Sends Update Location Request to HSS */
-void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
+void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue, uint32_t extra_ulr_flags)
 {
     int ret;
 
@@ -1367,8 +1367,9 @@ void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     /* Set the ULR-Flags */
     ret = fd_msg_avp_new(ogs_diam_s6a_ulr_flags, 0, &avp);
     ogs_assert(ret == 0);
-    val.u32 = OGS_DIAM_S6A_ULR_S6A_S6D_INDICATOR;
-    val.u32 |= OGS_DIAM_S6A_ULR_INITIAL_ATTACH_IND;
+    val.u32 = OGS_DIAM_S6A_ULR_S6A_S6D_INDICATOR |
+              OGS_DIAM_S6A_ULR_INITIAL_ATTACH_IND |
+              extra_ulr_flags;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
