@@ -1398,6 +1398,18 @@ void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
+    /* Set the SMS-Register-Request */
+    ret = fd_msg_avp_new(ogs_diam_s6a_sms_register_request, 0, &avp);
+    ogs_assert(ret == 0);
+    /* "SMS in MME" (3GPP TS 23.272 Annex C) not supported yet.
+     * We do support SGs interface though, so signal that,
+     * see 3GPP TS 23.272 C.8. */
+    val.u32 = OGS_DIAM_S6A_SMS_REGISTER_NOT_PREFERRED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
     ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
     ogs_assert(ret == 0);
 
