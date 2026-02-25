@@ -152,6 +152,11 @@ void sgwc_s5c_handle_create_session_response(
     if (rsp->pdn_address_allocation.presence == 0) {
         ogs_error("No PDN Address Allocation [Cause:%d]", session_cause);
         cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
+    } else if (rsp->pdn_address_allocation.len < OGS_PAA_IPV4_LEN ||
+            rsp->pdn_address_allocation.len > OGS_PAA_IPV4V6_LEN) {
+        ogs_error("Invalid PAA IE [Length:%d]",
+                rsp->pdn_address_allocation.len);
+        cause_value = OGS_GTP2_CAUSE_INVALID_LENGTH;
     } else {
         memcpy(&sess->paa, rsp->pdn_address_allocation.data,
                 rsp->pdn_address_allocation.len);
