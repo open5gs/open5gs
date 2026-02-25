@@ -30,6 +30,11 @@ libasn1c_common_sources = files('''
     INTEGER.c
     NULL.h
     NULL.c
+    BOOLEAN.h
+    BOOLEAN.c
+    BOOLEAN_aper.c
+    BOOLEAN_print.c
+    BOOLEAN_rfill.c
     NativeEnumerated.h
     NativeEnumerated.c
     NativeInteger.h

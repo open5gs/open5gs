@@ -206,6 +206,16 @@ struct ran_ue_s {
         ogs_nr_cgi_t    nr_cgi;
     } saved;
 
+    struct {
+        bool pending;
+        ogs_pool_id_t stream_id;
+        ogs_pkbuf_t *stored_nrppa_pdu;  /* Store NRPPa PDU when UE is IDLE (for paging) */
+        char *stored_lmf_instance_id;    /* Store LMF instance ID when UE is IDLE */
+        char *callback_uri;              /* Callback URI for NRPPa measurement result notification */
+        ogs_sbi_client_t *client;        /* Client for callback notification */
+        uint32_t measurement_id;         /* NRPPa measurement ID for status endpoint */
+    } nrppa;
+
     /* NG Holding timer for removing this context */
     ogs_timer_t     *t_ng_holding;
 
@@ -365,6 +375,17 @@ struct amf_ue_s {
     ogs_time_t      ue_location_timestamp;
     ogs_plmn_id_t   last_visited_plmn_id;
     ogs_nas_ue_usage_setting_t ue_usage_setting;
+
+    /* NRPPa storage for IDLE UEs (when ran_ue doesn't exist) */
+    struct {
+        bool pending;
+        ogs_pool_id_t stream_id;
+        ogs_pkbuf_t *stored_nrppa_pdu;  /* Store NRPPa PDU when UE is IDLE (for paging) */
+        char *stored_lmf_instance_id;    /* Store LMF instance ID when UE is IDLE */
+        char *callback_uri;              /* Callback URI for NRPPa measurement result notification */
+        ogs_sbi_client_t *client;        /* Client for callback notification */
+        uint32_t measurement_id;         /* NRPPa measurement ID for status endpoint */
+    } nrppa;
 
     struct {
         int num_of_s_nssai;

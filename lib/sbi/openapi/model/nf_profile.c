@@ -2305,13 +2305,11 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     cJSON *mnpf_info = NULL;
     OpenAPI_mnpf_info_t *mnpf_info_local_nonprim = NULL;
     nf_instance_id = cJSON_GetObjectItemCaseSensitive(nf_profileJSON, "nfInstanceId");
-    if (!nf_instance_id) {
+    if (nf_instance_id) {
+    if (!cJSON_IsString(nf_instance_id) && !cJSON_IsNull(nf_instance_id)) {
         ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [nf_instance_id]");
         goto end;
     }
-    if (!cJSON_IsString(nf_instance_id)) {
-        ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [nf_instance_id]");
-        goto end;
     }
 
     nf_instance_name = cJSON_GetObjectItemCaseSensitive(nf_profileJSON, "nfInstanceName");
@@ -2323,26 +2321,22 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     }
 
     nf_type = cJSON_GetObjectItemCaseSensitive(nf_profileJSON, "nfType");
-    if (!nf_type) {
-        ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [nf_type]");
-        goto end;
-    }
+    if (nf_type) {
     if (!cJSON_IsString(nf_type)) {
         ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [nf_type]");
         goto end;
     }
     nf_typeVariable = OpenAPI_nf_type_FromString(nf_type->valuestring);
+    }
 
     nf_status = cJSON_GetObjectItemCaseSensitive(nf_profileJSON, "nfStatus");
-    if (!nf_status) {
-        ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [nf_status]");
-        goto end;
-    }
+    if (nf_status) {
     if (!cJSON_IsString(nf_status)) {
         ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [nf_status]");
         goto end;
     }
     nf_statusVariable = OpenAPI_nf_status_FromString(nf_status->valuestring);
+    }
 
     collocated_nf_instances = cJSON_GetObjectItemCaseSensitive(nf_profileJSON, "collocatedNfInstances");
     if (collocated_nf_instances) {
@@ -3714,7 +3708,7 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     }
 
     nf_profile_local_var = OpenAPI_nf_profile_create (
-        ogs_strdup(nf_instance_id->valuestring),
+        nf_instance_id && !cJSON_IsNull(nf_instance_id) ? ogs_strdup(nf_instance_id->valuestring) : NULL,
         nf_instance_name && !cJSON_IsNull(nf_instance_name) ? ogs_strdup(nf_instance_name->valuestring) : NULL,
         nf_typeVariable,
         nf_statusVariable,

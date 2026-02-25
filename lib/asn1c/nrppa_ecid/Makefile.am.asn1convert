@@ -1,0 +1,13 @@
+include Makefile.am.libasncodec
+
+bin_PROGRAMS += asn1convert
+asn1convert_CFLAGS = $(ASN_MODULE_CFLAGS) -DASN_DISABLE_BER_SUPPORT -DASN_DISABLE_XER_SUPPORT -DASN_DISABLE_OER_SUPPORT -DASN_DISABLE_UPER_SUPPORT -DASN_DISABLE_JER_SUPPORT 
+asn1convert_CPPFLAGS = -I$(top_srcdir)/-DASN_PDU_COLLECTION 
+asn1convert_LDADD = libasncodec.la
+asn1convert_SOURCES = \
+	pdu_collection.c
+regen: regenerate-from-asn1-source
+
+regenerate-from-asn1-source:
+	/tmp/open5gs-asn1c/asn1c/asn1c -pdu=all -fcompound-names -findirect-choice -fno-include-deps -no-gen-BER -no-gen-XER -no-gen-OER -no-gen-UPER -no-gen-JER ../support/nrppa-r18/NRPPA-CommonDataTypes.asn ../support/nrppa-r18/NRPPA-Constants.asn ../support/nrppa-r18/NRPPA-Containers.asn ../support/nrppa-r18/NRPPA-IEs.asn ../support/nrppa-r18/NRPPA-PDU-Contents.asn
+

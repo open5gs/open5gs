@@ -22,8 +22,7 @@ typedef struct OpenAPI_cm_state_s OpenAPI_cm_state_t;
 typedef struct OpenAPI_cm_state_s {
 } OpenAPI_cm_state_t;
 
-OpenAPI_cm_state_t *OpenAPI_cm_state_create(
-);
+OpenAPI_cm_state_t *OpenAPI_cm_state_create(void);
 void OpenAPI_cm_state_free(OpenAPI_cm_state_t *cm_state);
 OpenAPI_cm_state_t *OpenAPI_cm_state_parseFromJSON(cJSON *cm_stateJSON);
 cJSON *OpenAPI_cm_state_convertToJSON(OpenAPI_cm_state_t *cm_state);

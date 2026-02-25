@@ -918,6 +918,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
             if (amf_ue->t3513.retry_count >=
                     amf_timer_cfg(AMF_TIMER_T3513)->max_count) {
                 amf_sess_t *sess = NULL;
+                ran_ue_t *ran_ue = NULL;
 
                 /* Paging failed */
                 ogs_warn("[%s] Paging failed. Stop", amf_ue->supi);
@@ -930,6 +931,59 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                                 sess,
                                 OpenAPI_n1_n2_message_transfer_cause_UE_NOT_RESPONDING));
                     }
+                }
+
+                /* Cleanup stored NRPPa request if paging was for NRPPa */
+                /* Check amf_ue first (for IDLE UEs without ran_ue), then ran_ue */
+                ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+                if (amf_ue->nrppa.pending && amf_ue->nrppa.stored_nrppa_pdu) {
+                    ogs_warn("[%s] Paging timeout - cleaning up stored NRPPa request in amf_ue",
+                            amf_ue->supi);
+
+                    /* Cleanup stored data */
+                    ogs_pkbuf_free(amf_ue->nrppa.stored_nrppa_pdu);
+                    amf_ue->nrppa.stored_nrppa_pdu = NULL;
+                    if (amf_ue->nrppa.stored_lmf_instance_id) {
+                        ogs_free(amf_ue->nrppa.stored_lmf_instance_id);
+                        amf_ue->nrppa.stored_lmf_instance_id = NULL;
+                    }
+
+                    /* Send timeout error to LMF */
+                    ogs_sbi_stream_t *stream = ogs_sbi_stream_find_by_id(amf_ue->nrppa.stream_id);
+                    if (stream) {
+                        ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT,
+                                NULL, "NRPPa measurement paging timed out",
+                                "UE did not respond to paging for NRPPa request", NULL);
+                    }
+
+                    /* Clear pending flag */
+                    amf_ue->nrppa.pending = false;
+                    amf_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
+                } else if (ran_ue && ran_ue->nrppa.pending && ran_ue->nrppa.stored_nrppa_pdu) {
+                    ogs_warn("[%s] Paging timeout - cleaning up stored NRPPa request in ran_ue",
+                            amf_ue->supi);
+
+                    /* Cleanup stored data */
+                    ogs_pkbuf_free(ran_ue->nrppa.stored_nrppa_pdu);
+                    ran_ue->nrppa.stored_nrppa_pdu = NULL;
+                    if (ran_ue->nrppa.stored_lmf_instance_id) {
+                        ogs_free(ran_ue->nrppa.stored_lmf_instance_id);
+                        ran_ue->nrppa.stored_lmf_instance_id = NULL;
+                    }
+
+                    /* Send timeout error to LMF */
+                    ogs_sbi_stream_t *stream = ogs_sbi_stream_find_by_id(ran_ue->nrppa.stream_id);
+                    if (stream) {
+                        ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT,
+                                NULL, "NRPPa measurement paging timed out",
+                                "UE did not respond to paging for NRPPa request", NULL);
+                    }
+
+                    /* Clear pending flag */
+                    ran_ue->nrppa.pending = false;
+                    ran_ue->nrppa.stream_id = OGS_INVALID_POOL_ID;
                 }
 
                 AMF_UE_CLEAR_PAGING_INFO(amf_ue);
