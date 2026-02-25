@@ -153,23 +153,16 @@ void sgwc_s5c_handle_create_session_response(
         ogs_error("No PDN Address Allocation [Cause:%d]", session_cause);
         cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
     } else {
-        if(rsp->pdn_address_allocation.len > OGS_PAA_IPV4V6_LEN){
-            ogs_error("PAA IE Length (%u) exceeds maximum (%d)", "rejecting CreateSessionResponse",
-                rsp->pdn_address_allocation.len, OGS_PAA_IPV4V6_LEN);
-            cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;    
-        } else{
-            memcpy(&sess->paa, rsp->pdn_address_allocation.data,
+        memcpy(&sess->paa, rsp->pdn_address_allocation.data,
                 rsp->pdn_address_allocation.len);
-            sess->session.session_type = sess->paa.session_type;
-            if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
-            } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
-            } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-            } else {
-                ogs_error("Unknown session-type [%d]", sess->session.session_type);
-                cause_value = OGS_GTP2_CAUSE_PREFERRED_PDN_TYPE_NOT_SUPPORTED;
-            }
+        sess->session.session_type = sess->paa.session_type;
+        if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
+        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+        } else {
+            ogs_error("Unknown session-type [%d]", sess->session.session_type);
+            cause_value = OGS_GTP2_CAUSE_PREFERRED_PDN_TYPE_NOT_SUPPORTED;
         }
-        
     }
 
     if (rsp->cause.presence == 0) {
