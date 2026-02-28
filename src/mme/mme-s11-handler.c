@@ -316,6 +316,15 @@ void mme_s11_handle_create_session_response(
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
+    if (rsp->pdn_address_allocation.presence) {
+        if (rsp->pdn_address_allocation.len < OGS_PAA_IPV4_LEN ||
+            rsp->pdn_address_allocation.len > OGS_PAA_IPV4V6_LEN) {
+            ogs_error("Invalid PAA IE [Length:%d]",
+                    rsp->pdn_address_allocation.len);
+            cause_value = OGS_GTP2_CAUSE_INVALID_LENGTH;
+        }
+    }
+
     if (cause_value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
             ogs_error("[%s] Attach reject [Cause:%d]",
