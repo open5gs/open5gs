@@ -1059,6 +1059,11 @@ int ogs_sbi_parse_request(
             if (v) {
                 discovery_option->requester_features =
                     ogs_uint64_from_string_hexadecimal(v);
+                if (ogs_errno == EINVAL || ogs_errno == ERANGE) {
+                    ogs_error("ogs_uint64_from_string_hexadecimal() failed");
+                    ogs_sbi_discovery_option_free(discovery_option);
+                    return OGS_ERROR;
+                }
                 discovery_option_presence = true;
             }
         }
@@ -1281,7 +1286,6 @@ int ogs_sbi_parse_request(
 
     if (parse_content(message, &request->http) != OGS_OK) {
         ogs_error("parse_content() failed");
-        ogs_sbi_message_free(message);
         return OGS_ERROR;
     }
 
