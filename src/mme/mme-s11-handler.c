@@ -475,8 +475,32 @@ void mme_s11_handle_create_session_response(
     if (rsp->bearer_contexts_created[0].bearer_level_qos.presence) {
         decoded = ogs_gtp2_parse_bearer_qos(&bearer_qos,
             &rsp->bearer_contexts_created[0].bearer_level_qos);
-        ogs_assert(decoded ==
-                rsp->bearer_contexts_created[0].bearer_level_qos.len);
+        if (decoded != rsp->bearer_contexts_created[0].
+                bearer_level_qos.len) {
+            ogs_error("[%s] Invalid Bearer QoS IE "
+                    "(decoded=%d, ie_len=%u)",
+                    mme_ue->imsi_bcd, decoded,
+                    rsp->bearer_contexts_created[0].bearer_level_qos.len);
+            if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
+                r = nas_eps_send_attach_reject(enb_ue, mme_ue,
+                        OGS_NAS_EMM_CAUSE_NETWORK_FAILURE,
+                        OGS_NAS_ESM_CAUSE_NETWORK_FAILURE);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            } else if (create_action ==
+                    OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE) {
+                r = nas_eps_send_tau_reject(enb_ue, mme_ue,
+                        OGS_NAS_EMM_CAUSE_NETWORK_FAILURE);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            }
+            if (enb_ue)
+                mme_send_delete_session_or_mme_ue_context_release(
+                        enb_ue, mme_ue);
+            else
+                ogs_error("No S1 Context");
+            return;
+        }
         session->qos.index = bearer_qos.qci;
         session->qos.arp.priority_level = bearer_qos.priority_level;
         session->qos.arp.pre_emption_capability =
@@ -534,8 +558,32 @@ void mme_s11_handle_create_session_response(
     if (rsp->bearer_contexts_created[0].bearer_level_qos.presence) {
         decoded = ogs_gtp2_parse_bearer_qos(&bearer_qos,
             &rsp->bearer_contexts_created[0].bearer_level_qos);
-        ogs_assert(rsp->bearer_contexts_created[0].bearer_level_qos.len ==
-                decoded);
+        if (decoded != rsp->bearer_contexts_created[0].
+                bearer_level_qos.len) {
+            ogs_error("[%s] Invalid Bearer QoS IE "
+                    "(decoded=%d, ie_len=%u)",
+                    mme_ue->imsi_bcd, decoded,
+                    rsp->bearer_contexts_created[0].bearer_level_qos.len);
+            if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST) {
+                r = nas_eps_send_attach_reject(enb_ue, mme_ue,
+                        OGS_NAS_EMM_CAUSE_NETWORK_FAILURE,
+                        OGS_NAS_ESM_CAUSE_NETWORK_FAILURE);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            } else if (create_action ==
+                    OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE) {
+                r = nas_eps_send_tau_reject(enb_ue, mme_ue,
+                        OGS_NAS_EMM_CAUSE_NETWORK_FAILURE);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            }
+            if (enb_ue)
+                mme_send_delete_session_or_mme_ue_context_release(
+                        enb_ue, mme_ue);
+            else
+                ogs_error("No S1 Context");
+            return;
+        }
         session->qos.index = bearer_qos.qci;
         session->qos.arp.priority_level = bearer_qos.priority_level;
         session->qos.arp.pre_emption_capability =
