@@ -69,7 +69,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     ogs_sbi_xact_t *sbi_xact = NULL;
     ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
     int state = AMF_CREATE_SM_CONTEXT_NO_STATE;
-    ogs_pool_id_t assoc_ran_ue_id = OGS_INVALID_POOL_ID;
+    ogs_pool_id_t ran_ue_id = OGS_INVALID_POOL_ID;
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *sbi_request = NULL;
@@ -541,7 +541,12 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
                     sbi_object_id <= OGS_MAX_POOL_ID);
 
-            assoc_ran_ue_id = sbi_xact->assoc_id[AMF_ASSOC_RAN_UE_ID];
+            if (sbi_xact->user_data) {
+                amf_sbi_xact_ctx_t *ctx = sbi_xact->user_data;
+
+                if (ctx->ran_ue_id != OGS_INVALID_POOL_ID)
+                    ran_ue_id = ctx->ran_ue_id;
+            }
 
             ogs_sbi_xact_remove(sbi_xact);
 
@@ -591,9 +596,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
 
-            if (assoc_ran_ue_id >= OGS_MIN_POOL_ID &&
-                    assoc_ran_ue_id <= OGS_MAX_POOL_ID)
-                ran_ue = ran_ue_find_by_id(assoc_ran_ue_id);
+            if (ran_ue_id >= OGS_MIN_POOL_ID && ran_ue_id <= OGS_MAX_POOL_ID)
+                ran_ue = ran_ue_find_by_id(ran_ue_id);
 
             SWITCH(sbi_message.h.resource.component[2])
             CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
@@ -662,7 +666,12 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
                     sbi_object_id <= OGS_MAX_POOL_ID);
 
-            assoc_ran_ue_id = sbi_xact->assoc_id[AMF_ASSOC_RAN_UE_ID];
+            if (sbi_xact->user_data) {
+                amf_sbi_xact_ctx_t *ctx = sbi_xact->user_data;
+
+                if (ctx->ran_ue_id != OGS_INVALID_POOL_ID)
+                    ran_ue_id = ctx->ran_ue_id;
+            }
 
             state = sbi_xact->state;
 
@@ -682,9 +691,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
 
-            if (assoc_ran_ue_id >= OGS_MIN_POOL_ID &&
-                    assoc_ran_ue_id <= OGS_MAX_POOL_ID)
-                ran_ue = ran_ue_find_by_id(assoc_ran_ue_id);
+            if (ran_ue_id >= OGS_MIN_POOL_ID && ran_ue_id <= OGS_MAX_POOL_ID)
+                ran_ue = ran_ue_find_by_id(ran_ue_id);
 
             amf_nnssf_nsselection_handle_get(
                     amf_ue, ran_ue, sess, state, &sbi_message);
@@ -793,7 +801,12 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
                     sbi_object_id <= OGS_MAX_POOL_ID);
 
-            assoc_ran_ue_id = sbi_xact->assoc_id[AMF_ASSOC_RAN_UE_ID];
+            if (sbi_xact->user_data) {
+                amf_sbi_xact_ctx_t *ctx = sbi_xact->user_data;
+
+                if (ctx->ran_ue_id != OGS_INVALID_POOL_ID)
+                    ran_ue_id = ctx->ran_ue_id;
+            }
 
             service_type = sbi_xact->service_type;
             requester_nf_type = sbi_xact->requester_nf_type;
@@ -869,13 +882,13 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 ogs_error("[%s:%s:%d:%d] Cannot receive SBI message",
                         amf_ue->supi, amf_ue->suci, sess->psi, sess->pti);
 
-                if (assoc_ran_ue_id < OGS_MIN_POOL_ID &&
-                        assoc_ran_ue_id > OGS_MAX_POOL_ID) {
-                    ogs_error("No assoc RAN-UE id [%d]", assoc_ran_ue_id);
+                if (ran_ue_id < OGS_MIN_POOL_ID ||
+                    ran_ue_id > OGS_MAX_POOL_ID) {
+                    ogs_error("No assoc RAN-UE id [%d]", ran_ue_id);
                     break;
                 }
 
-                ran_ue = ran_ue_find_by_id(assoc_ran_ue_id);
+                ran_ue = ran_ue_find_by_id(ran_ue_id);
                 if (!ran_ue) {
                     ogs_error("[%s:%s:%d:%d] "
                             "NG Context has already been removed",

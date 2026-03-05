@@ -31,6 +31,17 @@
 extern "C" {
 #endif
 
+typedef struct amf_sbi_xact_ctx_s {
+    /*
+     * Snapshot of the RAN-UE identifier associated with the
+     * SBI transaction at the time the request was sent.
+     *
+     * This is required because the session's current RAN-UE
+     * may change before the asynchronous response arrives.
+     */
+    ogs_pool_id_t ran_ue_id;
+} amf_sbi_xact_ctx_t;
+
 int amf_sbi_open(void);
 void amf_sbi_close(void);
 
