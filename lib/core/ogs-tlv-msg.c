@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2026 by Sukchan Lee <acetcom@gmail.com>
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * This file is part of Open5GS.
@@ -829,29 +829,52 @@ static ogs_tlv_t *ogs_tlv_parse_block_desc(uint32_t length, void *data, uint8_t 
     ogs_tlv_t *curr = NULL;
 
     root = curr = ogs_tlv_get();
-
-    ogs_assert(curr);
+    if (!curr) {
+        ogs_error("ogs_tlv_parse_block() failed[LEN:%d,MODE:%d] - no tlv",
+                length, msg_mode);
+        ogs_log_hexdump(OGS_LOG_ERROR, data, ogs_min(length, 512));
+        return NULL;
+    }
 
     pos = tlv_get_element_desc(curr, pos, msg_mode, desc);
-
-    ogs_assert(pos);
+    if (!pos) {
+        ogs_error("ogs_tlv_parse_block() failed[LEN:%u,MODE:%u] - parse error",
+                length, msg_mode);
+        ogs_log_hexdump(OGS_LOG_ERROR, data, ogs_min(length, 512));
+        ogs_tlv_free_all(root);
+        return NULL;
+    }
 
     while(pos - blk < length) {
         prev = curr;
 
         curr = ogs_tlv_get();
-        ogs_assert(curr);
+        if (!curr) {
+            ogs_error("ogs_tlv_parse_block() failed[LEN:%d,MODE:%d]",
+                    length, msg_mode);
+            ogs_log_hexdump(OGS_LOG_ERROR, data, ogs_min(length, 512));
+
+            ogs_tlv_free_all(root);
+            return NULL;
+        }
         prev->next = curr;
 
         pos = tlv_get_element_desc(curr, pos, msg_mode, desc);
-        ogs_assert(pos);
+        if (!pos) {
+            ogs_error("ogs_tlv_parse_block() failed[LEN:%d,MODE:%d]",
+                    length, msg_mode);
+            ogs_log_hexdump(OGS_LOG_ERROR, data, ogs_min(length, 512));
+
+            ogs_tlv_free_all(root);
+            return NULL;
+        }
     }
 
     if (length != (pos - blk)) {
         ogs_error("ogs_tlv_parse_block() failed[LEN:%d,MODE:%d]",
                 length, msg_mode);
         ogs_error("POS[%p] BLK[%p] POS-BLK[%d]", pos, blk, (int)(pos - blk));
-        ogs_log_hexdump(OGS_LOG_FATAL, data, length);
+        ogs_log_hexdump(OGS_LOG_ERROR, data, ogs_min(length, 512));
 
         ogs_tlv_free_all(root);
         return NULL;
