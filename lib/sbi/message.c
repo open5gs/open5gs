@@ -3124,17 +3124,40 @@ static bool build_content(
     return true;
 }
 
+typedef struct multipart_part_data_s {
+    char *content_type;
+    char *content_id;
+    char *content;
+    size_t content_length;
+} multipart_part_data_t;
+
 typedef struct multipart_parser_data_s {
     int num_of_part;
-    struct {
-        char *content_type;
-        char *content_id;
-        char *content;
-        size_t content_length;
-    } part[OGS_SBI_MAX_NUM_OF_PART];
+    multipart_part_data_t part[OGS_SBI_MAX_NUM_OF_PART];
+
+    bool parse_error;
 
     char *header_field;
 } multipart_parser_data_t;
+
+static void multipart_parser_data_free(multipart_parser_data_t *data)
+{
+    int i;
+
+    ogs_assert(data);
+
+    for (i = 0; i < OGS_SBI_MAX_NUM_OF_PART; i++) {
+        if (data->part[i].content_type)
+            ogs_free(data->part[i].content_type);
+        if (data->part[i].content_id)
+            ogs_free(data->part[i].content_id);
+        if (data->part[i].content)
+            ogs_free(data->part[i].content);
+    }
+
+    if (data->header_field)
+        ogs_free(data->header_field);
+}
 
 static int on_header_field(
         multipart_parser *parser, const char *at, size_t length)
@@ -3210,7 +3233,7 @@ static int on_part_data(
                     ogs_error("Overflow length [%d:%d]",
                         (int)data->part[data->num_of_part].content_length,
                         (int)length);
-                    ogs_assert_if_reached();
+                    data->parse_error = true;
                     return 0;
                 }
                 data->part[data->num_of_part].content_length += length;
@@ -3252,7 +3275,8 @@ static int parse_multipart(
         ogs_sbi_message_t *message, ogs_sbi_http_message_t *http)
 {
     char *boundary = NULL;
-    int i, preamble;
+    int i, preamble, rv;
+    size_t parsed;
 
     multipart_parser_settings settings;
     multipart_parser_data_t data;
@@ -3264,6 +3288,12 @@ static int parse_multipart(
 
     if (!http->content) {
         ogs_error("HTTP content NULL [%d]", (int)http->content_length);
+        return OGS_ERROR;
+    }
+
+    if (http->content_length < 2) {
+        ogs_error("Invalid HTTP content_length [%d]",
+                (int)http->content_length);
         return OGS_ERROR;
     }
 
@@ -3297,17 +3327,40 @@ static int parse_multipart(
 
     memset(&data, 0, sizeof(data));
     multipart_parser_set_data(parser, &data);
-    multipart_parser_execute(parser,
+    parsed = multipart_parser_execute(parser,
             http->content+preamble, http->content_length-preamble);
+
+    rv = OGS_ERROR;
+
+    if (parsed != (http->content_length - preamble) || data.parse_error) {
+        ogs_error("Multipart parse failed [%d:%d],[len:%d,preamble:%d,err:%d]",
+                (int)parsed, (int)(http->content_length - preamble),
+                (int)http->content_length, preamble, data.parse_error);
+        ogs_log_hexdump(OGS_LOG_ERROR,
+                (unsigned char *)http->content, http->content_length);
+        goto cleanup;
+    }
+
+    if (data.num_of_part > OGS_SBI_MAX_NUM_OF_PART) {
+        /* Overflow Issues #1247 */
+        ogs_error("Overflow num_of_part[%d]", data.num_of_part);
+        ogs_log_hexdump(OGS_LOG_ERROR,
+                (unsigned char *)http->content, http->content_length);
+        goto cleanup;
+    }
+
+    rv = OGS_OK;
+
+cleanup:
 
     multipart_parser_free(parser);
     ogs_free(boundary);
 
-    if (data.num_of_part > OGS_SBI_MAX_NUM_OF_PART) {
-        /* Overflow Issues #1247 */
-        ogs_fatal("Overflow num_of_part[%d]", data.num_of_part);
-        ogs_assert_if_reached();
+    if (rv != OGS_OK) {
+        multipart_parser_data_free(&data);
+        return OGS_ERROR;
     }
+
     for (i = 0; i < data.num_of_part; i++) {
         SWITCH(data.part[i].content_type)
         CASE(OGS_SBI_CONTENT_JSON_TYPE)
