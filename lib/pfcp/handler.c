@@ -1149,7 +1149,9 @@ ogs_pfcp_far_t *ogs_pfcp_handle_create_far(ogs_pfcp_sess_t *sess,
     far->apply_action = message->apply_action.u16;
 
     far->dst_if = 0;
+    far->dst_if_type_presence = false;
     memset(&far->outer_header_creation, 0, sizeof(far->outer_header_creation));
+    far->outer_header_creation_len = 0;
 
     if (far->dnn) {
         ogs_free(far->dnn);
@@ -1600,6 +1602,21 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_create_urr(ogs_pfcp_sess_t *sess,
     urr->rep_triggers.reptri_5 = (message->reporting_triggers.u24 >> 16) & 0xFF;
     urr->rep_triggers.reptri_6 = (message->reporting_triggers.u24 >> 8) & 0xFF;
     urr->rep_triggers.reptri_7 = message->reporting_triggers.u24 & 0xFF;
+
+    /* Clear optional/presence-driven fields to prevent stale state
+     * when find_or_add() returns an already-existing URR */
+    urr->meas_period = 0;
+    memset(&urr->vol_threshold, 0, sizeof(urr->vol_threshold));
+    memset(&urr->vol_quota, 0, sizeof(urr->vol_quota));
+    urr->event_threshold = 0;
+    urr->event_quota = 0;
+    urr->time_threshold = 0;
+    urr->time_quota = 0;
+    urr->quota_holding_time = 0;
+    memset(&urr->dropped_dl_traffic_threshold, 0,
+            sizeof(urr->dropped_dl_traffic_threshold));
+    urr->quota_validity_time = 0;
+    memset(&urr->meas_info, 0, sizeof(urr->meas_info));
 
     if (message->measurement_period.presence) {
         urr->meas_period = message->measurement_period.u32;
