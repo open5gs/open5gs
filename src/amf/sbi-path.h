@@ -57,6 +57,7 @@ bool amf_sbi_send_request(
 #define AMF_UPDATE_SM_CONTEXT_ACTIVATED                 11
 #define AMF_UPDATE_SM_CONTEXT_SETUP_FAIL                12
 #define AMF_UPDATE_SM_CONTEXT_DEACTIVATED               13
+#define AMF_UPDATE_SM_CONTEXT_DEACTIVATED_LOCAL         25
 #define AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST      14
 #define AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST           15
 #define AMF_UPDATE_SM_CONTEXT_MODIFIED                  16

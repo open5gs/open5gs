@@ -4910,8 +4910,22 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 
         amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
         if (amf_ue) {
-            amf_ue_deassociate_ran_ue(amf_ue, ran_ue);
+            int xact_count = amf_sess_xact_count(amf_ue);
+
+            amf_sbi_send_deactivate_all_sessions(
+                    ran_ue, amf_ue,
+                    AMF_UPDATE_SM_CONTEXT_DEACTIVATED_LOCAL,
+                    NGAP_Cause_PR_nas,
+                    NGAP_CauseNas_normal_release);
+
+            if (amf_sess_xact_count(amf_ue) == xact_count) {
+                ran_ue->ue_ctx_rel_action =
+                    NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK;
+                ngap_handle_ue_context_release_action(ran_ue);
+            }
+        } else {
+            ran_ue->ue_ctx_rel_action = NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE;
+            ngap_handle_ue_context_release_action(ran_ue);
         }
-        ran_ue_remove(ran_ue);
     }
 }
