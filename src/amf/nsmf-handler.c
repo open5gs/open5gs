@@ -19,6 +19,7 @@
 
 #include "nsmf-handler.h"
 #include "nas-path.h"
+#include "ngap-handler.h"
 #include "ngap-path.h"
 #include "sbi-path.h"
 
@@ -629,6 +630,26 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                                 NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
+                    } else {
+                        ogs_warn("[%s] RAN-NG Context has already been removed",
+                                amf_ue->supi);
+                    }
+                }
+
+            } else if (state ==
+                            AMF_UPDATE_SM_CONTEXT_DEACTIVATED_LOCAL) {
+                /*
+                 * ErrorIndication-triggered local release:
+                 * Sessions have been deactivated; perform the release
+                 * action directly without sending UEContextReleaseCommand
+                 * since the RAN context is already considered lost.
+                 */
+
+                if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
+                    if (ran_ue) {
+                        ran_ue->ue_ctx_rel_action =
+                            NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK;
+                        ngap_handle_ue_context_release_action(ran_ue);
                     } else {
                         ogs_warn("[%s] RAN-NG Context has already been removed",
                                 amf_ue->supi);
