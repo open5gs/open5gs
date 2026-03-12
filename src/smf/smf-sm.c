@@ -1361,11 +1361,10 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
                     sbi_object_id <= OGS_MAX_POOL_ID);
 
-            ogs_sbi_xact_remove(sbi_xact);
-
             sess = smf_sess_find_by_id(sbi_object_id);
             if (!sess) {
                 ogs_error("Session has already been removed");
+                ogs_sbi_xact_remove(sbi_xact);
                 break;
             }
             smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
@@ -1378,7 +1377,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                         "Cannot receive SBI message", smf_ue->supi, NULL));
+            } else {
+                e->sess_id = sess->id;
+                ogs_fsm_dispatch(&sess->sm, e);
             }
+
+            ogs_sbi_xact_remove(sbi_xact);
             break;
 
         default:
