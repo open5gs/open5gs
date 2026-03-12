@@ -212,6 +212,7 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
                     amf_ue, pdu_session_resource_setup_request);
             AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
             CLEAR_AMF_UE_TIMER(amf_ue->t3513);
+            amf_ue->do_deregister = OpenAPI_deregistration_reason_NULL;
 
             ogs_timer_start(amf_ue->implicit_deregistration.timer,
                     ogs_time_from_sec(amf_self()->time.t3512.value + 240));
@@ -937,6 +938,7 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
                         amf_ue, pdu_session_resource_setup_request);
                 AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
                 CLEAR_AMF_UE_TIMER(amf_ue->t3513);
+                amf_ue->do_deregister = OpenAPI_deregistration_reason_NULL;
 
             } else {
                 amf_ue->t3513.retry_count++;
@@ -3381,6 +3383,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
         AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
+        amf_ue->do_deregister = OpenAPI_deregistration_reason_NULL;
 
         if (amf_ue->amf_ue_context_transfer_state ==
                 UE_CONTEXT_TRANSFER_NEW_AMF_STATE) {
