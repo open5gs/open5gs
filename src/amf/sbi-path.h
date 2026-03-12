@@ -46,7 +46,6 @@ bool amf_sbi_send_request(
 #define AMF_UPDATE_SM_CONTEXT_ACTIVATED                 11
 #define AMF_UPDATE_SM_CONTEXT_SETUP_FAIL                12
 #define AMF_UPDATE_SM_CONTEXT_DEACTIVATED               13
-#define AMF_UPDATE_SM_CONTEXT_DEACTIVATED_LOCAL         25
 #define AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST      14
 #define AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST           15
 #define AMF_UPDATE_SM_CONTEXT_MODIFIED                  16
@@ -64,6 +63,7 @@ bool amf_sbi_send_request(
 #define AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED         51
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL              52
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL          53
+#define AMF_REMOVE_N2_CONTEXT_BY_ERROR_INDICATION       54
 
 /*
  * TS23.502

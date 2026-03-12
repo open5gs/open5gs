@@ -4902,30 +4902,34 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 
     if (ran_ue) {
         amf_ue_t *amf_ue = NULL;
+        int xact_count = 0;
 
-        ogs_warn("    Performing local release for"
-                " RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+        ogs_warn("    Performing local release for "
+                "RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
                 (long long)ran_ue->ran_ue_ngap_id,
                 (long long)ran_ue->amf_ue_ngap_id);
 
         amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
         if (amf_ue) {
-            int xact_count = amf_sess_xact_count(amf_ue);
+            CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
+
+            xact_count = amf_sess_xact_count(amf_ue);
 
             amf_sbi_send_deactivate_all_sessions(
                     ran_ue, amf_ue,
-                    AMF_UPDATE_SM_CONTEXT_DEACTIVATED_LOCAL,
-                    NGAP_Cause_PR_nas,
-                    NGAP_CauseNas_normal_release);
+                    AMF_REMOVE_N2_CONTEXT_BY_ERROR_INDICATION,
+                    Cause->present, (int)Cause->choice.radioNetwork);
 
             if (amf_sess_xact_count(amf_ue) == xact_count) {
-                ran_ue->ue_ctx_rel_action =
-                    NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK;
-                ngap_handle_ue_context_release_action(ran_ue);
+                ogs_debug("    SUPI[%s]", amf_ue->supi);
+                amf_ue_deassociate_ran_ue(amf_ue, ran_ue);
+                ran_ue_remove(ran_ue);
+                ogs_timer_start(amf_ue->mobile_reachable.timer,
+                        ogs_time_from_sec(
+                            amf_self()->time.t3512.value + 240));
             }
         } else {
-            ran_ue->ue_ctx_rel_action = NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE;
-            ngap_handle_ue_context_release_action(ran_ue);
+            ran_ue_remove(ran_ue);
         }
     }
 }
