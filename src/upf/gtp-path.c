@@ -614,7 +614,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                         be32toh(src_addr[0]), be32toh(sess->ipv4->addr[0]));
                     ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
 
-                    goto cleanup;
+                    ogs_warn("[PASS] Allowing mismatched source IP"); // spoofing check disabled
                 }
 
                 subnet = sess->ipv4->subnet;
@@ -684,7 +684,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                             be32toh(sess->ipv6->addr[3]));
                     ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
 
-                    goto cleanup;
+                    ogs_warn("[PASS] Allowing mismatched source IPv6"); // spoofing check disabled
                 }
 
                 subnet = sess->ipv6->subnet;

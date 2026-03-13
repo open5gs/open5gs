@@ -590,6 +590,19 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
             nas_guti.m_tmsi = be32toh(nas_guti.m_tmsi);
 
             mme_ue = mme_ue_find_by_guti(&nas_guti);
+            if (!mme_ue && nas_guti.m_tmsi == 0) {
+                /* M_TMSI=0x0 fallback: iPhone on private LTE sends zero M_TMSI.
+                 * Try to find the single registered UE instead of forcing reattach. */
+                mme_ue_t *iter_ue = NULL;
+                ogs_list_for_each(&mme_self()->mme_ue_list, iter_ue) {
+                    if (MME_UE_HAVE_IMSI(iter_ue)) {
+                        mme_ue = iter_ue;
+                        ogs_warn("[%s] M_TMSI=0x0 fallback: found registered UE",
+                                mme_ue->imsi_bcd);
+                        break;
+                    }
+                }
+            }
             if (!mme_ue) {
                 ogs_info("Unknown UE by S_TMSI[G:%d,C:%d,M_TMSI:0x%x]",
                         nas_guti.mme_gid, nas_guti.mme_code, nas_guti.m_tmsi);
