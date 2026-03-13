@@ -4063,6 +4063,25 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
     sgw_ue_t *sgw_ue = NULL, *old_sgw_ue = NULL;
     ogs_assert(mme_ue && imsi_bcd);
 
+    /*
+     * Issues: #4357
+     *
+     * Remove the old IMSI hash entry BEFORE overwriting mme_ue->imsi.
+     *
+     * Previously, the hash removal at the end of this function used
+     * mme_ue->imsi AFTER it had already been overwritten with the new IMSI,
+     * so the OLD IMSI entry was never actually removed from the hash table.
+     *
+     * This caused a dangling pointer: the old IMSI key still pointed to
+     * this mme_ue_t, and after mme_ue_remove() freed the object (with
+     * mme_ue_fsm_fini()), a subsequent lookup by the old IMSI would return
+     * a context with an invalid FSM state, leading to ogs_assert_if_reached()
+     * in mme_state_operational().
+     */
+    if (mme_ue->imsi_len != 0)
+        ogs_hash_set(mme_self()->imsi_ue_hash,
+                mme_ue->imsi, mme_ue->imsi_len, NULL);
+
     ogs_cpystrn(mme_ue->imsi_bcd, imsi_bcd, OGS_MAX_IMSI_BCD_LEN+1);
     ogs_bcd_to_buffer(mme_ue->imsi_bcd, mme_ue->imsi, &mme_ue->imsi_len);
 
@@ -4134,10 +4153,8 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
         }
     }
 
-    if (mme_ue->imsi_len != 0)
-        ogs_hash_set(mme_self()->imsi_ue_hash,
-                mme_ue->imsi, mme_ue->imsi_len, NULL);
-
+    /* Register new IMSI in hash.
+     * Old IMSI hash entry was already removed at the top of this function. */
     ogs_hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
 
     mme_ue->hssmap = mme_hssmap_find_by_imsi_bcd(mme_ue->imsi_bcd);
