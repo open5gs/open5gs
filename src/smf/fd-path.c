@@ -105,8 +105,11 @@ void smf_fd_msg_avp_add_3gpp_uli(smf_sess_t *sess, struct msg *req)
         return;
     }
 
-    ogs_assert(sess->gtp.user_location_information.data);
-    ogs_assert(sess->gtp.user_location_information.len);
+    if (!sess->gtp.user_location_information.data ||
+        !sess->gtp.user_location_information.len) {
+        ogs_error("Missing User Location Information(ULI) payload");
+        return;
+    }
     memcpy(&uli_buf, sess->gtp.user_location_information.data,
             sess->gtp.user_location_information.len);
 
