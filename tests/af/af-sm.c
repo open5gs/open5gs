@@ -262,15 +262,19 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
                     break;
 
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                    if (message.res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT) {
-                        ogs_sbi_subscription_data_remove(subscription_data);
-                    } else {
+                    if (message.res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT)
+                        ogs_info("[%s] Subscription deleted",
+                                subscription_data->id ?
+                                    subscription_data->id : "Unknown");
+                    else
                         ogs_error("[%s] HTTP response error [%d]",
                                 subscription_data->id ?
                                     subscription_data->id : "Unknown",
                                 message.res_status);
-                    }
+
+                    ogs_sbi_subscription_data_remove(subscription_data);
                     break;
+
 
                 DEFAULT
                     ogs_error("Invalid HTTP method [%s]", message.h.method);
