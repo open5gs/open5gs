@@ -1,3 +1,45 @@
+open5gs (2.7.7) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 15 Mar 2026 20:35:27 +0900
+
+open5gs (2.7.7~questing) questing; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 15 Mar 2026 20:32:45 +0900
+
+open5gs (2.7.7~plucky) plucky; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 15 Mar 2026 20:29:35 +0900
+
+open5gs (2.7.7~noble) noble; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 15 Mar 2026 20:27:45 +0900
+
+open5gs (2.7.7~jammy) jammy; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 15 Mar 2026 20:26:00 +0900
+
+open5gs (2.7.7~focal) focal; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 15 Mar 2026 20:23:53 +0900
+
+open5gs (2.7.7~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 15 Mar 2026 20:21:59 +0900
+
 open5gs (2.7.6) unstable; urgency=medium
 
   * Bug Fixed
