@@ -4742,7 +4742,7 @@ void ngap_handle_ng_reset(
                 ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
 
                 if (!ran_ue) {
-                    ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
+                    ogs_warn("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                             (long long)amf_ue_ngap_id);
                     continue;
                 }
