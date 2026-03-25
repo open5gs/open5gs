@@ -173,6 +173,22 @@ typedef struct ogs_sbi_nf_instance_s {
 #define OGS_SBI_MAX_NUM_OF_NF_TYPE 128
     OpenAPI_nf_type_e allowed_nf_type[OGS_SBI_MAX_NUM_OF_NF_TYPE];
 
+    /*
+     * TS 33.518 4.2.2.2.1 - NF discovery authorization for specific slice
+     *
+     * s_nssai[]: S-NSSAIs this NF instance serves (from NFProfile.sNssais).
+     *            Used to authorize the requester during NF discovery.
+     *
+     * allowed_nssai[]: S-NSSAIs for which this NF may be discovered
+     *                  (from NFProfile.allowedNssais).
+     *                  Used to filter target NFs during NF discovery.
+     */
+    int num_of_s_nssai;
+    ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
+
+    int num_of_allowed_nssai;
+    ogs_s_nssai_t allowed_nssai[OGS_MAX_NUM_OF_SLICE];
+
 #define OGS_SBI_DEFAULT_PRIORITY 0
 #define OGS_SBI_DEFAULT_CAPACITY 100
 #define OGS_SBI_DEFAULT_LOAD 0

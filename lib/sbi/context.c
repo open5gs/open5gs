@@ -1339,6 +1339,9 @@ void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance)
     nf_instance->num_of_ipv6 = 0;
 
     nf_instance->num_of_allowed_nf_type = 0;
+
+    nf_instance->num_of_s_nssai = 0;
+    nf_instance->num_of_allowed_nssai = 0;
 }
 
 void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
@@ -2162,6 +2165,38 @@ bool ogs_sbi_discovery_option_is_matched(
         ogs_sbi_discovery_option_hnrf_uri_is_matched(
             nf_instance, discovery_option) == false)
         return false;
+
+    /*
+     * TS 33.518 4.2.2.2.1 - Target allowed_nssai filtering
+     *
+     * If the target NF registered with allowedNssais, it may only be
+     * discovered for queries whose S-NSSAI falls within that set.
+     */
+    if (nf_instance->num_of_allowed_nssai &&
+            discovery_option->num_of_snssais) {
+        bool nssai_allowed = false;
+
+        for (i = 0; i < discovery_option->num_of_snssais; i++) {
+            int j;
+            for (j = 0; j < nf_instance->num_of_allowed_nssai; j++) {
+                if (discovery_option->snssais[i].sst ==
+                        nf_instance->allowed_nssai[j].sst &&
+                    (nf_instance->allowed_nssai[j].sd.v ==
+                            OGS_S_NSSAI_NO_SD_VALUE ||
+                     discovery_option->snssais[i].sd.v ==
+                            OGS_S_NSSAI_NO_SD_VALUE ||
+                     discovery_option->snssais[i].sd.v ==
+                            nf_instance->allowed_nssai[j].sd.v)) {
+                    nssai_allowed = true;
+                    break;
+                }
+            }
+            if (nssai_allowed) break;
+        }
+
+        if (!nssai_allowed)
+            return false;
+    }
 
     /* Determine which SMF filters are requested */
     if (nf_instance->nf_type == OpenAPI_nf_type_SMF) {

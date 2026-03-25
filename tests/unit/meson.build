@@ -24,6 +24,7 @@ testunit_unit_sources = files('''
     ngap-message-test.c
     sbi-message-test.c
     security-test.c
+    nrf-discovery-test.c
     crash-test.c
 '''.split())
 
