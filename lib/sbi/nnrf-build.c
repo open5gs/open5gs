@@ -254,6 +254,45 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
     else
         OpenAPI_list_free(AllowedNfTypeList);
 
+    if (nf_instance->num_of_s_nssai) {
+        OpenAPI_list_t *sNssaiList = OpenAPI_list_create();
+        ogs_assert(sNssaiList);
+
+        for (i = 0; i < nf_instance->num_of_s_nssai; i++) {
+            OpenAPI_ext_snssai_t *sNssai = OpenAPI_ext_snssai_create(
+                    nf_instance->s_nssai[i].sst,
+                    ogs_s_nssai_sd_to_string(nf_instance->s_nssai[i].sd),
+                    NULL, 0);
+            ogs_assert(sNssai);
+            OpenAPI_list_add(sNssaiList, sNssai);
+        }
+
+        if (sNssaiList->count)
+            NFProfile->s_nssais = sNssaiList;
+        else
+            OpenAPI_list_free(sNssaiList);
+    }
+
+    if (nf_instance->num_of_allowed_nssai) {
+        OpenAPI_list_t *allowedNssaiList = OpenAPI_list_create();
+        ogs_assert(allowedNssaiList);
+
+        for (i = 0; i < nf_instance->num_of_allowed_nssai; i++) {
+            OpenAPI_ext_snssai_t *sNssai = OpenAPI_ext_snssai_create(
+                    nf_instance->allowed_nssai[i].sst,
+                    ogs_s_nssai_sd_to_string(
+                        nf_instance->allowed_nssai[i].sd),
+                    NULL, 0);
+            ogs_assert(sNssai);
+            OpenAPI_list_add(allowedNssaiList, sNssai);
+        }
+
+        if (allowedNssaiList->count)
+            NFProfile->allowed_nssais = allowedNssaiList;
+        else
+            OpenAPI_list_free(allowedNssaiList);
+    }
+
     NFServiceList = OpenAPI_list_create();
     if (!NFServiceList) {
         ogs_error("No nf_service_list");
@@ -440,6 +479,14 @@ void ogs_nnrf_nfm_free_nf_profile(OpenAPI_nf_profile_t *NFProfile)
     OpenAPI_list_free(NFProfile->plmn_list);
 
     OpenAPI_list_free(NFProfile->allowed_nf_types);
+
+    OpenAPI_list_for_each(NFProfile->s_nssais, node)
+        OpenAPI_ext_snssai_free(node->data);
+    OpenAPI_list_free(NFProfile->s_nssais);
+
+    OpenAPI_list_for_each(NFProfile->allowed_nssais, node)
+        OpenAPI_ext_snssai_free(node->data);
+    OpenAPI_list_free(NFProfile->allowed_nssais);
 
     OpenAPI_list_for_each(NFProfile->nf_services, node) {
         NFService = node->data;

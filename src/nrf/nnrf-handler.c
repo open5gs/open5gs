@@ -1080,6 +1080,54 @@ bool nrf_nnrf_handle_nf_discover(
         }
     }
 
+    /*
+     * TS 33.518 4.2.2.2.1 - NF discovery authorization for specific slice
+     *
+     * When the discovery request carries S-NSSAI filters, verify that the
+     * requesting NF is authorized for those slices.  The requester's
+     * registered sNssais (from its NFProfile) define the set of slices
+     * it may legitimately query.  If the requester registered with sNssais
+     * and none of the requested slices match, reject with 403 Forbidden.
+     */
+    if (discovery_option &&
+            discovery_option->num_of_snssais &&
+            discovery_option->requester_nf_instance_id) {
+
+        ogs_sbi_nf_instance_t *requester = NULL;
+
+        requester = ogs_sbi_nf_instance_find(
+                        discovery_option->requester_nf_instance_id);
+        if (requester && requester->num_of_s_nssai) {
+            bool authorized = false;
+            int ri, qi;
+
+            for (qi = 0; qi < discovery_option->num_of_snssais; qi++) {
+                for (ri = 0; ri < requester->num_of_s_nssai; ri++) {
+                    if (discovery_option->snssais[qi].sst ==
+                            requester->s_nssai[ri].sst &&
+                        discovery_option->snssais[qi].sd.v ==
+                            requester->s_nssai[ri].sd.v) {
+                        authorized = true;
+                        break;
+                    }
+                }
+                if (authorized) break;
+            }
+
+            if (!authorized) {
+                ogs_error("NF [%s] not authorized for requested S-NSSAI",
+                        discovery_option->requester_nf_instance_id);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                        recvmsg,
+                        "Requester not authorized for requested S-NSSAI",
+                        discovery_option->requester_nf_instance_id, NULL));
+                return false;
+            }
+        }
+    }
+
     SearchResult = ogs_calloc(1, sizeof(*SearchResult));
     ogs_assert(SearchResult);
 

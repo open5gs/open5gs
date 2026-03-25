@@ -181,6 +181,45 @@ void ogs_nnrf_nfm_handle_nf_profile(
         }
     }
 
+    /*
+     * TS 33.518 4.2.2.2.1 - Store S-NSSAIs for slice-based discovery
+     * authorization.  sNssais identifies the slices this NF serves;
+     * allowedNssais restricts for which slices the NF may be discovered.
+     */
+    nf_instance->num_of_s_nssai = 0;
+    OpenAPI_list_for_each(NFProfile->s_nssais, node) {
+        OpenAPI_ext_snssai_t *sNssai = node->data;
+        if (sNssai) {
+            if (nf_instance->num_of_s_nssai >= OGS_MAX_NUM_OF_SLICE) {
+                ogs_warn("Overflow: NFProfile.sNssais exceeds %d",
+                        OGS_MAX_NUM_OF_SLICE);
+                break;
+            }
+            nf_instance->s_nssai[nf_instance->num_of_s_nssai].sst =
+                sNssai->sst;
+            nf_instance->s_nssai[nf_instance->num_of_s_nssai].sd =
+                ogs_s_nssai_sd_from_string(sNssai->sd);
+            nf_instance->num_of_s_nssai++;
+        }
+    }
+
+    nf_instance->num_of_allowed_nssai = 0;
+    OpenAPI_list_for_each(NFProfile->allowed_nssais, node) {
+        OpenAPI_ext_snssai_t *sNssai = node->data;
+        if (sNssai) {
+            if (nf_instance->num_of_allowed_nssai >= OGS_MAX_NUM_OF_SLICE) {
+                ogs_warn("Overflow: NFProfile.allowedNssais exceeds %d",
+                        OGS_MAX_NUM_OF_SLICE);
+                break;
+            }
+            nf_instance->allowed_nssai[nf_instance->num_of_allowed_nssai].sst =
+                sNssai->sst;
+            nf_instance->allowed_nssai[nf_instance->num_of_allowed_nssai].sd =
+                ogs_s_nssai_sd_from_string(sNssai->sd);
+            nf_instance->num_of_allowed_nssai++;
+        }
+    }
+
     OpenAPI_list_for_each(NFProfile->nf_services, node) {
         ogs_sbi_nf_service_t *nf_service = NULL;
         OpenAPI_nf_service_t *NFService = node->data;
