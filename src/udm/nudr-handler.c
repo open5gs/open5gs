@@ -57,10 +57,12 @@ bool udm_nudr_dr_handle_subscription_authentication(
     size_t xres_len = 8;
     uint8_t xres_star[OGS_MAX_RES_LEN];
     uint8_t kausf[OGS_SHA256_DIGEST_SIZE];
+    uint8_t kakma[OGS_SHA256_DIGEST_SIZE];
 
     char rand_string[OGS_KEYSTRLEN(OGS_RAND_LEN)];
     char autn_string[OGS_KEYSTRLEN(OGS_AUTN_LEN)];
     char kausf_string[OGS_KEYSTRLEN(OGS_SHA256_DIGEST_SIZE)];
+    char kakma_string[OGS_KEYSTRLEN(OGS_SHA256_DIGEST_SIZE)];
     char xres_star_string[OGS_KEYSTRLEN(OGS_MAX_RES_LEN)];
 
     OpenAPI_authentication_subscription_t *AuthenticationSubscription = NULL;
@@ -227,6 +229,10 @@ bool udm_nudr_dr_handle_subscription_authentication(
                     ck, ik,
                     udm_ue->serving_network_name, autn,
                     kausf);
+            
+            /* TS33.535: Kakma derviation function */
+            char *rid = ogs_nas_5gs_rid_from_suci(udm_ue->suci);
+            ogs_kdf_kakma(kausf, rid, udm_ue->supi, kakma);
 
             /* TS33.501 Annex A.4 : RES* and XRES* derivation function */
             ogs_kdf_xres_star(
