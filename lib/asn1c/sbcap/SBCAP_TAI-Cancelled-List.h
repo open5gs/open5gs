@@ -40,5 +40,5 @@ extern asn_per_constraints_t asn_PER_type_SBCAP_TAI_Cancelled_List_constr_1;
 }
 #endif
 
-#endif	/* _SBCAP_TAI_Cancelled_List_H_ */
 #include <asn_internal.h>
+#endif	/* _SBCAP_TAI_Cancelled_List_H_ */
