@@ -240,15 +240,15 @@ pwsiwf:
   sbi:
     client:
       amf:
-        - uri: http://127.0.0.5:7777 # Default AMF SBI
+        - uri: http://127.0.0.5:7777
   sbcap:
     server:
-      - address: 127.0.0.199 # Using a new address for PWS-IWF
+      - address: 127.0.0.199
         port: 29168
     client:
       cbc:
-        - address: 127.0.0.1 # External CBC address - update this to your CBC IP
-          port: 29168        # CBC SBCAP port - update this to your CBC port
+        - address: 127.0.0.1
+          port: 29168
 
 pcrf:
   freeDiameter:
