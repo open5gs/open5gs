@@ -32,6 +32,7 @@ typedef enum SBCAP_Cause {
 	SBCAP_Cause_warning_broadcast_not_supported	= 9,
 	SBCAP_Cause_warning_broadcast_not_operational	= 10,
 	SBCAP_Cause_message_reference_already_used	= 11,
+	SBCAP_Cause_unspecified_error	= 12,
 	SBCAP_Cause_unspecifed_error	= 12,
 	SBCAP_Cause_transfer_syntax_error	= 13,
 	SBCAP_Cause_semantic_error	= 14,
