@@ -17,25 +17,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PWSIWF_SAI_NONUEN2_BUILD_H
-#define PWSIWF_SAI_NONUEN2_BUILD_H
+#ifndef PWSIWF_SAI_NGAP_BUILD_H
+#define PWSIWF_SAI_NGAP_BUILD_H
 
 #include "context.h"
-#include "sbi-path.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-ogs_sbi_request_t *pwsiwf_sai_nonuen2_comm_build_nonuen2_message_transfer(
-        pwsiwf_sai_warning_t *warning, pwsiwf_sai_nonuen2_message_transfer_param_t *param);
+/* NGAP Warning Message Transfer Building Functions */
+ogs_pkbuf_t *ngap_build_warning_message_broadcast_request_transfer(
+        pwsiwf_warning_t *warning);
 
-ogs_sbi_request_t *pwsiwf_sai_nonuen2_callback_build_warning_status(
-        pwsiwf_sai_warning_t *warning, void *data);
+ogs_pkbuf_t *ngap_build_warning_message_stop_request_transfer(
+        pwsiwf_warning_t *warning);
 
+ogs_pkbuf_t *ngap_build_warning_message_cancel_request_transfer(
+        pwsiwf_warning_t *warning);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* PWSIWF_SAI_NONUEN2_BUILD_H */
+#endif /* PWSIWF_SAI_NGAP_BUILD_H */ 

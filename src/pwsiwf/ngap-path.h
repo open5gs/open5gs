@@ -17,28 +17,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PWSIWF_SAI_SBCAP_HANDLER_H
-#define PWSIWF_SAI_SBCAP_HANDLER_H
+#ifndef NGAP_PATH_H
+#define NGAP_PATH_H
 
+#include "ogs-core.h"
 #include "context.h"
-#include "pwsiwf_sai-event.h"
+#include "sbc-message.h"
+
+#define NGAP_NON_UE_SIGNALLING 0
+
+static inline ogs_pkbuf_t *ngap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws) { return NULL; }
+static inline ogs_pkbuf_t *ngap_build_kill_request(sbc_pws_data_t *sbc_pws) { return NULL; }
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* SBCAP Message Handler Functions */
-void pwsiwf_sai_sbcap_handle_write_replace_warning_request(
-        pwsiwf_sai_connection_t *connection, ogs_sbcap_message_t *message);
-
-void pwsiwf_sai_sbcap_handle_stop_warning_request(
-        pwsiwf_sai_connection_t *connection, ogs_sbcap_message_t *message);
-
-void pwsiwf_sai_sbcap_handle_write_replace_warning_response(
-        pwsiwf_sai_connection_t *connection, ogs_sbcap_message_t *message);
+/* PWS-IWF NGAP-AMF Message Functions */
+int pwsiwf_ngap_send_write_replace_warning_request(sbc_pws_data_t *sbc_pws);
+int pwsiwf_ngap_send_kill_request(sbc_pws_data_t *sbc_pws);
+int pwsiwf_ngap_send_to_amf(ogs_pkbuf_t *buf);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* PWSIWF_SAI_SBCAP_HANDLER_H */ 
+#endif /* NGAP_PATH_H */ 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,27 +17,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PWSIWF_SAI_NGAP_BUILD_H
-#define PWSIWF_SAI_NGAP_BUILD_H
+#ifndef PWSIWF_SAI_SBCAP_HANDLER_H
+#define PWSIWF_SAI_SBCAP_HANDLER_H
 
 #include "context.h"
+#include "pwsiwf-event.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* NGAP Warning Message Transfer Building Functions */
-ogs_pkbuf_t *ngap_build_warning_message_broadcast_request_transfer(
-        pwsiwf_sai_warning_t *warning);
+/* SBCAP Message Handler Functions */
+void pwsiwf_sbcap_handle_write_replace_warning_request(
+        pwsiwf_connection_t *connection, ogs_sbcap_message_t *message);
 
-ogs_pkbuf_t *ngap_build_warning_message_stop_request_transfer(
-        pwsiwf_sai_warning_t *warning);
+void pwsiwf_sbcap_handle_stop_warning_request(
+        pwsiwf_connection_t *connection, ogs_sbcap_message_t *message);
 
-ogs_pkbuf_t *ngap_build_warning_message_cancel_request_transfer(
-        pwsiwf_sai_warning_t *warning);
+void pwsiwf_sbcap_handle_write_replace_warning_response(
+        pwsiwf_connection_t *connection, ogs_sbcap_message_t *message);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* PWSIWF_SAI_NGAP_BUILD_H */ 
+#endif /* PWSIWF_SAI_SBCAP_HANDLER_H */ 

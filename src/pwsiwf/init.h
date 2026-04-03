@@ -24,8 +24,8 @@
 extern "C" {
 #endif
 
-int pwsiwf_sai_initialize(void);
-void pwsiwf_sai_terminate(void);
+int pwsiwf_initialize(void);
+void pwsiwf_terminate(void);
 
 #ifdef __cplusplus
 }

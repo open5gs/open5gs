@@ -22,13 +22,13 @@
 #include "namf-handler.h"
 #include "ngap-build.h"
 
-bool pwsiwf_sai_nonuen2_comm_handle_nonuen2_message_transfer(
-        pwsiwf_sai_warning_t *warning, int state, ogs_sbi_message_t *recvmsg)
+bool pwsiwf_nonuen2_comm_handle_nonuen2_message_transfer(
+        pwsiwf_warning_t *warning, int state, ogs_sbi_message_t *recvmsg)
 {
-    pwsiwf_sai_connection_t *connection = NULL;
+    pwsiwf_connection_t *connection = NULL;
 
     ogs_assert(warning);
-    connection = pwsiwf_sai_connection_find_by_id(warning->connection_id);
+    connection = pwsiwf_connection_find_by_id(warning->connection_id);
     ogs_assert(connection);
     ogs_assert(state);
     ogs_assert(recvmsg);
@@ -54,7 +54,7 @@ bool pwsiwf_sai_nonuen2_comm_handle_nonuen2_message_transfer(
             ogs_info("[Warning ID:%d] Update/retransmission successful", warning->warning_id);
         } else if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_ACCEPTED) {
             if (recvmsg->http.location) {
-                pwsiwf_sai_warning_set_paging_nonuen2message_location(
+                pwsiwf_warning_set_paging_nonuen2message_location(
                         warning, recvmsg->http.location);
                 ogs_info("[Warning ID:%d] Message accepted, location: %s", 
                     warning->warning_id, recvmsg->http.location);
@@ -80,7 +80,7 @@ bool pwsiwf_sai_nonuen2_comm_handle_nonuen2_message_transfer(
             ogs_info("[Warning ID:%d] Stop/cancel completed", warning->warning_id);
         } else if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_NOT_FOUND) {
             /* Message not transferred, retry */
-            pwsiwf_sai_nonuen2_message_transfer_param_t param;
+            pwsiwf_nonuen2_message_transfer_param_t param;
 
             memset(&param, 0, sizeof(param));
             param.state = PWSIWF_SAI_WARNING_MESSAGE_RETRANSMISSION;
@@ -91,7 +91,7 @@ bool pwsiwf_sai_nonuen2_comm_handle_nonuen2_message_transfer(
 
             param.nonuen2_failure_txf_notif_uri = true;
 
-            pwsiwf_sai_nonuen2_comm_send_nonuen2_message_transfer(warning, &param);
+            pwsiwf_nonuen2_comm_send_nonuen2_message_transfer(warning, &param);
             ogs_info("[Warning ID:%d] Retrying broadcast", warning->warning_id);
         } else {
             ogs_error("[Warning ID:%d] HTTP response error [status:%d]",
@@ -107,10 +107,10 @@ bool pwsiwf_sai_nonuen2_comm_handle_nonuen2_message_transfer(
     return true;
 }
 
-bool pwsiwf_sai_nonuen2_comm_handle_nonuen2_message_transfer_failure_notify(
+bool pwsiwf_nonuen2_comm_handle_nonuen2_message_transfer_failure_notify(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
-    pwsiwf_sai_warning_t *warning = NULL;
+    pwsiwf_warning_t *warning = NULL;
     char *failure_uri = NULL;
 
     ogs_assert(stream);
@@ -131,7 +131,7 @@ bool pwsiwf_sai_nonuen2_comm_handle_nonuen2_message_transfer_failure_notify(
         return false;
     }
 
-    warning = pwsiwf_sai_warning_find_by_paging_nonuen2message_location(failure_uri);
+    warning = pwsiwf_warning_find_by_paging_nonuen2message_location(failure_uri);
     if (!warning) {
         ogs_error("Warning not found for URI: %s", failure_uri);
         ogs_assert(true ==
@@ -145,11 +145,11 @@ bool pwsiwf_sai_nonuen2_comm_handle_nonuen2_message_transfer_failure_notify(
      *
      * TS23.502 4.2.3.3 Network Triggered Service Request
      *
-     * 5. [Conditional] AMF to PWS-IWF_SAI:
+     * 5. [Conditional] AMF to PWS-IWF:
      * Namf_Communication_NonUeN2Transfer Failure Notification.
      *
      * When a Namf_Communication_NonUeN2Transfer Failure Notification
-     * is received, PWS-IWF_SAI may retry the warning message broadcast
+     * is received, PWS-IWF may retry the warning message broadcast
      * or take appropriate action based on the failure cause.
      */
 

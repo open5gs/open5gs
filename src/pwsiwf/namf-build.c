@@ -21,8 +21,8 @@
 #include "ngap-build.h"
 #include "openapi/model/non_ue_n2_message_transfer_request.h"
 
-ogs_sbi_request_t *pwsiwf_sai_nonuen2_comm_build_nonuen2_message_transfer(
-        pwsiwf_sai_warning_t *warning, pwsiwf_sai_nonuen2_message_transfer_param_t *param)
+ogs_sbi_request_t *pwsiwf_nonuen2_comm_build_nonuen2_message_transfer(
+        pwsiwf_warning_t *warning, pwsiwf_nonuen2_message_transfer_param_t *param)
 {
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
@@ -75,7 +75,7 @@ ogs_sbi_request_t *pwsiwf_sai_nonuen2_comm_build_nonuen2_message_transfer(
     memcpy(pws_container.message_contents, warning->warning_data.message_contents, warning->warning_data.message_length);
     
    
-    ogs_info("[pwsiwf_sai] PWS: msg_id=%u, serial_number=%u, repetition_period=%u, number_of_broadcast=%u, data_coding_scheme=%u, message_length=%u",
+    ogs_info("[pwsiwf] PWS: msg_id=%u, serial_number=%u, repetition_period=%u, number_of_broadcast=%u, data_coding_scheme=%u, message_length=%u",
         pws_container.message_identifier,
         pws_container.serial_number,
         pws_container.repetition_period,
@@ -157,8 +157,8 @@ ogs_sbi_request_t *pwsiwf_sai_nonuen2_comm_build_nonuen2_message_transfer(
     return request;
 }
 
-ogs_sbi_request_t *pwsiwf_sai_nonuen2_callback_build_warning_status(
-        pwsiwf_sai_warning_t *warning, void *data)
+ogs_sbi_request_t *pwsiwf_nonuen2_callback_build_warning_status(
+        pwsiwf_warning_t *warning, void *data)
 {
     ogs_sbi_request_t *request = NULL;
     OpenAPI_pws_information_t pwsInfo;

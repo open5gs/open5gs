@@ -41,12 +41,12 @@ typedef enum {
 
     MAX_NUM_OF_PWSIWF_SAI_EVENT,
 
-} pwsiwf_sai_event_e;
+} pwsiwf_event_e;
 
 typedef struct SBCAP_SBC_AP_PDU ogs_sbcap_message_t;
-typedef struct pwsiwf_sai_connection_s pwsiwf_sai_connection_t;
+typedef struct pwsiwf_connection_s pwsiwf_connection_t;
 
-typedef struct pwsiwf_sai_event_s {
+typedef struct pwsiwf_event_s {
     int id;
     int timer_id;
 
@@ -60,23 +60,23 @@ typedef struct pwsiwf_sai_event_s {
 
     ogs_sbcap_message_t *sbcap_message;
 
-    pwsiwf_sai_connection_t *connection;
+    pwsiwf_connection_t *connection;
 
     ogs_timer_t *timer;
-} pwsiwf_sai_event_t;
+} pwsiwf_event_t;
 
-OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(pwsiwf_sai_event_t));
+OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(pwsiwf_event_t));
 
-void pwsiwf_sai_event_term(void);
+void pwsiwf_event_term(void);
 
-pwsiwf_sai_event_t *pwsiwf_sai_event_new(pwsiwf_sai_event_e id);
-void pwsiwf_sai_event_free(pwsiwf_sai_event_t *e);
+pwsiwf_event_t *pwsiwf_event_new(pwsiwf_event_e id);
+void pwsiwf_event_free(pwsiwf_event_t *e);
 
-void pwsiwf_sai_event_timeout(void *data);
+void pwsiwf_event_timeout(void *data);
 
-const char *pwsiwf_sai_event_get_name(pwsiwf_sai_event_t *e);
+const char *pwsiwf_event_get_name(pwsiwf_event_t *e);
 
-void pwsiwf_sai_sctp_event_push(pwsiwf_sai_event_e id,
+void pwsiwf_sctp_event_push(pwsiwf_event_e id,
         void *sock, ogs_sockaddr_t *addr, ogs_pkbuf_t *pkbuf,
         uint16_t max_num_of_istreams, uint16_t max_num_of_ostreams);
 

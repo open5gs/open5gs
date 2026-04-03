@@ -27,20 +27,20 @@
 extern "C" {
 #endif
 
-/* PWS-IWF_SAI SBI Server Functions */
-int pwsiwf_sai_sbi_open(void);
-void pwsiwf_sai_sbi_close(void);
+/* PWS-IWF SBI Server Functions */
+int pwsiwf_sbi_open(void);
+void pwsiwf_sbi_close(void);
 
-/* PWS-IWF_SAI SBI Server Callback Functions */
-int pwsiwf_sai_sbi_server_callback(ogs_sbi_request_t *request, void *data);
+/* PWS-IWF SBI Server Callback Functions */
+int pwsiwf_sbi_server_callback(ogs_sbi_request_t *request, void *data);
 
-/* PWS-IWF_SAI SBI Path Functions */
-int pwsiwf_sai_sbi_discover_and_send(ogs_sbi_service_type_e service_type,
-        ogs_sbi_request_t *(*build)(pwsiwf_sai_warning_t *warning, void *data),
-        pwsiwf_sai_warning_t *warning, ogs_sbi_xact_t *xact, void *data);
+/* PWS-IWF SBI Path Functions */
+int pwsiwf_sbi_discover_and_send(ogs_sbi_service_type_e service_type,
+        ogs_sbi_request_t *(*build)(pwsiwf_warning_t *warning, void *data),
+        pwsiwf_warning_t *warning, ogs_sbi_xact_t *xact, void *data);
 
-/* PWS-IWF_SAI NONUEN2 Message Transfer Functions */
-typedef struct pwsiwf_sai_nonuen2_message_transfer_param_s {
+/* PWS-IWF NONUEN2 Message Transfer Functions */
+typedef struct pwsiwf_nonuen2_message_transfer_param_s {
 #define PWSIWF_SAI_NONUEN2_MESSAGE_TRANSFER_NO_STATE             0
 #define PWSIWF_SAI_WARNING_MESSAGE_BROADCAST                     1
 #define PWSIWF_SAI_WARNING_MESSAGE_STOP                          2
@@ -54,17 +54,17 @@ typedef struct pwsiwf_sai_nonuen2_message_transfer_param_s {
 
     bool nonuen2_failure_txf_notif_uri;
     bool skip_ind;
-} pwsiwf_sai_nonuen2_message_transfer_param_t;
+} pwsiwf_nonuen2_message_transfer_param_t;
 
-int pwsiwf_sai_nonuen2_comm_send_nonuen2_message_transfer(
-        pwsiwf_sai_warning_t *warning, pwsiwf_sai_nonuen2_message_transfer_param_t *param);
+int pwsiwf_nonuen2_comm_send_nonuen2_message_transfer(
+        pwsiwf_warning_t *warning, pwsiwf_nonuen2_message_transfer_param_t *param);
 
-/* PWS-IWF_SAI SBI Client Functions */
-int pwsiwf_sai_sbi_client_open(void);
-void pwsiwf_sai_sbi_client_close(void);
+/* PWS-IWF SBI Client Functions */
+int pwsiwf_sbi_client_open(void);
+void pwsiwf_sbi_client_close(void);
 
-/* PWS-IWF_SAI SBI Client Callback Functions */
-int pwsiwf_sai_sbi_client_callback(int status, ogs_sbi_response_t *response, void *data);
+/* PWS-IWF SBI Client Callback Functions */
+int pwsiwf_sbi_client_callback(int status, ogs_sbi_response_t *response, void *data);
 
 #ifdef __cplusplus
 }

@@ -26,10 +26,10 @@ extern "C" {
 
 #include "context.h"
 
-bool pwsiwf_sai_nonuen2_comm_handle_nonuen2_message_transfer(
-        pwsiwf_sai_warning_t *warning, int state, ogs_sbi_message_t *recvmsg);
+bool pwsiwf_nonuen2_comm_handle_nonuen2_message_transfer(
+        pwsiwf_warning_t *warning, int state, ogs_sbi_message_t *recvmsg);
 
-bool pwsiwf_sai_nonuen2_comm_handle_nonuen2_message_transfer_failure_notify(
+bool pwsiwf_nonuen2_comm_handle_nonuen2_message_transfer_failure_notify(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus

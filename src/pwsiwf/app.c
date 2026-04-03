@@ -17,29 +17,36 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef NGAP_PATH_H
-#define NGAP_PATH_H
-
-#include "ogs-core.h"
+#include "ogs-sctp.h"
+#include "ogs-app.h"
+#include "init.h"
 #include "context.h"
-#include "sbc-message.h"
+#include "ogs-ngap.h"
 
-#define NGAP_NON_UE_SIGNALLING 0
+int app_initialize(const char *const argv[])
+{
+    int rv;
 
-static inline ogs_pkbuf_t *ngap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws) { return NULL; }
-static inline ogs_pkbuf_t *ngap_build_kill_request(sbc_pws_data_t *sbc_pws) { return NULL; }
+    /* Install log domain first */
+    ogs_log_install_domain(&__pwsiwf_log_domain, "pwsiwf", ogs_core()->log.level);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    // Register NGAP log domain
+    if (!ogs_log_find_domain("ngap"))
+        ogs_log_install_domain(&__ogs_ngap_domain, "ngap", ogs_core()->log.level);
 
-/* PWS-IWF_SAI NGAP-AMF Message Functions */
-int pwsiwf_sai_ngap_send_write_replace_warning_request(sbc_pws_data_t *sbc_pws);
-int pwsiwf_sai_ngap_send_kill_request(sbc_pws_data_t *sbc_pws);
-int pwsiwf_sai_ngap_send_to_amf(ogs_pkbuf_t *buf);
-
-#ifdef __cplusplus
+    ogs_sctp_init(ogs_app()->usrsctp.udp_port);
+    rv = pwsiwf_initialize();
+    if (rv != OGS_OK) {
+        ogs_error("Failed to initialize PWS-IWF");
+        return rv;
+    }
+    ogs_info("PWS-IWF initialize...done");
+    return OGS_OK;
 }
-#endif
 
-#endif /* NGAP_PATH_H */ 
+void app_terminate(void)
+{
+    pwsiwf_terminate();
+    ogs_sctp_final();
+    ogs_info("PWS-IWF terminate...done");
+} 

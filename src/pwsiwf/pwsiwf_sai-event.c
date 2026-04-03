@@ -17,18 +17,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pwsiwf_sai-event.h"
+#include "pwsiwf-event.h"
 #include "context.h"
 
-void pwsiwf_sai_event_term(void)
+void pwsiwf_event_term(void)
 {
     ogs_queue_term(ogs_app()->queue);
     ogs_pollset_notify(ogs_app()->pollset);
 }
 
-pwsiwf_sai_event_t *pwsiwf_sai_event_new(pwsiwf_sai_event_e id)
+pwsiwf_event_t *pwsiwf_event_new(pwsiwf_event_e id)
 {
-    pwsiwf_sai_event_t *e = NULL;
+    pwsiwf_event_t *e = NULL;
 
     e = ogs_calloc(1, sizeof *e);
     ogs_assert(e);
@@ -39,23 +39,23 @@ pwsiwf_sai_event_t *pwsiwf_sai_event_new(pwsiwf_sai_event_e id)
     return e;
 }
 
-void pwsiwf_sai_event_free(pwsiwf_sai_event_t *e)
+void pwsiwf_event_free(pwsiwf_event_t *e)
 {
     ogs_assert(e);
     ogs_free(e);
 }
 
-void pwsiwf_sai_event_timeout(void *data)
+void pwsiwf_event_timeout(void *data)
 {
-    pwsiwf_sai_event_t *e = data;
+    pwsiwf_event_t *e = data;
     ogs_assert(e);
 
-    ogs_info("PWS-IWF_SAI Event Timeout: %s", pwsiwf_sai_event_get_name(e));
+    ogs_info("PWS-IWF Event Timeout: %s", pwsiwf_event_get_name(e));
 
-    pwsiwf_sai_event_free(e);
+    pwsiwf_event_free(e);
 }
 
-const char *pwsiwf_sai_event_get_name(pwsiwf_sai_event_t *e)
+const char *pwsiwf_event_get_name(pwsiwf_event_t *e)
 {
     if (e == NULL)
         return OGS_FSM_NAME_INIT_SIG;
@@ -89,17 +89,17 @@ const char *pwsiwf_sai_event_get_name(pwsiwf_sai_event_t *e)
     return "UNKNOWN_EVENT";
 }
 
-void pwsiwf_sai_sctp_event_push(pwsiwf_sai_event_e id,
+void pwsiwf_sctp_event_push(pwsiwf_event_e id,
         void *sock, ogs_sockaddr_t *addr, ogs_pkbuf_t *pkbuf,
         uint16_t max_num_of_istreams, uint16_t max_num_of_ostreams)
 {
-    pwsiwf_sai_event_t *e = NULL;
+    pwsiwf_event_t *e = NULL;
     int rv;
 
     ogs_assert(id);
     ogs_assert(sock);
 
-    e = pwsiwf_sai_event_new(id);
+    e = pwsiwf_event_new(id);
     ogs_assert(e);
     e->sock = sock;
     e->addr = addr;
@@ -113,7 +113,7 @@ void pwsiwf_sai_sctp_event_push(pwsiwf_sai_event_e id,
         ogs_free(e->addr);
         if (e->pkbuf)
             ogs_pkbuf_free(e->pkbuf);
-        pwsiwf_sai_event_free(e);
+        pwsiwf_event_free(e);
     }
 #if HAVE_USRSCTP
     else {
