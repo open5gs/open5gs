@@ -12,4 +12,4 @@ pwsiwf:
   sbcap:
     server:
       - address: 127.0.0.199  # PWS-IWF SBCAP server address
-        port: 29168           # PWS-IWF SBCAP server port 
+        port: 29168           # PWS-IWF SBCAP server port
