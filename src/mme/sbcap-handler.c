@@ -125,7 +125,7 @@ void sbcap_handle_write_replace_warning_request(
                //     warning_type = &ie->value.choice.Warning_Type;
                //     ogs_debug("warning_type: %s",warning_type->buf);
                //     uint8_t warning_type_i = 0;
-               //     memcpy(&warning_type_i,warning_type->buf, sizeof(uint8_t));  //sai
+               //     memcpy(&warning_type_i,warning_type->buf, sizeof(uint8_t));  
                //     ogs_info("warning_type: %d",warning_type_i);
                //     sbc_pws -> warning_type = warning_type_i;
 
@@ -145,9 +145,9 @@ void sbcap_handle_write_replace_warning_request(
                    data_coding_scheme = &ie->value.choice.Data_Coding_Scheme;
                    ogs_debug("data_coding_scheme: %s",data_coding_scheme->buf);
                    uint8_t data_coding_scheme_i = 0;
-                   memcpy(&data_coding_scheme_i,data_coding_scheme->buf, sizeof(uint8_t));  //sai
+                   memcpy(&data_coding_scheme_i,data_coding_scheme->buf, sizeof(uint8_t));  
                    ogs_info("data_coding_scheme: %d",data_coding_scheme_i);
-                   sbc_pws -> data_coding_scheme = data_coding_scheme_i; //sai
+                   sbc_pws -> data_coding_scheme = data_coding_scheme_i; 
            
                 break;
                case SBCAP_ProtocolIE_ID_id_Warning_Message_Content :

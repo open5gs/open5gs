@@ -46,7 +46,7 @@ static OGS_POOL(mme_vlr_pool, mme_vlr_t);
 static OGS_POOL(mme_csmap_pool, mme_csmap_t);
 static OGS_POOL(mme_hssmap_pool, mme_hssmap_t);
 
-static OGS_POOL(mme_sbc_pool, mme_sbcap_t);//sai
+static OGS_POOL(mme_sbc_pool, mme_sbcap_t);
 
 static OGS_POOL(mme_enb_pool, mme_enb_t);
 static OGS_POOL(mme_ue_pool, mme_ue_t);
@@ -87,7 +87,7 @@ void mme_context_init(void)
 
     ogs_log_install_domain(&__ogs_sctp_domain, "sctp", ogs_core()->log.level);
     ogs_log_install_domain(&__ogs_s1ap_domain, "s1ap", ogs_core()->log.level);
-    ogs_log_install_domain(&__ogs_sbcap_domain, "sbcap", ogs_core()->log.level); //sai
+    ogs_log_install_domain(&__ogs_sbcap_domain, "sbcap", ogs_core()->log.level); 
     ogs_log_install_domain(&__ogs_nas_domain, "nas", ogs_core()->log.level);
     ogs_log_install_domain(&__ogs_diam_domain, "diam", ogs_core()->log.level);
     ogs_log_install_domain(&__mme_log_domain, "mme", ogs_core()->log.level);
@@ -96,7 +96,7 @@ void mme_context_init(void)
 
     ogs_list_init(&self.s1ap_list);
     ogs_list_init(&self.s1ap_list6);
-    ogs_list_init(&self.sbcap_list); //sai
+    ogs_list_init(&self.sbcap_list); 
 
     ogs_list_init(&self.sgsn_list);
     ogs_list_init(&self.sgw_list);
@@ -145,7 +145,7 @@ void mme_context_init(void)
     self.sbcap_id_hash = ogs_hash_make();
     ogs_assert(self.sbcap_id_hash);
     self.sbcap_addr_hash = ogs_hash_make();
-    ogs_assert(self.sbcap_addr_hash); //sai
+    ogs_assert(self.sbcap_addr_hash); 
 
 
     self.imsi_ue_hash = ogs_hash_make();
@@ -186,7 +186,7 @@ void mme_context_final(void)
     ogs_assert(self.sbcap_addr_hash);
     ogs_hash_destroy(self.sbcap_addr_hash);
     ogs_assert(self.sbcap_id_hash);
-    ogs_hash_destroy(self.sbcap_id_hash); //sai
+    ogs_hash_destroy(self.sbcap_id_hash); 
 
     ogs_assert(self.imsi_ue_hash);
     ogs_hash_destroy(self.imsi_ue_hash);
@@ -216,7 +216,7 @@ void mme_context_final(void)
     ogs_pool_final(&mme_csmap_pool);
     ogs_pool_final(&mme_vlr_pool);
     ogs_pool_final(&mme_hssmap_pool);
-    ogs_pool_final(&mme_sbc_pool); //sai
+    ogs_pool_final(&mme_sbc_pool); 
 
     context_initialized = 0;
 }
@@ -232,7 +232,7 @@ static int mme_context_prepare(void)
 
     self.s1ap_port = OGS_S1AP_SCTP_PORT;
     self.sgsap_port = OGS_SGSAP_SCTP_PORT;
-    self.sbcap_port = OGS_SBCAP_SCTP_PORT; //sai
+    self.sbcap_port = OGS_SBCAP_SCTP_PORT; 
     self.diam_config->cnf_port = DIAMETER_PORT;
     self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
 
@@ -263,7 +263,7 @@ static int mme_context_validation(void)
     if (ogs_list_first(&self.sbcap_list) == NULL) {
         ogs_error("No mme.sbcap.address in '%s'", ogs_app()->file);
         return OGS_RETRY;
-    } //sai
+    } 
 
     if (ogs_list_first(&ogs_gtp_self()->gtpc_list) == NULL &&
         ogs_list_first(&ogs_gtp_self()->gtpc_list6) == NULL) {
@@ -751,7 +751,7 @@ int mme_context_parse_config(void)
                         } else
                             ogs_warn("unknown key `%s`", s1ap_key);
                     }
-                    /////////////////sai///////////////////
+                    //////////////////////////////////
                     } else if (!strcmp(mme_key, "sbcap")) {
                         ogs_yaml_iter_t sbcap_iter;
                         ogs_yaml_iter_recurse(&mme_iter, &sbcap_iter);
@@ -891,7 +891,7 @@ int mme_context_parse_config(void)
                                         YAML_SEQUENCE_NODE);
                             } else
                                 ogs_warn("unknown key `%s`", sbcap_key);
-                        }/////////////////////sai//////////                    
+                        }/////////////////////////////                    
                 } else if (!strcmp(mme_key, "gtpc")) {
                     ogs_yaml_iter_t gtpc_iter;
                     ogs_yaml_iter_recurse(&mme_iter, &gtpc_iter);
@@ -3112,7 +3112,7 @@ void mme_vlr_close(mme_vlr_t *vlr)
 }
 
 
-///sai
+/
 
 mme_sbcap_t *mme_sbcap_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 {
