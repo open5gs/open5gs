@@ -7,3 +7,6 @@ subprojects/prometheus-client-c
 subprojects/usrsctp
 
 webui/.next
+
+# # add msg_id_calculator.py to the ignore list
+# msg_id_calculator.py

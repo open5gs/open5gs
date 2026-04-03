@@ -49,6 +49,15 @@ int amf_sbi_open(void)
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_AMF);
     }
 
+    if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NPWSIWF_SAI)) {
+        service = ogs_sbi_nf_service_build_default(
+                    nf_instance, OGS_SBI_SERVICE_NAME_NPWSIWF_SAI);
+        ogs_assert(service);
+        ogs_sbi_nf_service_add_version(
+                    service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
+        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_AMF);
+    }
+
     /* Initialize NRF NF Instance */
     nf_instance = ogs_sbi_self()->nrf_instance;
     if (nf_instance)

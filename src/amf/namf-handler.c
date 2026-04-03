@@ -23,6 +23,7 @@
 #include "nas-path.h"
 #include "ngap-path.h"
 #include "sbi-path.h"
+#include "sbc-message.h"
 
 int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
@@ -1966,6 +1967,132 @@ int amf_namf_comm_handle_registration_status_update_response(
         ogs_sbi_message_t *recvmsg, amf_ue_t *amf_ue) {
 
     /* Nothing to do */
+
+    return OGS_OK;
+}
+
+int amf_namf_comm_handle_non_ue_n2_message_transfer(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    int status, r;
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    OpenAPI_n2_information_transfer_req_data_t *N2InformationTransferReqData;
+    OpenAPI_n2_information_transfer_rsp_data_t N2InformationTransferRspData;
+
+    OpenAPI_n2_info_container_t *n2InfoContainer = NULL;
+    OpenAPI_pws_information_t *pwsInfo = NULL;
+
+    OpenAPI_n2_info_content_t *pws_container = NULL; 
+    sbc_pws_data_t *sbc_pws = NULL;
+
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    N2InformationTransferReqData = recvmsg->N2InformationTransferReqData;
+    if (!N2InformationTransferReqData) {
+        ogs_error("No N2InformationTransferReqData");
+        return OGS_ERROR;
+    }
+
+    n2InfoContainer = N2InformationTransferReqData->n2_information;
+    if (!n2InfoContainer) {
+        ogs_error("No n2InfoContainer");
+        return OGS_ERROR;
+    }
+
+    pwsInfo = n2InfoContainer->pws_info;
+
+    if (!pwsInfo)
+    {
+        ogs_error("No pws Info");
+        return OGS_ERROR;
+    }
+
+    pws_container = pwsInfo->pws_container;
+    if (!pws_container)
+    {
+        ogs_error("No pws container");
+        return OGS_ERROR;
+    }
+
+    
+
+
+    if (pws_container) {
+        sbc_pws = ogs_calloc(1, sizeof(sbc_pws_data_t));
+        if (!sbc_pws) {
+                ogs_error("Failed to allocate sbc_pws_data");
+                return OGS_ERROR;
+        }
+
+        sbc_pws->message_id = pws_container->message_identifier;
+        sbc_pws->serial_number = pws_container->serial_number;
+        sbc_pws->repetition_period = pws_container->repetition_period;
+        sbc_pws->number_of_broadcast = pws_container->number_of_broadcast;
+        sbc_pws->data_coding_scheme = pws_container->data_coding_scheme;
+        sbc_pws->message_length = pws_container->message_length;
+        memcpy(sbc_pws->message_contents, pws_container->message_contents, pws_container->message_length);
+
+        // Print all PWS values
+        char msg_content_hex[2048] = {0};
+        for (uint32_t i = 0; i < pws_container->message_length && i < sizeof(msg_content_hex)/2-1; i++) {
+            sprintf(&msg_content_hex[i*2], "%02X", pws_container->message_contents[i]);
+        }
+        ogs_info("PWS: msg_id=%u, serial_number=%u, repetition_period=%u, number_of_broadcast=%u, data_coding_scheme=%u, message_length=%u, message_contents(hex)=%s",
+            pwsInfo->message_identifier,
+            pws_container->serial_number,
+            pws_container->repetition_period,
+            pws_container->number_of_broadcast,
+            pwsInfo->data_coding_scheme,
+            pws_container->message_length,
+            msg_content_hex);
+
+
+        // Manually assign test values for PWS for testing
+        sbc_pws->message_id = 4352;
+        sbc_pws->serial_number = 64;
+        sbc_pws->repetition_period = 5;
+        sbc_pws->number_of_broadcast = 999;
+        sbc_pws->data_coding_scheme = 1;
+        sbc_pws->message_length = 84;
+        for (uint32_t i = 0; i < sbc_pws->message_length; i++) {
+            sbc_pws->message_contents[i] = (uint8_t)(i + 1); // Fill with dummy data
+        }
+
+        // Send PWS message to all gNBs
+        r = ngap_send_write_replace_warning_request(sbc_pws);
+        if (r != OGS_OK) {
+            ogs_error("Failed to send PWS warning request");
+        }
+        ogs_free(sbc_pws);
+    } else {
+        ogs_error("No PWS content here in pws_container");
+        return OGS_ERROR;
+    }
+
+
+    /* TODO: Handle other N2 information types like:
+     * - SM Info (Session Management)
+     * - RAN Info (Radio Access Network)
+     * - NRPPA Info (NR Positioning Protocol A)
+     * - V2X Info (Vehicle-to-Everything)
+     * - ProSe Info (Proximity Services)
+     */
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
+    status = OGS_SBI_HTTP_STATUS_OK;
+
+    memset(&N2InformationTransferRspData, 0, sizeof(N2InformationTransferRspData));
+    N2InformationTransferRspData.result = OpenAPI_n2_information_transfer_result_N2_INFO_TRANSFER_INITIATED;
+
+    sendmsg.N2InformationTransferRspData = &N2InformationTransferRspData;
+
+    response = ogs_sbi_build_response(&sendmsg, status);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     return OGS_OK;
 }

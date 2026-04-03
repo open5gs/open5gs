@@ -84,6 +84,14 @@ void ngap_handle_ng_reset(
 void ngap_handle_error_indication(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 
+void ngap_handle_write_replace_warning_response  (
+        amf_gnb_t *gnb, ogs_ngap_message_t *message);
+
+void ngap_handle_pws_cancel_request(
+        amf_gnb_t *gnb, ogs_ngap_message_t *message);
+void ngap_handle_pws_cancel_response(
+        amf_gnb_t *gnb, ogs_ngap_message_t *message);
+
 #ifdef __cplusplus
 }
 #endif

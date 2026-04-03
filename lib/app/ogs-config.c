@@ -235,6 +235,9 @@ int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent)
                 } else if (!strcmp(parameter_key, "no_udr")) {
                     global_conf.parameter.no_udr =
                         ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_pwsiwf_sai")) {
+                    global_conf.parameter.no_pwsiwf_sai =
+                        ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key, "no_ipv4")) {
                     global_conf.parameter.no_ipv4 =
                         ogs_yaml_iter_bool(&parameter_iter);

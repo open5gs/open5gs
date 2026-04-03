@@ -2803,3 +2803,214 @@ ogs_pkbuf_t *ngap_build_downlink_ran_status_transfer(
 
     return ogs_ngap_encode(&pdu);
 }
+
+
+ogs_pkbuf_t *ngap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
+{
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_WriteReplaceWarningRequest_t *WriteReplaceWarningRequest = NULL;
+
+    NGAP_WriteReplaceWarningRequestIEs_t *ie = NULL;
+    NGAP_MessageIdentifier_t *MessageIdentifier = NULL;
+    NGAP_SerialNumber_t *SerialNumber = NULL;
+    // NGAP_WarningType_t *WarningType = NULL;
+    NGAP_RepetitionPeriod_t *RepetitionPeriod = NULL;
+    NGAP_NumberOfBroadcasts_t *NumberofBroadcastRequest = NULL;
+    NGAP_DataCodingScheme_t *DataCodingScheme = NULL;
+    NGAP_WarningMessageContents_t *WarningMessageContents = NULL;
+
+    ogs_debug("WriteReplaceWarningRequest");
+
+    ogs_assert(sbc_pws);
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        NGAP_ProcedureCode_id_WriteReplaceWarning;
+    initiatingMessage->criticality = NGAP_Criticality_reject;
+    initiatingMessage->value.present =
+        NGAP_InitiatingMessage__value_PR_WriteReplaceWarningRequest;
+
+    WriteReplaceWarningRequest =
+        &initiatingMessage->value.choice.WriteReplaceWarningRequest;
+
+    ie = CALLOC(1, sizeof(NGAP_WriteReplaceWarningRequestIEs_t));
+    ASN_SEQUENCE_ADD(&WriteReplaceWarningRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_MessageIdentifier;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_WriteReplaceWarningRequestIEs__value_PR_MessageIdentifier;
+
+    MessageIdentifier = &ie->value.choice.MessageIdentifier;
+
+    MessageIdentifier->size = (16 / 8);
+    MessageIdentifier->buf =
+        CALLOC(MessageIdentifier->size, sizeof(uint8_t));
+    MessageIdentifier->bits_unused = 0;
+    MessageIdentifier->buf[0] = (sbc_pws->message_id >> 8) & 0xFF;
+    MessageIdentifier->buf[1] = sbc_pws->message_id & 0xFF;
+
+    ie = CALLOC(1, sizeof(NGAP_WriteReplaceWarningRequestIEs_t));
+    ASN_SEQUENCE_ADD(&WriteReplaceWarningRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_SerialNumber;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_WriteReplaceWarningRequestIEs__value_PR_SerialNumber;
+
+    SerialNumber = &ie->value.choice.SerialNumber;
+
+    SerialNumber->size = (16 / 8);
+    SerialNumber->buf =
+        CALLOC(SerialNumber->size, sizeof(uint8_t));
+    SerialNumber->bits_unused = 0;
+    SerialNumber->buf[0] = (sbc_pws->serial_number >> 8) & 0xFF;
+    SerialNumber->buf[1] = sbc_pws->serial_number & 0xFF;
+
+    /* TODO: optional Warning Area List */
+
+    ie = CALLOC(1, sizeof(NGAP_WriteReplaceWarningRequestIEs_t));
+    ASN_SEQUENCE_ADD(&WriteReplaceWarningRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RepetitionPeriod;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_WriteReplaceWarningRequestIEs__value_PR_RepetitionPeriod;
+
+    RepetitionPeriod = &ie->value.choice.RepetitionPeriod;
+
+    *RepetitionPeriod = sbc_pws->repetition_period; 
+
+    /* TODO: optional Extended Repetition Period */
+
+    ie = CALLOC(1, sizeof(NGAP_WriteReplaceWarningRequestIEs_t));
+    ASN_SEQUENCE_ADD(&WriteReplaceWarningRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_NumberOfBroadcastsRequested;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_WriteReplaceWarningRequestIEs__value_PR_NumberOfBroadcastsRequested;
+
+    NumberofBroadcastRequest = &ie->value.choice.NumberOfBroadcastsRequested;
+
+    *NumberofBroadcastRequest = sbc_pws->number_of_broadcast;
+
+    /* TODO: optional Warnging Type */
+
+    /* TODO: optional Warning Security Information */
+
+    ie = CALLOC(1, sizeof(NGAP_WriteReplaceWarningRequestIEs_t));
+    ASN_SEQUENCE_ADD(&WriteReplaceWarningRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_DataCodingScheme;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_WriteReplaceWarningRequestIEs__value_PR_DataCodingScheme;
+
+    DataCodingScheme = &ie->value.choice.DataCodingScheme;
+
+    DataCodingScheme->size = (8 / 8);
+    DataCodingScheme->buf =
+        CALLOC(DataCodingScheme->size, sizeof(uint8_t));
+    DataCodingScheme->bits_unused = 0;
+    DataCodingScheme->buf[0] = sbc_pws->data_coding_scheme & 0xFF;
+
+    ie = CALLOC(1, sizeof(NGAP_WriteReplaceWarningRequestIEs_t));
+    ASN_SEQUENCE_ADD(&WriteReplaceWarningRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_WarningMessageContents;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_WriteReplaceWarningRequestIEs__value_PR_WarningMessageContents;
+
+    WarningMessageContents = &ie->value.choice.WarningMessageContents;
+
+    WarningMessageContents->size = sbc_pws->message_length;;
+    WarningMessageContents->buf =
+        CALLOC(WarningMessageContents->size, sizeof(uint8_t));
+    memcpy(WarningMessageContents->buf,
+            sbc_pws->message_contents, WarningMessageContents->size);
+
+    /* TODO: optional Concurrent Warning Message Indicator */
+
+    ogs_debug("    Message[%02x,%02x] Serial[%02x,%02x] "
+            "Repetition[%d] NumBroadcast[%d]",
+        MessageIdentifier->buf[0], MessageIdentifier->buf[1],
+        SerialNumber->buf[0], SerialNumber->buf[1],
+        (int)*RepetitionPeriod, (int)*NumberofBroadcastRequest);
+
+    return ogs_ngap_encode(&pdu);
+}
+
+ogs_pkbuf_t *ngap_build_pws_cancel_request(sbc_pws_data_t *sbc_pws)
+{
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_PWSCancelRequest_t *NGAP_PWSCancelRequest = NULL;
+
+    NGAP_PWSCancelRequestIEs_t *ie = NULL;
+    NGAP_MessageIdentifier_t *MessageIdentifier = NULL;
+    NGAP_SerialNumber_t *SerialNumber = NULL;
+
+    ogs_debug("KillRequest");
+
+    ogs_assert(sbc_pws);
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode = NGAP_ProcedureCode_id_PWSCancel;
+    initiatingMessage->criticality = NGAP_Criticality_reject;
+    initiatingMessage->value.present =
+        NGAP_InitiatingMessage__value_PR_PWSCancelRequest;
+
+    NGAP_PWSCancelRequest = &initiatingMessage->value.choice.PWSCancelRequest;
+
+    ie = CALLOC(1, sizeof(NGAP_PWSCancelRequestIEs_t));
+    ASN_SEQUENCE_ADD(&NGAP_PWSCancelRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_MessageIdentifier;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_PWSCancelRequestIEs__value_PR_MessageIdentifier;
+
+    MessageIdentifier = &ie->value.choice.MessageIdentifier;
+
+    MessageIdentifier->size = (16 / 8);
+    MessageIdentifier->buf =
+        CALLOC(MessageIdentifier->size, sizeof(uint8_t));
+    MessageIdentifier->bits_unused = 0;
+    MessageIdentifier->buf[0] = (sbc_pws->message_id >> 8) & 0xFF;
+    MessageIdentifier->buf[1] = sbc_pws->message_id & 0xFF;
+
+    ie = CALLOC(1, sizeof(NGAP_PWSCancelRequestIEs_t));
+    ASN_SEQUENCE_ADD(&NGAP_PWSCancelRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_SerialNumber;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_PWSCancelRequestIEs__value_PR_SerialNumber;
+
+    SerialNumber = &ie->value.choice.SerialNumber;
+
+    SerialNumber->size = (16 / 8);
+    SerialNumber->buf =
+        CALLOC(SerialNumber->size, sizeof(uint8_t));
+    SerialNumber->bits_unused = 0;
+    SerialNumber->buf[0] = (sbc_pws->serial_number >> 8) & 0xFF;
+    SerialNumber->buf[1] = sbc_pws->serial_number & 0xFF;
+
+    /* TODO: optional Warning Area List */
+
+    ogs_debug("    Message[%02x,%02x] Serial[%02x,%02x]",
+            MessageIdentifier->buf[0], MessageIdentifier->buf[1],
+            SerialNumber->buf[0], SerialNumber->buf[1]);
+
+    return ogs_ngap_encode(&pdu);
+}
+

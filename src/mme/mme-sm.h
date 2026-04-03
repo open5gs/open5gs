@@ -36,6 +36,11 @@ void s1ap_state_final(ogs_fsm_t *s, mme_event_t *e);
 void s1ap_state_operational(ogs_fsm_t *s, mme_event_t *e);
 void s1ap_state_exception(ogs_fsm_t *s, mme_event_t *e);
 
+void sbcap_state_initial(ogs_fsm_t *s, mme_event_t *e);
+void sbcap_state_final(ogs_fsm_t *s, mme_event_t *e);
+void sbcap_state_operational(ogs_fsm_t *s, mme_event_t *e);
+void sbcap_state_exception(ogs_fsm_t *s, mme_event_t *e);
+
 void emm_state_initial(ogs_fsm_t *s, mme_event_t *e);
 void emm_state_final(ogs_fsm_t *s, mme_event_t *e);
 void emm_state_de_registered(ogs_fsm_t *s, mme_event_t *e);

@@ -36,6 +36,12 @@ typedef enum {
     MME_EVENT_S1AP_LO_SCTP_COMM_UP,
     MME_EVENT_S1AP_LO_CONNREFUSED,
 
+    MME_EVENT_SBCAP_MESSAGE,
+    MME_EVENT_SBCAP_TIMER,
+    MME_EVENT_SBCAP_LO_ACCEPT,
+    MME_EVENT_SBCAP_LO_SCTP_COMM_UP,
+    MME_EVENT_SBCAP_LO_CONNREFUSED,
+
     MME_EVENT_EMM_MESSAGE,
     MME_EVENT_EMM_TIMER,
     MME_EVENT_ESM_MESSAGE,
@@ -59,9 +65,11 @@ typedef enum {
 
 typedef long S1AP_ProcedureCode_t;
 typedef struct S1AP_S1AP_PDU ogs_s1ap_message_t;
+typedef struct SBCAP_SBC_AP_PDU ogs_sbcap_message_t;
 typedef struct ogs_nas_eps_message_s ogs_nas_eps_message_t;
 typedef struct ogs_diam_s6a_message_s ogs_diam_s6a_message_t;
 typedef struct mme_vlr_s mme_vlr_t;
+typedef struct mme_sbcap_s mme_sbcap_t;
 typedef struct mme_enb_s mme_enb_t;
 typedef struct enb_ue_s enb_ue_t;
 typedef struct sgw_ue_s sgw_ue_t;
@@ -84,6 +92,8 @@ typedef struct mme_event_s {
 
     S1AP_ProcedureCode_t s1ap_code;
     ogs_s1ap_message_t *s1ap_message;
+    
+    ogs_sbcap_message_t *sbcap_message;
 
     ogs_gtp_node_t *gnode;
 
@@ -94,6 +104,7 @@ typedef struct mme_event_s {
     ogs_diam_s6a_message_t *s6a_message;
 
     mme_vlr_t *vlr;
+    mme_sbcap_t *sbc;
     ogs_pool_id_t enb_id;
     ogs_pool_id_t enb_ue_id;
     ogs_pool_id_t sgw_ue_id;

@@ -62,6 +62,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     uint16_t max_num_of_ostreams = 0;
 
     ogs_s1ap_message_t s1ap_message;
+    ogs_sbcap_message_t sbcap_message;
     ogs_pkbuf_t *pkbuf = NULL;
     int rc, r;
 
@@ -83,6 +84,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     ogs_gtp1_message_t gtp1_message;
 
     mme_vlr_t *vlr = NULL;
+    mme_sbcap_t *sbc = NULL;
 
     ogs_assert(e);
     mme_sm_debug(e);
@@ -1031,6 +1033,107 @@ cleanup:
         ogs_assert(OGS_FSM_STATE(&vlr->sm));
 
         ogs_fsm_dispatch(&vlr->sm, e);
+        break;
+
+        case MME_EVENT_SBCAP_LO_ACCEPT:
+        sock = e->sock;
+        ogs_assert(sock);
+        addr = e->addr;
+        ogs_assert(addr);
+
+        ogs_assert(addr->ogs_sa_family == AF_INET);
+
+        ogs_info("SBC/CBC accepted[%s] in master_sm module",
+            OGS_ADDR(addr, buf));
+
+        sbc = mme_sbcap_find_by_addr(addr);
+        if (!sbc) {
+            sbc = mme_sbcap_add(sock, addr);
+            ogs_assert(sbc);
+        } else {
+            ogs_warn("SBC.CBC context duplicated with IP-address [%s]!!!",
+                    OGS_ADDR(addr, buf));
+            ogs_sock_destroy(sock);
+            ogs_free(addr);
+            ogs_warn("SBcAP Socket Closed");
+        }
+
+
+        break;
+
+    case MME_EVENT_SBCAP_LO_SCTP_COMM_UP:
+        sock = e->sock;
+        ogs_assert(sock);
+        addr = e->addr;
+        ogs_assert(addr);
+
+        ogs_assert(addr->ogs_sa_family == AF_INET);
+
+        max_num_of_ostreams = e->max_num_of_ostreams;
+
+
+        ogs_info("SBC/CBC [%s] max_num_of_ostreams : %d",
+            OGS_ADDR(addr, buf), max_num_of_ostreams);
+
+        break;
+
+    case MME_EVENT_SBCAP_LO_CONNREFUSED:
+        sock = e->sock;
+        ogs_assert(sock);
+        addr = e->addr;
+        ogs_assert(addr);
+
+        ogs_assert(addr->ogs_sa_family == AF_INET);
+
+        sbc = mme_sbcap_find_by_addr(addr);
+        if (sbc) {
+            ogs_info("CBC/SBC [%s] connection refused!!!", OGS_ADDR(addr, buf));
+            //mme_gtp_send_release_all_ue_in_enb(
+            //        enb, OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_LO_CONNREFUSED);
+            mme_sbc_remove(sbc);
+        } else {
+            ogs_warn("CBC/SBC [%s] connection refused, Already Removed!",
+                    OGS_ADDR(addr, buf));
+        }
+        ogs_free(addr);
+
+        break;
+    case MME_EVENT_SBCAP_MESSAGE:
+        sock = e->sock;
+        ogs_assert(sock);
+        addr = e->addr;
+        ogs_assert(addr);
+        pkbuf = e->pkbuf;
+        ogs_assert(pkbuf);
+
+        ogs_assert(addr->ogs_sa_family == AF_INET);
+
+        sbc = mme_sbcap_find_by_addr(addr);
+        ogs_free(addr);
+
+        ogs_assert(sbc);
+        ogs_assert(OGS_FSM_STATE(&sbc->sm));
+        ///sbcap_message
+        //ogs_warn("Before SBCAP message");
+        ogs_sbcap_decode(&sbcap_message, pkbuf);
+        rc = OGS_OK;
+        //ogs_warn("After SBCAP message");
+
+        if (rc == OGS_OK) {
+            e->sbc = sbc;
+            e->sbcap_message = &sbcap_message;
+            ogs_fsm_dispatch(&sbc->sm, e);
+        } else {
+            ogs_warn("Cannot decode SBCAP message");
+            r = OGS_OK;//s1ap_send_error_indication(
+                    //enb, NULL, NULL, S1AP_Cause_PR_protocol,
+                    //S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+        }
+
+        ogs_sbcap_free(&sbcap_message);
+        ogs_pkbuf_free(pkbuf);
         break;
 
     default:

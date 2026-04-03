@@ -29,6 +29,7 @@
 #include "ogs-app.h"
 #include "ogs-sctp.h"
 #include "metrics.h"
+#include "ogs-sbcap.h"
 
 /* S1AP */
 #include "S1AP_Cause.h"
@@ -53,6 +54,7 @@ typedef struct mme_pgw_s mme_pgw_t;
 typedef struct mme_vlr_s mme_vlr_t;
 typedef struct mme_csmap_s mme_csmap_t;
 typedef struct mme_hssmap_s mme_hssmap_t;
+typedef struct mme_sbcap_s mme_sbcap_t;
 
 typedef struct enb_ue_s enb_ue_t;
 typedef struct sgw_ue_s sgw_ue_t;
@@ -79,9 +81,11 @@ typedef struct mme_context_s {
     const char          *diam_conf_path;  /* MME Diameter conf path */
     ogs_diam_config_t   *diam_config;     /* MME Diameter config */
 
+    uint16_t        sbcap_port;      /* Default SBCAP Port */
     uint16_t        s1ap_port;      /* Default S1AP Port */
     uint16_t        sgsap_port;     /* Default SGsAP Port */
 
+    ogs_list_t      sbcap_list;      /* MME SBCAP IPv4 Server List */
     ogs_list_t      s1ap_list;      /* MME S1AP IPv4 Server List */
     ogs_list_t      s1ap_list6;     /* MME S1AP IPv6 Server List */
 
@@ -156,6 +160,8 @@ typedef struct mme_context_s {
     ogs_hash_t *enb_id_hash;    /* hash table for ENB-ID */
     ogs_hash_t *imsi_ue_hash;   /* hash table (IMSI : MME_UE) */
     ogs_hash_t *guti_ue_hash;   /* hash table (GUTI : MME_UE) */
+    ogs_hash_t *sbcap_addr_hash;  /* hash table for SBC Address */
+    ogs_hash_t *sbcap_id_hash;    /* hash table for SBC-ID */
 
     ogs_hash_t *mme_s11_teid_hash;  /* hash table (MME-S11-TEID : MME_UE) */
     ogs_hash_t *mme_gn_teid_hash;  /* hash table (MME-GN-TEID : MME_UE) */
@@ -228,6 +234,25 @@ typedef struct mme_vlr_s {
     ogs_sockopt_t   *option;    /* VLR SGsAP Socket Option */
     ogs_poll_t      *poll;      /* VLR SGsAP Poll */
 } mme_vlr_t;
+
+typedef struct mme_sbcap_s { //added by northmoriko _sai refined
+    ogs_lnode_t     lnode;
+
+    ogs_fsm_t       sm;          /* A state machine */
+
+    //ogs_timer_t     *t_conn;     /* client timer to connect to server */
+    ogs_sctp_sock_t sctp; 
+
+    int             max_num_of_ostreams;/* SCTP Max num of outbound streams */
+    uint16_t        ostream_id;     /* vlr_ostream_id generator */
+    //ogs_pkbuf_t
+    ///ogs_sockaddr_t  *sa_list;   /* SBcAP Socket Address List */
+///
+    ///ogs_sock_t      *sock;      /* SBcAP Socket */
+    ///ogs_sockaddr_t  *addr;      /* SBcAP Connected Socket Address */
+    ///ogs_sockopt_t   *option;    /* SBcAP Socket Option */
+    ///ogs_poll_t      *poll;      /* SBcAP Poll */
+} mme_sbcap_t;
 
 typedef struct mme_csmap_s {
     ogs_lnode_t     lnode;
@@ -1076,6 +1101,12 @@ void mme_vlr_remove_all(void);
 void mme_vlr_close(mme_vlr_t *vlr);
 mme_vlr_t *mme_vlr_find_by_sock(const ogs_sock_t *sock);
 
+mme_sbcap_t *mme_sbcap_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
+int mme_sbc_remove(mme_sbcap_t *sbc);
+int mme_sbc_remove_all(void);
+mme_sbcap_t *mme_sbcap_find_by_addr(ogs_sockaddr_t *addr);
+
+
 mme_csmap_t *mme_csmap_add(mme_vlr_t *vlr);
 void mme_csmap_remove(mme_csmap_t *csmap);
 void mme_csmap_remove_all(void);
@@ -1098,6 +1129,8 @@ mme_enb_t *mme_enb_find_by_enb_id(uint32_t enb_id);
 int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id);
 int mme_enb_sock_type(ogs_sock_t *sock);
 mme_enb_t *mme_enb_find_by_id(ogs_pool_id_t id);
+
+int mme_sbcap_sock_type(ogs_sock_t *sock);
 
 enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id);
 void enb_ue_remove(enb_ue_t *enb_ue);

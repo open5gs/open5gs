@@ -25,6 +25,20 @@ typedef struct OpenAPI_n2_info_content_s {
     int ngap_message_type;
     OpenAPI_ngap_ie_type_e ngap_ie_type;
     struct OpenAPI_ref_to_binary_data_s *ngap_data;
+
+
+        //added by sairisan
+    uint16_t message_identifier;
+    uint16_t serial_number;
+    // uint8_t warning_type;
+    uint32_t no_of_tai;        
+    uint32_t repetition_period;
+    uint32_t number_of_broadcast;
+    uint8_t data_coding_scheme;
+    uint32_t message_length;
+    uint8_t message_contents[1024]; /* TODO: max 9600 */
+
+    
 } OpenAPI_n2_info_content_t;
 
 OpenAPI_n2_info_content_t *OpenAPI_n2_info_content_create(

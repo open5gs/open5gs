@@ -2663,6 +2663,7 @@ ogs_pkbuf_t *s1ap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
     S1AP_WriteReplaceWarningRequestIEs_t *ie = NULL;
     S1AP_MessageIdentifier_t *MessageIdentifier = NULL;
     S1AP_SerialNumber_t *SerialNumber = NULL;
+    // S1AP_WarningType_t *WarningType = NULL;
     S1AP_RepetitionPeriod_t *RepetitionPeriod = NULL;
     S1AP_NumberofBroadcastRequest_t *NumberofBroadcastRequest = NULL;
     S1AP_DataCodingScheme_t *DataCodingScheme = NULL;

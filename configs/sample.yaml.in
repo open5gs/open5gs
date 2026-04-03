@@ -46,7 +46,10 @@ mme:
     connect:
       - identity: hss.localdomain
         address: 127.0.0.8
-
+  sbcap:
+    server:
+      - address: 127.0.0.2
+        port: 29168
   s1ap:
     server:
       - address: 127.0.0.2
@@ -232,6 +235,21 @@ hss:
     connect:
       - identity: mme.localdomain
         address: 127.0.0.2
+
+pwsiwf_sai:
+  sbi:
+    client:
+      amf:
+        - uri: http://127.0.0.5:7777 # Default AMF SBI
+  sbcap:
+    server:
+      - address: 127.0.0.199 # Using a new address for PWS-IWF_SAI
+        port: 29168
+    client:
+      cbc:
+        - address: 127.0.0.1 # External CBC address - update this to your CBC IP
+          port: 29168        # CBC SBCAP port - update this to your CBC port
+
 pcrf:
   freeDiameter:
     identity: pcrf.localdomain
@@ -333,3 +351,30 @@ udr:
     client:
       scp:
         - uri: http://127.0.0.200:7777
+
+#pwsiwf_sai:
+#  sbi:
+#    server:
+#      - address: 127.0.0.21
+#        port: 7778
+#      - address: ::1
+#        port: 7779
+#    client:
+#      scp:
+#        - uri: http://127.0.0.200:7777
+#      delegated:
+#        nrf:
+#          nfm: no
+#          disc: no
+#        scp:
+#          next: no
+#  sctp:
+#    - addr: 127.0.0.21
+#      port: 10000
+#  ngap:
+#    - addr: 127.0.0.21
+#      port: 38412
+#  sbcap:
+#    server:
+#      - address: 127.0.0.21
+#        port: 29168

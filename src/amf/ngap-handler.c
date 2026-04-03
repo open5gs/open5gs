@@ -654,8 +654,6 @@ void ngap_handle_uplink_nas_transport(
     NGAP_UserLocationInformation_t *UserLocationInformation = NULL;
     NGAP_UserLocationInformationNR_t *UserLocationInformationNR = NULL;
 
-    ogs_5gs_tai_t nr_tai;
-    int served_tai_index = 0;
 
     ogs_assert(gnb);
     ogs_assert(gnb->sctp.sock);
@@ -768,22 +766,6 @@ void ngap_handle_uplink_nas_transport(
     UserLocationInformationNR =
         UserLocationInformation->choice.userLocationInformationNR;
     ogs_assert(UserLocationInformationNR);
-    ogs_ngap_ASN_to_5gs_tai(&UserLocationInformationNR->tAI, &nr_tai);
-
-    served_tai_index = amf_find_served_tai(&nr_tai);
-    if (served_tai_index < 0) {
-        ogs_error("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
-            ogs_plmn_id_hexdump(&nr_tai.plmn_id), nr_tai.tac.v);
-        r = ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
-                NGAP_Cause_PR_protocol,
-                NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-        return;
-    }
-    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
-
     ogs_ngap_ASN_to_nr_cgi(
             &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
     ogs_ngap_ASN_to_5gs_tai(
@@ -903,7 +885,6 @@ void ngap_handle_ue_radio_capability_info_indication(
     if (amf_ue)
         OGS_ASN_STORE_DATA(&amf_ue->ueRadioCapability, UERadioCapability);
 }
-
 void ngap_handle_initial_context_setup_response(
         amf_gnb_t *gnb, ogs_ngap_message_t *message)
 {
@@ -2743,14 +2724,14 @@ void ngap_handle_path_switch_request(
         *eUTRAintegrityProtectionAlgorithms = NULL;
     uint16_t nr_ea = 0, nr_ia = 0, eutra_ea = 0, eutra_ia = 0;
     uint8_t nr_ea0 = 0, nr_ia0 = 0, eutra_ea0 = 0, eutra_ia0 = 0;
+    ogs_5gs_tai_t nr_tai;
+    int served_tai_index = 0;
 
     NGAP_PDUSessionResourceToBeSwitchedDLItem_t *PDUSessionItem = NULL;
     OCTET_STRING_t *transfer = NULL;
 
     amf_nsmf_pdusession_sm_context_param_t param;
 
-    ogs_5gs_tai_t nr_tai;
-    int served_tai_index = 0;
 
     ogs_assert(gnb);
     ogs_assert(gnb->sctp.sock);
@@ -3241,7 +3222,6 @@ void ngap_handle_handover_required(
         ogs_assert(r != OGS_ERROR);
         return;
     }
-
     if (!TargetID) {
         ogs_error("No TargetID");
         r = ngap_send_error_indication2(source_ue,
@@ -4594,6 +4574,8 @@ void ngap_handle_ran_configuration_update(
     ogs_expect(OGS_OK == ngap_send_ran_configuration_update_ack(gnb));
 }
 
+
+
 void ngap_handle_ng_reset(
         amf_gnb_t *gnb, ogs_ngap_message_t *message)
 {
@@ -4933,3 +4915,80 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         }
     }
 }
+
+
+void ngap_handle_write_replace_warning_response(
+        amf_gnb_t *gnb, ogs_ngap_message_t *message)
+{
+    char buf[OGS_ADDRSTRLEN];
+
+    NGAP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    NGAP_WriteReplaceWarningResponse_t *WriteReplaceWarningResponse = NULL;
+
+    ogs_assert(gnb);
+    ogs_assert(gnb->sctp.sock);
+
+    ogs_assert(message);
+    successfulOutcome = message->choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
+    WriteReplaceWarningResponse =
+        &successfulOutcome->value.choice.WriteReplaceWarningResponse;
+    ogs_assert(WriteReplaceWarningResponse);
+
+    ogs_debug("WriteReplaceWarningResponse");
+
+    ogs_debug("    IP[%s] GNB_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
+
+}
+
+void ngap_handle_pws_cancel_response(
+        amf_gnb_t *gnb, ogs_ngap_message_t *message)
+{
+    char buf[OGS_ADDRSTRLEN];
+
+    NGAP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    NGAP_PWSCancelResponse_t *PWSCancelResponse = NULL;
+
+    ogs_assert(gnb);
+    ogs_assert(gnb->sctp.sock);
+
+    ogs_assert(message);
+    successfulOutcome = message->choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
+    PWSCancelResponse =
+        &successfulOutcome->value.choice.PWSCancelResponse;
+    ogs_assert(PWSCancelResponse);
+
+    ogs_debug("PWSCancelResponse");
+
+    ogs_debug("    IP[%s] GNB_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
+}
+
+void ngap_handle_pws_cancel_request(
+        amf_gnb_t *gnb, ogs_ngap_message_t *message)
+{
+    char buf[OGS_ADDRSTRLEN];
+
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_PWSCancelRequest_t *PWSCancelRequest = NULL;
+
+    ogs_assert(gnb);
+    ogs_assert(gnb->sctp.sock);
+
+    ogs_assert(message);
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    PWSCancelRequest =
+        &initiatingMessage->value.choice.PWSCancelRequest;
+    ogs_assert(PWSCancelRequest);
+
+    ogs_debug("PWSCancelRequest");
+
+    ogs_debug("    IP[%s] GNB_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
+
+    /* TODO: Handle PWS Cancel Request */
+}
+

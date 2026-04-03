@@ -41,7 +41,10 @@ int amf_namf_comm_handle_ue_context_transfer_response(
 int amf_namf_comm_handle_registration_status_update_request(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 int amf_namf_comm_handle_registration_status_update_response(
-        ogs_sbi_message_t *recvmsg, amf_ue_t *amf_ue);
+        ogs_sbi_message_t *recvmsg, amf_ue_t *amf_ue);  
+
+int amf_namf_comm_handle_non_ue_n2_message_transfer(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }

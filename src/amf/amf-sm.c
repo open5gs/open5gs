@@ -17,6 +17,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "amf-sm.h"
+// #include "amf-event.h"
+// #include "amf-timer.h"
+
 #include "sbi-path.h"
 #include "ngap-path.h"
 #include "nas-path.h"
@@ -253,6 +257,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     END
                     break;
 
+
                 DEFAULT
                     ogs_error("Invalid resource name [%s]",
                             sbi_message.h.resource.component[2]);
@@ -264,6 +269,29 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 END
                 break;
 
+            CASE(OGS_SBI_RESOURCE_NAME_NON_UE_N2_MESSAGES) /* New case for PWS */
+                SWITCH(sbi_message.h.method)
+                ogs_info("AMF is Receiving PWS (ETWS/CMAS)................");
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    rv = amf_namf_comm_handle_non_ue_n2_message_transfer(
+                    stream, &sbi_message);
+                    if (rv != OGS_OK) {
+                        ogs_assert(true ==ogs_sbi_server_send_error(stream,OGS_SBI_HTTP_STATUS_BAD_REQUEST,&sbi_message,
+                        "Invalid NonUeN2MessageTransferReqData", NULL, NULL));
+                    }
+                    else {
+                        ogs_info("PWS (ETWS/CMAS)Broadcast to gNB successfully");
+                    }
+                    break;
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_FORBIDDEN, &sbi_message,
+                        "Invalid HTTP method", sbi_message.h.method, NULL));
+                END
+                break;
+
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
                         sbi_message.h.resource.component[0]);
@@ -272,37 +300,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
                         "Invalid resource name",
                         sbi_message.h.resource.component[0], NULL));
-            END
-            break;
-
-        CASE(OGS_SBI_SERVICE_NAME_NAMF_CALLBACK)
-            SWITCH(sbi_message.h.resource.component[1])
-            CASE(OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS)
-                amf_namf_callback_handle_sm_context_status(
-                        stream, &sbi_message);
-                break;
-
-            CASE(OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY)
-                amf_namf_callback_handle_dereg_notify(stream, &sbi_message);
-                break;
-
-            CASE(OGS_SBI_RESOURCE_NAME_SDMSUBSCRIPTION_NOTIFY)
-                amf_namf_callback_handle_sdm_data_change_notify(
-                        stream, &sbi_message);
-                break;
-
-            CASE(OGS_SBI_RESOURCE_NAME_AM_POLICY_NOTIFY)
-                ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
-                break;
-
-            DEFAULT
-                ogs_error("Invalid resource name [%s]",
-                        sbi_message.h.resource.component[1]);
-                ogs_assert(true ==
-                    ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
-                        "Invalid resource name",
-                        sbi_message.h.resource.component[1], NULL));
             END
             break;
 
@@ -1220,3 +1217,5 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         break;
     }
 }
+
+

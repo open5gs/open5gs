@@ -131,6 +131,8 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_TRANSFER              "transfer"
 #define OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE       "transfer-update"
 
+#define OGS_SBI_RESOURCE_NAME_NON_UE_N2_MESSAGES    "non-ue-n2-messages"  //sairisan
+
 #define OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS     "sm-context-status"
 #define OGS_SBI_RESOURCE_NAME_AM_POLICY_NOTIFY      "am-policy-notify"
 #define OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY          "dereg-notify"
@@ -151,6 +153,8 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_PCF_BINDINGS          "pcfBindings"
 
 #define OGS_SBI_RESOURCE_NAME_EXCHANGE_CAPABILITY   "exchange-capability"
+
+#define OGS_SBI_RESOURCE_NAME_WARNING_MESSAGE       "warning-message"
 
 #define OGS_SBI_PATCH_PATH_NF_STATUS                "/nfStatus"
 #define OGS_SBI_PATCH_PATH_LOAD                     "/load"
@@ -427,6 +431,17 @@ extern "C" {
 #define OGS_SBI_CALLBACK_NAMF_COMMUNICATION_ONN1N2TRANSFERFAILURE \
     "Namf_Communication_onN1N2TransferFailure"
 
+#define OGS_SBI_SERVICE_NAME_NUDM_UECM                  "nudm-uecm"
+#define OGS_SBI_SERVICE_NAME_NUDM_SDM                   "nudm-sdm"
+#define OGS_SBI_SERVICE_NAME_NUDM_UEAU                  "nudm-ueau"
+#define OGS_SBI_SERVICE_NAME_NUDM_MT                    "nudm-mt"
+#define OGS_SBI_SERVICE_NAME_NUDM_PP                    "nudm-pp"
+#define OGS_SBI_SERVICE_NAME_NPWS_CALLBACK              "npws-callback"
+
+/* NRF NFManagement Service */
+#define OGS_SBI_SERVICE_NAME_NNRF_MGMT                  "nnrf-mgmt"
+/* NRF NFDiscovery Service */
+
 typedef struct ogs_sbi_header_s {
     char *method;
     char *uri;
@@ -584,6 +599,8 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_list_t *SessionManagementSubscriptionDataList;
     OpenAPI_n1_n2_message_transfer_req_data_t *N1N2MessageTransferReqData;
     OpenAPI_n1_n2_message_transfer_rsp_data_t *N1N2MessageTransferRspData;
+    OpenAPI_n2_information_transfer_req_data_t *N2InformationTransferReqData;
+    OpenAPI_n2_information_transfer_rsp_data_t *N2InformationTransferRspData;
     OpenAPI_n1_n2_msg_txfr_failure_notification_t
         *N1N2MsgTxfrFailureNotification;
     OpenAPI_sm_context_status_notification_t *SmContextStatusNotification;

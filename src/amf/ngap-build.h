@@ -22,6 +22,8 @@
 
 #include "context.h"
 
+#include "sbc-message.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -76,6 +78,13 @@ ogs_pkbuf_t *ngap_build_handover_cancel_ack(ran_ue_t *source_ue);
 ogs_pkbuf_t *ngap_build_downlink_ran_status_transfer(
     ran_ue_t *target_ue,
     NGAP_RANStatusTransfer_TransparentContainer_t *transfer);
+
+ogs_pkbuf_t *ngap_build_write_replace_warning_request(
+    sbc_pws_data_t *sbc_pws);
+
+ogs_pkbuf_t *ngap_build_pws_cancel_request(
+    sbc_pws_data_t *sbc_pws);
+
 
 #ifdef __cplusplus
 }

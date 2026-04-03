@@ -18,7 +18,6 @@
  */
 
 #include "namf-build.h"
-#include "gsm-build.h"
 #include "ngap-build.h"
 
 ogs_sbi_request_t *smf_namf_comm_build_n1_n2_message_transfer(

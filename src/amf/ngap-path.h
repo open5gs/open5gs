@@ -86,6 +86,10 @@ int ngap_send_ng_reset_ack(
         amf_gnb_t *gnb,
         NGAP_UE_associatedLogicalNG_connectionList_t *partOfNG_Interface);
 
+int ngap_send_write_replace_warning_request(sbc_pws_data_t *sbc_pws);
+
+int ngap_pws_cancel_request(sbc_pws_data_t *sbc_pws);
+
 #ifdef __cplusplus
 }
 #endif

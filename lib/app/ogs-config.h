@@ -48,6 +48,7 @@ typedef struct ogs_global_conf_s {
         int no_nssf;
         int no_bsf;
         int no_udr;
+        int no_pwsiwf_sai;
         int no_sepp;
         int no_scp;
         int no_nrf;
