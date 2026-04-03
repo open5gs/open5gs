@@ -1,7 +1,1 @@
-{
-    "files.associations": {
-        "message.h": "c",
-        "nsmf-handler.h": "c",
-        "non_ue_n2_message_transfer_request.h": "c"
-    }
-}
+{}
