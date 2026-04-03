@@ -3112,7 +3112,6 @@ void mme_vlr_close(mme_vlr_t *vlr)
 }
 
 
-/
 
 mme_sbcap_t *mme_sbcap_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 {
