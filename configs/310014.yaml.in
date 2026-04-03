@@ -48,7 +48,7 @@ mme:
   sbcap:
     server:
       - address: 127.0.0.2
-        port: 29168  
+        port: 29168
   s1ap:
     server:
       - address: 127.0.0.2
