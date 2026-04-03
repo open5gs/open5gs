@@ -24,7 +24,7 @@ typedef long	 SBCAP_ProtocolIE_ID_t;
 
 #define SBCAP_ProtocolIE_ID_id_Message_Identifier	((SBCAP_ProtocolIE_ID_t)5)
 #define SBCAP_ProtocolIE_ID_id_Serial_Number	((SBCAP_ProtocolIE_ID_t)11)
-#define SBCAP_ProtocolIE_ID_id_Warning_Type    ((SBCAP_ProtocolIE_ID_t)18)
+#define SBCAP_ProtocolIE_ID_id_Warning_Type	((SBCAP_ProtocolIE_ID_t)18)
 #define SBCAP_ProtocolIE_ID_id_Repetition_Period	((SBCAP_ProtocolIE_ID_t)10)
 #define SBCAP_ProtocolIE_ID_id_Number_Of_Broadcast_Requested	((SBCAP_ProtocolIE_ID_t)7)
 #define SBCAP_ProtocolIE_ID_id_Data_Coding_Scheme	((SBCAP_ProtocolIE_ID_t)3)
